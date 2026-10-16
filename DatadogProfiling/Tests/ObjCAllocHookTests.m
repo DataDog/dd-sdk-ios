@@ -14,6 +14,7 @@
 
 #import "objc_alloc_hook.h"
 #import "objc_alloc_hook_testing.h"
+#import "memory_live_set.h"
 
 static _Atomic(uint64_t) targetAllocations;
 static _Atomic(uint64_t) targetDeallocations;
@@ -45,6 +46,8 @@ static dispatch_semaphore_t observerEntered;
 static dispatch_semaphore_t observerRelease;
 static _Atomic(uint64_t) replacementAllocations;
 static _Atomic(int) replacementStartStatus;
+static _Atomic(dd_memory_live_set_t *) liveTable;
+static _Atomic(uint64_t) liveGeneration;
 
 static void observeAllocation(const void *address, uint64_t size, const char *name);
 static void observeDeallocation(const void *address);
@@ -52,6 +55,9 @@ static void observeBlockingAllocation(const void *address, uint64_t size, const 
 static void observeBlockingDeallocation(const void *address);
 static void observeReplacementAllocation(const void *address, uint64_t size, const char *name);
 static void observeReplacementDeallocation(const void *address);
+static void observeLiveAllocation(const void *address, uint64_t size, const char *name);
+static void observeLiveDeallocation(const void *address);
+static dd_swift_class_name_t resolveUnusedSwiftName(const HeapMetadata *metadata);
 static void *beforeAlloc(Class cls, SEL selector, struct _NSZone *zone);
 static void beforeDealloc(__unsafe_unretained id object, SEL selector);
 static void *afterAlloc(Class cls, SEL selector, struct _NSZone *zone);
@@ -61,6 +67,111 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
 @end
 
 @implementation ObjCAllocHookTests
+
+- (dd_memory_live_snapshot_t *)makeSnapshot {
+    dd_memory_live_snapshot_t *snapshot = dd_memory_live_snapshot_create();
+    XCTAssertNotEqual(snapshot, NULL);
+    [self addTeardownBlock:^{ dd_memory_live_snapshot_destroy(snapshot); }];
+    return snapshot;
+}
+
+- (void)testSnapshotOwnsObjCNameAndClearsIdentityOnSlotReuse {
+    dd_memory_live_set_t *table = dd_memory_live_set_create();
+    XCTAssertNotEqual(table, NULL);
+    if (table == NULL) {
+        return;
+    }
+    dd_memory_live_snapshot_t *snapshot = [self makeSnapshot];
+    dd_memory_live_snapshot_t *swiftSnapshot = [self makeSnapshot];
+    if (snapshot == NULL || swiftSnapshot == NULL) {
+        dd_memory_live_set_destroy(table);
+        return;
+    }
+    uint64_t generation = dd_memory_live_set_start(table);
+    dd_memory_live_sample_t swiftSample = {0};
+    swiftSample.address = (const void *)0x10000;
+    swiftSample.swift_metadata = (const HeapMetadata *)0x10;
+    swiftSample.swift_name_resolver = resolveUnusedSwiftName;
+    swiftSample.source = DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT;
+    XCTAssertEqual(dd_memory_live_set_insert(table, generation, &swiftSample),
+                   DD_MEMORY_LIVE_SET_INSERTED);
+    XCTAssertTrue(dd_memory_live_set_remove(table, generation, swiftSample.address));
+
+    char mutableName[] = "TransientFixture";
+    dd_memory_live_sample_t sample = {0};
+    sample.address = (const void *)0x10000;
+    sample.size = 42;
+    sample.class_name = mutableName;
+    sample.source = DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC;
+    dd_memory_live_sample_t invalid = sample;
+    invalid.class_name = NULL;
+    invalid.swift_metadata = (const HeapMetadata *)0x10;
+    XCTAssertEqual(dd_memory_live_set_insert(table, generation, &invalid),
+                   DD_MEMORY_LIVE_SET_INVALID_SAMPLE);
+    invalid.class_name = mutableName;
+    invalid.swift_name_resolver = resolveUnusedSwiftName;
+    XCTAssertEqual(dd_memory_live_set_insert(table, generation, &invalid),
+                   DD_MEMORY_LIVE_SET_INVALID_SAMPLE);
+    XCTAssertEqual(dd_memory_live_set_insert(table, generation, &sample),
+                   DD_MEMORY_LIVE_SET_INSERTED);
+    mutableName[0] = 'X';
+
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    dd_memory_live_snapshot_view_t view = dd_memory_live_snapshot_view(snapshot);
+    XCTAssertEqual(view.count, (size_t)1);
+    const dd_memory_live_sample_t *output = view.samples;
+    XCTAssertEqual(output->swift_metadata, NULL);
+    XCTAssertTrue(output->swift_name_resolver == NULL);
+    XCTAssertEqual(output->source, DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC);
+    XCTAssertTrue(dd_memory_live_set_remove(table, generation, sample.address));
+
+    XCTAssertEqual(dd_memory_live_set_insert(table, generation, &swiftSample),
+                   DD_MEMORY_LIVE_SET_INSERTED);
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, swiftSnapshot));
+    dd_memory_live_snapshot_view_t swiftView = dd_memory_live_snapshot_view(swiftSnapshot);
+    XCTAssertEqual(swiftView.count, (size_t)1);
+    const dd_memory_live_sample_t *swiftOutput = swiftView.samples;
+    XCTAssertEqual(swiftOutput->class_name, NULL);
+    XCTAssertEqual(swiftOutput->swift_metadata, swiftSample.swift_metadata);
+    XCTAssertTrue(swiftOutput->swift_name_resolver == swiftSample.swift_name_resolver);
+    XCTAssertEqual(swiftOutput->source, DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT);
+    XCTAssertTrue(dd_memory_live_set_remove(table, generation, swiftSample.address));
+    dd_memory_live_set_destroy(table);
+    dd_memory_live_class_name_t name = dd_memory_live_sample_class_name(output);
+    XCTAssertEqual(name.length, (uint64_t)(sizeof(mutableName) - 1));
+    XCTAssertEqual(strcmp(name.data, "TransientFixture"), 0);
+}
+
+- (void)testOversizedObjCNameIsOmittedWithoutBorrowing {
+    dd_memory_live_set_t *table = dd_memory_live_set_create();
+    XCTAssertNotEqual(table, NULL);
+    if (table == NULL) {
+        return;
+    }
+    dd_memory_live_snapshot_t *snapshot = [self makeSnapshot];
+    if (snapshot == NULL) {
+        dd_memory_live_set_destroy(table);
+        return;
+    }
+    uint64_t generation = dd_memory_live_set_start(table);
+    char longName[DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES + 1];
+    memset(longName, 'A', sizeof(longName) - 1);
+    longName[sizeof(longName) - 1] = '\0';
+    dd_memory_live_sample_t sample = {0};
+    sample.address = (const void *)0x10000;
+    sample.class_name = longName;
+    sample.source = DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC;
+    XCTAssertEqual(dd_memory_live_set_insert(table, generation, &sample),
+                   DD_MEMORY_LIVE_SET_INSERTED);
+    memset(longName, 'X', sizeof(longName) - 1);
+
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    dd_memory_live_snapshot_view_t view = dd_memory_live_snapshot_view(snapshot);
+    XCTAssertEqual(view.count, (size_t)1);
+    XCTAssertEqual(view.samples[0].class_name, NULL);
+    XCTAssertEqual(dd_memory_live_set_diagnostics(table).omitted_class_names, (uint64_t)1);
+    dd_memory_live_set_destroy(table);
+}
 
 - (void)testPartialFailureCompositionAndStop {
     Class root = objc_getClass("NSObject");
@@ -242,9 +353,52 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
                    DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED);
     XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 10 * NSEC_PER_SEC)), 0);
     dd_objc_alloc_hook_stop();
+
+    // Feed actual ARC allocation/deallocation callbacks into the live table.
+    dd_memory_live_set_t *table = dd_memory_live_set_create();
+    XCTAssertNotEqual(table, NULL);
+    if (table == NULL) {
+        return;
+    }
+    dd_memory_live_snapshot_t *snapshot = [self makeSnapshot];
+    if (snapshot == NULL) {
+        dd_memory_live_set_destroy(table);
+        return;
+    }
+    uint64_t generation = dd_memory_live_set_start(table);
+    atomic_store(&liveTable, table);
+    atomic_store(&liveGeneration, generation);
+    XCTAssertEqual(dd_objc_alloc_hook_start(observeLiveAllocation, observeLiveDeallocation),
+                   DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED);
+    __attribute__((objc_precise_lifetime)) DDObjCAllocFixture *first = [DDObjCAllocFixture new];
+    __attribute__((objc_precise_lifetime)) DDObjCAllocFixture *second = [DDObjCAllocFixture new];
+    __attribute__((objc_precise_lifetime)) DDObjCAllocFixture *third = [DDObjCAllocFixture new];
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    dd_memory_live_snapshot_view_t view = dd_memory_live_snapshot_view(snapshot);
+    XCTAssertEqual(view.count, (size_t)3);
+    dd_memory_live_class_name_t className = dd_memory_live_sample_class_name(view.samples);
+    XCTAssertNotEqual(className.data, NULL);
+    if (className.data != NULL) {
+        XCTAssertEqual(className.length, (uint64_t)strlen("DDObjCAllocFixture"));
+        XCTAssertEqual(strncmp(className.data, "DDObjCAllocFixture", (size_t)className.length), 0);
+    }
+    first = nil;
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    XCTAssertEqual(dd_memory_live_snapshot_view(snapshot).count, (size_t)2);
+    second = nil;
+    third = nil;
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    XCTAssertEqual(dd_memory_live_snapshot_view(snapshot).count, (size_t)0);
+    dd_objc_alloc_hook_stop();
+    atomic_store(&liveTable, NULL);
+    dd_memory_live_set_destroy(table);
 }
 
 @end
+
+static dd_swift_class_name_t resolveUnusedSwiftName(const HeapMetadata *metadata) {
+    return (dd_swift_class_name_t){NULL, 0};
+}
 
 @implementation DDObjCAllocFixture
 - (Class)class {
@@ -295,6 +449,25 @@ static void observeReplacementAllocation(const void *address, uint64_t size, con
 }
 
 static void observeReplacementDeallocation(const void *address) { (void)address; }
+
+static void observeLiveAllocation(const void *address, uint64_t size, const char *name) {
+    if (name == NULL || strcmp(name, "DDObjCAllocFixture") != 0) {
+        return;
+    }
+    dd_memory_live_set_t *table = atomic_load(&liveTable);
+    dd_memory_live_sample_t sample = {0};
+    sample.address = address;
+    sample.size = size;
+    sample.weight = 1;
+    sample.class_name = name;
+    sample.source = DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC;
+    dd_memory_live_set_insert(table, atomic_load(&liveGeneration), &sample);
+}
+
+static void observeLiveDeallocation(const void *address) {
+    dd_memory_live_set_t *table = atomic_load(&liveTable);
+    dd_memory_live_set_remove(table, atomic_load(&liveGeneration), address);
+}
 
 static void *beforeAlloc(Class cls, SEL selector, struct _NSZone *zone) {
     if (atomic_load(&beforeEnabled)) {
