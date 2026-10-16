@@ -485,6 +485,82 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].session.hasReplay, true)
     }
 
+    /// Starts a session whose reader reports no replay, lets exactly one tick sample, turns replay on
+    /// after that tick (before the next one), then runs `trigger` and returns the written memory events.
+    private func memoryEventsAfterReplayStartsBetweenTicks(
+        trigger: (TimeseriesSessionCollector, String) -> Void
+    ) -> [RUMTimeseriesMemoryEvent] {
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only `trigger` flushes
+            samplingInterval: 0.3,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock(hasReplay: nil)
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-replay-starts", applicationID: "app-1", sessionType: .user)
+
+        // First tick fires at 0.3 s and the next one at 0.6 s, so replay turns on between the two
+        settle(0.45)
+        contextReader.hasReplay = true
+        trigger(collector, "session-replay-starts")
+
+        return featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+    }
+
+    func testWhenReplayStartsAfterLastTick_pauseReportsHasReplay() {
+        // When
+        let events = memoryEventsAfterReplayStartsBetweenTicks { collector, sessionID in
+            collector.pause(sessionID: sessionID)
+            collector.flush() // barrier: waits for `pause()` to finish on the collector's queue
+        }
+
+        // Then
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.last?.session.hasReplay, true)
+    }
+
+    func testWhenReplayStartsAfterLastTick_stopReportsHasReplay() {
+        // When
+        let events = memoryEventsAfterReplayStartsBetweenTicks { collector, sessionID in
+            collector.stop(sessionID: sessionID)
+            collector.flush() // barrier: waits for `stop()` to finish on the collector's queue
+        }
+
+        // Then
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.last?.session.hasReplay, true)
+    }
+
+    func testWhenReplayStartsAfterLastTick_flushReportsHasReplay() {
+        // When
+        let events = memoryEventsAfterReplayStartsBetweenTicks { collector, sessionID in
+            collector.flush()
+            collector.stop(sessionID: sessionID)
+        }
+
+        // Then
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.last?.session.hasReplay, true)
+    }
+
+    func testWhenNewSessionStarts_leftoverBatchKeepsPreviousSessionHasReplay() {
+        // When — replay turns on right as a new session starts, so it belongs to the new session
+        let events = memoryEventsAfterReplayStartsBetweenTicks { collector, _ in
+            collector.start(sessionID: "session-next", applicationID: "app-1", sessionType: .user)
+            collector.flush() // barrier: waits for `start()` to flush the previous session's leftovers
+            collector.stop(sessionID: "session-next")
+        }
+
+        // Then — the previous session's leftover batch keeps the value it observed
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.last?.session.id, "session-replay-starts")
+        XCTAssertNil(events.last?.session.hasReplay)
+    }
+
     func testItPopulatesSessionSampleRateFromConstructorInjectedValue() {
         // Given
         memoryReader.vitalData = 1_000_000
@@ -1421,6 +1497,7 @@ private class RUMActiveContextReaderMock: RUMActiveContextReader {
     var activeView: (id: String?, path: String?, name: String?)
     @ReadWriteLock
     var sessionActivity: (sessionID: String?, sessionStart: TimeInterval, lastInteraction: TimeInterval)
+    @ReadWriteLock
     var hasReplay: Bool?
     private let monotonicClock: MonotonicClock
 
