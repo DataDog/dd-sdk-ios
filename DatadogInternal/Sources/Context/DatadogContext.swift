@@ -98,7 +98,15 @@ public struct DatadogContext {
     public var accountInfo: AccountInfo?
 
     /// The user's consent to data collection
-    public var trackingConsent: TrackingConsent = .pending
+    public var trackingConsent: TrackingConsent = .pending {
+        didSet { trackingConsentRevision &+= 1 }
+    }
+
+    /// Incremented each time `trackingConsent` is set.
+    ///
+    /// Consent can return to an earlier value, for example `.pending` to `.notGranted` and back to `.pending`.
+    /// Comparing revisions tells a consumer whether it has observed every consent change up to this context.
+    public private(set) var trackingConsentRevision: UInt64 = 0
 
     /// Application launch info.
     public var launchInfo: LaunchInfo
