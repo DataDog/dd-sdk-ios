@@ -2339,6 +2339,35 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(result.aggregatedErrors, 1)
     }
 
+    func testGivenStatsOnlySpan_whenTheCustomizationKeepsIt_itIsStillNotUploadedButItsTagsCount() throws {
+        // At 0% the pre-check rejects the request, so its span exists only for client-side stats. A
+        // customization that keeps every trace must not make enabling stats upload it.
+        for samplingRate: SampleRate in [0, 100] {
+            let runCore = PassthroughCoreMock()
+            let capture = SpanSnapshotCapture()
+            let tracer: DatadogTracer = .mockWith(core: runCore, onSpanFinished: { capture.capture($0) }) // the handler holds it weakly
+            let handler = TracingURLSessionHandler(
+                tracer: tracer,
+                contextReceiver: ContextMessageReceiver(),
+                samplingRate: samplingRate,
+                firstPartyHosts: .init(["www.example.com": [.datadog]]),
+                traceContextInjection: .sampled,
+                telemetry: NOPTelemetry(),
+                spanCustomization: { _, span, _, _ in
+                    span.keepTrace()
+                    span.setTag(key: SpanTags.resource, value: "customized")
+                }
+            )
+            let interception = makeCompletedInterception()
+            handler.interceptionDidStart(interception: interception, capturedStates: [])
+            handler.interceptionDidComplete(interception: interception)
+
+            let uploaded = (runCore.events() as [SpanEventsEnvelope]).flatMap(\.spans)
+            XCTAssertEqual(uploaded.count, samplingRate == 0 ? 0 : 1, "Sampling rate \(samplingRate)")
+            XCTAssertEqual(capture.snapshots.map(\.resource), ["customized"], "Sampling rate \(samplingRate)")
+        }
+    }
+
     // MARK: - Client-Side Stats service entries (RUM-17308)
 
     func testGivenInjectedRequestUnderParentWithAnotherService_whenItCompletes_itIsAServiceEntry() throws {

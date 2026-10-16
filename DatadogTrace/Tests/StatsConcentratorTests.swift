@@ -322,6 +322,35 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 1)
     }
 
+    // MARK: - Clearing Data
+
+    func testPerformUnlessClearedRunsOnlyWhenNoClearHappenedSinceTheExport() {
+        let concentrator = makeConcentrator(now: 0)
+        concentrator.add(.mockWith(startTime: 0, duration: 100))
+        let export = concentrator.flushForStorage(now: 0, force: true)
+        XCTAssertEqual(export.buckets.count, 1)
+
+        var runs: [String] = []
+        concentrator.performUnlessCleared(since: export.clearGeneration) { runs.append("before clear") }
+        concentrator.clearAllData()
+        concentrator.performUnlessCleared(since: export.clearGeneration) { runs.append("after clear") }
+        let later = concentrator.flushForStorage(now: 0, force: true)
+        concentrator.performUnlessCleared(since: later.clearGeneration) { runs.append("later export") }
+
+        XCTAssertEqual(runs, ["before clear", "later export"])
+    }
+
+    func testWhenAllDataIsCleared_bufferedBucketsAreDroppedAndLaterSpansAreKept() throws {
+        let concentrator = makeConcentrator(now: 0)
+        concentrator.add(.mockWith(resource: "before", startTime: 0, duration: 100))
+
+        concentrator.clearAllData()
+        concentrator.add(.mockWith(resource: "after", startTime: 0, duration: 100))
+
+        let buckets = concentrator.flush(now: 0, force: true)
+        XCTAssertEqual(buckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
     // MARK: - Eligibility
 
     func testTopLevelSpanIsEligible() {
