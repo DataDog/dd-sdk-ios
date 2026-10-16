@@ -9,13 +9,12 @@
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
+#include <array>
 #include <atomic>
 #include <cstring>
 #include <new>
 #include <os/lock.h>
-#include <sys/mman.h>
 #include <type_traits>
-#include <unistd.h>
 
 namespace {
 
@@ -48,15 +47,6 @@ struct Slot {
     }
 };
 
-// Default-initialize this POD in mmap storage without writing unused pages.
-// Only records published through a nonempty view are read by consumers.
-struct SnapshotStorage {
-    dd_memory_live_sample_t samples[kCapacity];
-    char class_names[kMaxSnapshotNameBytes];
-};
-static_assert(std::is_trivial<SnapshotStorage>::value,
-              "snapshot storage must remain trivial for lazy mmap initialization");
-
 void update_peak(std::atomic<uint64_t> &peak, uint64_t value) {
     uint64_t current = peak.load(std::memory_order_relaxed);
     while (current < value &&
@@ -73,66 +63,31 @@ size_t bucket_for(uintptr_t address) {
     return static_cast<size_t>(value) & (kCapacity - 1);
 }
 
-size_t mapped_bytes(size_t bytes) {
-    const size_t page_size = static_cast<size_t>(getpagesize());
-    return ((bytes + page_size - 1) / page_size) * page_size;
-}
-
 } // namespace
 
+// Default-initialization leaves the large buffers untouched. Capture writes
+// every published record; creation clears the count before exposing the handle.
 struct dd_memory_live_snapshot {
-    static dd_memory_live_snapshot_t *create();
-    void destroy();
     dd_memory_live_snapshot_view_t view() const {
-        return {storage->samples, count};
+        return {samples.data(), count};
     }
     void clear() {
         count = 0;
     }
 
-    dd_memory_live_snapshot() = default;
-    ~dd_memory_live_snapshot() = default;
-    dd_memory_live_snapshot(const dd_memory_live_snapshot &) = delete;
-    dd_memory_live_snapshot &operator=(const dd_memory_live_snapshot &) = delete;
-    dd_memory_live_snapshot(dd_memory_live_snapshot &&) = delete;
-    dd_memory_live_snapshot &operator=(dd_memory_live_snapshot &&) = delete;
-
 private:
     friend struct dd_memory_live_set;
 
-    SnapshotStorage *storage = nullptr;
-    size_t count = 0;
-    uint64_t storage_bytes = 0;
+    std::array<dd_memory_live_sample_t, kCapacity> samples;
+    std::array<char, kMaxSnapshotNameBytes> class_names;
+    size_t count;
 
     dd_memory_live_sample_t &sample_at(size_t index) {
-        return *(storage->samples + index);
+        return *(samples.data() + index);
     }
 };
-static_assert(sizeof(dd_memory_live_snapshot_t) % alignof(SnapshotStorage) == 0,
-              "snapshot buffers must follow an aligned snapshot header");
-
-dd_memory_live_snapshot_t *dd_memory_live_snapshot::create() {
-    const size_t allocation_size =
-        sizeof(dd_memory_live_snapshot_t) + sizeof(SnapshotStorage);
-    void *mapping = mmap(nullptr, allocation_size,
-                         PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-    if (mapping == MAP_FAILED) {
-        return nullptr;
-    }
-    auto *snapshot = new (mapping) dd_memory_live_snapshot_t();
-    void *buffer_storage = static_cast<char *>(mapping) + sizeof(dd_memory_live_snapshot_t);
-    snapshot->storage = new (buffer_storage) SnapshotStorage;
-    snapshot->storage_bytes = mapped_bytes(allocation_size);
-    return snapshot;
-}
-
-void dd_memory_live_snapshot::destroy() {
-    void *mapping = this;
-    const size_t allocation_size = storage_bytes;
-    storage->~SnapshotStorage();
-    this->~dd_memory_live_snapshot();
-    munmap(mapping, allocation_size);
-}
+static_assert(std::is_trivial<dd_memory_live_snapshot_t>::value,
+              "snapshot creation must not initialize unused buffers");
 
 struct dd_memory_live_set {
     static dd_memory_live_set_t *create();
@@ -157,8 +112,7 @@ private:
     // kEmpty. This preserves probe chains, allowing lookups to stop at kEmpty.
     // Compaction must quiesce probes and rebuild chains before making entries empty.
     os_unfair_lock state_lock = OS_UNFAIR_LOCK_INIT;
-    Slot *slots = nullptr;
-    std::atomic<uintptr_t> addresses[kCapacity]{};
+    std::array<std::atomic<uintptr_t>, kCapacity> addresses{};
     std::atomic<bool> active{false};
     std::atomic<uint64_t> generation{0};
     // Counters remain atomic so diagnostics can read without state_lock.
@@ -179,6 +133,7 @@ private:
     std::atomic<uint64_t> max_probe_length{0};
     std::atomic<uint64_t> snapshot_bytes_high_water{0};
     std::atomic<bool> reached_admission_limit{false};
+    std::array<Slot, kCapacity> slots;
 
     class StateLockGuard {
     public:
@@ -199,9 +154,13 @@ private:
         dd_memory_live_set &table;
     };
 
-    // Callers bound indices by kCapacity using loop limits or the bucket mask.
+    // Probes and scans bound these indices by kCapacity.
     std::atomic<uintptr_t> &address_at(size_t index) {
-        return *(addresses + index);
+        return *(addresses.data() + index);
+    }
+
+    Slot &slot_at(size_t index) {
+        return *(slots.data() + index);
     }
 
     void note_probe(size_t length) {
@@ -217,37 +176,12 @@ private:
 };
 
 dd_memory_live_set_t *dd_memory_live_set::create() {
-    void *storage = mmap(nullptr, sizeof(dd_memory_live_set_t),
-                         PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-    if (storage == MAP_FAILED) {
-        return nullptr;
-    }
-
-    void *slot_storage = mmap(nullptr, sizeof(Slot) * kCapacity,
-                              PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-    if (slot_storage == MAP_FAILED) {
-        munmap(storage, sizeof(dd_memory_live_set_t));
-        return nullptr;
-    }
-
-    auto *table = new (storage) dd_memory_live_set_t();
-    table->slots = static_cast<Slot *>(slot_storage);
-    for (size_t i = 0; i < kCapacity; ++i) {
-        new (&table->slots[i]) Slot();
-    }
-    return table;
+    return new (std::nothrow) dd_memory_live_set_t();
 }
 
 void dd_memory_live_set::destroy() {
     stop();
-    void *table_storage = this;
-    Slot *slot_storage = slots;
-    for (size_t i = 0; i < kCapacity; ++i) {
-        slot_storage[i].~Slot();
-    }
-    this->~dd_memory_live_set();
-    munmap(slot_storage, sizeof(Slot) * kCapacity);
-    munmap(table_storage, sizeof(dd_memory_live_set_t));
+    delete this;
 }
 
 uint64_t dd_memory_live_set::start() {
@@ -259,7 +193,7 @@ uint64_t dd_memory_live_set::start() {
     }
     for (size_t i = 0; i < kCapacity; ++i) {
         address_at(i).store(kEmpty, std::memory_order_release);
-        slots[i].sample = {};
+        slot_at(i).sample = {};
     }
     occupancy.store(0, std::memory_order_relaxed);
     peak_occupancy.store(0, std::memory_order_relaxed);
@@ -339,7 +273,7 @@ dd_memory_live_insert_result_t dd_memory_live_set::insert(
         return DD_MEMORY_LIVE_SET_DROPPED;
     }
 
-    Slot &slot = slots[available];
+    Slot &slot = slot_at(available);
     const bool reused_tombstone =
         address_at(available).load(std::memory_order_relaxed) == kTombstone;
     slot.sample = *sample;
@@ -444,17 +378,17 @@ bool dd_memory_live_set::snapshot(
             return fail();
         }
         size_t length = 0;
-        if (!slots[i].class_name_bytes(length) ||
+        if (!slot_at(i).class_name_bytes(length) ||
             name_offset > kMaxSnapshotNameBytes ||
             length > kMaxSnapshotNameBytes - name_offset) {
             return fail();
         }
         dd_memory_live_sample_t &output = snapshot->sample_at(written);
-        output = slots[i].sample;
+        output = slot_at(i).sample;
         if (length != 0) {
-            std::memcpy(snapshot->storage->class_names + name_offset,
-                        slots[i].sample.class_name, length);
-            output.class_name = snapshot->storage->class_names + name_offset;
+            std::memcpy(snapshot->class_names.data() + name_offset,
+                        slot_at(i).sample.class_name, length);
+            output.class_name = snapshot->class_names.data() + name_offset;
             name_offset += length;
         }
         ++written;
@@ -463,7 +397,7 @@ bool dd_memory_live_set::snapshot(
         return fail();
     }
     snapshot->count = written;
-    update_peak(snapshot_bytes_high_water, snapshot->storage_bytes);
+    update_peak(snapshot_bytes_high_water, sizeof(dd_memory_live_snapshot_t));
     return true;
 }
 
@@ -491,8 +425,7 @@ dd_memory_live_set_diagnostics_t dd_memory_live_set::diagnostics() const {
     result.total_probe_length =
         total_probe_length.load(std::memory_order_relaxed);
     result.max_probe_length = max_probe_length.load(std::memory_order_relaxed);
-    result.table_bytes = mapped_bytes(sizeof(dd_memory_live_set_t)) +
-                         mapped_bytes(sizeof(Slot) * kCapacity);
+    result.table_bytes = sizeof(dd_memory_live_set_t);
     result.snapshot_bytes_high_water =
         snapshot_bytes_high_water.load(std::memory_order_relaxed);
     result.reached_admission_limit =
@@ -502,13 +435,15 @@ dd_memory_live_set_diagnostics_t dd_memory_live_set::diagnostics() const {
 }
 
 extern "C" dd_memory_live_snapshot_t *dd_memory_live_snapshot_create(void) {
-    return dd_memory_live_snapshot::create();
+    auto *snapshot = new (std::nothrow) dd_memory_live_snapshot_t;
+    if (snapshot != nullptr) {
+        snapshot->clear();
+    }
+    return snapshot;
 }
 
 extern "C" void dd_memory_live_snapshot_destroy(dd_memory_live_snapshot_t *snapshot) {
-    if (snapshot != nullptr) {
-        snapshot->destroy();
-    }
+    delete snapshot;
 }
 
 extern "C" dd_memory_live_snapshot_view_t dd_memory_live_snapshot_view(
