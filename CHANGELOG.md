@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device over finished spans before the trace sampling decision, so APM RED metrics stay accurate at any `sampleRate`. Off by default. See [#3301][]
+- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device from eligible finished spans, independently of trace upload sampling. Disabled by default. See [#3301][]
 - [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
 - [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
 - [FEATURE] Add `spanCustomization` to `Trace.Configuration.URLSessionTracking` to customize spans created for intercepted network requests, for example to add request-based tags. See [#2741][]
