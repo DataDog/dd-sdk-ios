@@ -18,6 +18,12 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
         self.core = core
     }
 
+    @discardableResult
+    func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        listener(FlagsClientEvent(type: .configurationChanged, flagsChanged: []))
+        return NOPFlagsSubscription()
+    }
+
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void

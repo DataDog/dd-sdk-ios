@@ -23,6 +23,8 @@ internal protocol FlagsRepositoryProtocol {
 
     func flagAssignments() -> [String: FlagAssignment]?
 
+    func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
+
     func reset()
 
     func flush()
@@ -86,6 +88,7 @@ private struct PendingCacheReadCallback {
 internal final class FlagsRepository {
     let clientName: String
     private let stateManager = FlagsStateManager()
+    private let firstFlags = FirstFlagsCallbacks()
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
@@ -244,21 +247,37 @@ internal final class FlagsRepository {
 
     private func readState() {
         // Retain the read lifecycle, not the repository, so the group is balanced even after deallocation.
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [_repositoryState] data in
+        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [_repositoryState, weak firstFlags] data in
             var cachedData = data
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
                 cachedAssignment.reason = "CACHED"
                 return cachedAssignment
             } ?? [:]
+            // Keep the helper alive outside the state lock if repository destruction races this read.
+            let firstFlags = firstFlags
             var callbacks: [PendingCacheReadCallback] = []
+            var publish: (() -> Void)?
             _repositoryState.mutate { state in
                 callbacks = state.applyInitialFlagsData(cachedData)
+                publish = state.flagsData.flatMap { firstFlags?.reserve(keys: Array($0.flags.keys)) }
             }
 
             // Pending failures report `.clientNotInitialized` if the repository has been released.
-            Self.executePendingDiskReadCallbacks(callbacks.map { $0.prepare() })
+            let pendingCompletions = callbacks.map { $0.prepare() }
+            Self.publishFirstFlags(publish)
+            Self.executePendingDiskReadCallbacks(pendingCompletions)
+            withExtendedLifetime(firstFlags) {}
         }
+    }
+
+    /// Publication follows the internal commit, independently of customer state/context callbacks.
+    /// Each broadcast remains sequential, but never occupies storage or network completion queues.
+    private static func publishFirstFlags(_ publish: (() -> Void)?) {
+        guard let publish else {
+            return
+        }
+        DispatchQueue.global(qos: .userInitiated).async(execute: DispatchWorkItem(block: publish))
     }
 
     private static func executePendingDiskReadCallbacks(_ callbacks: [() -> Void]) {
@@ -327,6 +346,7 @@ internal final class FlagsRepository {
         // Only the latest request can select fallback data, unless a success for its
         // context already supplied fresh assignments while it was in flight.
         var notifyListeners: (() -> Void)?
+        var publish: (() -> Void)?
         _repositoryState.mutate { state in
             guard contextUpdateID == state.contextUpdateID, state.flagsDataVersion == versionAtStart else {
                 return
@@ -338,6 +358,7 @@ internal final class FlagsRepository {
             // serving flags from a different user/context.
             if let matchingFlagsData = state.flagsData(matching: context) {
                 state.flagsData = matchingFlagsData
+                publish = firstFlags.reserve(keys: Array(matchingFlagsData.flags.keys))
                 newState = .stale
             } else {
                 // Drop active flags to prevent cross-context leakage. Keep the fallback cache:
@@ -348,12 +369,17 @@ internal final class FlagsRepository {
             notifyListeners = stateManager.updateStateWithoutNotifying(newState)
         }
 
+        Self.publishFirstFlags(publish)
         return notifyListeners
     }
 }
 
 extension FlagsRepository: FlagsRepositoryProtocol {
     var state: FlagsStateObservable { stateManager }
+
+    func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        firstFlags.register(listener)
+    }
 
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
@@ -387,6 +413,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false
         var notifyReconciling: (() -> Void)?
+        var publish: (() -> Void)?
         // Request registration, assignments, and client state use the same synchronization boundary.
         // Listener delivery and public completions must remain outside this lock.
         _repositoryState.mutate { state in
@@ -399,9 +426,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             // Apply the same context check whether the initial disk read wins or loses the race.
             if state.flagsDataVersion == 0 {
                 state.flagsData = state.flagsData(matching: context)
+                publish = state.flagsData.flatMap { firstFlags.reserve(keys: Array($0.flags.keys)) }
             }
             notifyReconciling = stateManager.updateStateWithoutNotifying(.reconciling)
         }
+        Self.publishFirstFlags(publish)
         notifyReconciling?()
         let initializationCompletion = isFirstContextUpdate
             ? makeInitializationCompletion(completion, context: context, contextUpdateID: contextUpdateID)
@@ -452,6 +481,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 var versionAfterSuccess: UInt64?
                 var callbacks: [PendingCacheReadCallback] = []
                 var notifyListeners: (() -> Void)?
+                var publish: (() -> Void)?
                 self._repositoryState.mutate { state in
                     // Accept an older success for the current context only if no success or reset
                     // superseded its starting version. The latest request's success always applies.
@@ -462,6 +492,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         return
                     }
                     state.flagsData = flagsData
+                    publish = self.firstFlags.reserve(keys: Array(flags.keys))
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
                     versionAfterSuccess = state.flagsDataVersion
@@ -473,6 +504,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     return
                 }
                 let pendingCompletions = callbacks.map { $0.prepare() }
+                Self.publishFirstFlags(publish)
                 self.writeState(flagsData, version: versionAfterSuccess)
                 complete(
                     .success(()),
