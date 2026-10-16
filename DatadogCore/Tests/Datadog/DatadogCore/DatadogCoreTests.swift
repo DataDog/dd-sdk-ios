@@ -225,6 +225,33 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 2, "It should send 2 requests")
     }
 
+    func testWhenConsentReturnsToAnEarlierValue_theContextConsentRevisionStillAdvances() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .pending,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        let initialRevision = core.contextProvider.read().trackingConsentRevision
+
+        // When
+        core.set(trackingConsent: .notGranted)
+        core.set(trackingConsent: .pending)
+
+        // Then: consumers can tell the context changed even though its consent value is the same.
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.trackingConsent, .pending)
+        XCTAssertEqual(context.trackingConsentRevision, initialRevision + 2)
+    }
+
     func testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents() throws {
         // Given
         let core = DatadogCore(
