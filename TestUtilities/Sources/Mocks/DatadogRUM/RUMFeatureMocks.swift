@@ -1207,6 +1207,24 @@ internal final class MonotonicClockMock: MonotonicClock {
     }
 }
 
+public class TimeseriesCollectorMock: TimeseriesCollecting {
+    public weak var activeContextReader: RUMActiveContextReader?
+    /// The value returned by `hasCollectedData(sessionID:)` for any session.
+    public var hasData: Bool
+
+    public init(hasData: Bool = false) {
+        self.hasData = hasData
+    }
+
+    public func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
+    public func pause(sessionID: String) {}
+    public func resume(sessionID: String) {}
+    public func stop(sessionID: String) {}
+    public func noteActivity(sessionID: String) {}
+    public func flush() {}
+    public func hasCollectedData(sessionID: String) -> Bool { hasData }
+}
+
 extension RUMScopeDependencies {
     public static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -1316,7 +1334,8 @@ extension RUMScopeDependencies {
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
         sessionType: RUMSessionType? = nil,
-        monotonicClock: MonotonicClock? = nil
+        monotonicClock: MonotonicClock? = nil,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -1348,7 +1367,8 @@ extension RUMScopeDependencies {
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
             sessionType: sessionType,
-            monotonicClock: monotonicClock ?? self.monotonicClock
+            monotonicClock: monotonicClock ?? self.monotonicClock,
+            timeseriesCollector: timeseriesCollector ?? self.timeseriesCollector
         )
     }
 }
