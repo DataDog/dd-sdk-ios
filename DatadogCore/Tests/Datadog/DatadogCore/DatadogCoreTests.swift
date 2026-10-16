@@ -10,6 +10,16 @@ import DatadogInternal
 @_spi(Internal)
 @testable import DatadogCore
 
+private final class DataClearableFeatureMock: DatadogFeature, DataClearable {
+    static let name = "data-clearable-mock"
+    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    private(set) var clearCount = 0
+
+    func clearAllData() {
+        clearCount += 1
+    }
+}
+
 private struct FeatureMock: DatadogRemoteFeature {
     static let name: String = "mock"
 
@@ -605,6 +615,27 @@ class DatadogCoreTests: XCTestCase {
         core.clearAccountInfo()
         let accountAfterUpdate = core.accountInfoPublisher.current
         XCTAssertNil(accountAfterUpdate)
+    }
+
+    func testWhenClearingAllData_itAsksFeaturesToDropTheirInMemoryData() throws {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let feature = DataClearableFeatureMock()
+        try core.register(feature: feature)
+
+        core.clearAllData()
+
+        XCTAssertEqual(feature.clearCount, 1)
     }
 
     func testItClearUserInfo() {

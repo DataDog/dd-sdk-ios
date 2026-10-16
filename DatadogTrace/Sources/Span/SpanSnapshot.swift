@@ -72,11 +72,14 @@ extension SpanSnapshot {
     ///   for trace uploads, but `StatsConcentrator.flush(now:)` runs against the device-local
     ///   clock. Using the server-adjusted time here would bucket snapshots in the future
     ///   relative to the flush clock on devices whose clock is behind the server, delaying
-    ///   or dropping stats. Stats stay on the device-local clock.
+    ///   or dropping stats. Stats are bucketed on the device-local clock, and `ClientStatsFeature`
+    ///   moves each bucket's start to the server clock when it stores it.
     init(from event: SpanEvent, startTime: Date, deployment: DeploymentIdentity, isServiceEntry: Bool = false) {
         let spanKind = event.tags[SpanTags.kind]
         let httpStatusCode: UInt32 = {
-            guard let raw = event.tags[OTTags.httpStatusCode],
+            // OpenTelemetry's stable HTTP conventions use `http.response.status_code`; the OpenTracing
+            // `http.status_code` is the fallback.
+            guard let raw = event.tags["http.response.status_code"] ?? event.tags[OTTags.httpStatusCode],
                   let intValue = Int(raw),
                   let uint32 = UInt32(exactly: intValue) else {
                 return 0
