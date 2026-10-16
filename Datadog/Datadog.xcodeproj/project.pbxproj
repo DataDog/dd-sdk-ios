@@ -85,6 +85,9 @@
 		110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */; };
 		111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
 		111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
+		111F0450307E6DE700CDB469 /* poisson_allocation_sampler.h in Headers */ = {isa = PBXBuildFile; fileRef = 111F044F307E6DE700CDB469 /* poisson_allocation_sampler.h */; };
+		111F0452307E6E0800CDB469 /* poisson_allocation_sampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 111F0451307E6E0800CDB469 /* poisson_allocation_sampler.cpp */; };
+		111F0495307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111F0494307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift */; };
 		1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */; };
 		1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
 		1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD042F00000000297156 /* ProfilingSessionMetric.swift */; };
@@ -271,7 +274,6 @@
 		11D5190C306AA655008C003F /* swift_alloc_hook.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D5190B306AA655008C003F /* swift_alloc_hook.h */; };
 		11D5190E306AA6A0008C003F /* swift_alloc_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */; };
 		11D51910306AA6E7008C003F /* SwiftAllocHookTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */; };
-		11D519223074F977008C003F /* swift_alloc_hook_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D519213074F977008C003F /* swift_alloc_hook_testing.h */; };
 		11D51912306AF453008C003F /* objc_alloc_hook.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D51911306AF453008C003F /* objc_alloc_hook.h */; };
 		11D51914306AF456008C003F /* objc_alloc_hook_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D51913306AF456008C003F /* objc_alloc_hook_testing.h */; };
 		11D51916306AF45B008C003F /* objc_alloc_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11D51915306AF45B008C003F /* objc_alloc_hook.cpp */; };
@@ -280,6 +282,7 @@
 		11D5191C30716A70008C003F /* memory_live_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11D5191B30716A70008C003F /* memory_live_set.cpp */; };
 		11D5191E30716AE0008C003F /* MemoryLiveSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D5191D30716AE0008C003F /* MemoryLiveSetTests.swift */; };
 		11D5192030719A1C008C003F /* swift_class_name.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D5191F30719A1C008C003F /* swift_class_name.h */; };
+		11D519223074F977008C003F /* swift_alloc_hook_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D519213074F977008C003F /* swift_alloc_hook_testing.h */; };
 		11E6D59F2E6B1468004D2F87 /* FirstFrameReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */; };
 		11E6D5A22E6B16A3004D2F87 /* FirstFrameReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */; };
 		11EA5C212DC27F7600E8DFA2 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */; };
@@ -2041,6 +2044,9 @@
 		111201BE2E93C13000375DA3 /* AppStateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateInfo.swift; sourceTree = "<group>"; };
 		111201BF2E93C13000375DA3 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
+		111F044F307E6DE700CDB469 /* poisson_allocation_sampler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = poisson_allocation_sampler.h; sourceTree = "<group>"; };
+		111F0451307E6E0800CDB469 /* poisson_allocation_sampler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = poisson_allocation_sampler.cpp; sourceTree = "<group>"; };
+		111F0494307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoissonAllocationSamplerTests.swift; sourceTree = "<group>"; };
 		1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryController.swift; sourceTree = "<group>"; };
 		1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMetric.swift; sourceTree = "<group>"; };
 		1121FD042F00000000297156 /* ProfilingSessionMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingSessionMetric.swift; sourceTree = "<group>"; };
@@ -2196,7 +2202,6 @@
 		11D5190B306AA655008C003F /* swift_alloc_hook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_alloc_hook.h; sourceTree = "<group>"; };
 		11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = swift_alloc_hook.cpp; sourceTree = "<group>"; };
 		11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAllocHookTests.swift; sourceTree = "<group>"; };
-		11D519213074F977008C003F /* swift_alloc_hook_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_alloc_hook_testing.h; sourceTree = "<group>"; };
 		11D51911306AF453008C003F /* objc_alloc_hook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = objc_alloc_hook.h; sourceTree = "<group>"; };
 		11D51913306AF456008C003F /* objc_alloc_hook_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = objc_alloc_hook_testing.h; sourceTree = "<group>"; };
 		11D51915306AF45B008C003F /* objc_alloc_hook.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = objc_alloc_hook.cpp; sourceTree = "<group>"; };
@@ -2205,6 +2210,7 @@
 		11D5191B30716A70008C003F /* memory_live_set.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory_live_set.cpp; sourceTree = "<group>"; };
 		11D5191D30716AE0008C003F /* MemoryLiveSetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryLiveSetTests.swift; sourceTree = "<group>"; };
 		11D5191F30719A1C008C003F /* swift_class_name.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_class_name.h; sourceTree = "<group>"; };
+		11D519213074F977008C003F /* swift_alloc_hook_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_alloc_hook_testing.h; sourceTree = "<group>"; };
 		11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReader.swift; sourceTree = "<group>"; };
 		11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReaderTests.swift; sourceTree = "<group>"; };
 		11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+objc.swift"; sourceTree = "<group>"; };
@@ -6694,6 +6700,7 @@
 				11D5191930716A0B008C003F /* memory_live_set.h */,
 				11D5191F30719A1C008C003F /* swift_class_name.h */,
 				1199DEDE307CDD4900101B27 /* memory_live_set_testing.h */,
+				111F044F307E6DE700CDB469 /* poisson_allocation_sampler.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -6715,6 +6722,7 @@
 				11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */,
 				11D51915306AF45B008C003F /* objc_alloc_hook.cpp */,
 				11D5191B30716A70008C003F /* memory_live_set.cpp */,
+				111F0451307E6E0800CDB469 /* poisson_allocation_sampler.cpp */,
 			);
 			name = Mach;
 			path = ../Mach;
@@ -7310,6 +7318,7 @@
 				11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */,
 				11D51917306AF4B4008C003F /* ObjCAllocHookTests.m */,
 				11D5191D30716AE0008C003F /* MemoryLiveSetTests.swift */,
+				111F0494307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -7583,6 +7592,7 @@
 				11D519223074F977008C003F /* swift_alloc_hook_testing.h in Headers */,
 				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				11D51914306AF456008C003F /* objc_alloc_hook_testing.h in Headers */,
+				111F0450307E6DE700CDB469 /* poisson_allocation_sampler.h in Headers */,
 				115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */,
 				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 				A1B2C3D52F90000100ABCDEF /* aggregation_worker.h in Headers */,
@@ -9310,6 +9320,7 @@
 				115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */,
 				D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				118848602F6C5122008D2919 /* ProfilingOperation.swift in Sources */,
+				111F0452307E6E0800CDB469 /* poisson_allocation_sampler.cpp in Sources */,
 				1188486C2F717DDE008D2919 /* DatadogProfiler.swift in Sources */,
 				1188485A2F6C50EC008D2919 /* ProfilingHandler.swift in Sources */,
 				D233E7F02E4B588000E7CFDE /* profile.cpp in Sources */,
@@ -9940,6 +9951,7 @@
 				110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				0EFAE08216FC46BC84FEDF88 /* ProfilingHandlerTests.swift in Sources */,
 				11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */,
+				111F0495307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift in Sources */,
 				A6DC5EA853D947FA9FEA4743 /* ProfilingConditionsTests.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				11D51918306AF4B4008C003F /* ObjCAllocHookTests.m in Sources */,
