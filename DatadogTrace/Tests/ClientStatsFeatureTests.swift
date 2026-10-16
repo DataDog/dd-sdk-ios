@@ -116,6 +116,46 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["after"])
     }
 
+    func testWhenConsentIsRevokedAndGrantedWhileAFlushWaitsToWrite_itsBucketsAreNeverStored() throws {
+        // Given: stats collected while consent is pending, exported by a flush whose write has not run yet.
+        let (core, stats) = try enableClientStats()
+        core.defersWriteContexts = true
+        stats.record(.mockWith(resource: "before", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+
+        // When: consent is revoked, then granted again, before the write runs.
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .notGranted)), from: core)
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .granted)), from: core)
+        core.contextValue = .mockWith(trackingConsent: .granted)
+        core.runPendingWriteContexts()
+
+        // Then: the stats collected before the revocation are not stored, and later ones are.
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+        core.defersWriteContexts = false
+        stats.record(.mockWith(resource: "after", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
+    func testWhenTheMessageBusHasNotDeliveredAConsentChangeYet_aFlushDoesNotStoreUnderIt() throws {
+        // Given: the core already applied a revocation and a new grant, but the feature has not received
+        // either message, so it still believes consent is pending.
+        let (core, stats) = try enableClientStats()
+        stats.record(.mockWith(resource: "before", startTime: 0, duration: 100))
+        core.contextValue = .mockWith(trackingConsent: .granted)
+
+        // When
+        stats.flushStats(.teardown)
+
+        // Then: nothing is stored under a consent the feature has not seen, since a revocation may precede it.
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .notGranted)), from: core)
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .granted)), from: core)
+        stats.record(.mockWith(resource: "after", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
     func testWhenAllDataIsCleared_bufferedStatsAreNeverStored() throws {
         let (core, stats) = try enableClientStats()
         stats.record(.mockWith(startTime: 0, duration: 100))
@@ -1570,7 +1610,8 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
         _writeContextBypassConsentValues.mutate { $0.append(bypassConsent) }
         _writeContextOnMainThread.mutate { $0.append(Thread.isMainThread) }
         if defersWriteContexts {
-            pendingWriteContexts.append { [contextValue, writer] in block(contextValue, writer) }
+            // Like the core, read the context when the write context runs, not when it was requested.
+            pendingWriteContexts.append { [unowned self] in block(self.contextValue, self.writer) }
         } else {
             block(contextValue, writer)
         }
