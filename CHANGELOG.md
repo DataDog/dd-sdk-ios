@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device over finished spans before the trace sampling decision, so APM RED metrics stay accurate at any `sampleRate`. Off by default. See [#3301][]
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
 
@@ -1305,6 +1306,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
+[#3301]: https://github.com/DataDog/dd-sdk-ios/pull/3301
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
 
 [@00fa9a]: https://github.com/00FA9A
