@@ -169,6 +169,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         }
     }
 
+    // TODO: RUM-19008 Nothing keeps the app running until this flush: stats of a span that finishes in the
+    // second before the system suspends the app stay in memory, and are lost if the app is then terminated.
     private func scheduleSuspendableFlush() {
         var isAlreadyScheduled = false
         _isSuspendableFlushScheduled.mutate {
