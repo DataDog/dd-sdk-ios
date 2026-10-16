@@ -611,8 +611,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private let queue = DispatchQueue(label: "com.datadoghq.stats-concentrator", qos: .utility)
 
     private var buckets: [UInt64: StatsBucket] = [:]
-    /// Incremented by `clearAllData()`, so buckets exported before a clear can be told apart.
+    /// Incremented by `clearAllData()` and by consent revocation, so buckets exported before either
+    /// can be told apart.
     private var clearGeneration: UInt64 = 0
+    // TODO: RUM-19013 This only moves forward, and bucketing uses the device wall clock. After the clock
+    // moves backward, new spans go into the bucket from before the change, which the periodic flush does
+    // not export until the clock catches up, and which a forced flush exports with that earlier window.
     private var oldestTs: UInt64
 
     /// The user's current tracking consent. `.granted` and `.pending` are both recording states;
@@ -627,6 +631,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// than `.notGranted`) avoids dropping spans that are stamped `_dd.compute_stats=0`, which would
     /// otherwise leave the backend with no stats and no client bucket for that window.
     private var currentConsent: TrackingConsent
+    /// The `DatadogContext.trackingConsentRevision` of the last consent received, or `nil` before the first.
+    private var receivedConsentRevision: UInt64?
 
     /// Creates a concentrator.
     ///
@@ -844,14 +850,23 @@ internal final class StatsConcentrator: @unchecked Sendable {
         }
     }
 
-    /// Runs `block` on the concentrator's queue unless data was cleared since `clearGeneration`.
+    /// Runs `block` on the concentrator's queue unless the exported data must no longer be stored.
     ///
-    /// A flush writes its exported buckets through this. A clear runs on the same queue, so a write that
-    /// runs is queued before the core queues the storage deletion, and one exported before a clear but
-    /// not yet written is skipped instead of surviving it.
-    func performUnlessCleared(since clearGeneration: UInt64, _ block: () -> Void) {
+    /// A flush writes its exported buckets through this, with the consent revision of the context it
+    /// writes under. The block is skipped when, since `clearGeneration`:
+    /// - data was cleared: a clear runs on the same queue, so a write that runs is queued before the core
+    ///   queues the storage deletion;
+    /// - consent was revoked: buckets collected before a revocation must never be uploaded, even if
+    ///   consent is granted again before they are written.
+    ///
+    /// Consent changes reach the concentrator through the message bus, which can lag behind the write
+    /// context. The block is also skipped when the concentrator has not received `consentRevision`, since
+    /// a revocation before it may still be on its way, even if consent has returned to the value the
+    /// concentrator last received. The stats of a flush racing a consent change are dropped rather than
+    /// risk storing them.
+    func performUnlessCleared(since clearGeneration: UInt64, consentRevision: UInt64, _ block: () -> Void) {
         queue.sync {
-            if clearGeneration == self.clearGeneration {
+            if clearGeneration == self.clearGeneration && consentRevision == receivedConsentRevision {
                 block()
             }
         }
@@ -863,13 +878,20 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// action: data already written to storage is migrated by the core, and in-memory data keeps
     /// accumulating. Revoking consent (`→ .notGranted`) discards the in-memory buffer so spans
     /// aggregated before the revocation are never uploaded, even if consent is later re-granted.
-    func updateConsent(_ consent: TrackingConsent) {
+    ///
+    /// - Parameters:
+    ///   - consent: The consent of the received context.
+    ///   - revision: The `DatadogContext.trackingConsentRevision` of the received context.
+    func updateConsent(_ consent: TrackingConsent, revision: UInt64) {
         queue.async { [self] in
             currentConsent = consent
+            receivedConsentRevision = revision
             // Revoking consent discards everything buffered in memory so spans aggregated before
             // the revocation are never uploaded, even if consent is later granted again. Running on
-            // the queue orders this clear with any in-flight `add` and `flush` work.
+            // the queue orders this clear with any in-flight `add` and `flush` work, and the new
+            // generation discards buckets already exported but not yet written.
             if consent == .notGranted {
+                clearGeneration &+= 1
                 buckets.removeAll()
             }
         }
