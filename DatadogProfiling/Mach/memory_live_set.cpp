@@ -91,7 +91,15 @@ static_assert(std::is_trivial<dd_memory_live_snapshot_t>::value,
 
 struct dd_memory_live_set {
     static dd_memory_live_set_t *create();
-    void destroy();
+    dd_memory_live_set() = default;
+    ~dd_memory_live_set() {
+        stop();
+    }
+    dd_memory_live_set(const dd_memory_live_set &) = delete;
+    dd_memory_live_set &operator=(const dd_memory_live_set &) = delete;
+    dd_memory_live_set(dd_memory_live_set &&) = delete;
+    dd_memory_live_set &operator=(dd_memory_live_set &&) = delete;
+
     uint64_t start();
     void stop();
     dd_memory_live_insert_result_t insert(uint64_t token,
@@ -177,11 +185,6 @@ private:
 
 dd_memory_live_set_t *dd_memory_live_set::create() {
     return new (std::nothrow) dd_memory_live_set_t();
-}
-
-void dd_memory_live_set::destroy() {
-    stop();
-    delete this;
 }
 
 uint64_t dd_memory_live_set::start() {
@@ -457,9 +460,7 @@ extern "C" dd_memory_live_set_t *dd_memory_live_set_create(void) {
 }
 
 extern "C" void dd_memory_live_set_destroy(dd_memory_live_set_t *table) {
-    if (table != nullptr) {
-        table->destroy();
-    }
+    delete table;
 }
 
 extern "C" uint64_t dd_memory_live_set_start(dd_memory_live_set_t *table) {
