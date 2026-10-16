@@ -81,10 +81,6 @@ private:
     std::array<dd_memory_live_sample_t, kCapacity> samples;
     std::array<char, kMaxSnapshotNameBytes> class_names;
     size_t count;
-
-    dd_memory_live_sample_t &sample_at(size_t index) {
-        return *(samples.data() + index);
-    }
 };
 static_assert(std::is_trivial<dd_memory_live_snapshot_t>::value,
               "snapshot creation must not initialize unused buffers");
@@ -162,15 +158,6 @@ private:
         dd_memory_live_set &table;
     };
 
-    // Probes and scans bound these indices by kCapacity.
-    std::atomic<uintptr_t> &address_at(size_t index) {
-        return *(addresses.data() + index);
-    }
-
-    Slot &slot_at(size_t index) {
-        return *(slots.data() + index);
-    }
-
     void note_probe(size_t length) {
         probe_count.fetch_add(1, std::memory_order_relaxed);
         total_probe_length.fetch_add(length, std::memory_order_relaxed);
@@ -195,8 +182,8 @@ uint64_t dd_memory_live_set::start() {
         token = generation.fetch_add(1, std::memory_order_acq_rel) + 1;
     }
     for (size_t i = 0; i < kCapacity; ++i) {
-        address_at(i).store(kEmpty, std::memory_order_release);
-        slot_at(i).sample = {};
+        addresses[i].store(kEmpty, std::memory_order_release);
+        slots[i].sample = {};
     }
     occupancy.store(0, std::memory_order_relaxed);
     peak_occupancy.store(0, std::memory_order_relaxed);
@@ -253,7 +240,7 @@ dd_memory_live_insert_result_t dd_memory_live_set::insert(
         ++length;
         const size_t index = (start + offset) & (kCapacity - 1);
         const uintptr_t current =
-            address_at(index).load(std::memory_order_acquire);
+            addresses[index].load(std::memory_order_acquire);
         if (current == address) {
             note_probe(length);
             duplicate_samples.fetch_add(1, std::memory_order_relaxed);
@@ -276,9 +263,9 @@ dd_memory_live_insert_result_t dd_memory_live_set::insert(
         return DD_MEMORY_LIVE_SET_DROPPED;
     }
 
-    Slot &slot = slot_at(available);
+    Slot &slot = slots[available];
     const bool reused_tombstone =
-        address_at(available).load(std::memory_order_relaxed) == kTombstone;
+        addresses[available].load(std::memory_order_relaxed) == kTombstone;
     slot.sample = *sample;
     if (sample->class_name != nullptr) {
         const size_t length = strnlen(sample->class_name, kMaxClassNameBytes);
@@ -296,7 +283,7 @@ dd_memory_live_insert_result_t dd_memory_live_set::insert(
     if (reused_tombstone) {
         tombstones.fetch_sub(1, std::memory_order_relaxed);
     }
-    address_at(available).store(address, std::memory_order_release);
+    addresses[available].store(address, std::memory_order_release);
     return DD_MEMORY_LIVE_SET_INSERTED;
 }
 
@@ -327,7 +314,7 @@ bool dd_memory_live_set::remove(uint64_t token, const void *pointer,
         }
         // The probe reads only the atomic index. Hits recheck lifecycle and
         // address under state_lock before changing the table.
-        const uintptr_t current = address_at(index).load(std::memory_order_relaxed);
+        const uintptr_t current = addresses[index].load(std::memory_order_relaxed);
         if (current == kEmpty) {
             return false;
         }
@@ -337,8 +324,8 @@ bool dd_memory_live_set::remove(uint64_t token, const void *pointer,
                 stale_generation_rejections.fetch_add(1, std::memory_order_relaxed);
                 return false;
             }
-            if (address_at(index).load(std::memory_order_relaxed) == address) {
-                address_at(index).store(kTombstone, std::memory_order_release);
+            if (addresses[index].load(std::memory_order_relaxed) == address) {
+                addresses[index].store(kTombstone, std::memory_order_release);
                 occupancy.fetch_sub(1, std::memory_order_relaxed);
                 const uint64_t new_tombstones =
                     tombstones.fetch_add(1, std::memory_order_relaxed) + 1;
@@ -374,23 +361,23 @@ bool dd_memory_live_set::snapshot(
     size_t written = 0;
     size_t name_offset = 0;
     for (size_t i = 0; i < kCapacity; ++i) {
-        if (address_at(i).load(std::memory_order_relaxed) <= kTombstone) {
+        if (addresses[i].load(std::memory_order_relaxed) <= kTombstone) {
             continue;
         }
         if (written >= live_count) {
             return fail();
         }
         size_t length = 0;
-        if (!slot_at(i).class_name_bytes(length) ||
+        if (!slots[i].class_name_bytes(length) ||
             name_offset > kMaxSnapshotNameBytes ||
             length > kMaxSnapshotNameBytes - name_offset) {
             return fail();
         }
-        dd_memory_live_sample_t &output = snapshot->sample_at(written);
-        output = slot_at(i).sample;
+        dd_memory_live_sample_t &output = snapshot->samples[written];
+        output = slots[i].sample;
         if (length != 0) {
             std::memcpy(snapshot->class_names.data() + name_offset,
-                        slot_at(i).sample.class_name, length);
+                        slots[i].sample.class_name, length);
             output.class_name = snapshot->class_names.data() + name_offset;
             name_offset += length;
         }
