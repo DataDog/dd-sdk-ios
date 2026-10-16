@@ -30,12 +30,14 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     init(
         configuration: Flags.Configuration,
         featureScope: FeatureScope,
-        core: DatadogCoreProtocol
+        core: DatadogCoreProtocol,
+        wrapperSource: FlagsWrapperSource? = nil
     ) {
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
-            featureScope: featureScope
+            featureScope: featureScope,
+            wrapperSource: wrapperSource
         )
         initializationTimeout = configuration.initializationTimeout
         requestBuilder = ExposureRequestBuilder(

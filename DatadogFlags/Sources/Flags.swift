@@ -194,7 +194,8 @@ public enum Flags {
 
     internal static func enableOrThrow(
         with configuration: Flags.Configuration,
-        in core: DatadogCoreProtocol
+        in core: DatadogCoreProtocol,
+        wrapperSource: FlagsWrapperSource? = nil
     ) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
@@ -214,8 +215,35 @@ public enum Flags {
         let feature = FlagsFeature(
             configuration: configuration,
             featureScope: featureScope,
-            core: core
+            core: core,
+            wrapperSource: wrapperSource
         )
         try core.register(feature: feature)
+    }
+
+    /// Enables Flags for a Datadog wrapper. Not an application configuration API.
+    @_spi(Internal)
+    public static func enable(
+        with configuration: Flags.Configuration,
+        in core: DatadogCoreProtocol,
+        wrapperSDKName: String,
+        wrapperSDKVersion: String,
+        nativeBridgeVersion: String
+    ) {
+        do {
+            try runOnMainThreadSync {
+                try enableOrThrow(
+                    with: configuration,
+                    in: core,
+                    wrapperSource: FlagsWrapperSource(
+                        sdkName: wrapperSDKName,
+                        sdkVersion: wrapperSDKVersion,
+                        nativeBridgeVersion: nativeBridgeVersion
+                    )
+                )
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
     }
 }

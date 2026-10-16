@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogFlags
 
 final class FlagsTests: XCTestCase {
@@ -68,5 +69,21 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(flags.initializationTimeout, config.initializationTimeout)
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
+    }
+
+    func testWrapperEnablePreservesLoadedAndCompiledVersions() throws {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(
+            with: .init(),
+            in: core,
+            wrapperSDKName: "dd-sdk-reactnative",
+            wrapperSDKVersion: "4.2.0-js.1",
+            nativeBridgeVersion: "4.1.0"
+        )
+        let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        let fetcher = try XCTUnwrap(flags.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
+        XCTAssertEqual(fetcher.wrapperSource?.sdkName, "dd-sdk-reactnative")
+        XCTAssertEqual(fetcher.wrapperSource?.sdkVersion, "4.2.0-js.1")
+        XCTAssertEqual(fetcher.wrapperSource?.nativeBridgeVersion, "4.1.0")
     }
 }
