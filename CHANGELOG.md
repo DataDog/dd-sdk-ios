@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device over finished spans before the trace sampling decision, so APM RED metrics stay accurate at any `sampleRate`. Off by default. See [#3301][]
+
 # 3.20.0 / 19-10-2026
 
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
@@ -1301,6 +1303,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
+[#3301]: https://github.com/DataDog/dd-sdk-ios/pull/3301
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
 
 [@00fa9a]: https://github.com/00FA9A
