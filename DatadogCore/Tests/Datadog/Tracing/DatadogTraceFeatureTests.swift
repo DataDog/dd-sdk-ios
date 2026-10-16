@@ -217,15 +217,48 @@ class DatadogTraceFeatureTests: XCTestCase {
         XCTAssertTrue(statsRequests(in: httpClient).isEmpty)
     }
 
+    func testWhenConsentIsRevokedAndGrantedAgain_clientStatsCollectedBeforeAreNeverUploaded() throws {
+        // Repeated, because consent changes reach the feature through the message bus, which can run behind
+        // the flushes and writes this exercises.
+        for iteration in 0..<20 {
+            temporaryCoreDirectory.delete()
+            temporaryCoreDirectory.create()
+            let httpClient = HTTPClientMock(responseCode: 202)
+            let core = makeClientStatsCore(httpClient: httpClient, maxObjectsInFile: .max, initialConsent: .pending)
+            let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+            core.flush() // deliver the initial context
+
+            // Given: stats collected while consent is pending, and a flush racing the consent changes.
+            stats.record(.mockWith(resource: "before-revocation", startTime: 0, duration: 100))
+            if iteration.isMultiple(of: 2) {
+                stats.flushStats(.teardown)
+            }
+
+            // When: consent is revoked, then granted again, with a flush right behind.
+            core.set(trackingConsent: .notGranted)
+            core.set(trackingConsent: .granted)
+            stats.flushStats(.teardown)
+            core.flush()
+            stats.record(.mockWith(resource: "after-grant", startTime: 0, duration: 100))
+            core.flushAndTearDown()
+
+            // Then
+            // MessagePack keeps strings as raw UTF-8, so resource names can be found in the bodies.
+            let bodies = try statsRequests(in: httpClient).map { String(decoding: try XCTUnwrap($0.decompressed().httpBody), as: UTF8.self) }
+            XCTAssertFalse(bodies.contains { $0.contains("before-revocation") }, "Iteration \(iteration)")
+            XCTAssertTrue(bodies.contains { $0.contains("after-grant") }, "Iteration \(iteration)")
+        }
+    }
+
     // MARK: - Client-Side Stats Helpers
 
     /// A core with the real 1 MB storage event limit and no file size limit of its own, so the
     /// client stats feature's limits apply.
-    private func makeClientStatsCore(httpClient: HTTPClientMock, maxObjectsInFile: Int) -> DatadogCore {
+    private func makeClientStatsCore(httpClient: HTTPClientMock, maxObjectsInFile: Int, initialConsent: TrackingConsent = .granted) -> DatadogCore {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
-            initialConsent: .granted,
+            initialConsent: initialConsent,
             performance: .combining(
                 storagePerformance: StoragePerformanceMock(
                     maxFileSize: .max,
