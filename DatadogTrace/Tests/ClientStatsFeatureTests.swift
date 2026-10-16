@@ -73,7 +73,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenContextMessageRevokesConsent_itStopsConcentratorFromExporting() {
         // Given: a concentrator with buffered data and the feature's consent receiver
         let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
-        let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
+        let receiver = TraceClientStatsContextReceiver(concentrator: concentrator)
         concentrator.add(SpanSnapshot.mockWith(startTime: 0, duration: 2_000_000_000, isTopLevel: true))
 
         // When: the bus delivers a context carrying revoked consent
@@ -89,9 +89,105 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenMessageIsNotContext_theConsentReceiverIgnoresIt() {
         let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
-        let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
+        let receiver = TraceClientStatsContextReceiver(concentrator: concentrator)
 
         XCTAssertFalse(receiver.receive(message: .payload("irrelevant"), from: core))
+    }
+
+    // MARK: - Clearing Data
+
+    func testWhenAllDataIsClearedWhileAFlushWaitsToWrite_itsBucketsAreNeverStored() throws {
+        // Given: a flush that exported a bucket but whose write context has not run yet.
+        let (core, stats) = try enableClientStats()
+        core.defersWriteContexts = true
+        stats.record(.mockWith(resource: "before", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+
+        // When
+        stats.clearAllData()
+        core.runPendingWriteContexts()
+
+        // Then: the bucket collected before the clear is not stored, and later stats still are.
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+        XCTAssertFalse(core.telemetryMock.messages.compactMap(\.asMetric).contains { $0.name == TraceClientStatsMetric.name })
+        core.defersWriteContexts = false
+        stats.record(.mockWith(resource: "after", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
+    func testWhenAllDataIsCleared_bufferedStatsAreNeverStored() throws {
+        let (core, stats) = try enableClientStats()
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        stats.clearAllData()
+        stats.flushStats(.teardown)
+
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+    }
+
+    // MARK: - App Lifecycle
+
+    func testWhenTheAppMovesIntoOrOutOfASuspendableState_theReceiverReportsEachTransitionOnce() {
+        let receiver = TraceClientStatsContextReceiver(concentrator: nil)
+        var transitions: [Bool] = []
+        receiver.appMayBeSuspendedDidChange = { transitions.append($0) }
+        let foreground: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground())
+        let background: DatadogContext = .mockWith(applicationStateHistory: suspendableAppStateHistory())
+
+        for context in [foreground, background, background, foreground, background] {
+            _ = receiver.receive(message: .context(context), from: core)
+        }
+
+        XCTAssertEqual(transitions, [true, false, true])
+    }
+
+    func testWhenTheAppGoesToTheBackground_theFeatureStoresBufferedStatsOffTheCallingThread() throws {
+        // Given: buffered stats in the current window, which the periodic flush would keep for 20 s or more.
+        let (core, stats) = try enableClientStats()
+        stats.record(.mockWith(startTime: 0, duration: 100))
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInForeground())), from: core)
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+
+        // When
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: suspendableAppStateHistory())), from: core)
+
+        // Then: the flush runs on the feature's queue, not on the message bus caller. Its metric is sent
+        // after the write, so wait for both.
+        waitUntil { core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name) != nil }
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [1])
+        XCTAssertEqual(core.writeContextOnMainThread, [false])
+        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false, "Only teardown reports forced")
+    }
+
+    func testWhenSpansFinishWhileTheAppMayBeSuspended_theyAreStoredSoonInFewFlushes() throws {
+        // Given: the SDK starts while the app is already in the background, with nothing buffered yet.
+        let (core, stats) = try enableClientStats()
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: suspendableAppStateHistory())), from: core)
+
+        // When: a burst of spans finishes afterwards.
+        for _ in 0..<10 {
+            stats.record(.mockWith(startTime: 0, duration: 100))
+        }
+
+        // Then: every span is stored within the delay. The burst takes at most two flushes: the one the
+        // transition started, if it runs after the first span, and the one the burst scheduled.
+        let storedHits = { core.exportedBuckets.flatMap(\.stats).map(\.hits).reduce(0, +) }
+        waitUntil(timeout: ClientStatsFeature.suspendableFlushDelay + 3) { storedHits() == 10 }
+        XCTAssertEqual(storedHits(), 10)
+        let flushMetrics = core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }
+        XCTAssertLessThanOrEqual(flushMetrics.count, 2)
+    }
+
+    func testWhenSpansFinishInTheForeground_theyWaitForThePeriodicFlush() throws {
+        let (core, stats) = try enableClientStats()
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInForeground())), from: core)
+
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        RunLoop.current.run(until: Date().addingTimeInterval(ClientStatsFeature.suspendableFlushDelay + 0.5))
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
     }
 
     // MARK: - Request Builder
@@ -238,7 +334,7 @@ class ClientStatsFeatureTests: XCTestCase {
             isTopLevel: true
         ))
 
-        stats.flushStats(force: false)
+        stats.flushStats(.periodic)
 
         XCTAssertTrue(core.exportedBuckets.isEmpty)
     }
@@ -259,7 +355,7 @@ class ClientStatsFeatureTests: XCTestCase {
                 stats.concentrator.add(.mockWith(resource: "GET /items/\(index)", startTime: 0, duration: 100))
             }
 
-            stats.flushStats(force: true)
+            stats.flushStats(.teardown)
 
             XCTAssertEqual(core.exportedBuckets.count, 1)
             let bucket = try XCTUnwrap(core.exportedBuckets.first)
@@ -313,10 +409,10 @@ class ClientStatsFeatureTests: XCTestCase {
         }
 
         // The time bucket is still recent, so nothing is stored early.
-        stats.flushStats(force: false)
+        stats.flushStats(.periodic)
         XCTAssertTrue(core.exportedBuckets.isEmpty)
 
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         let overflowBuckets = core.exportedBuckets.filter { $0.env == "original-env" }
         XCTAssertEqual(overflowBuckets.compactMap(\.version).sorted(), ["one", "two"], "Each bucket and deployment is stored exactly once")
         XCTAssertEqual(overflowBuckets.first { $0.version == "one" }?.stats.map(\.hits), [3])
@@ -341,8 +437,28 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(exportMetrics.count, 1)
         XCTAssertEqual(exportMetrics.first?.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, UInt64(limit + 4))
         let count = core.exportedBuckets.count
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         XCTAssertEqual(core.exportedBuckets.count, count)
+    }
+
+    func testPeriodicFlushRunsOffTheMainThread() throws {
+        // Given: a short flush interval and a bucket that is old enough to flush.
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        let feature = ClientStatsFeature(core: core, configuration: config, dateProvider: dateProvider, flushInterval: 0.05)
+        feature.concentrator.add(.mockWith(startTime: 0, duration: 100))
+        dateProvider.advance(bySeconds: 60)
+
+        // When: the main run loop keeps running, as in an app.
+        let deadline = Date().addingTimeInterval(5)
+        while core.exportedBuckets.isEmpty && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+
+        // Then: the periodic flush stored the bucket from its own queue.
+        XCTAssertEqual(core.exportedBuckets.count, 1)
+        XCTAssertEqual(core.writeContextOnMainThread.first, false)
+        withExtendedLifetime(feature) {}
     }
 
     func testWhenFlushProducesBuckets_itSendsFlushMetric() throws {
@@ -361,7 +477,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
         // When: advancing past the buffer window makes the bucket flushable.
         dateProvider.advance(bySeconds: 60)
-        stats.flushStats(force: false)
+        stats.flushStats(.periodic)
 
         // Then
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -385,7 +501,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
 
         // When: a forced flush (teardown) exports the still-recent bucket.
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -403,7 +519,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
 
         // When: nothing was aggregated, so the flush is empty.
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then
         XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -423,7 +539,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.concentrator.updateConsent(.notGranted)
         stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
         dateProvider.advance(bySeconds: 60)
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then: no buckets are exported, so no metric is emitted.
         XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -659,7 +775,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.concentrator.add(.mockWith(resource: "GET /items", startTime: 0, duration: 100))
         stats.concentrator.add(.mockWith(resource: "GET /items", startTime: 0, duration: 100))
 
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["GET /items"])
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [2])
@@ -700,7 +816,7 @@ class ClientStatsFeatureTests: XCTestCase {
         addSpans(stats.concentrator)
 
         // When
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then: every stored piece fits.
         let pieces = core.exportedBuckets
@@ -907,9 +1023,9 @@ class ClientStatsFeatureTests: XCTestCase {
         let (core, stats) = try enableClientStats()
         stats.concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "1.0.0")))
         stats.concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "2.0.0")))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         stats.concentrator.add(.mockWith(startTime: 20_000_000_000, duration: 100))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         let payloads = core.exportedBuckets.compactMap(\.payload)
         XCTAssertEqual(payloads.count, 3, "Every stored bucket has a payload identity")
@@ -922,9 +1038,9 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given: a whole bucket stored first, then a bucket split into pieces.
         let (core, stats) = try enableClientStats()
         stats.concentrator.add(.mockWith(resource: "GET /small", startTime: 0, duration: 100))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         addWideLatencySpans(to: stats.concentrator, endingAt: 100_000_000_000)
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         let events = core.exportedBuckets.map(makeEvent(from:))
         XCTAssertGreaterThan(events.count, 2)
         let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
@@ -942,9 +1058,9 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenABatchIsRetriedOrUploadedAfterARestart_itKeepsEveryPayloadIdentity() throws {
         let (core, stats) = try enableClientStats()
         stats.concentrator.add(.mockWith(resource: "GET /small", startTime: 0, duration: 100))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         addWideLatencySpans(to: stats.concentrator, endingAt: 100_000_000_000)
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         let events = core.exportedBuckets.map(makeEvent(from:))
         let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
         let afterRestart = makeRequestBuilder()
@@ -1045,6 +1161,68 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(clientStats["Lang"] as? String, "ios")
         XCTAssertEqual(clientStats["RuntimeID"] as? String, "runtime-id")
         XCTAssertEqual(clientStats["Sequence"] as? Int64, 1)
+    }
+
+    func testShiftingToTheServerClockMovesTheStartAndKeepsItAlignedToBuckets() {
+        let bucketDuration: UInt64 = 10_000_000_000
+        let start = 170_000_000 * bucketDuration
+        let cases: [(offset: TimeInterval, start: UInt64, expected: UInt64)] = [
+            (0, 1_000, 1_000), // no offset keeps the start exactly
+            (3_600, start, start + 360 * bucketDuration), // device clock an hour behind
+            (-7.4, start, start - bucketDuration), // rounds to the nearest boundary
+            (2, start, start), // under half a bucket
+            (1, .max, .max), // a saturated start stays saturated
+            (-100, 0, 0)
+        ]
+        for testCase in cases {
+            let bucket = makeExportedBucket(start: testCase.start, duration: bucketDuration)
+            XCTAssertEqual(bucket.shiftedToServerClock(by: testCase.offset).start, testCase.expected, "Offset \(testCase.offset)")
+        }
+    }
+
+    func testWhenTheClockSynchronizesAfterSpansFinished_theirBucketUsesTheNewerOffset() throws {
+        // Given: spans finish at startup, before the first clock synchronization, so the offset is still 0.
+        let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(serverTimeOffset: 0))
+        config.featureFlags[.clientSideStats] = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        // When: the synchronization finds the device clock an hour behind before the bucket is stored.
+        core.contextValue = .mockWith(serverTimeOffset: 3_600)
+        stats.flushStats(.teardown)
+
+        // Then: the bucket uses the newer offset. It is intentionally not the offset of each span, which
+        // comes from the context the span captured when it started, so it can still be the unsynchronized 0.
+        XCTAssertEqual(core.exportedBuckets.first?.start, 3_600_000_000_000)
+    }
+
+    func testWhenABucketIsStored_itKeepsTheServerOffsetOfThatMomentWhateverTheUploadContext() throws {
+        // Given: the device clock is an hour behind when the bucket is stored.
+        let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(serverTimeOffset: 3_600))
+        config.featureFlags[.clientSideStats] = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+        let stored = try XCTUnwrap(core.exportedBuckets.first)
+        XCTAssertEqual(stored.start, 3_600_000_000_000)
+
+        // When: it is uploaded, and retried, after the offset changed, for example after a relaunch.
+        let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+        for (offset, attempt): (TimeInterval, UInt) in [(0, 0), (-500, 1)] {
+            let request = try builder.request(
+                for: [makeEvent(from: stored)],
+                with: .mockWith(serverTimeOffset: offset),
+                execution: .init(previousResponseCode: attempt > 0 ? 500 : nil, attempt: attempt)
+            )
+
+            // Then: the uploaded start is the stored one.
+            let bucket = try mapFields(try XCTUnwrap(firstClientStatsPayload(in: request)["Stats"] as? [Any?]).first ?? nil)
+            XCTAssertEqual(bucket["Start"] as? Int64, 3_600_000_000_000, "Upload offset \(offset)")
+        }
     }
 
     func testWhenBuildingRequest_itMapsExportedBucketsOntoWirePayload() throws {
@@ -1216,6 +1394,23 @@ class ClientStatsFeatureTests: XCTestCase {
         }
     }
 
+    /// An app state in which the app may be suspended: the background, or sleep on macOS.
+    private func suspendableAppStateHistory() -> AppStateHistory {
+        #if os(macOS)
+        return .mockWith(initialState: .sleeping, date: Date())
+        #else
+        return .mockAppInBackground()
+        #endif
+    }
+
+    /// Spins the run loop until `condition` holds or `timeout` passes.
+    private func waitUntil(timeout: TimeInterval = 3, _ condition: () -> Bool) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+        }
+    }
+
     private func enableClientStats() throws -> (FeatureRegistrationPassthroughCoreMock, ClientStatsFeature) {
         let core = FeatureRegistrationPassthroughCoreMock()
         config.featureFlags[.clientSideStats] = true
@@ -1341,7 +1536,8 @@ class ClientStatsFeatureTests: XCTestCase {
 
 private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     private let writer = FileWriterMock()
-    private let contextValue: DatadogContext
+    /// The context of every write context. Tests can change it, for example to simulate a clock synchronization.
+    var contextValue: DatadogContext
     private var registeredFeatures: [DatadogFeature] = []
 
     var remoteConfiguration: RemoteConfiguration?
@@ -1371,10 +1567,31 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        writeContextBypassConsentValues.append(bypassConsent)
-        block(contextValue, writer)
+        _writeContextBypassConsentValues.mutate { $0.append(bypassConsent) }
+        _writeContextOnMainThread.mutate { $0.append(Thread.isMainThread) }
+        if defersWriteContexts {
+            pendingWriteContexts.append { [contextValue, writer] in block(contextValue, writer) }
+        } else {
+            block(contextValue, writer)
+        }
     }
 
+    /// When `true`, write contexts wait for `runPendingWriteContexts()`, like a context read that has
+    /// not completed yet.
+    var defersWriteContexts = false
+    private var pendingWriteContexts: [() -> Void] = []
+
+    func runPendingWriteContexts() {
+        let pending = pendingWriteContexts
+        pendingWriteContexts = []
+        pending.forEach { $0() }
+    }
+
+    /// Whether each write context was opened on the main thread.
+    @ReadWriteLock
+    var writeContextOnMainThread: [Bool] = []
+
+    @ReadWriteLock
     var writeContextBypassConsentValues: [Bool] = []
 
     func context(_ block: @escaping (DatadogContext) -> Void) {
