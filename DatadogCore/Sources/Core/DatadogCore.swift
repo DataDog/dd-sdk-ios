@@ -267,6 +267,8 @@ internal final class DatadogCore {
 
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
+        // Features drop their in-memory data first, so it cannot be written after storages are cleared.
+        features.values.compactMap { $0 as? DataClearable }.forEach { $0.clearAllData() }
         allStorages.forEach { $0.clearAllData() }
         allDataStores.forEach { $0.clearAllData() }
     }

@@ -960,4 +960,38 @@ class SpanEventBuilderTests: XCTestCase {
         let json = try JSONEncoder().encode(span).toJSONObject()
         XCTAssertNil(json["meta._dd.compute_stats"], "A user value must not be able to set the SDK-owned opt-out tag")
     }
+
+    func testWhenTheEventMapperChangesOrRemovesComputeStats_theSDKValueStillWins() throws {
+        let mappers: [(String, SpanEventMapper)] = [
+            ("removes every tag", { var event = $0; event.tags = [:]; return event }),
+            ("removes the tag", { var event = $0; event.tags.removeValue(forKey: "_dd.compute_stats"); return event }),
+            ("sets the tag to 1", { var event = $0; event.tags["_dd.compute_stats"] = "1"; return event })
+        ]
+        for (label, mapper) in mappers {
+            for statsEnabled in [true, false] {
+                // Given
+                let builder: SpanEventBuilder = .mockWith(eventsMapper: mapper, statsComputationEnabled: statsEnabled)
+
+                // When
+                let span = builder.createSpanEvent(
+                    context: .mockAny(),
+                    traceID: .mockAny(),
+                    spanID: .mockAny(),
+                    parentSpanID: .mockAny(),
+                    operationName: .mockAny(),
+                    startTime: .mockAny(),
+                    finishTime: .mockAny(),
+                    samplingRate: .mockAny(),
+                    samplingPriority: .mockAny(),
+                    samplingDecisionMaker: .mockAny(),
+                    tags: [:],
+                    baggageItems: [:],
+                    logFields: []
+                )
+
+                // Then
+                XCTAssertEqual(span.tags["_dd.compute_stats"], statsEnabled ? "0" : nil, "Mapper \(label), stats enabled: \(statsEnabled)")
+            }
+        }
+    }
 }
