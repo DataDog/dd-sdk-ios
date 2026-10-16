@@ -133,7 +133,7 @@ class ClientStatsFeatureTests: XCTestCase {
         var transitions: [Bool] = []
         receiver.appMayBeSuspendedDidChange = { transitions.append($0) }
         let foreground: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground())
-        let background: DatadogContext = .mockWith(applicationStateHistory: .mockAppInBackground())
+        let background: DatadogContext = .mockWith(applicationStateHistory: suspendableAppStateHistory())
 
         for context in [foreground, background, background, foreground, background] {
             _ = receiver.receive(message: .context(context), from: core)
@@ -150,7 +150,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertTrue(core.exportedBuckets.isEmpty)
 
         // When
-        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInBackground())), from: core)
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: suspendableAppStateHistory())), from: core)
 
         // Then: the flush runs on the feature's queue, not on the message bus caller. Its metric is sent
         // after the write, so wait for both.
@@ -164,7 +164,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenSpansFinishWhileTheAppMayBeSuspended_theyAreStoredSoonInFewFlushes() throws {
         // Given: the SDK starts while the app is already in the background, with nothing buffered yet.
         let (core, stats) = try enableClientStats()
-        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInBackground())), from: core)
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: suspendableAppStateHistory())), from: core)
 
         // When: a burst of spans finishes afterwards.
         for _ in 0..<10 {
@@ -1392,6 +1392,15 @@ class ClientStatsFeatureTests: XCTestCase {
         try allClientStatsPayloads(in: request).map { payload in
             try XCTUnwrap(payload["Stats"] as? [Any?]).map { try (mapFields($0)["Stats"] as? [Any?])?.count }
         }
+    }
+
+    /// An app state in which the app may be suspended: the background, or sleep on macOS.
+    private func suspendableAppStateHistory() -> AppStateHistory {
+        #if os(macOS)
+        return .mockWith(initialState: .sleeping, date: Date())
+        #else
+        return .mockAppInBackground()
+        #endif
     }
 
     /// Spins the run loop until `condition` holds or `timeout` passes.
