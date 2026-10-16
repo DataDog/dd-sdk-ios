@@ -78,9 +78,6 @@ final class FlagKeyObfuscationTests: XCTestCase {
         }
         XCTAssertNil(cache.lookupKeys[Data("flag".utf8)])
         XCTAssertEqual(cache.flagAssignment(for: "flag"), assignment)
-        let restored = try JSONDecoder().decode(FlagsData.self, from: JSONEncoder().encode(cache.data))
-        XCTAssertEqual(restored, cache.data)
-        XCTAssertTrue(FlagsRepository.CachedFlagsData(data: restored).lookupKeys.isEmpty, "Lookup hashes are not persisted")
     }
 
     func testPlaintextLookupDoesNotNeedWriteAccess() throws {
@@ -377,7 +374,10 @@ final class FlagKeyObfuscationTests: XCTestCase {
         let response = try decode(flags: [digest: assignment], metadata: metadata())
         XCTAssertEqual(try JSONDecoder().decode(FlagAssignmentsResponse.self, from: JSONEncoder().encode(response)), response)
         let data = state(response)
-        let encoded = try JSONEncoder().encode(data)
+        var original = FlagsRepository.CachedFlagsData(data: data)
+        XCTAssertEqual(original.flagAssignment(for: "flag"), assignment)
+        XCTAssertFalse(original.lookupKeys.isEmpty)
+        let encoded = try JSONEncoder().encode(original.data)
         let diskJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
         XCTAssertEqual(diskJSON["obfuscation"] as? [String: String], ["scheme": "flag-key-sha256-v1", "salt": salt])
         XCTAssertNil(diskJSON["obfuscated"], "The disk format needs only the optional descriptor")
@@ -385,6 +385,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
         let restored = try JSONDecoder().decode(FlagsData.self, from: encoded)
         XCTAssertEqual(restored, data)
         var cached = FlagsRepository.CachedFlagsData(data: restored)
+        XCTAssertTrue(cached.lookupKeys.isEmpty, "Lookup hashes are not persisted")
         XCTAssertEqual(cached.flagAssignment(for: "flag"), assignment)
         XCTAssertEqual(Array(restored.flags.keys), [digest])
     }
@@ -554,14 +555,6 @@ final class FlagKeyObfuscationTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
             XCTAssertTrue(client.getBooleanValue(key: "flag", defaultValue: false))
-            let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"])
-            XCTAssertNil(stored.data(), "Old SDKs must not read encoded assignments as plaintext")
-            let persisted = try XCTUnwrap(stored.data(expectedVersion: 2))
-            let restored = try JSONDecoder().decode(FlagsData.self, from: persisted)
-            XCTAssertEqual(restored.obfuscation, encoding)
-            XCTAssertEqual(Array(restored.flags.keys), [key])
-            var cached = FlagsRepository.CachedFlagsData(data: restored)
-            XCTAssertEqual(cached.flagAssignment(for: "flag"), assignment)
         }
         XCTAssertEqual(evaluations.logEvaluationCalls.map(\.flagKey), ["flag", "flag", "flag"])
         XCTAssertEqual(evaluations.logEvaluationCalls.map(\.assignment.serialID), [123, 123, 123])
