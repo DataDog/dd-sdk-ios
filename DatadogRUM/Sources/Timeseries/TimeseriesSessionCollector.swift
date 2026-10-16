@@ -163,8 +163,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             guard let self = self else {
                 return
             }
-            // No `refreshHasReplay()`: leftovers belong to the previous session, while the reader may
-            // already report the new one.
             self.flushMemory()
             self.flushCPU()
             self.sessionID = sessionID
@@ -316,7 +314,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
-    /// OR-accumulates the reader's current replay state into `hasReplay`. Must run on `queue`.
     private func refreshHasReplay() {
         if let hasContextReplay = activeContextReader?.hasReplay {
             hasReplay = (hasReplay ?? false) || hasContextReplay

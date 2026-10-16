@@ -459,9 +459,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         trigger: (TimeseriesSessionCollector, String) -> Void
     ) -> [RUMTimeseriesMemoryEvent] {
         memoryReader.vitalData = 1_000_000
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
-            featureScope: featureScope,
+            featureScope: scope,
             batchSize: 100, // won't auto-flush — only `trigger` flushes
             samplingInterval: 0.3,
             cpuUsageProvider: { nil },
@@ -476,43 +477,32 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         contextReader.hasReplay = true
         trigger(collector, "session-replay-starts")
 
-        return featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        return scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
     }
 
-    func testWhenReplayStartsAfterLastTick_pauseReportsHasReplay() {
-        // When
-        let events = memoryEventsAfterReplayStartsBetweenTicks { collector, sessionID in
-            collector.pause(sessionID: sessionID)
-            collector.flush() // barrier: waits for `pause()` to finish on the collector's queue
+    func testWhenReplayStartsAfterLastTick_pauseStopAndFlushReportHasReplay() {
+        let triggers: [(name: String, run: (TimeseriesSessionCollector, String) -> Void)] = [
+            ("pause", { collector, sessionID in
+                collector.pause(sessionID: sessionID)
+                collector.flush() // barrier: waits for `pause()` to finish on the collector's queue
+            }),
+            ("stop", { collector, sessionID in
+                collector.stop(sessionID: sessionID)
+                collector.flush() // barrier: waits for `stop()` to finish on the collector's queue
+            }),
+            ("flush", { collector, _ in
+                collector.flush()
+            })
+        ]
+
+        for trigger in triggers {
+            // When
+            let events = memoryEventsAfterReplayStartsBetweenTicks(trigger: trigger.run)
+
+            // Then
+            XCTAssertEqual(events.count, 1, "\(trigger.name)")
+            XCTAssertEqual(events.last?.session.hasReplay, true, "\(trigger.name)")
         }
-
-        // Then
-        XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(events.last?.session.hasReplay, true)
-    }
-
-    func testWhenReplayStartsAfterLastTick_stopReportsHasReplay() {
-        // When
-        let events = memoryEventsAfterReplayStartsBetweenTicks { collector, sessionID in
-            collector.stop(sessionID: sessionID)
-            collector.flush() // barrier: waits for `stop()` to finish on the collector's queue
-        }
-
-        // Then
-        XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(events.last?.session.hasReplay, true)
-    }
-
-    func testWhenReplayStartsAfterLastTick_flushReportsHasReplay() {
-        // When
-        let events = memoryEventsAfterReplayStartsBetweenTicks { collector, sessionID in
-            collector.flush()
-            collector.stop(sessionID: sessionID)
-        }
-
-        // Then
-        XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(events.last?.session.hasReplay, true)
     }
 
     func testWhenNewSessionStarts_leftoverBatchKeepsPreviousSessionHasReplay() {
