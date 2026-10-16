@@ -68,10 +68,23 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
 
 @implementation ObjCAllocHookTests
 
+- (dd_memory_live_snapshot_t *)makeSnapshot {
+    dd_memory_live_snapshot_t *snapshot = dd_memory_live_snapshot_create();
+    XCTAssertNotEqual(snapshot, NULL);
+    [self addTeardownBlock:^{ dd_memory_live_snapshot_destroy(snapshot); }];
+    return snapshot;
+}
+
 - (void)testSnapshotOwnsObjCNameAndClearsIdentityOnSlotReuse {
     dd_memory_live_set_t *table = dd_memory_live_set_create();
     XCTAssertNotEqual(table, NULL);
     if (table == NULL) {
+        return;
+    }
+    dd_memory_live_snapshot_t *snapshot = [self makeSnapshot];
+    dd_memory_live_snapshot_t *swiftSnapshot = [self makeSnapshot];
+    if (snapshot == NULL || swiftSnapshot == NULL) {
+        dd_memory_live_set_destroy(table);
         return;
     }
     uint64_t generation = dd_memory_live_set_start(table);
@@ -103,44 +116,28 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
                    DD_MEMORY_LIVE_SET_INSERTED);
     mutableName[0] = 'X';
 
-    dd_memory_live_sample_t output = {0};
-    output.size = 123;
-    char shortNames[4] = {0};
-    size_t count = 99;
-    size_t required = 0;
-    XCTAssertFalse(dd_memory_live_set_snapshot(table, generation, &output, 1,
-                                                shortNames, sizeof(shortNames),
-                                                &count, &required));
-    XCTAssertEqual(count, (size_t)0);
-    XCTAssertEqual(required, sizeof(mutableName));
-    XCTAssertEqual(output.size, (uint64_t)123);
-
-    char snapshotNames[sizeof(mutableName)] = {0};
-    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, &output, 1,
-                                               snapshotNames, sizeof(snapshotNames),
-                                               &count, &required));
-    XCTAssertEqual(count, (size_t)1);
-    XCTAssertEqual(required, sizeof(mutableName));
-    XCTAssertEqual((const void *)output.class_name, (const void *)snapshotNames);
-    XCTAssertEqual(output.swift_metadata, NULL);
-    XCTAssertTrue(output.swift_name_resolver == NULL);
-    XCTAssertEqual(output.source, DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC);
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    dd_memory_live_snapshot_view_t view = dd_memory_live_snapshot_view(snapshot);
+    XCTAssertEqual(view.count, (size_t)1);
+    const dd_memory_live_sample_t *output = view.samples;
+    XCTAssertEqual(output->swift_metadata, NULL);
+    XCTAssertTrue(output->swift_name_resolver == NULL);
+    XCTAssertEqual(output->source, DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC);
     XCTAssertTrue(dd_memory_live_set_remove(table, generation, sample.address));
 
     XCTAssertEqual(dd_memory_live_set_insert(table, generation, &swiftSample),
                    DD_MEMORY_LIVE_SET_INSERTED);
-    dd_memory_live_sample_t swiftOutput = {0};
-    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, &swiftOutput, 1,
-                                               NULL, 0, &count, &required));
-    XCTAssertEqual(count, (size_t)1);
-    XCTAssertEqual(required, (size_t)0);
-    XCTAssertEqual(swiftOutput.class_name, NULL);
-    XCTAssertEqual(swiftOutput.swift_metadata, swiftSample.swift_metadata);
-    XCTAssertTrue(swiftOutput.swift_name_resolver == swiftSample.swift_name_resolver);
-    XCTAssertEqual(swiftOutput.source, DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT);
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, swiftSnapshot));
+    dd_memory_live_snapshot_view_t swiftView = dd_memory_live_snapshot_view(swiftSnapshot);
+    XCTAssertEqual(swiftView.count, (size_t)1);
+    const dd_memory_live_sample_t *swiftOutput = swiftView.samples;
+    XCTAssertEqual(swiftOutput->class_name, NULL);
+    XCTAssertEqual(swiftOutput->swift_metadata, swiftSample.swift_metadata);
+    XCTAssertTrue(swiftOutput->swift_name_resolver == swiftSample.swift_name_resolver);
+    XCTAssertEqual(swiftOutput->source, DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT);
     XCTAssertTrue(dd_memory_live_set_remove(table, generation, swiftSample.address));
     dd_memory_live_set_destroy(table);
-    dd_memory_live_class_name_t name = dd_memory_live_sample_class_name(&output);
+    dd_memory_live_class_name_t name = dd_memory_live_sample_class_name(output);
     XCTAssertEqual(name.length, (uint64_t)(sizeof(mutableName) - 1));
     XCTAssertEqual(strcmp(name.data, "TransientFixture"), 0);
 }
@@ -149,6 +146,11 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
     dd_memory_live_set_t *table = dd_memory_live_set_create();
     XCTAssertNotEqual(table, NULL);
     if (table == NULL) {
+        return;
+    }
+    dd_memory_live_snapshot_t *snapshot = [self makeSnapshot];
+    if (snapshot == NULL) {
+        dd_memory_live_set_destroy(table);
         return;
     }
     uint64_t generation = dd_memory_live_set_start(table);
@@ -163,14 +165,10 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
                    DD_MEMORY_LIVE_SET_INSERTED);
     memset(longName, 'X', sizeof(longName) - 1);
 
-    dd_memory_live_sample_t output = {0};
-    size_t count = 0;
-    size_t required = 99;
-    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, &output, 1,
-                                               NULL, 0, &count, &required));
-    XCTAssertEqual(count, (size_t)1);
-    XCTAssertEqual(required, (size_t)0);
-    XCTAssertEqual(output.class_name, NULL);
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    dd_memory_live_snapshot_view_t view = dd_memory_live_snapshot_view(snapshot);
+    XCTAssertEqual(view.count, (size_t)1);
+    XCTAssertEqual(view.samples[0].class_name, NULL);
     XCTAssertEqual(dd_memory_live_set_diagnostics(table).omitted_class_names, (uint64_t)1);
     dd_memory_live_set_destroy(table);
 }
@@ -362,6 +360,11 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
     if (table == NULL) {
         return;
     }
+    dd_memory_live_snapshot_t *snapshot = [self makeSnapshot];
+    if (snapshot == NULL) {
+        dd_memory_live_set_destroy(table);
+        return;
+    }
     uint64_t generation = dd_memory_live_set_start(table);
     atomic_store(&liveTable, table);
     atomic_store(&liveGeneration, generation);
@@ -370,31 +373,22 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
     __attribute__((objc_precise_lifetime)) DDObjCAllocFixture *first = [DDObjCAllocFixture new];
     __attribute__((objc_precise_lifetime)) DDObjCAllocFixture *second = [DDObjCAllocFixture new];
     __attribute__((objc_precise_lifetime)) DDObjCAllocFixture *third = [DDObjCAllocFixture new];
-    dd_memory_live_sample_t liveSamples[3] = {0};
-    char firstSnapshotNames[128] = {0};
-    char laterSnapshotNames[128] = {0};
-    size_t liveCount = 0;
-    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, liveSamples, 3,
-                                               firstSnapshotNames, sizeof(firstSnapshotNames),
-                                               &liveCount, NULL));
-    XCTAssertEqual(liveCount, (size_t)3);
-    dd_memory_live_class_name_t className = dd_memory_live_sample_class_name(&liveSamples[0]);
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    dd_memory_live_snapshot_view_t view = dd_memory_live_snapshot_view(snapshot);
+    XCTAssertEqual(view.count, (size_t)3);
+    dd_memory_live_class_name_t className = dd_memory_live_sample_class_name(view.samples);
     XCTAssertNotEqual(className.data, NULL);
     if (className.data != NULL) {
         XCTAssertEqual(className.length, (uint64_t)strlen("DDObjCAllocFixture"));
         XCTAssertEqual(strncmp(className.data, "DDObjCAllocFixture", (size_t)className.length), 0);
     }
     first = nil;
-    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, liveSamples, 3,
-                                               laterSnapshotNames, sizeof(laterSnapshotNames),
-                                               &liveCount, NULL));
-    XCTAssertEqual(liveCount, (size_t)2);
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    XCTAssertEqual(dd_memory_live_snapshot_view(snapshot).count, (size_t)2);
     second = nil;
     third = nil;
-    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, liveSamples, 3,
-                                               laterSnapshotNames, sizeof(laterSnapshotNames),
-                                               &liveCount, NULL));
-    XCTAssertEqual(liveCount, (size_t)0);
+    XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot));
+    XCTAssertEqual(dd_memory_live_snapshot_view(snapshot).count, (size_t)0);
     dd_objc_alloc_hook_stop();
     atomic_store(&liveTable, NULL);
     dd_memory_live_set_destroy(table);

@@ -26,6 +26,7 @@ extern "C" {
 #define DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES 128
 
 typedef struct dd_memory_live_set dd_memory_live_set_t;
+typedef struct dd_memory_live_snapshot dd_memory_live_snapshot_t;
 
 typedef enum {
     DD_MEMORY_LIVE_SAMPLE_SOURCE_UNKNOWN = 0,
@@ -33,17 +34,17 @@ typedef enum {
     DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT = 2
 } dd_memory_live_sample_source_t;
 
-/// An Obj-C sample copies its NUL-terminated runtime class name on insertion
+/// An Obj-C sample copies its null-terminated runtime class name on insertion
 /// when it fits in DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES. Longer names are
-/// omitted. A snapshot copies stored names into caller-owned storage. Swift
+/// omitted. A snapshot owns copies of stored names. Swift
 /// name bytes may be temporary: store metadata and the resolver instead,
 /// then resolve a snapshot sample outside the allocation hot path.
 typedef struct {
     const void *address;
     uint64_t size;
     double weight;
-    /// Obj-C name only; pass NULL for Swift samples. Snapshot copies point
-    /// into the caller's class-name storage.
+    /// Obj-C name only; pass NULL for Swift samples. Captured names point into
+    /// snapshot storage.
     const char *class_name;
     /// Swift samples carry both fields instead of retaining resolver output.
     const HeapMetadata *swift_metadata;
@@ -52,6 +53,27 @@ typedef struct {
     uint32_t frame_count;
     dd_memory_live_sample_source_t source;
 } dd_memory_live_sample_t;
+
+/// Borrowed records and Obj-C name bytes owned by a snapshot. Valid until that
+/// snapshot is captured again (including a failed capture) or destroyed.
+typedef struct {
+    const dd_memory_live_sample_t *samples;
+    size_t count;
+} dd_memory_live_snapshot_view_t;
+
+/// Allocates fixed-capacity sample and name storage once with mmap. Returns
+/// NULL on allocation failure. Create outside allocation/deallocation observers.
+dd_memory_live_snapshot_t *dd_memory_live_snapshot_create(void);
+
+/// Releases snapshot storage. The caller must first finish captures and readers
+/// using this snapshot or its views. NULL is a no-op.
+void dd_memory_live_snapshot_destroy(dd_memory_live_snapshot_t *snapshot);
+
+/// Returns the latest capture without copying. Before capture, after failure,
+/// or for NULL, the view is empty. A snapshot's captures and readers must be
+/// serialized by its owner; separate snapshots can be used independently.
+dd_memory_live_snapshot_view_t dd_memory_live_snapshot_view(
+    const dd_memory_live_snapshot_t *snapshot);
 
 typedef struct {
     const char *data;
@@ -90,8 +112,7 @@ typedef struct {
     uint64_t max_probe_length;
     /// Page-rounded mmap storage owned by the table.
     uint64_t table_bytes;
-    /// Largest combined caller-declared sample and class-name buffers used by
-    /// a successful capture.
+    /// Page-rounded snapshot storage used by a successful capture.
     uint64_t snapshot_bytes_high_water;
     /// At least one insertion exhausted its bounded probe window in this
     /// generation. This can occur while other slots remain empty; use
@@ -101,7 +122,7 @@ typedef struct {
 } dd_memory_live_set_diagnostics_t;
 
 /// Allocates the table once with mmap. Returns NULL if allocation fails.
-/// No operation on an existing table allocates memory.
+/// Operations on an existing table and snapshot do not allocate memory.
 dd_memory_live_set_t *dd_memory_live_set_create(void);
 
 /// The caller must first stop and drain all allocation/deallocation hooks and
@@ -143,16 +164,11 @@ dd_memory_live_insert_result_t dd_memory_live_set_insert(
 bool dd_memory_live_set_remove(dd_memory_live_set_t *table,
                                uint64_t generation, const void *address);
 
-/// Copies one coherent point-in-time view into caller-owned storage. Pass an
-/// array of DD_MEMORY_LIVE_SET_CAPACITY records to guarantee enough samples.
-/// Obj-C names are copied into class_names, including their NUL terminators;
-/// DD_MEMORY_LIVE_SET_CAPACITY * DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES bytes
-/// guarantees enough name storage. When the sample array is large enough,
-/// class_name_bytes_required reports the needed size even if name storage is
-/// short. It remains zero when the sample array is short, and may be NULL when
-/// this size is not needed. Swift names continue to resolve through stored
-/// metadata. Returns false, with *count == 0, for a stale generation or short
-/// buffer. Snapshot storage must be allocated outside the intercepted hot path.
+/// Copies one coherent point-in-time view into reusable snapshot storage,
+/// including owned Obj-C name bytes. Swift names resolve through stored
+/// metadata. Snapshot storage is independent of the table and survives table
+/// stop, restart or destruction. A capture replaces the previous contents;
+/// failure leaves an empty view. Create storage outside the intercepted hot path.
 /// Capture holds the state lock across the full scan and copy, blocking sampled
 /// inserts and sampled-object removals on all threads. Integration must capture
 /// on a background serial profiler queue at emission boundaries: event/lifecycle
@@ -161,10 +177,7 @@ bool dd_memory_live_set_remove(dd_memory_live_set_t *table,
 /// threads for Mach sampling.
 bool dd_memory_live_set_snapshot(dd_memory_live_set_t *table,
                                  uint64_t generation,
-                                 dd_memory_live_sample_t *output,
-                                 size_t output_capacity, char *class_names,
-                                 size_t class_names_capacity, size_t *count,
-                                 size_t *class_name_bytes_required);
+                                 dd_memory_live_snapshot_t *snapshot);
 
 /// Reads each field atomically without the state lock; fields may reflect
 /// different instants. When associating diagnostics with a snapshot, serialize
