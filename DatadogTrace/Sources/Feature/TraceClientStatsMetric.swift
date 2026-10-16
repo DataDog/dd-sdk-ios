@@ -28,7 +28,8 @@ internal enum TraceClientStatsMetric {
     static let spansCountKey = "spans_count"
     /// The total number of errored spans across all groups (sum of group errors).
     static let errorsCountKey = "errors_count"
-    /// Whether the flush was forced (SDK teardown) rather than a periodic flush.
+    /// Whether the flush was the SDK teardown's. Periodic flushes and flushes while the app may be
+    /// suspended report `false`.
     static let forcedKey = "forced"
     /// Groups, and the spans in them, dropped because a group alone exceeds the storage event limit.
     static let oversizedGroupsCountKey = "oversized_groups_count"
@@ -68,7 +69,7 @@ internal struct TraceClientStatsMetricController {
     }
 
     /// Emits the metric summarizing what a non-empty flush produced.
-    func send(for buckets: [ExportedBucket], oversizedGroups: [ExportedGroupedStats], force: Bool) {
+    func send(for buckets: [ExportedBucket], oversizedGroups: [ExportedGroupedStats], isTeardown: Bool) {
         var groupsCount = 0
         var spansCount: UInt64 = 0
         var errorsCount: UInt64 = 0
@@ -88,7 +89,7 @@ internal struct TraceClientStatsMetricController {
                 TraceClientStatsMetric.groupsCountKey: groupsCount,
                 TraceClientStatsMetric.spansCountKey: spansCount,
                 TraceClientStatsMetric.errorsCountKey: errorsCount,
-                TraceClientStatsMetric.forcedKey: force,
+                TraceClientStatsMetric.forcedKey: isTeardown,
                 TraceClientStatsMetric.oversizedGroupsCountKey: oversizedGroups.count,
                 TraceClientStatsMetric.oversizedSpansCountKey: oversizedGroups.map(\.hits).reduce(0, +)
             ]

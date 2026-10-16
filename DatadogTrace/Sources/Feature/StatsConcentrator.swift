@@ -265,6 +265,51 @@ internal struct ExportedBucket: Codable, Sendable {
         return size.estimate
     }
 
+    /// A copy of this bucket whose start is moved to the server clock.
+    ///
+    /// The concentrator buckets spans on the device clock, so they flush on time even when that clock
+    /// is wrong. Uploaded spans are shifted by the server time offset too, so `ClientStatsFeature`
+    /// shifts a bucket by the offset of the moment it stores it, and the stored start never changes
+    /// afterwards, across retries, restarts and split pieces.
+    ///
+    /// That offset is intentionally not each span's: a span keeps the context it captured when it
+    /// started, so a span started before the first clock synchronization keeps an offset of 0. The
+    /// offset at storage time is the most accurate one known by then. The start is rounded to the nearest
+    /// bucket boundary to stay aligned, so offsets under half a bucket round away, which is within the
+    /// 10-second granularity of the stats.
+    func shiftedToServerClock(by offset: TimeInterval) -> ExportedBucket {
+        ExportedBucket(
+            start: Self.serverStart(of: start, duration: duration, offset: offset),
+            duration: duration,
+            stats: stats,
+            env: env,
+            version: version,
+            service: service,
+            payload: payload,
+            pieceCount: pieceCount
+        )
+    }
+
+    private static func serverStart(of start: UInt64, duration: UInt64, offset: TimeInterval) -> UInt64 {
+        let offsetNanoseconds = (offset * 1_000_000_000).rounded()
+        // A start saturated at `UInt64.max` comes from a pathological span time and stays saturated.
+        guard offsetNanoseconds != 0, offsetNanoseconds.isFinite, start < .max else {
+            return start
+        }
+        // Doubles cover any real start or offset, and multiples of a 10-second bucket stay exact; the
+        // result is clamped so a pathological value cannot trap. A bucket of zero duration has no
+        // boundary to align to.
+        let shifted = Double(start) + offsetNanoseconds
+        let aligned = duration > 0 ? (shifted / Double(duration)).rounded() * Double(duration) : shifted
+        guard aligned > 0 else {
+            return 0
+        }
+        guard aligned < Double(UInt64.max) else {
+            return .max
+        }
+        return UInt64(aligned)
+    }
+
     /// A copy of this bucket uploaded in `payload`.
     func assigning(_ payload: PayloadIdentity) -> ExportedBucket {
         ExportedBucket(
@@ -566,6 +611,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private let queue = DispatchQueue(label: "com.datadoghq.stats-concentrator", qos: .utility)
 
     private var buckets: [UInt64: StatsBucket] = [:]
+    /// Incremented by `clearAllData()`, so buckets exported before a clear can be told apart.
+    private var clearGeneration: UInt64 = 0
     private var oldestTs: UInt64
 
     /// The user's current tracking consent. `.granted` and `.pending` are both recording states;
@@ -697,11 +744,17 @@ internal final class StatsConcentrator: @unchecked Sendable {
     ///   Used during SDK teardown.
     /// - Returns: Array of exported buckets ready for serialization.
     func flush(now: Nanoseconds, force: Bool) -> [ExportedBucket] {
+        flushForStorage(now: now, force: force).buckets
+    }
+
+    /// Flushes like `flush(now:force:)`, and returns the clear generation the buckets were exported in,
+    /// for `performUnlessCleared(since:_:)`.
+    func flushForStorage(now: Nanoseconds, force: Bool) -> (buckets: [ExportedBucket], clearGeneration: UInt64) {
         return queue.sync {
             // Never export while consent is not granted. The storage writer already drops these
             // writes, but returning early avoids needlessly serializing the sketches.
             guard currentConsent != .notGranted else {
-                return []
+                return ([], clearGeneration)
             }
 
             // A bucket is complete once it is older than the retention window ending at `now`, i.e.
@@ -774,11 +827,35 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 oldestTs = newOldestTs
             }
 
-            return flushed
+            return (flushed, clearGeneration)
         }
     }
 
     // MARK: - Consent
+
+    /// Drops every buffered bucket, for `Datadog.clearAllData()`. Spans recorded afterwards are kept.
+    ///
+    /// Synchronous, so the core clears storage only after it. Buckets already exported but not yet
+    /// written are discarded through `performUnlessCleared(since:_:)`.
+    func clearAllData() {
+        queue.sync {
+            clearGeneration &+= 1
+            buckets.removeAll()
+        }
+    }
+
+    /// Runs `block` on the concentrator's queue unless data was cleared since `clearGeneration`.
+    ///
+    /// A flush writes its exported buckets through this. A clear runs on the same queue, so a write that
+    /// runs is queued before the core queues the storage deletion, and one exported before a clear but
+    /// not yet written is skipped instead of surviving it.
+    func performUnlessCleared(since clearGeneration: UInt64, _ block: () -> Void) {
+        queue.sync {
+            if clearGeneration == self.clearGeneration {
+                block()
+            }
+        }
+    }
 
     /// Updates the tracking consent that gates aggregation.
     ///
