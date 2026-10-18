@@ -75,6 +75,56 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent2.view.id)
     }
 
+    func testLegacyWatchdog_preservesReportedSnapshotUntilNextStartedUpdateAndIgnoresStoppedUpdates() throws {
+        let didSend = expectation(description: "previous view reported once")
+        didSend.assertForOverFulfill = true
+        let firstQueue = DispatchQueue(label: "com.datadoghq.tests.legacy-watchdog-first")
+        given(
+            isSimulator: false, isDebugging: false, appVersion: "1.0.0", osVersion: "1.0.0",
+            systemBootTime: 1, vendorId: "foo", processId: UUID(), didCrash: false,
+            didSend: didSend, queue: firstQueue
+        )
+        sut.update(viewEvent: .mockRandom())
+        var stored: RUMViewEvent?
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
+        XCTAssertNil(stored)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        firstQueue.sync {}
+        XCTAssertEqual(sut.currentState, .started)
+        XCTAssertNil(reporter.sendParams)
+        let previous: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: previous)
+
+        let nextQueue = DispatchQueue(label: "com.datadoghq.tests.legacy-watchdog-next")
+        given(
+            isSimulator: false, isDebugging: false, appVersion: "1.0.0", osVersion: "1.0.0",
+            systemBootTime: 1, vendorId: "foo", processId: UUID(), didCrash: false,
+            didSend: didSend, queue: nextQueue
+        )
+        sut.update(viewEvent: .mockRandom())
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        waitForExpectations(timeout: 1)
+        nextQueue.sync {}
+        XCTAssertEqual(sut.currentState, .started)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        XCTAssertEqual(try encoder.encode(XCTUnwrap(reporter.sendParams?.viewEvent)), try encoder.encode(previous))
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
+        XCTAssertEqual(try encoder.encode(XCTUnwrap(stored)), try encoder.encode(previous))
+        sut.start(launchReport: LaunchReport(didCrash: false))
+        nextQueue.sync {}
+        XCTAssertEqual(sut.currentState, .started)
+        let current: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: current)
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
+        XCTAssertEqual(try encoder.encode(XCTUnwrap(stored)), try encoder.encode(current))
+        sut.stop()
+        sut.update(viewEvent: .mockRandom())
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
+        XCTAssertEqual(sut.currentState, .stopped)
+        XCTAssertEqual(try encoder.encode(XCTUnwrap(stored)), try encoder.encode(current))
+    }
+
     // MARK: Helpers
 
     func given(

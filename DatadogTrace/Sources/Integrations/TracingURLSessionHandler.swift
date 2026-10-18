@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
@@ -24,6 +25,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let rumContext: RUMCoreContext?
         /// The RUM session snapshot read when the request was modified, or `nil` if no session was active.
         let sessionDecision: SessionSamplingDecision?
+        var rumURLSessionContext: RUMURLSessionContext? = nil
     }
 
     /// Integration with Core Context.
@@ -65,6 +67,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     private struct CapturedRUMContext {
         let rumContext: RUMCoreContext?
         let sessionDecision: SessionSamplingDecision?
+        var rumURLSessionContext: RUMURLSessionContext? = nil
     }
 
     @ReadWriteLock
@@ -205,7 +208,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             activeSpan: tracer.activeSpan,
             hasGraphQLHeaders: hasGraphQLHeaders,
             rumContext: requestTimeRUMContext,
-            sessionDecision: sessionDecision
+            sessionDecision: sessionDecision,
+            rumURLSessionContext: networkContext?.rumURLSessionContext
         )
 
         return (
@@ -240,7 +244,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 }
                 contexts[interception.identifier] = CapturedRUMContext(
                     rumContext: capturedState.rumContext,
-                    sessionDecision: capturedState.sessionDecision
+                    sessionDecision: capturedState.sessionDecision,
+                    rumURLSessionContext: capturedState.rumURLSessionContext
                 )
             }
         }
@@ -318,10 +323,18 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: startTime,
                 eventWriter: capturedRUMContext.map {
-                    LazySpanWriteContext(
+                    if let captured = $0.rumURLSessionContext {
+                        return CapturedRUMSpanWriteContext(
+                            original: LazySpanWriteContext(featureScope: tracer.featureScope),
+                            owner: captured.owner,
+                            value: captured.value,
+                            sessionOwnership: .request($0.sessionDecision?.sessionID)
+                        ) as SpanWriteContext
+                    }
+                    return LazySpanWriteContext(
                         featureScope: tracer.featureScope,
                         rumContextOverride: $0.rumContext.map(RUMContextOverride.replace) ?? .remove
-                    )
+                    ) as SpanWriteContext
                 }
             )
         } else if Sampler(samplingRate: samplingRate).sample() {
@@ -359,10 +372,18 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: startTime,
                 eventWriter: capturedRUMContext.map {
-                    LazySpanWriteContext(
+                    if let captured = $0.rumURLSessionContext {
+                        return CapturedRUMSpanWriteContext(
+                            original: LazySpanWriteContext(featureScope: tracer.featureScope),
+                            owner: captured.owner,
+                            value: captured.value,
+                            sessionOwnership: .request($0.sessionDecision?.sessionID)
+                        ) as SpanWriteContext
+                    }
+                    return LazySpanWriteContext(
                         featureScope: tracer.featureScope,
                         rumContextOverride: $0.rumContext.map(RUMContextOverride.replace) ?? .remove
-                    )
+                    ) as SpanWriteContext
                 }
             )
         } else {

@@ -291,3 +291,128 @@ private class CountingDelegate: NSObject, UITableViewDelegate {
 }
 
 #endif
+
+#if os(iOS) || os(visionOS)
+@MainActor
+final class ScrollDelegateEnclosureTests: XCTestCase {
+    func testScrollDelegate_allVoidCallbacksEncloseOneOriginalCall() throws {
+        let trace = ScrollDelegateTrace()
+        let handler = EnclosingScrollHandler(trace: trace)
+        let delegate = EnclosedScrollDelegate(trace: trace)
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+        try dispatchAll(proxy, scroll: UIScrollView())
+        XCTAssertEqual(trace.entries, [
+            "enter-begin", "notify-begin", "delegate-begin", "exit-begin",
+            "enter-drag", "notify-drag", "delegate-drag-true", "exit-drag",
+            "enter-decelerate", "notify-decelerate", "delegate-decelerate", "exit-decelerate"
+        ])
+    }
+
+    func testScrollDelegate_defaultWitnessKeepsNotificationBeforeOneOriginalCall() throws {
+        let trace = ScrollDelegateTrace()
+        let handler = LegacyScrollHandler(trace: trace)
+        let delegate = EnclosedScrollDelegate(trace: trace)
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+        try dispatchAll(proxy, scroll: UIScrollView())
+        XCTAssertEqual(trace.entries, ["notify-begin", "delegate-begin", "notify-drag", "delegate-drag-true", "notify-decelerate", "delegate-decelerate"])
+    }
+
+    func testScrollDelegate_releaseDuringNotificationSkipsWeakOriginalForEveryCallback() throws {
+        for selected in 0..<3 {
+            let trace = ScrollDelegateTrace()
+            let handler = EnclosingScrollHandler(trace: trace)
+            var delegate: EnclosedScrollDelegate? = EnclosedScrollDelegate(trace: trace)
+            weak var weakDelegate = delegate
+            let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+            handler.onNotify = { delegate = nil }
+            defer { handler.onNotify = nil }
+            try dispatch(proxy, scroll: UIScrollView(), selected: selected)
+            XCTAssertNil(weakDelegate)
+            XCTAssertNil(proxy.originalDelegate)
+            XCTAssertFalse(trace.entries.contains(where: { $0.hasPrefix("delegate-") }))
+            XCTAssertEqual(trace.entries.count, 3)
+        }
+    }
+
+    func testScrollDelegate_nestedCallbacksRestoreOuterEnclosureAndForwardOnce() throws {
+        let trace = ScrollDelegateTrace()
+        let handler = EnclosingScrollHandler(trace: trace)
+        let delegate = EnclosedScrollDelegate(trace: trace)
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+        var nested = false
+        handler.onNotify = {
+            guard !nested else { return }
+            nested = true
+            proxy.scrollViewDidEndDecelerating(UIScrollView())
+        }
+        defer { handler.onNotify = nil }
+        try dispatch(proxy, scroll: UIScrollView(), selected: 0)
+        XCTAssertEqual(trace.entries, ["enter-begin", "notify-begin", "enter-decelerate", "notify-decelerate", "delegate-decelerate", "exit-decelerate", "delegate-begin", "exit-begin"])
+    }
+
+    private func dispatchAll(_ proxy: UIScrollViewDelegateProxy, scroll: UIScrollView) throws {
+        for selected in 0..<3 { try dispatch(proxy, scroll: scroll, selected: selected) }
+    }
+
+    private func dispatch(_ proxy: UIScrollViewDelegateProxy, scroll: UIScrollView, selected: Int) throws {
+        if selected == 1 {
+            let selector = #selector(UIScrollViewDelegate.scrollViewDidEndDragging(_:willDecelerate:))
+            let method = try XCTUnwrap(class_getInstanceMethod(UIScrollViewDelegateProxy.self, selector))
+            XCTAssertTrue(String(cString: method_getTypeEncoding(method)!).hasPrefix("v"))
+            typealias Callback = @convention(c) (AnyObject, Selector, UIScrollView, Bool) -> Void
+            unsafeBitCast(proxy.method(for: selector), to: Callback.self)(proxy, selector, scroll, true)
+        } else {
+            let selector = selected == 0 ? #selector(UIScrollViewDelegate.scrollViewWillBeginDragging(_:)) : #selector(UIScrollViewDelegate.scrollViewDidEndDecelerating(_:))
+            let method = try XCTUnwrap(class_getInstanceMethod(UIScrollViewDelegateProxy.self, selector))
+            XCTAssertTrue(String(cString: method_getTypeEncoding(method)!).hasPrefix("v"))
+            typealias Callback = @convention(c) (AnyObject, Selector, UIScrollView) -> Void
+            unsafeBitCast(proxy.method(for: selector), to: Callback.self)(proxy, selector, scroll)
+        }
+    }
+}
+
+private final class ScrollDelegateTrace { var entries: [String] = [] }
+private class LegacyScrollHandler: UIScrollViewHandler {
+    let trace: ScrollDelegateTrace
+    var onNotify: (() -> Void)?
+    init(trace: ScrollDelegateTrace) { self.trace = trace }
+    func notify_scrollViewWillBeginDragging(_ scrollView: UIScrollView) { trace.entries.append("notify-begin"); onNotify?() }
+    func notify_scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool) { trace.entries.append("notify-drag"); onNotify?() }
+    func notify_scrollViewDidEndDecelerating(_ scrollView: UIScrollView) { trace.entries.append("notify-decelerate"); onNotify?() }
+    func publish(to subscriber: RUMCommandSubscriber) {}
+}
+private final class EnclosingScrollHandler: UIScrollViewHandler {
+    let trace: ScrollDelegateTrace
+    var onNotify: (() -> Void)?
+    init(trace: ScrollDelegateTrace) { self.trace = trace }
+    func notify_scrollViewWillBeginDragging(_ scrollView: UIScrollView) { trace.entries.append("notify-begin"); onNotify?() }
+    func notify_scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool) { trace.entries.append("notify-drag"); onNotify?() }
+    func notify_scrollViewDidEndDecelerating(_ scrollView: UIScrollView) { trace.entries.append("notify-decelerate"); onNotify?() }
+    func publish(to subscriber: RUMCommandSubscriber) {}
+    func interceptWillBeginDragging(_ scrollView: UIScrollView, operation: () -> Void) {
+        trace.entries.append("enter-begin")
+        notify_scrollViewWillBeginDragging(scrollView)
+        operation()
+        trace.entries.append("exit-begin")
+    }
+    func interceptDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool, operation: () -> Void) {
+        trace.entries.append("enter-drag")
+        notify_scrollViewDidEndDragging(scrollView, willDecelerate: willDecelerate)
+        operation()
+        trace.entries.append("exit-drag")
+    }
+    func interceptDidEndDecelerating(_ scrollView: UIScrollView, operation: () -> Void) {
+        trace.entries.append("enter-decelerate")
+        notify_scrollViewDidEndDecelerating(scrollView)
+        operation()
+        trace.entries.append("exit-decelerate")
+    }
+}
+private final class EnclosedScrollDelegate: NSObject, UIScrollViewDelegate {
+    let trace: ScrollDelegateTrace
+    init(trace: ScrollDelegateTrace) { self.trace = trace }
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) { trace.entries.append("delegate-begin") }
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) { trace.entries.append("delegate-drag-\(decelerate)") }
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) { trace.entries.append("delegate-decelerate") }
+}
+#endif

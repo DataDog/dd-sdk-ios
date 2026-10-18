@@ -6,9 +6,11 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
+@_spi(Internal)
+@testable import DatadogInternal
 @_spi(Internal)
 @testable import DatadogCore
+@testable import DatadogRUM
 
 private struct FeatureMock: DatadogRemoteFeature {
     static let name: String = "mock"
@@ -56,6 +58,972 @@ class DatadogCoreTests: XCTestCase {
     override func tearDown() {
         temporaryCoreDirectory.delete()
         super.tearDown()
+    }
+
+    func testCoreAndFeatureScopeHaveNoHandoffOwnerBeforeActivation() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .notGranted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer { core.stop() }
+        let scope = core.scope(for: FeatureMock.self)
+
+        XCTAssertNil(RUMContextHandoff.owner(in: core))
+        XCTAssertNil(RUMContextHandoff.owner(in: scope))
+        core.stop()
+        XCTAssertNil(RUMContextHandoff.owner(in: scope))
+    }
+
+    private func handoffValue(_ name: String) -> RUMContextHandoff.CurrentValue {
+        RUMContextHandoff.CurrentValue(
+            rumContext: .mockWith(viewID: name),
+            sceneIdentifier: name,
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+    }
+
+    private var supportsHandoffScope: Bool {
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            return true
+        }
+        #endif
+        return false
+    }
+
+    func testHandoffExecutionScopeRestoresNestedOwnersAndResult() {
+        guard supportsHandoffScope else {
+            return
+        }
+        let first = RUMContextHandoff.Owner()
+        let second = RUMContextHandoff.Owner()
+        var calls = 0
+        let result = RUMContextHandoff.withValue(handoffValue("first"), for: first) {
+            calls += 1
+            XCTAssertEqual(RUMContextHandoff.current(for: first)?.rumContext?.viewID, "first")
+            let nested = RUMContextHandoff.withValue(handoffValue("second"), for: second) {
+                XCTAssertNil(RUMContextHandoff.current(for: first))
+                XCTAssertEqual(RUMContextHandoff.current(for: second)?.rumContext?.viewID, "second")
+                return 42
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: first)?.rumContext?.viewID, "first")
+            XCTAssertNil(RUMContextHandoff.current(for: second))
+            return nested
+        }
+        XCTAssertEqual(calls, 1)
+        XCTAssertEqual(result, 42)
+        XCTAssertNil(RUMContextHandoff.current(for: first))
+        XCTAssertNil(RUMContextHandoff.current(for: second))
+    }
+
+    func testHandoffExecutionScopePreservesAuthoritativeNilAndActionFields() throws {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        try RUMContextHandoff.withValue(handoffValue("outer"), for: owner) {
+            let empty = RUMContextHandoff.CurrentValue(
+                rumContext: nil,
+                sceneIdentifier: "attached",
+                hasPendingUserAction: true,
+                excludedUserActionID: "previous"
+            )
+            try RUMContextHandoff.withValue(empty, for: owner) {
+                let value = try XCTUnwrap(RUMContextHandoff.current(for: owner))
+                XCTAssertNil(value.rumContext)
+                XCTAssertEqual(value.sceneIdentifier, "attached")
+                XCTAssertTrue(value.hasPendingUserAction)
+                XCTAssertEqual(value.excludedUserActionID, "previous")
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.rumContext?.viewID, "outer")
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffExecutionScopeRestoresAfterSyncThrow() throws {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        var calls = 0
+        try RUMContextHandoff.withValue(handoffValue("outer"), for: owner) {
+            XCTAssertThrowsError(try RUMContextHandoff.withValue(handoffValue("inner"), for: owner) {
+                calls += 1
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "inner")
+                throw HandoffScopeTestError.expected
+            }) { error in
+                XCTAssertEqual(error as? HandoffScopeTestError, .expected)
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+        }
+        XCTAssertEqual(calls, 1)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffExecutionScopeSeparatesConcurrentThreads() {
+        guard supportsHandoffScope else {
+            return
+        }
+        let first = RUMContextHandoff.Owner()
+        let second = RUMContextHandoff.Owner()
+        let entered = expectation(description: "both scopes entered")
+        entered.expectedFulfillmentCount = 2
+        let finished = expectation(description: "both scopes returned")
+        finished.expectedFulfillmentCount = 2
+        let release = DispatchSemaphore(value: 0)
+        for (owner, peer, name) in [(first, second, "first"), (second, first, "second")] {
+            DispatchQueue.global().async {
+                defer { finished.fulfill() }
+                RUMContextHandoff.withValue(self.handoffValue(name), for: owner) {
+                    entered.fulfill()
+                    XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+                    XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, name)
+                    XCTAssertNil(RUMContextHandoff.current(for: peer))
+                }
+                XCTAssertNil(RUMContextHandoff.current(for: owner))
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        release.signal()
+        release.signal()
+        wait(for: [finished], timeout: 5)
+    }
+
+    func testHandoffExecutionScopeSeparatesConcurrentTasks() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let first = RUMContextHandoff.Owner()
+        let second = RUMContextHandoff.Owner()
+        let barrier = HandoffScopeTestGate()
+        let firstTask = RUMContextHandoff.withValue(handoffValue("first"), for: first) {
+            Task {
+                await barrier.arriveAndWait()
+                await Task.yield()
+                XCTAssertNil(RUMContextHandoff.current(for: second))
+                return RUMContextHandoff.current(for: first)?.sceneIdentifier
+            }
+        }
+        let secondTask = RUMContextHandoff.withValue(handoffValue("second"), for: second) {
+            Task {
+                await barrier.arriveAndWait()
+                await Task.yield()
+                XCTAssertNil(RUMContextHandoff.current(for: first))
+                return RUMContextHandoff.current(for: second)?.sceneIdentifier
+            }
+        }
+        let firstValue = await firstTask.value
+        let secondValue = await secondTask.value
+        XCTAssertEqual(firstValue, "first")
+        XCTAssertEqual(secondValue, "second")
+        XCTAssertNil(RUMContextHandoff.current(for: first))
+        XCTAssertNil(RUMContextHandoff.current(for: second))
+    }
+
+    func testHandoffExecutionScopeInheritedTaskRetainsBindingAfterParentReturns() async {
+        let owner = RUMContextHandoff.Owner()
+        let gate = HandoffScopeTestGate()
+        let task = RUMContextHandoff.withValue(handoffValue("parent"), for: owner) {
+            Task {
+                await gate.wait()
+                return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+            }
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+        await gate.release()
+        let actual = await task.value
+        XCTAssertEqual(actual, supportsHandoffScope ? "parent" : nil)
+    }
+
+    func testHandoffExecutionScopeDetachedTaskDoesNotInherit() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let task = RUMContextHandoff.withValue(handoffValue("parent"), for: owner) {
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "parent")
+            return Task.detached {
+                RUMContextHandoff.current(for: owner)?.sceneIdentifier
+            }
+        }
+        let actual = await task.value
+        XCTAssertNil(actual)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffExecutionScopeRejectsForeignCoreOwner() throws {
+        guard supportsHandoffScope else {
+            return
+        }
+        let first = makeHandoffCore()
+        let second = makeHandoffCore()
+        defer { first.stop(); second.stop() }
+        let firstOwner = try first.activateRUMContextHandoff()
+        let secondOwner = try second.activateRUMContextHandoff()
+        RUMContextHandoff.withValue(handoffValue("first"), for: firstOwner) {
+            XCTAssertNil(RUMContextHandoff.current(for: secondOwner))
+            RUMContextHandoff.withValue(handoffValue("second"), for: secondOwner) {
+                XCTAssertNil(RUMContextHandoff.current(for: firstOwner))
+                XCTAssertEqual(RUMContextHandoff.current(for: secondOwner)?.sceneIdentifier, "second")
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: firstOwner)?.sceneIdentifier, "first")
+        }
+    }
+
+    func testHandoffExecutionScopeRejectsStoppedAndReinitializedOwner() async throws {
+        guard supportsHandoffScope else {
+            return
+        }
+        let oldCore = makeHandoffCore()
+        let oldOwner = try oldCore.activateRUMContextHandoff()
+        let gate = HandoffScopeTestGate()
+        let captured = RUMContextHandoff.withValue(handoffValue("old"), for: oldOwner) {
+            Task {
+                await gate.wait()
+                return RUMContextHandoff.current(for: oldOwner)?.sceneIdentifier
+            }
+        }
+        oldCore.stop()
+        let newCore = makeHandoffCore()
+        defer { newCore.stop() }
+        let newOwner = try newCore.activateRUMContextHandoff()
+        XCTAssertFalse(oldOwner.isValid)
+        XCTAssertTrue(newOwner.isValid)
+        XCTAssertFalse(oldOwner === newOwner)
+        RUMContextHandoff.withValue(handoffValue("old"), for: oldOwner) {
+            XCTAssertNil(RUMContextHandoff.current(for: oldOwner))
+            XCTAssertNil(RUMContextHandoff.current(for: newOwner))
+        }
+        RUMContextHandoff.withValue(handoffValue("new"), for: newOwner) {
+            XCTAssertEqual(RUMContextHandoff.current(for: newOwner)?.sceneIdentifier, "new")
+        }
+        await gate.release()
+        let actual = await captured.value
+        XCTAssertNil(actual)
+    }
+
+    func testHandoffExecutionScopeDoesNotRetainCore() async throws {
+        guard supportsHandoffScope else {
+            return
+        }
+        var core: DatadogCore? = makeHandoffCore()
+        weak var weakCore = core
+        let owner = try XCTUnwrap(core).activateRUMContextHandoff()
+        let gate = HandoffScopeTestGate()
+        let captured = RUMContextHandoff.withValue(handoffValue("retained value"), for: owner) {
+            Task {
+                await gate.wait()
+                return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+            }
+        }
+        core?.flush()
+        core?.stop()
+        core = nil
+        XCTAssertNil(weakCore)
+        XCTAssertFalse(owner.isValid)
+        await gate.release()
+        let actual = await captured.value
+        XCTAssertNil(actual)
+    }
+
+    func testHandoffExecutionScopeMissingOrInvalidOwnerRunsFallbackOnce() {
+        guard supportsHandoffScope else {
+            return
+        }
+        let active = RUMContextHandoff.Owner()
+        let invalid = RUMContextHandoff.Owner()
+        invalid.invalidate()
+        let owners: [RUMContextHandoff.Owner?] = [
+            nil,
+            RUMContextHandoff.owner(in: PassthroughCoreMock()),
+            RUMContextHandoff.owner(in: NOPDatadogCore()),
+            invalid
+        ]
+        RUMContextHandoff.withValue(handoffValue("outer"), for: active) {
+            for owner in owners {
+                var calls = 0
+                let result = RUMContextHandoff.withValue(handoffValue("fallback"), for: owner) {
+                    calls += 1
+                    XCTAssertNil(RUMContextHandoff.current(for: owner))
+                    XCTAssertEqual(RUMContextHandoff.current(for: active)?.sceneIdentifier, "outer")
+                    return 7
+                }
+                XCTAssertEqual(result, 7)
+                XCTAssertEqual(calls, 1)
+            }
+        }
+    }
+
+    func testHandoffExecutionScopeEnclosingTaskGroupPreservesOwnership() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let task = RUMContextHandoff.withValue(handoffValue("group"), for: owner) {
+            Task {
+                await withTaskGroup(of: String?.self) { group in
+                    for _ in 0..<2 {
+                        group.addTask {
+                            await Task.yield()
+                            return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                        }
+                    }
+                    var results: [String?] = []
+                    for await result in group { results.append(result) }
+                    return results
+                }
+            }
+        }
+        let results = await task.value
+        XCTAssertEqual(results, ["group", "group"])
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffExecutionScopeInsideTaskGroupChildPreservesOwnership() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let first = RUMContextHandoff.Owner()
+        let second = RUMContextHandoff.Owner()
+        let results = await withTaskGroup(of: String?.self) { group in
+            for (owner, peer, name) in [(first, second, "first"), (second, first, "second")] {
+                group.addTask {
+                    RUMContextHandoff.withValue(self.handoffValue(name), for: owner) {
+                        XCTAssertNil(RUMContextHandoff.current(for: peer))
+                        return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                    }
+                }
+            }
+            var results: [String?] = []
+            for await result in group { results.append(result) }
+            return results.compactMap { $0 }.sorted()
+        }
+        XCTAssertEqual(results, ["first", "second"])
+        XCTAssertNil(RUMContextHandoff.current(for: first))
+        XCTAssertNil(RUMContextHandoff.current(for: second))
+    }
+
+    func testHandoffExecutionScopePreservesSyncOperationOnSupportedAndUnsupportedSystems() {
+        let owner = RUMContextHandoff.Owner()
+        var calls = 0
+        let result = RUMContextHandoff.withValue(handoffValue("value"), for: owner) {
+            calls += 1
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, supportsHandoffScope ? "value" : nil)
+            return 23
+        }
+        XCTAssertEqual(result, 23)
+        XCTAssertEqual(calls, 1)
+        XCTAssertThrowsError(try RUMContextHandoff.withValue(handoffValue("value"), for: owner) {
+            calls += 1
+            throw HandoffScopeTestError.expected
+        }) { error in
+            XCTAssertEqual(error as? HandoffScopeTestError, .expected)
+        }
+        XCTAssertEqual(calls, 2)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffCallbackScopeCopiesSyncBindingIntoExternalTaskGroup() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let peer = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        var calls = 0
+        let actual = await withTaskGroup(of: String?.self) { group in
+            let result = RUMContextHandoff.withValue(handoffValue("outer"), for: owner) {
+                let result = RUMContextHandoff.withValue(handoffValue("callback"), for: owner) {
+                    calls += 1
+                    group.addTask {
+                        await gate.wait()
+                        XCTAssertNil(RUMContextHandoff.current(for: peer))
+                        return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                    }
+                    return false
+                }
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+                return result
+            }
+            XCTAssertFalse(result)
+            XCTAssertEqual(calls, 1)
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+            await gate.waitUntilWaiting()
+            await gate.release()
+            return await group.next()!
+        }
+        XCTAssertEqual(actual, "callback")
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffCallbackScopeCopiesAsyncBindingIntoExternalTaskGroup() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let peer = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        var calls = 0
+        let actual = await withTaskGroup(of: String?.self) { group in
+            let result = await RUMContextHandoff.withValue(handoffValue("outer"), for: owner) {
+                let result = await RUMContextHandoff.withValue(handoffValue("callback"), for: owner) {
+                    calls += 1
+                    group.addTask {
+                        await gate.wait()
+                        XCTAssertNil(RUMContextHandoff.current(for: peer))
+                        return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                    }
+                    await gate.waitUntilWaiting()
+                    return false
+                }
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+                return result
+            }
+            XCTAssertFalse(result)
+            XCTAssertEqual(calls, 1)
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+            await gate.release()
+            return await group.next()!
+        }
+        XCTAssertEqual(actual, "callback")
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffCallbackScopePreservesTasklessMainActorLifetimeAndInheritedTask() async {
+        guard #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        let value = handoffValue("callback")
+        let child: Task<String?, Never> = await withCheckedContinuation { continuation in
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    XCTAssertTrue(withUnsafeCurrentTask { $0 == nil })
+                    MainActor.assertIsolated()
+                    var calls = 0
+                    let (result, child) = RUMContextHandoff.withValue(value, for: owner) {
+                        MainActor.assertIsolated()
+                        calls += 1
+                        XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, self.supportsHandoffScope ? "callback" : nil)
+                        var reference: HandoffCallbackMainActorTestReference? = HandoffCallbackMainActorTestReference()
+                        weak var released = reference
+                        XCTAssertEqual(reference?.value, 23)
+                        reference = nil
+                        XCTAssertNil(released)
+                        let child = Task { @MainActor in
+                            await gate.wait()
+                            MainActor.assertIsolated()
+                            return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                        }
+                        return (false, child)
+                    }
+                    MainActor.assertIsolated()
+                    XCTAssertTrue(withUnsafeCurrentTask { $0 == nil })
+                    XCTAssertFalse(result)
+                    XCTAssertEqual(calls, 1)
+                    XCTAssertNil(RUMContextHandoff.current(for: owner))
+                    continuation.resume(returning: child)
+                }
+            }
+        }
+        await gate.waitUntilWaiting()
+        await gate.release()
+        let actual = await child.value
+        XCTAssertEqual(actual, supportsHandoffScope ? "callback" : nil)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    @MainActor
+    func testHandoffAsyncExecutionScopePreservesMainActorAndNonSendableResultAcrossSuspension() async {
+        guard #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        let original = HandoffAsyncScopeTestResult()
+        let release = Task {
+            await gate.waitUntilWaiting()
+            await gate.release()
+        }
+        MainActor.assertIsolated()
+        let result = await RUMContextHandoff.withValue(handoffValue("main"), for: owner) {
+            MainActor.assertIsolated()
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, self.supportsHandoffScope ? "main" : nil)
+            await gate.wait()
+            MainActor.assertIsolated()
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, self.supportsHandoffScope ? "main" : nil)
+            original.calls += 1
+            return original
+        }
+        await release.value
+        MainActor.assertIsolated()
+        XCTAssertTrue(result === original)
+        XCTAssertEqual(result.calls, 1)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffAsyncExecutionScopePreservesCustomActorAndNonSendableResultAcrossSuspension() async {
+        guard #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *), supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        let actor = HandoffAsyncScopeTestActor()
+        let task = Task { await actor.exercise(owner: owner, gate: gate) }
+        await gate.waitUntilWaiting()
+        await gate.release()
+        await task.value
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffAsyncExecutionScopeRestoresNestedBindingAfterThrow() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        var calls = 0
+        await RUMContextHandoff.withValue(handoffValue("outer"), for: owner) {
+            do {
+                try await RUMContextHandoff.withValue(handoffValue("inner"), for: owner) {
+                    calls += 1
+                    XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "inner")
+                    await Task.yield()
+                    XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "inner")
+                    throw HandoffScopeTestError.expected
+                }
+                XCTFail("Expected operation error")
+            } catch {
+                XCTAssertEqual(error as? HandoffScopeTestError, .expected)
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+            await Task.yield()
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+        }
+        XCTAssertEqual(calls, 1)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffAsyncExecutionScopeSeparatesConcurrentOwnersAcrossSuspension() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let first = RUMContextHandoff.Owner()
+        let second = RUMContextHandoff.Owner()
+        let gate = HandoffScopeTestGate()
+        let firstTask = Task {
+            await RUMContextHandoff.withValue(handoffValue("first"), for: first) {
+                await gate.arriveAndWait()
+                XCTAssertEqual(RUMContextHandoff.current(for: first)?.sceneIdentifier, "first")
+                XCTAssertNil(RUMContextHandoff.current(for: second))
+                return 1
+            }
+        }
+        let secondTask = Task {
+            await RUMContextHandoff.withValue(handoffValue("second"), for: second) {
+                await gate.arriveAndWait()
+                XCTAssertEqual(RUMContextHandoff.current(for: second)?.sceneIdentifier, "second")
+                XCTAssertNil(RUMContextHandoff.current(for: first))
+                return 2
+            }
+        }
+        let firstResult = await firstTask.value
+        let secondResult = await secondTask.value
+        XCTAssertEqual(firstResult, 1)
+        XCTAssertEqual(secondResult, 2)
+        XCTAssertNil(RUMContextHandoff.current(for: first))
+        XCTAssertNil(RUMContextHandoff.current(for: second))
+    }
+
+    func testHandoffAsyncExecutionScopeInvalidatesStoppedOwnerDuringSuspension() async throws {
+        guard supportsHandoffScope else {
+            return
+        }
+        let oldCore = makeHandoffCore()
+        let oldOwner = try oldCore.activateRUMContextHandoff()
+        let gate = HandoffAsyncScopeTestGate()
+        let captured = Task {
+            await RUMContextHandoff.withValue(handoffValue("old"), for: oldOwner) {
+                XCTAssertEqual(RUMContextHandoff.current(for: oldOwner)?.sceneIdentifier, "old")
+                await gate.wait()
+                return RUMContextHandoff.current(for: oldOwner)?.sceneIdentifier
+            }
+        }
+        await gate.waitUntilWaiting()
+        oldCore.stop()
+        let newCore = makeHandoffCore()
+        defer { newCore.stop() }
+        let newOwner = try newCore.activateRUMContextHandoff()
+        XCTAssertFalse(oldOwner.isValid)
+        XCTAssertTrue(newOwner.isValid)
+        XCTAssertFalse(oldOwner === newOwner)
+        let fresh = await RUMContextHandoff.withValue(handoffValue("new"), for: newOwner) {
+            await Task.yield()
+            XCTAssertNil(RUMContextHandoff.current(for: oldOwner))
+            return RUMContextHandoff.current(for: newOwner)?.sceneIdentifier
+        }
+        XCTAssertEqual(fresh, "new")
+        await gate.release()
+        let actual = await captured.value
+        XCTAssertNil(actual)
+        XCTAssertNil(RUMContextHandoff.current(for: newOwner))
+    }
+
+    @MainActor
+    func testHandoffAsyncExecutionScopePreservesActorAndOuterBindingInDirectFallback() async {
+        guard #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) else {
+            return
+        }
+        let active = RUMContextHandoff.Owner()
+        let invalid = RUMContextHandoff.Owner()
+        invalid.invalidate()
+        await RUMContextHandoff.withValue(handoffValue("outer"), for: active) {
+            for owner in [nil, invalid] as [RUMContextHandoff.Owner?] {
+                var calls = 0
+                let result = await RUMContextHandoff.withValue(handoffValue("fallback"), for: owner) {
+                    MainActor.assertIsolated()
+                    calls += 1
+                    await Task.yield()
+                    MainActor.assertIsolated()
+                    XCTAssertNil(RUMContextHandoff.current(for: owner))
+                    XCTAssertEqual(RUMContextHandoff.current(for: active)?.sceneIdentifier, self.supportsHandoffScope ? "outer" : nil)
+                    return 7
+                }
+                XCTAssertEqual(result, 7)
+                XCTAssertEqual(calls, 1)
+                do {
+                    try await RUMContextHandoff.withValue(handoffValue("fallback"), for: owner) {
+                        MainActor.assertIsolated()
+                        calls += 1
+                        await Task.yield()
+                        MainActor.assertIsolated()
+                        throw HandoffScopeTestError.expected
+                    }
+                    XCTFail("Expected fallback error")
+                } catch {
+                    XCTAssertEqual(error as? HandoffScopeTestError, .expected)
+                }
+                XCTAssertEqual(calls, 2)
+                MainActor.assertIsolated()
+                XCTAssertEqual(RUMContextHandoff.current(for: active)?.sceneIdentifier, self.supportsHandoffScope ? "outer" : nil)
+            }
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: active))
+    }
+
+    private func makeHandoffCore() -> DatadogCore {
+        DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .notGranted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+    }
+
+    func testHandoffActivationPublishesToExistingProviderWithoutLosingContext() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        provider.currentNetworkContext = NetworkContext(rumContext: .mockAny())
+        let context = provider.currentNetworkContext?.rumContext
+
+        let owner = try core.activateRUMContextHandoff()
+
+        XCTAssertTrue(provider.rumContextHandoffOwner === owner)
+        XCTAssertTrue(RUMContextHandoff.owner(in: core.scope(for: HandoffFeature.self)) === owner)
+        XCTAssertEqual(provider.currentNetworkContext?.rumContext?.viewID, context?.viewID)
+        XCTAssertTrue(provider.receive(message: .context(.mockAny()), from: core))
+        XCTAssertTrue(provider.rumContextHandoffOwner === owner)
+    }
+
+    func testProviderRegisteredAfterActivationReceivesSameOwner() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let provider = NetworkContextCoreProvider()
+        try core.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        XCTAssertTrue(provider.rumContextHandoffOwner === owner)
+    }
+
+    func testDuplicateActivationAndForeignRollbackPreserveExistingLifetime() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let foreign = RUMContextHandoff.Owner()
+        XCTAssertThrowsError(try core.activateRUMContextHandoff())
+        core.deactivateRUMContextHandoff(owner: foreign)
+        XCTAssertTrue(core.rumContextHandoffOwner === owner)
+        XCTAssertTrue(owner.isValid)
+        XCTAssertTrue(foreign.isValid)
+    }
+
+    func testDelayedActivePublicationCannotReplaceNewLifetime() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        var replacement: RUMContextHandoff.Owner?
+        receiver.beforePublication = { owner, active in
+            guard active else {
+                return
+            }
+            receiver.beforePublication = nil
+            // Reentrant Core mutation proves receiver callbacks run outside its lock.
+            core.deactivateRUMContextHandoff(owner: owner)
+            replacement = try? core.activateRUMContextHandoff()
+        }
+        let old = try core.activateRUMContextHandoff()
+        XCTAssertFalse(old.isValid)
+        XCTAssertNotNil(replacement)
+        XCTAssertTrue(provider.rumContextHandoffOwner === replacement)
+        provider.receiveRUMContextHandoff(owner: old, active: false)
+        XCTAssertTrue(provider.rumContextHandoffOwner === replacement)
+    }
+
+    func testRegistrationAndContextUpdateDuringPausedPublicationKeepOwner() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let firstProvider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: firstProvider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        let entered = expectation(description: "publication entered")
+        let finished = expectation(description: "activation completed")
+        let release = DispatchSemaphore(value: 0)
+        receiver.beforePublication = { _, active in
+            if active {
+                entered.fulfill()
+                XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+            }
+        }
+        DispatchQueue.global().async {
+            defer { finished.fulfill() }
+            do {
+                _ = try core.activateRUMContextHandoff()
+            } catch {
+                XCTFail("Activation unexpectedly failed")
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        let owner = try XCTUnwrap(core.rumContextHandoffOwner)
+        let secondProvider = NetworkContextCoreProvider()
+        try core.register(feature: OtherHandoffFeature(receiver: HandoffReceiver(provider: secondProvider)))
+        firstProvider.currentNetworkContext = NetworkContext(rumContext: .mockAny())
+        let viewID = firstProvider.currentNetworkContext?.rumContext?.viewID
+        release.signal()
+        wait(for: [finished], timeout: 5)
+        XCTAssertTrue(firstProvider.rumContextHandoffOwner === owner)
+        XCTAssertTrue(secondProvider.rumContextHandoffOwner === owner)
+        XCTAssertEqual(firstProvider.currentNetworkContext?.rumContext?.viewID, viewID)
+    }
+
+    func testStopInvalidatesOwnerAndRejectsFurtherActivation() throws {
+        let core = makeHandoffCore()
+        let provider = NetworkContextCoreProvider()
+        try core.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        let owner = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: HandoffFeature.self)
+        core.stop()
+        XCTAssertFalse(owner.isValid)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+        XCTAssertNil(RUMContextHandoff.owner(in: scope))
+        XCTAssertThrowsError(try core.activateRUMContextHandoff())
+        provider.receiveRUMContextHandoff(owner: owner, active: true)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+    }
+
+    func testRollbackRemovesOnlyIssuedOwnerAndAllowsFreshActivation() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        try core.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        let old = try core.activateRUMContextHandoff()
+        core.deactivateRUMContextHandoff(owner: old)
+        XCTAssertFalse(old.isValid)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+        let current = try core.activateRUMContextHandoff()
+        core.deactivateRUMContextHandoff(owner: old)
+        XCTAssertTrue(provider.rumContextHandoffOwner === current)
+        XCTAssertTrue(current.isValid)
+    }
+
+    func testDefaultCoreRegistrationDoesNotActivateHandoff() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        XCTAssertNil(core.rumContextHandoffOwner)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+        XCTAssertEqual(receiver.publications, 0)
+    }
+
+    func testCoreDeallocationInvalidatesExternallyRetainedOwner() throws {
+        var core: DatadogCore? = makeHandoffCore()
+        weak var weakCore = core
+        let owner = try XCTUnwrap(core).activateRUMContextHandoff()
+        core?.flush()
+        core = nil
+        XCTAssertNil(weakCore)
+        XCTAssertFalse(owner.isValid)
+    }
+
+    func testPausedOldPublicationCannotOverwriteReinitializedCoreOwner() throws {
+        let oldCore = makeHandoffCore()
+        let newCore = makeHandoffCore()
+        defer { oldCore.stop(); newCore.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try oldCore.register(feature: HandoffFeature(receiver: receiver))
+        let entered = expectation(description: "old publication entered")
+        let finished = expectation(description: "old activation returned")
+        let release = DispatchSemaphore(value: 0)
+        receiver.beforePublication = { _, active in
+            if active {
+                entered.fulfill()
+                XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+            }
+        }
+        DispatchQueue.global().async {
+            defer { finished.fulfill() }
+            do {
+                _ = try oldCore.activateRUMContextHandoff()
+            } catch {
+                XCTFail("Activation unexpectedly failed")
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        let old = try XCTUnwrap(oldCore.rumContextHandoffOwner)
+        oldCore.stop()
+        try newCore.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        let fresh = try newCore.activateRUMContextHandoff()
+        release.signal()
+        wait(for: [finished], timeout: 5)
+        XCTAssertFalse(old.isValid)
+        XCTAssertTrue(fresh.isValid)
+        XCTAssertTrue(provider.rumContextHandoffOwner === fresh)
+    }
+
+    func testRegistrationAfterStopRejectsFeatureAndRemovesOnlyCreatedStore() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let entered = expectation(description: "registration prepared its store")
+        let finished = expectation(description: "registration returned")
+        let release = DispatchSemaphore(value: 0)
+        let feature = PausedHandoffRemoteFeature {
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        DispatchQueue.global().async {
+            defer { finished.fulfill() }
+            do {
+                try core.registerRUMContextHandoff(feature: feature, owner: owner)
+                XCTFail("Registration unexpectedly succeeded after stop")
+            } catch {
+                // Rejection after the terminal stop is required.
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        core.stop()
+        release.signal()
+        wait(for: [finished], timeout: 5)
+        XCTAssertFalse(owner.isValid)
+        XCTAssertNil(core.get(feature: PausedHandoffRemoteFeature.self))
+        XCTAssertNil(core.stores[PausedHandoffRemoteFeature.name])
+        core.flush()
+    }
+
+    func testStoppedOwnerSkipsQueuedConnectionAndInitialContext() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let activeReceiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        try core.registerRUMContextHandoff(feature: HandoffFeature(receiver: activeReceiver), owner: owner)
+        core.contextProvider.flush()
+        core.bus.flush()
+        XCTAssertGreaterThan(activeReceiver.messages, 0)
+
+        let entered = expectation(description: "bus queue held before registration")
+        let release = DispatchSemaphore(value: 0)
+        core.bus.queue.async {
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        wait(for: [entered], timeout: 5)
+        let stoppedReceiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        // The registry commit succeeds while connect and initial context await the bus.
+        try core.registerRUMContextHandoff(feature: OtherHandoffFeature(receiver: stoppedReceiver), owner: owner)
+        XCTAssertNotNil(core.get(feature: OtherHandoffFeature.self))
+        core.contextProvider.flush()
+        // This probe precedes stop's removal, so an unguarded connection is observable.
+        core.send(message: .context(.mockAny()), else: {})
+        core.stop()
+        XCTAssertFalse(owner.isValid)
+        release.signal()
+        core.bus.flush()
+        XCTAssertEqual(stoppedReceiver.messages, 0)
+        XCTAssertNil(stoppedReceiver.provider.rumContextHandoffOwner)
+    }
+
+    func testForeignAndExpiredRegistrationPreserveAcceptedStoreAndFeature() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.registerRUMContextHandoff(feature: FeatureMock(), owner: owner)
+        let acceptedStore = try XCTUnwrap(core.stores[FeatureMock.name])
+        let acceptedUploader = try XCTUnwrap(acceptedStore.upload.uploader as? DataUploadWorker)
+        let foreign = RUMContextHandoff.Owner()
+        let expired = RUMContextHandoff.Owner()
+        expired.invalidate()
+        for rejectedOwner in [foreign, expired] {
+            XCTAssertThrowsError(try core.registerRUMContextHandoff(feature: FeatureMock(), owner: rejectedOwner))
+            let currentStore = try XCTUnwrap(core.stores[FeatureMock.name])
+            XCTAssertTrue(currentStore.storage.authorizedFilesOrchestrator === acceptedStore.storage.authorizedFilesOrchestrator)
+            XCTAssertTrue(currentStore.storage.unauthorizedFilesOrchestrator === acceptedStore.storage.unauthorizedFilesOrchestrator)
+            XCTAssertTrue(try XCTUnwrap(currentStore.upload.uploader as? DataUploadWorker) === acceptedUploader)
+            XCTAssertNotNil(core.get(feature: FeatureMock.self))
+            XCTAssertTrue(core.rumContextHandoffOwner === owner)
+        }
+        let writeCompleted = expectation(description: "accepted scope remains usable")
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "retained-owner"))
+            writeCompleted.fulfill()
+        }
+        wait(for: [writeCompleted], timeout: 5)
+        core.flush()
+    }
+
+    func testReplacingFeatureReleasesItAfterRegistryUnlock() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var released = false
+        var feature: ReentrantDeinitFeature? = ReentrantDeinitFeature {
+            // A registry lookup here would deadlock if destruction held its write lock.
+            XCTAssertNotNil(core.get(feature: ReentrantDeinitFeature.self))
+            released = true
+        }
+        try core.register(feature: XCTUnwrap(feature))
+        feature = nil
+        try core.register(feature: ReentrantDeinitFeature {})
+        XCTAssertTrue(released)
     }
 
     func testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue() throws {
@@ -773,3 +1741,957 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(userAfter.email, "user-email")
     }
 }
+
+private struct HandoffFeature: DatadogFeature {
+    static let name = "handoff-test"
+    let receiver: HandoffReceiver
+    var messageReceiver: FeatureMessageReceiver { receiver }
+}
+
+private struct OtherHandoffFeature: DatadogFeature {
+    static let name = "other-handoff-test"
+    let receiver: HandoffReceiver
+    var messageReceiver: FeatureMessageReceiver { receiver }
+}
+
+private final class HandoffReceiver: FeatureMessageReceiver, RUMContextHandoffReceiving {
+    let provider: NetworkContextCoreProvider
+    var beforePublication: ((RUMContextHandoff.Owner, Bool) -> Void)?
+    private(set) var publications = 0
+    private(set) var messages = 0
+
+    init(provider: NetworkContextCoreProvider) { self.provider = provider }
+
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+        beforePublication?(owner, active)
+        publications += 1
+        provider.receiveRUMContextHandoff(owner: owner, active: active)
+    }
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        messages += 1
+        return false
+    }
+}
+
+private struct PausedHandoffRemoteFeature: DatadogRemoteFeature {
+    static let name = "paused-handoff-registration"
+    let beforeReceiverRead: () -> Void
+    var requestBuilder: FeatureRequestBuilder { FeatureRequestBuilderMock() }
+    var performanceOverride: PerformancePresetOverride? { nil }
+    var messageReceiver: FeatureMessageReceiver {
+        beforeReceiverRead()
+        return NOPFeatureMessageReceiver()
+    }
+}
+
+private final class ReentrantDeinitFeature: DatadogFeature {
+    static let name = "reentrant-deinit-test"
+    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    let onDeinit: () -> Void
+    init(onDeinit: @escaping () -> Void) { self.onDeinit = onDeinit }
+    deinit { onDeinit() }
+}
+
+private enum HandoffScopeTestError: Error, Equatable {
+    case expected
+}
+
+private actor HandoffScopeTestGate {
+    private var isReleased = false
+    private var arrivals = 0
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        guard !isReleased else {
+            return
+        }
+        await withCheckedContinuation { waiters.append($0) }
+    }
+
+    func arriveAndWait() async {
+        arrivals += 1
+        if arrivals == 2 {
+            release()
+        } else {
+            await wait()
+        }
+    }
+
+    func release() {
+        isReleased = true
+        let pending = waiters
+        waiters.removeAll()
+        for waiter in pending { waiter.resume() }
+    }
+}
+
+private final class HandoffAsyncScopeTestResult {
+    var calls = 0
+}
+
+private actor HandoffAsyncScopeTestGate {
+    private var isWaiting = false
+    private var isReleased = false
+    private var waiter: CheckedContinuation<Void, Never>?
+    private var observers: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        precondition(!isWaiting)
+        isWaiting = true
+        let pending = observers
+        observers.removeAll()
+        for observer in pending { observer.resume() }
+        guard !isReleased else {
+            return
+        }
+        await withCheckedContinuation { waiter = $0 }
+    }
+
+    func waitUntilWaiting() async {
+        guard !isWaiting else {
+            return
+        }
+        await withCheckedContinuation { observers.append($0) }
+    }
+
+    func release() {
+        isReleased = true
+        waiter?.resume()
+        waiter = nil
+    }
+}
+
+@available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *)
+private actor HandoffAsyncScopeTestActor {
+    func exercise(owner: RUMContextHandoff.Owner, gate: HandoffAsyncScopeTestGate) async {
+        let outer = RUMContextHandoff.CurrentValue(
+            rumContext: nil,
+            sceneIdentifier: "outer",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        let inner = RUMContextHandoff.CurrentValue(
+            rumContext: nil,
+            sceneIdentifier: "custom",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        let original = HandoffAsyncScopeTestResult()
+        assertIsolated()
+        await RUMContextHandoff.withValue(outer, for: owner) {
+            let result = await RUMContextHandoff.withValue(inner, for: owner) {
+                self.assertIsolated()
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "custom")
+                await gate.wait()
+                self.assertIsolated()
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "custom")
+                original.calls += 1
+                return original
+            }
+            self.assertIsolated()
+            XCTAssertTrue(result === original)
+            XCTAssertEqual(result.calls, 1)
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+        }
+        assertIsolated()
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+}
+@MainActor
+private final class HandoffCallbackMainActorTestReference {
+    let value = 23
+}
+
+#if os(iOS)
+private final class AcceptedReceiptActionCapture {
+    @ReadWriteLock
+    var id: String?
+}
+
+extension DatadogCoreTests {
+    @MainActor
+    func testBuiltInSamplingKeepsAnInvalidatedOwnerAuthoritative() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Consumer capture requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var configuration = RUM.Configuration(applicationID: "sampling-capture", trackAnonymousUser: false)
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: configuration, in: core)
+        core.contextProvider.flush()
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let sampler = try XCTUnwrap(core.sessionSampler as? SessionSamplerWithRUMContext)
+        let session = try XCTUnwrap(UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171"))
+        feature.sessionSamplingStore.setSession(id: session.uuidString.lowercased(), sampler: DeterministicSampler(uuid: session, samplingRate: 10))
+        try RUMContextHandoff.withValue(handoffValue("original-view"), for: owner) {
+            core.deactivateRUMContextHandoff(owner: owner)
+            let sampled = sampler.decisionWithRUMContext(for: .featureRate, rate: 20)
+            let captured = try XCTUnwrap(sampled.capture)
+            XCTAssertTrue(captured.owner === owner)
+            XCTAssertFalse(captured.owner.isValid)
+            XCTAssertNil(captured.value.rumContext)
+            XCTAssertNil(captured.value.resolvedRUMContext(for: owner))
+            XCTAssertEqual(sampled.decision?.sessionID, session.uuidString.lowercased())
+            XCTAssertEqual(sampled.decision?.isSampled, true)
+        }
+    }
+
+    @MainActor
+    func testBuiltInSamplingPreservesValidUnboundAndNilOwnership() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Consumer capture requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var configuration = RUM.Configuration(applicationID: "sampling-capture", trackAnonymousUser: false)
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: configuration, in: core)
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let sampler = try XCTUnwrap(core.sessionSampler as? SessionSamplerWithRUMContext)
+        XCTAssertNil(sampler.decisionWithRUMContext(for: .featureRate, rate: 100).capture)
+        let empty = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "original-scene", hasPendingUserAction: false, excludedUserActionID: nil)
+        try RUMContextHandoff.withValue(empty, for: owner) {
+            let captured = try XCTUnwrap(sampler.decisionWithRUMContext(for: .featureRate, rate: 100).capture)
+            XCTAssertTrue(captured.owner === owner)
+            XCTAssertNil(captured.value.rumContext)
+            XCTAssertEqual(captured.value.sceneIdentifier, "original-scene")
+        }
+    }
+
+    @MainActor
+    func testQueuedActionReceiptKeepsItsOriginalViewAfterAnotherSceneBecomesRepresentative() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let date = Date()
+        let initial = DatadogContext.mockWith(
+            sdkInitDate: date,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+            applicationStateHistory: .mockWith(initialState: .active, date: date)
+        )
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: DatadogContextProvider(context: initial),
+            applicationVersion: initial.version,
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer { core.flushAndTearDown() }
+        var config = RUM.Configuration(applicationID: "receipt-application", trackAnonymousUser: false)
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        config.sessionSampleRate = 100
+        config.dateProvider = RelativeDateProvider(startingFrom: date, advancingBySeconds: 0)
+        try RUM.enableOrThrow(with: config, in: core)
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let monitor = feature.monitor
+        XCTAssertTrue(monitor.isMultiSceneTrackingEnabled)
+        let owner = try XCTUnwrap(monitor.rumContextHandoffOwner)
+        let first = RUMSceneIdentifier(rawValue: "receipt-first-scene")
+        let second = RUMSceneIdentifier(rawValue: "receipt-second-scene")
+        func start(_ scene: RUMSceneIdentifier, name: String, at time: Date) {
+            monitor.process(command: RUMStartViewCommand(
+                time: time,
+                identity: ViewIdentifier(name),
+                name: name,
+                path: name,
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .manual,
+                target: .scene(scene)
+            ))
+        }
+        start(first, name: "first", at: date.addingTimeInterval(1))
+        core.flush()
+        let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(first)))
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: original)
+        let submitted = RUMContextHandoff.CurrentValue(
+            rumContext: original,
+            sceneIdentifier: first.rawValue,
+            hasPendingUserAction: true,
+            excludedUserActionID: original.userActionID,
+            actionReceipt: receipt
+        )
+        var action = RUMAddUserActionCommand(
+            time: date.addingTimeInterval(2),
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .tap,
+            name: "original-action"
+        )
+        action.target = .scene(first)
+        action.actionReceipt = receipt
+        let retained = try RUMContextHandoff.withValue(submitted, for: owner) {
+            let retained = try XCTUnwrap(RUMContextHandoff.current(for: owner))
+            monitor.process(command: action)
+            return retained
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+        let acceptedAction = AcceptedReceiptActionCapture()
+        core.scope(for: RUMFeature.self).context { _ in
+            let firstView = monitor.applicationScope.activeSession?.viewScopes.first {
+                $0.isActiveView && $0.sceneIdentifier == first
+            }
+            acceptedAction.id = firstView?.userActionScope?.actionUUID.toRUMDataFormat
+            XCTAssertNotNil(acceptedAction.id)
+            XCTAssertEqual(firstView?.userActionScope?.name, "original-action")
+        }
+        start(second, name: "second", at: date.addingTimeInterval(3))
+        let observed = XCTestExpectation(description: "actual Core delivery after queued action and navigation")
+        core.scope(for: RUMFeature.self).context { context in
+            let delivered = context.additionalContext(ofType: RUMCoreContext.self)
+            let firstView = monitor.applicationScope.activeSession?.viewScopes.first {
+                $0.isActiveView && $0.sceneIdentifier == first
+            }
+            let accepted = acceptedAction.id
+            XCTAssertNotNil(accepted)
+            XCTAssertNil(firstView?.userActionScope, "Receipt survives the original action's expiration")
+            XCTAssertNotEqual(delivered?.viewID, original.viewID)
+            XCTAssertEqual(delivered?.viewID, monitor.rumContextSnapshot(for: .scene(second))?.viewID)
+            let projected = retained.resolvedRUMContext(for: owner)
+            XCTAssertEqual(projected?.viewID, original.viewID)
+            XCTAssertEqual(projected?.sessionID, original.sessionID)
+            XCTAssertEqual(projected?.userActionID, accepted)
+            XCTAssertEqual(projected?.viewPath, original.viewPath)
+            XCTAssertEqual(context.service, initial.service)
+            observed.fulfill()
+        }
+        wait(for: [observed], timeout: 5)
+        core.flush()
+    }
+}
+#endif
+
+#if os(iOS)
+extension DatadogCoreTests {
+    func testWriteCaptureUsesPublishedStoreOwnerBeforeFeatureRegistryCommit() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: PausedHandoffRemoteFeature.self)
+        let delivered = expectation(description: "write queued before feature registry commit")
+        var writes = 0
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        core.contextProvider.flush()
+        let feature = PausedHandoffRemoteFeature {
+            XCTAssertNotNil(core.stores[PausedHandoffRemoteFeature.name])
+            XCTAssertNil(core.get(feature: PausedHandoffRemoteFeature.self))
+            scope.eventWriteContextWithRUMCapture { context, _, capture in
+                writes += 1
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertEqual(capture?.value.resolvedRUMContext(for: owner)?.viewID, "caller-view")
+                delivered.fulfill()
+            }
+        }
+        try RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            try core.register(feature: feature)
+        }
+        wait(for: [delivered], timeout: 5)
+        XCTAssertEqual(writes, 1)
+        XCTAssertNotNil(core.get(feature: PausedHandoffRemoteFeature.self))
+    }
+
+    func testWriteCaptureAfterActivationUsesExistingStoreWithoutChangingDeliveryContext() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        try core.register(feature: FeatureMock())
+        let scope = core.scope(for: FeatureMock.self)
+        let owner = try core.activateRUMContextHandoff()
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        let delivered = expectation(description: "activated existing store")
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            scope.eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertEqual(capture?.value.resolvedRUMContext(for: owner)?.viewID, "caller-view")
+                delivered.fulfill()
+            }
+        }
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCapturePreservesAuthoritativeNilInsteadOfDeliveryView() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.register(feature: FeatureMock())
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        let value = RUMContextHandoff.CurrentValue(
+            rumContext: nil, sceneIdentifier: nil, hasPendingUserAction: false, excludedUserActionID: nil
+        )
+        let delivered = expectation(description: "authoritative empty caller")
+        RUMContextHandoff.withValue(value, for: owner) {
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertNotNil(capture)
+                XCTAssertNil(capture?.value.resolvedRUMContext(for: owner))
+                delivered.fulfill()
+            }
+        }
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCaptureInvalidatedInsideBindingCannotSelectLegacyDeliveryView() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.register(feature: FeatureMock())
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        let delivered = expectation(description: "invalid published owner is authoritative")
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            owner.invalidate()
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertNotNil(capture)
+                XCTAssertNil(capture?.value.rumContext)
+                XCTAssertNil(capture?.value.resolvedRUMContext(for: owner))
+                delivered.fulfill()
+            }
+        }
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCaptureQueuedBeforeOwnerReplacementCannotAdoptReplacement() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.register(feature: FeatureMock())
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        core.contextProvider.flush()
+        let entered = expectation(description: "actual context queue held")
+        let release = DispatchSemaphore(value: 0)
+        core.contextProvider.read { _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        wait(for: [entered], timeout: 5)
+        let delivered = expectation(description: "queued capture retains invalid original owner")
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertFalse(owner.isValid)
+                XCTAssertEqual(capture?.value.rumContext?.viewID, "caller-view")
+                XCTAssertNil(capture?.value.resolvedRUMContext(for: owner))
+                delivered.fulfill()
+            }
+        }
+        core.deactivateRUMContextHandoff(owner: owner)
+        let replacement = try core.activateRUMContextHandoff()
+        XCTAssertFalse(owner === replacement)
+        XCTAssertTrue(replacement.isValid)
+        release.signal()
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCaptureOffAndMissingBindingKeepLegacyContextExactlyOnce() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        for activated in [false, true] {
+            let core = makeHandoffCore()
+            try core.register(feature: FeatureMock())
+            if activated {
+                _ = try core.activateRUMContextHandoff()
+            }
+            core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+            let delivered = expectation(description: "legacy context without matching binding")
+            var calls = 0
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                calls += 1
+                XCTAssertNil(capture)
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                delivered.fulfill()
+            }
+            wait(for: [delivered], timeout: 5)
+            XCTAssertEqual(calls, 1)
+            core.stop()
+        }
+    }
+
+    func testWriteCaptureKeepsOriginalConsentAndBypassWriterSelection() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        for bypassConsent in [false, true] {
+            let core = makeHandoffCore()
+            let owner = try core.activateRUMContextHandoff()
+            let requests = FeatureRequestBuilderSpy()
+            try core.register(feature: FeatureMock(requestBuilder: requests))
+            let scope = try XCTUnwrap(core.scope(for: FeatureMock.self) as? RUMContextHandoffEventWriting)
+            for (consent, name) in [(TrackingConsent.notGranted, "not-granted"), (.granted, "granted"), (.pending, "pending")] {
+                core.set(trackingConsent: consent)
+                RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+                    scope.eventWriteContextWithRUMCapture(bypassConsent: bypassConsent) { context, writer, capture in
+                        XCTAssertEqual(context.trackingConsent, consent)
+                        XCTAssertEqual(capture?.value.resolvedRUMContext(for: owner)?.viewID, "caller-view")
+                        writer.write(value: FeatureMock.Event(event: name))
+                    }
+                }
+            }
+            core.flushAndTearDown()
+            let actual = requests.requestParameters.flatMap { $0.events }.map { $0.data.utf8String }
+            let expected = bypassConsent
+                ? [#"{"event":"not-granted"}"#, #"{"event":"granted"}"#, #"{"event":"pending"}"#]
+                : [#"{"event":"granted"}"#]
+            XCTAssertEqual(actual, expected)
+        }
+    }
+}
+#endif
+
+#if os(iOS)
+@available(iOS 27.0, *)
+extension DatadogCoreTests {
+    private func assertNoLegacyFlagEvaluations(
+        in receiver: FeatureMessageReceiverMock, file: StaticString = #file, line: UInt = #line
+    ) {
+        XCTAssertFalse(
+            receiver.messages.contains { message in
+                if case .payload(is RUMFlagEvaluationMessage) = message {
+                    return true
+                }
+                return false
+            },
+            "Captured evaluation must not also dispatch an untargeted legacy payload",
+            file: file,
+            line: line
+        )
+    }
+
+    func testBuiltInFlagScopeKeepsLegacyPayloadWhenOffOrUnbound() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let scope = core.scope(for: FeatureMock.self)
+        XCTAssertTrue(scope is RUMFlagEvaluationSending)
+        scope.sendFlagEvaluation(.init(flagKey: "off", value: false))
+        _ = try core.activateRUMContextHandoff()
+        scope.sendFlagEvaluation(.init(flagKey: "unbound", value: true))
+        core.bus.flush()
+        let evaluations = receiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+            guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.map(\.flagKey), ["off", "unbound"])
+        XCTAssertEqual(try XCTUnwrap(evaluations.first { $0.flagKey == "off" }).value as? Bool, false)
+        XCTAssertEqual(try XCTUnwrap(evaluations.first { $0.flagKey == "unbound" }).value as? Bool, true)
+        XCTAssertFalse(receiver.messages.contains { message in
+            if case .payload(is RUMCapturedFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        })
+    }
+
+    func testBuiltInFlagScopeCapturesBeforeQueuedDeliveryAndOwnerReplacement() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let original = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: FeatureMock.self)
+        core.bus.flush()
+        let entered = expectation(description: "message bus held before evaluation")
+        let release = DispatchSemaphore(value: 0)
+        core.bus.queue.async {
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        defer { release.signal() }
+        wait(for: [entered], timeout: 2)
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: original) {
+            scope.sendFlagEvaluation(.init(flagKey: "captured", value: "variant"))
+        }
+        core.deactivateRUMContextHandoff(owner: original)
+        let replacement = try core.activateRUMContextHandoff()
+        release.signal()
+        core.bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 1)
+        let evaluation = try XCTUnwrap(evaluations.first)
+        let capture = try XCTUnwrap(evaluation.capture)
+        XCTAssertTrue(capture.owner === original)
+        XCTAssertFalse(capture.owner.isValid)
+        XCTAssertFalse(capture.owner === replacement)
+        XCTAssertEqual(capture.value.rumContext?.viewID, "caller-view")
+        XCTAssertEqual(evaluation.evaluation.flagKey, "captured")
+        XCTAssertEqual(evaluation.evaluation.value as? String, "variant")
+    }
+
+    func testBuiltInFlagScopeDoesNotTurnNilOrInvalidOwnershipIntoLegacyPayload() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let owner = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: FeatureMock.self)
+        let nilContext = RUMContextHandoff.CurrentValue(
+            rumContext: nil, sceneIdentifier: "a", hasPendingUserAction: false, excludedUserActionID: nil
+        )
+        RUMContextHandoff.withValue(nilContext, for: owner) {
+            scope.sendFlagEvaluation(.init(flagKey: "nil-context", value: true))
+        }
+        // A stale true publication must remain an authoritative unavailable capture.
+        owner.invalidate()
+        scope.sendFlagEvaluation(.init(flagKey: "invalid-owner", value: true))
+        core.bus.flush()
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.map { $0.evaluation.flagKey }, ["nil-context", "invalid-owner"])
+        for evaluation in evaluations {
+            let capture = try XCTUnwrap(evaluation.capture)
+            XCTAssertTrue(capture.owner === owner)
+            XCTAssertNil(capture.value.rumContext)
+        }
+        XCTAssertFalse(receiver.messages.contains { message in
+            if case .payload(is RUMFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        })
+    }
+
+    func testStaleFlagPublicationsCannotReplaceOrDisableCurrentOwner() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let original = try core.activateRUMContextHandoff()
+        core.deactivateRUMContextHandoff(owner: original)
+        let current = try core.activateRUMContextHandoff()
+        core.bus.publishFlagEvaluationOwner(original, active: true)
+        core.bus.publishFlagEvaluationOwner(original, active: false)
+        RUMContextHandoff.withValue(handoffValue("current"), for: current) {
+            core.scope(for: FeatureMock.self).sendFlagEvaluation(.init(flagKey: "current", value: true))
+        }
+        core.bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 1)
+        let evaluation = try XCTUnwrap(evaluations.first)
+        XCTAssertTrue(evaluation.capture?.owner === current)
+        XCTAssertEqual(evaluation.capture?.value.rumContext?.viewID, "current")
+        XCTAssertTrue(current.isValid)
+        XCTAssertFalse(original.isValid)
+    }
+
+    func testFlagCaptureIsPublishedBeforeReentrantHandoffReceiverCallbacks() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let messages = FeatureMessageReceiverMock()
+        core.bus.connect(messages, forKey: "flag-test")
+        let receiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        var replacement: RUMContextHandoff.Owner?
+        receiver.beforePublication = { owner, active in
+            guard active else {
+                return
+            }
+            receiver.beforePublication = nil
+            RUMContextHandoff.withValue(self.handoffValue("before-replacement"), for: owner) {
+                core.scope(for: HandoffFeature.self).sendFlagEvaluation(.init(flagKey: "reentrant", value: true))
+            }
+            core.deactivateRUMContextHandoff(owner: owner)
+            replacement = try? core.activateRUMContextHandoff()
+        }
+        let original = try core.activateRUMContextHandoff()
+        core.bus.flush()
+        assertNoLegacyFlagEvaluations(in: messages)
+        let evaluations = messages.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 1)
+        let evaluation = try XCTUnwrap(evaluations.first)
+        XCTAssertTrue(evaluation.capture?.owner === original)
+        XCTAssertFalse(original.isValid)
+        XCTAssertTrue(try XCTUnwrap(replacement).isValid)
+        XCTAssertEqual(evaluation.capture?.value.rumContext?.viewID, "before-replacement")
+    }
+
+    func testFlagScopeCannotCaptureOwnerFromAnotherCore() throws {
+        let first = makeHandoffCore()
+        let second = makeHandoffCore()
+        defer { first.stop(); second.stop() }
+        let firstReceiver = FeatureMessageReceiverMock()
+        let secondReceiver = FeatureMessageReceiverMock()
+        first.bus.connect(firstReceiver, forKey: "flag-test")
+        second.bus.connect(secondReceiver, forKey: "flag-test")
+        let owner = try first.activateRUMContextHandoff()
+        RUMContextHandoff.withValue(handoffValue("first"), for: owner) {
+            first.scope(for: FeatureMock.self).sendFlagEvaluation(.init(flagKey: "first", value: true))
+            second.scope(for: FeatureMock.self).sendFlagEvaluation(.init(flagKey: "second", value: false))
+        }
+        first.bus.flush()
+        second.bus.flush()
+        assertNoLegacyFlagEvaluations(in: firstReceiver)
+        XCTAssertEqual(firstReceiver.messages.filter { message in
+            if case .payload(is RUMCapturedFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        }.count, 1)
+        let secondEvaluation = try XCTUnwrap(secondReceiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+            guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }.first)
+        XCTAssertEqual(secondEvaluation.flagKey, "second")
+        XCTAssertEqual(secondEvaluation.value as? Bool, false)
+        XCTAssertFalse(secondReceiver.messages.contains { message in
+            if case .payload(is RUMCapturedFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        })
+    }
+
+    func testRetainedFlagScopeDoesNotKeepCoreOrItsActivationAlive() throws {
+        var core: DatadogCore? = makeHandoffCore()
+        weak var weakCore = core
+        let owner = try XCTUnwrap(core).activateRUMContextHandoff()
+        let scope = try XCTUnwrap(core).scope(for: FeatureMock.self)
+        core?.flush()
+        core = nil
+        XCTAssertNil(weakCore)
+        XCTAssertFalse(owner.isValid)
+        // Sending through a surviving weak scope remains safe after Core deallocation.
+        scope.sendFlagEvaluation(.init(flagKey: "after-deinit", value: true))
+    }
+
+    private func runConcurrentFlagOperations(_ operations: [() -> Void]) {
+        let entered = expectation(description: "all Flags workers entered")
+        entered.expectedFulfillmentCount = operations.count
+        let finished = expectation(description: "all Flags workers completed")
+        finished.expectedFulfillmentCount = operations.count
+        let release = DispatchSemaphore(value: 0)
+        let threads = operations.map { operation in
+            Thread {
+                defer { finished.fulfill() }
+                entered.fulfill()
+                guard release.wait(timeout: .now() + 10) == .success else {
+                    XCTFail("Flags worker was not released")
+                    return
+                }
+                operation()
+            }
+        }
+        threads.forEach { $0.start() }
+        wait(for: [entered], timeout: 10)
+        threads.forEach { _ in release.signal() }
+        wait(for: [finished], timeout: 10)
+    }
+
+    func testConcurrentFirstFlagPublicationsKeepOneAuthoritativeOwner() throws {
+        for round in 0..<32 {
+            let core = PassthroughCoreMock()
+            let bus = MessageBus.make(configurationDispatchTime: .seconds(0))
+            let receiver = FeatureMessageReceiverMock()
+            bus.connect(core: core)
+            bus.connect(receiver, forKey: "flag-test")
+            bus.flush()
+            let first = RUMContextHandoff.Owner()
+            let second = RUMContextHandoff.Owner()
+            runConcurrentFlagOperations([
+                { bus.publishFlagEvaluationOwner(first, active: true) },
+                { bus.publishFlagEvaluationOwner(second, active: true) }
+            ])
+            for (owner, name) in [(first, "first"), (second, "second")] {
+                RUMContextHandoff.withValue(handoffValue(name), for: owner) {
+                    bus.sendFlagEvaluation(.init(flagKey: name, value: round))
+                }
+            }
+            bus.flush()
+            let captured = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+                guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            let legacy = receiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+                guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            XCTAssertEqual(captured.count, 1)
+            XCTAssertEqual(legacy.count, 1)
+            let evaluation = try XCTUnwrap(captured.first)
+            let capture = try XCTUnwrap(evaluation.capture)
+            let winner = capture.owner
+            XCTAssertTrue(winner === first || winner === second)
+            let winnerName = winner === first ? "first" : "second"
+            let loser = winner === first ? second : first
+            XCTAssertEqual(evaluation.evaluation.flagKey, winnerName)
+            XCTAssertEqual(capture.value.rumContext?.viewID, winnerName)
+            XCTAssertEqual(evaluation.evaluation.value as? Int, round)
+            XCTAssertEqual(legacy.first?.flagKey, winner === first ? "second" : "first")
+            bus.publishFlagEvaluationOwner(loser, active: false)
+            RUMContextHandoff.withValue(handoffValue(winnerName), for: winner) {
+                bus.sendFlagEvaluation(.init(flagKey: "after-loser-disable", value: true))
+            }
+            bus.publishFlagEvaluationOwner(winner, active: false)
+            bus.sendFlagEvaluation(.init(flagKey: "after-winner-disable", value: false))
+            bus.flush()
+            let finalCaptured = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+                guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            let finalLegacy = receiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+                guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            XCTAssertEqual(finalCaptured.count, 2)
+            XCTAssertTrue(finalCaptured.last?.capture?.owner === winner)
+            XCTAssertEqual(finalCaptured.last?.evaluation.flagKey, "after-loser-disable")
+            XCTAssertEqual(finalLegacy.count, 2)
+            XCTAssertEqual(finalLegacy.last?.flagKey, "after-winner-disable")
+        }
+    }
+
+    func testConcurrentStaleFlagPublicationsCannotChangeReplacementDelivery() throws {
+        let core = PassthroughCoreMock()
+        let bus = MessageBus.make(configurationDispatchTime: .seconds(0))
+        let receiver = FeatureMessageReceiverMock()
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "flag-test")
+        let original = RUMContextHandoff.Owner()
+        let current = RUMContextHandoff.Owner()
+        bus.publishFlagEvaluationOwner(original, active: true)
+        original.invalidate()
+        bus.publishFlagEvaluationOwner(current, active: true)
+        bus.flush()
+        let value = handoffValue("replacement")
+        runConcurrentFlagOperations([
+            {
+                for _ in 0..<64 {
+                    bus.publishFlagEvaluationOwner(original, active: true)
+                    bus.publishFlagEvaluationOwner(original, active: false)
+                }
+            },
+            {
+                for _ in 0..<64 { bus.publishFlagEvaluationOwner(current, active: true) }
+            },
+            {
+                RUMContextHandoff.withValue(value, for: current) {
+                    for index in 0..<64 {
+                        bus.sendFlagEvaluation(.init(flagKey: "replacement-\(index)", value: index))
+                    }
+                }
+            }
+        ])
+        bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 64)
+        for (index, evaluation) in evaluations.enumerated() {
+            XCTAssertTrue(evaluation.capture?.owner === current)
+            XCTAssertEqual(evaluation.capture?.value.rumContext?.viewID, "replacement")
+            XCTAssertEqual(evaluation.evaluation.flagKey, "replacement-\(index)")
+            XCTAssertEqual(evaluation.evaluation.value as? Int, index)
+        }
+    }
+
+    func testConcurrentFlagOwnerInvalidationPreservesCapturedAbsence() throws {
+        let core = PassthroughCoreMock()
+        let bus = MessageBus.make(configurationDispatchTime: .seconds(0))
+        let receiver = FeatureMessageReceiverMock()
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "flag-test")
+        let owner = RUMContextHandoff.Owner()
+        bus.publishFlagEvaluationOwner(owner, active: true)
+        bus.flush()
+        let value = handoffValue("original")
+        runConcurrentFlagOperations([
+            { owner.invalidate() },
+            {
+                RUMContextHandoff.withValue(value, for: owner) {
+                    for index in 0..<64 {
+                        bus.sendFlagEvaluation(.init(flagKey: "invalidation-\(index)", value: index))
+                    }
+                }
+            }
+        ])
+        bus.sendFlagEvaluation(.init(flagKey: "after-invalidation", value: true))
+        bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 65)
+        for (index, evaluation) in evaluations.prefix(64).enumerated() {
+            let capture = try XCTUnwrap(evaluation.capture)
+            XCTAssertTrue(capture.owner === owner)
+            XCTAssertFalse(capture.owner.isValid)
+            XCTAssertTrue(capture.value.rumContext == nil || capture.value.rumContext?.viewID == "original")
+            XCTAssertEqual(evaluation.evaluation.flagKey, "invalidation-\(index)")
+            XCTAssertEqual(evaluation.evaluation.value as? Int, index)
+        }
+        let final = try XCTUnwrap(evaluations.last)
+        let finalCapture = try XCTUnwrap(final.capture)
+        XCTAssertTrue(finalCapture.owner === owner)
+        XCTAssertNil(finalCapture.value.rumContext)
+        XCTAssertNil(finalCapture.value.sceneIdentifier)
+        XCTAssertEqual(final.evaluation.flagKey, "after-invalidation")
+    }
+}
+#endif

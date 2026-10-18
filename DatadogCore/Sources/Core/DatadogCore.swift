@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Core implementation of Datadog SDK.
@@ -14,7 +15,14 @@ import DatadogInternal
 ///
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
-internal final class DatadogCore {
+internal final class DatadogCore: RUMContextHandoffActivating {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        guard case let .active(activation) = registry.handoff else {
+            return nil
+        }
+        return activation.owner
+    }
+
     /// The root location for storing Features data in this instance of the SDK.
     /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
     let directory: CoreDirectory
@@ -53,7 +61,7 @@ internal final class DatadogCore {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message-bus instance.
-    let bus = MessageBus()
+    let bus = MessageBus.make()
 
     /// The remote configuration provider, if configured.
     let remoteConfigurationProvider: RemoteConfigurationProvider?
@@ -62,13 +70,95 @@ internal final class DatadogCore {
     @ReadWriteLock
     var remoteConfiguration: RemoteConfiguration?
 
-    /// Registry for Features.
+    /// Storage and On-only ownership share the original storage lock.
+    private struct FeatureStores {
+        var entries: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
+        var handoffOwner: RUMContextHandoff.Owner?
+    }
+
     @ReadWriteLock
-    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
+    private var featureStores = FeatureStores()
+
+    /// Preserve dictionary access while every write retains current owner metadata.
+    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] {
+        get { featureStores.entries }
+        set { _featureStores.mutate { $0.entries = newValue } }
+    }
+
+    fileprivate func storeSnapshot(for name: String) -> (storage: FeatureStorage?, owner: RUMContextHandoff.Owner?) {
+        let snapshot = featureStores
+        return (snapshot.entries[name]?.storage, snapshot.handoffOwner)
+    }
 
     /// Registry for Features.
+    private struct RegisteredFeature {
+        let feature: DatadogFeature
+        let messageReceiver: FeatureMessageReceiver
+    }
+
+    /// Allocated only for On. Releasing the Core's guard invalidates owners
+    /// retained by downstream work without performing an Off deinit lookup.
+    private final class ActivatedHandoff {
+        let owner = RUMContextHandoff.Owner()
+        deinit { owner.invalidate() }
+    }
+
+    private enum HandoffState {
+        case inactive
+        case active(ActivatedHandoff)
+        case stopped
+    }
+
+    private struct Registry {
+        var features: [String: RegisteredFeature] = [:]
+        var handoff: HandoffState = .inactive
+        var isStopped = false
+    }
+
     @ReadWriteLock
-    private var features: [String: DatadogFeature] = [:]
+    private var registry = Registry()
+
+    /// Called only for resolved On mode, before instrumentation installation.
+    func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner {
+        var owner: RUMContextHandoff.Owner?
+        var receivers: [FeatureMessageReceiver] = []
+        try _registry.mutate { registry in
+            guard !registry.isStopped, case .inactive = registry.handoff else {
+                throw ProgrammerError(description: "RUM context ownership is already active or the SDK has stopped.")
+            }
+            let activation = ActivatedHandoff()
+            registry.handoff = .active(activation)
+            _featureStores.mutate { $0.handoffOwner = activation.owner }
+            owner = activation.owner
+            receivers = registry.features.values.map { $0.messageReceiver }
+        }
+        // The mutation above always issues an Owner or throws.
+        guard let owner else {
+            throw ProgrammerError(description: "RUM context ownership could not be activated.")
+        }
+        bus.publishFlagEvaluationOwner(owner, active: true)
+        receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true) }
+        return owner
+    }
+
+    func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner) {
+        var receivers: [FeatureMessageReceiver] = []
+        _registry.mutate { registry in
+            guard case let .active(activation) = registry.handoff, activation.owner === owner else {
+                return
+            }
+            owner.invalidate()
+            registry.handoff = .inactive
+            _featureStores.mutate { stores in
+                if stores.handoffOwner === owner {
+                    stores.handoffOwner = nil
+                }
+            }
+            receivers = registry.features.values.map { $0.messageReceiver }
+        }
+        bus.publishFlagEvaluationOwner(owner, active: false)
+        receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
+    }
 
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
@@ -296,8 +386,8 @@ internal final class DatadogCore {
     }
 
     private var allDataStores: [DataStore] {
-        features.values.compactMap { feature in
-            let featureType = type(of: feature) as DatadogFeature.Type
+        registry.features.values.compactMap { entry in
+            let featureType = type(of: entry.feature) as DatadogFeature.Type
             return scope(for: featureType).dataStore
         }
     }
@@ -333,9 +423,31 @@ internal final class DatadogCore {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        var owner: RUMContextHandoff.Owner?
+        var receivers: [FeatureMessageReceiver] = []
+        var stoppedFeatures: [String: RegisteredFeature] = [:]
+        _registry.mutate { registry in
+            stoppedFeatures = registry.features
+            registry.isStopped = true
+            if case let .active(activation) = registry.handoff {
+                activation.owner.invalidate()
+                owner = activation.owner
+                receivers = registry.features.values.map { $0.messageReceiver }
+                registry.handoff = .stopped
+            }
+            registry.features = [:]
+        }
+        if let owner {
+            bus.publishFlagEvaluationOwner(owner, active: false)
+            receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
+            stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
+        }
         remoteConfigurationProvider?.stop()
-        stores = [:]
-        features = [:]
+        _featureStores.mutate { stores in
+            stores.entries = [:]
+            stores.handoffOwner = nil
+        }
+        withExtendedLifetime(stoppedFeatures) {}
     }
 }
 
@@ -350,6 +462,24 @@ extension DatadogCore: DatadogCoreProtocol {
     ///
     /// - Parameter feature: The Feature instance.
     func register<T>(feature: T) throws where T: DatadogFeature {
+        try register(feature: feature, expectedOwner: nil)
+    }
+
+    func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature {
+        try register(feature: feature, expectedOwner: owner)
+    }
+
+    private func register<T>(feature: T, expectedOwner: RUMContextHandoff.Owner?) throws where T: DatadogFeature {
+        var createdStore: (storage: FeatureStorage, upload: FeatureUpload)?
+        if let expectedOwner {
+            // Reject stale/foreign transactions before constructing storage/upload.
+            try _registry.mutate { registry in
+                guard case let .active(activation) = registry.handoff,
+                      activation.owner === expectedOwner, expectedOwner.isValid else {
+                    throw ProgrammerError(description: "RUM context ownership expired before feature registration.")
+                }
+            }
+        }
         if let feature = feature as? DatadogRemoteFeature {
             let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
@@ -383,18 +513,76 @@ extension DatadogCore: DatadogCoreProtocol {
                 telemetry: telemetry
             )
 
-            stores[T.name] = (
-                storage: storage,
-                upload: upload
-            )
-
-            // If there is any persisted data recorded with `.pending` consent,
-            // it should be deleted on Feature startup:
-            storage.clearUnauthorizedData()
+            createdStore = (storage: storage, upload: upload)
+            if expectedOwner == nil {
+                // Preserve the legacy registration order for Off/custom features.
+                stores[T.name] = createdStore
+                storage.clearUnauthorizedData()
+            }
         }
 
-        features[T.name] = feature
-        add(messageReceiver: feature.messageReceiver, forKey: T.name)
+        let messageReceiver = feature.messageReceiver
+        var owner: RUMContextHandoff.Owner?
+        var replacedFeature: RegisteredFeature?
+        var replacedStore: (storage: FeatureStorage, upload: FeatureUpload)?
+        do {
+            try _registry.mutate { registry in
+                switch registry.handoff {
+                case .inactive:
+                    break
+                case let .active(activation):
+                    owner = activation.owner
+                case .stopped:
+                    throw ProgrammerError(description: "Cannot register a feature in a stopped scene-tracking SDK.")
+                }
+                if let expectedOwner {
+                    guard owner === expectedOwner, expectedOwner.isValid else {
+                        throw ProgrammerError(description: "RUM context ownership expired before feature registration.")
+                    }
+                }
+                if expectedOwner != nil, let createdStore {
+                    // The On transaction keeps its store private until this commit.
+                    // Retain the displaced store so destruction occurs after unlock.
+                    _featureStores.mutate { stores in
+                        replacedStore = stores.entries.updateValue(createdStore, forKey: T.name)
+                    }
+                }
+                replacedFeature = registry.features.updateValue(
+                    RegisteredFeature(feature: feature, messageReceiver: messageReceiver), forKey: T.name
+                )
+            }
+        } catch {
+            if let createdStore {
+                _featureStores.mutate { stores in
+                    if stores.entries[T.name]?.storage.authorizedFilesOrchestrator === createdStore.storage.authorizedFilesOrchestrator {
+                        stores.entries[T.name] = nil
+                    }
+                }
+            }
+            throw error
+        }
+        withExtendedLifetime(replacedFeature) {}
+        withExtendedLifetime(replacedStore) {}
+        if expectedOwner != nil {
+            createdStore?.storage.clearUnauthorizedData()
+        }
+        if let owner {
+            (messageReceiver as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true)
+            bus.connect(messageReceiver, forKey: T.name, while: owner)
+            contextProvider.read { [weak self] context in
+                guard let self else {
+                    return
+                }
+                self.bus.queue.async {
+                    guard owner.isValid else {
+                        return
+                    }
+                    _ = messageReceiver.receive(message: .context(context), from: self)
+                }
+            }
+        } else {
+            add(messageReceiver: messageReceiver, forKey: T.name)
+        }
     }
 
     /// Retrieves a Feature by its name and type.
@@ -409,7 +597,7 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
     func feature<T>(named name: String, type: T.Type) -> T? {
-        features[name] as? T
+        registry.features[name]?.feature as? T
     }
 
     func scope<Feature>(for featureType: Feature.Type) -> FeatureScope where Feature: DatadogFeature {
@@ -429,7 +617,12 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffEventWriting, RUMFlagEvaluationSending where Feature: DatadogFeature {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        core?.bus.sendFlagEvaluation(evaluation)
+    }
+
     private weak var core: DatadogCore?
     private let store: FeatureDataStore
 
@@ -466,6 +659,53 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
             // (on context thread) call the block
             let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
+        }
+    }
+
+    func eventWriteContextWithRUMCapture(
+        bypassConsent: Bool,
+        _ block: @escaping (DatadogContext, Writer, RUMContextHandoff.Capture?) -> Void
+    ) {
+        guard let core else {
+            return
+        }
+        let snapshot = core.storeSnapshot(for: Feature.name)
+        guard let storage = snapshot.storage else {
+            if core.get(feature: Feature.self) != nil {
+                DD.logger.error(
+                    "Failed to obtain Event Write Context for '\(Feature.name)' because it is not a `DatadogRemoteFeature`."
+                )
+                #if DEBUG
+                assertionFailure("Obtaining Event Write Context for '\(Feature.name)' but it is not a `DatadogRemoteFeature`.")
+                #endif
+            }
+            return
+        }
+        // Storage publication and owner were read together; capture after unlocking.
+        let capture: RUMContextHandoff.Capture?
+        if let owner = snapshot.owner {
+            if let value = RUMContextHandoff.current(for: owner) {
+                capture = RUMContextHandoff.Capture(owner: owner, value: value)
+            } else if !owner.isValid {
+                // Owner validity is monotonic; a raced invalidation cannot select legacy context.
+                capture = RUMContextHandoff.Capture(
+                    owner: owner,
+                    value: RUMContextHandoff.CurrentValue(
+                        rumContext: nil,
+                        sceneIdentifier: nil,
+                        hasPendingUserAction: false,
+                        excludedUserActionID: nil
+                    )
+                )
+            } else {
+                capture = nil
+            }
+        } else {
+            capture = nil
+        }
+        context { context in
+            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
+            block(context, writer, capture)
         }
     }
 
@@ -632,7 +872,7 @@ extension DatadogCore: Flushable {
         // Reset baggages that need not be persisted across flushes.
         removeContext(ofType: LaunchReport.self)
 
-        let features = features.values.compactMap { $0 as? Flushable }
+        let features = registry.features.values.compactMap { $0.feature as? Flushable }
 
         // The flushing is repeated few times, to make sure that operations spawned from other operations
         // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current

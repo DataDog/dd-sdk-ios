@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 
 @testable import DatadogInternal
 
@@ -16,8 +17,9 @@ class URLSessionTaskSwizzlerTests: XCTestCase {
         let swizzler = URLSessionTaskSwizzler()
 
         try swizzler.swizzle(
-            interceptResume: { _ in
+            interceptResume: { _, continuation in
                 expectation.fulfill()
+                continuation()
             }
         )
 
@@ -36,5 +38,47 @@ class URLSessionTaskSwizzlerTests: XCTestCase {
 
         // Then
         wait(for: [expectation], timeout: 5)
+    }
+
+    func testSwizzling_taskResume_defersOnlyTargetAndForwardsEachCall() throws {
+        let server = ServerMock(
+            delivery: .success(response: .mockWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+        let session = server.getInterceptedURLSession()
+        let target = session.dataTask(with: URL.mockAny())
+        let foreign = session.dataTask(with: URL.mockAny())
+        let forwarded = ReadWriteLock(wrappedValue: 0)
+        let previous = URLSessionTaskSwizzler()
+        try previous.swizzle { task, continuation in
+            if task === target || task === foreign { forwarded.mutate { $0 += 1 } }
+            continuation()
+        }
+        defer { previous.unswizzle() }
+        var continuations: [URLSessionTaskSwizzler.ResumeContinuation] = []
+        let swizzler = URLSessionTaskSwizzler()
+        try swizzler.swizzle { task, continuation in
+            guard task === target else {
+                continuation()
+                return
+            }
+            continuations.append(continuation)
+        }
+        defer {
+            target.cancel()
+            foreign.cancel()
+            session.invalidateAndCancel()
+            swizzler.unswizzle()
+        }
+        foreign.resume()
+        XCTAssertEqual(forwarded.wrappedValue, 1)
+        target.resume()
+        target.resume()
+        XCTAssertEqual(forwarded.wrappedValue, 1)
+        XCTAssertEqual(continuations.count, 2)
+        continuations.forEach { $0() }
+        continuations.removeAll()
+        XCTAssertEqual(forwarded.wrappedValue, 3)
+        XCTAssertEqual(server.waitAndReturnRequests(count: 2).count, 2)
     }
 }

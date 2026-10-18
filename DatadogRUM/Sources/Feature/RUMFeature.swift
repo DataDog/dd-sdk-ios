@@ -5,6 +5,8 @@
  */
 
 import Foundation
+import CoreFoundation
+@_spi(Internal)
 import DatadogInternal
 #if canImport(UIKit)
 import UIKit
@@ -12,7 +14,7 @@ import UIKit
 import AppKit
 #endif
 
-internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
+internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMContext {
     static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
@@ -24,6 +26,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
     let instrumentation: RUMInstrumentation
 
     let configuration: RUM.Configuration
+
+    /// The scene-tracking mode frozen when this feature is enabled.
+    let isMultiSceneTrackingEnabled: Bool
+    let rumContextHandoffOwner: RUMContextHandoff.Owner?
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
@@ -44,6 +50,41 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         configuration: RUM.Configuration
     ) throws {
         self.configuration = configuration
+
+        let supportsMultiSceneTracking: Bool
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            supportsMultiSceneTracking = true
+        } else {
+            supportsMultiSceneTracking = false
+        }
+        #else
+        supportsMultiSceneTracking = false
+        #endif
+
+        let featureFlags = Self.resolvedFeatureFlags(
+            configuration.featureFlags,
+            bundle: configuration.bundle,
+            supportsMultiSceneTracking: supportsMultiSceneTracking
+        )
+        self.isMultiSceneTrackingEnabled = featureFlags[.multiSceneTracking]
+
+        let activationCore: RUMContextHandoffActivating?
+        let issuedOwner: RUMContextHandoff.Owner?
+        if featureFlags[.multiSceneTracking] {
+            activationCore = core as? RUMContextHandoffActivating
+            issuedOwner = try activationCore?.activateRUMContextHandoff()
+        } else {
+            activationCore = nil
+            issuedOwner = nil
+        }
+        rumContextHandoffOwner = issuedOwner
+        var initializationCompleted = false
+        defer {
+            if !initializationCompleted, let owner = issuedOwner {
+                activationCore?.deactivateRUMContextHandoff(owner: owner)
+            }
+        }
 
         // Created first: the initial session identity is recorded into it further down, still inside
         // `RUM.enable()`, and `RUM.enableURLSessionTracking` wires the URLSession handler to it.
@@ -213,7 +254,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
-            viewCache: ViewCache(dateProvider: configuration.dateProvider),
+            viewCache: ViewCache(
+                dateProvider: configuration.dateProvider,
+                isMultiSceneTrackingEnabled: featureFlags[.multiSceneTracking]
+            ),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
@@ -238,7 +282,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             },
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
-            featureFlags: configuration.featureFlags,
+            featureFlags: featureFlags,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(
                     viewName: viewName,
@@ -262,7 +306,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider
+            dateProvider: configuration.dateProvider,
+            executionContextProvider: featureFlags[.multiSceneTracking] ? RUMContextHandoff.current(for:) : nil
         )
 
         timeseriesCollector?.activeContextReader = monitor
@@ -362,8 +407,19 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
+            isMultiSceneTrackingEnabled: dependencies.isMultiSceneTrackingEnabled,
+            rumContextHandoffOwner: issuedOwner,
+            handoffMonitor: dependencies.isMultiSceneTrackingEnabled ? monitor : nil,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
+        #endif
+        #if os(iOS)
+        if dependencies.isMultiSceneTrackingEnabled {
+            let handler: AnyObject = instrumentation.viewsHandler
+            if let handler = handler as? any RUMSceneTargetedManualViewHandling {
+                monitor.bind(sceneTargetedManualViewHandler: handler)
+            }
+        }
         #endif
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
@@ -477,6 +533,30 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
+        initializationCompleted = true
+    }
+}
+
+extension RUMFeature {
+    /// Resolves the requested scene-tracking flag without changing other feature flags.
+    static func resolvedFeatureFlags(
+        _ requestedFlags: RUM.Configuration.FeatureFlags,
+        bundle: Bundle,
+        supportsMultiSceneTracking: Bool
+    ) -> RUM.Configuration.FeatureFlags {
+        var resolvedFlags = requestedFlags
+        resolvedFlags[.multiSceneTracking] = false
+
+        guard requestedFlags[.multiSceneTracking], supportsMultiSceneTracking,
+              let manifest = bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") as? [String: Any],
+              let supportsMultipleScenes = manifest["UIApplicationSupportsMultipleScenes"] as? NSNumber,
+              CFGetTypeID(supportsMultipleScenes) == CFBooleanGetTypeID(),
+              supportsMultipleScenes.boolValue else {
+            return resolvedFlags
+        }
+
+        resolvedFlags[.multiSceneTracking] = true
+        return resolvedFlags
     }
 }
 
@@ -513,6 +593,45 @@ extension RUMFeature {
 
     func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
         sessionSamplingStore.decision(for: policy, rate: rate)
+    }
+
+    func decisionWithRUMContext(for policy: SamplingRatePolicy, rate: SampleRate) -> RUMSessionSamplingContext {
+        let decision = sessionSamplingStore.decision(for: policy, rate: rate)
+        let capture: RUMContextHandoff.Capture?
+        if let owner = rumContextHandoffOwner, let value = RUMContextHandoff.captureValue(for: owner) {
+            capture = RUMContextHandoff.Capture(owner: owner, value: value)
+        } else {
+            capture = nil
+        }
+        return RUMSessionSamplingContext(decision: decision, capture: capture)
+    }
+}
+
+extension RUMFeature: RUMContextHandoffWebViewProviding {
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
+        guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
+            return nil
+        }
+        let context = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneIdentifier)))
+        return RUMContextHandoff.Capture(
+            owner: owner,
+            value: .init(
+                rumContext: context,
+                sceneIdentifier: sceneIdentifier,
+                hasPendingUserAction: false,
+                excludedUserActionID: nil
+            )
+        )
+    }
+}
+
+extension RUMFeature: RUMContextHandoffSessionValidating {
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool {
+        guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
+            return false
+        }
+        // This checks the live session at the current SDK date without requiring an active view.
+        return monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID == sessionID
     }
 }
 

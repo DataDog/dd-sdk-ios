@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 #if canImport(WebKit)
 import WebKit
@@ -33,6 +34,86 @@ internal class WebViewSessionRolloverHandler {
 
     /// The core that owns this handler.
     private weak var core: DatadogCoreProtocol?
+
+    private enum NativeOwnership {
+        case legacy
+        case active(RUMContextHandoff.Owner)
+        case retired(RUMContextHandoff.Owner)
+    }
+
+    private var nativeOwnership = NativeOwnership.legacy
+
+    /// Whether messages belong to an active or retired native RUM lifetime.
+    var hasNativeOwnership: Bool {
+        if case .legacy = nativeOwnership {
+            return false
+        }
+        return true
+    }
+
+    /// Updates only the main-confined lifetime token; provider registration may still be pending.
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+        if active {
+            guard owner.isValid else {
+                return
+            }
+            nativeOwnership = .active(owner)
+        } else {
+            switch nativeOwnership {
+            case .legacy:
+                nativeOwnership = .retired(owner)
+            case .active(let current), .retired(let current):
+                guard current === owner else {
+                    return
+                }
+                nativeOwnership = .retired(owner)
+            }
+        }
+    }
+
+    /// The caller supplies the scene observed at native bridge receipt.
+    /// Nil means legacy mode; a retained On lifetime always produces authoritative capture or absence.
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String?) -> RUMContextHandoff.Capture? {
+        let owner: RUMContextHandoff.Owner
+        switch nativeOwnership {
+        case .legacy:
+            return nil
+        case .retired(let retiredOwner):
+            return emptyCapture(for: retiredOwner)
+        case .active(let activeOwner):
+            owner = activeOwner
+        }
+        return captureRUMContext(forSceneIdentifier: sceneIdentifier, owner: owner)
+    }
+
+    private func captureRUMContext(forSceneIdentifier sceneIdentifier: String?, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture {
+        guard owner.isValid, let sceneIdentifier, let core,
+              let provider = core.feature(named: Feature.rum, type: RUMContextHandoffWebViewProviding.self),
+              let capture = provider.captureRUMContext(forSceneIdentifier: sceneIdentifier, owner: owner),
+              capture.owner === owner, capture.value.sceneIdentifier == sceneIdentifier else {
+            return emptyCapture(for: owner)
+        }
+        return capture
+    }
+
+    /// Resolve native UI only for a live On lifetime, before any bridge queue dispatch.
+    func captureRUMContext(forSceneIdentifier resolveSceneIdentifier: () -> String?) -> RUMContextHandoff.Capture? {
+        switch nativeOwnership {
+        case .legacy:
+            return nil
+        case .retired(let owner):
+            return emptyCapture(for: owner)
+        case .active(let owner):
+            guard owner.isValid else {
+                return emptyCapture(for: owner)
+            }
+            return captureRUMContext(forSceneIdentifier: resolveSceneIdentifier(), owner: owner)
+        }
+    }
+
+    private func emptyCapture(for owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture {
+        .init(owner: owner, value: .init(rumContext: nil, sceneIdentifier: nil, hasPendingUserAction: false, excludedUserActionID: nil))
+    }
 
     /// Creates a new RUM session rollover handler.
     ///
@@ -136,7 +217,8 @@ internal class WebViewSessionRolloverHandler {
     ///   for details.
     ///
     /// - throws: If a problem happens registering a newly created feature.
-    static func register(webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements) throws {
+    @discardableResult
+    static func register(webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements) throws -> WebViewSessionRolloverHandler {
         // In some situations, like users manually removing the injected user scripts and enabling tracking on the
         // WebView again, we cannot detect the view is already instrumented. So, just in case, try to unregister
         // the given WebView it before registering it.
@@ -144,6 +226,7 @@ internal class WebViewSessionRolloverHandler {
         let feature = try WebViewTrackingFeature.obtainOrRegisterFeature(in: core)
         handlerPerView.setObject(feature.sessionRolloverHandler, forKey: webView)
         feature.sessionRolloverHandler.register(webView: webView, elements: elements)
+        return feature.sessionRolloverHandler
     }
 
     /// Unregisters a WebView from this handler.

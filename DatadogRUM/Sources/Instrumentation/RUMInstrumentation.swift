@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 #if canImport(UIKit)
@@ -24,7 +25,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
-    let viewsHandler: RUMViewsHandler
+    let viewsHandler: RUMViewsHandling
 
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
@@ -104,17 +105,34 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         memoryWarningMonitor: MemoryWarningMonitor?,
         uuidGenerator: RUMUUIDGenerator,
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
+        isMultiSceneTrackingEnabled: Bool = false,
+        rumContextHandoffOwner: RUMContextHandoff.Owner? = nil,
+        handoffMonitor: Monitor? = nil,
         isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
-        let viewsHandler = RUMViewsHandler(
-            dateProvider: dateProvider,
-            uiKitPredicate: predicates.rumViewsPredicate,
-            swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
-            swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
-            notificationCenterProvider: notificationCenterProvider
-        )
+        let viewsHandler: RUMViewsHandling = {
+            #if os(iOS)
+            if isMultiSceneTrackingEnabled {
+                return RUMSceneViewsHandler(
+                    dateProvider: dateProvider,
+                    uiKitPredicate: predicates.rumViewsPredicate,
+                    swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
+                    swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
+                    notificationCenterProvider: notificationCenterProvider,
+                    isMultiSceneApplication: true
+                )
+            }
+            #endif
+            return RUMViewsHandler(
+                dateProvider: dateProvider,
+                uiKitPredicate: predicates.rumViewsPredicate,
+                swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
+                swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
+                notificationCenterProvider: notificationCenterProvider
+            )
+        }()
         let viewControllerSwizzler: DDViewControllerSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic view tracking is enabled
@@ -144,6 +162,25 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 macOSPredicate: predicates.rumActionsPredicate
             )
             #else
+            #if os(iOS)
+            if isMultiSceneTrackingEnabled, #available(iOS 27.0, *),
+               let owner = rumContextHandoffOwner, owner.isValid, let monitor = handoffMonitor {
+                let factory: UIEventCommandFactory? = predicates.shouldEnableActionsInstrumentation ? UITouchCommandFactory(
+                    dateProvider: dateProvider,
+                    heatmapIdentifierRegistry: heatmapIdentifierRegistry,
+                    uiKitPredicate: predicates.rumActionsPredicate,
+                    swiftUIPredicate: predicates.swiftUIRUMActionsPredicate,
+                    swiftUIDetector: SwiftUIComponentFactory.createDetector()
+                ) : nil
+                return RUMSceneActionsHandler(
+                    legacyHandler: RUMActionsHandler(dateProvider: dateProvider, eventCommandsFactory: factory),
+                    eventCommandsFactory: factory,
+                    dateProvider: dateProvider,
+                    owner: owner,
+                    expectedMonitor: monitor
+                )
+            }
+            #endif
             return RUMActionsHandler(
                 dateProvider: dateProvider,
                 heatmapIdentifierRegistry: heatmapIdentifierRegistry,
@@ -158,6 +195,12 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
                 if predicates.shouldEnableActionsInstrumentation {
+                    #if os(iOS)
+                    if isMultiSceneTrackingEnabled, #available(iOS 27.0, *),
+                       let handler = actionsHandler as? RUMSceneActionsHandling {
+                        return try DDSceneApplicationInstrumentation(handler: handler)
+                    }
+                    #endif
                     return try DDApplicationInstrumentation(handler: actionsHandler)
                 }
             } catch {
@@ -180,9 +223,23 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 predicate: uiKitRUMActionsPredicate
             )
             scrollHandler = handler
+            let delegateHandler: UIScrollViewHandler
+            #if os(iOS)
+            if isMultiSceneTrackingEnabled, #available(iOS 27.0, *),
+               let owner = rumContextHandoffOwner, owner.isValid, let monitor = handoffMonitor {
+                delegateHandler = RUMSceneScrollHandler(
+                    legacyHandler: handler, dateProvider: dateProvider,
+                    owner: owner, expectedMonitor: monitor
+                )
+            } else {
+                delegateHandler = handler
+            }
+            #else
+            delegateHandler = handler
+            #endif
             scrollViewSwizzler = {
                 do {
-                    return try UIScrollViewSwizzler(handler: handler)
+                    return try UIScrollViewSwizzler(handler: delegateHandler)
                 } catch {
                     consolePrint(
                         "🔥 Datadog SDK error: RUM scroll tracking can't be enabled due to error: \(error)",
@@ -298,7 +355,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         viewsHandler.publish(to: subscriber)
         actionsHandler.publish(to: subscriber)
         #if !os(watchOS) && !os(tvOS) && !os(macOS)
-        scrollHandler?.publish(to: subscriber)
+        if let scrollViewSwizzler {
+            scrollViewSwizzler.publish(to: subscriber)
+        } else {
+            scrollHandler?.publish(to: subscriber)
+        }
         #endif
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)

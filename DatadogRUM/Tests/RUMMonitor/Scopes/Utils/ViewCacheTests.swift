@@ -112,4 +112,162 @@ class ViewCacheTests: XCTestCase {
 
         XCTAssertNil(cache.lastView(before: timestamp))
     }
+
+    func testMultiSceneOwnership_distinguishesSceneLegacyAndUnknownIDs() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+        let scene = RUMSceneIdentifier(rawValue: "scene-a")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "scene-view", timestamp: start, sceneIdentifier: scene)
+        cache.insert(id: "legacy-view", timestamp: start + 1)
+
+        XCTAssertEqual(cache.ownership(forViewID: "scene-view"), .scene(scene))
+        XCTAssertEqual(cache.ownership(forViewID: "legacy-view"), .legacy)
+        XCTAssertEqual(cache.ownership(forViewID: "unknown-view"), .unknown)
+    }
+
+    func testMultiSceneNavigation_keepsPeerActiveAndRetainsStoppedViewForFullTTL() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, ttl: 30, isMultiSceneTrackingEnabled: true)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "a-old", timestamp: start, isActive: true, sceneIdentifier: sceneA)
+        cache.insert(id: "b", timestamp: start, isActive: true, sceneIdentifier: sceneB)
+        clock.advance(bySeconds: 100)
+        cache.insert(id: "a-new", timestamp: clock.now.timeIntervalSince1970.dd.toInt64Milliseconds, isActive: true, sceneIdentifier: sceneA)
+
+        clock.advance(bySeconds: 30)
+        XCTAssertEqual(cache.ownership(forViewID: "a-old"), .scene(sceneA))
+        XCTAssertEqual(cache.ownership(forViewID: "b"), .scene(sceneB))
+        clock.advance(bySeconds: 1)
+        XCTAssertEqual(cache.ownership(forViewID: "a-old"), .unknown)
+        XCTAssertEqual(cache.ownership(forViewID: "a-new"), .scene(sceneA))
+        XCTAssertEqual(cache.ownership(forViewID: "b"), .scene(sceneB))
+    }
+
+    func testMultiSceneCapacity_keepsQuietSceneHistoryBesideBusyScene() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, capacity: 4, isMultiSceneTrackingEnabled: true)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "b-old", timestamp: start, sceneIdentifier: sceneB)
+        cache.insert(id: "b-active", timestamp: start + 1, isActive: true, sceneIdentifier: sceneB)
+        for index in 0..<10 {
+            cache.insert(id: "a-\(index)", timestamp: start + Int64(index) + 2, isActive: true, sceneIdentifier: sceneA)
+        }
+
+        XCTAssertEqual(cache.ownership(forViewID: "b-old"), .scene(sceneB))
+        XCTAssertEqual(cache.ownership(forViewID: "b-active"), .scene(sceneB))
+        XCTAssertEqual(cache.ownership(forViewID: "a-9"), .scene(sceneA))
+        XCTAssertEqual(cache.ownership(forViewID: "a-8"), .scene(sceneA))
+        XCTAssertEqual(cache.ownership(forViewID: "a-7"), .unknown)
+    }
+
+    func testMultiSceneSingleBucket_preservesNewestOrderingAndReplayFilter() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, capacity: 2, isMultiSceneTrackingEnabled: true)
+        let scene = RUMSceneIdentifier(rawValue: "scene-a")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "old", timestamp: start, hasReplay: true, sceneIdentifier: scene)
+        cache.insert(id: "replay", timestamp: start + 1, hasReplay: true, sceneIdentifier: scene)
+        cache.insert(id: "newest", timestamp: start + 2, hasReplay: false, sceneIdentifier: scene)
+
+        XCTAssertEqual(cache.lastView(before: start + 3), "newest")
+        XCTAssertEqual(cache.lastView(before: start + 3, hasReplay: true), "replay")
+        XCTAssertEqual(cache.ownership(forViewID: "old"), .unknown)
+    }
+
+    func testDefaultMode_sceneMetadataDoesNotEnablePeerRetention() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, capacity: 2)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "b", timestamp: start, isActive: true, sceneIdentifier: sceneB)
+        cache.insert(id: "a-old", timestamp: start + 1, isActive: true, sceneIdentifier: sceneA)
+        cache.insert(id: "a-new", timestamp: start + 2, isActive: true, sceneIdentifier: sceneA)
+
+        XCTAssertEqual(cache.ownership(forViewID: "b"), .unknown)
+        clock.advance(bySeconds: 200)
+        XCTAssertEqual(cache.ownership(forViewID: "a-old"), .scene(sceneA))
+        XCTAssertEqual(cache.ownership(forViewID: "a-new"), .scene(sceneA))
+    }
+
+    func testMultiSceneZeroCapacity_discardsEvenActiveOwners() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, capacity: 0, isMultiSceneTrackingEnabled: true)
+        cache.insert(id: "a", timestamp: clock.now.timeIntervalSince1970.dd.toInt64Milliseconds, isActive: true, sceneIdentifier: .init(rawValue: "scene-a"))
+
+        XCTAssertEqual(cache.ownership(forViewID: "a"), .unknown)
+    }
+
+    func testMultiSceneCapacity_pinsAllLiveOwnersBeforeHistory() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, capacity: 1, isMultiSceneTrackingEnabled: true)
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "a", timestamp: start, isActive: true, sceneIdentifier: .init(rawValue: "scene-a"))
+        cache.insert(id: "b", timestamp: start + 1, isActive: true, sceneIdentifier: .init(rawValue: "scene-b"))
+        cache.insert(id: "history", timestamp: start + 2, sceneIdentifier: .init(rawValue: "scene-c"))
+
+        XCTAssertEqual(cache.ownership(forViewID: "a"), .scene(.init(rawValue: "scene-a")))
+        XCTAssertEqual(cache.ownership(forViewID: "b"), .scene(.init(rawValue: "scene-b")))
+        XCTAssertEqual(cache.ownership(forViewID: "history"), .unknown)
+    }
+
+    func testSceneLookup_ignoresNewerPeerAndLegacyViews() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "a-old", timestamp: start, hasReplay: true, sceneIdentifier: sceneA)
+        cache.insert(id: "a-new", timestamp: start + 1, hasReplay: false, sceneIdentifier: sceneA)
+        cache.insert(id: "b-newer", timestamp: start + 2, hasReplay: true, sceneIdentifier: sceneB)
+        cache.insert(id: "legacy-newest", timestamp: start + 3, hasReplay: true)
+
+        XCTAssertEqual(cache.lastView(before: start + 4, in: sceneA), "a-new")
+        XCTAssertEqual(cache.lastView(before: start + 4, hasReplay: true, in: sceneA), "a-old")
+        XCTAssertEqual(cache.lastView(before: start + 4, hasReplay: false, in: sceneA), "a-new")
+        XCTAssertNil(cache.lastView(before: start + 4, in: RUMSceneIdentifier(rawValue: "unknown")))
+        XCTAssertEqual(cache.lastView(before: start + 4, hasReplay: true), "legacy-newest")
+    }
+
+    func testSceneLookup_requiresReplayAndStrictlyEarlierTimestamp() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "a-without-replay", timestamp: start, hasReplay: false, sceneIdentifier: sceneA)
+        cache.insert(id: "b-with-replay", timestamp: start, hasReplay: true, sceneIdentifier: sceneB)
+        cache.insert(id: "a-with-replay", timestamp: start + 1, hasReplay: true, sceneIdentifier: sceneA)
+
+        XCTAssertNil(cache.lastView(before: start + 1, hasReplay: true, in: sceneA))
+        XCTAssertEqual(cache.lastView(before: start + 2, hasReplay: true, in: sceneA), "a-with-replay")
+        XCTAssertEqual(cache.lastView(before: start + 2, hasReplay: false, in: sceneA), "a-without-replay")
+        XCTAssertEqual(cache.lastView(before: start + 1, hasReplay: true), "b-with-replay")
+    }
+
+    func testSceneLookup_preservesActiveLifetimeAndExpiresStoppedHistory() {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, ttl: 30, isMultiSceneTrackingEnabled: true)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let start = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "a-old", timestamp: start, hasReplay: true, isActive: true, sceneIdentifier: sceneA)
+        clock.advance(bySeconds: 100)
+        XCTAssertEqual(cache.lastView(before: start + 1, hasReplay: true, in: sceneA), "a-old")
+
+        let navigation = clock.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "a-current", timestamp: navigation, hasReplay: true, isActive: true, sceneIdentifier: sceneA)
+        cache.insert(id: "b-current", timestamp: navigation + 1, hasReplay: true, isActive: true, sceneIdentifier: sceneB)
+        clock.advance(bySeconds: 30)
+        XCTAssertEqual(cache.lastView(before: start + 1, hasReplay: true, in: sceneA), "a-old")
+        clock.advance(bySeconds: 1)
+        XCTAssertNil(cache.lastView(before: start + 1, hasReplay: true, in: sceneA))
+        XCTAssertEqual(cache.lastView(before: navigation + 2, hasReplay: true, in: sceneA), "a-current")
+        XCTAssertEqual(cache.lastView(before: navigation + 2, hasReplay: true), "b-current")
+    }
 }

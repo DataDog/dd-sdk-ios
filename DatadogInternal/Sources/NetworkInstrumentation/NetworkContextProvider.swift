@@ -10,13 +10,51 @@ import Foundation
 internal protocol NetworkContextProvider: AnyObject {
     /// Returns current `NetworkContext` value.
     var currentNetworkContext: NetworkContext? { get }
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
+}
+
+extension NetworkContextProvider {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { nil }
 }
 
 /// Manages the `NetworkContext` reads and writes in a thread-safe manner.
 internal class NetworkContextCoreProvider: NetworkContextProvider {
     // MARK: - NetworkContextProviderType
+    private struct State {
+        var context: NetworkContext?
+        var owner: RUMContextHandoff.Owner?
+    }
+
     @ReadWriteLock
-    var currentNetworkContext: NetworkContext?
+    private var state = State()
+
+    var currentNetworkContext: NetworkContext? {
+        get { state.context }
+        set { _state.mutate { $0.context = newValue } }
+    }
+
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        let owner = state.owner
+        return owner?.isValid == true ? owner : nil
+    }
+}
+
+extension NetworkContextCoreProvider: RUMContextHandoffReceiving {
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+        _state.mutate { state in
+            if active {
+                // A delayed publication cannot replace a newer lifetime: the old
+                // owner is invalidated before the Core releases its registry lock.
+                guard owner.isValid else {
+                    return
+                }
+                state.owner = owner
+            } else if state.owner === owner {
+                // Rollback/stop clears only the lifetime it issued.
+                state.owner = nil
+            }
+        }
+    }
 }
 
 extension NetworkContextCoreProvider: FeatureMessageReceiver {

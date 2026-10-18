@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 import OpenTelemetryApi
 
@@ -83,26 +84,24 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
 
     func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: OTTagValue]? = nil, startTime: Date? = nil) -> OTSpan {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last ?? activeSpan?.context as? DDSpanContext
+        let samplingContext = samplerProvider.samplerWithRUMContext(samplingRate: nil)
         return startSpan(
-            spanContext: createSpanContext(parentSpanContext: parentSpanContext, using: samplerProvider.sampler),
+            spanContext: createSpanContext(parentSpanContext: parentSpanContext, using: samplingContext.sampler),
             operationName: operationName,
             tags: tags,
-            startTime: startTime
+            startTime: startTime,
+            samplingContext: samplingContext
         )
     }
 
     func startRootSpan(operationName: String, tags: [String: OTTagValue]? = nil, startTime: Date? = nil, customSampleRate: SampleRate? = nil) -> OTSpan {
-        let sampler: Sampling = if let customSampleRate {
-            samplerProvider.makeSamplerFor(samplingRate: customSampleRate)
-        } else {
-            samplerProvider.sampler
-        }
-
+        let samplingContext = samplerProvider.samplerWithRUMContext(samplingRate: customSampleRate)
         return startSpan(
-            spanContext: createSpanContext(parentSpanContext: nil, using: sampler),
+            spanContext: createSpanContext(parentSpanContext: nil, using: samplingContext.sampler),
             operationName: operationName,
             tags: tags,
-            startTime: startTime
+            startTime: startTime,
+            samplingContext: samplingContext
         )
     }
 
@@ -148,7 +147,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         operationName: String,
         tags: [String: OTTagValue]? = nil,
         startTime: Date? = nil,
-        eventWriter: SpanWriteContext? = nil
+        eventWriter: SpanWriteContext? = nil,
+        samplingContext: TraceSamplingContext? = nil
     ) -> OTSpan {
         var combinedTags = self.tags
         if let userTags = tags {
@@ -158,7 +158,18 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
         // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
         // available on the caller thread.
-        let writer = eventWriter ?? LazySpanWriteContext(featureScope: featureScope)
+        let originalWriter = eventWriter ?? LazySpanWriteContext(featureScope: featureScope)
+        let writer: SpanWriteContext
+        if let capture = samplingContext?.capture {
+            writer = CapturedRUMSpanWriteContext(
+                original: originalWriter,
+                owner: capture.owner,
+                value: capture.value,
+                sessionOwnership: .request(samplingContext?.sessionID)
+            )
+        } else {
+            writer = originalWriter
+        }
         let span = DDSpan(
             tracer: self,
             context: spanContext,

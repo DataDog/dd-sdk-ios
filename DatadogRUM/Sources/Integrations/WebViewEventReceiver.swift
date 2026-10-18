@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal typealias JSON = [String: Any]
@@ -49,11 +50,24 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - message: The message containing the Browser RUM event.
     ///   - core: The core to write the event.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        let browserMessage: WebViewMessage
+        let capturedMessage: WebViewMessageWithRUMContext?
         switch message {
-        case let .webview(.rum(event)):
-            receive(rum: event, core: core)
-        case let .webview(.telemetry(event)):
-            receive(telemetry: event)
+        case let .webview(message):
+            browserMessage = message
+            capturedMessage = nil
+        case let .payload(message as WebViewMessageWithRUMContext):
+            browserMessage = message.message
+            capturedMessage = message
+        default:
+            return false
+        }
+
+        switch browserMessage {
+        case let .rum(event):
+            receive(rum: event, capture: capturedMessage, core: core)
+        case let .telemetry(event):
+            receive(telemetry: event, capture: capturedMessage, core: core)
         default:
             return false
         }
@@ -61,21 +75,38 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         return true
     }
 
-    private func receive(rum event: JSON, core: DatadogCoreProtocol) {
-        commandSubscriber.process(
-            command: RUMKeepSessionAliveCommand(
-                time: dateProvider.now,
-                attributes: [:]
-            )
-        )
+    private func receive(rum event: JSON, capture: WebViewMessageWithRUMContext?, core: DatadogCoreProtocol) {
+        if let capture {
+            guard capture.capture.owner.isValid,
+                  RUMContextHandoff.owner(in: core) === capture.capture.owner else {
+                return
+            }
+        }
+        if capture == nil {
+            keepRUMSessionAlive()
+        }
 
         featureScope.eventWriteContext { context, writer in
-            guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled else {
-                return // Drop event if RUM is not enabled or RUM session is not sampled
+            let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
+            let rum: RUMCoreContext?
+            if let capture {
+                rum = capture.rumContext(in: core, sessionID: currentRUM?.sessionID)
+            } else {
+                rum = currentRUM
+            }
+            guard let rum, rum.sessionSampler.isSampled else {
+                return // Drop unavailable or unsampled native ownership without borrowing another session.
             }
 
+            if let capture {
+                self.keepRUMSessionAlive(capture: capture.capture)
+            }
             var webViewContext = context.additionalContext(ofType: RUMWebViewContext.self) ?? .init()
             var event = event
+            if capture != nil {
+                // Supplied containers have no proven native ownership, including malformed events.
+                event[RUMViewEvent.CodingKeys.container.rawValue] = nil
+            }
 
             event["ddtags"] = DDTag.merge(context.ddTags, with: event["ddtags"] as? String)
 
@@ -98,7 +129,16 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 event["date"] = correctedDate
 
                 // Inject the container source and view id
-                if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
+                let viewID: String?
+                if let capture {
+                    // A captured native callback can only use history from its originating scene.
+                    viewID = capture.capture.value.sceneIdentifier.flatMap {
+                        self.viewCache.lastView(before: correctedDate, hasReplay: true, in: RUMSceneIdentifier(rawValue: $0))
+                    }
+                } else {
+                    viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true)
+                }
+                if let viewID {
                     event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
                         source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
                         view: RUMViewEvent.Container.View(id: viewID)
@@ -150,11 +190,24 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func receive(telemetry event: JSON) {
+    private func keepRUMSessionAlive(capture: RUMContextHandoff.Capture? = nil) {
+        commandSubscriber.process(
+            command: RUMKeepSessionAliveCommand(time: dateProvider.now, attributes: [:], capture: capture)
+        )
+    }
+
+    private func receive(telemetry event: JSON, capture: WebViewMessageWithRUMContext?, core: DatadogCoreProtocol) {
         // RUM-2866: Update with dedicated telemetry track
         featureScope.eventWriteContext { context, writer in
-            guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled else {
-                return // Drop event if RUM is not enabled or RUM session is not sampled
+            let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
+            let rum: RUMCoreContext?
+            if let capture {
+                rum = capture.rumContext(in: core, sessionID: currentRUM?.sessionID)
+            } else {
+                rum = currentRUM
+            }
+            guard let rum, rum.sessionSampler.isSampled else {
+                return // Drop unavailable or unsampled native ownership without borrowing another session.
             }
 
             var event = event

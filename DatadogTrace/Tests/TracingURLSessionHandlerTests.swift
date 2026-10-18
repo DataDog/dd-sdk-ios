@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 
+@_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogTrace
 
@@ -2086,5 +2087,52 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
         XCTAssertEqual(actualSampled, expectedSampled, "Cross-SDK vector: handler must match composed rate Knuth decision")
+    }
+}
+
+extension TracingURLSessionHandlerTests {
+    func testAutomaticConstructorsInstallCapturedOwnershipForInjectedAndUninjectedSpans() throws {
+        for injected in [false, true] {
+            for mode in TraceConstructorCaptureFixture.Mode.allCases {
+                let fixture = TraceConstructorCaptureFixture(mode: mode)
+                let sampler = fixture.sessionSampler()
+                let tracer = DatadogTracer.mockWith(
+                    featureScope: fixture.scope,
+                    spanEventBuilder: .mockWith(bundleWithRUM: true)
+                )
+                let handler = TracingURLSessionHandler(
+                    tracer: tracer,
+                    contextReceiver: ContextMessageReceiver(),
+                    samplingRate: 100,
+                    firstPartyHosts: .init(["www.example.com": [.datadog]]),
+                    traceContextInjection: .all,
+                    telemetry: NOPTelemetry(),
+                    sessionSampler: sampler
+                )
+                var network = NetworkContext(rumContext: fixture.original)
+                network.rumURLSessionContext = .init(owner: fixture.owner, value: fixture.value)
+                let (request, trace, state) = handler.modify(
+                    request: makeRequest(withExistingDatadogHeaders: !injected),
+                    headerTypes: [.datadog],
+                    networkContext: network
+                )
+                XCTAssertEqual(sampler.legacyCalls, 1)
+                XCTAssertEqual(sampler.richCalls, 0)
+                XCTAssertEqual(sampler.legacyPolicies, [.combinedWithSessionRate])
+                XCTAssertEqual(trace != nil, injected)
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), injected ? "1" : "existing")
+                let interception = makeCompletedInterception()
+                if let trace { interception.register(trace: trace) }
+                handler.interceptionDidStart(interception: interception, capturedStates: [try XCTUnwrap(state)])
+                handler.interceptionDidComplete(interception: interception)
+                XCTAssertEqual(try fixture.scope.spanEventsWritten().count, 0)
+                fixture.resolveReceiptAndFlush()
+                let events = try fixture.scope.spanEventsWritten()
+                XCTAssertEqual(events.count, 1)
+                fixture.assertCapturedTags(try XCTUnwrap(events.first))
+                XCTAssertEqual(events.first?.operationName, "urlsession.request")
+                XCTAssertEqual(sampler.legacyCalls, 1)
+            }
+        }
     }
 }

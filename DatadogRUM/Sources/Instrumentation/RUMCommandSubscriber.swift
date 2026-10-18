@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// The Command Subscriber is able to process RUM Commands.
@@ -15,6 +16,31 @@ internal protocol RUMCommandSubscriber: AnyObject {
     ///
     /// - Parameter command: The RUM command to process.
     func process(command: RUMCommand)
+    var isMultiSceneTrackingEnabled: Bool { get }
+    var currentExecutionContext: RUMContextHandoff.CurrentValue? { get }
+}
+
+internal extension RUMCommandSubscriber {
+    var isMultiSceneTrackingEnabled: Bool { false }
+    var currentExecutionContext: RUMContextHandoff.CurrentValue? { nil }
+
+    var currentExecutionTarget: RUMCommandTarget {
+        guard isMultiSceneTrackingEnabled, let handoff = currentExecutionContext else {
+            return .processRepresentative
+        }
+        if let viewID = handoff.rumContext?.viewID.flatMap(UUID.init(uuidString:)).map(RUMUUID.init(rawValue:)) {
+            return .view(viewID)
+        }
+        if let identifier = handoff.sceneIdentifier {
+            return .scene(RUMSceneIdentifier(rawValue: identifier))
+        }
+        return .processRepresentative
+    }
+}
+
+/// Supplies immutable scene context without synchronizing command processing.
+internal protocol RUMContextSnapshotProviding: AnyObject {
+    func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext?
 }
 
 /// A Command Publisher is responsible for creating RUM Commands

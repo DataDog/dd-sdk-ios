@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// A `Sampling` that reports a decision which was already made.
@@ -65,6 +66,23 @@ internal final class SamplerProvider: TracerSamplerProvider, @unchecked Sendable
     ///
     /// - returns: The appropriate sampler to be used for tracing operations with custom
     /// sampling rates.
+    func samplerWithRUMContext(samplingRate: SampleRate?) -> TraceSamplingContext {
+        let rate = samplingRate ?? sampleRate
+        let context: RUMSessionSamplingContext
+        if let sampler = sessionSampler as? SessionSamplerWithRUMContext {
+            context = sampler.decisionWithRUMContext(for: .featureRate, rate: rate)
+        } else {
+            context = RUMSessionSamplingContext(decision: sessionSampler?.decision(for: .featureRate, rate: rate), capture: nil)
+        }
+        let sampler: Sampling
+        if let decision = context.decision {
+            sampler = DecidedSampler(samplingRate: rate.normalizedSampleRate, isSampled: decision.isSampled)
+        } else {
+            sampler = Sampler(samplingRate: rate)
+        }
+        return TraceSamplingContext(sampler: sampler, capture: context.capture, sessionID: context.decision?.sessionID)
+    }
+
     func makeSamplerFor(samplingRate: DatadogInternal.SampleRate) -> any Sampling {
         // `.featureRate`, not `.combinedWithSessionRate`: `Trace.Configuration.sampleRate` is an
         // absolute trace sampling rate, so the RUM session contributes only the seed. A Trace rate of

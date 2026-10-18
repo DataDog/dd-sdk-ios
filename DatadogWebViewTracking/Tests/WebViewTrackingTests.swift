@@ -8,8 +8,10 @@
 
 import XCTest
 import WebKit
-import TestUtilities
+@testable import TestUtilities
+@_spi(Internal)
 import DatadogInternal
+@_spi(Experimental)
 @testable import DatadogRUM
 @testable import DatadogWebViewTracking
 
@@ -1176,5 +1178,339 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("https://foo.com") })
     }
 }
+
+#if os(iOS) && DD_MOUNTED_WEBVIEW_ACCEPTANCE
+import UIKit
+@testable import DatadogCore
+
+@available(iOS 27.0, *)
+@MainActor
+final class WebViewTrackingLifetimeTests: XCTestCase {
+    func testRemovingRealWebKitHandlerReleasesOwnedObjects() async throws {
+        try await checkLifetime(mode: .frameworkControl)
+    }
+
+    func testPublicDisableReleasesOwnedObjectsWhenMultiSceneTrackingIsOff() async throws {
+        try await checkLifetime(mode: .off)
+    }
+
+    func testPublicDisableAndCoreTeardownRetireOwnershipWithoutRetainingOwnedObjects() async throws {
+        try await checkLifetime(mode: .on)
+    }
+
+    private func checkLifetime(mode: WebViewLifetimeMode) async throws {
+        let fixture = WebViewLifetimeFixture()
+        do {
+            try fixture.prepare(mode: mode)
+        } catch {
+            await fixture.finish()
+            throw error
+        }
+
+        let references = fixture.references
+        XCTAssertNotNil(references.webView)
+        XCTAssertNotNil(references.window)
+        XCTAssertNotNil(references.root)
+        XCTAssertNotNil(references.contentController)
+        XCTAssertTrue(references.webView === fixture.webView)
+        XCTAssertTrue(references.window === fixture.window)
+        XCTAssertTrue(references.root === fixture.root)
+        XCTAssertTrue(references.contentController === fixture.controller)
+        if mode != .frameworkControl {
+            XCTAssertNotNil(references.core)
+            XCTAssertTrue(references.core === fixture.core)
+        }
+        let retainedBridge = fixture.controller?.addedHandler as? DDScriptMessageHandler
+        let retainedRollover = retainedBridge?.sessionRolloverHandler
+        let retainedOwner = fixture.core?.rumContextHandoffOwner
+        let retainedCapture = retainedRollover?.captureRUMContext(forSceneIdentifier: "owned-lifetime-fixture")
+        if mode == .frameworkControl {
+            XCTAssertNotNil(fixture.controller?.addedHandler, "Real WebKit must retain the handler after its creation scope ends")
+            XCTAssertNil(fixture.core)
+        } else {
+            XCTAssertNotNil(retainedBridge)
+            XCTAssertNotNil(retainedRollover)
+            XCTAssertTrue(retainedRollover?.coreTesting === fixture.core)
+            XCTAssertEqual(retainedRollover?.hasNativeOwnership, mode == .on)
+            if mode == .on {
+                XCTAssertNotNil(retainedOwner)
+                XCTAssertEqual(retainedOwner?.isValid, true)
+                XCTAssertNotNil(retainedCapture)
+                XCTAssertTrue(retainedCapture?.owner === retainedOwner)
+            } else {
+                XCTAssertNil(retainedOwner)
+                XCTAssertNil(retainedCapture)
+            }
+        }
+
+        await fixture.finish()
+        XCTAssertNil(references.core)
+        XCTAssertNil(references.webView)
+        XCTAssertNil(references.window)
+        XCTAssertNil(references.root)
+        XCTAssertNil(references.contentController)
+        if mode == .on {
+            XCTAssertEqual(retainedOwner?.isValid, false)
+            XCTAssertEqual(retainedCapture?.owner.isValid, false)
+            XCTAssertNil(retainedRollover?.coreTesting)
+            let retired = retainedRollover?.captureRUMContext(forSceneIdentifier: {
+                XCTFail("A retired owner must not resolve native UI")
+                return nil
+            })
+            XCTAssertNotNil(retired, "Retirement must remain authoritative rather than return the legacy fallback")
+            XCTAssertTrue(retired?.owner === retainedOwner)
+            XCTAssertNil(retired?.value.sceneIdentifier)
+            XCTAssertNil(retired?.value.rumContext)
+            XCTAssertEqual(retired?.value.hasPendingUserAction, false)
+            XCTAssertNil(retired?.value.excludedUserActionID)
+        }
+        withExtendedLifetime((retainedBridge, retainedRollover, retainedOwner, retainedCapture)) {}
+    }
+}
+
+private enum WebViewLifetimeMode: Equatable {
+    case frameworkControl, off, on
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private final class WebViewLifetimeFixture {
+    var core: DatadogCore?
+    var directory: CoreDirectory?
+    var window: WebViewLifetimeWindow?
+    var root: WebViewLifetimeRoot?
+    var webView: WebViewLifetimeView?
+    var controller: WebViewLifetimeController?
+    let references = WebViewLifetimeReferences()
+    private var mode = WebViewLifetimeMode.frameworkControl
+    private var releases: [XCTestExpectation] = []
+
+    func prepare(mode: WebViewLifetimeMode) throws {
+        self.mode = mode
+        let contentController = WebViewLifetimeController(released: release("owned content controller"))
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = contentController
+        let ownedWebView = WebViewLifetimeView(configuration: configuration, released: release("owned WebView"))
+        let ownedRoot = WebViewLifetimeRoot(released: release("owned root controller"))
+        let ownedWindow = WebViewLifetimeWindow(released: release("owned window"))
+        ownedRoot.view.addSubview(ownedWebView)
+        ownedWindow.rootViewController = ownedRoot
+        controller = contentController
+        webView = ownedWebView
+        root = ownedRoot
+        window = ownedWindow
+        references.contentController = contentController
+        references.webView = ownedWebView
+        references.root = ownedRoot
+        references.window = ownedWindow
+
+        if mode == .frameworkControl {
+            autoreleasepool {
+                let handler = WebViewLifetimeHandler(released: release("framework handler"))
+                contentController.add(handler, name: "lifetime-control")
+            }
+            return
+        }
+
+        let ownedDirectory = temporaryUniqueCoreDirectory()
+        directory = ownedDirectory
+        try ownedDirectory.create()
+        let context = DatadogContext.mockWith(
+            clientToken: "webview-lifetime-local-only",
+            service: "webview-lifetime-local-only",
+            env: "fixture",
+            version: "1",
+            trackingConsent: .granted
+        )
+        let ownedCore = DatadogCore(
+            directory: ownedDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: DatadogContextProvider(context: context),
+            applicationVersion: "1",
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        core = ownedCore
+        references.core = ownedCore
+        var rum = RUM.Configuration(
+            applicationID: "00000000-0000-4000-8000-000000000003",
+            sessionSampleRate: 100,
+            trackFrustrations: false,
+            trackBackgroundEvents: true,
+            longTaskThreshold: nil,
+            vitalsUpdateFrequency: nil,
+            trackAnonymousUser: false,
+            trackMemoryWarnings: false,
+            trackSlowFrames: false,
+            telemetrySampleRate: 0
+        )
+        rum.featureFlags[.multiSceneTracking] = mode == .on
+        rum.timeseries = nil
+        RUM.enable(with: rum, in: ownedCore)
+        XCTAssertEqual(ownedCore.feature(named: RUMFeature.name, type: RUMFeature.self)?.isMultiSceneTrackingEnabled, mode == .on)
+        WebViewTracking.enable(webView: ownedWebView, hosts: ["lifetime.invalid"], in: ownedCore)
+        XCTAssertEqual(contentController.installedName, DDScriptMessageHandler.name)
+        XCTAssertEqual(contentController.userScripts.filter { $0.source.hasPrefix(WebViewTracking.jsCodePrefix) }.count, 1)
+        XCTAssertNotNil(WebViewSessionRolloverHandler.handlerPerViewTesting.object(forKey: ownedWebView))
+        XCTAssertTrue(WebViewSessionRolloverHandler.handlerPerViewTesting.object(forKey: ownedWebView) === (contentController.addedHandler as? DDScriptMessageHandler)?.sessionRolloverHandler)
+    }
+
+    private func release(_ description: String) -> XCTestExpectation {
+        let expectation = XCTestExpectation(description: description)
+        expectation.assertForOverFulfill = true
+        releases.append(expectation)
+        return expectation
+    }
+
+    func finish() async {
+        autoreleasepool {
+            if let webView {
+                webView.stopLoading()
+                if mode == .frameworkControl {
+                    controller?.removeScriptMessageHandler(forName: "lifetime-control")
+                } else {
+                    let handler = (controller?.addedHandler as? DDScriptMessageHandler)?.sessionRolloverHandler
+                    WebViewTracking.disable(webView: webView)
+                    XCTAssertNil(WebViewSessionRolloverHandler.handlerPerViewTesting.object(forKey: webView))
+                    XCTAssertNil(handler?.activeWebViewsTesting.object(forKey: webView))
+                    XCTAssertFalse(webView.configuration.userContentController.userScripts.contains { $0.source.hasPrefix(WebViewTracking.jsCodePrefix) })
+                }
+            }
+            XCTAssertNil(controller?.installedName)
+            window?.rootViewController = nil
+            webView?.removeFromSuperview()
+            webView = nil
+            root = nil
+            window = nil
+            controller = nil
+        }
+        let cleanup = WebViewLifetimeCleanup()
+        WebViewLifetimeBackground.tearDown(core: core, directory: directory, cleanup: cleanup)
+        core = nil
+        directory = nil
+        let cleaned = await XCTWaiter.fulfillment(of: [cleanup.completed], timeout: 60)
+        XCTAssertEqual(cleaned, .completed, "Owned teardown did not complete")
+        XCTAssertEqual(cleanup.failures, [])
+        let released = await XCTWaiter.fulfillment(of: releases, timeout: 60)
+        XCTAssertEqual(released, .completed, "Owned objects did not deinitialize; inspect the framework control before attributing an SDK regression")
+    }
+}
+
+private final class WebViewLifetimeReferences {
+    weak var core: DatadogCore?
+    weak var webView: WKWebView?
+    weak var window: UIWindow?
+    weak var root: UIViewController?
+    weak var contentController: WKUserContentController?
+}
+
+private final class WebViewLifetimeCleanup {
+    let completed = XCTestExpectation(description: "owned Core and directories torn down")
+    @ReadWriteLock
+    var failures: [String] = []
+}
+
+private final class WebViewLifetimeCoreHandle {
+    var core: DatadogCore?
+    init(_ core: DatadogCore?) { self.core = core }
+}
+
+private enum WebViewLifetimeBackground {
+    static func tearDown(core: DatadogCore?, directory: CoreDirectory?, cleanup: WebViewLifetimeCleanup) {
+        let handle = WebViewLifetimeCoreHandle(core)
+        let queue = DispatchQueue(label: "webview-lifetime-cleanup", autoreleaseFrequency: .workItem)
+        queue.async {
+            handle.core?.flushAndTearDown()
+            // Clear Core before completion, even if Dispatch retains this closure.
+            handle.core = nil
+            if let directory {
+                for owned in [directory.osDirectory, directory.coreDirectory] {
+                    do { try owned.delete() } catch { cleanup.failures.append("owned-directory-cleanup") }
+                }
+            }
+        }
+        queue.async {
+            DispatchQueue.main.async { cleanup.completed.fulfill() }
+        }
+    }
+}
+
+@MainActor
+private final class WebViewLifetimeController: WKUserContentController {
+    private let released: XCTestExpectation
+    private(set) weak var addedHandler: WKScriptMessageHandler?
+    private(set) var installedName: String?
+
+    init(released: XCTestExpectation) {
+        self.released = released
+        super.init()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    deinit { released.fulfill() }
+
+    override func add(_ scriptMessageHandler: WKScriptMessageHandler, name: String) {
+        super.add(scriptMessageHandler, name: name)
+        addedHandler = scriptMessageHandler
+        installedName = name
+    }
+
+    override func removeScriptMessageHandler(forName name: String) {
+        super.removeScriptMessageHandler(forName: name)
+        if installedName == name { installedName = nil }
+    }
+}
+
+@MainActor
+private final class WebViewLifetimeView: WKWebView {
+    private let released: XCTestExpectation
+    init(configuration: WKWebViewConfiguration, released: XCTestExpectation) {
+        self.released = released
+        super.init(frame: .zero, configuration: configuration)
+    }
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    deinit { released.fulfill() }
+}
+
+@MainActor
+private final class WebViewLifetimeRoot: UIViewController {
+    private let released: XCTestExpectation
+    init(released: XCTestExpectation) {
+        self.released = released
+        super.init(nibName: nil, bundle: nil)
+    }
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    deinit { released.fulfill() }
+}
+
+@MainActor
+private final class WebViewLifetimeWindow: UIWindow {
+    private let released: XCTestExpectation
+    init(released: XCTestExpectation) {
+        self.released = released
+        super.init(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+    }
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    deinit { released.fulfill() }
+}
+
+private final class WebViewLifetimeHandler: NSObject, WKScriptMessageHandler {
+    private let released: XCTestExpectation
+    init(released: XCTestExpectation) {
+        self.released = released
+        super.init()
+    }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {}
+    deinit { released.fulfill() }
+}
+#endif
 
 #endif

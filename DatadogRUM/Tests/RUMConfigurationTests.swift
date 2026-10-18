@@ -60,6 +60,18 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertFalse(emptyFlags[.none], "should be `false` when the flag has no default")
     }
 
+    func testMultiSceneTrackingIsDisabledByDefault() {
+        let config = RUM.Configuration(applicationID: "app-id")
+        let emptyFlags: RUM.Configuration.FeatureFlags = [:]
+        let explicitFlags: RUM.Configuration.FeatureFlags = [.multiSceneTracking: true]
+
+        XCTAssertFalse(config.featureFlags[.multiSceneTracking])
+        XCTAssertFalse(emptyFlags[.multiSceneTracking])
+        XCTAssertTrue(explicitFlags[.multiSceneTracking])
+        XCTAssertTrue(explicitFlags[.trackScrollAndSwipeActions])
+        XCTAssertTrue(explicitFlags[.viewUpdates])
+    }
+
     func testDefaultURLSessionTrackingConfiguration() {
         // When
         let tracking = RUM.Configuration.URLSessionTracking()
