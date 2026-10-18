@@ -211,7 +211,7 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         }
         XCTAssertTrue(details.value)
         XCTAssertEqual(details.variant, "variation-124")
-        XCTAssertEqual(details.reason, "TARGETING_MATCH")
+        XCTAssertEqual(details.reason, "CACHED")
         XCTAssertEqual(details.allocationKey, "allocation-124")
         XCTAssertNil(details.error)
         XCTAssertEqual(RUMContextHandoff.withValue(executionValue(second, scene: secondScene), for: owner) {
