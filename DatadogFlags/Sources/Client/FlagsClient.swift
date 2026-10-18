@@ -38,17 +38,17 @@ import DatadogInternal
 public final class FlagsClient {
     /// Configuration for an individual Flags client.
     public struct Configuration {
-        /// Enables the `dd_evaluation_telemetry_opt_out` context attribute as a local telemetry control.
+        /// Enables evaluation telemetry suppression through the `dd_evaluation_telemetry_opt_out` context attribute.
         ///
         /// Only a boolean `true` suppresses new evaluation events, counts, and automatic RUM flag annotations.
-        /// Exposure logging and flag assignments remain unchanged. Previously recorded telemetry is not removed.
-        /// When enabled, the reserved attribute is excluded from assignment requests.
+        /// Exposure logging remains unchanged. Previously recorded telemetry is not removed.
+        /// The attribute remains available for targeting and exposure reporting.
         ///
         /// Default: `false`.
         public var enableEvaluationTelemetryOptOutParameter: Bool
 
         /// Creates configuration for an individual Flags client.
-        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables the local evaluation telemetry control. Default: `false`.
+        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables the evaluation telemetry control. Default: `false`.
         public init(enableEvaluationTelemetryOptOutParameter: Bool = false) {
             self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
         }
@@ -255,29 +255,13 @@ extension FlagsClient: FlagsClientProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        guard configuration.enableEvaluationTelemetryOptOutParameter else {
-            repository.setEvaluationContext(context, completion: completion)
-            return
-        }
-
-        let assignmentContext = Self.assignmentContext(context)
-        var isTelemetryOnlyUpdate = false
-        _telemetryContext.mutate { previous in
-            if let previous {
-                isTelemetryOnlyUpdate = previous != context && Self.assignmentContext(previous) == assignmentContext
-            }
-            previous = context
-        }
-
-        if isTelemetryOnlyUpdate {
-            completion(.success(()))
-        } else {
-            repository.setEvaluationContext(assignmentContext, completion: completion)
-        }
+        telemetryContext = context
+        repository.setEvaluationContext(context, completion: completion)
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        let trackEvaluationTelemetry = !isEvaluationTelemetryOptedOut(in: telemetryContext)
+        let context = repository.context
+        let trackEvaluationTelemetry = !isEvaluationTelemetryOptedOut(in: telemetryContext ?? context)
         let defaultAssignment = FlagAssignment(
             allocationKey: "",
             variationKey: "",
@@ -286,7 +270,7 @@ extension FlagsClient: FlagsClientProtocol {
             doLog: false
         )
 
-        guard let context = repository.context else {
+        guard let context else {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
@@ -372,12 +356,6 @@ extension FlagsClient: FlagsClientProtocol {
     private func isEvaluationTelemetryOptedOut(in context: FlagsEvaluationContext?) -> Bool {
         configuration.enableEvaluationTelemetryOptOutParameter && context?.attributes[Self.telemetryOptOutAttribute] == .bool(true)
     }
-
-    private static func assignmentContext(_ context: FlagsEvaluationContext) -> FlagsEvaluationContext {
-        var attributes = context.attributes
-        attributes.removeValue(forKey: telemetryOptOutAttribute)
-        return .init(targetingKey: context.targetingKey, attributes: attributes)
-    }
 }
 
 // MARK: - Internal methods consumed by the React Native SDK
@@ -393,7 +371,7 @@ extension FlagsClient: FlagsClientInternal {
         trackEvaluation(
             key: key,
             assignment: assignment,
-            context: configuration.enableEvaluationTelemetryOptOutParameter ? Self.assignmentContext(context) : context,
+            context: context,
             trackEvaluationTelemetry: !isEvaluationTelemetryOptedOut(in: context)
         )
     }

@@ -1,6 +1,6 @@
 # Evaluation telemetry control
 
-Enable the local context control when creating a Flags client:
+Enable the evaluation telemetry control when creating a Flags client:
 
 ```swift
 Flags.enable()
@@ -18,9 +18,11 @@ client.setEvaluationContext(
 
 The option defaults to `false`. When enabled, only a typed boolean `true` suppresses new evaluation events, evaluation counts, and automatic RUM flag annotations. Missing, false, null, numeric, and string values do not suppress them.
 
-The SDK preserves flag values, details, exposure logging, and unrelated telemetry. It does not remove events or annotations recorded before the update.
+Telemetry suppression does not change flag evaluation, exposure logging, or unrelated telemetry. It does not remove events or annotations recorded before the update.
 
-When enabled, the SDK consumes the reserved attribute locally and excludes it from assignment requests. Changes to only this attribute take effect immediately. They do not request assignments, change readiness, or clear cached assignments. Genuine targeting changes still use the normal assignment refresh behavior. Repeating the same complete context still requests a refresh.
+The attribute remains available in assignment requests, stored context, and exposure attributes. Applications can use it in targeting rules. Changes use the normal assignment refresh and exposure deduplication behavior. A targeting rule can therefore change an assignment when this attribute changes.
+
+The latest requested context controls telemetry suppression immediately, including while an assignment refresh is pending or fails. Before the first context update, cached context controls suppression. The client configuration still determines whether suppression is enabled.
 
 Each client keeps its own configuration and current policy. If a client name already exists, `create` returns that client and keeps its original configuration.
 
