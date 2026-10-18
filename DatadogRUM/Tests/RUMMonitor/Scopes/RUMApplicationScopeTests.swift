@@ -979,7 +979,6 @@ extension RUMApplicationScopeTests {
         XCTAssertTrue(fixture.resources.isEmpty)
         try fixture.assertAction("new", resources: 0, errors: 0)
     }
-
 }
 
 extension RUMApplicationScopeTests {
@@ -1520,8 +1519,10 @@ extension RUMApplicationScopeTests {
         return .init(
             owner: owner,
             value: .init(
-                rumContext: try capturedReceiptContext(app, view: view), sceneIdentifier: routingSceneA.rawValue,
-                hasPendingUserAction: false, excludedUserActionID: nil
+                rumContext: try capturedReceiptContext(app, view: view),
+                sceneIdentifier: routingSceneA.rawValue,
+                hasPendingUserAction: false,
+                excludedUserActionID: nil
             )
         )
     }
@@ -1547,8 +1548,10 @@ extension RUMApplicationScopeTests {
                     && !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: now.timeIntervalSince(self.routingDate))
             }
             let receiver = WebViewEventReceiver(
-                featureScope: receiverScope, dateProvider: DateProviderMock(now: routingDate.addingTimeInterval(5)),
-                commandSubscriber: subscriber, viewCache: ViewCache(dateProvider: DateProviderMock())
+                featureScope: receiverScope,
+                dateProvider: DateProviderMock(now: routingDate.addingTimeInterval(5)),
+                commandSubscriber: subscriber,
+                viewCache: ViewCache(dateProvider: DateProviderMock())
             )
             XCTAssertTrue(receiver.receive(
                 message: .payload(WebViewMessageWithRUMContext(message: .rum(["date": 1_600_000_003_000, "view": ["id": "browser"]]), capture: capture)),
@@ -1584,7 +1587,8 @@ extension RUMApplicationScopeTests {
             _ = processRouting(
                 app,
                 command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(5), attributes: [:], capture: capture),
-                context: context, writer: writer
+                context: context,
+                writer: writer
             )
             XCTAssertTrue(app.activeSession === session)
             XCTAssertEqual(writer.events.count, count)
@@ -1603,7 +1607,8 @@ extension RUMApplicationScopeTests {
             _ = processRouting(
                 app,
                 command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(elapsed), attributes: [:], capture: capture),
-                context: context, writer: writer
+                context: context,
+                writer: writer
             )
             XCTAssertTrue(app.activeSession === session)
             XCTAssertNil(session.endReason)
@@ -1637,7 +1642,8 @@ extension RUMApplicationScopeTests {
         _ = processRouting(
             app,
             command: RUMKeepSessionAliveCommand(time: expiredDate, attributes: [:], capture: capture),
-            context: context, writer: writer
+            context: context,
+            writer: writer
         )
 
         XCTAssertTrue(app.activeSession === session)

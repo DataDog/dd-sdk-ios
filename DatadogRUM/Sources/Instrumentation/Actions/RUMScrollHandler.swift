@@ -177,7 +177,8 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
         func pending(receipt: RUMContextHandoff.ActionReceipt?) -> Capture {
             Capture(scene: scene, value: value.map {
                 RUMContextHandoff.CurrentValue(
-                    rumContext: $0.rumContext, sceneIdentifier: $0.sceneIdentifier,
+                    rumContext: $0.rumContext,
+                    sceneIdentifier: $0.sceneIdentifier,
                     hasPendingUserAction: true,
                     excludedUserActionID: $0.rumContext?.userActionID,
                     actionReceipt: receipt
@@ -189,8 +190,10 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
         var terminal: Capture {
             Capture(scene: scene, value: scene.map {
                 RUMContextHandoff.CurrentValue(
-                    rumContext: nil, sceneIdentifier: $0.rawValue,
-                    hasPendingUserAction: false, excludedUserActionID: nil
+                    rumContext: nil,
+                    sceneIdentifier: $0.rawValue,
+                    hasPendingUserAction: false,
+                    excludedUserActionID: nil
                 )
             })
         }
@@ -287,9 +290,13 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
     }
 
     func process(command: RUMCommand) {
-        guard let frame = publicationFrame else { return }
+        guard let frame = publicationFrame else {
+            return
+        }
         if var start = command as? RUMStartUserActionCommand {
-            guard isOwnedSubscriber else { return }
+            guard isOwnedSubscriber else {
+                return
+            }
             let ownership = RUMContinuousActionOwnership(sceneIdentifier: frame.capture.scene, owner: owner)
             start.target = .continuousAction(ownership)
             let receipt = frame.capture.value.map {
@@ -332,13 +339,17 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
             context = nil
         }
         return Capture(scene: scene, value: RUMContextHandoff.CurrentValue(
-            rumContext: context, sceneIdentifier: scene.rawValue,
-            hasPendingUserAction: false, excludedUserActionID: nil
+            rumContext: context,
+            sceneIdentifier: scene.rawValue,
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
         ))
     }
 
     private var isOwnedSubscriber: Bool {
-        guard owner.isValid, let monitor = expectedMonitor, subscriber === monitor else { return false }
+        guard owner.isValid, let monitor = expectedMonitor, subscriber === monitor else {
+            return false
+        }
         return monitor.isMultiSceneTrackingEnabled && monitor.rumContextHandoffOwner === owner
     }
 
@@ -350,7 +361,9 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
     }
 
     private func withCapture<T>(_ capture: Capture, operation: () -> T) -> T {
-        guard let value = capture.value else { return operation() }
+        guard let value = capture.value else {
+            return operation()
+        }
         return RUMContextHandoff.withValue(value, for: owner, operation: operation)
     }
 }

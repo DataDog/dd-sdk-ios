@@ -1128,8 +1128,10 @@ class WebViewEventReceiverTests: XCTestCase {
             let core = CapturedWebViewCore()
             core.owner = owner
             let receiver = WebViewEventReceiver(
-                featureScope: scope, dateProvider: DateProviderMock(),
-                commandSubscriber: RUMCommandSubscriberMock(), viewCache: ViewCache(dateProvider: DateProviderMock())
+                featureScope: scope,
+                dateProvider: DateProviderMock(),
+                commandSubscriber: RUMCommandSubscriberMock(),
+                viewCache: ViewCache(dateProvider: DateProviderMock())
             )
             var event = fields
             event["container"] = ["view": ["id": "unproved-peer"]]

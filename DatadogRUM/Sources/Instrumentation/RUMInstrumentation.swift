@@ -228,8 +228,10 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             if isMultiSceneTrackingEnabled, #available(iOS 27.0, *),
                let owner = rumContextHandoffOwner, owner.isValid, let monitor = handoffMonitor {
                 delegateHandler = RUMSceneScrollHandler(
-                    legacyHandler: handler, dateProvider: dateProvider,
-                    owner: owner, expectedMonitor: monitor
+                    legacyHandler: handler,
+                    dateProvider: dateProvider,
+                    owner: owner,
+                    expectedMonitor: monitor
                 )
             } else {
                 delegateHandler = handler

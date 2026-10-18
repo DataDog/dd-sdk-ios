@@ -80,9 +80,16 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         didSend.assertForOverFulfill = true
         let firstQueue = DispatchQueue(label: "com.datadoghq.tests.legacy-watchdog-first")
         given(
-            isSimulator: false, isDebugging: false, appVersion: "1.0.0", osVersion: "1.0.0",
-            systemBootTime: 1, vendorId: "foo", processId: UUID(), didCrash: false,
-            didSend: didSend, queue: firstQueue
+            isSimulator: false,
+            isDebugging: false,
+            appVersion: "1.0.0",
+            osVersion: "1.0.0",
+            systemBootTime: 1,
+            vendorId: "foo",
+            processId: UUID(),
+            didCrash: false,
+            didSend: didSend,
+            queue: firstQueue
         )
         sut.update(viewEvent: .mockRandom())
         var stored: RUMViewEvent?
@@ -97,9 +104,16 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
 
         let nextQueue = DispatchQueue(label: "com.datadoghq.tests.legacy-watchdog-next")
         given(
-            isSimulator: false, isDebugging: false, appVersion: "1.0.0", osVersion: "1.0.0",
-            systemBootTime: 1, vendorId: "foo", processId: UUID(), didCrash: false,
-            didSend: didSend, queue: nextQueue
+            isSimulator: false,
+            isDebugging: false,
+            appVersion: "1.0.0",
+            osVersion: "1.0.0",
+            systemBootTime: 1,
+            vendorId: "foo",
+            processId: UUID(),
+            didCrash: false,
+            didSend: didSend,
+            queue: nextQueue
         )
         sut.update(viewEvent: .mockRandom())
         _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())

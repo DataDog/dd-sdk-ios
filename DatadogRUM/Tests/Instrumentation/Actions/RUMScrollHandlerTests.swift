@@ -236,7 +236,8 @@ private class MockScrollView: UIScrollView {
 #endif
 
 #if os(iOS)
-@_spi(Internal) import DatadogInternal
+@_spi(Internal)
+import DatadogInternal
 
 @available(iOS 27.0, *)
 @MainActor
@@ -371,7 +372,9 @@ final class SceneScrollOwnershipTests: XCTestCase {
         let nilSource = f.scroll(in: nil)
         var nested = false
         f.predicate.onAction = { view in
-            guard view === a, !nested else { return }
+            guard view === a, !nested else {
+                return
+            }
             nested = true
             XCTAssertEqual(RUMContextHandoff.current(for: f.owner)?.sceneIdentifier, "a")
             f.handler.interceptWillBeginDragging(b) {
@@ -410,7 +413,9 @@ final class SceneScrollOwnershipTests: XCTestCase {
             var nested = false
             var previousCalls = 0
             let reenter = {
-                guard !nested else { return }
+                guard !nested else {
+                    return
+                }
                 nested = true
                 f.windowB.addSubview(scroll)
                 f.handler.interceptWillBeginDragging(scroll) {
@@ -558,8 +563,7 @@ final class SceneScrollOwnershipTests: XCTestCase {
             f.handler.interceptWillBeginDragging(scroll) {
                 previousCalls += 1
                 XCTAssertNil(RUMContextHandoff.current(for: fresh))
-                if invalidate { XCTAssertNil(RUMContextHandoff.current(for: f.owner)) }
-                else { XCTAssertEqual(RUMContextHandoff.current(for: f.owner)?.hasPendingUserAction, false) }
+                if invalidate { XCTAssertNil(RUMContextHandoff.current(for: f.owner)) } else { XCTAssertEqual(RUMContextHandoff.current(for: f.owner)?.hasPendingUserAction, false) }
             }
             XCTAssertEqual(previousCalls, 1)
             XCTAssertTrue(f.monitor.commands.isEmpty)
@@ -657,7 +661,8 @@ private final class SceneScrollPredicate: UITouchRUMActionsPredicate {
 private final class SceneScrollView: UIScrollView {
     let mockPan = MockPanGestureRecognizer()
     init() { super.init(frame: .zero) }
-    @available(*, unavailable) required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var panGestureRecognizer: UIPanGestureRecognizer { mockPan }
 }
 private final class SceneScrollMonitor: Monitor {

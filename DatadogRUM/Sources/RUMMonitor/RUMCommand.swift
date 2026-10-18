@@ -51,7 +51,9 @@ internal final class RUMContinuousActionOwnership: Equatable {
 
     /// A dropped or deferred Start must not be retried against a later view/action.
     func beginStart() -> Bool {
-        guard !isClosed, !hasAppliedStart, owner.isValid else { return false }
+        guard !isClosed, !hasAppliedStart, owner.isValid else {
+            return false
+        }
         hasAppliedStart = true
         isApplyingStart = true
         return true
@@ -63,7 +65,9 @@ internal final class RUMContinuousActionOwnership: Equatable {
     var canClaim: Bool { isApplyingStart && !isClosed && claim == nil && owner.isValid }
 
     func claimAction(sessionID: RUMUUID, viewID: RUMUUID, actionID: RUMUUID) {
-        guard canClaim else { return }
+        guard canClaim else {
+            return
+        }
         claim = Claim(sessionID: sessionID, viewID: viewID, actionID: actionID)
     }
 
@@ -965,7 +969,9 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
 internal struct RUMKeepSessionAliveCommand: RUMCommand {
     /// Ownership supplied by a captured WebView message; nil preserves legacy processing.
     var target: RUMCommandTarget {
-        guard let capture else { return .processRepresentative }
+        guard let capture else {
+            return .processRepresentative
+        }
         return capture.value.sceneIdentifier.map { .scene(RUMSceneIdentifier(rawValue: $0)) } ?? .none
     }
     var canStartApplicationLaunchView = false

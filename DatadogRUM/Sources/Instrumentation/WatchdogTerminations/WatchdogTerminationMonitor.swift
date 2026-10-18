@@ -89,7 +89,9 @@ internal final class WatchdogTerminationMonitor {
     /// The multi-scene session calls this only after its command propagation completes.
     @discardableResult
     func updateRepresentativeView(viewEvent: RUMViewEvent?) -> Bool {
-        guard currentState == .started else { return false }
+        guard currentState == .started else {
+            return false
+        }
         if let viewEvent {
             DD.logger.debug(ErrorMessages.rumViewEventUpdated)
             feature.rumDataStore.setValue(viewEvent, forKey: .watchdogRUMViewEvent)

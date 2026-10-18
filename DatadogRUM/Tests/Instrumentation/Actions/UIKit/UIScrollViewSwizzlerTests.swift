@@ -281,7 +281,8 @@ private class MockScrollViewDelegate: NSObject, UIScrollViewDelegate {
 #endif
 
 #if os(iOS)
-@_spi(Internal) import DatadogInternal
+@_spi(Internal)
+import DatadogInternal
 
 @available(iOS 27.0, *)
 @MainActor

@@ -912,7 +912,9 @@ private final class HandoffFeatureScope: FeatureScope, RUMContextHandoffOwnerPro
 @MainActor
 extension RUMTests {
     func testWebViewContextCapability_resolvesOnlyRequestedScene() throws {
-        guard #available(iOS 27.0, *) else { return }
+        guard #available(iOS 27.0, *) else {
+            return
+        }
         let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
         let activationCore = HandoffActivationCoreMock()
         activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
@@ -959,7 +961,9 @@ extension RUMTests {
     }
 
     func testCapturedWebViewSession_actualFeatureKeepsOriginalViewWithoutActiveView() throws {
-        guard #available(iOS 27.0, *) else { return }
+        guard #available(iOS 27.0, *) else {
+            return
+        }
         let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
         let activationCore = HandoffActivationCoreMock()
         activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
@@ -992,7 +996,9 @@ extension RUMTests {
     }
 
     func testCapturedWebViewSession_actualFeatureRejectsStaleSameIDAfterExpiry() throws {
-        guard #available(iOS 27.0, *) else { return }
+        guard #available(iOS 27.0, *) else {
+            return
+        }
         for maximumDuration in [false, true] {
             let start = Date(timeIntervalSince1970: 1_000)
             let clock = DateProviderMock(now: start)

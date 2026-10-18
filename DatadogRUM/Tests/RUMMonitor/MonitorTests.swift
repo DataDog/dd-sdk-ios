@@ -1466,8 +1466,7 @@ final class AutomaticContinuousActionOwnershipTests: XCTestCase {
             wait(for: [entered], timeout: 2)
             let receipt = f.receipt()
             XCTAssertNil(f.monitor.rumContextSnapshot(for: .scene(.init(rawValue: "a"))))
-            if earlierTerminal { f.stop(receipt) }
-            else { f.enqueueView("b", scene: "b"); f.start(receipt) }
+            if earlierTerminal { f.stop(receipt) } else { f.enqueueView("b", scene: "b"); f.start(receipt) }
             let firstApplied = expectation(description: "first receipt boundary applied")
             scope.context { _ in
                 if earlierTerminal {

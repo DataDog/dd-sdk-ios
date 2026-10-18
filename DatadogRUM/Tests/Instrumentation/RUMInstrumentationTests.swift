@@ -488,7 +488,8 @@ extension RUMInstrumentationTests {
 #endif
 
 #if os(iOS)
-@_spi(Internal) import DatadogInternal
+@_spi(Internal)
+import DatadogInternal
 
 @MainActor
 final class ScrollFactoryWiringTests: XCTestCase {
@@ -552,7 +553,9 @@ final class ScrollFactoryWiringTests: XCTestCase {
         let subscriber = RUMCommandSubscriberMock()
         instrumentation.publish(to: subscriber)
         XCTAssertIdentical(instrumentation.scrollHandler?.subscriber, subscriber)
-        if #available(iOS 27.0, *) { return }
+        if #available(iOS 27.0, *) {
+            return
+        }
         let monitor = ScrollFactoryMonitor(owner: owner)
         let older = makeInstrumentation(enabled: true, owner: owner, monitor: monitor)
         older.publish(to: subscriber)

@@ -147,6 +147,8 @@ internal final class ViewCache {
     /// Missing, expired and replay-ineligible entries never borrow a peer or legacy view.
     func lastView<Integer>(
         before timestamp: Integer,
+        // Preserve the scene-qualified query's established argument order.
+        // swiftlint:disable:next function_default_parameter_at_end
         hasReplay: Bool? = nil,
         in sceneIdentifier: RUMSceneIdentifier
     ) -> String? where Integer: BinaryInteger {

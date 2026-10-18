@@ -341,7 +341,9 @@ final class ScrollDelegateEnclosureTests: XCTestCase {
         let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
         var nested = false
         handler.onNotify = {
-            guard !nested else { return }
+            guard !nested else {
+                return
+            }
             nested = true
             proxy.scrollViewDidEndDecelerating(UIScrollView())
         }

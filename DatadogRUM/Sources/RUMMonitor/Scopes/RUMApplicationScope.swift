@@ -166,7 +166,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         defer { actionReceipt?.reject() }
         if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
             if command is RUMStartUserActionCommand {
-                guard ownership.beginStart() else { return }
+                guard ownership.beginStart() else {
+                    return
+                }
             } else if command is RUMStopUserActionCommand {
                 // A terminal cannot create/refresh a session or adopt a later action.
                 guard let session = activeSession,

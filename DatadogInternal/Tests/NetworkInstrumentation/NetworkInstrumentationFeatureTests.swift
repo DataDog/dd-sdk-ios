@@ -1312,8 +1312,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertTrue(handler.interceptions.values.allSatisfy { $0.trackingMode == .registeredDelegate && $0.metrics != nil && $0.completion != nil })
     }
 
-
-
     func testAutomaticMode_whenResumeIsConcurrent_itPreparesBeforeForwardingEitherCall() throws {
         let (server, started, completed) = setupInterceptionTest()
         let url = try XCTUnwrap(URL(string: "https://example.com/concurrent-resume"))
@@ -1866,7 +1864,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(task.state, .suspended)
         handler.onRequestMutation = nil
     }
-
 
     private final class ReenteringError: Error, @unchecked Sendable {
         let onRelease: () -> Void

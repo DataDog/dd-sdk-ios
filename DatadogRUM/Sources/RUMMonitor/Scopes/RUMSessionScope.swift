@@ -5,7 +5,8 @@
  */
 
 import Foundation
-@_spi(Internal) import DatadogInternal
+@_spi(Internal)
+import DatadogInternal
 
 /// Receives complete mapped view events on the RUM queue before representative projection.
 internal protocol RUMMappedViewContextUpdating: AnyObject {
@@ -827,7 +828,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
     }
 
     func recordMappedViewEvent(_ event: RUMViewEvent, for viewID: RUMUUID) {
-        guard let sceneState else { return }
+        guard let sceneState else {
+            return
+        }
         guard viewScopes.contains(where: { $0.viewUUID == viewID && $0.isActiveView }),
               event.view.id == viewID.toRUMDataFormat,
               event.session.id == sessionUUID.toRUMDataFormat else {
@@ -838,7 +841,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
     }
 
     private func updateRepresentativeFatalErrorContext() {
-        guard let sceneState else { return }
+        guard let sceneState else {
+            return
+        }
         let activeIDs = Set(viewScopes.lazy.filter { $0.isActiveView }.map { $0.viewUUID })
         sceneState.mappedViewEvents = sceneState.mappedViewEvents.filter { activeIDs.contains($0.key) }
         let viewID = activeView?.viewUUID
