@@ -435,15 +435,17 @@ class MonitorTests: XCTestCase {
         XCTAssertNil((monitorWithoutCollector as RUMActiveContextReader).hasReplay)
 
         // Given — a timeseries collector configured
+        let collector = TimeseriesCollectorStub()
         let monitor = Monitor(
             dependencies: .mockWith(
                 featureScope: featureScope,
                 monotonicClock: DateProviderMonotonicClock(dateProvider: dateProvider),
-                timeseriesCollector: TimeseriesCollectorStub()
+                timeseriesCollector: collector
             ),
             dateProvider: dateProvider
         )
         let activeContextReader: RUMActiveContextReader = monitor
+        collector.activeContextReader = activeContextReader
 
         monitor.startView(key: "foo")
         XCTAssertEqual(activeContextReader.hasReplay, true)
@@ -455,6 +457,13 @@ class MonitorTests: XCTestCase {
 
         // Then — the stale value is not carried over into the new session
         XCTAssertNil(activeContextReader.hasReplay)
+
+        // When — the session ends while the snapshot (`nil`) lags behind the command's context (`true`)
+        dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
+        monitor.startView(key: "baz")
+
+        // Then — the collector reads the command's value while it is stopped
+        XCTAssertEqual(collector.hasReplayWhenStopped, true)
     }
 }
 
@@ -463,7 +472,11 @@ private class TimeseriesCollectorStub: TimeseriesCollecting {
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
     func pause(sessionID: String) {}
     func resume(sessionID: String) {}
-    func stop(sessionID: String) {}
+    var hasReplayWhenStopped: Bool?
+
+    func stop(sessionID: String) {
+        hasReplayWhenStopped = activeContextReader?.hasReplay
+    }
     var activitySessionIDs: [String] = []
     var isPreviousSessionExpiredOnActivity: Bool?
 

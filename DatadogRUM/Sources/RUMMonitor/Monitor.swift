@@ -172,6 +172,10 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
             let previousSessionID = self.sessionActivitySnapshot.sessionID
 
+            if self.applicationScope.dependencies.timeseriesCollector != nil {
+                self.update(hasReplay: context.hasReplay)
+            }
+
             _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
 
             if self.applicationScope.dependencies.timeseriesCollector != nil {
