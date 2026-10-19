@@ -138,9 +138,13 @@ internal class SnapshotTestCase: XCTestCase {
         let expectResources = self.expectation(description: "Wait for resources")
 
         // Set up SR recorder:
+        let resourcesScope = FeatureScopeMock()
         let resourceProcessor = ResourceProcessor(
             queue: NoQueue(),
-            resourcesWriter: ResourcesWriter(scope: FeatureScopeMock())
+            resourcesWriter: ResourcesWriter(
+                scope: resourcesScope,
+                availabilityStore: ResourceAvailabilityStore(scope: resourcesScope)
+            )
         )
 
         let snapshotProcessor = SnapshotProcessor(
