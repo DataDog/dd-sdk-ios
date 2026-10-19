@@ -2137,7 +2137,7 @@ extension MonitorTests {
     private func withPreparedResourceCore(
         _ body: (DatadogCore, FeatureScope, RUMContextHandoff.Owner, DatadogContextProvider) throws -> Void
     ) throws {
-        temporaryCoreDirectory.create()
+        try temporaryCoreDirectory.create()
         let provider = DatadogContextProvider(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch)))
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -2155,7 +2155,7 @@ extension MonitorTests {
             core.flush()
             core.stop()
             provider.flush()
-            temporaryCoreDirectory.delete()
+            XCTAssertNoThrow(try temporaryCoreDirectory.delete())
         }
         let owner = try core.activateRUMContextHandoff()
         try core.registerRUMContextHandoff(feature: PreparedResourceFeature(), owner: owner)
