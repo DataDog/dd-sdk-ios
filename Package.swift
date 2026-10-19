@@ -235,7 +235,7 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogProfiling/Tests",
-            exclude: ["ObjCAllocHookTests.m"], // Xcode-only Objective-C runtime test
+            exclude: ["ObjCAllocHookTests.m"], // Xcode-only Objective-C runtime tests
             swiftSettings: [.interoperabilityMode(.Cxx), .swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
 
