@@ -123,6 +123,15 @@ typedef struct {
     bool is_active;
 } dd_memory_live_set_diagnostics_t;
 
+/// Diagnostics captured under the table lock with the snapshot. Empty after
+/// creation or a failed capture. Readers follow the snapshot's serialization contract.
+dd_memory_live_set_diagnostics_t dd_memory_live_snapshot_diagnostics(
+    const dd_memory_live_snapshot_t *snapshot);
+
+/// Requested snapshot object bytes, including before its first capture.
+/// Excludes allocator overhead and does not measure resident memory.
+uint64_t dd_memory_live_snapshot_storage_bytes(const dd_memory_live_snapshot_t *snapshot);
+
 /// Allocates the table and its inline slots once. Returns NULL if allocation fails.
 /// Operations on an existing table and snapshot do not allocate memory.
 dd_memory_live_set_t *dd_memory_live_set_create(void);

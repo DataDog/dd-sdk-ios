@@ -9,38 +9,6 @@ import Foundation
 import XCTest
 import DatadogMachProfiler.Testing
 
-private final class LiveSetSwiftObject {
-    let payload = (1, 2, 3, 4)
-}
-
-private struct LiveSetHandle: @unchecked Sendable {
-    let table: OpaquePointer
-    let generation: UInt64
-}
-
-private final class LiveSetStressCounts: @unchecked Sendable {
-    private let lock = NSLock()
-    private var inserted = 0
-    private var removed = 0
-    private var failed = 0
-    private var addresses: [UInt] = []
-
-    func record(inserted: Int, removed: Int, failed: Int, addresses: [UInt] = []) {
-        lock.lock()
-        self.inserted += inserted
-        self.removed += removed
-        self.failed += failed
-        self.addresses.append(contentsOf: addresses)
-        lock.unlock()
-    }
-
-    func snapshot() -> (inserted: Int, removed: Int, failed: Int, addresses: [UInt]) {
-        lock.lock()
-        defer { lock.unlock() }
-        return (inserted, removed, failed, addresses)
-    }
-}
-
 final class MemoryLiveSetTests: XCTestCase {
     private var table: OpaquePointer?
     private var snapshotStorage: OpaquePointer?
@@ -95,6 +63,31 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertTrue(diagnostics.reached_admission_limit)
         XCTAssertGreaterThan(diagnostics.total_probe_length, 0)
         XCTAssertLessThanOrEqual(diagnostics.max_probe_length, UInt64(DD_MEMORY_LIVE_SET_MAX_PROBE))
+    }
+
+    func testSnapshotDiagnosticsRemainAtTheCaptureBoundary() {
+        let storageBytes = dd_memory_live_snapshot_storage_bytes(snapshotStorage)
+        XCTAssertGreaterThan(storageBytes, 0)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).occupancy, 0)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).snapshot_bytes_high_water, 0)
+        XCTAssertEqual(insert(0x10000, size: 16), DD_MEMORY_LIVE_SET_INSERTED)
+        XCTAssertEqual(snapshot().count, 1)
+        XCTAssertEqual(dd_memory_live_snapshot_storage_bytes(snapshotStorage), storageBytes)
+        XCTAssertEqual(dd_memory_live_set_diagnostics(table).snapshot_bytes_high_water, storageBytes)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).snapshot_bytes_high_water, storageBytes)
+        XCTAssertTrue(remove(0x10000))
+        XCTAssertEqual(dd_memory_live_set_diagnostics(table).occupancy, 0)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).occupancy, 1)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).generation, generation)
+
+        XCTAssertFalse(dd_memory_live_set_snapshot(table, generation + 1, snapshotStorage))
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).generation, 0)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).occupancy, 0)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(snapshotStorage).snapshot_bytes_high_water, 0)
+        XCTAssertEqual(dd_memory_live_snapshot_storage_bytes(snapshotStorage), storageBytes)
+        XCTAssertEqual(dd_memory_live_set_diagnostics(table).snapshot_bytes_high_water, storageBytes)
+        XCTAssertEqual(dd_memory_live_snapshot_storage_bytes(nil), 0)
+        XCTAssertEqual(dd_memory_live_snapshot_diagnostics(nil).occupancy, 0)
     }
 
     func testRestartRejectsStaleWorkAndClearsSamples() {
@@ -662,4 +655,37 @@ final class MemoryLiveSetTests: XCTestCase {
         return result
     }
 }
+
+private final class LiveSetSwiftObject {
+    let payload = (1, 2, 3, 4)
+}
+
+private struct LiveSetHandle: @unchecked Sendable {
+    let table: OpaquePointer
+    let generation: UInt64
+}
+
+private final class LiveSetStressCounts: @unchecked Sendable {
+    private let lock = NSLock()
+    private var inserted = 0
+    private var removed = 0
+    private var failed = 0
+    private var addresses: [UInt] = []
+
+    func record(inserted: Int, removed: Int, failed: Int, addresses: [UInt] = []) {
+        lock.lock()
+        self.inserted += inserted
+        self.removed += removed
+        self.failed += failed
+        self.addresses.append(contentsOf: addresses)
+        lock.unlock()
+    }
+
+    func snapshot() -> (inserted: Int, removed: Int, failed: Int, addresses: [UInt]) {
+        lock.lock()
+        defer { lock.unlock() }
+        return (inserted, removed, failed, addresses)
+    }
+}
+
 #endif // !os(watchOS)

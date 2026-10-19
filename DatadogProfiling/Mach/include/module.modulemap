@@ -4,6 +4,7 @@ module DatadogMachProfiler {
   header "swift_alloc_hook.h"
   header "objc_alloc_hook.h"
   header "memory_live_set.h"
+  header "memory_allocation_window.h"
   export *
 
   explicit module Cxx {
