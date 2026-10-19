@@ -469,6 +469,54 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         }
     }
 
+    func testWhenReplayStateChangesAcrossSessionBoundary_itNeitherLeaksIntoNorIsLostFromABatch() {
+        memoryReader.vitalData = 1_000_000
+        func makeCollector() -> (TimeseriesSessionCollector, FeatureScopeMock) {
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
+            let collector = TimeseriesSessionCollector(
+                memoryReader: memoryReader,
+                featureScope: scope,
+                batchSize: 100,
+                samplingInterval: 0.3,
+                cpuUsageProvider: { nil },
+                totalRAM: 4_000_000_000
+            )
+            return (collector, scope)
+        }
+
+        // Stale `true` from the previous session is visible when `start()` and `pause()` run
+        let (newCollector, newScope) = makeCollector()
+        let staleReader = RUMActiveContextReaderMock(hasReplay: true)
+        newCollector.activeContextReader = staleReader
+        newCollector.start(sessionID: "new-session", applicationID: "app-1", sessionType: .user)
+        newCollector.pause(sessionID: "new-session")
+        newCollector.flush() // barrier: waits for `start()` and `pause()` to finish on the collector's queue
+
+        // The monitor clears the previous session's replay state, then the new session runs
+        staleReader.hasReplay = nil
+        newCollector.resume(sessionID: "new-session")
+        settle(0.45)
+        newCollector.flush()
+
+        let newEvents = newScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertEqual(newEvents.count, 1)
+        XCTAssertNil(newEvents.last?.session.hasReplay, "stale replay leaked into the new session")
+
+        // Replay is visible on the caller's thread only, as after the monitor clears it at a session boundary
+        let (oldCollector, oldScope) = makeCollector()
+        let callerThreadReader = CallerThreadReplayReaderMock()
+        oldCollector.activeContextReader = callerThreadReader
+        oldCollector.start(sessionID: "old-session", applicationID: "app-1", sessionType: .user)
+        settle(0.45)
+
+        oldCollector.stop(sessionID: "old-session")
+        oldCollector.flush() // barrier: waits for `stop()` to finish on the collector's queue
+
+        let oldEvents = oldScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertEqual(oldEvents.count, 1)
+        XCTAssertEqual(oldEvents.last?.session.hasReplay, true, "replay at `stop()` call time was lost")
+    }
+
     func testItPopulatesSessionSampleRateFromConstructorInjectedValue() {
         // Given
         memoryReader.vitalData = 1_000_000
@@ -1424,6 +1472,14 @@ private class RUMActiveContextReaderMock: RUMActiveContextReader {
         return RUMSessionScope.hasExpired(sessionStart: activity.sessionStart, now: now)
             || RUMSessionScope.hasTimedOut(lastInteraction: activity.lastInteraction, now: now)
     }
+}
+
+/// Reports replay only to the main thread, standing in for a monitor that clears its replay state
+/// before the collector's queue gets to read it.
+private class CallerThreadReplayReaderMock: RUMActiveContextReader {
+    var hasReplay: Bool? { Thread.isMainThread ? true : nil }
+
+    func isSessionExpired(sessionID: String) -> Bool { false }
 }
 
 /// A manually-advanceable `Date`/`mediaTime` pair, settable independently to simulate wall-clock/media-clock
