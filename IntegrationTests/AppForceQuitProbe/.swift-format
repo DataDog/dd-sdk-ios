@@ -1,0 +1,8 @@
+{
+  "indentation": {"spaces": 4},
+  "lineLength": 120,
+  "lineBreakBeforeEachArgument": true,
+  "lineBreakBetweenDeclarationAttributes": true,
+  "multiElementCollectionTrailingCommas": false,
+  "respectsExistingLineBreaks": true
+}

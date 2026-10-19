@@ -1,0 +1,5 @@
+.build/
+build/
+build-device/
+*.xcodeproj/
+Info-*.plist

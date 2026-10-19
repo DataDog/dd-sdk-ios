@@ -1,0 +1,52 @@
+name: AppForceQuitProbe
+options:
+  deploymentTarget:
+    iOS: "15.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "2"
+    PROBE_SOURCE_SHA: unattested
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_UIFileSharingEnabled: YES
+    INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
+    INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown"
+targetTemplates:
+  Probe:
+    type: application
+    platform: iOS
+    sources: [Sources/ProbeCore, App]
+    info:
+      path: Info-${target_name}.plist
+      properties:
+        CFBundleDisplayName: ${target_name}
+        ProbeSourceSHA: $(PROBE_SOURCE_SHA)
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+targets:
+  ForceQuitUIKit:
+    templates: [Probe]
+    sources: [UIKit]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.datadog.probe.forcequit.uikit
+  ForceQuitSwiftUI:
+    templates: [Probe]
+    sources: [SwiftUI]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.datadog.probe.forcequit.swiftui
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) PROBE_SWIFTUI"
+schemes:
+  ForceQuitUIKit:
+    build:
+      targets:
+        ForceQuitUIKit: all
+  ForceQuitSwiftUI:
+    build:
+      targets:
+        ForceQuitSwiftUI: all

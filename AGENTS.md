@@ -78,6 +78,10 @@ Feature-specific docs (in each module directory):
 
 ## Quick Reference
 
+The isolated force-quit feasibility app lives under `IntegrationTests/AppForceQuitProbe/` and is not
+part of shipping SDK schemes. Its README has Swift package tests, local SwiftLint configuration,
+XcodeGen targets for UIKit/SwiftUI and device commands. Probe results do not establish SDK behavior.
+
 | Task | Command |
 |------|---------|
 | Setup | `make` |
