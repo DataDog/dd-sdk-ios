@@ -188,7 +188,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         tags = attributes.tags
 
         // set global tags
-        for (key, value) in tracer.tags {
+        for (key, value) in tracer.tags.flattened {
             ddSpan.setTag(key: key, value: value)
         }
 
