@@ -26,10 +26,13 @@ internal struct ProbeObservation: Codable {
     var naive: Bool
     var automatic: ProbeVerdict
     var explicit: ProbeVerdict
+    var reporterLifecycle: ProbeVerdict
+    var reporter: ProbeReporterEvidence
+    var metricKit: [ProbeDiagnostic]
     var events: [ProbeEvent]
     var captureErrors: [String]
     var trialID: String
-    var crashReporting = "disabled_no_sdk_linked"
+    var crashReporting = "kscrash_2.5.1_sdk_monitors_local_only"
     var sdkWriter = "not_exercised"
 }
 
@@ -44,6 +47,10 @@ internal final class ProbeCapture: ObservableObject {
     var events: [ProbeEvent] = []
     var errors: [String] = []
     var trialID = "unassigned"
+    var reporter = ProbeReporterEvidence()
+    var diagnostics: [ProbeDiagnostic] = []
+    private var crashReporter: ProbeCrashReporter?
+    private var metricCollector: AnyObject?
     private var observers: [NSObjectProtocol] = []
     private let exportQueue = DispatchQueue(label: "probe.export")
     private var allocations: [Data] = []
@@ -103,6 +110,7 @@ internal final class ProbeCapture: ObservableObject {
                 "app": info["CFBundleShortVersionString"] as? String ?? "unknown",
                 "build": info["CFBundleVersion"] as? String ?? "unknown",
                 "source": info["ProbeSourceSHA"] as? String ?? "unattested",
+                "pid": String(getpid()),
                 "install": install, "os": ProcessInfo.processInfo.operatingSystemVersionString,
                 "boot": bootKnown ? "\(boot.tv_sec).\(boot.tv_usec)" : "", "model": model
             ],
@@ -147,6 +155,18 @@ internal final class ProbeCapture: ObservableObject {
             }
             priorFileData = nil
         }
+        if let store = store {
+            let crash = ProbeCrashReporter(directory: store.directory, runID: current.id, previousID: previous?.id)
+            crashReporter = crash
+            current.crashReporterInstalled = crash.installed
+            reporter = crash.evidence
+            if #available(iOS 27.0, *) {
+                metricCollector = ProbeMetricCollector(directory: store.directory) { [weak self] diagnostic in
+                    self?.diagnostics.append(diagnostic)
+                    self?.record("metrickit_diagnostic_received")
+                }
+            }
+        }
         let names: [Notification.Name] = [
             UIScene.willConnectNotification, UIScene.didActivateNotification,
             UIScene.willDeactivateNotification,
@@ -167,6 +187,9 @@ internal final class ProbeCapture: ObservableObject {
         }
         for scene in application.connectedScenes { self.scene(scene, event: "initial_connected") }
         record("launch_earliest_open_sessions")
+        if ProcessInfo.processInfo.arguments.contains("--probe-verify-reporter-failure") {
+            verifyReporterRefusal()
+        }
     }
 
     func postConnection(_ application: UIApplication) {
@@ -215,6 +238,7 @@ internal final class ProbeCapture: ObservableObject {
     func terminate() {
         // The physical removal trial delivered this callback. It is not a normal-exit oracle.
         current.terminationCallbackObserved = true
+        current.terminationObservedAt = Self.stamp()
         record("application_will_terminate")
     }
 
@@ -263,6 +287,11 @@ internal final class ProbeCapture: ObservableObject {
                 evidence: evidence,
                 explicit: true
             ),
+            reporterLifecycle: ProbeClassifier.reporterLifecycle(
+                previous: previous, current: current, evidence: evidence, reporter: reporter
+            ),
+            reporter: reporter,
+            metricKit: diagnostics,
             events: events,
             captureErrors: Array(Set(errors)).sorted(),
             trialID: trialID
@@ -272,7 +301,7 @@ internal final class ProbeCapture: ObservableObject {
     func refresh() {
         let value = observation()
         status =
-            "Run \(current.id.prefix(8))\nTrial \(trialID)\nAutomatic: \(value.automatic.outcome)\n\(value.automatic.reasons.joined(separator: ", "))\nExplicit: \(value.explicit.outcome)\n\(value.explicit.reasons.joined(separator: ", "))\nNaive: \(value.naive)\nEvents: \(events.count)\nErrors: \(errors.joined(separator: ", "))"
+            "Run \(current.id.prefix(8))\nTrial \(trialID)\nReporter: \(reporter.read.rawValue), installed \(current.crashReporterInstalled == true)\nReporter lifecycle: \(value.reporterLifecycle.outcome)\n\(value.reporterLifecycle.reasons.joined(separator: ", "))\nAutomatic: \(value.automatic.outcome)\n\(value.automatic.reasons.joined(separator: ", "))\nExplicit: \(value.explicit.outcome)\n\(value.explicit.reasons.joined(separator: ", "))\nMetricKit diagnostics: \(diagnostics.count)\nNaive: \(value.naive)\nEvents: \(events.count)\nErrors: \(errors.joined(separator: ", "))"
         guard let store = store, let data = try? JSONEncoder().encode(value) else {
             return
         }
@@ -334,5 +363,15 @@ internal final class ProbeCapture: ObservableObject {
             allocations = []
         default: break
         }
+    }
+
+    func verifyReporterRefusal() {
+        reporter = crashReporter?.verifyReadRefusal() ?? ProbeReporterEvidence()
+        record("reporter_read_refusal_fixture")
+    }
+
+    func restoreReporterEvidence() {
+        reporter = crashReporter?.evidence ?? ProbeReporterEvidence()
+        record("reporter_startup_evidence_restored")
     }
 }

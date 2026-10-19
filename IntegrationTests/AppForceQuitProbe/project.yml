@@ -1,4 +1,8 @@
 name: AppForceQuitProbe
+packages:
+  KSCrash:
+    url: https://github.com/kstenerud/KSCrash.git
+    exactVersion: 2.5.1
 options:
   deploymentTarget:
     iOS: "15.0"
@@ -8,7 +12,7 @@ settings:
     TARGETED_DEVICE_FAMILY: "1,2"
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.1"
-    CURRENT_PROJECT_VERSION: "2"
+    CURRENT_PROJECT_VERSION: "3"
     PROBE_SOURCE_SHA: unattested
     GENERATE_INFOPLIST_FILE: YES
     INFOPLIST_KEY_UIFileSharingEnabled: YES
@@ -20,6 +24,9 @@ targetTemplates:
     type: application
     platform: iOS
     sources: [Sources/ProbeCore, App]
+    dependencies:
+      - package: KSCrash
+        product: Recording
     info:
       path: Info-${target_name}.plist
       properties:

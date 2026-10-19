@@ -15,7 +15,7 @@ internal struct ProbeScreen: View {
     var body: some View {
         Form {
             Section(header: Text("App force quit evidence probe")) {
-                Text("Local observations only. No customer events. Crash reporting disabled.")
+                Text("Local observations only. KSCrash enabled. Reporter lifecycle is an unvalidated hypothesis.")
                 TextField("Host trial ID", text: $trial)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
@@ -41,6 +41,8 @@ internal struct ProbeScreen: View {
                 Button("Open another window on iPad") {
                     UIApplication.shared.requestSceneSessionActivation(nil, userActivity: nil, options: nil)
                 }
+                Button("Verify reporter read refusal") { capture.verifyReporterRefusal() }
+                Button("Restore startup reporter evidence") { capture.restoreReporterEvidence() }
             }
             Section(header: Text("Faults affect this dedicated probe only")) {
                 ForEach(["managed_crash", "native_crash", "hang_5s", "fatal_hang", "memory"], id: \.self) { name in

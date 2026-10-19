@@ -1,13 +1,35 @@
 # App force quit evidence probe
 
-This is an isolated experiment, outside all shipping SDK targets. It has no Datadog or crash reporter
-dependency and sends no telemetry. `candidate` means a raw evidence tuple passed the experimental
+This is an isolated experiment, outside all shipping SDK targets. It links KSCrash 2.5.1 using the
+shipping SDK's monitor configuration and sends no telemetry. `candidate` means a raw evidence tuple passed the experimental
 classifier. It does not mean a gesture was proven or the feature is ready to ship.
 
 `ForceQuitUIKit` uses a UIKit app/scene delegate with SwiftUI controls. `ForceQuitSwiftUI` uses a
 SwiftUI `App` and `WindowGroup` with a probe-only application delegate adapter. Both support iPad
 multiwindow. They share automatic scene notifications, earliest and post-connection `openSessions`,
 and a separate explicit `didDiscardSceneSessions` result. No swizzling is used.
+
+Build 0.1/3 adds a third `reporterLifecycle` hypothesis. It requires reporter installation on both
+runs, an empty readable report store, no KSCrash prior-crash flag, a foreground exit, a termination
+callback within 15 seconds, compatible source/build and a relaunch within 60 seconds. Retained scenes
+do not veto this separate heuristic. The original two verdicts remain available. No third-verdict
+candidate enters action preparation. Raw reports are archived locally before pending reports are
+removed. Missing, unmatched or unreadable crash reports remain unknown.
+
+On iOS 27+, a retained `MetricManager` archives individual diagnostics, including memory exceptions.
+JSON exports include receipt time, event interval and optional process ID. This collector is passive;
+absence of a diagnostic does not establish a clean previous run. Older systems omit this collector.
+The probe does not use daily aggregate metrics as per-run evidence.
+
+The target behavior is force kill followed by quick relaunch, including removal of a stuck app.
+Test `fatal_hang`, then manually remove and quickly reopen the probe. That is a manual recovery
+positive, not a watchdog negative. A blocked main thread may prevent the lifecycle callbacks this
+hypothesis requires. A normal removal followed by a relaunch after more than 60 seconds is a negative.
+
+`Verify reporter read refusal` runs the real filesystem reader against a dedicated file where a
+directory is expected. It does not modify the live report directory. `Restore startup reporter
+evidence` restores the launch observation. The launch argument `--probe-verify-reporter-failure`
+exercises the same failure fixture for a host-owned smoke capture; it is never a physical positive.
 
 From this directory:
 

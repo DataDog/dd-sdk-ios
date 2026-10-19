@@ -340,3 +340,158 @@ private func currentRunGatesAndClockTolerance() {
             == "cannot_confirm"
     )
 }
+
+private func reporterPrior() -> ProbeRun {
+    var value = prior()
+    value.compatibility["source"] = "source-a"
+    value.crashReporterInstalled = true
+    value.terminationCallbackObserved = true
+    value.terminationObservedAt = ProbeStamp(wall: 111, uptime: 61)
+    return value
+}
+
+private func reporterCurrent() -> ProbeRun {
+    var value = run("new", at: 115)
+    value.compatibility["source"] = "source-a"
+    value.crashReporterInstalled = true
+    return value
+}
+
+@Test
+private func reporterHypothesisDoesNotRequireDiscardAndRejectsEveryReporterFailure() {
+    let retained = ProbeSceneEvidence(earliestOpen: ["a"], postConnectionOpen: ["a"])
+    let clean = ProbeReporterEvidence(read: .empty, crashedLastLaunch: false)
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: reporterPrior(),
+            current: reporterCurrent(),
+            evidence: retained,
+            reporter: clean
+        ).outcome == "candidate"
+    )
+    #expect(
+        ProbeClassifier.classify(
+            previous: reporterPrior(),
+            current: reporterCurrent(),
+            evidence: retained,
+            explicit: false
+        ).outcome == "cannot_confirm"
+    )
+    for state in ProbeReporterRead.allCases where state != .empty {
+        #expect(
+            ProbeClassifier.reporterLifecycle(
+                previous: reporterPrior(),
+                current: reporterCurrent(),
+                evidence: retained,
+                reporter: ProbeReporterEvidence(read: state, crashedLastLaunch: false)
+            ).outcome == "cannot_confirm"
+        )
+    }
+    for crashed: Bool? in [true, nil] {
+        #expect(
+            ProbeClassifier.reporterLifecycle(
+                previous: reporterPrior(),
+                current: reporterCurrent(),
+                evidence: retained,
+                reporter: ProbeReporterEvidence(read: .empty, crashedLastLaunch: crashed)
+            ).outcome == "cannot_confirm"
+        )
+    }
+}
+
+@Test
+private func reporterHypothesisHasLifecycleCompatibilityAndHealthRefusals() {
+    let changes: [(inout ProbeRun) -> Void] =
+        [
+            { $0.terminationCallbackObserved = nil }, { $0.terminationCallbackObserved = false },
+            { $0.terminationObservedAt = nil }, { $0.terminationObservedAt?.wall = .nan },
+            { $0.terminationObservedAt = ProbeStamp(wall: 109, uptime: 59) },
+            { $0.terminationObservedAt = ProbeStamp(wall: 116, uptime: 66) },
+            { $0.terminationObservedAt = ProbeStamp(wall: 111, uptime: 40) },
+            { $0.crashReporterInstalled = nil }, { $0.crashReporterInstalled = false },
+            { $0.foregroundExit = nil }, { $0.activeScenes = ["a"] }, { $0.foregroundScenes = [] },
+            { $0.debugging = true }, { $0.physicalDevice = false }, { $0.automation = true },
+            { $0.schemaVersion = 2 }, { $0.mainProcess = false }, { $0.normalTermination = true },
+            { $0.id = "new" }, { $0.vetoes = ["oom"] }, { $0.compatibility["source"] = "unattested" }
+        ]
+        + ["app", "build", "source", "install", "os", "boot", "model"].map { key in
+            { $0.compatibility[key] = "different" }
+        }
+    let clean = ProbeReporterEvidence(read: .empty, crashedLastLaunch: false)
+    for change in changes {
+        var previous = reporterPrior()
+        change(&previous)
+        #expect(
+            ProbeClassifier.reporterLifecycle(
+                previous: previous,
+                current: reporterCurrent(),
+                evidence: evidence(),
+                reporter: clean
+            ).outcome == "cannot_confirm"
+        )
+    }
+    var current = reporterCurrent()
+    current.crashReporterInstalled = false
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: reporterPrior(),
+            current: current,
+            evidence: evidence(),
+            reporter: clean
+        ).outcome == "cannot_confirm"
+    )
+    var unreliable = evidence()
+    unreliable.storeReliable = false
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: reporterPrior(),
+            current: reporterCurrent(),
+            evidence: unreliable,
+            reporter: clean
+        ).outcome == "cannot_confirm"
+    )
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: nil,
+            current: reporterCurrent(),
+            evidence: evidence(),
+            reporter: clean
+        ).outcome == "cannot_confirm"
+    )
+}
+
+@Test
+private func reporterHypothesisTerminationAndRelaunchWindows() {
+    let clean = ProbeReporterEvidence(read: .empty, crashedLastLaunch: false)
+    var previous = reporterPrior()
+    previous.terminationObservedAt = ProbeStamp(wall: 125, uptime: 75)
+    var current = reporterCurrent()
+    current.started = ProbeStamp(wall: 170, uptime: 120)
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: previous,
+            current: current,
+            evidence: evidence(),
+            reporter: clean
+        ).outcome == "candidate"
+    )
+    previous.terminationObservedAt = ProbeStamp(wall: 125.001, uptime: 75.001)
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: previous,
+            current: current,
+            evidence: evidence(),
+            reporter: clean
+        ).outcome == "cannot_confirm"
+    )
+    previous = reporterPrior()
+    current.started = ProbeStamp(wall: 170.001, uptime: 120.001)
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: previous,
+            current: current,
+            evidence: evidence(),
+            reporter: clean
+        ).outcome == "cannot_confirm"
+    )
+}

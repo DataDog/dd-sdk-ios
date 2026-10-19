@@ -31,6 +31,8 @@ internal struct ProbeRun: Codable, Equatable {
     var foregroundExit: ProbeStamp?
     var normalTermination = false
     var terminationCallbackObserved: Bool?
+    var terminationObservedAt: ProbeStamp?
+    var crashReporterInstalled: Bool?
     var vetoes: [String] = []
 }
 
@@ -51,7 +53,63 @@ internal struct ProbeVerdict: Codable, Equatable {
     }
 }
 
+internal enum ProbeReporterRead: String, Codable, CaseIterable {
+    case empty, capturedCrash, unmatchedReport, readFailed, installFailed, unavailable
+}
+
+internal struct ProbeReporterEvidence: Codable {
+    var read: ProbeReporterRead = .unavailable
+    var crashedLastLaunch: Bool?
+    var reportRunIDs: [String] = []
+    var archivedReports: [String] = []
+    var failure: String?
+}
+
 internal enum ProbeClassifier {
+    // Separate feasibility hypothesis. This must never feed the action preparation path.
+    static func reporterLifecycle(
+        previous: ProbeRun?,
+        current: ProbeRun,
+        evidence: ProbeSceneEvidence,
+        reporter: ProbeReporterEvidence
+    ) -> ProbeVerdict {
+        guard let previous = previous else {
+            return .unknown(["no_prior_run"])
+        }
+        var failures = commonFailures(previous: previous, current: current)
+        failures += timingFailures(previous: previous, current: current)
+        if !evidence.storeReliable { failures.append("unreliable_store") }
+        if previous.foregroundScenes.isEmpty { failures.append("no_foreground_scenes") }
+        if previous.crashReporterInstalled != true || current.crashReporterInstalled != true {
+            failures.append("reporter_not_installed_both_runs")
+        }
+        if reporter.read != .empty { failures.append("reporter_\(reporter.read.rawValue)") }
+        if reporter.crashedLastLaunch != false { failures.append("reporter_prior_crash_or_unknown") }
+        if previous.compatibility["source"]?.isEmpty != false
+            || previous.compatibility["source"] == "unattested"
+            || previous.compatibility["source"] != current.compatibility["source"] {
+            failures.append("compatibility_source")
+        }
+        if previous.terminationCallbackObserved != true {
+            failures.append("missing_termination_callback")
+        }
+        if let terminal = previous.terminationObservedAt, let exit = previous.foregroundExit {
+            if !terminal.isValid || terminal.uptime < exit.uptime || terminal.wall < exit.wall
+                || terminal.uptime > current.started.uptime || terminal.wall > current.started.wall
+                || abs(terminal.offset - exit.offset) > 5 {
+                failures.append("termination_clock_discontinuity")
+            }
+            if !(0...15).contains(terminal.wall - exit.wall) {
+                failures.append("termination_after_foreground_window")
+            }
+        } else {
+            failures.append("missing_termination_stamp")
+        }
+        return failures.isEmpty
+            ? ProbeVerdict(outcome: "candidate", reasons: ["unvalidated_reporter_lifecycle_hypothesis"])
+            : .unknown(Array(Set(failures)).sorted())
+    }
+
     // Deliberately unsafe comparator, retained only to demonstrate false positives in fixtures.
     static func naive(previous: ProbeRun?, current: ProbeRun) -> Bool {
         guard let previous = previous, previous.id != current.id, !previous.normalTermination else {
