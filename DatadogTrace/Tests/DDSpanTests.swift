@@ -266,6 +266,18 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)
     }
 
+    func testWhenSettingDictionaryWithBothSamplingTags_itAppliesThemInKeyOrder() {
+        let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: "the span") as! DDSpan
+        let context = span.context as! DDSpanContext
+
+        span.setTag(key: "manual", value: ["keep": true, "drop": true])
+
+        XCTAssertEqual(context.samplingDecision.samplingPriority, .manualKeep)
+        XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)
+    }
+
     func testDropTraceFunctionSetsExpectedSamplingDecision() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
