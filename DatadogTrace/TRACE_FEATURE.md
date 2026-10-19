@@ -1,7 +1,7 @@
 ---
 last_updated: 2026-10-19
 sdk_version: 3.19.0
-verified_against_commit: 6a1269f57
+verified_against_commit: 0ec30eade
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -212,7 +212,7 @@ requestSpan.finish()
 - **`DatadogTrace/Sources/Tracer.swift`** — Access point: `Tracer.shared(in:)` returns an `OTTracer`. Also defines `SpanTags` (`resource`, `operation`, `service`, `manualKeep`, `manualDrop`).
 - **`DatadogTrace/Sources/OpenTracing/OTTracer.swift`** — OpenTracing tracer protocol (`Sendable`): `startSpan`, `startRootSpan`, `inject`, `extract`, `activeSpan`. Tag parameters use `[String: OTTagValue]?`.
 - **`DatadogTrace/Sources/OpenTracing/OTSpan.swift`** — OpenTracing span protocol (`Sendable`): `setTag(key:value:)` (value is `OTTagValue`; an extension overload accepts `[String: OTTagValue]` for dictionaries with mixed value types), `log(fields:)` (fields are `[String: Encodable & Sendable]`), `setBaggageItem`, `setActive`, `finish`, `setError`, `keepTrace`, `dropTrace`.
-- **`DatadogTrace/Sources/OpenTracing/OTTagValue.swift`** — `public typealias OTTagValue = Encodable & Sendable`. Used for all span tag values; custom tag types must conform to both `Encodable` and `Sendable`. Dictionary tag values (in `setTag`, `startSpan(tags:)` and global `tags`) are flattened into one tag per leaf field, e.g. `["context": ["foo": "bar"]]` becomes `context.foo = "bar"`. Setting a dictionary is equivalent to setting each leaf tag separately. Tags passed to `startSpan(tags:)` are merged with global tags before flattening, so they still replace a global tag with the same top-level key; a later `setTag(key:value:)` call (or an OpenTelemetry attribute) only replaces tags with the exact same key, so it does not remove leaves flattened from an earlier dictionary. Structs and arrays are not flattened and are sent as a single JSON string.
+- **`DatadogTrace/Sources/OpenTracing/OTTagValue.swift`** — `public typealias OTTagValue = Encodable & Sendable`. Used for all span tag values; custom tag types must conform to both `Encodable` and `Sendable`. Dictionary tag values (in `setTag`, `startSpan(tags:)` and global `tags`) are flattened into one tag per leaf field, e.g. `["context": ["foo": "bar"]]` becomes `context.foo = "bar"`. Setting a dictionary is equivalent to setting each leaf tag separately. Global tags and tags passed to `startSpan(tags:)` are flattened separately and then merged, so span tags win on any shared leaf and also replace a global tag with the same top-level key; a later `setTag(key:value:)` call (or an OpenTelemetry attribute) only replaces tags with the exact same key, so it does not remove leaves flattened from an earlier dictionary. Structs and arrays are not flattened and are sent as a single JSON string. Dictionaries coming from Objective-C (`startSpan(tags:)`, `DDTraceConfiguration.tags`) are not flattened yet, and there is no Objective-C `setTag` for dictionaries.
 - **`DatadogTrace/Sources/OpenTracing/OTFormat.swift`** — Format/carrier protocols for `inject` / `extract`.
 
 ### Public API — OpenTelemetry
