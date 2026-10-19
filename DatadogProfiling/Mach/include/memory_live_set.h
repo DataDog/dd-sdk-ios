@@ -34,9 +34,9 @@ typedef enum {
     DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT = 2
 } dd_memory_live_sample_source_t;
 
-/// An Obj-C sample copies its null-terminated runtime class name on insertion
-/// when it fits in DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES. Longer names are
-/// omitted. A snapshot owns copies of stored names. Swift
+/// An Obj-C sample copies its runtime class name, including the trailing '\0',
+/// on insertion when it fits in DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES.
+/// Longer names are omitted. A snapshot owns copies of stored names. Swift
 /// name bytes may be temporary: store metadata and the resolver instead,
 /// then resolve a snapshot sample outside the allocation hot path.
 typedef struct {
@@ -61,7 +61,7 @@ typedef struct {
     size_t count;
 } dd_memory_live_snapshot_view_t;
 
-/// Allocates fixed-capacity sample and name storage once with mmap. Returns
+/// Allocates fixed-capacity sample and name storage once. Returns
 /// NULL on allocation failure. Create outside allocation/deallocation observers.
 dd_memory_live_snapshot_t *dd_memory_live_snapshot_create(void);
 
@@ -110,9 +110,11 @@ typedef struct {
     uint64_t probe_count;
     uint64_t total_probe_length;
     uint64_t max_probe_length;
-    /// Page-rounded mmap storage owned by the table.
+    /// Requested allocation size in bytes, including inline table storage.
+    /// Excludes allocator overhead.
     uint64_t table_bytes;
-    /// Page-rounded snapshot storage used by a successful capture.
+    /// Requested snapshot allocation size used by a successful capture.
+    /// Excludes allocator overhead.
     uint64_t snapshot_bytes_high_water;
     /// At least one insertion exhausted its bounded probe window in this
     /// generation. This can occur while other slots remain empty; use
@@ -121,7 +123,7 @@ typedef struct {
     bool is_active;
 } dd_memory_live_set_diagnostics_t;
 
-/// Allocates the table once with mmap. Returns NULL if allocation fails.
+/// Allocates the table and its inline slots once. Returns NULL if allocation fails.
 /// Operations on an existing table and snapshot do not allocate memory.
 dd_memory_live_set_t *dd_memory_live_set_create(void);
 
