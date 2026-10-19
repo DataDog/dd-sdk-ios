@@ -5081,3 +5081,142 @@ class RUMViewScopeTests: XCTestCase {
         #endif
     }
 }
+
+extension RUMViewScopeTests {
+    func testPendingResourcePreparation_settlesInactiveViewExactlyOnce() throws {
+        for commits in [false, true] {
+            let telemetry = TelemetryMock()
+            let dependencies = RUMScopeDependencies.mockWith(
+                viewEndedMetricFactory: {
+                    let controller = ViewEndedController(telemetry: telemetry, sampleRate: 100)
+                    controller.add(metric: ViewEndedMetric(tnsConfigPredicate: .disabled, invConfigPredicate: .disabled))
+                    return controller
+                },
+                featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
+            )
+            guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+            let writer = FileWriterMock()
+            let time = Date(timeIntervalSince1970: 1_600_000_000)
+            var retained: RUMPreparedResourceViewScope? = RUMPreparedResourceViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: dependencies,
+                identity: ViewIdentifier("original"),
+                path: "original",
+                name: "original",
+                customTimings: [:],
+                startTime: time,
+                serverTimeOffset: 0,
+                interactionToNextViewMetric: nil,
+                viewIndexInSession: 1
+            )
+            weak var released = retained
+            do {
+                let view = try XCTUnwrap(retained)
+                let key = UUID().uuidString
+                XCTAssertTrue(view.reserveResourcePreparation(key))
+                XCTAssertFalse(view.reserveResourcePreparation(key))
+                let stop = RUMStopViewCommand.mockWith(time: time.addingTimeInterval(1), identity: ViewIdentifier("original"))
+                XCTAssertTrue(view.process(command: stop, context: context, writer: writer))
+                XCTAssertFalse(view.isActiveView)
+                XCTAssertTrue(view.hasPendingResourcePreparations)
+                XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.isActive, true)
+                XCTAssertTrue(telemetry.messages.compactMap(\.asMetric).isEmpty)
+
+                if commits {
+                    let start = RUMStartResourceCommand.mockWith(resourceKey: key, time: time.addingTimeInterval(2))
+                    XCTAssertEqual(view.commitResourcePreparation(key, command: start, context: context, writer: writer), true)
+                    XCTAssertNil(view.abandonResourcePreparation(key, on: stop, writesEvents: true, context: context, writer: writer))
+                    XCTAssertNotNil(view.resourceScopes[key], "Abandonment cannot remove committed work")
+                    XCTAssertFalse(view.process(
+                        command: RUMStopResourceCommand.mockWith(resourceKey: key, time: time.addingTimeInterval(3)),
+                        context: context,
+                        writer: writer
+                    ))
+                    XCTAssertEqual(writer.events(ofType: RUMResourceEvent.self).count, 1)
+                } else {
+                    XCTAssertEqual(view.abandonResourcePreparation(key, on: stop, writesEvents: true, context: context, writer: writer), false)
+                    XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
+                }
+                let count = writer.events(ofType: RUMViewEvent.self).count
+                XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.isActive, false)
+                XCTAssertFalse(view.hasPendingResourcePreparations)
+                XCTAssertNil(view.abandonResourcePreparation(key, on: stop, writesEvents: true, context: context, writer: writer))
+                XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, count)
+                XCTAssertEqual(telemetry.messages.compactMap(\.asMetric).filter { $0.name == ViewEndedMetric.Constants.name }.count, 1)
+            }
+            retained = nil
+            XCTAssertNil(released)
+        }
+        // Removing a nonfinal key is neither Action activity nor an expiry tick.
+        for fraction in [0.75, 1.25] {
+            let writer = FileWriterMock()
+            let time = Date(timeIntervalSince1970: 1_600_000_000)
+            let view = RUMPreparedResourceViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockWith(featureFlags: [.multiSceneTracking: true, .viewUpdates: false]),
+                identity: ViewIdentifier("active"),
+                path: "active",
+                name: "active",
+                customTimings: [:],
+                startTime: time,
+                serverTimeOffset: 0,
+                interactionToNextViewMetric: nil,
+                viewIndexInSession: 1
+            )
+            _ = view.process(command: RUMAddUserActionCommand.mockWith(time: time, actionType: .tap), context: context, writer: writer)
+            XCTAssertTrue(view.reserveResourcePreparation("rejected"))
+            XCTAssertTrue(view.reserveResourcePreparation("still-pending"))
+            let timeout = RUMUserActionScope.Constants.discreteActionTimeoutDuration
+            let tick = RUMKeepSessionAliveCommand(time: time.addingTimeInterval(fraction * timeout), attributes: [:])
+            XCTAssertEqual(view.abandonResourcePreparation("rejected", on: tick, writesEvents: true, context: context, writer: writer), true)
+            XCTAssertNotNil(view.userActionScope)
+            XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+            _ = view.process(command: RUMCommandMock(time: time.addingTimeInterval(1.5 * timeout)), context: context, writer: writer)
+            XCTAssertNil(view.userActionScope, "Abandonment must not prolong the original Action")
+            XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).count, 1)
+            XCTAssertTrue(view.containsResourcePreparation("still-pending"))
+        }
+        // A Resource beginning within an existing Action prevents expiry until it settles.
+        for fails in [false, true] {
+            let writer = FileWriterMock()
+            let time = Date(timeIntervalSince1970: 1_600_000_000)
+            let timeout = RUMUserActionScope.Constants.discreteActionTimeoutDuration
+            let view = RUMPreparedResourceViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockWith(featureFlags: [.multiSceneTracking: true, .viewUpdates: false]),
+                identity: ViewIdentifier("action-owner"),
+                path: "action-owner",
+                name: "action-owner",
+                customTimings: [:],
+                startTime: time,
+                serverTimeOffset: 0,
+                interactionToNextViewMetric: nil,
+                viewIndexInSession: 1
+            )
+            _ = view.process(command: RUMAddUserActionCommand.mockWith(time: time, actionType: .tap), context: context, writer: writer)
+            let action = try XCTUnwrap(view.userActionScope)
+            XCTAssertTrue(view.reserveResourcePreparation("owned-resource"))
+            let start = RUMStartResourceCommand.mockWith(resourceKey: "owned-resource", time: time.addingTimeInterval(0.5 * timeout))
+            XCTAssertEqual(view.commitResourcePreparation("owned-resource", command: start, context: context, writer: writer), true)
+            _ = view.process(command: RUMCommandMock(time: time.addingTimeInterval(2 * timeout)), context: context, writer: writer)
+            XCTAssertTrue(view.userActionScope === action, "A commit that bypasses ordinary Action accounting must fail")
+            if fails {
+                _ = view.process(command: RUMStopResourceWithErrorCommand.mockWithErrorObject(resourceKey: "owned-resource", time: time.addingTimeInterval(3 * timeout)), context: context, writer: writer)
+                XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.action?.id.stringValue, action.actionUUID.toRUMDataFormat)
+            } else {
+                _ = view.process(command: RUMStopResourceCommand.mockWith(resourceKey: "owned-resource", time: time.addingTimeInterval(3 * timeout)), context: context, writer: writer)
+                XCTAssertEqual(writer.events(ofType: RUMResourceEvent.self).last?.action?.id.stringValue, action.actionUUID.toRUMDataFormat)
+            }
+            _ = view.process(command: RUMCommandMock(time: time.addingTimeInterval(5 * timeout)), context: context, writer: writer)
+            XCTAssertNil(view.userActionScope)
+            let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+            XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).count, 1)
+            XCTAssertEqual(event.action.id, action.actionUUID.toRUMDataFormat)
+            XCTAssertEqual(event.action.resource.count, fails ? 0 : 1)
+            XCTAssertEqual(event.action.error.count, fails ? 1 : 0)
+        }
+    }
+}

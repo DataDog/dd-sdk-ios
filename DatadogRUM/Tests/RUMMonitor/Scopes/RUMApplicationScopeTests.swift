@@ -1701,3 +1701,61 @@ private final class WebViewKeepAliveOwnerCore: DatadogCoreProtocol, RUMContextHa
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
     func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
 }
+
+extension RUMApplicationScopeTests {
+    func testPreparedResource_stoppedAndExpiredSessionsKeepOriginalOwnership() throws {
+        for expires in [false, true] {
+            let featureScope = WebViewKeepAliveOwnerScope()
+            let time = Date(timeIntervalSince1970: 1_600_000_000)
+            let dependencies = RUMScopeDependencies.mockWith(
+                featureScope: featureScope,
+                trackBackgroundEvents: false,
+                featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
+            )
+            guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+            monotonicClock.elapsedTime = 0
+            let context = DatadogContext.mockWith(sdkInitDate: time, launchInfo: .mockWith(launchReason: .userLaunch))
+            let app = createRUMApplicationScope(dependencies: dependencies, sdkContext: context)
+            var startA = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("original"), name: "original")
+            startA.target = .scene(RUMSceneIdentifier(rawValue: "original-scene"))
+            _ = app.process(command: startA, monotonicTime: 0, context: context, writer: writer)
+            let original = try XCTUnwrap(app.activeSession)
+            let view = try XCTUnwrap(original.viewScopes.last { $0.isActiveView && $0.viewName == "original" })
+            let identity = RUMResourcePreparationIdentity(owner: featureScope.owner, resourceID: UUID(), sessionID: original.sessionUUID, viewID: view.viewUUID)
+            _ = app.processResourcePreparation(.init(identity: identity, operation: .reserve, time: time), monotonicTime: 0, context: context, writer: writer)
+            XCTAssertTrue(view.hasPendingResourcePreparations)
+            _ = app.process(command: RUMStopSessionCommand.mockWith(time: time.addingTimeInterval(1)), monotonicTime: 1, context: context, writer: writer)
+            var startB = RUMStartViewCommand.mockWith(time: time.addingTimeInterval(2), identity: ViewIdentifier("peer"), name: "peer")
+            startB.target = .scene(RUMSceneIdentifier(rawValue: "peer-scene"))
+            _ = app.process(command: startB, monotonicTime: 2, context: context, writer: writer)
+            let peer = try XCTUnwrap(app.activeSession)
+            XCTAssertFalse(peer === original)
+            let peerID = peer.context.activeViewID
+            let interaction = peer.lastInteraction
+            let before = writer.events(ofType: RUMViewEvent.self).count
+            let now = expires ? RUMSessionScope.Constants.sessionTimeoutDuration + 1 : 3
+            let start = RUMStartResourceCommand.mockWith(resourceKey: identity.resourceKey, time: time.addingTimeInterval(3))
+            let accepted = app.processResourcePreparation(.init(identity: identity, operation: .commit(start), time: start.time), monotonicTime: now, context: context, writer: writer)
+            XCTAssertEqual(accepted, !expires)
+            if expires {
+                XCTAssertNil(view.resourceScopes[identity.resourceKey])
+                _ = app.processResourcePreparation(.init(identity: identity, operation: .abandon, time: start.time), monotonicTime: now, context: context, writer: writer)
+                XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, before)
+            } else {
+                XCTAssertNotNil(view.resourceScopes[identity.resourceKey])
+                var terminal = RUMStopResourceCommand.mockWith(resourceKey: identity.resourceKey, time: time.addingTimeInterval(4))
+                terminal.isAutomatic = true
+                XCTAssertTrue(app.processResourcePreparation(.init(identity: identity, operation: .resource(terminal), time: terminal.time), monotonicTime: 4, context: context, writer: writer))
+                let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+                XCTAssertEqual(event.session.id, original.sessionUUID.toRUMDataFormat)
+                XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+            }
+            XCTAssertTrue(app.activeSession === peer)
+            XCTAssertEqual(peer.context.activeViewID, peerID)
+            XCTAssertEqual(peer.lastInteraction, interaction)
+            XCTAssertNil(peer.endReason)
+            XCTAssertFalse(view.hasPendingResourcePreparations)
+            XCTAssertFalse(app.sessionScopes.contains { $0 === original })
+        }
+    }
+}

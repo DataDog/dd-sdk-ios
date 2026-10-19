@@ -87,3 +87,21 @@ public protocol DatadogURLSessionHandlerSupportingDistributedTracing: DatadogURL
     /// The currently configured distributed tracing sample rate. `nil` if distributed tracing (first part hosts tracing) is not configured.
     var distributedTracingSampleRate: SampleRate? { get }
 }
+
+/// Prepares captured RUM ownership before request modifiers execute.
+@_spi(Internal)
+public protocol DatadogURLSessionHandlerPreparingRUM: AnyObject {
+    func prepareRUMResource(capturing context: RUMURLSessionContext, reusing preparation: RUMURLSessionPreparation?) -> RUMURLSessionPreparation
+}
+
+/// Immutable preparation shared by compatible handlers.
+@_spi(Internal)
+public final class RUMURLSessionPreparation {
+    public let identifier: UUID?
+    public let capturedState: any URLSessionHandlerCapturedState
+
+    public init(identifier: UUID?, capturedState: any URLSessionHandlerCapturedState) {
+        self.identifier = identifier
+        self.capturedState = capturedState
+    }
+}

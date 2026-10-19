@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -2767,4 +2768,83 @@ extension RUMSessionScopeTests {
         XCTAssertEqual(watchdogView(in: feature)?.view.id, view.viewUUID.toRUMDataFormat)
         XCTAssertEqual(watchdogView(in: feature)?.view.isActive, false)
     }
+}
+
+extension RUMSessionScopeTests {
+    func testPreparedResource_committedExpiryReleasesWithOriginalSession() throws {
+        let featureScope = ResourcePreparationOwnerScope()
+        let clock = MonotonicClockMock()
+        let dependencies = RUMScopeDependencies.mockWith(
+            featureScope: featureScope,
+            trackBackgroundEvents: false,
+            featureFlags: [.multiSceneTracking: true, .viewUpdates: false],
+            monotonicClock: clock
+        )
+        guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+        var retained: RUMSessionScope? = .mockWith(isInitialSession: false, parent: parent, startTime: routingStart, dependencies: dependencies)
+        weak var releasedSession = retained
+        weak var releasedView: RUMViewScope?
+        weak var releasedResource: RUMResourceScope?
+        do {
+            let session = try XCTUnwrap(retained)
+            _ = startOwnedView(session, target: sceneATarget, key: "original")
+            let viewID = try XCTUnwrap(session.viewScopes.last?.viewUUID)
+            releasedView = session.viewScopes.last
+            let identity = RUMResourcePreparationIdentity(owner: featureScope.owner, resourceID: UUID(), sessionID: session.sessionUUID, viewID: viewID)
+            _ = session.processResourcePreparation(.init(identity: identity, operation: .reserve, time: routingStart), monotonicTime: 0, context: context, writer: writer)
+            let spare = RUMResourcePreparationIdentity(owner: featureScope.owner, resourceID: UUID(), sessionID: session.sessionUUID, viewID: viewID)
+            _ = session.processResourcePreparation(.init(identity: spare, operation: .reserve, time: routingStart), monotonicTime: 0, context: context, writer: writer)
+            let removal = try XCTUnwrap(session.processResourcePreparation(.init(identity: spare, operation: .abandon, time: routingStart), monotonicTime: 0, context: context, writer: writer))
+            XCTAssertTrue(removal.keepAlive)
+            XCTAssertFalse(removal.publishesContext, "Nonfinal removal is only bookkeeping")
+            let start = RUMStartResourceCommand.mockWith(resourceKey: identity.resourceKey, time: routingStart)
+            XCTAssertNotNil(session.processResourcePreparation(.init(identity: identity, operation: .commit(start), time: routingStart), monotonicTime: 0, context: context, writer: writer))
+            releasedResource = session.viewScopes.last?.resourceScopes[identity.resourceKey]
+            XCTAssertNotNil(releasedResource)
+            let before = writer.events(ofType: RUMViewEvent.self).count
+            clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+            let terminal = RUMStopResourceCommand.mockWith(resourceKey: identity.resourceKey, time: routingStart)
+            XCTAssertNil(session.processResourcePreparation(.init(identity: identity, operation: .resource(terminal), time: routingStart), monotonicTime: clock.elapsedTime, context: context, writer: writer))
+            XCTAssertNil(session.endReason, "Captured rejection cannot run generic session expiry")
+            XCTAssertNotNil(session.viewScopes.last?.resourceScopes[identity.resourceKey], "Committed expiry retains declared deferred cleanup")
+            XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
+            XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, before)
+        }
+        retained = nil
+        XCTAssertNil(releasedSession)
+        XCTAssertNil(releasedView)
+        XCTAssertNil(releasedResource)
+    }
+
+    func testUnusedResourcePreparation_preservesLegacyTrackingAndState() throws {
+        for flags in [RUM.Configuration.FeatureFlags.defaults, [.multiSceneTracking: false]] {
+            let featureScope = ResourcePreparationOwnerScope()
+            let dependencies = RUMScopeDependencies.mockWith(featureScope: featureScope, trackBackgroundEvents: false, featureFlags: flags)
+            let session = RUMSessionScope.mockWith(isInitialSession: false, parent: parent, startTime: routingStart, dependencies: dependencies)
+            _ = startOwnedView(session, target: .processRepresentative, key: "legacy")
+            let view = try XCTUnwrap(session.viewScopes.last)
+            XCTAssertFalse(view is RUMPreparedResourceViewScope)
+            XCTAssertFalse(view.hasPendingResourcePreparations)
+            XCTAssertFalse(view.reserveResourcePreparation("unused"))
+            startOwnedResource(session, target: .processRepresentative, key: "request")
+            route(RUMStopResourceCommand.mockWith(resourceKey: "request", time: routingStart.addingTimeInterval(1)), through: session)
+            XCTAssertNil(view.resourceScopes["request"])
+            XCTAssertEqual(writer.events(ofType: RUMResourceEvent.self).filter { $0.view.id == view.viewUUID.toRUMDataFormat }.count, 1)
+            XCTAssertEqual(featureScope.ownerReads, 0, "The unused path must not acquire an On lifetime")
+        }
+    }
+}
+
+private final class ResourcePreparationOwnerScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    let owner = RUMContextHandoff.Owner()
+    private let base = FeatureScopeMock()
+    private(set) var ownerReads = 0
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { ownerReads += 1; return owner }
+    var dataStore: DataStore { base.dataStore }
+    var telemetry: Telemetry { base.telemetry }
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { base.eventWriteContext(bypassConsent: bypassConsent, block) }
+    func context(_ block: @escaping (DatadogContext) -> Void) { base.context(block) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func set(anonymousId: String?) { base.set(anonymousId: anonymousId) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
 }

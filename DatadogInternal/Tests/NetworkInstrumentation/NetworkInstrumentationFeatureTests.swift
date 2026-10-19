@@ -3596,3 +3596,222 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     class DelegateSubClass: DelegateBaseClass {
     }
 }
+
+extension NetworkInstrumentationFeatureTests {
+    /// Uses the existing task-specific transport hold; callbacks are injected explicitly.
+    private func withPreparedRequest(
+        mode: TrackingMode = .automatic,
+        traces: Bool = true,
+        _ body: (NetworkInstrumentationFeature, URLSessionTask, PreparedRequestHandler, RUMURLSessionContext, ReadWriteLock<Int>) throws -> Void
+    ) throws {
+        #if os(iOS)
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Captured preparation requires iOS 27") }
+        #else
+        throw XCTSkip("Captured preparation requires iOS 27")
+        #endif
+        let local = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+        let probe = PreparedRequestHandler()
+        probe.firstPartyHosts = traces ? .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]]) : .init()
+        try local.register(urlSessionHandler: probe)
+        let feature = try XCTUnwrap(local.get(feature: NetworkInstrumentationFeature.self))
+        let owner = RUMContextHandoff.Owner()
+        feature.receiveRUMContextHandoff(owner: owner, active: true)
+        let value = RUMContextHandoff.CurrentValue(
+            rumContext: .mockWith(sessionID: UUID().uuidString, viewID: UUID().uuidString),
+            sceneIdentifier: "original",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        let capture = RUMURLSessionContext(owner: owner, value: value)
+        let delegate = SessionDataDelegateMock()
+        let session = URLSession(configuration: .ephemeral, delegate: mode == .registeredDelegate ? delegate : nil, delegateQueue: nil)
+        let task = session.dataTask(with: try XCTUnwrap(URL(string: "https://example.com/prepared-request")))
+        let forwards = ReadWriteLock(wrappedValue: 0)
+        let previous = URLSessionTaskSwizzler()
+        try previous.swizzle { [weak task] candidate, continuation in
+            guard candidate === task else {
+                continuation()
+                return
+            }
+            forwards.mutate { $0 += 1 }
+        }
+        defer {
+            probe.onModify = nil
+            probe.onPrepare = nil
+            probe.onStart = nil
+            probe.onComplete = nil
+            feature.flush()
+            previous.unswizzle()
+            session.invalidateAndCancel()
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: local)
+        if mode == .registeredDelegate {
+            try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: local)
+        }
+        try RUMContextHandoff.withValue(value, for: owner) {
+            try body(feature, task, probe, capture, forwards)
+        }
+    }
+
+    func testRequestPreparation_reservesOriginalViewBeforeRequestModifier() throws {
+        for mode in [TrackingMode.automatic, .registeredDelegate] {
+            for traces in [false, true] {
+                try withPreparedRequest(mode: mode, traces: traces) { feature, task, probe, capture, _ in
+                    let order = ReadWriteLock(wrappedValue: [String]())
+                    let initialView = capture.rumContext?.viewID
+                    let stateID = UUID()
+                    weak var released: PreparedRequestState?
+                    probe.onPrepare = { context, _ in
+                        XCTAssertEqual(context.rumContext?.viewID, initialView)
+                        order.mutate { $0.append("prepare") }
+                        let state = PreparedRequestState(viewID: context.rumContext?.viewID)
+                        released = state
+                        return RUMURLSessionPreparation(identifier: stateID, capturedState: state)
+                    }
+                    probe.onModify = { request, _ in
+                        XCTAssertEqual(order.wrappedValue, ["prepare"])
+                        order.mutate { $0.append("modify") }
+                        var final = request
+                        final.url = URL(string: "https://example.com/final-request")
+                        return final
+                    }
+                    probe.onStart = { interception in
+                        order.mutate { $0.append("start") }
+                        let captured = interception as? RUMURLSessionTaskInterception
+                        XCTAssertTrue(captured?.rumContext.owner === capture.owner)
+                        XCTAssertEqual(captured?.rumContext.rumContext?.viewID, initialView)
+                        XCTAssertEqual((captured?.preparedState(for: probe) as? PreparedRequestState)?.viewID, initialView)
+                        XCTAssertEqual(interception.identifier, stateID)
+                        XCTAssertEqual(interception.request.url?.path, traces ? "/final-request" : "/prepared-request")
+                    }
+                    task.resume()
+                    feature.flush()
+                    XCTAssertEqual(order.wrappedValue, traces ? ["prepare", "modify", "start"] : ["prepare", "start"])
+                    XCTAssertNotNil(released)
+                    if mode == .registeredDelegate { feature.task(task, didFinishCollecting: .mockWith()) }
+                    feature.task(task, didCompleteWithError: nil)
+                    feature.flush()
+                    XCTAssertNil(released, "Completed interception releases preparation state while task stays alive")
+                    XCTAssertEqual(task.state, .suspended)
+                }
+            }
+        }
+    }
+
+    func testRequestPreparation_skippedTaskGuardCreatesNoReservation() throws {
+        try withPreparedRequest { feature, task, probe, _, forwards in
+            let calls = ReadWriteLock(wrappedValue: 0)
+            probe.onPrepare = { _, _ in calls.mutate { $0 += 1 }; return .init(identifier: UUID(), capturedState: PreparedRequestState(viewID: nil)) }
+            let preparationID = try XCTUnwrap(Mirror(reflecting: feature).children.first { $0.label == "preparationID" }?.value as? UUID)
+            task.dd.prepareOnce(for: preparationID) { }
+            task.resume()
+            feature.flush()
+            XCTAssertEqual(calls.wrappedValue, 0)
+            XCTAssertNil(try Self.preparation(for: task, in: feature))
+            XCTAssertEqual(forwards.wrappedValue, 1)
+            XCTAssertEqual(task.state, .suspended)
+        }
+    }
+
+    func testRequestPreparation_reentrantAndBufferedCompletionSettlesOnce() throws {
+        try withPreparedRequest(mode: .registeredDelegate) { feature, task, probe, _, forwards in
+            let order = ReadWriteLock(wrappedValue: [String]())
+            let prepares = ReadWriteLock(wrappedValue: 0)
+            let modifies = ReadWriteLock(wrappedValue: 0)
+            probe.onPrepare = { _, _ in prepares.mutate { $0 += 1 }; return .init(identifier: UUID(), capturedState: PreparedRequestState(viewID: "original")) }
+            probe.onModify = { [weak feature, weak task] request, _ in
+                modifies.mutate { $0 += 1 }
+                guard let feature, let task else {
+                    return request
+                }
+                task.resume()
+                feature.task(task, didReceive: Data([1, 2]))
+                feature.task(task, didFinishCollecting: .mockWith())
+                feature.task(task, didCompleteWithError: nil)
+                feature.flush()
+                XCTAssertTrue(order.wrappedValue.isEmpty, "Early callbacks wait for preparation")
+                return request
+            }
+            probe.onStart = { _ in order.mutate { $0.append("start") } }
+            probe.onComplete = { interception in
+                order.mutate { $0.append("complete") }
+                XCTAssertEqual(interception.data, Data([1, 2]))
+                XCTAssertNotNil(interception.metrics)
+                XCTAssertNotNil(interception.completion)
+                XCTAssertNotNil((interception as? RUMURLSessionTaskInterception)?.preparedState(for: probe))
+            }
+            task.resume()
+            feature.flush()
+            XCTAssertEqual(prepares.wrappedValue, 1)
+            XCTAssertEqual(modifies.wrappedValue, 1)
+            XCTAssertEqual(order.wrappedValue, ["start", "complete"])
+            XCTAssertEqual(forwards.wrappedValue, 2)
+            XCTAssertNil(try Self.preparation(for: task, in: feature))
+        }
+    }
+
+    func testRequestPreparation_conflictingReceiptsAbandonOnlyTheirPendingKeys() throws {
+        for sameUUID in [false, true] {
+            try withPreparedRequest { feature, task, first, capture, _ in
+                let second = PreparedRequestHandler()
+                second.firstPartyHosts = first.firstPartyHosts
+                feature.handlers.append(second)
+                let identifier = UUID()
+                let releases = ReadWriteLock(wrappedValue: 0)
+                weak var firstState: PreparedRequestState?
+                weak var secondState: PreparedRequestState?
+                first.onPrepare = { _, _ in
+                    let state = PreparedRequestState(viewID: "original", onRelease: { releases.mutate { $0 += 1 } })
+                    firstState = state
+                    return .init(identifier: identifier, capturedState: state)
+                }
+                second.onPrepare = { _, shared in
+                    XCTAssertEqual(shared?.identifier, identifier)
+                    let state = PreparedRequestState(viewID: "original", onRelease: { releases.mutate { $0 += 1 } })
+                    secondState = state
+                    return .init(identifier: sameUUID ? identifier : UUID(), capturedState: state)
+                }
+                let starts = ReadWriteLock(wrappedValue: 0)
+                first.onStart = { interception in
+                    starts.mutate { $0 += 1 }
+                    let captured = interception as? RUMURLSessionTaskInterception
+                    XCTAssertTrue(captured?.rumContext.owner === capture.owner)
+                    XCTAssertNil(captured?.preparedState(for: first))
+                    XCTAssertNil(captured?.preparedState(for: second))
+                }
+                task.resume()
+                feature.flush()
+                XCTAssertEqual(starts.wrappedValue, 1)
+                XCTAssertNil(firstState)
+                XCTAssertNil(secondState)
+                XCTAssertEqual(releases.wrappedValue, 2, "Each conflicting pending receipt is released once")
+                feature.task(task, didCompleteWithError: nil)
+                feature.flush()
+                second.onPrepare = nil
+            }
+        }
+    }
+}
+
+private final class PreparedRequestHandler: DatadogURLSessionHandler, DatadogURLSessionHandlerPreparingRUM {
+    var firstPartyHosts = FirstPartyHosts()
+    var onPrepare: ((RUMURLSessionContext, RUMURLSessionPreparation?) -> RUMURLSessionPreparation)?
+    var onModify: ((URLRequest, NetworkContext?) -> URLRequest)?
+    var onStart: ((URLSessionTaskInterception) -> Void)?
+    var onComplete: ((URLSessionTaskInterception) -> Void)?
+    func prepareRUMResource(capturing context: RUMURLSessionContext, reusing preparation: RUMURLSessionPreparation?) -> RUMURLSessionPreparation {
+        onPrepare?(context, preparation) ?? .init(identifier: nil, capturedState: PreparedRequestState(viewID: nil))
+    }
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        (onModify?(request, networkContext) ?? request, nil, nil)
+    }
+    func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) { onStart?(interception) }
+    func interceptionDidComplete(interception: URLSessionTaskInterception) { onComplete?(interception) }
+}
+
+private final class PreparedRequestState: URLSessionHandlerCapturedState {
+    let viewID: String?
+    private let onRelease: () -> Void
+    init(viewID: String?, onRelease: @escaping () -> Void = {}) { self.viewID = viewID; self.onRelease = onRelease }
+    deinit { onRelease() }
+}

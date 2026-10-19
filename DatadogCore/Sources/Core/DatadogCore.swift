@@ -608,6 +608,31 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.set(additionalContext: context()) }
     }
 
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate) {
+        contextProvider.writeIfAccepted { [weak self] current in
+            guard let self, owner.isValid, self.rumContextHandoffOwner === owner else {
+                return false
+            }
+            // The supplier can reenter Core, including retiring this owner.
+            guard case let .set(rumContext) = context() else {
+                return false
+            }
+            var candidate = current
+            candidate.set(additionalContext: rumContext)
+            var accepted = false
+            self._registry.mutate { registry in
+                guard !registry.isStopped, case let .active(activation) = registry.handoff,
+                      activation.owner === owner, owner.isValid else { return }
+                // Revalidate and mutate together with Core ownership retirement.
+                // The displaced value remains retained until after unlocking.
+                swap(&current, &candidate)
+                accepted = true
+            }
+            withExtendedLifetime(candidate) {}
+            return accepted
+        }
+    }
+
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
@@ -617,7 +642,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffEventWriting, RUMFlagEvaluationSending where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffEventWriting, RUMFlagEvaluationSending, RUMContextHandoffContextUpdating where Feature: DatadogFeature {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
     func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
         core?.bus.sendFlagEvaluation(evaluation)
@@ -727,6 +752,10 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
         core?.set(context: context)
+    }
+
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate) {
+        core?.setRUMContext(for: owner, context: context)
     }
 
     func set(anonymousId: String?) {

@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogRUM
 
@@ -1568,4 +1569,226 @@ extension URLSessionRUMResourcesHandlerTests {
             XCTAssertEqual(success.attributes["transfer.control"] as? String, "preserved", file: file, line: line)
         }
     }
+}
+
+extension URLSessionRUMResourcesHandlerTests {
+    private func preparedResourceMonitor(
+        scope: ResourceHandlerOwnerScope, time: Date
+    ) throws -> (Monitor, RUMURLSessionContext) {
+        let dependencies = RUMScopeDependencies.mockWith(
+            featureScope: scope,
+            trackBackgroundEvents: false,
+            featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
+        )
+        guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+        let monitor = Monitor(dependencies: dependencies, dateProvider: DateProviderMock(now: time))
+        var start = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("original"), name: "original")
+        let scene = RUMSceneIdentifier(rawValue: "original")
+        start.target = .scene(scene)
+        monitor.process(command: start)
+        let context = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+        return (monitor, RUMURLSessionContext(owner: scope.owner, value: .init(rumContext: context, sceneIdentifier: scene.rawValue, hasPendingUserAction: false, excludedUserActionID: nil)))
+    }
+
+    private func preparedInterception(
+        handler: URLSessionRUMResourcesHandler,
+        capture: RUMURLSessionContext,
+        preparation: RUMURLSessionPreparation?,
+        request: URLRequest
+    ) -> RUMURLSessionTaskInterception {
+        RUMURLSessionTaskInterception(
+            request: .init(request: request),
+            isFirstParty: true,
+            trackingMode: .registeredDelegate,
+            identifier: preparation?.identifier,
+            rumContext: capture,
+            preparations: preparation.map { [.init(handler: ObjectIdentifier(handler), state: $0.capturedState)] } ?? []
+        )
+    }
+
+    func testPreparedResource_commitsFinalRequestToOriginalView() throws {
+        for traces in [false, true] {
+            for fails in [false, true] {
+                let time = dateProvider.now
+                let scope = ResourceHandlerOwnerScope(context: .mockWith(sdkInitDate: time, launchInfo: .mockWith(launchReason: .userLaunch)))
+                let (monitor, capture) = try preparedResourceMonitor(scope: scope, time: time)
+                let original = try XCTUnwrap(capture.rumContext)
+                let tracing: DistributedTracing? = traces ? .init(
+                    samplingRate: .maxSampleRate,
+                    firstPartyHosts: .init(),
+                    traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 0, idLo: 100)),
+                    spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 200, advancingByCount: 0),
+                    traceContextInjection: .all,
+                    sessionSampling: SessionSamplerMock.keepAll(sessionID: original.sessionID)
+                ) : nil
+                let handler = createHandler(distributedTracing: tracing)
+                handler.publish(to: monitor)
+                let preparation = handler.prepareRUMResource(capturing: capture, reusing: nil)
+                XCTAssertNotNil(preparation.identifier)
+                XCTAssertTrue(handler.prepareRUMResource(capturing: capture, reusing: preparation) === preparation, "Compatible handlers share the same receipt lifetime")
+                var final = URLRequest(url: try XCTUnwrap(URL(string: "https://example.com/final-payload")))
+                final.httpMethod = "POST"
+                let (request, trace, _) = handler.modify(request: final, headerTypes: traces ? [.datadog] : [], networkContext: capture.projecting(nil))
+
+                // This navigation represents the synchronous modifier boundary before deferred start.
+                var stopA = RUMStopViewCommand.mockWith(time: time.addingTimeInterval(1), identity: ViewIdentifier("original"))
+                stopA.target = .scene(RUMSceneIdentifier(rawValue: "original"))
+                monitor.process(command: stopA)
+                var startB = RUMStartViewCommand.mockWith(time: time.addingTimeInterval(1), identity: ViewIdentifier("peer"), name: "peer")
+                let sceneB = RUMSceneIdentifier(rawValue: "peer")
+                startB.target = .scene(sceneB)
+                monitor.process(command: startB)
+                var tap = RUMAddUserActionCommand.mockWith(time: time.addingTimeInterval(1), actionType: .tap, name: "peer tap")
+                tap.target = .scene(sceneB)
+                monitor.process(command: tap)
+                let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+                XCTAssertNotNil(peer.userActionID)
+                let interception = preparedInterception(handler: handler, capture: capture, preparation: preparation, request: request)
+                if let trace { interception.register(trace: trace) }
+                interception.register(startDate: time)
+                handler.interceptionDidStart(interception: interception, capturedStates: [])
+                interception.register(endDate: time.addingTimeInterval(2))
+                interception.register(metrics: .mockWith(fetch: .init(start: time, end: time.addingTimeInterval(2))))
+                let response = try XCTUnwrap(HTTPURLResponse(url: try XCTUnwrap(request.url), statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]))
+                interception.register(response: fails ? nil : response, error: fails ? NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled) : nil)
+                handler.interceptionDidComplete(interception: interception)
+                let resources = scope.base.eventsWritten(ofType: RUMResourceEvent.self)
+                let errors = scope.base.eventsWritten(ofType: RUMErrorEvent.self)
+                if fails {
+                    XCTAssertTrue(resources.isEmpty)
+                    let error = try XCTUnwrap(errors.last)
+                    XCTAssertEqual(errors.count, 1)
+                    XCTAssertEqual(error.session.id, original.sessionID)
+                    XCTAssertEqual(error.view.id, original.viewID)
+                } else {
+                    XCTAssertTrue(errors.isEmpty)
+                    let event = try XCTUnwrap(resources.last)
+                    XCTAssertEqual(resources.count, 1)
+                    XCTAssertEqual(event.session.id, original.sessionID)
+                    XCTAssertEqual(event.view.id, original.viewID)
+                    XCTAssertEqual(event.resource.url, request.url?.absoluteString)
+                    XCTAssertEqual(event.resource.method, .post)
+                    XCTAssertEqual(event.dd.traceId, traces ? "64" : nil)
+                    XCTAssertEqual(event.dd.spanId, traces ? "200" : nil)
+                }
+                XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.userActionID, peer.userActionID)
+                let peerEvent = try XCTUnwrap(scope.base.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == peer.viewID })
+                XCTAssertEqual(peerEvent.view.resource.count, 0)
+                XCTAssertEqual(peerEvent.view.error.count, 0)
+                let finalA = try XCTUnwrap(scope.base.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == original.viewID })
+                XCTAssertEqual(finalA.view.isActive, false)
+            }
+        }
+    }
+
+    func testPreparedResource_callbacksRequireExactOriginalLiveSubscriber() throws {
+        let owner = RUMContextHandoff.Owner()
+        let capture = RUMURLSessionContext(owner: owner, value: .init(rumContext: .mockWith(sessionID: UUID().uuidString, viewID: UUID().uuidString), sceneIdentifier: "original", hasPendingUserAction: false, excludedUserActionID: nil))
+        let request = URLRequest(url: try XCTUnwrap(URL(string: "https://example.com/callback-ownership")))
+        for replacementPoint in ["none", "attributes", "metrics"] {
+            let original = PreparedResourceSubscriber()
+            let replacement = PreparedResourceSubscriber()
+            weak var weakHandler: URLSessionRUMResourcesHandler?
+            let handler = createHandler(rumAttributesProvider: { [weak replacement] _, _, _, _ in
+                if replacementPoint == "attributes", let replacement { weakHandler?.publish(to: replacement) }
+                return [:]
+            })
+            weakHandler = handler
+            handler.publish(to: original)
+            let preparation = handler.prepareRUMResource(capturing: capture, reusing: nil)
+            XCTAssertNil(preparation.identifier, "Unsupported subscribers retain the ordinary UUID allocation point")
+            let interception = preparedInterception(handler: handler, capture: capture, preparation: preparation, request: request)
+            handler.interceptionDidStart(interception: interception, capturedStates: [])
+            XCTAssertEqual(original.commands.count, 1)
+            if replacementPoint == "metrics" {
+                original.onProcess = { [weak handler, weak replacement] command in
+                    if command is RUMAddResourceMetricsCommand, let replacement { handler?.publish(to: replacement) }
+                }
+            }
+            interception.register(metrics: .mockWith())
+            let response = try XCTUnwrap(HTTPURLResponse(url: try XCTUnwrap(request.url), statusCode: 200, httpVersion: nil, headerFields: nil))
+            interception.register(response: response, error: nil)
+            handler.interceptionDidComplete(interception: interception)
+            if replacementPoint == "none" {
+                XCTAssertEqual(original.commands.count, 3)
+                let start = try XCTUnwrap(original.commands.first as? RUMStartResourceCommand)
+                let metrics = try XCTUnwrap(original.commands.dropFirst().first as? RUMAddResourceMetricsCommand)
+                let terminal = try XCTUnwrap(original.commands.last as? RUMStopResourceCommand)
+                XCTAssertEqual(start.url, request.url?.absoluteString)
+                XCTAssertEqual(metrics.resourceKey, start.resourceKey)
+                XCTAssertEqual(terminal.resourceKey, start.resourceKey)
+                XCTAssertEqual(terminal.httpStatusCode, 200)
+                XCTAssertTrue(terminal.isAutomatic)
+            } else {
+                XCTAssertEqual(original.commands.count, replacementPoint == "attributes" ? 1 : 2)
+                XCTAssertFalse(original.commands.contains { $0 is RUMStopResourceCommand })
+            }
+            XCTAssertTrue(replacement.commands.isEmpty, "No callback may adopt the new subscriber")
+        }
+        do {
+            var original: PreparedResourceSubscriber? = PreparedResourceSubscriber()
+            weak var released = original
+            let replacement = PreparedResourceSubscriber()
+            let handler = createHandler()
+            handler.publish(to: try XCTUnwrap(original))
+            let preparation = handler.prepareRUMResource(capturing: capture, reusing: nil)
+            let interception = preparedInterception(handler: handler, capture: capture, preparation: preparation, request: request)
+            original = nil
+            XCTAssertNil(released, "Carrier and custom marker must retain no subscriber")
+            handler.publish(to: replacement)
+            handler.interceptionDidStart(interception: interception, capturedStates: [])
+            interception.register(response: .mockWith(), error: nil)
+            handler.interceptionDidComplete(interception: interception)
+            let late = preparedInterception(handler: handler, capture: capture, preparation: nil, request: request)
+            handler.interceptionDidStart(interception: late, capturedStates: [])
+            late.register(response: .mockWith(), error: nil)
+            handler.interceptionDidComplete(interception: late)
+            XCTAssertTrue(replacement.commands.isEmpty, "Released and absent handler states remain authoritative")
+        }
+        do {
+            let scope = ResourceHandlerOwnerScope(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch)))
+            var tuple: (Monitor, RUMURLSessionContext)? = try preparedResourceMonitor(scope: scope, time: dateProvider.now)
+            weak var released = tuple?.0
+            let handler = createHandler()
+            handler.publish(to: try XCTUnwrap(tuple?.0))
+            let context = try XCTUnwrap(tuple?.1)
+            let preparation = handler.prepareRUMResource(capturing: context, reusing: nil)
+            XCTAssertNotNil(preparation.identifier)
+            let interception = preparedInterception(handler: handler, capture: context, preparation: preparation, request: request)
+            tuple = nil
+            XCTAssertNil(released, "Eligible receipt retains neither original Monitor nor its scopes")
+            let replacement = PreparedResourceSubscriber()
+            handler.publish(to: replacement)
+            handler.interceptionDidStart(interception: interception, capturedStates: [])
+            interception.register(response: .mockWith(), error: nil)
+            handler.interceptionDidComplete(interception: interception)
+            XCTAssertTrue(replacement.commands.isEmpty)
+        }
+    }
+}
+
+private final class PreparedResourceSubscriber: RUMCommandSubscriber {
+    var commands: [RUMCommand] = []
+    var onProcess: ((RUMCommand) -> Void)?
+    func process(command: RUMCommand) { commands.append(command); onProcess?(command) }
+}
+
+private final class ResourceHandlerOwnerScope: FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffContextUpdating, @unchecked Sendable {
+    let owner = RUMContextHandoff.Owner()
+    let base: FeatureScopeMock
+    init(context: DatadogContext) { base = FeatureScopeMock(context: context) }
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    var dataStore: DataStore { base.dataStore }
+    var telemetry: Telemetry { base.telemetry }
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { base.eventWriteContext(bypassConsent: bypassConsent, block) }
+    func context(_ block: @escaping (DatadogContext) -> Void) { base.context(block) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate) {
+        guard owner === self.owner, owner.isValid, case let .set(value) = context() else {
+            return
+        }
+        base.set { value }
+    }
+    func set(anonymousId: String?) { base.set(anonymousId: anonymousId) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
 }

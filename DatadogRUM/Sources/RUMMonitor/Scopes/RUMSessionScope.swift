@@ -80,6 +80,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
     }
 
     private final class SceneState {
+        // Retain only the original leaf owner, never Core or Monitor.
+        let resourcePreparationOwner: RUMContextHandoff.Owner?
+
+        init(resourcePreparationOwner: RUMContextHandoff.Owner?) {
+            self.resourcePreparationOwner = resourcePreparationOwner
+        }
+
         var navigationDestination: NavigationDestination?
         var representativeViewID: RUMUUID?
         var interactionMetrics: [RUMSceneIdentifier: INVMetricTracking?] = [:]
@@ -188,7 +195,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
 
         self.parent = parent
         self.dependencies = dependencies
-        self.sceneState = dependencies.isMultiSceneTrackingEnabled ? SceneState() : nil
+        self.sceneState = dependencies.isMultiSceneTrackingEnabled
+            ? SceneState(resourcePreparationOwner: RUMContextHandoff.owner(in: dependencies.featureScope)) : nil
         self.sceneState?.navigationDestination = navigationDestination
         self.applicationState = applicationState
         self.sampler = DeterministicSampler(
@@ -469,6 +477,63 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         return isActive || !viewScopes.isEmpty
     }
 
+    /// The exact original session/view is the only recipient of a private control.
+    func processResourcePreparation(
+        _ command: RUMResourcePreparationCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer
+    ) -> (keepAlive: Bool, publishesContext: Bool)? {
+        let identity = command.identity
+        guard let sceneState, sceneState.resourcePreparationOwner === identity.owner,
+              identity.sessionID == sessionUUID,
+              let view = viewScopes.first(where: { $0.viewUUID == identity.viewID }) else { return nil }
+        let canWrite = identity.owner.isValid
+            && RUMContextHandoff.owner(in: dependencies.featureScope) === identity.owner
+            && sampler.isSampled && (isActive || endReason == .stopAPI)
+            && !hasTimedOut(now: monotonicTime) && !hasExpired(now: monotonicTime)
+
+        if case .abandon = command.operation {
+            let tick = RUMKeepSessionAliveCommand(time: command.time, globalAttributes: command.globalAttributes, attributes: [:])
+            guard let keepView = view.abandonResourcePreparation(
+                identity.resourceKey, on: tick, writesEvents: canWrite, context: context, writer: writer
+            ) else { return nil }
+            if !keepView { viewScopes.removeAll { $0 === view } }
+            let publishesContext = canWrite && !keepView
+            if publishesContext, isActive { updateRepresentativeFatalErrorContext() }
+            return (isActive || !viewScopes.isEmpty, publishesContext)
+        }
+        // Rejection cannot advance generic session, Action or peer lifecycle.
+        guard canWrite else {
+            return nil
+        }
+        let keepView: Bool
+        switch command.operation {
+        case .reserve:
+            guard isActive, view.isActiveView, view.resourceScopes[identity.resourceKey] == nil,
+                  view.reserveResourcePreparation(identity.resourceKey) else { return nil }
+            return (true, false)
+        case let .commit(start):
+            guard view.resourceScopes[identity.resourceKey] == nil,
+                  let retained = view.commitResourcePreparation(
+                    identity.resourceKey, command: start, context: context, writer: writer
+                  ) else { return nil }
+            keepView = retained
+        case let .resource(resource):
+            guard let keyed = resource as? RUMResourceCommand, keyed.resourceKey == identity.resourceKey,
+                  view.resourceScopes[identity.resourceKey] != nil,
+                  resource is RUMAddResourceMetricsCommand || resource is RUMResourceCompletionCommand else { return nil }
+            var owned = resource
+            if var completion = owned as? RUMResourceCompletionCommand {
+                completion.ownership = .views([view.viewUUID])
+                owned = completion
+            }
+            keepView = view.process(command: owned, context: context, writer: writer)
+        case .abandon:
+            return nil // handled above, including invalid-owner bookkeeping cleanup
+        }
+        if !keepView { viewScopes.removeAll { $0 === view } }
+        if isActive { updateRepresentativeFatalErrorContext() }
+        return (isActive || !viewScopes.isEmpty, true)
+    }
+
     // MARK: - RUMCommands Processing
 
     private func startView(on command: RUMStartViewCommand, context: DatadogContext) {
@@ -500,21 +565,40 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         sceneIdentifier: RUMSceneIdentifier? = nil,
         didReceiveStartCommand: Bool = false
     ) {
-        let scope = RUMViewScope(
-            isInitialView: isInitialView,
-            parent: self,
-            dependencies: dependencies,
-            identity: identity,
-            path: path,
-            name: name,
-            customTimings: customTimings,
-            startTime: startTime,
-            serverTimeOffset: serverTimeOffset,
-            interactionToNextViewMetric: metric(for: sceneIdentifier),
-            viewIndexInSession: nextViewIndex,
-            sceneIdentifier: sceneIdentifier,
-            didReceiveStartCommand: didReceiveStartCommand
-        )
+        let scope: RUMViewScope
+        if dependencies.isMultiSceneTrackingEnabled {
+            scope = RUMPreparedResourceViewScope(
+                isInitialView: isInitialView,
+                parent: self,
+                dependencies: dependencies,
+                identity: identity,
+                path: path,
+                name: name,
+                customTimings: customTimings,
+                startTime: startTime,
+                serverTimeOffset: serverTimeOffset,
+                interactionToNextViewMetric: metric(for: sceneIdentifier),
+                viewIndexInSession: nextViewIndex,
+                sceneIdentifier: sceneIdentifier,
+                didReceiveStartCommand: didReceiveStartCommand
+            )
+        } else {
+            scope = RUMViewScope(
+                isInitialView: isInitialView,
+                parent: self,
+                dependencies: dependencies,
+                identity: identity,
+                path: path,
+                name: name,
+                customTimings: customTimings,
+                startTime: startTime,
+                serverTimeOffset: serverTimeOffset,
+                interactionToNextViewMetric: metric(for: sceneIdentifier),
+                viewIndexInSession: nextViewIndex,
+                sceneIdentifier: sceneIdentifier,
+                didReceiveStartCommand: didReceiveStartCommand
+            )
+        }
         nextViewIndex += 1
 
         if path != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {

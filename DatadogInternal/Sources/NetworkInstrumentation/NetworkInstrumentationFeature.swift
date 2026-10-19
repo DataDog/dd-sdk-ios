@@ -220,13 +220,14 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     } else {
                         captured = nil
                     }
+                    let preparation = self.prepareRUMRequest(capturing: captured)
                     let (request, traceContexts) = self.intercept(
                         request: currentRequest,
                         additionalFirstPartyHosts: configuredFirstPartyHosts,
                         rumContext: captured
                     )
                     task.dd.override(currentRequest: request)
-                    self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request, rumContext: captured)
+                    self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request, rumContext: captured, preparation: preparation)
                     didPrepare = true
                 }
                 self.finishPreparation(for: task, didPrepare: didPrepare)
@@ -598,6 +599,35 @@ extension NetworkInstrumentationFeature {
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this
     /// information between calls.
+    struct RUMRequestPreparation {
+        let identifier: UUID?
+        let handlers: [RUMURLSessionHandlerPreparation]
+    }
+
+    /// Runs inside the winning task guard, outside the preparation coordinator lock.
+    private func prepareRUMRequest(capturing context: RUMURLSessionContext?) -> RUMRequestPreparation? {
+        guard let context else {
+            return nil
+        }
+        let handlers = self.handlers
+        var shared: RUMURLSessionPreparation?
+        var states: [RUMURLSessionHandlerPreparation] = []
+        for handler in handlers {
+            guard let capable = handler as? any DatadogURLSessionHandlerPreparingRUM else { continue }
+            let preparation = capable.prepareRUMResource(capturing: context, reusing: shared)
+            if preparation.identifier != nil {
+                guard shared == nil || shared === preparation else {
+                    // Releasing the uncommitted receipts abandons their pending keys.
+                    // The carrier remains authoritative, with no handler state to adopt.
+                    return RUMRequestPreparation(identifier: nil, handlers: [])
+                }
+                shared = preparation
+            }
+            states.append(RUMURLSessionHandlerPreparation(handler: ObjectIdentifier(capable), state: preparation.capturedState))
+        }
+        return RUMRequestPreparation(identifier: shared?.identifier, handlers: states)
+    }
+
     struct RequestInstrumentationContext {
         let traceContext: TraceContext?
         let capturedState: URLSessionHandlerCapturedState?
@@ -650,7 +680,7 @@ extension NetworkInstrumentationFeature {
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
-    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil, rumContext: RUMURLSessionContext? = nil) {
+    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil, rumContext: RUMURLSessionContext? = nil, preparation: RUMRequestPreparation? = nil) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
@@ -683,12 +713,25 @@ extension NetworkInstrumentationFeature {
                 return
             }
 
-            let interception = self.interceptions[task] ??
-                URLSessionTaskInterception(
+            let interception: URLSessionTaskInterception
+            if let existing = self.interceptions[task] {
+                interception = existing
+            } else if let rumContext {
+                interception = RUMURLSessionTaskInterception(
+                    request: request,
+                    isFirstParty: firstPartyHosts.isFirstParty(url: request.url),
+                    trackingMode: trackingMode,
+                    identifier: preparation?.identifier,
+                    rumContext: rumContext,
+                    preparations: preparation?.handlers ?? []
+                )
+            } else {
+                interception = URLSessionTaskInterception(
                     request: request,
                     isFirstParty: firstPartyHosts.isFirstParty(url: request.url),
                     trackingMode: trackingMode
                 )
+            }
 
             interception.register(request: request)
 

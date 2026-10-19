@@ -51,6 +51,12 @@ public extension FeatureScope {
     }
 }
 
+/// Optional owner-conditional RUM context publication; ordinary scopes are unchanged.
+@_spi(Internal)
+public protocol RUMContextHandoffContextUpdating {
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate)
+}
+
 /// Optional built-in delivery capability; custom scopes retain ordinary Flags delivery.
 @_spi(Internal)
 public protocol RUMFlagEvaluationSending {
@@ -71,6 +77,12 @@ public extension FeatureScope {
 /// Declares request-local ownership; activation is supplied by the scene input layer.
 @_spi(Internal)
 public enum RUMContextHandoff {
+    /// Rejection is distinct from an accepted update that clears RUM context.
+    public enum ContextUpdate {
+        case skip
+        case set(RUMCoreContext?)
+    }
+
     /// A lifetime token that retains no core, feature or UI object.
     public final class Owner: @unchecked Sendable {
         @ReadWriteLock

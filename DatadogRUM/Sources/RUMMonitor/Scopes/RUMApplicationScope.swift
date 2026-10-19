@@ -320,6 +320,30 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
     }
 
+    /// Routes a private request control without launch resolution or session fanout.
+    @discardableResult
+    func processResourcePreparation(
+        _ command: RUMResourcePreparationCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer
+    ) -> Bool {
+        guard dependencies.isMultiSceneTrackingEnabled,
+              let session = sessionScopes.first(where: { $0.sessionUUID == command.identity.sessionID }),
+              let result = session.processResourcePreparation(command, monotonicTime: monotonicTime, context: context, writer: writer) else {
+            return false
+        }
+        if !result.keepAlive {
+            // Settling a stopped A must not overwrite a newer active B's metadata.
+            if result.publishesContext, activeSession == nil, sessionScopes.last === session {
+                lastSessionEndReason = session.endReason
+                applicationState.wasPreviousSessionStopped = session.endReason == .stopAPI
+            }
+            sessionScopes.removeAll { $0 === session }
+            if result.publishesContext {
+                dependencies.sessionEndedMetric.endMetric(sessionID: session.sessionUUID, with: context)
+            }
+        }
+        return result.publishesContext
+    }
+
     // MARK: - Private
 
     /// Sanity count to make sure initial session is created only once.

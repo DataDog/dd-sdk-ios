@@ -10,6 +10,7 @@ import UIKit
 #endif
 @_spi(Internal)
 @testable import DatadogInternal
+@testable import DatadogCore
 @testable import DatadogRUM
 @testable import TestUtilities
 
@@ -2131,3 +2132,442 @@ final class CapturedFlagEvaluationOwnershipTests: XCTestCase {
 }
 
 #endif
+
+extension MonitorTests {
+    private func withPreparedResourceCore(
+        _ body: (DatadogCore, FeatureScope, RUMContextHandoff.Owner, DatadogContextProvider) throws -> Void
+    ) throws {
+        temporaryCoreDirectory.create()
+        let provider = DatadogContextProvider(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch)))
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .notGranted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: provider,
+            applicationVersion: "test",
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer {
+            core.flush()
+            core.stop()
+            provider.flush()
+            temporaryCoreDirectory.delete()
+        }
+        let owner = try core.activateRUMContextHandoff()
+        try core.registerRUMContextHandoff(feature: PreparedResourceFeature(), owner: owner)
+        let scope = core.scope(for: PreparedResourceFeature.self)
+        provider.flush()
+        try body(core, scope, owner, provider)
+    }
+
+    func testPreparedResourceCompletion_refreshesSceneAndCoreActionContext() throws {
+        try withPreparedResourceCore { _, scope, owner, provider in
+            let time = Date(timeIntervalSince1970: 1_600_000_000)
+            let dependencies = RUMScopeDependencies.mockWith(
+                featureScope: scope,
+                trackBackgroundEvents: false,
+                featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
+            )
+            guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+            let monitor = Monitor(dependencies: dependencies, dateProvider: DateProviderMock(now: time))
+            let scene = RUMSceneIdentifier(rawValue: "original")
+            var startView = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("original"), name: "original")
+            startView.target = .scene(scene)
+            monitor.process(command: startView)
+            provider.flush()
+            let initial = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+            let capture = RUMURLSessionContext(owner: owner, value: .init(rumContext: initial, sceneIdentifier: scene.rawValue, hasPendingUserAction: false, excludedUserActionID: nil))
+            let receipt = try XCTUnwrap(monitor.prepareResource(capturing: capture))
+            monitor.processResource(command: RUMStartResourceCommand.mockWith(resourceKey: receipt.identity.resourceKey, time: time), preparation: receipt.identity)
+            provider.flush()
+            provider.flush() // accepted controls enqueue one conditional publication from their callback
+
+            // This Action starts after the Resource, so its original resource count stays zero.
+            var tap = RUMAddUserActionCommand.mockWith(time: time.addingTimeInterval(1), actionType: .tap, name: "later tap")
+            tap.target = .scene(scene)
+            monitor.process(command: tap)
+            provider.flush()
+            let before = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+            XCTAssertNotNil(before.userActionID)
+            XCTAssertEqual(provider.read().additionalContext(ofType: RUMCoreContext.self)?.userActionID, before.userActionID)
+            let unused = try XCTUnwrap(monitor.prepareResource(capturing: capture))
+            provider.flush()
+            var abandonmentDeliveries = 0
+            provider.publish { _ in abandonmentDeliveries += 1 }
+            provider.flush()
+            monitor.abandonResourcePreparation(unused.identity)
+            provider.flush()
+            provider.flush()
+            XCTAssertEqual(abandonmentDeliveries, 0, "Uncommitted active-view abandonment must not publish context")
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(scene))?.userActionID, before.userActionID)
+
+            var terminal = RUMStopResourceCommand.mockWith(resourceKey: receipt.identity.resourceKey, time: time.addingTimeInterval(2))
+            terminal.isAutomatic = true
+            monitor.processResource(command: terminal, preparation: receipt.identity)
+            provider.flush()
+            provider.flush()
+            let after = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+            XCTAssertEqual(after.viewID, initial.viewID)
+            XCTAssertNil(after.userActionID, "The valid owning-view terminal expires the later Action")
+            let coreContext = try XCTUnwrap(provider.read().additionalContext(ofType: RUMCoreContext.self))
+            XCTAssertEqual(coreContext.viewID, initial.viewID)
+            XCTAssertNil(coreContext.userActionID, "Core must not retain the completed Action")
+            withExtendedLifetime(receipt) {}
+        }
+        try assertQueuedModifierNavigationPreservesResource()
+    }
+
+    func testCapturedResourceControl_rejectionHasNoLifecycleOrPeerEffects() throws {
+        for fault in ["foreign owner", "removed view", "expired session", "refreshed session"] {
+            try withPreparedResourceCore { _, scope, owner, provider in
+                let clock = MonotonicClockMock()
+                let time = Date(timeIntervalSince1970: 1_600_000_000)
+                let dependencies = RUMScopeDependencies.mockWith(
+                    featureScope: scope,
+                    trackBackgroundEvents: false,
+                    featureFlags: [.multiSceneTracking: true, .viewUpdates: false],
+                    monotonicClock: clock
+                )
+                guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+                let monitor = Monitor(dependencies: dependencies, dateProvider: DateProviderMock(now: time))
+                let peerScene = RUMSceneIdentifier(rawValue: "live-peer")
+                func startPeer() {
+                    var peer = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("live-peer"), name: "live-peer")
+                    peer.target = .scene(peerScene)
+                    monitor.process(command: peer)
+                    var tap = RUMAddUserActionCommand.mockWith(time: time, actionType: .tap, name: "peer Action")
+                    tap.target = .scene(peerScene)
+                    monitor.process(command: tap)
+                    var resource = RUMStartResourceCommand.mockWith(resourceKey: "peer-resource", time: time)
+                    resource.target = .scene(peerScene)
+                    monitor.process(command: resource)
+                    provider.flush()
+                }
+                var start = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("original"), name: "original")
+                let scene = RUMSceneIdentifier(rawValue: "original")
+                start.target = .scene(scene)
+                monitor.process(command: start)
+                provider.flush()
+                let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+                let capture = RUMURLSessionContext(owner: owner, value: .init(rumContext: original, sceneIdentifier: scene.rawValue, hasPendingUserAction: false, excludedUserActionID: nil))
+                let receipt = try XCTUnwrap(monitor.prepareResource(capturing: capture))
+                provider.flush()
+                startPeer()
+                var identity = receipt.identity
+                if fault == "foreign owner" {
+                    identity = .init(owner: RUMContextHandoff.Owner(), resourceID: identity.resourceID, sessionID: identity.sessionID, viewID: identity.viewID)
+                } else if fault == "removed view" {
+                    identity = .init(owner: identity.owner, resourceID: identity.resourceID, sessionID: identity.sessionID, viewID: .init(rawValue: UUID()))
+                } else {
+                    clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+                    if fault == "refreshed session" {
+                        var next = RUMStartViewCommand.mockWith(time: time.addingTimeInterval(2), identity: ViewIdentifier("replacement"), name: "replacement")
+                        next.target = .scene(scene)
+                        monitor.process(command: next)
+                        provider.flush()
+                        startPeer()
+                    }
+                }
+                let peerBefore = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene)))
+                XCTAssertNotNil(peerBefore.userActionID)
+                let treeBefore = try preparedResourceTreeSnapshot(monitor, pendingKey: receipt.identity.resourceKey)
+                let before = provider.read().additionalContext(ofType: RUMCoreContext.self)
+                var deliveries = 0
+                provider.publish { _ in deliveries += 1 }
+                provider.flush()
+                let command = RUMStartResourceCommand.mockWith(resourceKey: identity.resourceKey, time: time.addingTimeInterval(10))
+                monitor.processResource(command: command, preparation: identity)
+                provider.flush()
+                provider.flush()
+                let after = provider.read().additionalContext(ofType: RUMCoreContext.self)
+                XCTAssertEqual(after?.sessionID, before?.sessionID, fault)
+                XCTAssertEqual(after?.viewID, before?.viewID, fault)
+                XCTAssertEqual(after?.userActionID, before?.userActionID, fault)
+                XCTAssertEqual(deliveries, 0, "Rejected control cannot publish context: " + fault)
+                XCTAssertEqual(try preparedResourceTreeSnapshot(monitor, pendingKey: receipt.identity.resourceKey), treeBefore, fault)
+                let peerAfter = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene)))
+                XCTAssertEqual(peerAfter.sessionID, peerBefore.sessionID, fault)
+                XCTAssertEqual(peerAfter.viewID, peerBefore.viewID, fault)
+                XCTAssertEqual(peerAfter.userActionID, peerBefore.userActionID, fault)
+                monitor.abandonResourcePreparation(receipt.identity)
+                provider.flush()
+                provider.flush()
+            }
+        }
+    }
+
+    private func assertQueuedModifierNavigationPreservesResource() throws {
+        try withPreparedResourceCore { core, scope, owner, provider in
+            let time = Date()
+            let resources = ReadWriteLock(wrappedValue: [RUMResourceEvent]())
+            let views = ReadWriteLock(wrappedValue: [RUMViewEvent]())
+            let dependencies = RUMScopeDependencies.mockWith(
+                featureScope: scope,
+                trackBackgroundEvents: false,
+                firstPartyHosts: .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]]),
+                eventBuilder: .init(eventsMapper: .mockWith(
+                    viewEventMapper: { event in views.mutate { $0.append(event) }; return event },
+                    resourceEventMapper: { event in resources.mutate { $0.append(event) }; return event }
+                )),
+                featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
+            )
+            guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+            let monitor = Monitor(dependencies: dependencies, dateProvider: DateProviderMock(now: time))
+            let scene = RUMSceneIdentifier(rawValue: "queued-original")
+            let peerScene = RUMSceneIdentifier(rawValue: "queued-peer")
+            var originalStart = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("queued-original"), name: "queued-original")
+            originalStart.target = .scene(scene)
+            monitor.process(command: originalStart)
+            provider.flush()
+            let initial = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+            let value = RUMContextHandoff.CurrentValue(rumContext: initial, sceneIdentifier: scene.rawValue, hasPendingUserAction: false, excludedUserActionID: nil)
+            let tracing = DistributedTracing(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]]),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 0, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 200, advancingByCount: 0),
+                traceContextInjection: .all,
+                sessionSampling: SessionSamplerMock.keepAll(sessionID: initial.sessionID)
+            )
+            let handler = URLSessionRUMResourcesHandler(
+                dateProvider: DateProviderMock(now: time),
+                rumAttributesProvider: nil,
+                distributedTracing: tracing,
+                headerProcessor: nil,
+                disallowList: nil,
+                telemetry: NOPTelemetry()
+            )
+            handler.publish(to: monitor)
+            let modifier = PreparedResourceNavigationModifier()
+            let finalURL = try XCTUnwrap(URL(string: "https://example.com/final-queued-resource"))
+            let response = try XCTUnwrap(HTTPURLResponse(url: finalURL, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]))
+            let starts = ReadWriteLock(wrappedValue: (count: 0, key: Optional<String>.none, url: Optional<String>.none, method: Optional<String>.none, viewID: Optional<String>.none))
+            let modifies = ReadWriteLock(wrappedValue: 0)
+            modifier.onModify = { request in
+                modifies.mutate { $0 += 1 }
+                var stop = RUMStopViewCommand.mockWith(time: time, identity: ViewIdentifier("queued-original"))
+                stop.target = .scene(scene)
+                monitor.process(command: stop)
+                var next = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("queued-peer"), name: "queued-peer")
+                next.target = .scene(peerScene)
+                monitor.process(command: next)
+                // Deliberately no Core/Monitor queue flush before deferred interception start.
+                var final = request
+                final.url = finalURL
+                final.httpMethod = "POST"
+                return final
+            }
+            modifier.onStart = { interception in
+                starts.mutate {
+                    $0.count += 1
+                    $0.key = interception.identifier.uuidString
+                    $0.url = interception.request.url?.absoluteString
+                    $0.method = interception.request.httpMethod
+                    $0.viewID = (interception as? RUMURLSessionTaskInterception)?.rumContext.rumContext?.viewID
+                }
+                // Transport stub only: exercise the actual automatic completed-state callback below.
+                interception.register(response: response, error: nil)
+            }
+            try core.register(urlSessionHandler: handler)
+            try core.register(urlSessionHandler: modifier)
+            let network = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+            let session = URLSession(configuration: .ephemeral)
+            let task = session.dataTask(with: try XCTUnwrap(URL(string: "https://example.com/original-request")))
+            let forwards = ReadWriteLock(wrappedValue: 0)
+            let transportHold = URLSessionTaskSwizzler()
+            try transportHold.swizzle { [weak task] candidate, continuation in
+                guard candidate === task else {
+                    continuation()
+                    return
+                }
+                forwards.mutate { $0 += 1 }
+            }
+            defer {
+                modifier.onModify = nil
+                modifier.onStart = nil
+                network.flush()
+                transportHold.unswizzle()
+                session.invalidateAndCancel()
+            }
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+            RUMContextHandoff.withValue(value, for: owner) { task.resume() }
+            network.flush()
+            provider.flush()
+            provider.flush()
+            XCTAssertEqual(modifies.wrappedValue, 1)
+            XCTAssertEqual(forwards.wrappedValue, 1, "The controlled request never reaches native transport")
+            let observation = starts.wrappedValue
+            XCTAssertEqual(observation.count, 1)
+            XCTAssertEqual(observation.url, finalURL.absoluteString)
+            XCTAssertEqual(observation.method, "POST")
+            XCTAssertEqual(observation.viewID, initial.viewID)
+            let key = try XCTUnwrap(observation.key)
+            let original = try XCTUnwrap(monitor.applicationScope.sessionScopes.first { $0.sessionUUID.toRUMDataFormat == initial.sessionID })
+            let originalView = try XCTUnwrap(original.viewScopes.first { $0.viewUUID.toRUMDataFormat == initial.viewID })
+            XCTAssertFalse(originalView.isActiveView)
+            XCTAssertFalse(originalView.hasPendingResourcePreparations)
+            XCTAssertEqual(originalView.resourceScopes.count, 1)
+            XCTAssertNotNil(originalView.resourceScopes[key])
+            let peerBefore = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene)))
+            let peerView = try XCTUnwrap(original.viewScopes.first { $0.viewUUID.toRUMDataFormat == peerBefore.viewID })
+            XCTAssertTrue(peerView.isActiveView)
+            XCTAssertTrue(peerView.resourceScopes.isEmpty)
+
+            network.task(task, didChangeToState: URLSessionTask.State.completed.rawValue)
+            network.flush()
+            provider.flush()
+            provider.flush()
+            let event = try XCTUnwrap(resources.wrappedValue.last)
+            XCTAssertEqual(resources.wrappedValue.count, 1)
+            XCTAssertEqual(event.session.id, initial.sessionID)
+            XCTAssertEqual(event.view.id, initial.viewID)
+            XCTAssertEqual(event.resource.url, finalURL.absoluteString)
+            XCTAssertEqual(event.resource.method, .post)
+            XCTAssertEqual(event.dd.traceId, "64")
+            XCTAssertEqual(event.dd.spanId, "200")
+            XCTAssertTrue(originalView.resourceScopes.isEmpty)
+            XCTAssertFalse(original.viewScopes.contains { $0 === originalView })
+            XCTAssertEqual(views.wrappedValue.last { $0.view.id == initial.viewID }?.view.isActive, false)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(peerScene))?.viewID, peerBefore.viewID)
+            XCTAssertTrue(peerView.resourceScopes.isEmpty)
+            XCTAssertEqual(starts.wrappedValue.count, 1)
+        }
+    }
+
+    private func preparedResourceTreeSnapshot(_ monitor: Monitor, pendingKey: String) throws -> [String: String] {
+        // Queue barriers precede each call. Observe the tree rather than only cached Core IDs.
+        var result: [String: String] = ["application.active": String(monitor.applicationScope.applicationActive)]
+        let sessions = monitor.applicationScope.sessionScopes
+        result["application.sessions"] = sessions.map { String(describing: ObjectIdentifier($0)) }.joined(separator: ",")
+        func counters(_ object: AnyObject, names: [String], prefix: String) throws {
+            var fields: [String: Any] = [:]
+            var cursor: Mirror? = Mirror(reflecting: object)
+            while let mirror = cursor {
+                for child in mirror.children {
+                    if let label = child.label { fields[label] = child.value }
+                }
+                cursor = mirror.superclassMirror
+            }
+            for name in names {
+                result[prefix + "." + name] = String(reflecting: try XCTUnwrap(fields[name], "Missing source-bound scope counter: " + name))
+            }
+        }
+        for (index, session) in sessions.enumerated() {
+            let prefix = "session\(index)"
+            result[prefix + ".id"] = session.sessionUUID.toRUMDataFormat
+            result[prefix + ".active"] = String(session.isActive)
+            result[prefix + ".reason"] = session.endReason?.rawValue ?? "nil"
+            result[prefix + ".start"] = String(session.sessionStart)
+            result[prefix + ".interaction"] = String(session.lastInteraction)
+            result[prefix + ".views"] = session.viewScopes.map { String(describing: ObjectIdentifier($0)) }.joined(separator: ",")
+            for (index, view) in session.viewScopes.enumerated() {
+                let prefix = prefix + ".view\(index)"
+                result[prefix + ".id"] = view.viewUUID.toRUMDataFormat
+                result[prefix + ".active"] = String(view.isActiveView)
+                result[prefix + ".pending"] = String(view.hasPendingResourcePreparations)
+                result[prefix + ".originalPending"] = String(view.containsResourcePreparation(pendingKey))
+                result[prefix + ".resources"] = view.resourceScopes
+                    .sorted { $0.key < $1.key }
+                    .map { entry in
+                        entry.key + ":" + String(describing: ObjectIdentifier(entry.value))
+                    }
+                    .joined(separator: ",")
+                result[prefix + ".action"] = view.userActionScope.map { String(describing: ObjectIdentifier($0)) } ?? "nil"
+                try counters(view, names: ["actionsCount", "resourcesCount", "errorsCount", "version"], prefix: prefix)
+                if let action = view.userActionScope {
+                    try counters(action, names: ["resourcesCount", "errorsCount", "activeResourcesCount", "lastActivityTime"], prefix: prefix + ".action")
+                }
+            }
+        }
+        return result
+    }
+
+    func testPreparedResourceContextPublication_rejectsRetiredOwnerWithoutDelivery() throws {
+        for clears in [false, true] {
+            try withPreparedResourceCore { core, scope, owner, provider in
+                let publisher = try XCTUnwrap(scope as? RUMContextHandoffContextUpdating)
+                scope.set { RUMCoreContext.mockWith(viewID: "replacement") }
+                provider.flush()
+                var deliveries = 0
+                provider.publish { _ in deliveries += 1 }
+                provider.flush()
+                var replacement: RUMContextHandoff.Owner?
+                var activationError: Error?
+                publisher.setRUMContext(for: owner) {
+                    core.deactivateRUMContextHandoff(owner: owner)
+                    do { replacement = try core.activateRUMContextHandoff() } catch { activationError = error }
+                    return .set(clears ? nil : .mockWith(viewID: "stale"))
+                }
+                provider.flush()
+                XCTAssertNil(activationError)
+                XCTAssertNotNil(replacement)
+                XCTAssertFalse(owner.isValid)
+                XCTAssertEqual(provider.read().additionalContext(ofType: RUMCoreContext.self)?.viewID, "replacement")
+                XCTAssertEqual(deliveries, 0, "Retirement between supplier and mutation must skip even a nil update")
+                var lateSupplierCalls = 0
+                publisher.setRUMContext(for: owner) { lateSupplierCalls += 1; return .set(nil) }
+                provider.flush()
+                XCTAssertEqual(lateSupplierCalls, 0)
+                XCTAssertEqual(deliveries, 0)
+            }
+        }
+    }
+
+    func testPreparedResourceContextPublication_callbacksRunOutsideRegistryLock() throws {
+        try withPreparedResourceCore { core, scope, owner, provider in
+            let publisher = try XCTUnwrap(scope as? RUMContextHandoffContextUpdating)
+            var deliveries = 0
+            provider.publish { [weak core] _ in
+                XCTAssertTrue(core?.rumContextHandoffOwner === owner)
+                deliveries += 1
+            }
+            provider.flush()
+            var suppliers = 0
+            publisher.setRUMContext(for: owner) {
+                XCTAssertTrue(core.rumContextHandoffOwner === owner)
+                suppliers += 1
+                return .skip
+            }
+            provider.flush()
+            XCTAssertEqual(deliveries, 0)
+            publisher.setRUMContext(for: owner) {
+                XCTAssertTrue(core.rumContextHandoffOwner === owner)
+                suppliers += 1
+                return .set(.mockWith(viewID: "accepted"))
+            }
+            provider.flush()
+            XCTAssertEqual(provider.read().additionalContext(ofType: RUMCoreContext.self)?.viewID, "accepted")
+            XCTAssertEqual(deliveries, 1)
+            publisher.setRUMContext(for: owner) { .set(nil) }
+            provider.flush()
+            XCTAssertNil(provider.read().additionalContext(ofType: RUMCoreContext.self))
+            XCTAssertEqual(deliveries, 2, "Valid nil is an accepted publication, not skip")
+            XCTAssertEqual(suppliers, 2)
+            scope.set { RUMCoreContext.mockWith(viewID: "ordinary") }
+            provider.flush()
+            XCTAssertEqual(provider.read().additionalContext(ofType: RUMCoreContext.self)?.viewID, "ordinary")
+            XCTAssertEqual(deliveries, 3, "Ordinary publication remains unchanged")
+        }
+    }
+}
+
+private struct PreparedResourceFeature: DatadogRemoteFeature {
+    static let name = RUMFeature.name
+    let requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
+    let messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
+}
+
+private final class PreparedResourceNavigationModifier: DatadogURLSessionHandler {
+    let firstPartyHosts = FirstPartyHosts()
+    var onModify: ((URLRequest) -> URLRequest)?
+    var onStart: ((URLSessionTaskInterception) -> Void)?
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        (onModify?(request) ?? request, nil, nil)
+    }
+    func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) { onStart?(interception) }
+    func interceptionDidComplete(interception: URLSessionTaskInterception) {}
+}
