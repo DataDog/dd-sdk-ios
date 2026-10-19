@@ -24,7 +24,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by .resourceKey.
-    private(set) var resourceScopes: [String: RUMResourceScope] = [:]
+    fileprivate(set) var resourceScopes: [String: RUMResourceScope] = [:]
     /// Active User Action scope. There can be only one active user action at a time.
     private(set) var userActionScope: RUMUserActionScope?
 
@@ -1183,6 +1183,12 @@ private extension Result {
 /// Pending request preparation storage exists only for resolved-On views.
 internal final class RUMPreparedResourceViewScope: RUMViewScope {
     private var pendingResourceKeys: Set<String> = []
+
+    /// Breaks Resource-to-View retention when the original session is released.
+    func discardResourcesAfterSessionEnd() {
+        pendingResourceKeys.removeAll()
+        resourceScopes.removeAll()
+    }
 
     override var hasPendingResourcePreparations: Bool { !pendingResourceKeys.isEmpty }
 

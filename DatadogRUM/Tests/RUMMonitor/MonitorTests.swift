@@ -2272,8 +2272,12 @@ extension MonitorTests {
                         startPeer()
                     }
                 }
-                let peerBefore = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene)))
-                XCTAssertNotNil(peerBefore.userActionID)
+                let peerBefore = monitor.rumContextSnapshot(for: .scene(peerScene))
+                let expectsLivePeer = fault != "expired session"
+                XCTAssertEqual(peerBefore != nil, expectsLivePeer, fault)
+                if expectsLivePeer {
+                    XCTAssertNotNil(peerBefore?.userActionID, fault)
+                }
                 let treeBefore = try preparedResourceTreeSnapshot(monitor, pendingKey: receipt.identity.resourceKey)
                 let before = provider.read().additionalContext(ofType: RUMCoreContext.self)
                 var deliveries = 0
@@ -2289,10 +2293,11 @@ extension MonitorTests {
                 XCTAssertEqual(after?.userActionID, before?.userActionID, fault)
                 XCTAssertEqual(deliveries, 0, "Rejected control cannot publish context: " + fault)
                 XCTAssertEqual(try preparedResourceTreeSnapshot(monitor, pendingKey: receipt.identity.resourceKey), treeBefore, fault)
-                let peerAfter = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene)))
-                XCTAssertEqual(peerAfter.sessionID, peerBefore.sessionID, fault)
-                XCTAssertEqual(peerAfter.viewID, peerBefore.viewID, fault)
-                XCTAssertEqual(peerAfter.userActionID, peerBefore.userActionID, fault)
+                let peerAfter = monitor.rumContextSnapshot(for: .scene(peerScene))
+                XCTAssertEqual(peerAfter != nil, expectsLivePeer, fault)
+                XCTAssertEqual(peerAfter?.sessionID, peerBefore?.sessionID, fault)
+                XCTAssertEqual(peerAfter?.viewID, peerBefore?.viewID, fault)
+                XCTAssertEqual(peerAfter?.userActionID, peerBefore?.userActionID, fault)
                 monitor.abandonResourcePreparation(receipt.identity)
                 provider.flush()
                 provider.flush()

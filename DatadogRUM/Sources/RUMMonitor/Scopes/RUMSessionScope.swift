@@ -621,6 +621,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
 
     deinit {
         deactivateActiveView()
+        if sceneState != nil {
+            for case let view as RUMPreparedResourceViewScope in viewScopes {
+                view.discardResourcesAfterSessionEnd()
+            }
+        }
     }
 
     private func deactivateActiveView() {

@@ -1733,7 +1733,7 @@ extension RUMApplicationScopeTests {
             let peerID = peer.context.activeViewID
             let interaction = peer.lastInteraction
             let before = writer.events(ofType: RUMViewEvent.self).count
-            let now = expires ? RUMSessionScope.Constants.sessionTimeoutDuration + 1 : 3
+            let now = expires ? original.lastInteraction + RUMSessionScope.Constants.sessionTimeoutDuration + 1 : 3
             let start = RUMStartResourceCommand.mockWith(resourceKey: identity.resourceKey, time: time.addingTimeInterval(3))
             let accepted = app.processResourcePreparation(.init(identity: identity, operation: .commit(start), time: start.time), monotonicTime: now, context: context, writer: writer)
             XCTAssertEqual(accepted, !expires)
