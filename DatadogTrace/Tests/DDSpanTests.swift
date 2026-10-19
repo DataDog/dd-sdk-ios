@@ -99,6 +99,7 @@ class DDSpanTests: XCTestCase {
         span.setTag(key: "flat", value: ["foo": "foo-value", "bar": "bar-value"])
         span.setTag(key: "nested", value: ["foo": ["bar": "bar-value"]])
         span.setTag(key: "mixed", value: ["a": "1", "b": 2])
+        span.setTag(key: "mixedNested", value: ["a": ["b": 1], "c": "x"])
         span.finish()
 
         // Then
@@ -111,6 +112,8 @@ class DDSpanTests: XCTestCase {
                 "nested.foo.bar": "bar-value",
                 "mixed.a": "1",
                 "mixed.b": "2",
+                "mixedNested.a.b": "1",
+                "mixedNested.c": "x",
             ]
         )
     }

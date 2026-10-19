@@ -17,7 +17,7 @@ public protocol OTSpan: Sendable {
     /// Add a new tag or replace an existing tag key with this value.
     ///
     /// If the value is a dictionary, it is flattened into one tag per leaf field, e.g. setting
-    /// `["foo": "bar"]` for `"context"` key results with `"context.foo"` tag. Other complex values,
+    /// `["foo": "bar"]` for `"context"` key results in a `"context.foo"` tag. Other complex values,
     /// like structs or arrays, are not flattened and are sent as a single JSON string.
     ///
     /// - parameter key:   Key of the tag to set
@@ -79,7 +79,7 @@ public extension OTSpan {
         self.finish(at: Date())
     }
 
-    /// Add new tags by flattening a dictionary which values have different types, e.g. `["a": "1", "b": 2]`.
+    /// Add new tags by flattening a dictionary whose values have different types, e.g. `["a": "1", "b": 2]`.
     /// See `setTag(key:value:)` for flattening rules.
     ///
     /// - parameter key:   Key prefix of the tags to set
