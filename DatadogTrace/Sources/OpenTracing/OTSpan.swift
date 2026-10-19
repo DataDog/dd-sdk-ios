@@ -85,7 +85,7 @@ public extension OTSpan {
     /// - parameter key:   Key prefix of the tags to set
     /// - parameter value: Dictionary to flatten into tags
     func setTag(key: String, value: [String: OTTagValue]) {
-        for (nestedKey, nestedValue) in value {
+        for (nestedKey, nestedValue) in value.flattened {
             setTag(key: "\(key).\(nestedKey)", value: nestedValue)
         }
     }
