@@ -25,6 +25,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let initializationType: String?
     public let invTimeThresholdMs: Int64?
     public let mobileVitalsUpdatePeriod: Int64?
+    public let profilingApplicationLaunchSampleRate: Double?
+    public let profilingSampleRate: Double?
     public let reactNativeVersion: String?
     public let reactVersion: String?
     public let sessionReplaySampleRate: Int64?
@@ -65,6 +67,43 @@ public struct ConfigurationTelemetry: Equatable {
     public let useSecureSessionCookie: Bool?
     public let useTracing: Bool?
     public let useWorkerUrl: Bool?
+    public let remoteConfiguration: RemoteConfiguration?
+}
+
+extension ConfigurationTelemetry {
+    /// Metadata of the remote configuration currently applied for this session.
+    public struct RemoteConfiguration: Equatable {
+        /// Identifier of the remote configuration bundle this metadata belongs to.
+        public let configId: String?
+        /// CDN version identifier of the applied configuration (`x-amz-version-id` response header).
+        public let versionId: String?
+        /// CDN publish timestamp of the applied configuration (`last-modified` response header).
+        public let lastModified: Date?
+        /// Timestamp at which the device fetched and cached this configuration version.
+        public let lastSynced: Date?
+        /// Timestamp at which this configuration version was first observed as applied by the
+        /// device. Stamped once and reused on every subsequent session that runs on the same version.
+        public let firstApplied: Date?
+        /// Identifier of the sync that produced this configuration version, used to deduplicate
+        /// repeat sessions from the same device without a persistent identifier.
+        public let syncId: String?
+
+        public init(
+            configId: String? = nil,
+            versionId: String? = nil,
+            lastModified: Date? = nil,
+            lastSynced: Date? = nil,
+            firstApplied: Date? = nil,
+            syncId: String? = nil
+        ) {
+            self.configId = configId
+            self.versionId = versionId
+            self.lastModified = lastModified
+            self.lastSynced = lastSynced
+            self.firstApplied = firstApplied
+            self.syncId = syncId
+        }
+    }
 }
 
 /// A telemetry event that can be sampled in addition to the global telemetry sample rate.
@@ -124,6 +163,8 @@ public struct UsageTelemetry: SampledTelemetry {
         case addGraphQLRequest
         /// trackWebView API
         case trackWebView
+        /// Timeseries tracking enabled
+        case timeseries
 
         /// Describes the properties of `addViewLoadingTime` usage telemetry.
         public struct ViewLoadingTime {
@@ -321,42 +362,60 @@ extension Telemetry {
             id: "\(file):\(line):\(message)",
             message: message,
             kind: kind ?? "\(file)",
-            stack: stack ?? "\(file):\(line)"
+            stack: stack.map { "\(file):\(line)\n\($0)" } ?? "\(file):\(line)"
         )
     }
 
     /// Collect execution error.
     ///
+    /// - Note: Not exposed publicly — accepts only `TelemetrySanitizedError`, so a raw, unsanitized
+    ///   error description can never reach this sink. Callers should use `error(_ error: Error, ...)`
+    ///   instead, which sanitizes the error via `TelemetrySanitizedError.init(sanitizing:)` before
+    ///   forwarding here.
+    ///
     /// - Parameters:
-    ///   - error: The error.
+    ///   - error: The sanitized error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: DDError, file: String = #fileID, line: Int = #line) {
-        self.error(error.message, kind: error.type, stack: error.stack, file: file, line: line)
+    func error(_ error: TelemetrySanitizedError, file: String = #fileID, line: Int = #line) {
+        self.error(error.message, kind: error.kind, stack: error.stack, file: file, line: line)
     }
 
     /// Collect execution error.
     ///
+    /// - Note: Not exposed publicly — accepts only `TelemetrySanitizedError`, so a raw, unsanitized
+    ///   error description can never reach this sink. Callers should use
+    ///   `error(_ message: String, error: Error, ...)` instead, which sanitizes the error via
+    ///   `TelemetrySanitizedError.init(sanitizing:)` before forwarding here.
+    ///
     /// - Parameters:
     ///   - message: The error message.
-    ///   - error: The error.
+    ///   - error: The sanitized error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: DDError, file: String = #fileID, line: Int = #line) {
-        self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack, file: file, line: line)
+    func error(_ message: String, error: TelemetrySanitizedError, file: String = #fileID, line: Int = #line) {
+        self.error("\(message) - \(error.message)", kind: error.kind, stack: error.stack, file: file, line: line)
     }
 
     /// Collect execution error.
+    ///
+    /// - Note: If `error` conforms to `TelemetrySanitizableError`, its own sanitized context is reported.
+    ///   Otherwise, it falls back to Telemetry's default sanitization, which may drop most contextual
+    ///   information to avoid leaking sensitive data.
     ///
     /// - Parameters:
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
     public func error(_ error: Error, file: String = #fileID, line: Int = #line) {
-        self.error(DDError(error: error), file: file, line: line)
+        self.error(TelemetrySanitizedError(sanitizing: error), file: file, line: line)
     }
 
     /// Collect execution error.
+    ///
+    /// - Note: If `error` conforms to `TelemetrySanitizableError`, its own sanitized context is reported.
+    ///   Otherwise, it falls back to Telemetry's default sanitization, which may drop most contextual
+    ///   information to avoid leaking sensitive data.
     ///
     /// - Parameters:
     ///   - message: The error message.
@@ -364,7 +423,7 @@ extension Telemetry {
     ///   - file: The current file name.
     ///   - line: The line number in file.
     public func error(_ message: String, error: Error, file: String = #fileID, line: Int = #line) {
-        self.error(message, error: DDError(error: error), file: file, line: line)
+        self.error(message, error: TelemetrySanitizedError(sanitizing: error), file: file, line: line)
     }
 
     /// Report a Configuration Telemetry.
@@ -389,6 +448,8 @@ extension Telemetry {
         initializationType: String? = nil,
         invTimeThresholdMs: Int64? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
+        profilingApplicationLaunchSampleRate: Double? = nil,
+        profilingSampleRate: Double? = nil,
         reactNativeVersion: String? = nil,
         reactVersion: String? = nil,
         sessionReplaySampleRate: Int64? = nil,
@@ -428,7 +489,8 @@ extension Telemetry {
         useProxy: Bool? = nil,
         useSecureSessionCookie: Bool? = nil,
         useTracing: Bool? = nil,
-        useWorkerUrl: Bool? = nil
+        useWorkerUrl: Bool? = nil,
+        remoteConfiguration: ConfigurationTelemetry.RemoteConfiguration? = nil
     ) {
         self.report(configuration: .init(
             actionNameAttribute: actionNameAttribute,
@@ -448,6 +510,8 @@ extension Telemetry {
             initializationType: initializationType,
             invTimeThresholdMs: invTimeThresholdMs,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
+            profilingApplicationLaunchSampleRate: profilingApplicationLaunchSampleRate,
+            profilingSampleRate: profilingSampleRate,
             reactNativeVersion: reactNativeVersion,
             reactVersion: reactVersion,
             sessionReplaySampleRate: sessionReplaySampleRate,
@@ -487,7 +551,8 @@ extension Telemetry {
             useProxy: useProxy,
             useSecureSessionCookie: useSecureSessionCookie,
             useTracing: useTracing,
-            useWorkerUrl: useWorkerUrl
+            useWorkerUrl: useWorkerUrl,
+            remoteConfiguration: remoteConfiguration
         ))
     }
 
@@ -592,6 +657,8 @@ extension ConfigurationTelemetry {
             initializationType: other.initializationType ?? initializationType,
             invTimeThresholdMs: other.invTimeThresholdMs ?? invTimeThresholdMs,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
+            profilingApplicationLaunchSampleRate: other.profilingApplicationLaunchSampleRate ?? profilingApplicationLaunchSampleRate,
+            profilingSampleRate: other.profilingSampleRate ?? profilingSampleRate,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
             reactVersion: other.reactVersion ?? reactVersion,
             sessionReplaySampleRate: other.sessionReplaySampleRate ?? sessionReplaySampleRate,
@@ -631,7 +698,8 @@ extension ConfigurationTelemetry {
             useProxy: other.useProxy ?? useProxy,
             useSecureSessionCookie: other.useSecureSessionCookie ?? useSecureSessionCookie,
             useTracing: other.useTracing ?? useTracing,
-            useWorkerUrl: other.useWorkerUrl ?? useWorkerUrl
+            useWorkerUrl: other.useWorkerUrl ?? useWorkerUrl,
+            remoteConfiguration: other.remoteConfiguration ?? remoteConfiguration
         )
     }
 }

@@ -1,0 +1,17 @@
+{
+    "type": "object",
+    "properties": {
+        "nullableArrayProp": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "string"
+            }
+        },
+        "nullableStringProp": {
+            "type": ["string", "null"]
+        },
+        "nullPrecedesType": {
+            "type": ["null", "integer"]
+        }
+    }
+}

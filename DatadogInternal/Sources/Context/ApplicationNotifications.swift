@@ -11,6 +11,9 @@ import UIKit
 #if canImport(WatchKit)
 import WatchKit
 #endif
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// Convenient wrapper to get system notifications independent from platform
 public enum ApplicationNotifications {
@@ -18,7 +21,7 @@ public enum ApplicationNotifications {
         #if canImport(WatchKit)
         WKExtension.applicationDidFinishLaunchingNotification
         #else
-        UIApplication.didFinishLaunchingNotification
+        DDApplication.didFinishLaunchingNotification
         #endif
     }
 
@@ -26,32 +29,55 @@ public enum ApplicationNotifications {
         #if canImport(WatchKit)
         WKExtension.applicationDidBecomeActiveNotification
         #else
-        UIApplication.didBecomeActiveNotification
+        DDApplication.didBecomeActiveNotification
         #endif
     }
 
+    #if !os(macOS)
     public static var willResignActive: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationWillResignActiveNotification
         #else
-        UIApplication.willResignActiveNotification
+        DDApplication.willResignActiveNotification
         #endif
     }
+    #endif
 
+    // macOS has no concept of background apps in the same sense
+    // iOS and watchOS do, so these notifications do not exist.
+    #if canImport(WatchKit)
     public static var didEnterBackground: Notification.Name {
-        #if canImport(WatchKit)
         WKExtension.applicationDidEnterBackgroundNotification
-        #else
-        UIApplication.didEnterBackgroundNotification
-        #endif
     }
 
     public static var willEnterForeground: Notification.Name {
-        #if canImport(WatchKit)
         WKExtension.applicationWillEnterForegroundNotification
-        #else
-        UIApplication.willEnterForegroundNotification
-        #endif
     }
+    #elseif canImport(UIKit)
+    public static var didEnterBackground: Notification.Name {
+        UIApplication.didEnterBackgroundNotification
+    }
+
+    public static var willEnterForeground: Notification.Name {
+        UIApplication.willEnterForegroundNotification
+    }
+    #endif
+
+    #if os(macOS)
+    public static var didResignActive: Notification.Name {
+        DDApplication.didResignActiveNotification
+    }
+
+    public static var didHide: Notification.Name {
+        NSApplication.didHideNotification
+    }
+
+    public static var didUnhide: Notification.Name {
+        NSApplication.didUnhideNotification
+    }
+
+    public static var willTerminate: Notification.Name {
+        NSApplication.willTerminateNotification
+    }
+    #endif
 }
-#endif

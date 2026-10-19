@@ -8,6 +8,8 @@
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
+#include <cstdlib>
+
 #include "dd_pprof_testing.h"
 #include "profile.h"
 #include "profile_pprof_packer.h"
@@ -17,8 +19,12 @@
 extern "C" {
 
 dd_pprof_t* dd_pprof_create(uint64_t sampling_interval_ns) {
+    return dd_pprof_create_with_cpu_time(sampling_interval_ns, false);
+}
+
+dd_pprof_t* dd_pprof_create_with_cpu_time(uint64_t sampling_interval_ns, bool record_cpu_time) {
     try {
-        auto* profiler = new dd::profiler::profile(sampling_interval_ns);
+        auto* profiler = new dd::profiler::profile(sampling_interval_ns, record_cpu_time);
         return reinterpret_cast<dd_pprof_t*>(profiler);
     } catch (...) {
         return nullptr;
@@ -42,8 +48,8 @@ size_t dd_pprof_serialize(dd_pprof_t* profile, uint8_t** data) {
     return dd::profiler::profile_pprof_pack(*reinterpret_cast<dd::profiler::profile*>(profile), data);
 }
 
-void dd_pprof_free_serialized_data(uint8_t* data) {
-    if (data) free(data);
+void dd_pprof_free_serialized_data(const uint8_t* data) {
+    if (data) std::free(const_cast<uint8_t*>(data));
 }
 
 void dd_pprof_callback(stack_trace_t* traces, size_t count, void* ctx) {

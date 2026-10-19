@@ -4,14 +4,19 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if canImport(UIKit)
 import UIKit
-@preconcurrency import DatadogTrace
+#elseif canImport(AppKit)
+import AppKit
+#endif
+import DatadogTrace
 import DatadogCore
-@preconcurrency import DatadogLogs
+#if !os(macOS)
 @preconcurrency import DatadogRUM
-@preconcurrency import DatadogFlags
 @preconcurrency import DatadogSessionReplay
-@preconcurrency import OpenTelemetryApi
+#endif
+@preconcurrency import DatadogFlags
+import OpenTelemetryApi
 
 /**
  Compilation tests for Swift 6 migration.
@@ -45,15 +50,7 @@ struct StrictConcurrencyChecks {
         otelSpan.end()
     }
 
-    func logs() {
-        var config = Logs.Configuration()
-        config.eventMapper = { event in event }
-        Task.detached {
-            _ = config
-        }
-        _ = config
-    }
-
+    #if !os(macOS)
     func rum() {
         let monitor = RUMMonitor.shared()
         Task.detached {
@@ -61,6 +58,7 @@ struct StrictConcurrencyChecks {
         }
         monitor.stopSession()
     }
+    #endif
 
     func flags() {
         let client = FlagsClient.shared()

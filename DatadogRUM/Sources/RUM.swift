@@ -31,6 +31,7 @@ public enum RUM {
         }
     }
 
+    @MainActor
     internal static func enableOrThrow(
         with configuration: RUM.Configuration,
         in core: DatadogCoreProtocol
@@ -41,9 +42,19 @@ public enum RUM {
             )
         }
 
+        // Merge remote configuration on top of the in-code configuration. Remote values take
+        // precedence for supported behavioral parameters; if no remote configuration is available,
+        // the in-code configuration is used unchanged.
+        var configuration = configuration
+        configuration.apply(remoteConfiguration: core.remoteConfiguration)
+
         // Register RUM feature:
         let rum = try RUMFeature(in: core, configuration: configuration)
         try core.register(feature: rum)
+
+        if rum.timeseriesCollector != nil {
+            core.telemetry.usage(event: .timeseries)
+        }
 
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {

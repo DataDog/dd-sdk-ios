@@ -26,7 +26,12 @@ check_for_help "$@"
 parse_args "$@"
 
 WORKSPACE="Datadog.xcworkspace"
-DESTINATION="platform=$platform,name=$device,OS=$os"
+# macOS has no simulator, so the destination omits `name` and `OS`.
+if [ "$platform" = "macOS" ]; then
+    DESTINATION="platform=macOS"
+else
+    DESTINATION="platform=$platform,name=$device,OS=$os"
+fi
 SCHEME=$scheme
 
 # Enables Datadog Test Visibility to trace tests execution

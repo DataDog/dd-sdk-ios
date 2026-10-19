@@ -56,7 +56,7 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         sendCIAppLog(session)
 
         let views = try session.views.dropApplicationLaunchView()
-        let lastViewEvent = try XCTUnwrap(views.first?.viewEvents.last)
+        let lastViewEvent = try XCTUnwrap(views.first?.latestViewEvent)
 
         let cpuTicksPerSecond = try XCTUnwrap(lastViewEvent.view.cpuTicksPerSecond)
         XCTAssertGreaterThan(cpuTicksPerSecond, 0.0)
@@ -101,7 +101,7 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         sendCIAppLog(session)
 
         let views = try session.views.dropApplicationLaunchView()
-        let lastViewEvent = try XCTUnwrap(views[1].viewEvents.last)
+        let lastViewEvent = try XCTUnwrap(views[1].latestViewEvent)
         let oneSecond: TimeInterval = 1
 
         // When

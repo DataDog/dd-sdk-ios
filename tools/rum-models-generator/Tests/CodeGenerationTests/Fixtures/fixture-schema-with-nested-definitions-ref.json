@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "definitions": {
+        "Status": {
+            "$ref": "#/definitions/StatusType"
+        },
+        "StatusType": {
+            "type": "string",
+            "description": "The status",
+            "enum": ["pending", "active", "closed"]
+        }
+    },
+    "properties": {
+        "status": {
+            "$ref": "#/definitions/Status"
+        },
+        "name": {
+            "type": "string"
+        }
+    }
+}

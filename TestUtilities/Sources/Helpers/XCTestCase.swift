@@ -75,7 +75,6 @@ extension XCTestCase {
         closure()
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     public func dd_fulfillment(
         for expectations: [XCTestExpectation],
         timeout seconds: TimeInterval = .infinity,

@@ -9,7 +9,6 @@
 import SwiftUI
 import CommonCrypto
 
-@available(iOS 13.0, *)
 internal final class ShapeResource: NSObject {
     let svgString: String
 
@@ -33,7 +32,6 @@ internal final class ShapeResource: NSObject {
     }
 }
 
-@available(iOS 13.0, *)
 extension ShapeResource: Resource {
     var mimeType: String {
         "image/svg+xml"

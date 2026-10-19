@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 import DatadogRUM
 
 class RUMConfigurationTests: XCTestCase {
@@ -17,10 +18,17 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertEqual(config.sessionSampleRate, 100)
         XCTAssertEqual(config.telemetrySampleRate, 20)
         #if !os(watchOS)
+        #if os(macOS)
+        XCTAssertNil(config.appKitViewsPredicate)
+        XCTAssertNil(config.macOSActionsPredicate)
+        #else
         XCTAssertNil(config.uiKitViewsPredicate)
         XCTAssertNil(config.uiKitActionsPredicate)
+        #endif
         XCTAssertNil(config.swiftUIViewsPredicate)
+        #if !os(macOS)
         XCTAssertNil(config.swiftUIActionsPredicate)
+        #endif
         XCTAssertTrue(config.trackMemoryWarnings)
         #endif
         XCTAssertNil(config.urlSessionTracking)
@@ -38,5 +46,40 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.customEndpoint)
         XCTAssertTrue(config.trackAnonymousUser)
         XCTAssertTrue(config.featureFlags[.trackScrollAndSwipeActions])
+    }
+
+    func testFeatureFlagsSubscriptFallsBackToDefaults() {
+        // When
+        let emptyFlags: RUM.Configuration.FeatureFlags = [:]
+        let overriddenFlags: RUM.Configuration.FeatureFlags = [.trackScrollAndSwipeActions: false]
+
+        // Then
+        XCTAssertTrue(emptyFlags[.trackScrollAndSwipeActions], "should fall back to `.defaults` when not set")
+        XCTAssertFalse(overriddenFlags[.trackScrollAndSwipeActions], "should use the explicitly set value")
+        XCTAssertTrue(emptyFlags[.viewUpdates], "should fall back to `.defaults` when not set")
+        XCTAssertFalse(emptyFlags[.none], "should be `false` when the flag has no default")
+    }
+
+    func testDefaultURLSessionTrackingConfiguration() {
+        // When
+        let tracking = RUM.Configuration.URLSessionTracking()
+
+        // Then
+        XCTAssertNil(tracking.firstPartyHostsTracing)
+        XCTAssertNil(tracking.resourceAttributesProvider)
+        DDAssertReflectionEqual(tracking.disallowList, [])
+    }
+
+    func testURLSessionTrackingConfiguration_withDisallowList() {
+        // When
+        let tracking = RUM.Configuration.URLSessionTracking(
+            disallowList: ["https://foo.com/", "https://bar.com/*", "https://*.baz.com/"]
+        )
+
+        // Then
+        DDAssertReflectionEqual(
+            tracking.disallowList,
+            ["https://foo.com/", "https://bar.com/*", "https://*.baz.com/"]
+        )
     }
 }

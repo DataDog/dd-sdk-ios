@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// A block reader can read TLV formatted blocks from a data input.
 ///
@@ -148,11 +149,24 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
         return try read(length: Int(length))
     }
 }
+extension TLVBlockError: TelemetrySanitizableError {
+    /// Every case only ever describes block types, sizes, limits and stream status codes - never the
+    /// raw bytes or decoded content of a block - so the full description is safe to report as-is.
+    /// `readOperationFailed`'s `streamError` is the one exception: it's an arbitrary, foreign `Error`
+    /// (typically an `NSError`), and `NSError.userInfo` content depends on the error's domain - some
+    /// domains keep it minimal, others (e.g. `NSCocoaErrorDomain` file errors) can include the file
+    /// path - so `description` routes it through `TelemetrySanitizedError.init(sanitizing:)` rather than
+    /// assuming this particular source is safe to interpolate directly.
+    func sanitize() -> TelemetrySanitizedError {
+        TelemetrySanitizedError(unsafelyDescribing: self)
+    }
+}
+
 extension TLVBlockError: CustomStringConvertible {
     var description: String {
         switch self {
         case .readOperationFailed(let status, let error):
-            let error = error.map { "\($0)" } ?? "(null)"
+            let error = error.map { TelemetrySanitizedError(sanitizing: $0) }.map { "\($0.kind): \($0.message)" } ?? "(null)"
             return "DataBlock read operation failed with stream status: \(status.rawValue), error: \(error)"
         case .invalidDataType(let type):
             return "Invalid DataBlock type: \(type)"

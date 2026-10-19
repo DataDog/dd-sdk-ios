@@ -59,7 +59,12 @@ public extension Datadog
         public var bundle: Bundle
         public var batchProcessingLevel: BatchProcessingLevel
         public var backgroundTasksEnabled: Bool
-        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,version: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
+        public struct RemoteConfiguration
+            public var id: String
+            public var customURL: URL?
+            public init(id: String, customURL: URL? = nil)
+        public var remoteConfiguration: RemoteConfiguration? = nil
+        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,version: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false,remoteConfiguration: RemoteConfiguration? = nil)
 public class SharedContext: NSObject
     public let userId: String?
     public let accountId: String?
@@ -195,6 +200,11 @@ public protocol LogEventMapper
     public func inject(spanContext: OTSpanContext)
 [?] extension TracePropagationHeadersReader where Self: OTFormatReader
     public func extract() -> OTSpanContext?
+[?] extension Trace.Configuration
+    public struct InterceptedRequest: Sendable
+        public let url: URL?
+        public let httpMethod: String?
+        public let httpBody: Data?
 [?] extension OpenTelemetryApi.TraceState
     public func w3c() -> String
 public class OTelTracerProvider: OpenTelemetryApi.TracerProvider
@@ -308,6 +318,7 @@ public enum Trace
 [?] extension Trace
     public struct Configuration: SampledTelemetry, Sendable
         public typealias EventMapper = @Sendable (SpanEvent) -> SpanEvent
+        public typealias SpanCustomization = @Sendable (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
         public var sampleRate: SampleRate
         public var service: String?
         public var tags: [String: OTTagValue]?
@@ -318,12 +329,13 @@ public enum Trace
         public var customEndpoint: URL?
         public struct URLSessionTracking: Sendable
             public var firstPartyHostsTracing: FirstPartyHostsTracing
+            public var spanCustomization: SpanCustomization?
             public enum FirstPartyHostsTracing: Sendable
                 case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
                 case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
             public static let defaultRedactedStatusCodes: Set<Int> = [404]
             public var redactedStatusCodes: Set<Int>
-            public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes)
+            public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes,spanCustomization: SpanCustomization? = nil)
         public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: OTTagValue]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
     public static let resource = "resource.name"
@@ -393,7 +405,7 @@ public enum RUM
     public typealias ErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
     public typealias ActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
     public typealias LongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
-    public typealias SessionListener = (String, Bool) -> Void
+    public typealias SessionListener = @Sendable (String, Bool) -> Void
     public typealias ResourceAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
     public struct Configuration
         public let applicationID: String
@@ -423,15 +435,24 @@ public enum RUM
         public var trackSlowFrames: Bool
         public var telemetrySampleRate: SampleRate
         public var collectAccessibility: Bool
+        public var timeseries: Timeseries?
         public var featureFlags: FeatureFlags
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
             public var trackResourceHeaders: TrackResourceHeaders = .disabled
+            public var disallowList: [String] = []
         public enum VitalsFrequency: String
             case frequent
             case average
             case rare
+        public struct Timeseries
+            public var collectTypes: Set<TimeseriesType>
+            public init(collectTypes: Set<TimeseriesType>)
+            public static let `default` = Timeseries(collectTypes: [.memory, .cpu])
+        public enum TimeseriesType: CaseIterable
+            case memory
+            case cpu
 [?] extension RUM.Configuration.URLSessionTracking
     public enum FirstPartyHostsTracing
         case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
@@ -443,7 +464,7 @@ public enum RUM
     public enum HeaderCaptureRule
         case defaults
         case matchHeaders([String])
-    public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled)
+    public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled,disallowList: [String] = [])
 [?] extension RUM.Configuration
     public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
@@ -453,6 +474,7 @@ public enum RUM
     public enum FeatureFlag: String
         case none
         case trackScrollAndSwipeActions
+        case viewUpdates
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -577,9 +599,17 @@ public enum PerformanceMetric
 # ----------------------------------
 
 public final class CrashReporting
+    public struct Configuration
+        public var appHangBacktraceEnabled: Bool
+        public init(appHangBacktraceEnabled: Bool = true)
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with configuration: Configuration, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin,configuration: Configuration,in core: DatadogCoreProtocol = CoreRegistry.default)
 public static func enable()
+public static func enable(with configuration: objc_CrashReportingConfiguration)
+public var appHangBacktraceEnabled: Bool
+override public init()
 public protocol CrashReportingPlugin: AnyObject
     func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool)
     func inject(context: Data)
@@ -772,6 +802,33 @@ public struct SRContentClip: Codable, Hashable
         case right = "right"
         case top = "top"
     public init(bottom: Int64? = nil,left: Int64? = nil,right: Int64? = nil,top: Int64? = nil)
+public struct SREmbeddedContentWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let isVisible: Bool?
+    public let permanentId: String?
+    public let shapeStyle: SRShapeStyle?
+    public let slotId: String
+    public let type: String = "embedded_content"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isVisible = "isVisible"
+        case permanentId = "permanentId"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isVisible: Bool? = nil,permanentId: String? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64,x: Int64,y: Int64)
 public struct SRFocusRecord: Codable
     public let data: Data
     public let slotId: String?
@@ -790,13 +847,15 @@ public struct SRFocusRecord: Codable
         public init(hasFocus: Bool)
 public struct SRFullSnapshotRecord: Codable
     public let data: Data
+    public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 10
     public enum CodingKeys: String, CodingKey
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
-    public init(data: Data,timestamp: Int64)
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
     public struct Data: Codable
         public let compositionTree: SRCompositionTree?
         public let wireframes: [SRWireframe]
@@ -837,13 +896,15 @@ public struct SRImageWireframe: Codable, Hashable
     public init(base64: String? = nil,border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isEmpty: Bool? = nil,mimeType: String? = nil,permanentId: String? = nil,resourceId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
 public struct SRIncrementalSnapshotRecord: Codable
     public let data: Data
+    public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 11
     public enum CodingKeys: String, CodingKey
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
-    public init(data: Data,timestamp: Int64)
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
     public enum Data: Codable
         case mutationData(value: MutationData)
         case touchData(value: TouchData)
@@ -881,6 +942,7 @@ public struct SRIncrementalSnapshotRecord: Codable
                 case imageWireframeUpdate(value: ImageWireframeUpdate)
                 case placeholderWireframeUpdate(value: PlaceholderWireframeUpdate)
                 case webviewWireframeUpdate(value: WebviewWireframeUpdate)
+                case embeddedContentWireframeUpdate(value: EmbeddedContentWireframeUpdate)
                 public func encode(to encoder: Encoder) throws
                 public init(from decoder: Decoder) throws
                 public struct TextWireframeUpdate: Codable
@@ -988,6 +1050,31 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let shapeStyle: SRShapeStyle?
                     public let slotId: String
                     public let type: String = "webview"
+                    public let width: Int64?
+                    public let x: Int64?
+                    public let y: Int64?
+                    public enum CodingKeys: String, CodingKey
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case isVisible = "isVisible"
+                        case shapeStyle = "shapeStyle"
+                        case slotId = "slotId"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64? = nil,id: Int64,isVisible: Bool? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64? = nil,x: Int64? = nil,y: Int64? = nil)
+                public struct EmbeddedContentWireframeUpdate: Codable
+                    public let border: SRShapeBorder?
+                    public let clip: SRContentClip?
+                    public let height: Int64?
+                    public let id: Int64
+                    public let isVisible: Bool?
+                    public let shapeStyle: SRShapeStyle?
+                    public let slotId: String
+                    public let type: String = "embedded_content"
                     public let width: Int64?
                     public let x: Int64?
                     public let y: Int64?
@@ -1367,6 +1454,7 @@ public enum SRWireframe: Codable
     case imageWireframe(value: SRImageWireframe)
     case placeholderWireframe(value: SRPlaceholderWireframe)
     case webviewWireframe(value: SRWebviewWireframe)
+    case embeddedContentWireframe(value: SREmbeddedContentWireframe)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
 public typealias WireframeID = NodeID
@@ -1468,7 +1556,7 @@ public enum SessionReplay
         case swiftui
         case heatmaps
         case screenChangeScheduling
-        case layerTreeRecording
+        case compositionTreeRecording = "composition_tree_recording"
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -1546,13 +1634,14 @@ public enum Flags
         public var gracefulModeEnabled: Bool
         public var customFlagsEndpoint: URL?
         public var customFlagsHeaders: [String: String]?
+        public var initializationTimeout: TimeInterval?
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
         public var customEvaluationEndpoint: URL?
         public var trackEvaluations: Bool
         public var evaluationFlushInterval: TimeInterval
         public var rumIntegrationEnabled: Bool
-        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true)
+        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,initializationTimeout: TimeInterval? = 5,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true)
     public static func enable(with configuration: Flags.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
 public enum AnyValue: Equatable, Hashable
     case string(String)
@@ -1580,7 +1669,8 @@ public struct FlagAssignment: Equatable
     public var variation: Variation
     public var reason: String
     public var doLog: Bool
-    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool)
+    public var serialID: Int?
+    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool, serialID: Int? = nil)
     public init(from decoder: any Decoder) throws
     public func encode(to encoder: any Encoder) throws
 public enum FlagEvaluationError: Error
@@ -1609,6 +1699,7 @@ public enum FlagsError: Error
     case invalidResponse
     case clientNotInitialized
     case invalidConfiguration
+    case initializationTimedOut
 public struct FlagsEvaluationContext: Equatable, Codable
     public let targetingKey: String
     public let attributes: [String: AnyValue]
@@ -1621,7 +1712,7 @@ public struct FlagsEvaluationContext: Equatable, Codable
 public enum Profiling
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Profiling
-    public struct Configuration
+    public struct Configuration: Sendable
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
         public var continuousSampleRate: SampleRate

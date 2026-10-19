@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// Radius values for each layer corner.
     struct CornerRadii: Sendable, Equatable {
@@ -43,7 +42,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.CornerRadii {
     var uniformCornerRadius: CGFloat? {
         guard

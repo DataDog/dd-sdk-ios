@@ -15,6 +15,11 @@ import QuartzCore
 /// meaning — the absolute value is implementation-defined. Use this provider in combination
 /// with a `DateProvider` whenever you need a duration that must be `>= 0` regardless of
 /// wall-clock adjustments.
+///
+/// Media uptime pauses while the device is asleep and matches Core Animation frame timestamps.
+/// Use this provider for frame timing and durations that should exclude device sleep. For timeouts
+/// or durations that must include sleep, such as RUM session lifetime, use `MonotonicClock` instead.
+/// Readings from these two clocks are not interchangeable.
 public protocol CACurrentMediaTimeProvider: Sendable {
     /// Current media uptime.
     var current: CFTimeInterval { get }

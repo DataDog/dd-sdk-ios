@@ -40,6 +40,12 @@ public enum Trace {
             )
         }
 
+        // Merge remote configuration on top of the in-code configuration. Remote values take
+        // precedence for supported behavioral parameters; if no remote configuration is available,
+        // the in-code configuration is used unchanged.
+        var configuration = configuration
+        configuration.apply(remoteConfiguration: core.remoteConfiguration)
+
         // Register Trace feature:
         let trace = TraceFeature(in: core, configuration: configuration)
         try core.register(feature: trace)
@@ -68,7 +74,9 @@ public enum Trace {
                 firstPartyHosts: firstPartyHosts,
                 traceContextInjection: traceContextInjection,
                 telemetry: core.telemetry,
-                redactedStatusCodes: urlSessionTracking.redactedStatusCodes
+                redactedStatusCodes: urlSessionTracking.redactedStatusCodes,
+                sessionSampler: core.sessionSampler,
+                spanCustomization: urlSessionTracking.spanCustomization
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)

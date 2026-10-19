@@ -10,10 +10,11 @@ import DatadogInternal
 
 @testable import DatadogTrace
 
+#if !os(macOS)
 class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesApplicationStateHistory() throws {
         // Given
-        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        let receiver = ContextMessageReceiver()
         let core = PassthroughCoreMock(
             context: .mockWith(applicationStateHistory: .mockAppInBackground()),
             messageReceiver: receiver
@@ -28,3 +29,4 @@ class ContextMessageReceiverTests: XCTestCase {
         XCTAssertEqual(receiver.context.applicationStateHistory?.currentState, .active)
     }
 }
+#endif

@@ -101,6 +101,47 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
+    func testTTIDCommand_whenAppRunsAsAppExtension_createsAppLaunchVitalEventWithIsMainProcessFalse() throws {
+        // Given
+        let activeView: RUMViewScope = .mockWith(path: "ViewPath", name: "ViewName")
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2.0)
+        )
+        mockContext = .mockWith(
+            applicationBundleType: .iOSAppExtension,
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: mockContext.launchInfo.processLaunchDate
+            )
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: activeView)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
+    func testTTIDCommand_sanitizesContextAttributesBeforeWriting() throws {
+        // Given
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+        let attributes = Dictionary(
+            uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny()) }
+        )
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1),
+            attributes: attributes
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).first)
+        XCTAssertEqual(event.context?.contextInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
     func testTTIDCommand_appliesServerTimeOffsetToAppLaunchEventAndProfilerMessage() throws {
         // Given
         let featureScope = FeatureScopeMock()

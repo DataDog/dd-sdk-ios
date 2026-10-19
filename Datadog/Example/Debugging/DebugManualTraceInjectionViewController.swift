@@ -8,7 +8,6 @@ import SwiftUI
 import DatadogTrace
 import DatadogInternal
 
-@available(iOS 13, tvOS 13, *)
 internal class DebugManualTraceInjectionViewController: UIHostingController<DebugManualTraceInjectionView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: DebugManualTraceInjectionView())
@@ -28,7 +27,6 @@ extension TraceContextInjection {
     }
 }
 
-@available(iOS 13, tvOS 13, *)
 internal struct DebugManualTraceInjectionView: View {
     enum TraceHeaderType: String, CaseIterable, Identifiable {
         case datadog = "Datadog"
@@ -174,7 +172,6 @@ internal struct DebugManualTraceInjectionView: View {
 
 // MARK - Preview
 
-@available(iOS 13, tvOS 13, *)
 struct DebugTraceInjectionView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {

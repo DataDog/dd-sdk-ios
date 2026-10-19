@@ -30,13 +30,23 @@ class SessionReplayConfigurationTests: XCTestCase {
         XCTAssertEqual(config._additionalNodeRecorders.count, 0)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    func testDefaultConfigurationDisablesLayerTreeRecordingFeatureFlag() {
+    func testDefaultConfigurationDisablesCompositionTreeRecordingFeatureFlag() {
         // When
         let config = SessionReplay.Configuration()
 
         // Then
-        XCTAssertFalse(config.featureFlags[.layerTreeRecording])
+        XCTAssertFalse(config.featureFlags[.compositionTreeRecording])
+    }
+
+    func testFeatureFlagsSubscriptFallsBackToDefaults() {
+        // When
+        let emptyFlags: SessionReplay.Configuration.FeatureFlags = [:]
+        let overriddenFlags: SessionReplay.Configuration.FeatureFlags = [.swiftui: true]
+
+        // Then
+        XCTAssertFalse(emptyFlags[.swiftui], "should fall back to `.defaults` when not set")
+        XCTAssertTrue(overriddenFlags[.swiftui], "should use the explicitly set value")
+        XCTAssertFalse(emptyFlags[.heatmaps], "should be `false` when the flag has no default")
     }
 
     func testDefaultConfigurationWithNewApi() {

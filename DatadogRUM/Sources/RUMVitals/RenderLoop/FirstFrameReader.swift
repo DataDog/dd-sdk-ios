@@ -5,7 +5,11 @@
  */
 
 import DatadogInternal
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// Class that reads the first frame presented to the user.
 internal final class FirstFrameReader: RUMCommandPublisher {

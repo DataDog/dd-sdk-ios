@@ -6,28 +6,36 @@
 
 #if os(iOS)
 import Foundation
+import UIKit
 import WebKit
 
 @preconcurrency import DatadogInternal
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// State shared by all layers captured in one snapshot.
     final class Context {
         let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         let imagePrivacyLevel: ImagePrivacyLevel
+        let heatmapsEnabled: Bool
 
         /// Weak references to web views found while capturing the layer tree.
         let webViewCache: NSHashTable<WKWebView>
 
+        /// Weak references to embedded content views found while capturing the layer tree.
+        let embeddedContentViewCache: NSHashTable<UIView>
+
         init(
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
-            webViewCache: NSHashTable<WKWebView> = .weakObjects()
+            heatmapsEnabled: Bool = false,
+            webViewCache: NSHashTable<WKWebView> = .weakObjects(),
+            embeddedContentViewCache: NSHashTable<UIView> = .weakObjects()
         ) {
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
             self.imagePrivacyLevel = imagePrivacyLevel
+            self.heatmapsEnabled = heatmapsEnabled
             self.webViewCache = webViewCache
+            self.embeddedContentViewCache = embeddedContentViewCache
         }
     }
 }

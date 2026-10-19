@@ -55,6 +55,13 @@ internal final class DatadogCore {
     /// The message-bus instance.
     let bus = MessageBus()
 
+    /// The remote configuration provider, if configured.
+    let remoteConfigurationProvider: RemoteConfigurationProvider?
+
+    /// The last successfully fetched remote configuration, if any.
+    @ReadWriteLock
+    var remoteConfiguration: RemoteConfiguration?
+
     /// Registry for Features.
     @ReadWriteLock
     private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
@@ -86,21 +93,24 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
+    ///   - remoteConfigurationProvider: The remote configuration provider, if configured.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
         initialConsent: TrackingConsent,
-    	performance: PerformancePreset,
-    	httpClient: HTTPClient,
-    	encryption: DataEncryption?,
+        performance: PerformancePreset,
+        httpClient: HTTPClient,
+        encryption: DataEncryption?,
         contextProvider: DatadogContextProvider,
         applicationVersion: String,
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
-        isRunFromExtension: Bool = false
+        isRunFromExtension: Bool = false,
+        remoteConfigurationProvider: RemoteConfigurationProvider? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
+        self.remoteConfigurationProvider = remoteConfigurationProvider
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption
@@ -114,7 +124,6 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
-
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
@@ -123,6 +132,13 @@ internal final class DatadogCore {
         self.contextProvider.publish { [weak self] context in
             self?.send(message: .context(context))
         }
+
+        self.remoteConfigurationProvider?.start(
+            { [weak self] remoteConfiguration in
+                self?.remoteConfiguration = remoteConfiguration
+            },
+            telemetry: telemetry
+        )
     }
 
     /// Sets current user information.
@@ -317,6 +333,7 @@ internal final class DatadogCore {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
     }
@@ -482,7 +499,13 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
 }
 
 extension DatadogContextProvider {
-    /// Creates a core context provider with the given configuration,
+    /// Creates a core context provider with the given configuration.
+    ///
+    /// - Remark: `ContextProvider` must be initialized on the main thread for two key reasons:
+    ///   - It interacts with UIKit/AppKit APIs to read the initial app state, which is only safe on the main thread.
+    ///   - It subscribes to app state change notifications, and we need this subscription to occur
+    ///   before any Feature subscriptions. This ensures that Core always processes state changes first.
+    @MainActor
     convenience init(
         site: DatadogSite,
         clientToken: String,
@@ -507,16 +530,11 @@ extension DatadogContextProvider {
         processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
-        notificationCenter: NotificationCenter,
+        notificationCenterProvider: NotificationCenterProvider,
         appLaunchHandler: AppLaunchHandling,
-        appStateProvider: AppStateProvider
+        appStateProvider: AppStateProvider,
+        remoteConfigurationId: String?
     ) {
-        // `ContextProvider` must be initialized on the main thread for two key reasons:
-        // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
-        // - It subscribes to app state change notifications, and we need this subscription to occur
-        //   before any Feature subscriptions. This ensures that Core always processes state changes first.
-        dd_assert(Thread.isMainThread, "Must be called on main thread")
-
         let initialAppState = appStateProvider.current
         let appStateHistory = AppStateHistory(initialState: initialAppState, date: dateProvider.now)
         let launchInfo = appLaunchHandler.resolveLaunchInfo(using: processInfo)
@@ -542,16 +560,15 @@ extension DatadogContextProvider {
             localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchInfo: launchInfo,
-            applicationStateHistory: appStateHistory
+            applicationStateHistory: appStateHistory,
+            remoteConfigurationId: remoteConfigurationId
         )
 
         self.init(context: context)
 
         subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
 
-        #if !os(macOS)
         subscribe(\.launchInfo, to: LaunchInfoPublisher(handler: appLaunchHandler, initialValue: launchInfo))
-        #endif
 
         subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
 
@@ -560,20 +577,41 @@ extension DatadogContextProvider {
         #endif
 
         #if (os(iOS) || os(visionOS)) && !targetEnvironment(simulator)
-        subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
-        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
+        subscribe(
+            \.batteryStatus,
+             to: BatteryStatusPublisher(
+                notificationCenter: notificationCenterProvider.applicationCenter,
+                device: .current
+             )
+        )
+        subscribe(
+            \.isLowPowerModeEnabled,
+             to: LowPowerModePublisher(
+                notificationCenter: notificationCenterProvider.applicationCenter,
+                processInfo: processInfo
+             )
+        )
         #endif
 
         #if os(iOS)
-        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenter))
+        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenterProvider.applicationCenter))
         #endif
 
-        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenter))
+        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenterProvider.applicationCenter))
 
         #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         let applicationStatePublisher = ApplicationStatePublisher(
             appStateHistory: appStateHistory,
-            notificationCenter: notificationCenter,
+            notificationCenter: notificationCenterProvider.applicationCenter,
+            dateProvider: dateProvider
+        )
+        self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
+        #elseif os(macOS)
+        let applicationStatePublisher = ApplicationStatePublisher(
+            appStateHistory: appStateHistory,
+            applicationNotificationCenter: notificationCenterProvider.applicationCenter,
+            workspaceNotificationCenter: notificationCenterProvider.workspaceCenter,
+            applicationStateProvider: DefaultMacOSApplicationStateProvider(),
             dateProvider: dateProvider
         )
         self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)

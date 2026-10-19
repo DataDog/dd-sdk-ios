@@ -70,7 +70,7 @@ internal class RecordsBuilder {
             return try createIncrementalSnapshotRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
         } catch {
             // In case of any trouble, fallback to FSR which is always possible:
-            telemetry.error("[SR] Failed to create incremental record", error: DDError(error: error))
+            telemetry.error("[SR] Failed to create incremental record", error: error)
             return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
         }
     }

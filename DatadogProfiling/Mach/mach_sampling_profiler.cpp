@@ -6,6 +6,7 @@
 
 #include "mach_sampling_profiler.h"
 #include "aggregation_worker.h"
+#include "dd_profiler_testing.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
@@ -19,10 +20,15 @@
 #include <time.h>
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
+#include <mach/thread_info.h>
 #include <mach/machine/thread_state.h>
 #include <new>
 #include <utility>
 #include <mach/vm_map.h>
+
+#if defined(__arm64__)
+#include <ptrauth.h>
+#endif
 
 // Address validation constants and macros
 //
@@ -197,6 +203,30 @@ static constexpr bool is_valid_frame_pointer(uintptr_t fp) {
 }
 
 /**
+ * Removes pointer-authentication bits from an ARM64 instruction pointer.
+ *
+ * The profiler is normally compiled as arm64, even when it runs on arm64e
+ * hardware. Return addresses saved by arm64e system libraries can therefore
+ * contain PAC bits while ptrauth_strip remains a no-op in our arm64 binary.
+ * In that configuration, mask the upper bits and keep the 47-bit userspace
+ * virtual address. Other architectures do not require normalization.
+ */
+static uintptr_t normalize_instruction_pointer(uintptr_t instruction_pointer) {
+#if defined(__arm64__)
+#if __has_feature(ptrauth_calls)
+    return reinterpret_cast<uintptr_t>(ptrauth_strip(
+        reinterpret_cast<void*>(instruction_pointer),
+        ptrauth_key_return_address
+    ));
+#else
+    return instruction_pointer & 0x00007FFFFFFFFFFFULL;
+#endif
+#else
+    return instruction_pointer;
+#endif
+}
+
+/**
  * Initializes a stack trace with allocated frames.
  * 
  * @param trace Pointer to stack trace to initialize
@@ -210,9 +240,48 @@ bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth, uint64_t interva
     trace->thread_name = nullptr;
     trace->timestamp = 0;
     trace->sampling_interval_nanos = interval_nanos;
+    trace->cpu_time_nanos = 0;
     trace->frame_count = 0;
     trace->frames = (stack_frame_t*)malloc(max_depth * sizeof(stack_frame_t));
     return trace->frames != nullptr;
+}
+
+static bool thread_cpu_time_nanos(thread_t thread, uint64_t* cpu_time_nanos) {
+    if (!cpu_time_nanos) return false;
+
+    thread_basic_info_data_t info{};
+    mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
+    if (thread_info(thread, THREAD_BASIC_INFO, reinterpret_cast<thread_info_t>(&info), &count) != KERN_SUCCESS) {
+        return false;
+    }
+
+    const uint64_t user_time_nanos =
+        (static_cast<uint64_t>(info.user_time.seconds) * 1000000000ULL)
+        + (static_cast<uint64_t>(info.user_time.microseconds) * 1000ULL);
+    const uint64_t system_time_nanos =
+        (static_cast<uint64_t>(info.system_time.seconds) * 1000000000ULL)
+        + (static_cast<uint64_t>(info.system_time.microseconds) * 1000ULL);
+
+    *cpu_time_nanos = user_time_nanos + system_time_nanos;
+    return true;
+}
+
+static bool thread_identifier(thread_t thread, uint64_t* thread_id) {
+    if (!thread_id) return false;
+
+    thread_identifier_info_data_t info{};
+    mach_msg_type_number_t count = THREAD_IDENTIFIER_INFO_COUNT;
+    if (thread_info(
+            thread,
+            THREAD_IDENTIFIER_INFO,
+            reinterpret_cast<thread_info_t>(&info),
+            &count
+        ) != KERN_SUCCESS) {
+        return false;
+    }
+
+    *thread_id = info.thread_id;
+    return true;
 }
 
 /**
@@ -293,20 +362,22 @@ bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc, void** sp)
  *
  * @param trace Stack trace to fill with thread info
  * @param thread The mach thread to get info from
- * @return true if thread info was successfully retrieved
+ * @return true if the stable system thread identifier was retrieved
  */
 bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
     if (!trace) return false;
-    
-    trace->tid = thread;
+
+    trace->tid = static_cast<uint64_t>(thread);
     trace->thread_name = nullptr;
+
+    const bool has_stable_thread_id = thread_identifier(thread, &trace->tid);
     
     pthread_t pthread = pthread_from_mach_thread_np(thread);
-    if (!pthread) return false;
+    if (!pthread) return has_stable_thread_id;
 
     // Allocate buffer and get thread name
     trace->thread_name = (char*)malloc(PTHREAD_THREAD_NAME_MAX);
-    if (!trace->thread_name) return false;
+    if (!trace->thread_name) return has_stable_thread_id;
     
     int result = pthread_getname_np(pthread, (char*)trace->thread_name, PTHREAD_THREAD_NAME_MAX);
 
@@ -314,11 +385,11 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
         strlcpy((char*)trace->thread_name, "com.apple.main-thread", PTHREAD_THREAD_NAME_MAX);
     }
     
-    if (result == KERN_SUCCESS) return true;
+    if (result == KERN_SUCCESS) return has_stable_thread_id;
     
     free((void*)trace->thread_name);
     trace->thread_name = nullptr;
-    return false;
+    return has_stable_thread_id;
 }
 
 /**
@@ -377,7 +448,9 @@ static void walk_frames(
     bool allow_memory_fallback
 ) {
     void* fp = initial_fp;
-    void* pc = initial_pc;
+    void* pc = reinterpret_cast<void*>(normalize_instruction_pointer(
+        reinterpret_cast<uintptr_t>(initial_pc)
+    ));
     trace->frame_count = 0;
 
     while (trace->frame_count < max_depth && pc != nullptr) {
@@ -396,14 +469,15 @@ static void walk_frames(
         if (stack_base != 0 && fp_addr < stack_base) break;
 
         frame_pointer_pair_t next_frame = {};
-        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)) {
-            if (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame)) {
-                break;
-            }
+        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)
+            && (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame))) {
+            break;
         }
 
         fp = next_frame.next_frame_pointer;  // saved x29 / rbp
-        pc = next_frame.return_address;  // saved lr / return address on stack
+        pc = reinterpret_cast<void*>(normalize_instruction_pointer(
+            reinterpret_cast<uintptr_t>(next_frame.return_address)
+        ));  // saved lr / return address on stack
 
         if (!is_valid_userspace_addr(reinterpret_cast<uintptr_t>(pc))) break;
     }
@@ -585,6 +659,8 @@ bool mach_sampling_profiler::start_sampling() {
 
     // Clear any leftover data from previous runs
     sample_buffer.clear();
+    cpu_time_baselines.clear();
+    cpu_time_sampling_cycle = 0;
     if (sample_buffer.capacity() < config.max_buffer_size) {
         sample_buffer.reserve(config.max_buffer_size);
     }
@@ -684,7 +760,10 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
     if (!stack_trace_init(&trace, config.max_stack_depth, interval_nanos)) return;
 
     // Get thread info
-    stack_trace_get_thread_info(&trace, thread);
+    const bool has_stable_thread_id = stack_trace_get_thread_info(&trace, thread);
+    if (has_stable_thread_id) {
+        trace.cpu_time_nanos = thread_cpu_time_delta_nanos(thread, trace.tid);
+    }
 
     trace.timestamp = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 
@@ -715,6 +794,58 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
     }
 }
 
+uint64_t mach_sampling_profiler::thread_cpu_time_delta_nanos(thread_t thread, uint64_t thread_id) {
+    if (!config.record_cpu_time) {
+        return 0;
+    }
+
+    uint64_t current_cpu_time_nanos = 0;
+    if (!thread_cpu_time_nanos(thread, &current_cpu_time_nanos)) {
+        return 0;
+    }
+
+    try {
+        auto result = cpu_time_baselines.try_emplace(
+            thread_id,
+            cpu_time_baseline{current_cpu_time_nanos, cpu_time_sampling_cycle}
+        );
+        if (result.second) {
+            return 0;
+        }
+
+        cpu_time_baseline& baseline = result.first->second;
+        const uint64_t previous_cpu_time_nanos = baseline.cumulative_nanos;
+        baseline.cumulative_nanos = current_cpu_time_nanos;
+        baseline.last_seen_cycle = cpu_time_sampling_cycle;
+
+        if (current_cpu_time_nanos < previous_cpu_time_nanos) {
+            return 0;
+        }
+
+        return current_cpu_time_nanos - previous_cpu_time_nanos;
+    } catch (const std::bad_alloc&) {
+        // CPU-time bookkeeping is best-effort. Keep wall-time profiling active
+        // instead of letting an allocation failure escape the sampling pthread.
+        config.record_cpu_time = 0;
+        cpu_time_baselines.clear();
+        return 0;
+    }
+}
+
+void mach_sampling_profiler::prune_thread_cpu_time_state() {
+    if (!config.record_cpu_time || cpu_time_baselines.empty()) {
+        return;
+    }
+
+    for (auto it = cpu_time_baselines.begin(); it != cpu_time_baselines.end();) {
+        if (it->second.last_seen_cycle == cpu_time_sampling_cycle) {
+            ++it;
+        } else {
+            it = cpu_time_baselines.erase(it);
+        }
+    }
+}
+
 /**
  * Main sampling loop that collects stack traces from threads.
  */
@@ -726,19 +857,24 @@ void mach_sampling_profiler::main() {
         // Sampling interval in nanoseconds
         uint64_t interval_nanos = config.sampling_interval_nanos;
 
+        if (config.record_cpu_time) {
+            ++cpu_time_sampling_cycle;
+        }
+
         if (sample_buffer.size() >= config.max_buffer_size) {
             worker->enqueue_active_buffer(sample_buffer);
         }
 
         if (config.profile_current_thread_only) {
-            sample_thread(pthread_mach_thread_np(target_thread), interval_nanos);
+            const thread_t thread = pthread_mach_thread_np(target_thread);
+            sample_thread(thread, interval_nanos);
             if (sample_buffer.size() >= config.max_buffer_size) {
                 worker->enqueue_active_buffer(sample_buffer);
             }
         } else {
             thread_act_array_t threads = nullptr;
             mach_msg_type_number_t count = 0;
-            
+
             if (task_threads(mach_task_self(), &threads, &count) != KERN_SUCCESS) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 continue;
@@ -752,7 +888,7 @@ void mach_sampling_profiler::main() {
 
                 // Skip profiler-owned threads to avoid self-noise in customer profiles.
                 if (is_profiler_internal_thread(threads[i])) continue;
-                
+
                 sample_thread(threads[i], interval_nanos);
 
                 if (sample_buffer.size() >= config.max_buffer_size) {
@@ -768,6 +904,8 @@ void mach_sampling_profiler::main() {
             vm_deallocate(mach_task_self(), (vm_address_t)threads, count * sizeof(thread_t));
         }
 
+        prune_thread_cpu_time_state();
+
         // Sleep for the same interval we recorded
         std::this_thread::sleep_for(std::chrono::nanoseconds(interval_nanos));
     }
@@ -779,6 +917,10 @@ void mach_sampling_profiler::main() {
 } // namespace dd::profiler
 
 extern "C" {
+
+bool dd_profiler_get_thread_id_for_testing(mach_port_t thread, uint64_t* thread_id) {
+    return thread_identifier(thread, thread_id);
+}
 
 /**
  * Reads a stack region for testing purposes. See read_stack_region for semantics.

@@ -12,9 +12,11 @@ public struct AttributesSanitizer {
         /// Maximum number of nested levels in attribute name. E.g. `person.address.street` has 3 levels.
         /// If attribute name exceeds this number, extra levels are escaped by using `_` character (`one.two.(...).nine.ten_eleven_twelve`).
         public static let maxNestedLevelsInAttributeName: Int = 10
-        /// Maximum number of attributes in log.
+        /// Maximum number of attributes in an event.
         /// If this number is exceeded, extra attributes will be ignored.
-        public static let maxNumberOfAttributes: Int = 256
+        /// The backend accepts up to 2048 properties per JSON node; 1900 leaves margin for the
+        /// reserved attributes (e.g. `usr.name`) that also count towards that limit.
+        public static let maxNumberOfAttributes: Int = 1_900
     }
 
     let featureName: String
@@ -35,7 +37,8 @@ public struct AttributesSanitizer {
     ///     one.two.three.four.five.six.seven.eight_nine_ten_eleven
     ///
     public func sanitizeKeys<Value>(for attributes: [String: Value], prefixLevels: Int = 0) -> [String: Value] {
-        let sanitizedAttributes: [(String, Value)] = attributes.map { key, value in
+        var sanitizedAttributes = attributes
+        attributes.forEach { key, value in
             let sanitizedName = sanitize(attributeKey: key, prefixLevels: prefixLevels)
             if sanitizedName != key {
                 DD.logger.warn(
@@ -43,12 +46,13 @@ public struct AttributesSanitizer {
                     \(featureName) attribute '\(key)' was modified to '\(sanitizedName)' to match Datadog constraints.
                     """
                 )
-                return (sanitizedName, value)
-            } else {
-                return (key, value)
+                sanitizedAttributes.removeValue(forKey: key)
+                if attributes[sanitizedName] == nil {
+                    sanitizedAttributes[sanitizedName] = value
+                }
             }
         }
-        return Dictionary(uniqueKeysWithValues: sanitizedAttributes)
+        return sanitizedAttributes
     }
 
     private func sanitize(attributeKey: String, prefixLevels: Int = 0) -> String {

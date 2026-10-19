@@ -43,7 +43,7 @@ extension DDError {
     }
 }
 
-private func isNSErrorOrItsSubclass(_ error: Error) -> Bool {
+internal func isNSErrorOrItsSubclass(_ error: Error) -> Bool {
     var mirror: Mirror? = Mirror(reflecting: error)
 
     while mirror != nil {

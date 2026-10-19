@@ -17,19 +17,26 @@ internal struct DistributedTracing {
     let firstPartyHosts: FirstPartyHosts
     /// Trace context injection configuration to determine whether the trace context should be injected or not.
     let traceContextInjection: TraceContextInjection
+    /// Synchronous access to the RUM session, used to sample the request and to attach the session ID.
+    ///
+    /// This holds RUM's sampling store, which is a leaf object owned by `RUMFeature`, so the strong
+    /// reference does not create a cycle back to this handler.
+    let sessionSampling: SessionSampler?
 
     init(
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
-        traceContextInjection: TraceContextInjection
+        traceContextInjection: TraceContextInjection,
+        sessionSampling: SessionSampler? = nil
     ) {
         self.samplingRate = samplingRate
         self.traceIDGenerator = traceIDGenerator
         self.spanIDGenerator = spanIDGenerator
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
+        self.sessionSampling = sessionSampling
     }
 }
 
@@ -51,6 +58,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     let telemetry: Telemetry
     /// Header processor for capturing HTTP headers.
     let headerProcessor: HeaderProcessor?
+    /// The disallow-list of URLs excluded from RUM resource tracking.
+    let disallowList: DisallowList?
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -64,12 +73,14 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         rumAttributesProvider: RUM.ResourceAttributesProvider?,
         distributedTracing: DistributedTracing?,
         headerProcessor: HeaderProcessor?,
+        disallowList: DisallowList?,
         telemetry: Telemetry
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider
         self.distributedTracing = distributedTracing
         self.headerProcessor = headerProcessor
+        self.disallowList = disallowList
         self.telemetry = telemetry
     }
 
@@ -84,6 +95,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        guard !isDisallowed(url: request.url) else {
+            return (request, nil, nil)
+        }
+
         let (modifiedRequest, traceContext, _) = distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
@@ -98,6 +113,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+        guard !isDisallowed(url: interception.request.url) else {
+            return
+        }
+
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
 
@@ -121,6 +140,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
+        guard !isDisallowed(url: interception.request.url) else {
+            return
+        }
+
         guard let subscriber = subscriber else {
             return DD.logger.warn(
                 """
@@ -189,32 +212,37 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             )
         }
 
-        if let httpResponse = interception.completion?.httpResponse {
-            subscriber.process(
-                command: RUMStopResourceCommand(
-                    resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.now,
-                    attributes: combinedAttributes,
-                    kind: RUMResourceType(response: httpResponse),
-                    httpStatusCode: httpResponse.statusCode,
-                    size: interception.mostAccurateResponseSize
-                )
+        if let httpResponse = interception.completion?.httpResponse, interception.completion?.error == nil {
+            var command = RUMStopResourceCommand(
+                resourceKey: interception.identifier.uuidString,
+                time: dateProvider.now,
+                attributes: combinedAttributes,
+                kind: RUMResourceType(response: httpResponse),
+                httpStatusCode: httpResponse.statusCode,
+                size: interception.mostAccurateResponseSize
             )
+            command.isAutomatic = true
+            subscriber.process(command: command)
         }
 
         if let error = interception.completion?.error {
-            subscriber.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.now,
-                    error: error,
-                    source: .network,
-                    httpStatusCode: interception.completion?.httpResponse?.statusCode,
-                    globalAttributes: [:],
-                    attributes: combinedAttributes
-                )
+            let errorAttributes = combinedAttributes
+            var command = RUMStopResourceWithErrorCommand(
+                resourceKey: interception.identifier.uuidString,
+                time: dateProvider.now,
+                error: error,
+                source: .network,
+                httpStatusCode: interception.completion?.httpResponse?.statusCode,
+                globalAttributes: [:],
+                attributes: errorAttributes
             )
+            command.isAutomatic = true
+            subscriber.process(command: command)
         }
+    }
+
+    private func isDisallowed(url: URL?) -> Bool {
+        disallowList?.isDisallowed(url: url) == true
     }
 
     /// Extracts GraphQL errors from JSON response if present and returns them as a JSON string.
@@ -262,20 +290,25 @@ extension DistributedTracing {
             activeSpanContext = nil
         }
 
-        // When a RUM context is available, its `sessionSampler` is a `DeterministicSampler`
-        // seeded from the session ID. Calling `combined(with:)` composes the session rate
-        // with the tracing `samplingRate` while preserving the seed, so every resource in
-        // the same session receives a consistent sampling decision.
-        // When no RUM context exists, fall back to a random `Sampler`.
-        let sampler: () -> Sampling = {
-            networkContext?.rumContext?.sessionSampler.combined(with: samplingRate)
-            ?? Sampler(samplingRate: samplingRate)
+        // Read the RUM session from its store rather than from `networkContext`, which is delivered
+        // through the message bus and can still be empty at this point. A request modified inside that
+        // window used to fall through to the random `Sampler` below and to be injected without a RUM
+        // session ID, which is exactly the early-request gap this handler needs to close.
+        //
+        // The tracing `samplingRate` is a share of the sessions RUM already keeps, so the effective
+        // rate is the product of the two: `.combinedWithSessionRate`. The snapshot carries the ID and
+        // the session-derived decision together. A sampled active span still takes precedence below,
+        // as required to preserve the parent trace's decision.
+        let sessionDecision = sessionSampling?.decision(for: .combinedWithSessionRate, rate: samplingRate)
+        // When no RUM session is active, fall back to a random decision at the tracing rate.
+        let isSampled: () -> Bool = {
+            sessionDecision?.isSampled ?? Sampler(samplingRate: samplingRate).sample()
         }
         // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
         // with the trace.
         let traceID = activeSpanContext?.traceID ?? traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
-        let samplingPriority = activeSpanContext?.samplingPriority ?? (sampler().sample() ? .autoKeep : .autoDrop)
+        let samplingPriority = activeSpanContext?.samplingPriority ?? (isSampled() ? .autoKeep : .autoDrop)
         let samplingDecisionMaker = activeSpanContext?.samplingMechanismType ?? .agentRate
 
         // Extract GraphQL attributes from request before they are removed
@@ -295,7 +328,7 @@ extension DistributedTracing {
             sampleRate: activeSpanContext?.samplingRate ?? samplingRate,
             samplingPriority: samplingPriority,
             samplingDecisionMaker: samplingDecisionMaker,
-            rumSessionId: networkContext?.rumContext?.sessionID,
+            rumSessionId: sessionDecision?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
             accountId: networkContext?.accountConfigurationContext?.id,
             graphql: graphql

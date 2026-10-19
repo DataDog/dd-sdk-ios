@@ -16,9 +16,9 @@ internal class JSONSchemaToJSONTypeTransformer {
     }
 
     func transform(jsonSchema: JSONSchema) throws -> JSONType {
-        let schemaTitle = try jsonSchema.title
+        let schemaTitle = try (jsonSchema.title ?? jsonSchema.id)
             .unwrapOrThrow(
-                .inconsistency("`JSONSchema` must define `title`.")
+                .inconsistency("`JSONSchema` must define `title` or `$id`.")
             )
 
         return try transformSchemaToAnyType(jsonSchema, named: schemaTitle)
@@ -39,6 +39,12 @@ internal class JSONSchemaToJSONTypeTransformer {
         if let enumarations = schema.enum, schema.type == nil {
             schemaType = try enumarations.inferrSchemaType()
                 .unwrapOrThrow(.inconsistency("Heteregenous enum is not supported: \(enumarations)."))
+        } else if let constant = schema.const, schema.type == nil {
+            // Infer type from const value when type is not explicitly declared (e.g. discriminator fields)
+            switch constant.value {
+            case .string: return JSONPrimitive.string
+            case .integer: return JSONPrimitive.integer
+            }
         } else {
             schemaType = try schema.type
                 .unwrapOrThrow(.inconsistency("`JSONSchema` must define `type`: \(schema)."))
@@ -153,18 +159,53 @@ internal class JSONSchemaToJSONTypeTransformer {
 
     /// Transforms multiple non-homogeneous schemas (such as `oneOf: []`) into single `JSONUnionType`.
     private func transformSchemasToUnion(_ schema: JSONSchema, named name: String) throws -> JSONUnionType {
-        let unionSchema = try schema.oneOf ?? schema.anyOf
-            .unwrapOrThrow(.inconsistency("`JSONSchema` schema must define `oneOf` or `anyOf."))
+        let unionSchemas = try schema.oneOf ?? schema.anyOf
+            .unwrapOrThrow(.inconsistency("`JSONSchema` must define `oneOf` or `anyOf`."))
 
+        let discriminatorKey = findDiscriminatorKey(among: unionSchemas)
         return JSONUnionType(
             name: name,
             comment: schema.description,
-            types: try unionSchema.map { subschema in
+            types: try unionSchemas.map { subschema in
+                let variantName = resolveVariantName(subschema, discriminatorKey: discriminatorKey)
                 return .init(
-                    name: subschema.title,
-                    type: try transformSchemaToAnyType(subschema, named: subschema.title ?? name)
+                    name: variantName,
+                    type: try transformSchemaToAnyType(subschema, named: variantName ?? name)
                 )
             }
         )
+    }
+
+    /// Returns the best variant name for `subschema` within a union, trying in priority order:
+    /// 1. `title` (existing behaviour, used by all RUM event schemas)
+    /// 2. A direct `const` value on the subschema (e.g. `{"type":"string","const":"all"}` → `"all"`)
+    /// 3. The const value of a shared discriminator property across all object siblings
+    /// 4. `$id` propagated from a `$ref` target via allOf merging (e.g. `"rum-sdk-config-ios"`)
+    private func resolveVariantName(_ subschema: JSONSchema, discriminatorKey: String?) -> String? {
+        if let title = subschema.title {
+            return title
+        }
+        if let const = subschema.const {
+            return const.value.description
+        }
+        if let key = discriminatorKey {
+            return subschema.properties?[key]?.const?.value.description
+        }
+        if let id = subschema.id {
+            return id
+        }
+        return nil
+    }
+
+    /// Returns a property key that appears in every object variant and carries a unique `const`
+    /// value across all variants, or `nil` if no such key exists.
+    private func findDiscriminatorKey(among schemas: [JSONSchema]) -> String? {
+        guard schemas.allSatisfy({ $0.properties != nil }),
+              let firstKeys = schemas.first?.properties?.keys else { return nil }
+
+        return firstKeys.sorted().first { key in
+            let consts = schemas.compactMap { $0.properties?[key]?.const?.value.description }
+            return consts.count == schemas.count && Set(consts).count == schemas.count
+        }
     }
 }

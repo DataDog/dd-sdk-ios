@@ -16,9 +16,7 @@ extension DatadogExtension where ExtendedType == JSONEncoder {
             let formatted = iso8601DateFormatter.string(from: date)
             try container.encode(formatted)
         }
-        if #available(iOS 13, tvOS 13, *) {
-            encoder.outputFormatting = [.withoutEscapingSlashes]
-        }
+        encoder.outputFormatting = [.withoutEscapingSlashes]
         return encoder
     }
 }

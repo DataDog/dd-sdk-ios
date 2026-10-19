@@ -53,6 +53,8 @@ class MessageBusTests: XCTestCase {
             }
 
             XCTAssertEqual(configuration.batchSize, 1)
+            XCTAssertEqual(configuration.profilingApplicationLaunchSampleRate, 12.5)
+            XCTAssertEqual(configuration.profilingSampleRate, 37.5)
             XCTAssertTrue(configuration.trackErrors ?? false)
             expectation.fulfill()
         }
@@ -65,6 +67,7 @@ class MessageBusTests: XCTestCase {
 
         // When
         bus.configuration(batchSize: 1)
+        bus.configuration(profilingApplicationLaunchSampleRate: 12.5, profilingSampleRate: 37.5)
         bus.configuration(trackErrors: true)
 
         // Then

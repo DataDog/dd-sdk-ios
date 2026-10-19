@@ -65,6 +65,77 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(scope.parent.context.activeUserActionID, try XCTUnwrap(provider.context.activeUserActionID))
     }
 
+    func testGivenAppRunningAsAppExtension_whenResourceLoadingEnds_itSendsIsMainProcessFalse() throws {
+        let context: DatadogContext = .mockWith(
+            buildId: self.context.buildId,
+            applicationBundleType: .iOSAppExtension
+        )
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        _ = scope.process(
+            command: RUMStopResourceCommand(
+                resourceKey: "/resource/1",
+                time: currentTime,
+                attributes: [:],
+                kind: .image,
+                httpStatusCode: 200,
+                size: 1_024
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
+    func testGivenAppRunningAsAppExtension_whenResourceLoadingEndsWithError_itSendsIsMainProcessFalse() throws {
+        let context: DatadogContext = .mockWith(
+            buildId: self.context.buildId,
+            applicationBundleType: .iOSAppExtension
+        )
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand(
+                resourceKey: "/resource/1",
+                time: currentTime,
+                error: ErrorMock("network issue explanation"),
+                source: .network,
+                httpStatusCode: 500,
+                globalAttributes: [:],
+                attributes: [:]
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
@@ -1031,10 +1102,6 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() throws {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -1871,6 +1938,92 @@ class RUMResourceScopeTests: XCTestCase {
         let headers = try XCTUnwrap(response.headers)
         XCTAssertEqual(headers.headersInfo["content-type"], "text/html")
         XCTAssertEqual(headers.headersInfo["etag"], "\"abc\"")
+    }
+
+    func testWhenResourceMetricsIndicateCacheDeliveryType_itPopulatesResourceDeliveryTypeAndTransferSize() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        let metricsCommand = RUMAddResourceMetricsCommand(
+            resourceKey: "/api/data",
+            time: .mockDecember15th2019At10AMUTC(),
+            attributes: [:],
+            metrics: .mockWith(deliveryType: .cache, transferSize: 0)
+        )
+
+        // When
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.deliveryType, .cache)
+        XCTAssertEqual(event.resource.transferSize, 0)
+    }
+
+    func testWhenResourceMetricsHaveNoCacheSignal_itLeavesResourceDeliveryTypeAndTransferSizeNil() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // Mirrors metrics reported via the cross-platform `addResourceMetrics(at:fetch:...)` API,
+        // which has no notion of cache status at all.
+        let metricsCommand = RUMAddResourceMetricsCommand(
+            resourceKey: "/api/data",
+            time: .mockDecember15th2019At10AMUTC(),
+            attributes: [:],
+            metrics: .mockWith(deliveryType: nil, transferSize: nil)
+        )
+
+        // When
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertNil(event.resource.deliveryType)
+        XCTAssertNil(event.resource.transferSize)
     }
 
     func testWhenStopCommandContainsRequestHeadersAndBodySizeMetrics_itPopulatesBoth() throws {

@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 import DatadogRUM
 import DatadogCore
 
@@ -16,6 +17,19 @@ final class RUMManualInstrumentationScenario: TestScenario {
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        RUM.enable(with: config)
+    }
+}
+
+/// Variant of `RUMManualInstrumentationScenario` with the `.viewUpdates` feature flag enabled,
+/// so subsequent view writes are emitted as `RUMViewUpdateEvent` deltas instead of full view events.
+final class RUMManualInstrumentationViewUpdatesScenario: TestScenario {
+    static let storyboardName = "RUMManualInstrumentationScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.featureFlags = [.viewUpdates: true]
         RUM.enable(with: config)
     }
 }
@@ -46,6 +60,31 @@ final class RUMNavigationControllerScenario: TestScenario {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         config.uiKitViewsPredicate = Predicate()
+        RUM.enable(with: config)
+    }
+}
+
+/// Variant of `RUMNavigationControllerScenario` with the `.viewUpdates` feature flag enabled.
+final class RUMNavigationControllerViewUpdatesScenario: TestScenario {
+    static let storyboardName = "RUMNavigationControllerScenario"
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        func rumView(for viewController: UIViewController) -> RUMView? {
+            switch viewController.accessibilityLabel {
+            case "Screen 1": return .init(name: "Screen1")
+            case "Screen 2": return .init(name: "Screen2")
+            case "Screen 3": return .init(name: "Screen3")
+            case "Screen 4": return .init(name: "Screen4")
+            default: return nil
+            }
+        }
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = Predicate()
+        config.featureFlags = [.viewUpdates: true]
         RUM.enable(with: config)
     }
 }
@@ -171,6 +210,30 @@ final class RUMMobileVitalsScenario: TestScenario {
 
 /// Base scenario for RUM resources testing.
 class RUMResourcesBaseScenario: URLSessionBaseScenario {
+    /// The URL to a resource that supports ETag-based revalidation, used to test OS-level HTTP cache
+    /// revalidation reporting from `SendThirdPartyRequestsViewController`. Backed by the last entry in
+    /// `instrumentedEndpoints`, appended only for the Swift `URLSession` scenario (see `RUMResourcesScenarioTests`).
+    var cacheableResourceURL: URL {
+        if Environment.isRunningUITests() {
+            return Environment.serverMockConfiguration()!.instrumentedEndpoints[5]
+        }
+        return URL(string: "https://status.datadoghq.com/cache-test/resource-1")!
+    }
+
+    private let cacheEnabledSessionDelegate = CustomURLSessionDelegate()
+
+    /// A separate `URLSession`, configured with a real `URLCache` (not `.ephemeral`) and `.useProtocolCachePolicy`,
+    /// used only to exercise OS-level HTTP cache revalidation. Kept independent from `URLSessionBaseScenario.session`
+    /// so the other resource requests sharing that session are unaffected.
+    lazy var cacheEnabledSession: URLSession = {
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: CustomURLSessionDelegate.self))
+
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = URLCache(memoryCapacity: 4 * 1_024 * 1_024, diskCapacity: 20 * 1_024 * 1_024, diskPath: nil)
+        configuration.requestCachePolicy = .useProtocolCachePolicy
+        return URLSession(configuration: configuration, delegate: cacheEnabledSessionDelegate, delegateQueue: nil)
+    }()
+
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint

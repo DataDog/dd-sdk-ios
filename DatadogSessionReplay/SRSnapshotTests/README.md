@@ -32,19 +32,27 @@ To test view-tree snapshot comparison locally:
 make sr-snapshot-test
 ```
 
-Layer-tree snapshots use a separate folder, scheme, and simulator. To push new or updated layer-tree PNGs to the remote repo:
-```
-make sr-layer-snapshots-push
+### Layer tree snapshots
+
+Use `SNAPSHOT_ENV` with the Make commands to select a simulator and its reference images.
+Omit it to use the default shown below.
+
+```sh
+make sr-layer-snapshots-pull SNAPSHOT_ENV=ios-26.0.1-iphone17
+make sr-layer-snapshot-test SNAPSHOT_ENV=ios-26.0.1-iphone17
+make sr-layer-snapshots-push SNAPSHOT_ENV=ios-26.0.1-iphone17
 ```
 
-To pull layer-tree PNGs from the remote repo:
-```
-make sr-layer-snapshots-pull
-```
+[SnapshotEnvironments.json](SRLayerSnapshotTests/SnapshotEnvironments.json) defines the environments and the default.
+Install the selected simulator before running tests.
+Each environment has its own `_snapshots_/<environment>` folder, while PNG names, pointer hashes, and the image repository stay the same.
 
-To test layer-tree snapshot comparison locally:
-```
-make sr-layer-snapshot-test
-```
+To update references, pull the existing images and set `shouldRecord = true` in `SRLayerSnapshotTests.swift`.
+Run the tests to save new images and expect the image assertions to fail.
+Restore `shouldRecord = false`, review the images, rerun the tests, and push the updated references.
+
+In Xcode, select the `SRLayerSnapshotTests` scheme and a supported simulator.
+The tests select the matching references automatically when `SNAPSHOT_ENV` is empty.
+If no environment matches or more than one matches, the tests fail with an explanation.
 
 **Note**: Pulling and pushing snapshots requires the [GitHub CLI](https://cli.github.com/) to be installed and authorized on the machine.

@@ -52,7 +52,7 @@ Checks: [
 
 CheckOptions:
   readability-function-cognitive-complexity.IgnoreMacros: true
-  readability-function-cognitive-complexity.Threshold: 35
+  readability-function-cognitive-complexity.Threshold: 40
 
 WarningsAsErrors: '*'
 

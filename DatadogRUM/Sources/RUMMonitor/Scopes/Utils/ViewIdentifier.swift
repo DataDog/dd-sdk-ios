@@ -5,6 +5,11 @@
  */
 
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// A unique identifier for a RUM view.
 internal enum ViewIdentifier: Equatable {
@@ -20,11 +25,9 @@ extension ViewIdentifier {
     }
 }
 
-#if !os(watchOS)
-import UIKit
-
+#if !os(watchOS) && (canImport(UIKit) || canImport(AppKit))
 extension ViewIdentifier {
-    init(_ vc: UIViewController) {
+    init(_ vc: DDViewController) {
         self = .viewController(ObjectIdentifier(vc))
     }
 }

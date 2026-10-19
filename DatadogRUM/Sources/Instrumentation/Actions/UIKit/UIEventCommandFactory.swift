@@ -5,6 +5,8 @@
  */
 
 #if !os(watchOS)
+
+#if canImport(UIKit)
 import UIKit
 import DatadogInternal
 
@@ -14,7 +16,7 @@ internal protocol UIEventCommandFactory {
     /// Creates a RUM command from a `UIEvent` if applicable
     /// - Parameter event: The `UIEvent` to process
     /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked
-    func command(from event: UIEvent) -> RUMAddUserActionCommand?
+    func command(from event: DDEvent) -> RUMAddUserActionCommand?
 }
 
 // MARK: iOS implementation
@@ -41,7 +43,7 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
         self.swiftUIDetector = swiftUIDetector
     }
 
-    func command(from event: UIEvent) -> RUMAddUserActionCommand? {
+    func command(from event: DDEvent) -> RUMAddUserActionCommand? {
         guard let allTouches = event.allTouches else {
             return nil // not a touch event
         }
@@ -51,16 +53,24 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
 
         // Detect UIKit interactions first,
         // as they are more likely to happen.
-        if let rumAction = createUIKitActionCommand(from: tap) {
-            return rumAction
+        let actionCommand = createUIKitActionCommand(from: tap)
+            ?? swiftUIDetector?.createActionCommand(
+                from: tap,
+                predicate: swiftUIPredicate,
+                dateProvider: dateProvider
+            )
+
+        guard var actionCommand else {
+            return nil
         }
 
-        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+        actionCommand.heatmapAttributes = tap.heatmapAttributes(in: heatmapIdentifierRegistry)
+        return actionCommand
     }
 
     // MARK: UIKit
 
-    private func createUIKitActionCommand(from tap: UITouch) -> RUMAddUserActionCommand? {
+    private func createUIKitActionCommand(from tap: DDTouch) -> RUMAddUserActionCommand? {
         guard let uiKitPredicate else {
             return nil
         }
@@ -85,24 +95,12 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
             return nil
         }
 
-        var heatmapAttributes: HeatmapAttributes?
-
-        // Heatmap identifiers are looked up by `tap.view`, not the action target
-        if let heatmapIdentifier = heatmapIdentifierRegistry.heatmapIdentifier(for: ObjectIdentifier(view)) {
-            heatmapAttributes = HeatmapAttributes(
-                identifier: heatmapIdentifier,
-                size: view.bounds.size,
-                location: tap.location(in: view)
-            )
-        }
-
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
             instrumentation: .uikit,
             actionType: .tap,
-            name: action.name,
-            heatmapAttributes: heatmapAttributes
+            name: action.name
         )
     }
 
@@ -111,24 +109,70 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
     /// return the `UITableViewCell` as the best guess of user interaction.
     ///
     /// May return `nil` if there's no good guess and the RUM Action for given `view` should not be produced.
-    private func bestActionTarget(for view: UIView) -> UIView? {
-        if let uiControl = view as? UIControl {
-            // If the `view` is a `UIControl` (interactive element), accept it.
-            return uiControl
+    private func bestActionTarget(for view: DDView) -> DDView? {
+        if let ddControl = view as? DDControl {
+            // If the `view` is a `DDControl` (interactive element), accept it.
+            return ddControl
         } else {
             // If the `view` is not an interactive element, check if it's a child of a known view hierarchy
             // which can be considered as interactive.
-            // For now this includes checking if the interacted view is an (in-)direct child of the `UITableViewCell`
-            // or `UICollectionCell`, which is a common pattern when building list-based navigation on iOS.
+            // For now this includes checking if the interacted view is an (in-)direct child of the `DDTableViewCell`
+            // or `DDCollectionViewCell`, which is a common pattern when building list-based navigation on iOS.
             let bestParent = view.findInParentHierarchy { parent in
-                return parent is UITableViewCell
-                || parent is UICollectionViewCell
-                || parent is UIControl
+                return parent is DDTableViewCell
+                || parent is DDCollectionViewCell
+                || parent is DDControl
                 || parent.isUIAlertActionView
                 || parent.isUIAlertTextField
             }
             return bestParent // best parent or `nil`
         }
+    }
+}
+
+private extension UITouch {
+    /// Resolves heatmap attributes for the touch.
+    func heatmapAttributes(in registry: any HeatmapIdentifierRegistry) -> HeatmapAttributes? {
+        guard let view else {
+            return nil
+        }
+
+        let locationInView = location(in: view)
+
+        guard registry.requiresDescendantLookup else {
+            guard let heatmapIdentifier = registry.heatmapIdentifier(for: ObjectIdentifier(view.layer)) else {
+                return nil
+            }
+            return HeatmapAttributes(
+                identifier: heatmapIdentifier,
+                size: view.bounds.size,
+                location: locationInView
+            )
+        }
+
+        let hitTestLocation = view.layer.convert(locationInView, to: view.layer.superlayer)
+        var candidateLayer: CALayer? = view.layer.hitTest(hitTestLocation) ?? view.layer
+
+        while let layer = candidateLayer {
+            if let heatmapIdentifier = registry.heatmapIdentifier(for: ObjectIdentifier(layer)) {
+                let locationInLayer = layer.convert(locationInView, from: view.layer)
+                return HeatmapAttributes(
+                    identifier: heatmapIdentifier,
+                    size: layer.bounds.size,
+                    location: CGPoint(
+                        x: locationInLayer.x - layer.bounds.minX,
+                        y: locationInLayer.y - layer.bounds.minY
+                    )
+                )
+            }
+
+            guard layer !== view.layer else {
+                return nil
+            }
+            candidateLayer = layer.superlayer
+        }
+
+        return nil
     }
 }
 
@@ -139,7 +183,7 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
 
     let uiKitPredicate: UIPressRUMActionsPredicate
 
-    func command(from event: UIEvent) -> RUMAddUserActionCommand? {
+    func command(from event: DDEvent) -> RUMAddUserActionCommand? {
         guard let event = event as? UIPressesEvent else {
             return nil // not a press event
         }
@@ -149,7 +193,7 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         guard press.phase == .ended else {
             return nil // not in `.ended` phase
         }
-        guard let view = press.responder as? UIView, view.isSafeForPrivacy else {
+        guard let view = press.responder as? DDView, view.isSafeForPrivacy else {
             return nil // no valid view
         }
         guard let action = uiKitPredicate.rumAction(press: press.type, targetView: view) else {
@@ -164,4 +208,6 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         )
     }
 }
+#endif
+
 #endif

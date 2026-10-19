@@ -147,6 +147,6 @@ class MessageEmitterTests: XCTestCase {
         // Then
         XCTAssertEqual(dd.logger.errorLog?.message, "Encountered an error when receiving web view event")
         XCTAssertEqual(dd.logger.errorLog?.error?.message, #"invalidMessage(description: "123")"#)
-        XCTAssertEqual(telemetry.messages.first?.asError?.message, #"Encountered an error when receiving web view event - invalidMessage(description: "123")"#)
+        XCTAssertEqual(telemetry.messages.first?.asError?.message, "Encountered an error when receiving web view event - WebViewMessageError does not conform to TelemetrySanitizableError — reporting type name only")
     }
 }

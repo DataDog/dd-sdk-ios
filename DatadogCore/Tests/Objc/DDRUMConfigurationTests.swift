@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 @_spi(objc)
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class DDRUMConfigurationTests: XCTestCase {
@@ -63,7 +64,7 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertNil(swift.nextViewActionPredicate)
     }
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
     func testCollectAccessibility() {
         let random: Bool = .mockRandom()
         objc.collectAccessibility = random
@@ -143,6 +144,24 @@ class DDRUMConfigurationTests: XCTestCase {
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(trackResourceHeaders: .custom([.defaults, .matchHeaders(["x-request-id"])])))
     }
 
+    func testSetDDRUMURLSessionTrackingWithDisallowList() {
+        let tracking = objc_URLSessionTracking()
+
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, RUM.Configuration.URLSessionTracking())
+
+        tracking.setDisallowList(["https://foo.com/"])
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, .init(disallowList: ["https://foo.com/"]))
+
+        tracking.setDisallowList(["https://bar.com/*", "https://*.foo.com/*"])
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(
+            swift.urlSessionTracking,
+            .init(disallowList: ["https://bar.com/*", "https://*.foo.com/*"])
+        )
+    }
+
     func testSetDDRUMURLSessionTrackingWithResourceAttributesProvider() {
         let tracking = objc_URLSessionTracking()
 
@@ -194,6 +213,31 @@ class DDRUMConfigurationTests: XCTestCase {
 
         objc.vitalsUpdateFrequency = .never
         XCTAssertNil(swift.vitalsUpdateFrequency)
+    }
+
+    func testTimeseriesConfigurationWithDefaultTypes() {
+        objc.setTimeseriesConfiguration(.default)
+
+        XCTAssertNotNil(swift.timeseries)
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.memory, .cpu])
+    }
+
+    func testTimeseriesConfigurationWithMemoryType() {
+        objc.setTimeseriesConfiguration(.init(collectTypes: [.memory]))
+
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.memory])
+    }
+
+    func testTimeseriesConfigurationWithCPUType() {
+        objc.setTimeseriesConfiguration(.init(collectTypes: [.cpu]))
+
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.cpu])
+    }
+
+    func testTimeseriesConfigurationWithMemoryAndCPUTypes() {
+        objc.setTimeseriesConfiguration(.init(collectTypes: [.memory, .cpu]))
+
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.memory, .cpu])
     }
 
     func testEventMappers() {

@@ -12,6 +12,60 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagAssignmentsResponseTests: XCTestCase {
+    func testCachedAssignmentEqualityAndSerialization() throws {
+        let cached = FlagAssignment(
+            allocationKey: "allocation",
+            variationKey: "variant",
+            variation: .boolean(true),
+            reason: "CACHED",
+            doLog: true,
+            serialID: 42
+        )
+        let changes: [(inout FlagAssignment) -> Void] = [
+            { $0.allocationKey = "other" },
+            { $0.variationKey = "other" },
+            { $0.variation = .boolean(false) },
+            { $0.reason = "other" },
+            { $0.doLog = false },
+            { $0.serialID = 43 }
+        ]
+        for change in changes {
+            var changed = cached
+            change(&changed)
+            XCTAssertNotEqual(cached, changed)
+        }
+        let encoded = try JSONEncoder().encode(cached)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        XCTAssertEqual(Set(object.keys), [
+            "allocationKey", "variationKey", "variationType", "variationValue", "reason", "doLog", "serialId"
+        ])
+        XCTAssertEqual(object["reason"] as? String, "CACHED")
+        let decoded = try JSONDecoder().decode(FlagAssignment.self, from: encoded)
+        XCTAssertEqual(decoded, cached)
+    }
+
+    func testCacheProjectionChangesEqualityThroughExposedReason() {
+        let networkDefault = FlagAssignment(
+            allocationKey: "allocation",
+            variationKey: "variant",
+            variation: .boolean(true),
+            reason: "DEFAULT",
+            doLog: true
+        )
+        var networkMatch = networkDefault
+        networkMatch.reason = "TARGETING_MATCH"
+        XCTAssertNotEqual(networkDefault, networkMatch)
+
+        var cachedDefault = networkDefault
+        cachedDefault.reason = "CACHED"
+        var cachedMatch = networkMatch
+        cachedMatch.reason = "CACHED"
+
+        XCTAssertNotEqual(cachedDefault, networkDefault)
+        XCTAssertNotEqual(cachedMatch, networkMatch)
+        XCTAssertEqual(cachedDefault, cachedMatch)
+    }
+
     func testDecoding() throws {
         // Given
         let json = """
@@ -261,6 +315,104 @@ final class FlagAssignmentsResponseTests: XCTestCase {
 
         let anotherBrokenFlagError = try XCTUnwrap(response.failedFlags["another-broken-flag"])
         XCTAssertTrue(anotherBrokenFlagError.contains("ANOTHER_NEW_TYPE"), "Error should mention the unknown variant type")
+    }
+
+    func testDecodingSerialID() throws {
+        // Given
+        let withSerialIDEntry = { (entry: String) in
+            """
+            {
+              "allocationKey": "allocation-123",
+              "variationKey": "variation-123",
+              "variationType": "string",
+              "variationValue": "red",
+              "doLog": true,
+              "reason": "TARGETING_MATCH"\(entry)
+            }
+            """.data(using: .utf8)!
+        }
+
+        // When
+        let withZero = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": 0"#))
+        let withValue = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": 340132"#))
+        let withNull = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": null"#))
+        let withoutKey = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(""))
+        let withString = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": "abc""#))
+        let withFraction = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": 3.7"#))
+
+        // Then
+        XCTAssertEqual(withZero.serialID, 0)
+        XCTAssertEqual(withValue.serialID, 340_132)
+        XCTAssertNil(withNull.serialID, "An explicit null must decode as an absent serial id")
+        XCTAssertNil(withoutKey.serialID)
+        XCTAssertNil(withString.serialID, "A malformed serial id must decode as absent")
+        XCTAssertNil(withFraction.serialID, "A malformed serial id must decode as absent")
+        XCTAssertEqual(withString.variation, .string("red"), "The rest of the flag must still decode")
+    }
+
+    func testDecodingMalformedSerialIDDoesNotFailSiblingFlags() throws {
+        // Given
+        let json = """
+        {
+          "data": {
+            "id": "test_subject",
+            "type": "precomputed-assignments",
+            "attributes": {
+              "flags": {
+                "broken-serial-id-flag": {
+                  "allocationKey": "allocation-123",
+                  "variationKey": "variation-123",
+                  "variationType": "string",
+                  "variationValue": "red",
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH",
+                  "serialId": "not-an-integer"
+                },
+                "healthy-flag": {
+                  "allocationKey": "allocation-124",
+                  "variationKey": "variation-124",
+                  "variationType": "boolean",
+                  "variationValue": true,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH",
+                  "serialId": 0
+                }
+              }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        // When
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: json)
+
+        // Then
+        XCTAssertEqual(response.flags.count, 2)
+        XCTAssertNil(try XCTUnwrap(response.flags["broken-serial-id-flag"]).serialID)
+        XCTAssertEqual(try XCTUnwrap(response.flags["healthy-flag"]).serialID, 0)
+        XCTAssertEqual(response.failedFlags, [:])
+    }
+
+    func testEncodingSerialID() throws {
+        // Given
+        let assignment = FlagAssignment(
+            allocationKey: "allocation-123",
+            variationKey: "variation-123",
+            variation: .string("red"),
+            reason: "TARGETING_MATCH",
+            doLog: true,
+            serialID: 0
+        )
+        var withoutSerialID = assignment
+        withoutSerialID.serialID = nil
+
+        // When
+        let encoded = try JSONSerialization.jsonObject(with: JSONEncoder().encode(assignment)) as? [String: Any]
+        let encodedWithoutSerialID = try JSONSerialization.jsonObject(with: JSONEncoder().encode(withoutSerialID)) as? [String: Any]
+
+        // Then
+        XCTAssertEqual(try XCTUnwrap(encoded)["serialId"] as? Int, 0)
+        XCTAssertFalse(try XCTUnwrap(encodedWithoutSerialID).keys.contains("serialId"))
     }
 
     func testDecodingFlagAssignmentWithUnknownVariationType() throws {

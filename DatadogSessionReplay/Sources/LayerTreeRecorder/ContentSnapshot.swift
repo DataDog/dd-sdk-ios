@@ -11,7 +11,6 @@ import UIKit
 @preconcurrency import DatadogInternal
 
 /// Rendered content for one layer snapshot.
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class ContentSnapshot: Sendable {
     let image: UIImage
 
@@ -45,7 +44,6 @@ internal final class ContentSnapshot: Sendable {
 }
 
 /// A content snapshot and the geometry used to render it.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ContentSnapshotData: Sendable {
     let snapshot: ContentSnapshot
 
@@ -63,7 +61,6 @@ internal struct ContentSnapshotData: Sendable {
 }
 
 /// Failure reason for a layer image snapshot.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageSnapshotError: Error, Equatable {
     /// The recorder exhausted its time budget before rendering this image.
     case timedOut
@@ -73,6 +70,5 @@ internal enum ImageSnapshotError: Error, Equatable {
 }
 
 /// Result of rendering one layer image snapshot.
-@available(iOS 13.0, tvOS 13.0, *)
 internal typealias ContentSnapshotResult = Result<ContentSnapshot, ImageSnapshotError>
 #endif

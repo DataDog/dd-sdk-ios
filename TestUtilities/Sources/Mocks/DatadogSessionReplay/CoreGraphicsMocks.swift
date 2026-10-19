@@ -5,7 +5,10 @@
  */
 
 import CoreGraphics
-#if !os(watchOS)
+import DatadogRUM
+#if canImport(AppKit)
+import AppKit
+#elseif !os(watchOS)
 import UIKit
 #endif
 
@@ -96,11 +99,11 @@ extension CGSize: AnyMockable, RandomMockable {
 #if !os(watchOS)
 extension CGColor: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
-        return UIColor.mockAny().cgColor as! Self
+        return DDColor.mockAny().cgColor as! Self
     }
 
     public static func mockRandom() -> Self {
-        return UIColor.mockRandom().cgColor as! Self
+        return DDColor.mockRandom().cgColor as! Self
     }
 }
 #endif

@@ -13,7 +13,6 @@ import SwiftUI
 @testable import DatadogSessionReplay
 
 class ViewTreeRecordingContextTests: XCTestCase {
-    @available(iOS 13, tvOS 13, *)
     func testViewControllerTypeInit() {
         let alertVC = UIAlertController()
         let activityVC = UIActivityViewController(activityItems: [], applicationActivities: nil)

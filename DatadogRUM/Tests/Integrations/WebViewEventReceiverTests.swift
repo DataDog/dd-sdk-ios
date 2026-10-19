@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
 @testable import DatadogCore
@@ -270,7 +270,8 @@ class WebViewEventReceiverTests: XCTestCase {
             "application": ["id": rumContext.applicationID],
             "session": [
                 "id": rumContext.sessionID,
-            ],
+                "is_main_process": true
+            ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags,
@@ -314,7 +315,7 @@ class WebViewEventReceiverTests: XCTestCase {
         // Then
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID],
+            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": "browser_sdk_version:3.6.13,env:abc,sdk_version:5.2.0,service:abc,version:abc"
@@ -356,7 +357,50 @@ class WebViewEventReceiverTests: XCTestCase {
         // Then
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID],
+            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
+            "ddtags": featureScope.contextMock.ddTags
+        ]
+
+        XCTAssertTrue(result, "It must accept the message")
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
+        DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
+    }
+
+    func testGivenAppExtensionContext_whenReceivingWebEvent_itSetsIsMainProcessFalse() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            applicationBundleType: .iOSAppExtension,
+            additionalContext: [rumContext]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date)
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        let expectedWebEventWritten: JSON = [
+            "application": ["id": rumContext.applicationID],
+            "session": ["id": rumContext.sessionID, "is_main_process": false] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags
@@ -457,7 +501,8 @@ class WebViewEventReceiverTests: XCTestCase {
             "application": ["id": rumContext.applicationID],
             "session": [
                 "id": rumContext.sessionID,
-                "has_replay": webHasReplay
+                "has_replay": webHasReplay,
+                "is_main_process": true
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
@@ -534,7 +579,8 @@ class WebViewEventReceiverTests: XCTestCase {
             "application": ["id": rumContext.applicationID],
             "session": [
                 "id": rumContext.sessionID,
-                "has_replay": false
+                "has_replay": false,
+                "is_main_process": true
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
@@ -590,7 +636,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID],
+            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags,
@@ -640,7 +686,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID],
+            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags,
@@ -883,12 +929,113 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID],
+            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags,
             "usr": ["anonymous_id": fakeAnonymousId]
         ]
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
+    }
+
+    func testGivenLongLivedNativeView_whenDelayedWebEventArrivesAfterNavigation_itRetainsOriginalContainer() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let inactiveTTL: TimeInterval = 10
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: inactiveTTL)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let parent = RUMApplicationScope(
+            dependencies: .mockWith(rumApplicationID: "rum-207")
+        )
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: start,
+            context: sessionContext,
+            dependencies: .mockWith(
+                rumApplicationID: "rum-207",
+                samplingRate: 100,
+                viewCache: viewCache
+            )
+        )
+        let writer = FileWriterMock()
+
+        dateProvider.now = start
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: start,
+                identity: ViewIdentifier("A"),
+                name: "A",
+                path: "A"
+            ),
+            context: sessionContext,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.viewScopes.last).viewUUID.toRUMDataFormat
+
+        let navigation = start.addingTimeInterval(100)
+        dateProvider.now = navigation
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: navigation,
+                identity: ViewIdentifier("B"),
+                name: "B",
+                path: "B"
+            ),
+            context: sessionContext,
+            writer: writer
+        )
+        let viewBID = try XCTUnwrap(scope.viewScopes.last).viewUUID.toRUMDataFormat
+
+        dateProvider.now = navigation.addingTimeInterval(inactiveTTL - 0.01)
+        let rumContext = RUMCoreContext.mockWith(
+            applicationID: "rum-207",
+            sessionID: scope.context.sessionID.rawValue,
+            sessionSampleRate: 100,
+            viewID: viewBID,
+            serverTimeOffset: 0
+        )
+        featureScope.contextMock = .mockWith(
+            source: "react-native",
+            serverTimeOffset: 0,
+            additionalContext: [
+                rumContext,
+                SessionReplayCoreContext.HasReplay(value: true)
+            ]
+        )
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: dateProvider,
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: viewCache
+        )
+        let delayedDate = navigation.timeIntervalSince1970.dd.toInt64Milliseconds - 1
+        let webEvent: JSON = [
+            "application": ["id": "browser-app"],
+            "session": ["id": "browser-session", "has_replay": true],
+            "view": ["id": "browser-view"],
+            "date": Int(delayedDate)
+        ]
+
+        XCTAssertTrue(receiver.receive(message: webViewTrackingMessage(with: webEvent), from: NOPDatadogCore()))
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        let actual = try XCTUnwrap(featureScope.eventsWritten.first)
+        let actualJSON = try AnyCodable(actual).toJSONObject()
+
+        DDAssertJSONEqual(actualJSON["application"], ["id": "rum-207"] as JSON)
+        DDAssertJSONEqual(actualJSON["session"], ["id": rumContext.sessionID, "has_replay": true, "is_main_process": true] as JSON)
+        DDAssertJSONEqual(actualJSON["view"], ["id": "browser-view"] as JSON)
+        DDAssertJSONEqual(actualJSON["date"], delayedDate)
+        DDAssertJSONEqual(actualJSON["ddtags"], featureScope.contextMock.ddTags)
+
+        let actualContainer = try XCTUnwrap(actualJSON["container"] as? JSON)
+        let expectedContainer: JSON = [
+            "source": "react-native",
+            "view": ["id": viewAID]
+        ]
+        DDAssertJSONEqual(actualContainer, expectedContainer)
+        withExtendedLifetime(parent) {}
     }
 }

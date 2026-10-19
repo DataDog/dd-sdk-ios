@@ -4,6 +4,8 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if !__has_include(<AppKit/AppKit.h>)
+
 #import <XCTest/XCTest.h>
 @import DatadogRUM;
 @import DatadogInternal;
@@ -176,6 +178,10 @@
     config.vitalsUpdateFrequency = DDRUMVitalsFrequencyNever;
     XCTAssertEqual(config.vitalsUpdateFrequency, DDRUMVitalsFrequencyNever);
 
+    DDRUMTimeseriesConfiguration *timeseriesConfiguration = [[DDRUMTimeseriesConfiguration alloc]
+        initWithCollectTypes:@[DDRUMTimeseriesType.memory, DDRUMTimeseriesType.cpu]];
+    [config setTimeseriesConfiguration:timeseriesConfiguration];
+
     [config setViewEventMapper:^DDRUMViewEvent * _Nonnull(DDRUMViewEvent * _Nonnull viewEvent) {
         viewEvent.view.url = @"";
         return viewEvent;
@@ -220,3 +226,5 @@
 #pragma clang diagnostic pop
 
 @end
+
+#endif

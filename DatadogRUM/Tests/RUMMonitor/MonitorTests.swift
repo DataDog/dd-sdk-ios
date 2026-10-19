@@ -157,7 +157,7 @@ class MonitorTests: XCTestCase {
     func testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated() throws {
         // Given
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
@@ -195,7 +195,7 @@ class MonitorTests: XCTestCase {
     func testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten() throws {
         // Given
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
@@ -237,6 +237,243 @@ class MonitorTests: XCTestCase {
 
         XCTAssertTrue(lastView3.view.loadingTime! > old)
     }
+
+    func testStartingAnotherViewWithoutStoppingPreviousView_reportsSlowFramesRate() throws {
+        let hitch = Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) },
+                featureFlags: [.viewUpdates: false]
+            ),
+            dateProvider: dateProvider
+        )
+
+        monitor.startView(key: "ScreenA")
+        dateProvider.now.addTimeInterval(10)
+        monitor.startView(key: "ScreenB")
+        dateProvider.now.addTimeInterval(10)
+        monitor.stopView(key: "ScreenB")
+
+        let viewEvents = try XCTUnwrap((featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self))
+        XCTAssertEqual(viewEvents.last { $0.view.name == "ScreenA" }?.view.slowFramesRate, 16)
+        XCTAssertEqual(viewEvents.last { $0.view.name == "ScreenB" }?.view.slowFramesRate, 16)
+    }
+
+    // MARK: - Session lifetime
+
+    func testWhenCrossPlatformClockLagsDeviceClock_itKeepsTheSameSession() throws {
+        try assertSessionSurvivesCrossPlatformClockSkew(-2 * RUMSessionScope.Constants.sessionMaxDuration)
+    }
+
+    func testWhenCrossPlatformClockLeadsDeviceClock_itKeepsTheSameSession() throws {
+        try assertSessionSurvivesCrossPlatformClockSkew(2 * RUMSessionScope.Constants.sessionMaxDuration)
+    }
+
+    private func assertSessionSurvivesCrossPlatformClockSkew(_ offset: TimeInterval) throws {
+        let dateProvider = DateProviderMock()
+        let clock = MonotonicClockMock(elapsedTime: 123)
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock),
+            dateProvider: dateProvider
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "view")
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID)
+
+        // Each clock is consistent on its own; alternating between them must not split sessions.
+        for _ in 0..<4 {
+            clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration / 2)
+            dateProvider.now.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration / 2)
+            let timestamp = dateProvider.now.addingTimeInterval(offset).timeIntervalSince1970.dd.toInt64Milliseconds
+            monitor.addAction(type: .tap, name: "cross-platform", attributes: [CrossPlatformAttributes.timestampInMilliseconds: timestamp])
+            XCTAssertEqual(monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+
+            clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration / 2)
+            dateProvider.now.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration / 2)
+            monitor.addAction(type: .tap, name: "native", attributes: [:])
+            XCTAssertEqual(monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+        }
+    }
+
+    func testWhenDeviceDateChanges_itKeepsTheSameSession() throws {
+        for offset in [-2 * RUMSessionScope.Constants.sessionMaxDuration, 2 * RUMSessionScope.Constants.sessionMaxDuration] {
+            let dateProvider = DateProviderMock()
+            let clock = MonotonicClockMock(elapsedTime: 123)
+            let monitor = Monitor(
+                dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock),
+                dateProvider: dateProvider
+            )
+            monitor.notifySDKInit()
+            monitor.startView(key: "view")
+            let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID)
+
+            dateProvider.now.addTimeInterval(offset)
+            clock.advance(by: 1)
+            XCTAssertFalse(monitor.isSessionExpired(sessionID: sessionID.toRUMDataFormat))
+            monitor.addAction(type: .tap, name: "after date change", attributes: [:])
+            XCTAssertEqual(monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+        }
+    }
+
+    func testWhenInternalActionCarriesForeignDateWithoutTimestampAttribute_itKeepsTheSameSession() throws {
+        let dateProvider = DateProviderMock()
+        let clock = MonotonicClockMock(elapsedTime: 123)
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock),
+            dateProvider: dateProvider
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "view")
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID)
+        let internalMonitor = try XCTUnwrap(monitor._internal)
+
+        for offset in [-2 * RUMSessionScope.Constants.sessionMaxDuration, 2 * RUMSessionScope.Constants.sessionMaxDuration] {
+            clock.advance(by: 1)
+            internalMonitor.addAction(
+                at: dateProvider.now.addingTimeInterval(offset),
+                type: .tap,
+                name: "cross-platform heatmap tap",
+                heatmapAttributes: nil
+            )
+            XCTAssertEqual(monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+            clock.advance(by: 1)
+            monitor.addAction(type: .tap, name: "native", attributes: [:])
+            XCTAssertEqual(monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+        }
+    }
+
+    func testSessionExpiryReader_usesElapsedTimeAndRefreshesOnInteraction() throws {
+        let clock = MonotonicClockMock(elapsedTime: 123)
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock),
+            dateProvider: DateProviderMock()
+        )
+        XCTAssertFalse(monitor.isSessionExpired(sessionID: "no session"))
+        monitor.notifySDKInit()
+        monitor.startView(key: "view")
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        XCTAssertFalse(monitor.isSessionExpired(sessionID: sessionID))
+        monitor.addAction(type: .tap, name: "interaction", attributes: [:])
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        XCTAssertFalse(monitor.isSessionExpired(sessionID: sessionID))
+        clock.advance(by: 1)
+        XCTAssertTrue(monitor.isSessionExpired(sessionID: sessionID))
+        XCTAssertFalse(monitor.isSessionExpired(sessionID: "another session"))
+
+        monitor.addAction(type: .tap, name: "new session", attributes: [:])
+        XCTAssertNotEqual(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat, sessionID)
+        XCTAssertFalse(monitor.isSessionExpired(sessionID: sessionID))
+    }
+
+    func testSessionExpiryReader_expiresAtMaximumDurationDespiteContinuedInteraction() throws {
+        let clock = MonotonicClockMock(elapsedTime: 123)
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock),
+            dateProvider: DateProviderMock()
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "view")
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+        let sessionEnd = clock.elapsedTime + RUMSessionScope.Constants.sessionMaxDuration
+
+        while clock.elapsedTime + RUMSessionScope.Constants.sessionTimeoutDuration - 1 < sessionEnd {
+            clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+            monitor.addAction(type: .tap, name: "interaction", attributes: [:])
+            XCTAssertFalse(monitor.isSessionExpired(sessionID: sessionID))
+            XCTAssertEqual(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat, sessionID)
+        }
+        clock.advance(by: sessionEnd - clock.elapsedTime - 1)
+        XCTAssertFalse(monitor.isSessionExpired(sessionID: sessionID))
+        clock.advance(by: 1)
+        XCTAssertTrue(monitor.isSessionExpired(sessionID: sessionID))
+    }
+
+    func testWhenInteractionRenewsSession_itPublishesActivityBeforeNotifyingCollector() throws {
+        let clock = MonotonicClockMock()
+        let collector = TimeseriesCollectorStub()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock, timeseriesCollector: collector),
+            dateProvider: DateProviderMock()
+        )
+        collector.activeContextReader = monitor
+        monitor.notifySDKInit()
+        monitor.startView(key: "first")
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(collector.activitySessionIDs, [sessionID])
+
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+        monitor.addAction(type: .custom, name: "new session", attributes: [:])
+
+        let renewedID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+        XCTAssertNotEqual(renewedID, sessionID)
+        XCTAssertEqual(collector.activitySessionIDs, [sessionID, renewedID])
+        XCTAssertEqual(collector.isPreviousSessionExpiredOnActivity, false)
+    }
+
+    // MARK: - hasReplay snapshot
+
+    func testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession() throws {
+        let dateProvider = DateProviderMock()
+        featureScope = FeatureScopeMock(
+            context: .mockWith(additionalContext: [SessionReplayCoreContext.HasReplay(value: true)])
+        )
+
+        // Given — no timeseries collector configured
+        let monitorWithoutCollector = Monitor(
+            dependencies: .mockWith(featureScope: featureScope),
+            dateProvider: dateProvider
+        )
+
+        // When
+        monitorWithoutCollector.startView(key: "foo")
+
+        // Then — the snapshot is never updated
+        XCTAssertNil((monitorWithoutCollector as RUMActiveContextReader).hasReplay)
+
+        // Given — a timeseries collector configured
+        let monitor = Monitor(
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                monotonicClock: DateProviderMonotonicClock(dateProvider: dateProvider),
+                timeseriesCollector: TimeseriesCollectorStub()
+            ),
+            dateProvider: dateProvider
+        )
+        let activeContextReader: RUMActiveContextReader = monitor
+
+        monitor.startView(key: "foo")
+        XCTAssertEqual(activeContextReader.hasReplay, true)
+
+        // When — the session expires (starting a new one within a single `process(command:)` call) while
+        // the context still carries the previous session's (now stale) `hasReplay` value
+        dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1) // exceeds session max duration
+        monitor.startView(key: "bar")
+
+        // Then — the stale value is not carried over into the new session
+        XCTAssertNil(activeContextReader.hasReplay)
+    }
+}
+
+private class TimeseriesCollectorStub: TimeseriesCollecting {
+    weak var activeContextReader: RUMActiveContextReader?
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
+    func pause(sessionID: String) {}
+    func resume(sessionID: String) {}
+    func stop(sessionID: String) {}
+    var activitySessionIDs: [String] = []
+    var isPreviousSessionExpiredOnActivity: Bool?
+
+    func noteActivity(sessionID: String) {
+        if let previousSessionID = activitySessionIDs.last {
+            isPreviousSessionExpiredOnActivity = activeContextReader?.isSessionExpired(sessionID: previousSessionID)
+        }
+        activitySessionIDs.append(sessionID)
+    }
+    func flush() {}
 }
 
 // MARK: - Convenience

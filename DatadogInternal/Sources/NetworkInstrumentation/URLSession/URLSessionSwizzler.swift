@@ -29,16 +29,11 @@ internal final class URLSessionSwizzler {
             didReceive: didReceive
         )
 
-        if #available(iOS 13.0, *) {
-            // Prior to iOS 13.0 the `URLSession.dataTask(with:url, completionHandler:handler)` makes an internal
-            // call to `URLSession.dataTask(with:request, completionHandler:handler)`. To avoid duplicated call
-            // to the callback, we don't apply below swizzling prior to iOS 13.
-            dataTaskURLCompletionHandler = try DataTaskURLCompletionHandler.build()
-            dataTaskURLCompletionHandler?.swizzle(
-                interceptCompletion: interceptCompletionHandler,
-                didReceive: didReceive
-            )
-        }
+        dataTaskURLCompletionHandler = try DataTaskURLCompletionHandler.build()
+        dataTaskURLCompletionHandler?.swizzle(
+            interceptCompletion: interceptCompletionHandler,
+            didReceive: didReceive
+        )
     }
 
     /// Unswizzles all.
@@ -85,11 +80,9 @@ internal final class URLSessionSwizzler {
             swizzle(method) { previousImplementation -> Signature in
                 return { session, request, completionHandler -> URLSessionDataTask in
                     guard let completionHandler = completionHandler else {
-                        // The `completionHandler` can be `nil` in two cases:
-                        // - on iOS 11 or 12, where `dataTask(with:)` (for `URL` and `URLRequest`) calls
-                        //   the `dataTask(with:completionHandler:)` (for `URLRequest`) internally by nullifying the completion block.
-                        // - when `[session dataTaskWithURL:completionHandler:]` is called in Objective-C with explicitly passing
-                        //   `nil` as the `completionHandler` (it produces a warning, but compiles).
+                        // The `completionHandler` can be `nil` when `[session dataTaskWithURL:completionHandler:]` is called
+                        // in Objective-C with explicitly passing `nil` as the `completionHandler` (it produces a warning,
+                        // but compiles).
                         return previousImplementation(session, Self.selector, request, completionHandler)
                     }
 
@@ -141,11 +134,9 @@ internal final class URLSessionSwizzler {
             swizzle(method) { previousImplementation -> Signature in
                 return { session, url, completionHandler -> URLSessionDataTask in
                     guard let completionHandler = completionHandler else {
-                        // The `completionHandler` can be `nil` in two cases:
-                        // - on iOS 11 or 12, where `dataTask(with:)` (for `URL` and `URLRequest`) calls
-                        //   the `dataTask(with:completionHandler:)` (for `URLRequest`) internally by nullifying the completion block.
-                        // - when `[session dataTaskWithURL:completionHandler:]` is called in Objective-C with explicitly passing
-                        //   `nil` as the `completionHandler` (it produces a warning, but compiles).
+                        // The `completionHandler` can be `nil` when `[session dataTaskWithURL:completionHandler:]` is called
+                        // in Objective-C with explicitly passing `nil` as the `completionHandler` (it produces a warning,
+                        // but compiles).
                         return previousImplementation(session, Self.selector, url, completionHandler)
                     }
 

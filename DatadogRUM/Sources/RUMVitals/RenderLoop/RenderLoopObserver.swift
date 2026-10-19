@@ -6,7 +6,11 @@
 
 import DatadogInternal
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal protocol RenderLoopReader: AnyObject {
     var isActive: Bool { get }
@@ -32,6 +36,16 @@ internal protocol RenderLoopObserver {
 internal class DisplayLinker {
     @ReadWriteLock
     private var renderLoopReaders: [RenderLoopReader] = []
+    private final class DisplayLinkTarget: NSObject {
+        weak var owner: DisplayLinker?
+
+        @objc
+        func didUpdateFrame() {
+            owner?.didUpdateFrame()
+        }
+    }
+
+    private let displayLinkTarget = DisplayLinkTarget()
     private var displayLink: FrameInfoProvider?
     private let notificationCenter: NotificationCenter
     private let frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider
@@ -40,17 +54,32 @@ internal class DisplayLinker {
 
     init(
         notificationCenter: NotificationCenter,
-        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
+        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = {
+            #if canImport(UIKit)
+            CADisplayLink(target: $0, selector: $1)
+            #elseif canImport(AppKit)
+            NoopFrameInfoProvider(target: $0, selector: $1)
+            #endif
+        }
     ) {
         self.notificationCenter = notificationCenter
         self.frameInfoProviderFactory = frameInfoProviderFactory
 
+        #if os(macOS)
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(appWillResignActive),
+            name: ApplicationNotifications.didResignActive,
+            object: nil
+        )
+        #else
         notificationCenter.addObserver(
             self,
             selector: #selector(appWillResignActive),
             name: ApplicationNotifications.willResignActive,
             object: nil
         )
+        #endif
         notificationCenter.addObserver(
             self,
             selector: #selector(appDidBecomeActive),
@@ -58,6 +87,7 @@ internal class DisplayLinker {
             object: nil
         )
 
+        displayLinkTarget.owner = self
         start()
     }
 
@@ -71,7 +101,7 @@ internal class DisplayLinker {
             return
         }
 
-        displayLink = frameInfoProviderFactory(self, #selector(self.didUpdateFrame))
+        displayLink = frameInfoProviderFactory(displayLinkTarget, #selector(DisplayLinkTarget.didUpdateFrame))
 
         // NOTE: RUMM-1544 `.default` mode doesn't get fired while scrolling the UI, `.common` does.
         displayLink?.add(to: .main, forMode: .common)

@@ -9,6 +9,110 @@ import XCTest
 @testable import CodeDecoration
 
 final class SRCodeDecoratorTests: XCTestCase {
+    func testDecoratingWireframeSharedTypesAndDiscriminator() throws {
+        let wireframe = SwiftAssociatedTypeEnum(
+            name: "Wireframes",
+            comment: nil,
+            cases: [
+                SwiftAssociatedTypeEnum.Case(
+                    label: "ShapeWireframe",
+                    associatedType: Self.shapeWireframe(named: "ShapeWireframe")
+                ),
+                SwiftAssociatedTypeEnum.Case(
+                    label: "EmbeddedContentWireframe",
+                    associatedType: Self.embeddedContentWireframe(named: "EmbeddedContentWireframe")
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try SRCodeDecorator()
+            .decorate(code: GeneratedCode(swiftTypes: [wireframe]))
+
+        let typeNames = actual.swiftTypes.compactMap(\.typeName)
+        XCTAssertTrue(typeNames.contains("SRShapeWireframe"))
+        XCTAssertTrue(typeNames.contains("SREmbeddedContentWireframe"))
+        XCTAssertFalse(typeNames.contains("EmbeddedContentWireframe"))
+
+        let transformedWireframe = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRWireframe" } as? SwiftAssociatedTypeEnum)
+        XCTAssertEqual("type", transformedWireframe.discriminatorCodingKey)
+        XCTAssertEqual("shape", transformedWireframe.cases.first?.discriminatorValue as? String)
+        XCTAssertEqual("embedded_content", transformedWireframe.cases.dropFirst().first?.discriminatorValue as? String)
+        XCTAssertEqual(
+            "SREmbeddedContentWireframe",
+            (transformedWireframe.cases.dropFirst().first?.associatedType as? SwiftTypeReference)?.referencedTypeName
+        )
+    }
+
+    func testDecoratingWireframeUpdateMutationDiscriminator() throws {
+        let incrementalSnapshotRecord = SwiftStruct(
+            name: "MobileIncrementalSnapshotRecord",
+            comment: nil,
+            properties: [
+                Self.property(
+                    named: "data",
+                    type: SwiftAssociatedTypeEnum(
+                        name: "data",
+                        comment: nil,
+                        cases: [
+                            SwiftAssociatedTypeEnum.Case(
+                                label: "MutationData",
+                                associatedType: SwiftStruct(
+                                    name: "WireframeMutationData",
+                                    comment: nil,
+                                    properties: [
+                                        Self.property(
+                                            named: "source",
+                                            type: SwiftPrimitive<Int>(),
+                                            defaultValue: 2
+                                        ),
+                                        Self.property(
+                                            named: "updates",
+                                            type: SwiftArray(
+                                                element: SwiftAssociatedTypeEnum(
+                                                    name: "updates",
+                                                    comment: nil,
+                                                    cases: [
+                                                        SwiftAssociatedTypeEnum.Case(
+                                                            label: "WebviewWireframeUpdate",
+                                                            associatedType: Self.webviewWireframeUpdate()
+                                                        ),
+                                                        SwiftAssociatedTypeEnum.Case(
+                                                            label: "EmbeddedContentWireframeUpdate",
+                                                            associatedType: Self.embeddedContentWireframeUpdate()
+                                                        )
+                                                    ],
+                                                    conformance: []
+                                                )
+                                            )
+                                        )
+                                    ],
+                                    conformance: []
+                                )
+                            )
+                        ],
+                        conformance: []
+                    )
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try SRCodeDecorator()
+            .decorate(code: GeneratedCode(swiftTypes: [incrementalSnapshotRecord]))
+
+        let record = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRIncrementalSnapshotRecord" } as? SwiftStruct)
+        let data = try XCTUnwrap(record.properties.first { $0.name == "data" }?.type as? SwiftAssociatedTypeEnum)
+        let mutationData = try XCTUnwrap(data.cases.first?.associatedType as? SwiftStruct)
+        let updates = try XCTUnwrap(
+            (mutationData.properties.first { $0.name == "updates" }?.type as? SwiftArray)?.element as? SwiftAssociatedTypeEnum
+        )
+
+        XCTAssertEqual("type", updates.discriminatorCodingKey)
+        XCTAssertEqual("webview", updates.cases.first?.discriminatorValue as? String)
+        XCTAssertEqual("embedded_content", updates.cases.dropFirst().first?.discriminatorValue as? String)
+    }
+
     func testDecoratingShapeGradientSharedTypes() throws {
         let shapeWireframe = SwiftStruct(
             name: "ShapeWireframe",
@@ -239,6 +343,57 @@ final class SRCodeDecoratorTests: XCTestCase {
             mutability: .immutable,
             defaultValue: defaultValue,
             codingKey: .static(value: name)
+        )
+    }
+
+    private static func shapeWireframe(named name: String) -> SwiftStruct {
+        SwiftStruct(
+            name: name,
+            comment: nil,
+            properties: [
+                property(named: "id", type: SwiftPrimitive<Int>()),
+                property(named: "type", type: SwiftPrimitive<String>(), defaultValue: "shape")
+            ],
+            conformance: []
+        )
+    }
+
+    private static func embeddedContentWireframe(named name: String) -> SwiftStruct {
+        SwiftStruct(
+            name: name,
+            comment: nil,
+            properties: [
+                property(named: "id", type: SwiftPrimitive<Int>()),
+                property(named: "slotId", type: SwiftPrimitive<String>()),
+                property(named: "type", type: SwiftPrimitive<String>(), defaultValue: "embedded_content")
+            ],
+            conformance: []
+        )
+    }
+
+    private static func webviewWireframeUpdate() -> SwiftStruct {
+        SwiftStruct(
+            name: "WebviewWireframeUpdate",
+            comment: nil,
+            properties: [
+                property(named: "id", type: SwiftPrimitive<Int>()),
+                property(named: "slotId", type: SwiftPrimitive<String>()),
+                property(named: "type", type: SwiftPrimitive<String>(), defaultValue: "webview")
+            ],
+            conformance: []
+        )
+    }
+
+    private static func embeddedContentWireframeUpdate() -> SwiftStruct {
+        SwiftStruct(
+            name: "EmbeddedContentWireframeUpdate",
+            comment: nil,
+            properties: [
+                property(named: "id", type: SwiftPrimitive<Int>()),
+                property(named: "slotId", type: SwiftPrimitive<String>()),
+                property(named: "type", type: SwiftPrimitive<String>(), defaultValue: "embedded_content")
+            ],
+            conformance: []
         )
     }
 

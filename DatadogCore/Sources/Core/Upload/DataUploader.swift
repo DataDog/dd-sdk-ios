@@ -15,15 +15,6 @@ internal protocol DataUploaderType {
 
 /// Synchronously uploads data to server using `HTTPClient`.
 internal final class DataUploader: DataUploaderType {
-    /// An unreachable upload status - only meant to satisfy the compiler.
-    private static let unreachableUploadStatus = DataUploadStatus(
-        needsRetry: false,
-        responseCode: nil,
-        userDebugDescription: "",
-        error: nil,
-        attempt: 0
-    )
-
     private let httpClient: HTTPClient
     private let requestBuilder: FeatureRequestBuilder
     /// Name of the feature this worker is performing uploads for.
@@ -50,12 +41,63 @@ internal final class DataUploader: DataUploaderType {
         }
 
         let execution: ExecutionContext = .init(previousResponseCode: previous?.responseCode, attempt: attempt)
-        let request = try requestBuilder.request(for: events, with: context, execution: execution)
+        var reconciledEvents = events
+        if let reconciler = requestBuilder as? any FeatureEventReconciler {
+            reconciledEvents = self.reconciledEvents(events, with: reconciler, context: context, execution: execution)
+            if reconciledEvents.isEmpty {
+                return DataUploadStatus(
+                    needsRetry: false,
+                    isReconciled: true,
+                    responseCode: nil,
+                    userDebugDescription: "[batch resolved by reconciliation]",
+                    error: nil,
+                    attempt: attempt
+                )
+            }
+        }
 
+        let request = try requestBuilder.request(for: reconciledEvents, with: context, execution: execution)
         let requestID = request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField)
 
-        var uploadStatus: DataUploadStatus?
+        switch send(request: request) {
+        case .success(let (httpResponse, _)):
+            return DataUploadStatus(
+                httpResponse: httpResponse,
+                ddRequestID: requestID,
+                attempt: attempt
+            )
+        case .failure(let error):
+            return DataUploadStatus(networkError: error, attempt: attempt)
+        }
+    }
 
+    private func reconciledEvents(
+        _ events: [Event],
+        with reconciler: any FeatureEventReconciler,
+        context: DatadogContext,
+        execution: ExecutionContext
+    ) -> [Event] {
+        do {
+            switch try reconciler.reconciliation(for: events, with: context, execution: execution) {
+            case .skip:
+                return events
+            case .resolved:
+                return []
+            case .request(let request):
+                let (httpResponse, data) = try send(request: request).get()
+                guard (200..<300).contains(httpResponse.statusCode) else {
+                    return events
+                }
+                return try reconciler.reconcile(from: events, using: httpResponse, data: data)
+            }
+        } catch {
+            // Reconciliation is optional and should not prevent the batch from being sent
+            return events
+        }
+    }
+
+    private func send(request: URLRequest) -> Result<(HTTPURLResponse, Data?), Error> {
+        var result: Result<(HTTPURLResponse, Data?), Error>?
         let semaphore = DispatchSemaphore(value: 0)
 
 #if DD_BENCHMARK
@@ -64,21 +106,8 @@ internal final class DataUploader: DataUploaderType {
         let delegate: URLSessionTaskDelegate? = nil
 #endif
 
-        httpClient.send(request: request, delegate: delegate) { result in
-            switch result {
-            case .success(let httpResponse):
-                uploadStatus = DataUploadStatus(
-                    httpResponse: httpResponse,
-                    ddRequestID: requestID,
-                    attempt: attempt
-                )
-            case .failure(let error):
-                uploadStatus = DataUploadStatus(
-                    networkError: error,
-                    attempt: attempt
-                )
-            }
-
+        httpClient.send(request: request, delegate: delegate) {
+            result = $0
             semaphore.signal()
         }
 
@@ -89,6 +118,6 @@ internal final class DataUploader: DataUploaderType {
             .increment(by: request.httpBody?.count ?? 0, attributes: ["track": featureName])
 #endif
 
-        return uploadStatus ?? DataUploader.unreachableUploadStatus
+        return result ?? .failure(URLSessionTransportInconsistencyException())
     }
 }

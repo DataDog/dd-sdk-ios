@@ -36,6 +36,7 @@ internal class RUMFeatureOperationManager {
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
     private let sessionSampler: DeterministicSampler
+    private let sanitizer = RUMEventSanitizer()
 
     // MARK: - Initialization
 
@@ -129,6 +130,7 @@ internal class RUMFeatureOperationManager {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: parent.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -142,7 +144,7 @@ internal class RUMFeatureOperationManager {
             vital: vital
         )
 
-        writer.write(value: vitalEvent)
+        writer.write(value: sanitizer.sanitize(event: vitalEvent))
     }
 
     private func shouldSendOperationMessage(for command: RUMOperationStepVitalCommand) -> Bool {

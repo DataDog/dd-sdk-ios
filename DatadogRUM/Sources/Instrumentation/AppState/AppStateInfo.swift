@@ -7,10 +7,6 @@
 import Foundation
 import DatadogInternal
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 /// Represents the app state observed during application lifecycle events such as application start, resume and termination.
 /// This state is used to detect Watchdog Terminations.
 internal struct AppStateInfo: Codable {

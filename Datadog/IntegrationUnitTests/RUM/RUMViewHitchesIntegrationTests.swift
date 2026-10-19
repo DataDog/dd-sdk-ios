@@ -79,8 +79,8 @@ final class RUMViewHitchesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        let stopViewEvent = try XCTUnwrap(customView.viewEvents.last)
+        let slowFramesCount = customView.latestViewEvent?.view.slowFrames?.count ?? 0
 
-        XCTAssertGreaterThan(stopViewEvent.view.slowFrames?.count ?? 0, 0)
+        XCTAssertGreaterThan(slowFramesCount, 0)
     }
 }

@@ -126,6 +126,7 @@ internal struct FatalErrorBuilder {
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
                 id: lastRUMView.session.id,
+                isMainProcess: lastRUMView.session.isMainProcess,
                 type: lastRUMView.session.type
             ),
             source: lastRUMView.source?.toErrorEventSource ?? .ios,
@@ -153,7 +154,9 @@ internal struct FatalErrorBuilder {
                 configuration: original.dd.configuration,
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: original.dd.pageStates,
+                profiling: original.dd.profiling,
                 replayStats: original.dd.replayStats,
+                sdkName: original.dd.sdkName,
                 session: original.dd.session
             ),
             account: original.account,
@@ -178,6 +181,7 @@ internal struct FatalErrorBuilder {
             usr: original.usr,
             version: original.version,
             view: .init(
+                accessibility: original.view.accessibility,
                 action: original.view.action,
                 cpuTicksCount: original.view.cpuTicksCount,
                 cpuTicksPerSecond: original.view.cpuTicksPerSecond,
@@ -229,6 +233,7 @@ internal struct FatalErrorBuilder {
                 memoryMax: original.view.memoryMax,
                 name: original.view.name,
                 networkSettledTime: original.view.networkSettledTime,
+                performance: original.view.performance,
                 referrer: original.view.referrer,
                 refreshRateAverage: original.view.refreshRateAverage,
                 refreshRateMin: original.view.refreshRateMin,

@@ -10,7 +10,6 @@ import QuartzCore
 import UIKit
 
 /// Redaction to apply to a rendered image snapshot.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageRedactionAction: Hashable {
     case none
     case redactText
@@ -18,13 +17,11 @@ internal enum ImageRedactionAction: Hashable {
 }
 
 /// Redacted image or placeholder instruction.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageRedactionResult {
     case image(UIImage)
     case placeholder(UIColor)
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshot {
     func redacted(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
@@ -90,9 +87,11 @@ extension ContentSnapshot {
     private var isStaticText: Bool {
         layerClass.isSubclass(of: CATextLayer.self) ||
         layerClassName.hasSuffix("CGDrawingLayer") ||
+        layerClassName.hasSuffix("RBDrawingLayer") ||
         layerClassName.hasSuffix("UILabelLayer") ||
         delegateClass?.isSubclass(of: UILabel.self) == true ||
-        delegateClassName?.hasSuffix("CGDrawingView") == true
+        delegateClassName?.hasSuffix("CGDrawingView") == true ||
+        delegateClassName?.hasSuffix("RBDrawingView") == true
     }
 
     private var isImageLayer: Bool {

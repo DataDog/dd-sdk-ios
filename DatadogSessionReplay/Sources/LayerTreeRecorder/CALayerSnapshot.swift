@@ -18,7 +18,6 @@ import UIKit
 /// payload needed by later Session Replay recording steps.
 /// Frames are captured in the root layer coordinate space, matching the
 /// coordinate space used by Session Replay wireframes.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct CALayerSnapshot: Sendable {
     let layer: CALayerReference
     let replayID: Int64
@@ -27,6 +26,7 @@ internal struct CALayerSnapshot: Sendable {
     let layerClass: AnyClass
     let delegateClass: AnyClass?
     let contentsClass: AnyClass?
+    let heatmapKey: String?
 
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
@@ -39,6 +39,9 @@ internal struct CALayerSnapshot: Sendable {
 
     /// The layer's frame in the root layer coordinate space.
     var absoluteFrame: CGRect
+
+    /// The geometry used to capture this layer's rendered content.
+    var contentGeometry: ContentGeometry
 
     var sublayers: [CALayerSnapshot]
     /// Live descendant layers omitted from `sublayers` but captured when this layer is rendered as an image.
@@ -68,8 +71,24 @@ internal struct CALayerSnapshot: Sendable {
     let shadowPath: CGPath?
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
+    /// Describes the bounds and placement of a layer's rendered content.
+    struct ContentGeometry: Sendable {
+        /// The full content bounds in the layer's coordinate space.
+        let renderBounds: CGRect
+
+        /// The captured portion of `renderBounds`, in the layer's coordinate space.
+        let localRect: CGRect
+
+        /// The captured content frame in the root layer's coordinate space.
+        var frame: CGRect
+
+        /// Whether `localRect` contains only part of `renderBounds`.
+        var isPartial: Bool {
+            !renderBounds.equalTo(localRect)
+        }
+    }
+
     @MainActor
     init?(from root: CALayer, in context: Context) {
         let privacy = ResolvedPrivacy(
@@ -83,17 +102,19 @@ extension CALayerSnapshot {
             rootLayer: root,
             visibleBounds: root.bounds,
             privacy: privacy,
-            context: context
+            context: context,
+            heatmapTypeIndex: context.heatmapsEnabled ? 0 : nil
         )
     }
 
     @MainActor
-    private init?(
+    fileprivate init?(
         from layer: CALayer,
         rootLayer: CALayer,
         visibleBounds: CGRect,
         privacy: ResolvedPrivacy,
-        context: Context
+        context: Context,
+        heatmapTypeIndex: Int?
     ) {
         guard !layer.isHidden, layer.opacity > 0 else {
             return nil
@@ -126,28 +147,33 @@ extension CALayerSnapshot {
         let sublayers = if observation.ignoresSublayers || childVisibleBounds.isEmpty {
             [CALayerSnapshot]()
         } else {
-            layer.sublayers?.compactMap {
-                CALayerSnapshot(
-                    from: $0,
-                    rootLayer: rootLayer,
-                    visibleBounds: childVisibleBounds,
-                    privacy: privacy,
-                    context: context
-                )
-            } ?? []
+            [CALayerSnapshot](
+                sublayersOf: layer,
+                rootLayer: rootLayer,
+                visibleBounds: childVisibleBounds,
+                privacy: privacy,
+                context: context
+            )
         }
 
-        let dependencies = if observation.ignoresSublayers && !childVisibleBounds.isEmpty {
+        let dependencies: [CALayer] = if observation.ignoresSublayers && !childVisibleBounds.isEmpty {
             layer.sublayers?.flatMap {
                 $0.visibleDependencies(
                     rootLayer: rootLayer,
                     visibleBounds: childVisibleBounds
                 )
-                .map(CALayerReference.init)
             } ?? []
         } else {
-            [CALayerReference]()
+            []
         }
+
+        let contentGeometry = ContentGeometry(
+            layer: layer,
+            rootLayer: rootLayer,
+            absoluteFrame: absoluteFrame,
+            visibleBounds: visibleBounds,
+            dependencies: dependencies
+        )
 
         var cornerRadii = CornerRadii()
 
@@ -172,6 +198,7 @@ extension CALayerSnapshot {
             layerClass: type(of: layer),
             delegateClass: layer.delegate.map { type(of: $0) },
             contentsClass: layer.contents.map { type(of: $0 as AnyObject) },
+            heatmapKey: heatmapTypeIndex.map { layer.heatmapKey(typeIndex: $0) },
             textAndInputPrivacyLevel: privacy.textAndInputPrivacyLevel,
             imagePrivacyLevel: privacy.imagePrivacyLevel,
             isPrivate: privacy.isPrivate,
@@ -180,8 +207,9 @@ extension CALayerSnapshot {
             zPosition: layer.zPosition,
             transform: layer.transform,
             absoluteFrame: absoluteFrame,
+            contentGeometry: contentGeometry,
             sublayers: sublayers,
-            dependencies: dependencies,
+            dependencies: dependencies.map(CALayerReference.init),
             sublayerTransform: layer.sublayerTransform,
             mask: layer.mask.map(Mask.init),
             masksToBounds: layer.masksToBounds,
@@ -204,7 +232,43 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.ContentGeometry {
+    @MainActor
+    fileprivate init(
+        layer: CALayer,
+        rootLayer: CALayer,
+        absoluteFrame: CGRect,
+        visibleBounds: CGRect,
+        dependencies: [CALayer]
+    ) {
+        let renderBounds = layer.masksToBounds
+            ? layer.bounds
+            : dependencies.reduce(into: layer.bounds) { bounds, dependency in
+                bounds = bounds.union(dependency.convert(dependency.bounds, to: layer))
+            }
+
+        let rendersLayerBounds = renderBounds.equalTo(layer.bounds)
+        let renderFrame = rendersLayerBounds
+            ? absoluteFrame
+            : layer.convert(renderBounds, to: rootLayer)
+
+        let isOversized = renderBounds.width > rootLayer.bounds.width
+            || renderBounds.height > rootLayer.bounds.height
+
+        let visibleRenderFrame = rendersLayerBounds
+            ? renderFrame.intersection(visibleBounds)
+            : renderFrame.intersection(rootLayer.bounds)
+
+        self.init(
+            renderBounds: renderBounds,
+            localRect: isOversized
+                ? layer.convert(visibleRenderFrame, from: rootLayer)
+                : renderBounds,
+            frame: isOversized ? visibleRenderFrame : renderFrame
+        )
+    }
+}
+
 extension CALayerSnapshot {
     fileprivate struct ResolvedPrivacy {
         var textAndInputPrivacyLevel: TextAndInputPrivacyLevel
@@ -223,10 +287,27 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
+    @MainActor fileprivate var heatmapTypeIdentifier: ObjectIdentifier {
+        if let view = delegate as? UIView {
+            return ObjectIdentifier(type(of: view))
+        }
+        return ObjectIdentifier(type(of: self))
+    }
+
     @MainActor fileprivate var privacyOverrides: SessionReplayPrivacyOverrides? {
         (delegate as? UIView)?.dd._privacyOverrides
+    }
+
+    @MainActor
+    fileprivate func heatmapKey(typeIndex: Int) -> String {
+        if let view = delegate as? UIView {
+            if let accessibilityIdentifier = view.accessibilityIdentifier, !accessibilityIdentifier.isEmpty {
+                return accessibilityIdentifier
+            }
+            return "cls:\(String(describing: type(of: view)))#\(typeIndex)"
+        }
+        return "cls:\(String(describing: type(of: self)))#\(typeIndex)"
     }
 
     @MainActor
@@ -260,6 +341,49 @@ extension CALayer {
         }
 
         return CollectionOfOne(self) + sublayerDependencies
+    }
+}
+
+extension Array where Element == CALayerSnapshot {
+    @MainActor
+    fileprivate init(
+        sublayersOf layer: CALayer,
+        rootLayer: CALayer,
+        visibleBounds: CGRect,
+        privacy: CALayerSnapshot.ResolvedPrivacy,
+        context: CALayerSnapshot.Context
+    ) {
+        let sublayers = layer.sublayers ?? []
+
+        guard context.heatmapsEnabled else {
+            self = sublayers.compactMap {
+                CALayerSnapshot(
+                    from: $0,
+                    rootLayer: rootLayer,
+                    visibleBounds: visibleBounds,
+                    privacy: privacy,
+                    context: context,
+                    heatmapTypeIndex: nil
+                )
+            }
+            return
+        }
+
+        var typeCounts: [ObjectIdentifier: Int] = [:]
+        self = sublayers.compactMap { sublayer in
+            let typeIdentifier = sublayer.heatmapTypeIdentifier
+            let typeIndex = typeCounts[typeIdentifier, default: 0]
+            typeCounts[typeIdentifier] = typeIndex + 1
+
+            return CALayerSnapshot(
+                from: sublayer,
+                rootLayer: rootLayer,
+                visibleBounds: visibleBounds,
+                privacy: privacy,
+                context: context,
+                heatmapTypeIndex: typeIndex
+            )
+        }
     }
 }
 #endif

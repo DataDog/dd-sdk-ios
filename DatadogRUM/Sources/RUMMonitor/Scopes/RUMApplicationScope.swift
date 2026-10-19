@@ -28,6 +28,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// The end reason from the last active session. Used as "start reason" for the new session.
     private var lastSessionEndReason: RUMSessionScope.EndReason?
 
+    /// Keys of Resources still pending when the last session expired. The first manual completion of each key
+    /// that no tracked view owns is the expired Resource's, so it must not update actions in the next session.
+    /// A reused key keeps its entry. Only the last expired session is kept to bound this set.
+    private var expiredSessionResourceKeys: Set<String> = []
+
     var activeSession: RUMSessionScope? {
         get { return sessionScopes.first(where: { $0.isActive }) }
     }
@@ -75,6 +80,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     ///
     /// - Returns: `true` to indicate that the Application Scope should remain active.
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        process(command: command, monotonicTime: dependencies.monotonicClock.elapsedTime, context: context, writer: writer)
+    }
+
+    /// Processes a command using the monotonic time captured before queueing or buffering.
+    /// - Parameter monotonicTime: The captured monotonic clock reading.
+    func process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) -> Bool {
         #if !os(tvOS) && !os(watchOS)
         guard context.launchInfo.launchReason != .uncertain else {
             if !didLogFallbackToResolver {
@@ -82,24 +93,24 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 didLogFallbackToResolver = true
             }
             launchReasonResolver
-                .deferUntilLaunchReasonResolved(command: command, context: context, writer: writer, onReady: _process(command:context:writer:))
+                .deferUntilLaunchReasonResolved(command: command, monotonicTime: monotonicTime, context: context, writer: writer, onReady: _process(command:monotonicTime:context:writer:))
             return true
         }
-        _process(command: command, context: context, writer: writer)
+        _process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
         #else
         launchReasonResolver
-            .deferUntilLaunchReasonResolved(command: command, context: context, writer: writer, onReady: _process(command:context:writer:))
+            .deferUntilLaunchReasonResolved(command: command, monotonicTime: monotonicTime, context: context, writer: writer, onReady: _process(command:monotonicTime:context:writer:))
         #endif
 
         return true
     }
 
-    private func _process(command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func _process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
         if command is RUMSDKInitCommand {
-            createInitialSession(with: context, on: command)
+            createInitialSession(with: context, on: command, monotonicTime: monotonicTime)
 
             // RUM-6698: When the user launches an app that was not running (cold start), the expected
             // initial app state is `.inactive`:
@@ -113,12 +124,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // the initial state can be `.active`. Therefore, we consider both `.inactive` and `.active` as valid
             // initial states for starting the initial view.
             let appState = context.applicationStateHistory.currentState
-            let sdkInitInForeground = appState == .inactive || appState == .active
+            let sdkInitInForeground = appState.isRunningInForeground
             let isUserLaunch = context.launchInfo.launchReason == .userLaunch
 
             if sdkInitInForeground || isUserLaunch {
                 // Start "ApplicationLaunch" view immediatelly:
-                startApplicationLaunchView(on: command, context: context, writer: writer)
+                startApplicationLaunchView(on: command, monotonicTime: monotonicTime, context: context, writer: writer)
             }
             return
         }
@@ -129,18 +140,18 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if sessionScopes.isEmpty && !applicationActive {
             // This flow is likely stale code as`RUMSDKInitCommand` should already start the session before reaching this point
             dependencies.telemetry.debug("Starting initial session from lazy flow")
-            createInitialSession(with: context, on: command)
+            createInitialSession(with: context, on: command, monotonicTime: monotonicTime)
         }
 
         // Create the application launch view on any command
         if !applicationActive {
-            startApplicationLaunchView(on: command, context: context, writer: writer)
+            startApplicationLaunchView(on: command, monotonicTime: monotonicTime, context: context, writer: writer)
         }
 
         if activeSession == nil {
             // No active sessions, start a new one
             if !(command is RUMHandleAppLifecycleEventCommand) {
-                startNewSession(on: command, context: context, writer: writer)
+                startNewSession(on: command, monotonicTime: monotonicTime, context: context, writer: writer)
             }
         }
 
@@ -153,10 +164,19 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             applicationState.wasAnySessionStopped = true
         }
 
+        // Resolve once before a retained owner can finish during session broadcast.
+        let command = command.resolvingResourceOwners(
+            in: sessionScopes.flatMap { $0.viewScopes },
+            expiredSessionResourceKeys: expiredSessionResourceKeys
+        )
+        if let completion = command as? RUMResourceCompletionCommand, completion.ownership == .expiredSession {
+            expiredSessionResourceKeys.remove(completion.resourceKey)
+        }
+
         // Can't use scope(byPropagating:context:writer) because of the extra step in looking for sessions
         // that need a refresh
         sessionScopes = sessionScopes.compactMap({ scope in
-            if scope.process(command: command, context: context, writer: writer) {
+            if scope.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer) {
                 // proccss(command:context:writer) returned true, so keep the scope around
                 // as it it still has work to do.
                 return scope
@@ -180,9 +200,15 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             switch endReason {
             case .timeOut, .maxDuration:
                 applicationState.wasPreviousSessionStopped = false
+                // Expired sessions are dropped with their pending Resources, except one this command completes.
+                var pendingResourceKeys = Set(scope.viewScopes.flatMap { $0.resourceScopes.keys })
+                if let completion = command as? RUMResourceCompletionCommand {
+                    pendingResourceKeys.remove(completion.resourceKey)
+                }
+                expiredSessionResourceKeys = pendingResourceKeys
                 if !(command is RUMHandleAppLifecycleEventCommand) {
                     // Replace this session scope with the scope for refreshed session:
-                    return refresh(expiredSession: scope, on: command, context: context, writer: writer)
+                    return refresh(expiredSession: scope, on: command, monotonicTime: monotonicTime, context: context, writer: writer)
                 } else {
                     // The next session will start lazily on next event
                     return nil
@@ -213,14 +239,18 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private var didCreateInitialSessionCount = 0
 
     /// Starts initial RUM Session.
-    private func createInitialSession(with context: DatadogContext, on command: RUMCommand) {
+    private func createInitialSession(with context: DatadogContext, on command: RUMCommand, monotonicTime: TimeInterval) {
         if didCreateInitialSessionCount > 0 { // Sanity check
             dependencies.telemetry.error("Creating initial session \(didCreateInitialSessionCount) extra time(s) due to \(type(of: command)) (previous end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
+        let isFirstInitialSession = didCreateInitialSessionCount == 0
         didCreateInitialSessionCount += 1
 
         var startPrecondition: RUMSessionPrecondition? = nil
 
+        #if os(macOS)
+        startPrecondition = .userAppLaunch
+        #else
         if context.applicationStateHistory.currentState == .background {
             switch context.launchInfo.launchReason {
             case .userLaunch:
@@ -233,15 +263,21 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         } else {
             startPrecondition = .userAppLaunch
         }
+        #endif
 
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
             startTime: context.sdkInitDate,
+            monotonicStartTime: monotonicTime,
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,
-            applicationState: applicationState
+            applicationState: applicationState,
+            // Adopt the ID created in `RUM.enable()` rather than generating a new one. Only the very first
+            // initial session may adopt it; the sanity path above can run again, and reusing the same ID
+            // would produce two sessions sharing an identity.
+            presetSessionUUID: isFirstInitialSession ? dependencies.initialSessionUUID : nil
         )
 
         lastSessionEndReason = nil
@@ -250,11 +286,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     /// Starts new RUM Session immediately after previous one expires or time outs. It transfers some of the state from the expired session to the new one.
-    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
+    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
-        if context.applicationStateHistory.currentState == .background,
+        if isCurrentStateBackground(context: context),
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
         } else if lastSessionEndReason == .timeOut {
@@ -265,7 +301,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
         }
 
-        let refreshingInForeground = context.applicationStateHistory.currentState == .active
+        let refreshingInForeground = context.applicationStateHistory.currentState.isRunningInForeground
         let lastActiveViewPath = expiredSession.viewScopes.last(where: { $0.isActiveView })?.viewPath
         let transferActiveView = command.shouldRestartLastViewAfterSessionExpiration
             && refreshingInForeground
@@ -274,6 +310,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         let refreshedSession = RUMSessionScope(
             from: expiredSession,
             startTime: command.time,
+            monotonicStartTime: monotonicTime,
             startPrecondition: startPrecondition,
             context: context,
             transferActiveView: transferActiveView,
@@ -282,15 +319,15 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         sessionScopeDidUpdate(refreshedSession)
         lastActiveView = nil
         lastSessionEndReason = nil
-        _ = refreshedSession.process(command: command, context: context, writer: writer)
+        _ = refreshedSession.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
         return refreshedSession
     }
 
-    private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func startNewSession(on command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
-        if context.applicationStateHistory.currentState == .background,
+        if isCurrentStateBackground(context: context),
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
         } else if lastSessionEndReason == .stopAPI {
@@ -308,7 +345,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.debug("Starting new session triggered by \(type(of: command)). Previous session was stopped for the following reason: \(startPrecondition?.rawValue ?? "unknown")")
         }
 
-        let startingInForeground = context.applicationStateHistory.currentState == .active
+        let startingInForeground = context.applicationStateHistory.currentState.isRunningInForeground
         var resumeViewScope = false
 
         if lastSessionEndReason == .stopAPI {
@@ -321,6 +358,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             isInitialSession: false,
             parent: self,
             startTime: command.time,
+            monotonicStartTime: monotonicTime,
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,
@@ -342,13 +380,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// from creation of initial session due to receiving `RUMSDKInitCommand`. Starting from RUM-1649 the "application launch" view
     /// is started on SDK init only when the app is launched by user with no prewarming or when app was prewarmed but SDK was initialized
     /// after it became active.
-    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func startApplicationLaunchView(on command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
         applicationActive = true
 
         let isUserLaunch = context.launchInfo.launchReason == .userLaunch
         let isPrewarmed = context.launchInfo.launchReason == .prewarming
         let isBackgroundLaunch = context.launchInfo.launchReason == .backgroundLaunch
-        let isStartedInForeground = command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
+        let isStartedInForeground = command is RUMSDKInitCommand && !isCurrentStateBackground(context: context)
         guard isUserLaunch || (isPrewarmed && isStartedInForeground) || (isBackgroundLaunch && isStartedInForeground) else {
             return
         }
@@ -360,6 +398,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 globalAttributes: command.globalAttributes,
                 attributes: command.attributes
             ),
+            monotonicTime: monotonicTime,
             context: context,
             writer: writer
         )
@@ -380,5 +419,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             )
             return nil
         }
+    }
+
+    private func isCurrentStateBackground(context: DatadogContext) -> Bool {
+        #if os(macOS)
+        false
+        #else
+        context.applicationStateHistory.currentState == .background
+        #endif
     }
 }

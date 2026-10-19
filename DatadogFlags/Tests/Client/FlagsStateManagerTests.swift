@@ -32,6 +32,19 @@ final class FlagsStateManagerTests: XCTestCase {
         XCTAssertEqual(manager.currentState, .notReady)
     }
 
+    func testConditionalUpdateDoesNotReplaceExcludedCurrentState() {
+        // Given
+        let manager = FlagsStateManager()
+        manager.updateState(.ready)
+
+        // When
+        let accepted = manager.updateState(.stale, unlessCurrentStateIs: [.ready, .stale])
+
+        // Then
+        XCTAssertFalse(accepted)
+        XCTAssertEqual(manager.currentState, .ready)
+    }
+
     func testListenerReceivesCurrentStateOnAdd() {
         let manager = FlagsStateManager()
         manager.updateState(.ready)

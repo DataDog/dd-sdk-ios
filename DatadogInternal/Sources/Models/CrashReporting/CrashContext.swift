@@ -71,6 +71,12 @@ public struct CrashContext: Codable, Equatable {
     /// The last _"Is app in foreground?"_ information from crashed app process.
     public let lastIsAppInForeground: Bool
 
+    /// The identifier of the remote configuration the SDK was configured with.
+    public let remoteConfigurationId: String?
+
+    /// Denotes the mobile application's process type, such as its main process or an app extension process.
+    public let applicationBundleType: BundleType
+
     /// The last RUM view in crashed app process.
     public var lastRUMViewEvent: RUMViewEvent?
 
@@ -105,7 +111,9 @@ public struct CrashContext: Codable, Equatable {
         lastRUMViewEvent: RUMViewEvent?,
         lastRUMSessionState: RUMSessionState?,
         lastRUMAttributes: RUMEventAttributes?,
-        lastLogAttributes: LogEventAttributes?
+        lastLogAttributes: LogEventAttributes?,
+        remoteConfigurationId: String? = nil,
+        applicationBundleType: BundleType = .iOSApp
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service.sanitizedToDDTags()
@@ -123,6 +131,8 @@ public struct CrashContext: Codable, Equatable {
         self.carrierInfo = carrierInfo
         self.lastIsAppInForeground = lastIsAppInForeground
         self.appLaunchDate = appLaunchDate
+        self.remoteConfigurationId = remoteConfigurationId
+        self.applicationBundleType = applicationBundleType
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastRUMAttributes = lastRUMAttributes
@@ -151,6 +161,8 @@ public struct CrashContext: Codable, Equatable {
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
         self.lastIsAppInForeground = context.applicationStateHistory.currentState.isRunningInForeground
+        self.remoteConfigurationId = context.remoteConfigurationId
+        self.applicationBundleType = context.applicationBundleType
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
@@ -158,6 +170,34 @@ public struct CrashContext: Codable, Equatable {
         self.lastLogAttributes = lastLogAttributes
 
         self.appLaunchDate = context.launchInfo.launchPhaseDates[.processLaunch]
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        appLaunchDate = try container.decodeIfPresent(Date.self, forKey: .appLaunchDate)
+        serverTimeOffset = try container.decode(TimeInterval.self, forKey: .serverTimeOffset)
+        service = try container.decode(String.self, forKey: .service)
+        env = try container.decode(String.self, forKey: .env)
+        version = try container.decode(String.self, forKey: .version)
+        buildNumber = try container.decode(String.self, forKey: .buildNumber)
+        device = try container.decode(Device.self, forKey: .device)
+        os = try container.decode(OperatingSystem.self, forKey: .os)
+        sdkVersion = try container.decode(String.self, forKey: .sdkVersion)
+        source = try container.decode(String.self, forKey: .source)
+        trackingConsent = try container.decode(TrackingConsent.self, forKey: .trackingConsent)
+        userInfo = try container.decodeIfPresent(UserInfo.self, forKey: .userInfo)
+        accountInfo = try container.decodeIfPresent(AccountInfo.self, forKey: .accountInfo)
+        networkConnectionInfo = try container.decodeIfPresent(NetworkConnectionInfo.self, forKey: .networkConnectionInfo)
+        carrierInfo = try container.decodeIfPresent(CarrierInfo.self, forKey: .carrierInfo)
+        lastIsAppInForeground = try container.decode(Bool.self, forKey: .lastIsAppInForeground)
+        remoteConfigurationId = try container.decodeIfPresent(String.self, forKey: .remoteConfigurationId)
+        // Older, already-persisted crash contexts predate this field, so it must be decoded
+        // leniently to avoid dropping crash reports captured by a prior SDK version.
+        applicationBundleType = try container.decodeIfPresent(BundleType.self, forKey: .applicationBundleType) ?? .iOSApp
+        lastRUMViewEvent = try container.decodeIfPresent(RUMViewEvent.self, forKey: .lastRUMViewEvent)
+        lastRUMSessionState = try container.decodeIfPresent(RUMSessionState.self, forKey: .lastRUMSessionState)
+        lastLogAttributes = try container.decodeIfPresent(LogEventAttributes.self, forKey: .lastLogAttributes)
+        lastRUMAttributes = try container.decodeIfPresent(RUMEventAttributes.self, forKey: .lastRUMAttributes)
     }
 
     public static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {

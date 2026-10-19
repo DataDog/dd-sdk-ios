@@ -8,12 +8,13 @@
 import Foundation
 import QuartzCore
 import Testing
+import TestUtilities
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotPortalTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Resolves a position-matched portal and removes the original source subtree")
     func resolvesPositionMatchedPortalAndRemovesOriginalSourceSubtree() throws {
         // Given
@@ -70,7 +71,6 @@ struct CALayerSnapshotPortalTests {
         #expect(resolvedSource.sublayers.map(\.replayID) == [sourceContent.replayID])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Positions unmatched portal content relative to the portal")
     func positionsUnmatchedPortalContentRelativeToPortal() throws {
         // Given
@@ -107,11 +107,20 @@ struct CALayerSnapshotPortalTests {
 
         let resolvedSource = try #require(resolvedPortal.sublayers.first)
         #expect(resolvedSource.absoluteFrame == portal.absoluteFrame)
+        #expect(resolvedSource.contentGeometry.renderBounds == source.bounds)
+        #expect(resolvedSource.contentGeometry.localRect == source.bounds)
+        #expect(resolvedSource.contentGeometry.frame == portal.absoluteFrame)
         #expect(resolvedSource.opacity == 1)
-        #expect(resolvedSource.sublayers.first?.absoluteFrame == CGRect(x: 202, y: 304, width: 20, height: 10))
+        let resolvedContent = try #require(resolvedSource.sublayers.first)
+        #expect(resolvedContent.absoluteFrame == CGRect(x: 202, y: 304, width: 20, height: 10))
+        #expect(resolvedContent.contentGeometry.renderBounds == sourceContent.bounds)
+        #expect(resolvedContent.contentGeometry.localRect == sourceContent.bounds)
+        #expect(
+            resolvedContent.contentGeometry.frame
+                == CGRect(x: 202, y: 304, width: 20, height: 10)
+        )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Omits portal content when its unmatched source transform cannot be represented")
     func omitsPortalContentForUnsupportedUnmatchedSourceTransform() throws {
         // Given
@@ -146,7 +155,6 @@ struct CALayerSnapshotPortalTests {
         #expect(unresolvedPortal.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Stops resolving when portal sources form a cycle")
     func stopsResolvingPortalSourceCycles() throws {
         // Given
@@ -188,7 +196,6 @@ struct CALayerSnapshotPortalTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.SemanticObservation {
     static func portal(
         sourceReplayID: Int64,

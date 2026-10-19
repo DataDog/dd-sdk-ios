@@ -16,6 +16,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     }
 
     let flagAssignmentsFetcher: any FlagAssignmentsFetching
+    let initializationTimeout: TimeInterval?
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry
@@ -36,6 +37,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             customHeaders: configuration.customFlagsHeaders,
             featureScope: featureScope
         )
+        initializationTimeout = configuration.initializationTimeout
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry

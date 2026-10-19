@@ -17,6 +17,7 @@ internal final class FatalAppHangsHandler {
     /// Device date provider.
     private let dateProvider: DateProvider
     private let uuidGenerator: RUMUUIDGenerator
+    private let sanitizer = RUMEventSanitizer()
 
     init(
         featureScope: FeatureScope,
@@ -117,8 +118,8 @@ internal final class FatalAppHangsHandler {
                 additionalAttributes: nil,
                 timeSinceAppStart: timeSinceAppStart
             )
-            let error = builder.createRUMError(with: fatalHang.lastRUMView)
-            let view = builder.updateRUMViewWithError(fatalHang.lastRUMView)
+            let error = self.sanitizer.sanitize(event: builder.createRUMError(with: fatalHang.lastRUMView))
+            let view = self.sanitizer.sanitize(event: builder.updateRUMViewWithError(fatalHang.lastRUMView))
 
             if realDateNow.timeIntervalSince(realErrorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
                 DD.logger.debug("Sending fatal App hang as RUM error with issuing RUM view update")

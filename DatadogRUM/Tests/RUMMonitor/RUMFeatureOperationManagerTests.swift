@@ -98,6 +98,40 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
+    func testFeatureOperationCommand_whenAppRunsAsAppExtension_createsVitalEventWithIsMainProcessFalse() throws {
+        // Given
+        let command = RUMOperationStepVitalCommand.mockRandom()
+        mockContext = .mockWith(applicationBundleType: .iOSAppExtension)
+
+        // When
+        manager.process(
+            command,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: .mockAny()
+        )
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
+    func testFeatureOperationCommand_sanitizesContextAttributesBeforeWriting() throws {
+        // Given
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+        let attributes = Dictionary(
+            uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny()) }
+        )
+        let command: RUMOperationStepVitalCommand = .mockWith(attributes: attributes)
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: .mockAny())
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(event.context?.contextInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
     func testFeatureOperationCommand_sendsOperationMessageWithServerTimeOffset() throws {
         // Given
         let featureScope = FeatureScopeMock()

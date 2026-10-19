@@ -200,10 +200,12 @@ extension ImmutableRequest: AnyMockable {
     public static func mockWith(
         url: URL = .mockAny(),
         httpMethod: String = "GET",
+        httpBody: Data? = nil,
         allHTTPHeaderFields: [String: String] = .mockAny()
     ) -> ImmutableRequest {
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
+        request.httpBody = httpBody
         request.allHTTPHeaderFields = allHTTPHeaderFields
         return ImmutableRequest(request: request)
     }
@@ -223,7 +225,9 @@ extension ResourceMetrics: AnyMockable {
         firstByte: DateInterval? = nil,
         download: DateInterval? = nil,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
-        requestBodySize: (encoded: Int64, decoded: Int64)? = nil
+        requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
+        deliveryType: ResourceMetrics.DeliveryType? = nil,
+        transferSize: Int64? = nil
     ) -> Self {
         return .init(
             fetch: fetch,
@@ -234,7 +238,9 @@ extension ResourceMetrics: AnyMockable {
             firstByte: firstByte,
             download: download,
             responseBodySize: responseBodySize,
-            requestBodySize: requestBodySize
+            requestBodySize: requestBodySize,
+            deliveryType: deliveryType,
+            transferSize: transferSize
         )
     }
 }

@@ -9,6 +9,7 @@ import TestUtilities
 
 /// Defines a chain of `AppRunStep`s representing a test scenario for SDK integration testing.
 /// Allows building scenarios using `given()`, `when()`, and `then()` for fluent test composition.
+@MainActor
 internal struct AppRun: Hashable {
     /// Ordered steps to perform in this run.
     let steps: [AppRunStep]

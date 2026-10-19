@@ -62,7 +62,8 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     /// The reason why this evaluation result was returned.
     ///
     /// Provides context about how the flag was evaluated, such as "TARGETING_MATCH" or "DEFAULT".
-    /// Returns `nil` if the flag was not found.
+    /// Assignments restored from disk report "CACHED"; network assignments retain their response reason.
+    /// Returns `nil` when evaluation fails.
     public var reason: String?
 
     /// The error that occurred during evaluation, if any.
@@ -134,7 +135,7 @@ public struct FlagSnapshot: Equatable, Encodable {
     /// The variant key for the assigned flag.
     public let variant: String
 
-    /// The reason why this assignment was returned.
+    /// The reason why this assignment was returned. Disk-restored assignments report "CACHED".
     public let reason: String
 
     /// Creates a feature flag assignment snapshot.

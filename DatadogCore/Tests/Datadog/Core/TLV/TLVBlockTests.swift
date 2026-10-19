@@ -64,4 +64,26 @@ class TLVBlockTests: XCTestCase {
             )
         }
     }
+
+    func testSanitizingReadOperationFailed_neverReportsRawStreamError() {
+        // Given
+        // `streamError`'s `userInfo` content depends on its domain - `NSCocoaErrorDomain` file errors,
+        // for instance, can include the file path via `NSFilePathErrorKey` - so it must go through the
+        // same central `NSError` sanitization as any other foreign error, not be interpolated directly
+        // into `TLVBlockError`'s description.
+        let sensitiveFilePath = "/var/mobile/Containers/session-\(String.mockRandom(length: 16))/file.dat"
+        let streamError = NSError(
+            domain: NSCocoaErrorDomain,
+            code: 260,
+            userInfo: [NSFilePathErrorKey: sensitiveFilePath]
+        )
+        let error = TLVBlockError.readOperationFailed(streamStatus: .error, streamError: streamError)
+
+        // When
+        let sanitized = error.sanitize()
+
+        // Then
+        XCTAssertFalse(sanitized.message.contains(sensitiveFilePath))
+        XCTAssertTrue(sanitized.message.contains("domain: \(NSCocoaErrorDomain), code: 260"))
+    }
 }

@@ -23,6 +23,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRImageWireframe",
                 "SRPlaceholderWireframe",
                 "SRWebviewWireframe",
+                "SREmbeddedContentWireframe",
                 // For convenience, make fat `*Record` structures to be root types:
                 "SRFullSnapshotRecord",
                 "SRIncrementalSnapshotRecord",
@@ -97,6 +98,14 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
     override public func transform(associatedTypeEnum: SwiftAssociatedTypeEnum) throws -> SwiftAssociatedTypeEnum {
         var transformed = try super.transform(associatedTypeEnum: associatedTypeEnum)
+
+        if transformed.name == "SRWireframe" {
+            transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+        }
+
+        if transformed.name == "Updates", canAddDiscriminator("type", to: associatedTypeEnum) {
+            transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+        }
 
         if transformed.name == "SRCompositionLayerModifier" {
             transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
@@ -254,6 +263,12 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             }
             return value == codingKey
         }?.defaultValue
+    }
+
+    private func canAddDiscriminator(_ codingKey: String, to associatedTypeEnum: SwiftAssociatedTypeEnum) -> Bool {
+        !associatedTypeEnum.cases.isEmpty && associatedTypeEnum.cases.allSatisfy {
+            discriminatorValue(for: codingKey, in: $0.associatedType) != nil
+        }
     }
 }
 

@@ -17,7 +17,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotSRCompositionLayerTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates modifiers in rendering order")
     func createsModifiersInRenderingOrder() throws {
         // Given
@@ -58,7 +57,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
         #expect(maskImageModifier.resourceId == resourceID)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Maps shadows to shadow modifiers")
     func mapsShadowsToShadowModifiers() throws {
         // Given
@@ -90,7 +88,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
         #expect(shadow.path == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Maps automatic capsule effect to clip and shadow modifiers")
     func mapsAutomaticCapsuleEffectToClipAndShadowModifiers() throws {
         // Given
@@ -137,7 +134,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
         #expect(shadow.path == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Maps multiply color filters to color matrix modifiers")
     func mapsMultiplyColorFiltersToColorMatrixModifiers() throws {
         // Given
@@ -171,7 +167,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
         })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Maps vibrant color matrix filters while preserving source alpha")
     func mapsVibrantColorMatrixFiltersPreservingSourceAlpha() throws {
         // Given
@@ -203,7 +198,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
         ])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Maps Gaussian blur only for regular layers")
     func mapsGaussianBlurOnlyForRegularLayers() {
         // Given
@@ -224,7 +218,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
         #expect(backdropLayerModifiers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Maps scroll pocket effects to destination-out compositing")
     func mapsScrollPocketEffectsToDestinationOutCompositing() {
         // Given
@@ -242,7 +235,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
         #expect(compositeOperation == .destinationOut)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func modifierTypes(_ modifiers: [SRCompositionLayerModifier]) -> [String] {
         modifiers.map { modifier in
             switch modifier {

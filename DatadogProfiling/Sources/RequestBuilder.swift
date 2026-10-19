@@ -29,11 +29,11 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
     func request(for events: [Event], with context: DatadogContext, execution: ExecutionContext) throws -> URLRequest {
         guard events.count == 1, let event = events.first else {
-            throw ProgrammerError(description: "Invalid event count: \(events.count)")
+            throw ProfilingRequestBuilderError.unexpectedEventCount(count: events.count)
         }
 
         guard let metadataData = event.metadata else {
-            throw ProgrammerError(description: "Profile must include an event metadata")
+            throw ProfilingRequestBuilderError.missingAttachments
         }
 
         let decoder = JSONDecoder()
@@ -49,8 +49,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         )
 
         multipart.addFormData(
-            name: ProfileAttachments.Constants.wallFilename,
-            filename: ProfileAttachments.Constants.wallFilename,
+            name: ProfileAttachments.Constants.pprofFilename,
+            filename: ProfileAttachments.Constants.pprofFilename,
             data: attachments.pprof,
             mimeType: "application/octet-stream"
         )

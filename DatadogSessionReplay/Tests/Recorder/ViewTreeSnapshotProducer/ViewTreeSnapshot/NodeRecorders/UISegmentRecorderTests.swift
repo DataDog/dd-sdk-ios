@@ -28,9 +28,7 @@ class UISegmentRecorderTests: XCTestCase {
     func testWhenSegmentIsVisible() throws {
         // Given
         segment.selectedSegmentIndex = 2
-        if #available(iOS 13.0, *) {
-            segment.selectedSegmentTintColor = .mockRandom()
-        }
+        segment.selectedSegmentTintColor = .mockRandom()
 
         // When
         viewAttributes = .mock(fixture: .visible(.someAppearance))
@@ -44,9 +42,7 @@ class UISegmentRecorderTests: XCTestCase {
         XCTAssertEqual(builder.attributes, viewAttributes)
         XCTAssertEqual(builder.segmentTitles, ["first", "second", "third"])
         XCTAssertEqual(builder.selectedSegmentIndex, 2)
-        if #available(iOS 13.0, *) {
-            XCTAssertEqual(builder.selectedSegmentTintColor, segment.selectedSegmentTintColor)
-        }
+        XCTAssertEqual(builder.selectedSegmentTintColor, segment.selectedSegmentTintColor)
     }
 
     func testWhenViewIsNotOfExpectedType() {

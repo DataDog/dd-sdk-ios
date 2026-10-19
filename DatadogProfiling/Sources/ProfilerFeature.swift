@@ -9,13 +9,9 @@ import DatadogInternal
 
 #if !os(watchOS)
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
+// Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
+// transitive module dependency, but it is not distributed as an XCFramework.
 @_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
 
 internal final class ProfilerFeature: DatadogRemoteFeature {
     enum Constants {
@@ -44,59 +40,42 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
         telemetryController: ProfilingTelemetryController,
-        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaChecker(),
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
         self.telemetryController = telemetryController
 
         let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
-        self.profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate)
-
-        var messageReceivers: [FeatureMessageReceiver] = [
-            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider)
-        ]
-
-        messageReceivers.append(
-            AppLaunchProfiler(
-                core: core,
-                profilingSamplerProvider: profilingSamplerProvider,
-                quotaChecker: quotaChecker,
-                telemetryController: telemetryController
-            )
+        let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
+        self.profilingSamplerProvider = ProfilingSamplerProvider(
+            continuousSampleRate: continuousSampleRate,
+            appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0
         )
+        let quotaChecker = ProfilingQuotaChecker(profilingSamplerProvider: profilingSamplerProvider)
 
-        messageReceivers.append(quotaChecker)
+        Self.setProfilingEnabled(in: userDefaults)
+        Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
 
-        if let datadogProfiler = DatadogProfiler(
+        let datadogProfiler = DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration
-        ) {
-            messageReceivers.append(datadogProfiler)
-        }
-
-        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
-
-        setProfilingEnabled(in: userDefaults)
-        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        setAppLaunch(sampleRate: sampleRate, in: userDefaults)
+        )
+        self.messageReceiver = CombinedFeatureMessageReceiver([
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
+            quotaChecker,
+            datadogProfiler
+        ])
     }
 
-    private func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+    private static func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
     }
 
-    private func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
-        let previousSampleRate = userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate
-
-        // Profiling will use the lowest sample rate
-        // if there is more than one SDK instance initialized.
-        if previousSampleRate == nil || previousSampleRate ?? .maxSampleRate > sampleRate {
-            userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
-        }
+    private static func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
     }
 }
 

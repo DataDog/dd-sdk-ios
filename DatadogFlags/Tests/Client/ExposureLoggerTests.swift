@@ -14,6 +14,19 @@ import DatadogInternal
 final class ExposureLoggerTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testReasonOnlyChangeDoesNotCreateAnotherExposure() {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope)
+        var assignment = FlagAssignment.mockAnyBoolean()
+        assignment.reason = "CACHED"
+        logger.logExposure(for: "flag", assignment: assignment, evaluationContext: .mockAny())
+        assignment.reason = "TARGETING_MATCH"
+        logger.logExposure(for: "flag", assignment: assignment, evaluationContext: .mockAny())
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        assignment.variationKey = "different"
+        logger.logExposure(for: "flag", assignment: assignment, evaluationContext: .mockAny())
+        XCTAssertEqual(featureScope.eventsWritten.count, 2)
+    }
+
     func testLogExposure() {
         // Given
         let logger = ExposureLogger(
@@ -49,9 +62,77 @@ final class ExposureLoggerTests: XCTestCase {
                     allocation: .init(key: "allocation-123"),
                     flag: .init(key: "some-flag"),
                     variant: .init(key: "variation-123"),
+                    serialID: nil,
                     subject: .init(id: .mockAny(), attributes: .mockAny())
                 )
             ]
+        )
+    }
+
+    func testLogExposureWithSerialID() {
+        // Given
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope
+        )
+
+        // When
+        logger.logExposure(
+            for: "some-flag",
+            assignment: .init(
+                allocationKey: "allocation-123",
+                variationKey: "variation-123",
+                variation: .mockAnyBoolean(),
+                reason: .mockAny(),
+                doLog: true,
+                serialID: 0
+            ),
+            evaluationContext: .mockAny()
+        )
+
+        // Then
+        XCTAssertEqual(
+            featureScope.exposureEventsWritten,
+            [
+                .init(
+                    timestamp: Date.mockAny().timeIntervalSince1970.dd.toInt64Milliseconds,
+                    allocation: .init(key: "allocation-123"),
+                    flag: .init(key: "some-flag"),
+                    variant: .init(key: "variation-123"),
+                    serialID: 0,
+                    subject: .init(id: .mockAny(), attributes: .mockAny())
+                )
+            ]
+        )
+    }
+
+    func testLogExposureSerialIDAppearing() {
+        // Given
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let assignment1 = FlagAssignment.mockAnyBoolean()
+        var assignment2 = assignment1
+        assignment2.serialID = 0
+
+        // When
+        logger.logExposure(
+            for: .mockAny(),
+            assignment: assignment1,
+            evaluationContext: .mockAny()
+        )
+        logger.logExposure(
+            for: .mockAny(),
+            assignment: assignment2,
+            evaluationContext: .mockAny()
+        )
+
+        // Then
+        XCTAssertEqual(
+            featureScope.exposureEventsWritten.map(\.serialID),
+            [nil, 0],
+            "A serial id appearing on an otherwise unchanged assignment should not be deduplicated"
         )
     }
 

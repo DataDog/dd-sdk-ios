@@ -31,23 +31,18 @@ internal struct UIDatePickerRecorder: NodeRecorder {
         }
 
         var nodes: [Node]?
-        if #available(iOS 13.4, *) {
-            switch datePicker.datePickerStyle {
-            case .wheels:
-                nodes = wheelsStyleRecorder.record(datePicker, with: attributes, in: context)
-            case .compact:
-                nodes = compactStyleRecorder.record(datePicker, with: attributes, in: context)
-            case .inline:
-                nodes = inlineStyleRecorder.record(datePicker, with: attributes, in: context)
-            case .automatic:
-                // According to `datePicker.datePickerStyle` documentation:
-                // > "This property always returns a concrete style, never `UIDatePickerStyle.automatic`."
-                break
-            @unknown default:
-                nodes = wheelsStyleRecorder.record(datePicker, with: attributes, in: context)
-            }
-        } else {
-            // Observation: older OS versions use the "wheels" style
+        switch datePicker.datePickerStyle {
+        case .wheels:
+            nodes = wheelsStyleRecorder.record(datePicker, with: attributes, in: context)
+        case .compact:
+            nodes = compactStyleRecorder.record(datePicker, with: attributes, in: context)
+        case .inline:
+            nodes = inlineStyleRecorder.record(datePicker, with: attributes, in: context)
+        case .automatic:
+            // According to `datePicker.datePickerStyle` documentation:
+            // > "This property always returns a concrete style, never `UIDatePickerStyle.automatic`."
+            break
+        @unknown default:
             nodes = wheelsStyleRecorder.record(datePicker, with: attributes, in: context)
         }
 

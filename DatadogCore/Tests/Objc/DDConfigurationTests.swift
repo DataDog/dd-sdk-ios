@@ -109,6 +109,21 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcConfig.sdkConfiguration.backgroundTasksEnabled, fakeBackgroundTasksEnabled)
     }
 
+    func testSetRemoteConfigurationForwardsToSwiftConfiguration() throws {
+        let objcConfig = objc_Configuration(clientToken: "abc-123", env: "tests")
+
+        let remoteConfiguration = objc_RemoteConfiguration(id: "abc-123")
+        let customURL: URL = .mockRandom()
+        remoteConfiguration.customURL = customURL
+
+        objcConfig.setRemoteConfiguration(remoteConfiguration)
+        XCTAssertEqual(objcConfig.sdkConfiguration.remoteConfiguration?.id, "abc-123")
+        XCTAssertEqual(objcConfig.sdkConfiguration.remoteConfiguration?.customURL, customURL)
+
+        objcConfig.setRemoteConfiguration(nil)
+        XCTAssertNil(objcConfig.sdkConfiguration.remoteConfiguration)
+    }
+
     func testDataEncryption() throws {
         // Given
         class ObjCDataEncryption: objc_DataEncryption {

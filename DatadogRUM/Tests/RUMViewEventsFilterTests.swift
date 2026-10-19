@@ -217,6 +217,163 @@ final class RUMViewEventsFilterTests: XCTestCase {
         XCTAssertTrue(hasB2, "Event B.2 with accessibility should be kept")
     }
 
+    // MARK: - Delta baseline (viewUpdates) filtering
+
+    func testFilterDropsDeltasBeforeANewerFullEventOfTheSameView() throws {
+        let events = [
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2)),
+            try Event(data: "A.3", viewMetadata: .mockUpdate(id: "A", documentVersion: 3)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, isDeltaBaseline: true)),
+            try Event(data: "A.5", viewMetadata: .mockUpdate(id: "A", documentVersion: 5)),
+            try Event(data: "A.6", viewMetadata: .mockUpdate(id: "A", documentVersion: 6))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = Array(events[2...])
+
+        XCTAssertEqual(actual, expected, "Leading deltas are superseded; the full event and its trailing deltas are kept")
+    }
+
+    func testFilterDropsOlderBaselinesWhenANewerFullEventOfTheSameViewIsKept() throws {
+        // full, deltas, full, deltas, full — e.g. the view hit `maxConsecutiveViewUpdates` twice before upload.
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2)),
+            try Event(data: "A.3", viewMetadata: .mockUpdate(id: "A", documentVersion: 3)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, isDeltaBaseline: true)),
+            try Event(data: "A.5", viewMetadata: .mockUpdate(id: "A", documentVersion: 5)),
+            try Event(data: "A.6", viewMetadata: .mock(id: "A", documentVersion: 6, isDeltaBaseline: true))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = [
+            try Event(data: "A.6", viewMetadata: .mock(id: "A", documentVersion: 6, isDeltaBaseline: true))
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testFilterKeepsDeltasAfterTheNewestFullEvent() throws {
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2)),
+            try Event(data: "A.3", viewMetadata: .mockUpdate(id: "A", documentVersion: 3))
+        ]
+
+        let actual = sut.filter(events: events)
+
+        XCTAssertEqual(actual, events)
+    }
+
+    func testFilterKeepsDeltasWithNoNewerFullEventInTheBatch() throws {
+        // The baseline of these deltas was uploaded in an earlier batch.
+        let events = [
+            try Event(data: "A.7", viewMetadata: .mockUpdate(id: "A", documentVersion: 7)),
+            try Event(data: "A.8", viewMetadata: .mockUpdate(id: "A", documentVersion: 8)),
+            try Event(data: "A.9", viewMetadata: .mockUpdate(id: "A", documentVersion: 9))
+        ]
+
+        let actual = sut.filter(events: events)
+
+        XCTAssertEqual(actual, events)
+    }
+
+    func testFilterHandlesInterleavedViewsIndependently() throws {
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2)),
+            try Event(data: "B.2", viewMetadata: .mockUpdate(id: "B", documentVersion: 2)),
+            try Event(data: "A.3", viewMetadata: .mock(id: "A", documentVersion: 3, isDeltaBaseline: true)),
+            try Event(data: "B.3", viewMetadata: .mockUpdate(id: "B", documentVersion: 3)),
+            try Event(data: "A.4", viewMetadata: .mockUpdate(id: "A", documentVersion: 4))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = [
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "B.2", viewMetadata: .mockUpdate(id: "B", documentVersion: 2)),
+            try Event(data: "A.3", viewMetadata: .mock(id: "A", documentVersion: 3, isDeltaBaseline: true)),
+            try Event(data: "B.3", viewMetadata: .mockUpdate(id: "B", documentVersion: 3)),
+            try Event(data: "A.4", viewMetadata: .mockUpdate(id: "A", documentVersion: 4))
+        ]
+
+        XCTAssertEqual(actual, expected, "Batch order (oldest → newest) must be preserved")
+    }
+
+    func testFilterKeepsDeltasWithoutMetadata() throws {
+        // Deltas written by older SDK versions carry no metadata.
+        let events = [
+            try Event(data: "A.2", viewMetadata: nil),
+            try Event(data: "A.3", viewMetadata: nil),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, isDeltaBaseline: true))
+        ]
+
+        let actual = sut.filter(events: events)
+
+        XCTAssertEqual(actual, events)
+    }
+
+    func testFilterSkippedInitialOneNsViewDoesNotSupersedeEarlierEvents() throws {
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mockUpdate(id: "A", documentVersion: 1)),
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, duration: 1, indexInSession: 0, isDeltaBaseline: true))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = [
+            try Event(data: "A.1", viewMetadata: .mockUpdate(id: "A", documentVersion: 1))
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testFilterKeepsAccessibilityFullEventsWithoutSupersedingEarlierEvents() throws {
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2)),
+            try Event(data: "A.3", viewMetadata: .mock(id: "A", documentVersion: 3, hasAccessibility: true, isDeltaBaseline: true))
+        ]
+
+        let actual = sut.filter(events: events)
+
+        XCTAssertEqual(actual, events)
+    }
+
+    func testFilterKeepsAccessibilityDeltasBeforeANewerFullEventOfTheSameView() throws {
+        // Accessibility is only sent when it changes, so the newer full event doesn't repeat it.
+        // Dropping the delta would lose the change.
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2, hasAccessibility: true)),
+            try Event(data: "A.3", viewMetadata: .mockUpdate(id: "A", documentVersion: 3)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, isDeltaBaseline: true))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = [
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2, hasAccessibility: true)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, isDeltaBaseline: true))
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testFilterStillCollapsesRedundantLegacyFullEventsWhenNotDeltaBaseline() throws {
+        // Legacy (non-viewUpdates) full-event snapshots remain subject to redundant-event collapsing.
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: false)),
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, isDeltaBaseline: false))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = [
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, isDeltaBaseline: false))
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
     // MARK: - Error handling and telemetry
 
     func testFilterWhenInvalidMetadata() throws {
@@ -272,9 +429,24 @@ extension RUMViewEvent.Metadata {
         documentVersion: Int64 = .mockAny(),
         duration: Int64? = nil,
         indexInSession: Int? = nil,
-        hasAccessibility: Bool? = nil
+        hasAccessibility: Bool? = nil,
+        isDeltaBaseline: Bool? = nil,
+        isViewUpdate: Bool? = nil
     ) -> RUMViewEvent.Metadata {
-        return RUMViewEvent.Metadata(id: id, documentVersion: documentVersion, hasAccessibility: hasAccessibility, duration: duration, indexInSession: indexInSession)
+        return RUMViewEvent.Metadata(
+            id: id,
+            documentVersion: documentVersion,
+            hasAccessibility: hasAccessibility,
+            duration: duration,
+            indexInSession: indexInSession,
+            isDeltaBaseline: isDeltaBaseline,
+            isViewUpdate: isViewUpdate
+        )
+    }
+
+    /// Metadata of a `RUMViewUpdateEvent` delta.
+    static func mockUpdate(id: String = .mockAny(), documentVersion: Int64 = .mockAny(), hasAccessibility: Bool? = false) -> RUMViewEvent.Metadata {
+        return .mock(id: id, documentVersion: documentVersion, hasAccessibility: hasAccessibility, isViewUpdate: true)
     }
 }
 

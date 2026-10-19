@@ -89,16 +89,12 @@ internal final class UITabBarRecorder: NodeRecorder {
             return color.cgColor
         }
 
-        if #available(iOS 13.0, *) {
-            switch UITraitCollection.current.userInterfaceStyle {
-            case .light:
-                return UIColor.white.cgColor
-            case .dark:
-                return UIColor.black.cgColor
-            default:
-                return UIColor.white.cgColor
-            }
-        } else {
+        switch UITraitCollection.current.userInterfaceStyle {
+        case .light:
+            return UIColor.white.cgColor
+        case .dark:
+            return UIColor.black.cgColor
+        default:
             return UIColor.white.cgColor
         }
     }

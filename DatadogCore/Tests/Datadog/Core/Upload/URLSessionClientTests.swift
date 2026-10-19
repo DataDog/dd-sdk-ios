@@ -16,7 +16,7 @@ class URLSessionClientTests: XCTestCase {
 
         client.send(request: .mockAny()) { result in
             switch result {
-            case .success(let httpResponse):
+            case .success(let (httpResponse, _)):
                 XCTAssertEqual(httpResponse.statusCode, 200)
                 expectation.fulfill()
             case .failure:

@@ -11,6 +11,7 @@ import DatadogInternal
 /// Publisher that sets Session Replay context for being utilized by other Features.
 internal class SRContextPublisher {
     private weak var core: DatadogCoreProtocol?
+    private var recordCounts: [String: Int64] = [:]
 
     init(core: DatadogCoreProtocol) {
         self.core = core
@@ -21,9 +22,18 @@ internal class SRContextPublisher {
         core?.set(context: SessionReplayCoreContext.HasReplay(value: value))
     }
 
-    /// Notifies other Features on the state of Session Replay records count.
-    func setRecordsCountByViewID(_ value: [String: Int64]) {
-        core?.set(context: SessionReplayCoreContext.RecordsCount(value: value))
+    /// Increments the Session Replay record count for a RUM view.
+    func incrementRecordCount(by count: Int64, forViewID viewID: String) {
+        guard count > 0 else {
+            return
+        }
+
+        core?.set(
+            context: {
+                self.recordCounts[viewID, default: 0] += count
+                return SessionReplayCoreContext.RecordsCount(value: self.recordCounts)
+            }
+        )
     }
 }
 #endif

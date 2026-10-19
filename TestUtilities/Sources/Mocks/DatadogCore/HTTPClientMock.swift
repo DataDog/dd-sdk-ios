@@ -13,18 +13,18 @@ public class HTTPClientMock: HTTPClient {
     /// Keeps track of sent requests.
     private var requests: [URLRequest] = []
     /// Closure providing the result for each request.
-    private let result: (URLRequest) -> Result<HTTPURLResponse, Error>
+    private let result: (URLRequest) -> Result<(HTTPURLResponse, Data?), Error>
 
     /// Initializes the mock client with a result closure.
     /// - Parameter result: Closure providing the completion result for each incoming request (default is a successful HTTP response with `202` code).
-    public init(result: @escaping ((URLRequest) -> Result<HTTPURLResponse, Error>) = { _ in .success(.mockResponseWith(statusCode: 202)) }) {
+    public init(result: @escaping ((URLRequest) -> Result<(HTTPURLResponse, Data?), Error>) = { _ in .success((.mockResponseWith(statusCode: 202), nil)) }) {
         self.result = result
     }
 
     /// Convenience initializer for creating a mock client with a predefined response.
     /// - Parameter response: `HTTPURLResponse` to be used as completion for all incoming requests.
-    public convenience init(response: HTTPURLResponse) {
-        self.init(result: { _ in .success(response) })
+    public convenience init(response: HTTPURLResponse, data: Data? = nil) {
+        self.init(result: { _ in .success((response, data)) })
     }
 
     /// Convenience initializer for creating a mock client with a predefined response code.
@@ -41,7 +41,11 @@ public class HTTPClientMock: HTTPClient {
 
     // MARK: - HTTPClient conformance
 
-    public func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, any Error>) -> Void) {
+    public func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping (Result<(HTTPURLResponse, Data?), any Error>) -> Void
+    ) {
         queue.async {
             completion(self.result(request))
             self.requests.append(request)

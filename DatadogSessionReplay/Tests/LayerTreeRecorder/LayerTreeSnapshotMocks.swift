@@ -13,7 +13,6 @@ import QuartzCore
 
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension LayerTreeSnapshot {
     static func mockWith(
         date: Date = Date(timeIntervalSince1970: 42),
@@ -22,7 +21,8 @@ extension LayerTreeSnapshot {
         viewID: String = "view-id",
         viewportSize: CGSize = CGSize(width: 320, height: 640),
         root: CALayerSnapshot = .mockRoot(),
-        webViewSlotIDs: Set<Int> = []
+        webViewSlotIDs: Set<Int> = [],
+        embeddedContentSlots: [Int64: String] = [:]
     ) -> LayerTreeSnapshot {
         return LayerTreeSnapshot(
             date: date,
@@ -40,12 +40,12 @@ extension LayerTreeSnapshot {
             ),
             viewportSize: viewportSize,
             root: root,
-            webViewSlotIDs: webViewSlotIDs
+            webViewSlotIDs: webViewSlotIDs,
+            embeddedContentSlots: embeddedContentSlots
         )
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     static func mockRoot(
         absoluteFrame: CGRect = CGRect(x: 0, y: 0, width: 100, height: 200),
@@ -63,7 +63,9 @@ extension CALayerSnapshot {
         replayID: Int64 = 1,
         absoluteFrame: CGRect = .zero,
         observation: CALayerSnapshot.SemanticObservation = .init(semantics: .layer),
+        heatmapKey: String? = nil,
         bounds: CGRect? = nil,
+        contentGeometry: ContentGeometry? = nil,
         transform: CATransform3D = CATransform3DIdentity,
         backgroundColor: CGColor? = nil,
         cornerRadii: CALayerSnapshot.CornerRadii = .zero,
@@ -75,6 +77,7 @@ extension CALayerSnapshot {
         sublayers: [CALayerSnapshot] = []
     ) -> CALayerSnapshot {
         let layer = CALayer()
+        let bounds = bounds ?? CGRect(origin: .zero, size: absoluteFrame.size)
         return CALayerSnapshot(
             layer: CALayerReference(layer),
             replayID: replayID,
@@ -82,14 +85,20 @@ extension CALayerSnapshot {
             layerClass: CALayer.self,
             delegateClass: nil,
             contentsClass: nil,
+            heatmapKey: heatmapKey,
             textAndInputPrivacyLevel: .maskSensitiveInputs,
             imagePrivacyLevel: .maskNone,
             isPrivate: isPrivate,
-            bounds: bounds ?? CGRect(origin: .zero, size: absoluteFrame.size),
+            bounds: bounds,
             position: absoluteFrame.origin,
             zPosition: 0,
             transform: transform,
             absoluteFrame: absoluteFrame,
+            contentGeometry: contentGeometry ?? .init(
+                renderBounds: bounds,
+                localRect: bounds,
+                frame: absoluteFrame
+            ),
             sublayers: sublayers,
             dependencies: [],
             sublayerTransform: CATransform3DIdentity,

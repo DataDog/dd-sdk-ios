@@ -59,6 +59,112 @@ class GeneratingBacktraceTests: XCTestCase {
         )
     }
 
+    /// Reads the setting the way RUM does: by name, through `CrashReportingConfiguration`.
+    ///
+    /// `nil` means Crash Reporting was never enabled. Resolving the `?? true` fallback here instead would make the
+    /// assertions pass even if nothing were registered at all.
+    private func appHangBacktraceEnabled(in core: DatadogCoreProtocol) -> Bool? {
+        core.feature(named: Feature.crashReporting, type: CrashReportingConfiguration.self)?
+            .appHangBacktraceEnabled
+    }
+
+    /// Number of warnings emitted about the opt-out being undone.
+    ///
+    /// Filtered by substring because `KSCrash` is a process singleton: from the second enabling test onwards it
+    /// prints its own "already installed" warning, which is unrelated. The phrase is unique to the console
+    /// warning, so this cannot start counting the telemetry message that accompanies it.
+    private func optOutWarnings(in spy: PrintFunctionSpy) -> Int {
+        spy.printedMessages.filter { $0.contains("undoes the earlier opt-out") }.count
+    }
+
+    func testWhenCrashReportingIsEnabledOnce_itDoesNotWarnAboutTheOptOut() {
+        // Given
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        // When
+        CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
+
+        // Then
+        XCTAssertEqual(appHangBacktraceEnabled(in: core), false)
+        XCTAssertEqual(optOutWarnings(in: printFunction), 0, "There is no earlier value to undo")
+    }
+
+    func testWhenCrashReportingIsReEnabledWithoutTheOptOut_itWarnsAndAppliesTheLatestValue() {
+        // Given (`register(feature:)` overwrites by name, so a second `enable` replaces the configuration too)
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
+
+        // When (a wrapper SDK enables Crash Reporting again with defaults)
+        CrashReporting.enable(in: core)
+
+        // Then
+        XCTAssertEqual(appHangBacktraceEnabled(in: core), true, "The latest call wins")
+        XCTAssertEqual(optOutWarnings(in: printFunction), 1, "Undoing an explicit opt-out must not pass unnoticed")
+    }
+
+    func testWhenCrashReportingIsReEnabledWithTheOptOut_itDoesNotWarn() {
+        // Given (the app opts out *after* something else enabled Crash Reporting with defaults)
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        CrashReporting.enable(in: core)
+
+        // When
+        CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
+
+        // Then
+        XCTAssertEqual(appHangBacktraceEnabled(in: core), false)
+        XCTAssertEqual(
+            optOutWarnings(in: printFunction),
+            0,
+            "This ends in the state the app asked for, so warning would report a correct outcome"
+        )
+    }
+
+    func testWhenCrashReportingIsReEnabledWithTheSameOptOut_itDoesNotWarn() {
+        // Given
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
+
+        // When
+        CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
+
+        // Then
+        XCTAssertEqual(appHangBacktraceEnabled(in: core), false)
+        XCTAssertEqual(optOutWarnings(in: printFunction), 0, "Nothing changed")
+    }
+
+    func testGivenAppHangBacktracesDisabled_whenGeneratingBacktrace_itStillGeneratesIt() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS")
+        #endif
+        // Given
+        CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
+
+        // Then
+        XCTAssertEqual(appHangBacktraceEnabled(in: core), false)
+
+        // Only the App Hangs consumer is gated - other consumers must keep working:
+        let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace())
+        XCTAssertGreaterThan(backtrace.threads.count, 0, "Some thread(s) should be recorded")
+        XCTAssertGreaterThan(backtrace.binaryImages.count, 0, "Some binary image(s) should be recorded")
+    }
+
+    func testGivenCrashReportingNotEnabled_itPublishesNoOptOut() {
+        // Then (nothing is published, so backtrace generation is *unavailable* rather than *disabled* - it is the
+        // `?? true` fallback at the RUM call site, not this Feature, that decides what an absent configuration means)
+        XCTAssertNil(appHangBacktraceEnabled(in: core))
+    }
+
     func testGeneratingBacktraceOfTheMainThread() throws {
         #if os(watchOS)
         throw XCTSkip("Backtrace generation is not supported on watchOS")

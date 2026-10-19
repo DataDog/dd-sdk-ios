@@ -15,14 +15,9 @@ import UIKit
 internal class KeyWindowObserver: AppWindowObserver {
     /// Returns the key window of the app.
     var relevantWindow: UIWindow? {
-        if #available(iOS 13.0, tvOS 13.0, *) {
-            return findONiOS13AndLater()
-        } else {
-            return nil
-        }
+        return findONiOS13AndLater()
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func findONiOS13AndLater() -> UIWindow? {
         return UIApplication.managedShared?
             .connectedScenes

@@ -12,16 +12,20 @@ internal protocol HTTPClient {
     /// - Parameters:
     ///   - request: The request to be sent.
     ///   - delegate: The task-specific delegate.
-    ///   - completion: A closure that receives a Result containing either an HTTPURLResponse or an Error.
-    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void)
+    ///   - completion: A closure that receives a Result containing either the HTTP response and body or an Error.
+    func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping (Result<(HTTPURLResponse, Data?), Error>) -> Void
+    )
 }
 
 extension HTTPClient {
     /// Sends the provided request using HTTP.
     /// - Parameters:
     ///   - request: The request to be sent.
-    ///   - completion: A closure that receives a Result containing either an HTTPURLResponse or an Error.
-    func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+    ///   - completion: A closure that receives a Result containing either the HTTP response and body or an Error.
+    func send(request: URLRequest, completion: @escaping (Result<(HTTPURLResponse, Data?), Error>) -> Void) {
         self.send(request: request, delegate: nil, completion: completion)
     }
 }

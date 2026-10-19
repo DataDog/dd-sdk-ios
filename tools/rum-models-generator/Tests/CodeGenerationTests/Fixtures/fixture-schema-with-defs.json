@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "$defs": {
+        "StatusType": {
+            "type": "string",
+            "description": "Status description",
+            "enum": ["active", "inactive"]
+        },
+        "CountType": {
+            "type": "integer",
+            "description": "Count description"
+        }
+    },
+    "properties": {
+        "name": {
+            "type": "string"
+        }
+    }
+}

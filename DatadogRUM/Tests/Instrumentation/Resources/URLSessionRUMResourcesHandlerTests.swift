@@ -13,10 +13,28 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
+    /// The RUM session most tests in this file run against.
+    ///
+    /// The handler reads the session from RUM's sampling store rather than from `networkContext`, so
+    /// tests that assert on the injected session ID or on a sampling decision have to set it here.
+    /// The sampler keeps everything except a 0% rate, which is what these tests previously got from
+    /// `Sampler(samplingRate: .maxSampleRate)`.
+    private static let testSessionID = "abcdef01-2345-6789-abcd-ef0123456789"
+    private lazy var testSessionSampling = SessionSamplerMock.keepAll(sessionID: Self.testSessionID)
+
+    /// A session ID that is deliberately NOT the one the store holds.
+    ///
+    /// Tests below still pass a `networkContext` carrying a RUM context, because the handler continues
+    /// to read the active span, user and account from it. Its session ID differs from the store's so
+    /// that every `rumSessionId` / `baggage` assertion proves the value came from the store, which is
+    /// the behaviour this handler changed. See RUM-17921.
+    private static let staleBusSessionID = "99999999-9999-4999-8999-999999999999"
+
     private func createHandler(
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
         distributedTracing: DistributedTracing? = nil,
         headerProcessor: HeaderProcessor? = nil,
+        disallowList: DisallowList? = nil,
         telemetry: Telemetry = NOPTelemetry()
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
@@ -24,6 +42,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             rumAttributesProvider: rumAttributesProvider,
             distributedTracing: distributedTracing,
             headerProcessor: headerProcessor,
+            disallowList: disallowList,
             telemetry: telemetry
         )
         handler.publish(to: commandSubscriber)
@@ -40,7 +59,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -51,7 +71,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -81,7 +101,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -92,7 +113,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -118,7 +139,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -129,7 +151,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -158,7 +180,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -169,7 +192,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -195,7 +218,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .sampled
+                traceContextInjection: .sampled,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -206,7 +230,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -227,7 +251,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -238,7 +263,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -257,7 +282,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -268,7 +294,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -290,7 +316,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -301,7 +328,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -320,7 +347,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -351,7 +379,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 ),
                 userConfigurationContext: .mockWith(id: "some_user_id"),
                 accountConfigurationContext: .mockRandom()
@@ -380,7 +408,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -408,7 +437,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 ),
                 userConfigurationContext: .mockWith(id: "some_user_id"),
                 accountConfigurationContext: .mockRandom()
@@ -439,7 +468,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -527,7 +557,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: DefaultTraceIDGenerator(),
                 spanIDGenerator: DefaultSpanIDGenerator(),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -755,7 +786,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
         let request: URLRequest = .mockWith(httpMethod: "GET")
@@ -765,7 +797,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -799,7 +831,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -813,7 +846,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -836,7 +869,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -850,7 +884,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -874,7 +908,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -889,7 +924,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 ),
                 userConfigurationContext: .init(id: "user123"),
                 accountConfigurationContext: .init(id: "account456")
@@ -927,7 +962,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -940,7 +976,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -959,7 +995,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -973,7 +1010,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -1001,7 +1038,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -1018,7 +1056,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -1129,29 +1167,31 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     func testGivenSameSessionID_withDeterministicSampling_itProducesConsistentSamplingDecision() throws {
         // Given
-        let sessionID: UUID = .mockWith("12345678-1234-4abc-9def-123456789abc")
+        let sessionUUID: UUID = .mockWith("12345678-1234-4abc-9def-123456789abc")
+        let sessionSampling = SessionSamplerMock(
+            identity: .init(
+                sessionID: sessionUUID.uuidString.lowercased(),
+                sampler: DeterministicSampler(uuid: sessionUUID, samplingRate: .maxSampleRate)
+            )
+        )
         let handler = createHandler(
             distributedTracing: .init(
                 samplingRate: 50,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                sessionSampling: sessionSampling
             )
         )
 
-        // When - Make multiple requests with the same session ID
+        // When - Make multiple requests while the same session is active
         var samplingDecisions: [SamplingPriority] = []
         for _ in 1...10 {
             let (_, traceContext, _) = handler.modify(
                 request: .mockWith(url: "https://www.example.com"),
                 headerTypes: [.datadog],
-                networkContext: NetworkContext(
-                    rumContext: .mockWith(
-                        applicationID: .mockRandom(),
-                        sessionID: sessionID
-                    )
-                )
+                networkContext: nil
             )
             samplingDecisions.append(traceContext?.samplingPriority ?? .autoDrop)
         }
@@ -1236,6 +1276,53 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
     }
 
+    // MARK: - Disallow List
+
+    func testGivenDisallowedURL_whenInterceptionStartsAndCompletes_itDoesNotSendAnyRUMCommand() throws {
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        commandSubscriber.onCommandReceived = { _ in XCTFail("No RUM command should be sent for a disallowed URL") }
+
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://excluded.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+        taskInterception.register(metrics: .mockAny())
+        taskInterception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+
+        // When & Then (fails via `onCommandReceived` above if any RUM command is sent)
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+        handler.interceptionDidComplete(interception: taskInterception)
+    }
+
+    func testGivenDisallowedURL_whenInterceptionStarts_itDoesNotRegisterRUMOriginOnInterception() throws {
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://excluded.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+
+        // Then
+        XCTAssertNil(taskInterception.origin)
+    }
+
+    func testGivenNonDisallowedURL_whenDisallowListIsConfigured_itStartsRUMResourceAsUsual() throws {
+        let receiveCommand = expectation(description: "Receive RUM command")
+        commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
+
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://allowed.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(commandSubscriber.lastReceivedCommand is RUMStartResourceCommand)
+    }
+
     // MARK: - Helper Methods
 
     private func extractBaggageKeyValuePairs(from header: String) -> [String: String] {
@@ -1255,6 +1342,133 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         return dict
     }
+
+    // MARK: - Synchronous RUM session sampling
+
+    /*
+     These tests deliberately pass `networkContext: nil`. That is the early-request window: the
+     message bus has not delivered a RUM context yet, which is when the tracing headers used to be
+     dropped. The handler now reads RUM's sampling store instead, so a decision and a session ID are
+     available on the calling thread. See RUM-17921.
+     */
+
+    /// A session UUID whose Knuth hash fraction is roughly 6.4%: kept at a 20% rate applied alone,
+    /// dropped at the 2% that composing 20% with a 10% session rate produces.
+    private static let policyVectorUUID = UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171")!
+    private static let policyVectorSessionID = "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171"
+
+    private func makeSessionSampling(sessionRate: SampleRate = 10) -> SessionSamplerMock {
+        SessionSamplerMock(
+            identity: .init(
+                sessionID: Self.policyVectorSessionID,
+                sampler: DeterministicSampler(uuid: Self.policyVectorUUID, samplingRate: sessionRate)
+            )
+        )
+    }
+
+    private func makeDistributedTracing(
+        samplingRate: SampleRate,
+        sessionSampling: SessionSampler?
+    ) -> DistributedTracing {
+        .init(
+            samplingRate: samplingRate,
+            firstPartyHosts: .init(),
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+            spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+            traceContextInjection: .all,
+            sessionSampling: sessionSampling
+        )
+    }
+
+    func testGivenARUMSession_itComposesTheTracingRateWithTheSessionRate() throws {
+        // Given
+        let sessionSampling = makeSessionSampling()
+        let handler = createHandler(
+            distributedTracing: makeDistributedTracing(samplingRate: 20, sessionSampling: sessionSampling)
+        )
+
+        // When — no `networkContext`, so nothing here comes from the message bus
+        let (request, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        // Then — 20% of a 10% session is an effective 2%, which drops this vector. `modify` returns
+        // no trace context for a dropped request, and `.all` injection still writes the headers with
+        // priority 0 so the backend agrees with the decision.
+        XCTAssertNil(traceContext)
+        XCTAssertEqual(
+            request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField),
+            "0",
+            "The tracing rate is a share of the session, so it must be composed with the session rate"
+        )
+        XCTAssertEqual(sessionSampling.requests.map(\.policy), [.combinedWithSessionRate])
+        XCTAssertEqual(sessionSampling.requests.map(\.rate), [20])
+    }
+
+    func testGivenARUMSession_itKeepsTheRequestWhenTheComposedRateAllowsIt() throws {
+        // Given — a 100% session rate leaves the tracing rate untouched
+        let handler = createHandler(
+            distributedTracing: makeDistributedTracing(
+                samplingRate: 100,
+                sessionSampling: makeSessionSampling(sessionRate: .maxSampleRate)
+            )
+        )
+
+        // When
+        let (request, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        // Then
+        XCTAssertTrue(try XCTUnwrap(traceContext).samplingPriority.isKept)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+    }
+
+    func testGivenARUMSession_itInjectsTheSessionIDTheDecisionWasMadeFor() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: makeDistributedTracing(
+                samplingRate: .maxSampleRate,
+                sessionSampling: makeSessionSampling(sessionRate: .maxSampleRate)
+            )
+        )
+
+        // When
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        // Then
+        XCTAssertEqual(try XCTUnwrap(traceContext).rumSessionId, Self.policyVectorSessionID)
+    }
+
+    func testWithNoRUMSession_itFallsBackToRandomSamplingAndInjectsNoSessionID() throws {
+        // Given — RUM enabled but between sessions, or no store wired at all
+        let handler = createHandler(
+            distributedTracing: makeDistributedTracing(
+                samplingRate: .maxSampleRate,
+                sessionSampling: SessionSamplerMock()
+            )
+        )
+
+        // When
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        // Then — a decision is still made, it just is not tied to a session
+        let injected = try XCTUnwrap(traceContext)
+        XCTAssertTrue(injected.samplingPriority.isKept, "A 100% tracing rate keeps every request")
+        XCTAssertNil(injected.rumSessionId)
+    }
 }
 
 // MARK: - Test Helpers
@@ -1264,4 +1478,94 @@ struct ExpectedGraphQLHeaders {
     static let operationType: String = "_dd-custom-header-graph-ql-operation-type"
     static let variables: String = "_dd-custom-header-graph-ql-variables"
     static let payload: String = "_dd-custom-header-graph-ql-payload"
+}
+
+extension URLSessionRUMResourcesHandlerTests {
+    func testGivenResponseAndMissingBodyError_whenCompleting_itReportsOnlyNetworkError() throws {
+        try assertTransferCompletion(status: 200, body: nil, error: URLError(.networkConnectionLost))
+    }
+
+    func testGivenResponseAndPartialBodyError_whenCompleting_itPreservesErrorMetricsAndAttributes() throws {
+        try assertTransferCompletion(status: 200, body: Data("part".utf8), error: URLError(.networkConnectionLost), metrics: true)
+    }
+
+    func testGivenCompleteBody_whenCompleting_itReportsResource() throws {
+        try assertTransferCompletion(status: 200, body: Data("complete".utf8), error: nil)
+    }
+
+    func testGivenCompleteBodyWithMetrics_whenCompleting_itPreservesDeliveryTypeAndTransferSize() throws {
+        try assertTransferCompletion(status: 200, body: Data("complete".utf8), error: nil, metrics: true)
+    }
+
+    func testGivenSuccessfulHEAD_whenCompleting_itReportsEmptyResource() throws {
+        try assertTransferCompletion(status: 200, body: Data(), error: nil, method: "HEAD")
+    }
+
+    func testGivenSuccessful204_whenCompleting_itReportsEmptyResource() throws {
+        try assertTransferCompletion(status: 204, body: Data(), error: nil)
+    }
+
+    func testGivenNoResponseError_whenCompleting_itPreservesNetworkError() throws {
+        try assertTransferCompletion(status: nil, body: nil, error: URLError(.cannotConnectToHost))
+    }
+
+    func testGivenCompleteHTTPErrorResponse_whenCompleting_itPreservesResourcePolicy() throws {
+        try assertTransferCompletion(status: 404, body: Data("missing".utf8), error: nil)
+    }
+
+    private func assertTransferCompletion(
+        status: Int?,
+        body: Data?,
+        error: Error?,
+        method: String = "GET",
+        metrics: Bool = false,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        var request = URLRequest(url: URL(string: "https://example.com/transfer")!)
+        request.httpMethod = method
+        let interception = URLSessionTaskInterception(request: .init(request: request), isFirstParty: false, trackingMode: .automatic)
+        let response = status.map { HTTPURLResponse(url: request.url!, statusCode: $0, httpVersion: "HTTP/1.1", headerFields: ["Content-Length": "128"])! }
+        if let body { interception.register(nextData: body) }
+        if metrics { interception.register(metrics: .mockWith(deliveryType: .cache, transferSize: 128)) }
+        interception.register(response: response, error: error)
+        var providerCalls = 0
+        let handler = createHandler(rumAttributesProvider: { providedRequest, providedResponse, providedData, providedError in
+            providerCalls += 1
+            XCTAssertEqual(providedRequest.httpMethod, method, file: file, line: line)
+            XCTAssertEqual((providedResponse as? HTTPURLResponse)?.statusCode, status, file: file, line: line)
+            XCTAssertEqual(providedData, body, file: file, line: line)
+            XCTAssertEqual((providedError as NSError?)?.code, (error as NSError?)?.code, file: file, line: line)
+            return ["transfer.control": "preserved"]
+        })
+        handler.interceptionDidComplete(interception: interception)
+        let commands = commandSubscriber.receivedCommands
+        XCTAssertEqual(providerCalls, 1, file: file, line: line)
+        XCTAssertEqual(commands.count, metrics ? 2 : 1, file: file, line: line)
+        XCTAssertEqual(commands.compactMap { $0 as? RUMAddResourceMetricsCommand }.count, metrics ? 1 : 0, file: file, line: line)
+        if metrics {
+            let command = try XCTUnwrap(commands.first as? RUMAddResourceMetricsCommand, file: file, line: line)
+            XCTAssertEqual(command.resourceKey, interception.identifier.uuidString, file: file, line: line)
+            XCTAssertEqual(command.metrics.deliveryType, .cache, file: file, line: line)
+            XCTAssertEqual(command.metrics.transferSize, 128, file: file, line: line)
+        }
+        let successes = commands.compactMap { $0 as? RUMStopResourceCommand }
+        let failures = commands.compactMap { $0 as? RUMStopResourceWithErrorCommand }
+        XCTAssertEqual(successes.count, error == nil ? 1 : 0, file: file, line: line)
+        XCTAssertEqual(failures.count, error == nil ? 0 : 1, file: file, line: line)
+        if error != nil {
+            let failure = try XCTUnwrap(failures.first, file: file, line: line)
+            XCTAssertEqual(failure.resourceKey, interception.identifier.uuidString, file: file, line: line)
+            XCTAssertEqual(failure.httpStatusCode, status, file: file, line: line)
+            XCTAssertEqual(failure.errorSource, .network, file: file, line: line)
+            XCTAssertTrue(failure.isNetworkError, file: file, line: line)
+            XCTAssertEqual(failure.attributes["transfer.control"] as? String, "preserved", file: file, line: line)
+            XCTAssertEqual(Set(failure.attributes.keys), ["transfer.control"], file: file, line: line)
+        } else {
+            let success = try XCTUnwrap(successes.first, file: file, line: line)
+            XCTAssertEqual(success.resourceKey, interception.identifier.uuidString, file: file, line: line)
+            XCTAssertEqual(success.httpStatusCode, status, file: file, line: line)
+            XCTAssertEqual(success.attributes["transfer.control"] as? String, "preserved", file: file, line: line)
+        }
+    }
 }

@@ -76,6 +76,8 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         }
     }
 
+    public var remoteConfiguration: RemoteConfiguration? { core.remoteConfiguration }
+
     public func register<T>(feature: T) throws where T: DatadogFeature {
         try core.register(feature: feature)
     }
@@ -141,6 +143,13 @@ extension DatadogCoreProxy {
 
     public func flushAndTearDown() throws {
         core.flushAndTearDown()
+
+        // Upload workers can post telemetry (e.g. `upload_quality`) after the last bus flush in
+        // `core.flushAndTearDown()`, and the bus retains this proxy while delivering a message.
+        // Reconnect the bus to the actual core and wait for in-flight deliveries, so this proxy
+        // is not released on the bus queue after the test ends.
+        core.bus.connect(core: core)
+        core.bus.flush()
 
         if temporaryCoreDirectory.coreDirectory.exists() {
             try temporaryCoreDirectory.coreDirectory.delete()

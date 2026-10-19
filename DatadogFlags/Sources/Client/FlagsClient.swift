@@ -185,7 +185,8 @@ public final class FlagsClient {
                 clientName: name,
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
-                featureScope: featureScope
+                featureScope: featureScope,
+                initializationTimeout: feature.initializationTimeout
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),

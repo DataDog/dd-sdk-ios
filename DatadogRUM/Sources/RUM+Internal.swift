@@ -56,7 +56,8 @@ extension InternalExtension where ExtendedType == RUM {
                 firstPartyHosts: FirstPartyHosts(hosts),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,
-                traceContextInjection: traceContextInjection
+                traceContextInjection: traceContextInjection,
+                sessionSampling: rum.sessionSamplingStore
             )
         case let .traceWithHeaders(hostsWithHeaders, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
@@ -64,7 +65,8 @@ extension InternalExtension where ExtendedType == RUM {
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,
-                traceContextInjection: traceContextInjection
+                traceContextInjection: traceContextInjection,
+                sessionSampling: rum.sessionSamplingStore
             )
         case .none:
             distributedTracing = nil
@@ -79,11 +81,16 @@ extension InternalExtension where ExtendedType == RUM {
             }
         }()
 
+        let disallowList: DisallowList? = configuration.disallowList.isEmpty
+            ? nil
+            : DisallowList(configuration.disallowList)
+
         let urlSessionHandler = URLSessionRUMResourcesHandler(
             dateProvider: rumConfiguration.dateProvider,
             rumAttributesProvider: configuration.resourceAttributesProvider,
             distributedTracing: distributedTracing,
             headerProcessor: headerProcessor,
+            disallowList: disallowList,
             telemetry: core.telemetry
         )
 

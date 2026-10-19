@@ -8,7 +8,15 @@
 import Foundation
 import DatadogInternal
 
-internal struct ResourceRequestBuilder: FeatureRequestBuilder {
+internal struct ResourceRequestBuilder: FeatureEventReconciler {
+    private struct Response: Decodable {
+        let storedResourceIdentifiers: Set<String>
+
+        private enum CodingKeys: String, CodingKey {
+            case storedResourceIdentifiers = "stored_resource_ids"
+        }
+    }
+
     /// Custom URL for uploading data to.
     let customUploadURL: URL?
     /// Sends telemetry through sdk core.
@@ -16,26 +24,81 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
     /// Builds multipart form for request's body.
     let multipartBuilder: MultipartFormDataBuilder
 
+    /// Stores resource identifiers confirmed to be available in the backend
+    private let availabilityStore: ResourceAvailabilityStore
+
+    private let decoder = JSONDecoder()
+    private let encoder = JSONEncoder()
+
     init(
         customUploadURL: URL?,
+        availabilityStore: ResourceAvailabilityStore,
         telemetry: Telemetry,
-        multipartBuilder: MultipartFormDataBuilder = MultipartFormData()
+        multipartBuilder: MultipartFormDataBuilder = MultipartFormData(),
     ) {
         self.customUploadURL = customUploadURL
+        self.availabilityStore = availabilityStore
         self.telemetry = telemetry
         self.multipartBuilder = multipartBuilder
     }
+
+    // MARK: - FeatureRequestBuilder
 
     func request(
         for events: [Event],
         with context: DatadogContext,
         execution: ExecutionContext
     ) throws -> URLRequest {
-        let decoder = JSONDecoder()
         let resources = try events.map { event in
             try decoder.decode(EnrichedResource.self, from: event.data)
         }
         return try createRequest(resources: resources, context: context, execution: execution)
+    }
+
+    // MARK: - FeatureEventReconciler
+
+    func reconciliation(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> EventReconciliation {
+        let resourceRefs = try events.resourceRefs(using: decoder)
+
+        guard let applicationID = resourceRefs.applicationID else {
+            return .resolved
+        }
+
+        if availabilityStore.contains(
+            allOf: resourceRefs.lazy.map(\.identifier),
+            forApplicationID: applicationID
+        ) {
+            return .resolved
+        }
+
+        // TODO: PANA-9417 Build the reconciliation request for the entire batch.
+        return .skip
+    }
+
+    func reconcile(from events: [Event], using response: HTTPURLResponse, data: Data?) throws -> [Event] {
+        guard let data else {
+            throw InternalError(description: "Resource reconciliation response is missing its body.")
+        }
+        let response = try decoder.decode(Response.self, from: data)
+        let resourceRefs = try events.resourceRefs(using: decoder)
+
+        guard let applicationID = resourceRefs.applicationID else {
+            return events
+        }
+
+        let missingResourceIdentifiers = Set(resourceRefs.map(\.identifier))
+            .subtracting(response.storedResourceIdentifiers)
+
+        availabilityStore.invalidate(missingResourceIdentifiers, forApplicationID: applicationID)
+        availabilityStore.insert(response.storedResourceIdentifiers, forApplicationID: applicationID)
+
+        return zip(events, resourceRefs).compactMap { event, resource in
+            response.storedResourceIdentifiers.contains(resource.identifier) ? nil : event
+        }
     }
 
     private func createRequest(resources: [EnrichedResource], context: DatadogContext, execution: ExecutionContext) throws -> URLRequest {
@@ -69,7 +132,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
             )
         }
         if let context = resources.first?.context {
-            let data = try JSONEncoder().encode(context)
+            let data = try encoder.encode(context)
             multipart.addFormData(
                 name: "event",
                 filename: "blob",
@@ -83,6 +146,27 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
 
     private func url(with context: DatadogContext) -> URL {
         customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/replay")
+    }
+}
+
+private struct ResourceRef: Decodable {
+    let identifier: String
+    let context: EnrichedResource.Context
+}
+
+extension Array where Element == Event {
+    fileprivate func resourceRefs(using decoder: JSONDecoder) throws -> [ResourceRef] {
+        try self.map { event in
+            try decoder.decode(ResourceRef.self, from: event.data)
+        }
+    }
+}
+
+extension Array where Element == ResourceRef {
+    fileprivate var applicationID: String? {
+        // Assume a single application ID per resource batch.
+        // Reenabling RUM with a different ID while Session Replay is active is technically possible but unsupported.
+        first?.context.application.id
     }
 }
 #endif

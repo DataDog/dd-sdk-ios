@@ -7,9 +7,9 @@
 #if os(iOS)
 import DatadogInternal
 import Foundation
+import CoreImage
 
 /// Turns layer tree, image, and touch snapshots into Session Replay records.
-@available(iOS 13.0, tvOS 13.0, *)
 internal protocol LayerSnapshotProcessing {
     func process(
         layerTreeSnapshot: LayerTreeSnapshot,
@@ -19,31 +19,32 @@ internal protocol LayerSnapshotProcessing {
 }
 
 /// Builds and writes Session Replay records for the Core Animation recording pipeline.
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     private let queue: Queue
     private let recordWriter: RecordWriting
     private let resourceProcessor: ResourceProcessing
     private let replayContextPublisher: SRContextPublisher
+    private let heatmapIdentifierRegistry: (any HeatmapIdentifierRegistry)?
     private let telemetry: Telemetry
     private let recordBuilder = LayerRecordBuilder()
 
     private var lastSnapshot: LayerTreeSnapshot?
     private var lastCompositionTree: SRCompositionTree?
     private var lastWireframes: [SRWireframe]?
-    private var recordsCountByViewID: [String: Int64] = [:]
 
     init(
         queue: Queue,
         recordWriter: RecordWriting,
         resourceProcessor: ResourceProcessing,
         replayContextPublisher: SRContextPublisher,
+        heatmapIdentifierRegistry: (any HeatmapIdentifierRegistry)?,
         telemetry: Telemetry
     ) {
         self.queue = queue
         self.recordWriter = recordWriter
         self.resourceProcessor = resourceProcessor
         self.replayContextPublisher = replayContextPublisher
+        self.heatmapIdentifierRegistry = heatmapIdentifierRegistry
         self.telemetry = telemetry
     }
 
@@ -58,6 +59,8 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
                 imageSnapshots: imageSnapshots,
                 touchSnapshot: touchSnapshot
             )
+            // Release temporary images and textures after each batch
+            CIContext.clearSessionReplayCaches()
         }
     }
 
@@ -69,8 +72,15 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
         let output = CompositionTreeBuilder(
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
-            imageSnapshots: imageSnapshots
+            embeddedContentSlots: layerTreeSnapshot.embeddedContentSlots,
+            imageSnapshots: imageSnapshots,
+            screenName: layerTreeSnapshot.context.viewPath
         ).build()
+
+        heatmapIdentifierRegistry?.setHeatmapIdentifiers(
+            output.heatmapIdentifiers,
+            requiresDescendantLookup: true
+        )
 
         var records = records(
             from: layerTreeSnapshot,
@@ -84,7 +94,10 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
 
         if !records.isEmpty {
             let enrichedRecord = EnrichedRecord(context: layerTreeSnapshot.context, records: records)
-            trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
+            replayContextPublisher.incrementRecordCount(
+                by: Int64(records.count),
+                forViewID: enrichedRecord.viewID
+            )
             recordWriter.write(nextRecord: enrichedRecord)
         }
 
@@ -168,14 +181,8 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
 
         return records
     }
-
-    private func trackRecord(key: String, value: Int64) {
-        recordsCountByViewID[key, default: 0] += value
-        replayContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
-    }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension LayerTreeSnapshot {
     func shouldStartNewSegment(after previousSnapshot: LayerTreeSnapshot?) -> Bool {
         return context.applicationID != previousSnapshot?.context.applicationID ||
@@ -184,7 +191,6 @@ private extension LayerTreeSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension EnrichedRecord {
     init(context: LayerRecordingContext, records: [SRRecord]) {
         self.applicationID = context.applicationID

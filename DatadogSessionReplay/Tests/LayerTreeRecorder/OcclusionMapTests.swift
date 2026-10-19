@@ -13,7 +13,6 @@ import Testing
 
 @Suite(.datadogTesting)
 struct OcclusionMapTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Reports nothing as covered when the map is empty")
     func emptyMapReportsNothingAsCovered() {
         // Given
@@ -27,7 +26,6 @@ struct OcclusionMapTests {
         #expect(!isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores inserts one pixel short of a tile")
     func ignoresInsertsOnePixelShortOfATile() {
         // Given
@@ -41,7 +39,6 @@ struct OcclusionMapTests {
         #expect(!isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not cover a query that overlaps an unmarked tile")
     func doesNotCoverQueryOverlappingAnUnmarkedTile() {
         // Given
@@ -55,7 +52,6 @@ struct OcclusionMapTests {
         #expect(!isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Covers a query that spans the union of adjacent inserts")
     func coversQuerySpanningUnionOfAdjacentInserts() {
         // Given
@@ -70,7 +66,6 @@ struct OcclusionMapTests {
         #expect(isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test(
         "Does not cover an invalid candidate rect",
         arguments: [
@@ -92,7 +87,6 @@ struct OcclusionMapTests {
         #expect(!isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test(
         "Treats invalid sizes as empty",
         arguments: [
@@ -112,7 +106,6 @@ struct OcclusionMapTests {
         #expect(!isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores partial tiles at the canvas edge")
     func ignoresPartialTilesAtCanvasEdge() {
         // Given
@@ -128,7 +121,6 @@ struct OcclusionMapTests {
         #expect(!partialTileCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Supports canvases wider than 64 tiles")
     func supportsCanvasesWiderThan64Tiles() {
         // Given
@@ -142,7 +134,6 @@ struct OcclusionMapTests {
         #expect(isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Covers a query whose columns cross a word boundary")
     func coversQueryCrossingAWordBoundary() {
         // Given
@@ -160,7 +151,6 @@ struct OcclusionMapTests {
         #expect(!coveredJustAfterRange)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Covers a non-aligned query inside a marked region")
     func coversNonAlignedQueryInsideMarkedRegion() {
         // Given
@@ -174,7 +164,6 @@ struct OcclusionMapTests {
         #expect(isCovered)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Marks only fully-enclosed tiles when insert starts and ends mid-tile")
     func marksOnlyFullyEnclosedTilesWhenInsertStartsAndEndsMidTile() {
         // Given

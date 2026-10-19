@@ -25,11 +25,15 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: ResourcesWriting
     ) throws {
+        let srContextPublisher = SRContextPublisher(core: core)
         let recordingComponents = try RecordingComponents(
             core: core,
-            configuration: configuration
+            configuration: configuration,
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: srContextPublisher
         )
 
         self.requestBuilder = SegmentRequestBuilder(
@@ -39,14 +43,19 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.messageReceiver = CombinedFeatureMessageReceiver(
             [
                 recordingComponents.messageReceiver,
-                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self))
+                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self)),
+                EmbeddedContentReceiver(
+                    scope: core.scope(for: SessionReplayFeature.self),
+                    resourcesWriter: resourcesWriter,
+                    srContextPublisher: srContextPublisher
+                )
             ]
         )
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: SessionReplay.maxObjectSize,
             maxObjectSize: SessionReplay.maxObjectSize,
             meanFileAge: 2, // vs 5s with `batchSize: .small` - see `DatadogCore.PerformancePreset`
-            maxFileAgeForRead: 5.hours, // Session Replay intake max age is 5 hours
+            maxFileAgeForRead: 12.hours, // Conservative retention considering the backend view-close timeout
             uploadDelay: (
                 initial: 2, // vs 5s with `uploadFrequency: .frequent`
                 range: 0.6..<6, // vs 1s ..< 10s with `uploadFrequency: .frequent`
