@@ -77,7 +77,7 @@ custom_rules:
   unmanaged_deallocation: # prevents from unmanaged singletons deallocation with `.instance = nil`
     name: "Unmanaged singleton deallocation: `.instance = nil`"
     regex: '.instance = nil'
-    excluded_match_kinds: 
+    excluded_match_kinds:
       - comment
       - doccomment
     message: "All singletons must provide an explicit deinitialization API (e.g. `deinitialize()`) to reset its state and tear down all asynchronous work."
