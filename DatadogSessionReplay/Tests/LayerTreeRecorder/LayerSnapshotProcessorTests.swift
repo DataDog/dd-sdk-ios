@@ -9,7 +9,6 @@ import CoreGraphics
 @_spi(Internal)
 import DatadogInternal
 import Testing
-import DatadogSDKTesting
 @_spi(Internal)
 import TestUtilities
 import UIKit

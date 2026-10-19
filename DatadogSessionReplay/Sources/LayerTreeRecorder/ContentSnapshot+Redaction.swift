@@ -87,9 +87,11 @@ extension ContentSnapshot {
     private var isStaticText: Bool {
         layerClass.isSubclass(of: CATextLayer.self) ||
         layerClassName.hasSuffix("CGDrawingLayer") ||
+        layerClassName.hasSuffix("RBDrawingLayer") ||
         layerClassName.hasSuffix("UILabelLayer") ||
         delegateClass?.isSubclass(of: UILabel.self) == true ||
-        delegateClassName?.hasSuffix("CGDrawingView") == true
+        delegateClassName?.hasSuffix("CGDrawingView") == true ||
+        delegateClassName?.hasSuffix("RBDrawingView") == true
     }
 
     private var isImageLayer: Bool {

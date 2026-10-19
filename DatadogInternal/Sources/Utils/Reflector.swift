@@ -122,19 +122,33 @@ extension Reflector {
         descendant([first] + rest) as? T
     }
 
-    /// Access a descendant of specified type by path.
+    /// Access a descendant of the specified type by path.
     ///
     /// - Parameters:
     ///   - type: The expected descendant type.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error.notFound` or `Reflector.Error.typeMismatch`
-    public func descendant<T>(type: T.Type = T.self, _ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> T {
-        try descendant([first] + rest)
+    /// - Returns: The descendant instance if it exists at the provided path.
+    /// - Throws: `Reflector.Error.notFound` or `Reflector.Error.typeMismatch`.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> T {
+        try descendant(type: type, [first] + rest)
     }
 
-    public func descendant<T>(type: T.Type = T.self, _ paths: [ReflectionMirror.Path]) throws -> T {
+    /// Access a descendant of the specified type by path.
+    ///
+    /// - Parameters:
+    ///   - type: The expected descendant type.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The descendant instance if it exists at the provided path.
+    /// - Throws: `Reflector.Error.notFound` or `Reflector.Error.typeMismatch`.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> T {
         guard let value = descendant(paths) else {
             throw Error.notFound(.init(subjectType: mirror.subjectType, paths: paths))
         }
@@ -181,30 +195,32 @@ extension Reflector {
         }
     }
 
-    /// Reflect a descendant to the specified Element type by path.
+    /// Reflect a Collection descendant of the specified type by path.
     ///
     /// - Parameters:
-    ///   - type: The expected descendant type.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<T>(type: T.Type = T.self, _ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> T where T: Reflection {
-        try descendant(type: type, [first] + rest)
+    /// - Returns: The reflected collection, omitting elements that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch`.
+    public func descendant<Element>(
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> [Element] where Element: Reflection {
+        try descendant([first] + rest)
     }
 
     /// Reflect a Collection descendant of the specified type by path.
     ///
     /// - Parameters:
-    ///   - type: The expected element type.
-    ///   - first: The first path element.
-    ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<Element>(_ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> [Element] where Element: Reflection {
-        guard let subject = descendant([first] + rest) as? [Any] else {
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflected collection, omitting elements that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch`.
+    public func descendant<Element>(
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> [Element] where Element: Reflection {
+        guard let subject = descendant(paths) as? [Any] else {
             throw Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: [first] + rest),
+                .init(subjectType: mirror.subjectType, paths: paths),
                 expect: [Any].self,
                 got: mirror.subjectType
             )
@@ -223,15 +239,29 @@ extension Reflector {
     /// Reflect a Dictionary descendant to the specified Key/Value types by path.
     ///
     /// - Parameters:
-    ///   - type: The expected element type.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<Key, Value>(_ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> [Key: Value] where Key: Hashable, Value: Reflection {
-        guard let subject = descendant([first] + rest) as? [Key: Any] else {
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch`.
+    public func descendant<Key, Value>(
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> [Key: Value] where Key: Hashable, Value: Reflection {
+        try descendant([first] + rest)
+    }
+
+    /// Reflect a Dictionary descendant to the specified Key/Value types by path.
+    ///
+    /// - Parameters:
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch`.
+    public func descendant<Key, Value>(
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> [Key: Value] where Key: Hashable, Value: Reflection {
+        guard let subject = descendant(paths) as? [Key: Any] else {
             throw Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: [first] + rest),
+                .init(subjectType: mirror.subjectType, paths: paths),
                 expect: [Key: Any].self,
                 got: mirror.subjectType
             )
@@ -249,15 +279,29 @@ extension Reflector {
     /// Reflect a Dictionary descendant to the specified Key/Value types by path.
     ///
     /// - Parameters:
-    ///   - type: The expected element type.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<Key, Value>(_ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> [Key: Value] where Key: Reflection, Key: Hashable, Value: Reflection {
-        guard let subject = descendant([first] + rest) as? [AnyHashable: Any] else {
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch`.
+    public func descendant<Key, Value>(
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> [Key: Value] where Key: Reflection, Key: Hashable, Value: Reflection {
+        try descendant([first] + rest)
+    }
+
+    /// Reflect a Dictionary descendant to the specified Key/Value types by path.
+    ///
+    /// - Parameters:
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch`.
+    public func descendant<Key, Value>(
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> [Key: Value] where Key: Reflection, Key: Hashable, Value: Reflection {
+        guard let subject = descendant(paths) as? [AnyHashable: Any] else {
             throw Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: [first] + rest),
+                .init(subjectType: mirror.subjectType, paths: paths),
                 expect: [AnyHashable: Any].self,
                 got: mirror.subjectType
             )
@@ -272,7 +316,33 @@ extension Reflector {
         }
     }
 
-    public func descendant<T>(type: T.Type = T.self, _ paths: [ReflectionMirror.Path]) throws -> T where T: Reflection {
+    /// Reflect a descendant to the specified type by path.
+    ///
+    /// - Parameters:
+    ///   - type: The expected descendant type.
+    ///   - first: The first path element.
+    ///   - rest: The rest of the path elements.
+    /// - Returns: The reflection instance.
+    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> T where T: Reflection {
+        try descendant(type: type, [first] + rest)
+    }
+
+    /// Reflect a descendant to the specified type by path.
+    ///
+    /// - Parameters:
+    ///   - type: The expected descendant type.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflection instance.
+    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> T where T: Reflection {
         guard let value = descendant(paths) else {
             throw Error.notFound(.init(subjectType: mirror.subjectType, paths: paths))
         }

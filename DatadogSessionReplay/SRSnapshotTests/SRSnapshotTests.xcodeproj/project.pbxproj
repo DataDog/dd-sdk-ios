@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		0B2B4E26AC6546CAB12DB535 /* CompositionLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26878FC02BB942329DFBEB9D /* CompositionLayerView.swift */; };
+		5B0B6E52306D6B380079DA3A /* DrawingGroupFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B6E51306D6B380079DA3A /* DrawingGroupFixtureView.swift */; };
+		5B0B6E54306D6B3D0079DA3A /* CanvasFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B6E53306D6B3D0079DA3A /* CanvasFixtureView.swift */; };
+		5B0B6E56306D6B780079DA3A /* TextFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B6E55306D6B780079DA3A /* TextFixtureViewController.swift */; };
+		5B0B6E58306D6BA50079DA3A /* TextVariantsFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B6E57306D6BA50079DA3A /* TextVariantsFixtureView.swift */; };
 		5B0E062430060D80004CF4D3 /* ToolbarFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */; };
 		5B1C4F90305C42B300C2745C /* SnapshotEnvironments.json in Resources */ = {isa = PBXBuildFile; fileRef = 5B1C4F8F305C42B300C2745C /* SnapshotEnvironments.json */; };
 		5B1C4F92305C42B600C2745C /* LayerSnapshotEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1C4F91305C42B600C2745C /* LayerSnapshotEnvironment.swift */; };
@@ -75,6 +79,10 @@
 		12214F9A2906409FA7979ACC /* WireframeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframeView.swift; sourceTree = "<group>"; };
 		157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFixtureView.swift; sourceTree = "<group>"; };
 		26878FC02BB942329DFBEB9D /* CompositionLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionLayerView.swift; sourceTree = "<group>"; };
+		5B0B6E51306D6B380079DA3A /* DrawingGroupFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingGroupFixtureView.swift; sourceTree = "<group>"; };
+		5B0B6E53306D6B3D0079DA3A /* CanvasFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasFixtureView.swift; sourceTree = "<group>"; };
+		5B0B6E55306D6B780079DA3A /* TextFixtureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFixtureViewController.swift; sourceTree = "<group>"; };
+		5B0B6E57306D6BA50079DA3A /* TextVariantsFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextVariantsFixtureView.swift; sourceTree = "<group>"; };
 		5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarFixtureView.swift; sourceTree = "<group>"; };
 		5B1C4F8F305C42B300C2745C /* SnapshotEnvironments.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SnapshotEnvironments.json; sourceTree = "<group>"; };
 		5B1C4F91305C42B600C2745C /* LayerSnapshotEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotEnvironment.swift; sourceTree = "<group>"; };
@@ -278,6 +286,10 @@
 				5B5797B13062BD300002F9DF /* ShareSheetFixtureViewController.swift */,
 				5BA7641C3063DD7C008553D1 /* SafariFixtureViewController.swift */,
 				5BBEC04C3064091600D05D8B /* VideoPlayerFixtureView.swift */,
+				5B0B6E51306D6B380079DA3A /* DrawingGroupFixtureView.swift */,
+				5B0B6E53306D6B3D0079DA3A /* CanvasFixtureView.swift */,
+				5B0B6E55306D6B780079DA3A /* TextFixtureViewController.swift */,
+				5B0B6E57306D6BA50079DA3A /* TextVariantsFixtureView.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -472,11 +484,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				5B8D57B12FF7F8A80082404D /* StepperFixtureView.swift in Sources */,
+				5B0B6E56306D6B780079DA3A /* TextFixtureViewController.swift in Sources */,
 				71178A2E51724DE08237F169 /* UIColor+Hex.swift in Sources */,
 				9D32AEBF1E6647438AE1FA2A /* UIImage+SVG.swift in Sources */,
 				6B9225BBC49B4ED5A8DF83B8 /* CompositionTreeRendering.swift in Sources */,
 				5BA7641D3063DD7C008553D1 /* SafariFixtureViewController.swift in Sources */,
 				0B2B4E26AC6546CAB12DB535 /* CompositionLayerView.swift in Sources */,
+				5B0B6E58306D6BA50079DA3A /* TextVariantsFixtureView.swift in Sources */,
 				E6DE736005334DA8BD20F1E2 /* WireframeView.swift in Sources */,
 				5B94B8EB2FFFE3C5007DFF8E /* AlertFixtureView.swift in Sources */,
 				5B0E062430060D80004CF4D3 /* ToolbarFixtureView.swift in Sources */,
@@ -486,7 +500,9 @@
 				5B1C4F92305C42B600C2745C /* LayerSnapshotEnvironment.swift in Sources */,
 				5B5797B23062BD300002F9DF /* ShareSheetFixtureViewController.swift in Sources */,
 				BBC8DFBCE103473D93F1139A /* TextFixtureView.swift in Sources */,
+				5B0B6E52306D6B380079DA3A /* DrawingGroupFixtureView.swift in Sources */,
 				5BA07FD13002E97700322F5D /* TabFixtureView.swift in Sources */,
+				5B0B6E54306D6B3D0079DA3A /* CanvasFixtureView.swift in Sources */,
 				5BBEC04D3064091600D05D8B /* VideoPlayerFixtureView.swift in Sources */,
 				B32BB660FF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift in Sources */,
 				F5D1C29527334F449C400E97 /* LayerSnapshotTestCase.swift in Sources */,

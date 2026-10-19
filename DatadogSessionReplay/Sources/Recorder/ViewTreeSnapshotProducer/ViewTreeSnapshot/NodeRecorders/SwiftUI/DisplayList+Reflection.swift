@@ -36,7 +36,10 @@ extension DisplayList.ViewRenderer: Reflection {
 
 extension DisplayList.ViewUpdater: Reflection {
     init(from reflector: Reflector) throws {
-        viewCache = try reflector.descendant("viewCache")
+        // Copy only map to avoid copying unrelated caches that SwiftUI may update concurrently
+        viewCache = .init(
+            map: try reflector.descendant("viewCache", "map")
+        )
         lastList = try reflector.descendant("lastList")
     }
 }
@@ -59,12 +62,6 @@ extension DisplayList.Effect: Reflection {
         default:
             self = .unknown
         }
-    }
-}
-
-extension DisplayList.ViewUpdater.ViewCache: Reflection {
-    init(from reflector: Reflector) throws {
-        map = try reflector.descendant("map")
     }
 }
 

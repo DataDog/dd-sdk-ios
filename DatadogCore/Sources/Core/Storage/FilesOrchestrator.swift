@@ -221,7 +221,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
         do {
 #if DD_BENCHMARK
-            if case .intakeCode = deletionReason {
+            if deletionReason.isUploadCompletion {
                 try bench.meter.counter(metric: "ios.benchmark.bytes_deleted")
                     .increment(by: readableFile.size(), attributes: ["track": trackName])
             }

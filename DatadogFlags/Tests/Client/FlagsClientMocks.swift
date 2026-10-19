@@ -168,11 +168,15 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     }
 
     func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
-        flagsData?.flags[key]
+        var cached = flagsData.map { FlagsRepository.CachedFlagsData(data: $0) }
+        return cached?.flagAssignment(for: key)
     }
 
     func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
-        flagsData?.flags
+        guard let data = flagsData, data.obfuscation == nil else {
+            return nil
+        }
+        return data.flags
     }
 
     func reset() {
@@ -184,7 +188,7 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
     var flagAssignmentsStub: (
         (
             FlagsEvaluationContext,
-            @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+            @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
         ) -> Void
     )?
 
@@ -192,7 +196,7 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
         flagAssignmentsStub: (
             (
                 FlagsEvaluationContext,
-                @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+                @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
             ) -> Void
         )? = nil
     ) {
@@ -201,7 +205,7 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         flagAssignmentsStub?(evaluationContext, completion)
     }

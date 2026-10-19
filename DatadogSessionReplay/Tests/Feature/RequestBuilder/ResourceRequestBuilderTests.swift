@@ -11,6 +11,7 @@ import DatadogInternal
 @testable import TestUtilities
 
 class ResourceRequestBuilderTests: XCTestCase {
+    private let availabilityStore = ResourceAvailabilityStore(scope: FeatureScopeMock())
     private let resources = [
         EnrichedResource.mockRandom(),
         EnrichedResource.mockRandom(),
@@ -22,7 +23,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
     func testItCreatesPOSTRequest() throws {
         // Given
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock())
 
         // When
         let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .mockAny())
@@ -33,7 +34,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
     func testItSetsIntakeURL() {
         // Given
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock())
 
         // When
         func url(for site: DatadogSite) throws -> String {
@@ -56,7 +57,7 @@ class ResourceRequestBuilderTests: XCTestCase {
     func testItSetsCustomIntakeURL() {
         // Given
         let randomURL: URL = .mockRandom()
-        let builder = ResourceRequestBuilder(customUploadURL: randomURL, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: randomURL, availabilityStore: availabilityStore, telemetry: TelemetryMock())
 
         // When
         func url(for site: DatadogSite) throws -> String {
@@ -79,7 +80,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
     func testItSetsQueryParameters() throws {
         // Given
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock())
 
         // When
         let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .init(previousResponseCode: nil, attempt: 0))
@@ -99,7 +100,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         let randomDeviceOSVersion: String = .mockRandom()
 
         // Given
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock())
         let context: DatadogContext = .mockWith(
             clientToken: randomClientToken,
             version: randomVersion,
@@ -135,7 +136,7 @@ class ResourceRequestBuilderTests: XCTestCase {
     func testItSetsHTTPBodyInExpectedFormat() throws {
         // Given
         let multipartSpy = MultipartBuilderSpy()
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
 
         // When
         let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .mockAny())
@@ -157,7 +158,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
     func testWhenBatchDataIsMalformed_itThrows() {
         // Given
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock())
 
         // When, Then
         XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockRandom(), execution: .mockAny()))
@@ -167,7 +168,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         // Given
         let randomAttempt: UInt = .mockRandom(min: 1, max: 10)
         let randomStatus: Int = .mockRandom()
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock())
         let execution: ExecutionContext = .mockWith(previousResponseCode: randomStatus, attempt: randomAttempt)
 
         // When
@@ -179,7 +180,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
     func testItSetsRetryQueryParametersOnNetworkErrorRetry() throws {
         // Given
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = ResourceRequestBuilder(customUploadURL: nil, availabilityStore: availabilityStore, telemetry: TelemetryMock())
         let execution: ExecutionContext = .mockWith(previousResponseCode: nil, attempt: 1) // network error retry has no response code
 
         // When

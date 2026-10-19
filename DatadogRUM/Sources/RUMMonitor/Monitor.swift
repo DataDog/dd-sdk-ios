@@ -114,11 +114,12 @@ internal protocol RUMActiveContextReader: AnyObject {
     /// processed yet. Conformers must guarantee this is safe to read from any thread.
     var hasReplay: Bool? { get }
     /// Whether the session identified by `sessionID` has expired (exceeded its max duration or inactivity
-    /// timeout) as of `date`, evaluated against a live, single source of truth instead of a shadow copy of
-    /// that state. Returns `false` if `sessionID` doesn't match the currently active session (e.g. a session
-    /// transition is still propagating), so callers should treat that as "skip the check for now", not
-    /// "not expired". Conformers must guarantee this is safe to call from any thread.
-    func isSessionExpired(sessionID: String, at date: Date) -> Bool
+    /// timeout) as of now, evaluated against a live, single source of truth instead of a shadow copy of
+    /// that state. Session lifetime is measured on a monotonic clock owned by the conformer, so there is no
+    /// caller-supplied time to pass. Returns `false` if `sessionID` doesn't match the currently active
+    /// session (e.g. a session transition is still propagating), so callers should treat that as "skip the
+    /// check for now", not "not expired". Conformers must guarantee this is safe to call from any thread.
+    func isSessionExpired(sessionID: String) -> Bool
 }
 
 internal class Monitor: RUMCommandSubscriber {
@@ -137,7 +138,7 @@ internal class Monitor: RUMCommandSubscriber {
     private var activeViewSnapshot: (id: String?, path: String?, name: String?) = (nil, nil, nil)
 
     @ReadWriteLock
-    private var sessionActivitySnapshot: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) = (nil, nil, nil)
+    private var sessionActivitySnapshot: (sessionID: String?, sessionStart: TimeInterval?, lastInteraction: TimeInterval?) = (nil, nil, nil)
 
     @ReadWriteLock
     private var hasReplaySnapshot: Bool? = nil
@@ -167,6 +168,9 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         var command = command
+        // Preserve captured monotonic time through the Core queue and launch-reason buffering. Queue latency
+        // must not make a command issued before expiry lose its original session.
+        let monotonicTime = applicationScope.dependencies.monotonicClock.elapsedTime
         command.globalAttributes = attributes
         // process command in event context
         featureScope.eventWriteContext { [weak self] context, writer in
@@ -177,7 +181,7 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
             let previousSessionID = self.sessionActivitySnapshot.sessionID
 
-            _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+            _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
 
             if self.applicationScope.dependencies.timeseriesCollector != nil {
                 let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat
@@ -201,9 +205,14 @@ internal class Monitor: RUMCommandSubscriber {
                 )
                 self.sessionActivitySnapshot = (
                     sessionID: activeSession.sessionUUID.toRUMDataFormat,
-                    sessionStartTime: activeSession.sessionStartTime,
-                    lastInteractionTime: activeSession.lastInteractionTime
+                    sessionStart: activeSession.sessionStart,
+                    lastInteraction: activeSession.lastInteraction
                 )
+                // A delayed interaction can keep this session alive after sampling self-stopped.
+                // Publish its activity snapshot first so the collector observes the refreshed lifetime.
+                if command.isUserInteraction && context.applicationStateHistory.currentState.isRunningInForeground {
+                    self.applicationScope.dependencies.timeseriesCollector?.noteActivity(sessionID: activeSession.sessionUUID.toRUMDataFormat)
+                }
             } else {
                 self.activeViewSnapshot = (nil, nil, nil)
                 self.sessionActivitySnapshot = (nil, nil, nil)
@@ -266,15 +275,16 @@ extension Monitor: RUMActiveContextReader {
     var activeView: (id: String?, path: String?, name: String?) { activeViewSnapshot }
     var hasReplay: Bool? { hasReplaySnapshot }
 
-    func isSessionExpired(sessionID: String, at date: Date) -> Bool {
+    func isSessionExpired(sessionID: String) -> Bool {
         let activity = sessionActivitySnapshot
         guard activity.sessionID == sessionID,
-              let sessionStartTime = activity.sessionStartTime,
-              let lastInteractionTime = activity.lastInteractionTime else {
+              let sessionStart = activity.sessionStart,
+              let lastInteraction = activity.lastInteraction else {
             return false
         }
-        return RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date)
-            || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date)
+        let now = applicationScope.dependencies.monotonicClock.elapsedTime
+        return RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now)
+            || RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now)
     }
 }
 

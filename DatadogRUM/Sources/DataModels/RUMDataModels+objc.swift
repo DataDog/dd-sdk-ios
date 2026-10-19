@@ -1045,7 +1045,8 @@ public class objc_RUMActionEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMActionEventExecutionContextExecutionContextType {
@@ -1120,6 +1121,10 @@ public class objc_RUMActionEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMActionEventSessionRUMSessionType {
@@ -3028,9 +3033,40 @@ public class objc_RUMErrorEventErrorWasmModules: NSObject {
         root.swiftModel.buildId
     }
 
+    public var debugInfoType: objc_RUMErrorEventErrorWasmModulesDebugInfoType {
+        .init(swift: root.swiftModel.debugInfoType)
+    }
+
     public var url: String {
         root.swiftModel.url
     }
+}
+
+@objc(DDRUMErrorEventErrorWasmModulesDebugInfoType)
+@_spi(objc)
+public enum objc_RUMErrorEventErrorWasmModulesDebugInfoType: Int {
+    internal init(swift: RUMErrorEvent.Error.WasmModules.DebugInfoType?) {
+        switch swift {
+        case nil: self = .none
+        case .dwarf?: self = .dwarf
+        case .sourcemap?: self = .sourcemap
+        case .unknown?: self = .unknown
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.WasmModules.DebugInfoType? {
+        switch self {
+        case .none: return nil
+        case .dwarf: return .dwarf
+        case .sourcemap: return .sourcemap
+        case .unknown: return .unknown
+        }
+    }
+
+    case none
+    case dwarf
+    case sourcemap
+    case unknown
 }
 
 @objc(DDRUMErrorEventExecutionContext)
@@ -3048,7 +3084,8 @@ public class objc_RUMErrorEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMErrorEventExecutionContextExecutionContextType {
@@ -3154,6 +3191,10 @@ public class objc_RUMErrorEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMErrorEventSessionRUMSessionType {
@@ -4278,7 +4319,8 @@ public class objc_RUMLongTaskEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMLongTaskEventExecutionContextExecutionContextType {
@@ -4520,6 +4562,10 @@ public class objc_RUMLongTaskEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMLongTaskEventSessionRUMSessionType {
@@ -5506,7 +5552,8 @@ public class objc_RUMResourceEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMResourceEventExecutionContextExecutionContextType {
@@ -6261,6 +6308,10 @@ public class objc_RUMResourceEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMResourceEventSessionRUMSessionType {
@@ -7097,7 +7148,8 @@ public class objc_RUMTimeseriesCpuEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMTimeseriesCpuEventExecutionContextExecutionContextType {
@@ -7172,6 +7224,10 @@ public class objc_RUMTimeseriesCpuEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType {
@@ -8077,7 +8133,8 @@ public class objc_RUMTimeseriesMemoryEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMTimeseriesMemoryEventExecutionContextExecutionContextType {
@@ -8152,6 +8209,10 @@ public class objc_RUMTimeseriesMemoryEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType {
@@ -9420,7 +9481,8 @@ public class objc_RUMViewEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMViewEventExecutionContextExecutionContextType {
@@ -9554,6 +9616,10 @@ public class objc_RUMViewEventSession: NSObject {
 
     public var isActive: NSNumber? {
         root.swiftModel.session.isActive as NSNumber?
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var sampledForReplay: NSNumber? {
@@ -11636,7 +11702,8 @@ public class objc_RUMViewUpdateEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMViewUpdateEventExecutionContextExecutionContextType {
@@ -11770,6 +11837,10 @@ public class objc_RUMViewUpdateEventSession: NSObject {
 
     public var isActive: NSNumber? {
         root.swiftModel.session.isActive as NSNumber?
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var sampledForReplay: NSNumber? {
@@ -13705,7 +13776,8 @@ public class objc_RUMVitalAppLaunchEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMVitalAppLaunchEventExecutionContextExecutionContextType {
@@ -13780,6 +13852,10 @@ public class objc_RUMVitalAppLaunchEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType {
@@ -14920,7 +14996,8 @@ public class objc_RUMVitalDurationEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMVitalDurationEventExecutionContextExecutionContextType {
@@ -14995,6 +15072,10 @@ public class objc_RUMVitalDurationEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMVitalDurationEventSessionRUMSessionType {
@@ -16074,7 +16155,8 @@ public class objc_RUMVitalOperationStepEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMVitalOperationStepEventExecutionContextExecutionContextType {
@@ -16149,6 +16231,10 @@ public class objc_RUMVitalOperationStepEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType {
@@ -16810,6 +16896,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var premiumSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.premiumSampleRate as NSNumber?
+    }
+
+    public var profilingAnrEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.profilingAnrEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.profilingAnrEnabled as NSNumber? }
+    }
+
+    public var profilingApplicationLaunchSampleRate: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.profilingApplicationLaunchSampleRate = newValue?.doubleValue }
+        get { root.swiftModel.telemetry.configuration.profilingApplicationLaunchSampleRate as NSNumber? }
     }
 
     public var profilingSampleRate: NSNumber? {
@@ -18178,4 +18274,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/75aac05f07c331fffa8598919931106ed24bee63
+// Generated from https://github.com/DataDog/rum-events-format/tree/35fe66d7d178f38cc1f229946695a8b537ab4530

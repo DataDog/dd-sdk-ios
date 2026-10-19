@@ -12,6 +12,15 @@ import DatadogInternal
 class RUMApplicationScopeTests: XCTestCase {
     let writer = FileWriterMock()
     private let recorder = ActiveSessionUpdateRecorder()
+    /// Session timeout and max duration are measured on this clock, moved by `advance(_:by:)`.
+    private let monotonicClock = MonotonicClockMock()
+
+    /// Advances both the simulated wall clock (what `RUMCommand.time` carries) and the session clock
+    /// (what bounds session lifetime), as real elapsed time would move both.
+    private func advance(_ currentTime: inout Date, by interval: TimeInterval) {
+        currentTime.addTimeInterval(interval)
+        monotonicClock.advance(by: interval)
+    }
 
     class ActiveSessionUpdateRecorder {
         var calls = [DeterministicSampler?]()
@@ -67,7 +76,8 @@ class RUMApplicationScopeTests: XCTestCase {
                 if let sessionScope {
                     dependencies.onSessionUpdate(sessionScope)
                 }
-            }
+            },
+            monotonicClock: monotonicClock
         )
         let scope = RUMApplicationScope(dependencies: modifiedDependencies)
         // Always receive `RUMSDKInitCommand` as the very first command (see: `Monitor.notifySDKInit()`)
@@ -126,7 +136,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // When
         // Push time forward by the max session duration:
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionMaxDuration)
         _ = scope.process(
             command: RUMAddUserActionCommand.mockWith(time: currentTime),
             context: .mockAny(),
@@ -218,7 +228,7 @@ class RUMApplicationScopeTests: XCTestCase {
                 context: .mockAny(),
                 writer: writer
             )
-            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration) // force the Session to be re-created
+            advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration) // force the Session to be re-created
         }
 
         let viewEventsCount = writer.events(ofType: RUMViewEvent.self).count
@@ -474,7 +484,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         _ = scope.process(
             command: RUMCommandMock(time: currentTime, isUserInteraction: true),
             context: sdkContext,
@@ -497,7 +507,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // keep session active until it expires
         while currentTime < initialTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration) {
-            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+            advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
             _ = scope.process(
                 command: RUMCommandMock(time: currentTime, isUserInteraction: true),
                 context: sdkContext,
@@ -525,11 +535,11 @@ class RUMApplicationScopeTests: XCTestCase {
             sdkContext: sdkContext
         )
 
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
 
         // When
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(
             command: RUMCommandMock(time: currentTime, isUserInteraction: true),
             context: sdkContext,
@@ -551,7 +561,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -582,7 +592,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // Keep session active without exceeding maxDuration — stop one step before it would expire
         while currentTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1) < initialTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration) {
-            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+            advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
             _ = scope.process(
                 command: RUMCommandMock(time: currentTime, isUserInteraction: true),
                 context: sdkContext,
@@ -591,7 +601,7 @@ class RUMApplicationScopeTests: XCTestCase {
         }
 
         // When - advance past maxDuration without triggering inactivity timeout, then send in background
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -619,11 +629,11 @@ class RUMApplicationScopeTests: XCTestCase {
             sdkContext: sdkContext
         )
 
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
 
         // When
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -652,7 +662,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -680,11 +690,11 @@ class RUMApplicationScopeTests: XCTestCase {
             sdkContext: sdkContext
         )
 
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
 
         // When
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -717,7 +727,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When - session times out while app is in background
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -737,5 +747,235 @@ class RUMApplicationScopeTests: XCTestCase {
         // And no error telemetry is fired for .userLaunch in background (it is a valid scenario)
         XCTAssertNil(featureScope.telemetryMock.messages.firstError())
     }
+
+    func testWhenElapsedTimeAdvancesInBackgroundWithoutWallClockAdvancing_itStartsANewSession() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(launchReason: .userLaunch),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: true),
+            sdkContext: sdkContext
+        )
+        let sessionID = try XCTUnwrap(scope.activeSession?.sessionUUID)
+
+        // A suspension produces no commands; only the continuous session clock advances.
+        monotonicClock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration)
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime, isUserInteraction: true),
+            context: sdkContext,
+            writer: writer
+        )
+
+        XCTAssertNotEqual(scope.activeSession?.sessionUUID, sessionID)
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .inactivityTimeout)
+    }
     #endif
+
+    // MARK: - Resource Completion Ownership
+
+    func testGivenStoppedSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction() throws {
+        let time = Date.mockDecember15th2019At10AMUTC()
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, trackFrustrations: true))
+        let resourceKey = "stopped-session-success"
+        let firstView = ViewIdentifier("previous-session-view")
+        let secondView = ViewIdentifier("current-session-view")
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: time, identity: firstView),
+            context: .mockAny(),
+            writer: writer
+        )
+        let firstSession = try XCTUnwrap(scope.activeSession)
+        let firstViewID = try XCTUnwrap(firstSession.viewScopes.last?.viewUUID)
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(
+                resourceKey: resourceKey,
+                time: time.addingTimeInterval(0.010),
+                url: "https://example.com/stopped-success"
+            ),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: time.addingTimeInterval(0.030)),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: time.addingTimeInterval(0.040), identity: secondView),
+            context: .mockAny(),
+            writer: writer
+        )
+        let secondSession = try XCTUnwrap(scope.activeSession)
+        let secondViewID = try XCTUnwrap(secondSession.viewScopes.last?.viewUUID)
+        _ = scope.process(
+            command: RUMStartUserActionCommand.mockWith(time: time.addingTimeInterval(0.050), actionType: resourceActionType, name: "new session action"),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddResourceMetricsCommand.mockWith(resourceKey: resourceKey, time: time.addingTimeInterval(0.055), metrics: resourceMetrics(at: time)),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: resourceKey,
+                time: time.addingTimeInterval(0.060),
+                kind: .native,
+                httpStatusCode: 200,
+                size: 42
+            ),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopUserActionCommand.mockWith(time: time.addingTimeInterval(0.070), actionType: resourceActionType),
+            context: .mockAny(),
+            writer: writer
+        )
+
+        let resources = writer.events(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resources.count, 1)
+        let resource = try XCTUnwrap(resources.first)
+        XCTAssertEqual(resource.session.id, firstSession.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(resource.view.id, firstViewID.toRUMDataFormat)
+        XCTAssertEqual(resource.resource.encodedBodySize, 1_500)
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        let action = try XCTUnwrap(actions.first)
+        XCTAssertEqual(action.session.id, secondSession.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(action.view.id, secondViewID.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(action.action.resource).count, 0)
+        XCTAssertEqual(try XCTUnwrap(action.action.error).count, 0)
+        XCTAssertNil(action.action.frustration)
+    }
+
+    func testGivenStoppedSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction() throws {
+        let time = Date.mockDecember15th2019At10AMUTC()
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, trackFrustrations: true))
+        let resourceKey = "stopped-session-error"
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("previous-session-error-view")),
+            context: .mockAny(),
+            writer: writer
+        )
+        let firstSession = try XCTUnwrap(scope.activeSession)
+        let firstViewID = try XCTUnwrap(firstSession.viewScopes.last?.viewUUID)
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: resourceKey, time: time.addingTimeInterval(0.010), url: "https://example.com/stopped-error"),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: time.addingTimeInterval(0.030)),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: time.addingTimeInterval(0.040), identity: ViewIdentifier("current-session-error-view")),
+            context: .mockAny(),
+            writer: writer
+        )
+        let secondSession = try XCTUnwrap(scope.activeSession)
+        let secondViewID = try XCTUnwrap(secondSession.viewScopes.last?.viewUUID)
+        _ = scope.process(
+            command: RUMStartUserActionCommand.mockWith(time: time.addingTimeInterval(0.050), actionType: resourceActionType, name: "new session action"),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddResourceMetricsCommand.mockWith(resourceKey: resourceKey, time: time.addingTimeInterval(0.055), metrics: resourceMetrics(at: time)),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: resourceKey,
+                time: time.addingTimeInterval(0.060),
+                message: "stopped error",
+                type: "TestResourceError",
+                source: .network,
+                httpStatusCode: 500
+            ),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopUserActionCommand.mockWith(time: time.addingTimeInterval(0.070), actionType: resourceActionType),
+            context: .mockAny(),
+            writer: writer
+        )
+
+        let errors = writer.events(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.count, 1)
+        let error = try XCTUnwrap(errors.first)
+        XCTAssertEqual(error.session.id, firstSession.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(error.view.id, firstViewID.toRUMDataFormat)
+        XCTAssertEqual(error.error.resource?.url, "https://example.com/stopped-error")
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        let action = try XCTUnwrap(actions.first)
+        XCTAssertEqual(action.session.id, secondSession.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(action.view.id, secondViewID.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(action.action.resource).count, 0)
+        XCTAssertEqual(try XCTUnwrap(action.action.error).count, 0)
+        XCTAssertNil(action.action.frustration)
+    }
+
+    private var resourceActionType: RUMActionType {
+        #if os(macOS)
+        .click
+        #else
+        .tap
+        #endif
+    }
+
+    private func resourceMetrics(at time: Date) -> ResourceMetrics {
+        .mockWith(
+            fetch: .init(start: time.addingTimeInterval(0.010), end: time.addingTimeInterval(0.020)),
+            dns: .init(start: time.addingTimeInterval(0.011), end: time.addingTimeInterval(0.012)),
+            responseBodySize: (encoded: 1_500, decoded: 2_048)
+        )
+    }
+}
+
+extension RUMApplicationScopeTests {
+    func testGivenSameResourceKeyInSeparateApplications_itResolvesOwnersIndependently() throws {
+        let first = RUMResourceCompletionFixture(applicationScope: true)
+        let second = RUMResourceCompletionFixture(applicationScope: true)
+        let completion = try first.automaticCompletion(error: true)
+        let key = try XCTUnwrap(completion as? RUMResourceCommand).resourceKey
+        for fixture in [first, second] {
+            fixture.startView("owner")
+            fixture.startAction("owner")
+            fixture.startResource(key)
+            fixture.send(completion)
+            fixture.stopAction()
+            XCTAssertEqual(fixture.errors.count, 1)
+            try fixture.assertAction("owner", resources: 0, errors: 1)
+        }
+        XCTAssertNotEqual(first.errors.first?.view.id, second.errors.first?.view.id)
+        XCTAssertNotEqual(first.errors.first?.session.id, second.errors.first?.session.id)
+    }
+
+    func testGivenExpiredAutomaticResourceOwner_itDoesNotAdoptRestoredView() throws {
+        let fixture = RUMResourceCompletionFixture(applicationScope: true)
+        let completion = try fixture.automaticCompletion(error: true)
+        let key = try XCTUnwrap(completion as? RUMResourceCommand).resourceKey
+        fixture.startView("owner")
+        fixture.startResource(key)
+        let previous = try XCTUnwrap(fixture.application.activeSession).sessionUUID
+        fixture.time.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+        fixture.send(completion)
+        fixture.startView("new")
+        fixture.startAction("new")
+        fixture.stopAction()
+        XCTAssertNotEqual(fixture.application.activeSession?.sessionUUID, previous)
+        XCTAssertTrue(fixture.errors.isEmpty)
+        XCTAssertTrue(fixture.resources.isEmpty)
+        try fixture.assertAction("new", resources: 0, errors: 0)
+    }
 }
