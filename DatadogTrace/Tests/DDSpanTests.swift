@@ -129,6 +129,8 @@ class DDSpanTests: XCTestCase {
             tags: [
                 "global": ["foo": "foo-value"],
                 "overridden": ["foo": "foo-value"],
+                "globalDotted.foo": "global-value",
+                "globalNested": ["foo": "global-value"],
             ]
         )
 
@@ -140,6 +142,8 @@ class DDSpanTests: XCTestCase {
                 "overridden": "local-value",
                 "collision": ["foo": "nested-value"],
                 "collision.foo": "literal-value",
+                "globalDotted": ["foo": "local-value"],
+                "globalNested.foo": "local-value",
             ]
         )
         span.finish()
@@ -153,6 +157,8 @@ class DDSpanTests: XCTestCase {
                 "local.foo.bar": "bar-value",
                 "overridden": "local-value",
                 "collision.foo": "literal-value",
+                "globalDotted.foo": "local-value",
+                "globalNested.foo": "local-value",
             ]
         )
     }

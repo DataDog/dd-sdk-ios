@@ -150,10 +150,13 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         startTime: Date? = nil,
         eventWriter: SpanWriteContext? = nil
     ) -> OTSpan {
-        var combinedTags = self.tags
-        if let userTags = tags {
-            combinedTags.merge(userTags) { $1 }
-        }
+        // Flatten global and span tags separately, so span tags win over global ones also after flattening.
+        // Global tags replaced by a span tag with the same top-level key are dropped first.
+        let userTags = tags ?? [:]
+        let combinedTags = self.tags
+            .filter { userTags[$0.key] == nil }
+            .flattened
+            .merging(userTags.flattened) { _, user in user }
 
         // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
         // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
