@@ -3617,7 +3617,7 @@ extension NetworkInstrumentationFeatureTests {
         let owner = RUMContextHandoff.Owner()
         feature.receiveRUMContextHandoff(owner: owner, active: true)
         let value = RUMContextHandoff.CurrentValue(
-            rumContext: .mockWith(sessionID: UUID().uuidString, viewID: UUID().uuidString),
+            rumContext: .mockWith(sessionID: UUID(), viewID: UUID().uuidString),
             sceneIdentifier: "original",
             hasPendingUserAction: false,
             excludedUserActionID: nil
