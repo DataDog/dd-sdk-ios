@@ -10,6 +10,7 @@ import DatadogInternal
 internal protocol FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        diagnostics: Data?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
 }
@@ -62,6 +63,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        diagnostics: Data? = nil,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         // Repository callbacks can invoke application code; keep them off shared SDK work queues.
@@ -79,6 +81,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             self.assignmentFetchQueue.async {
                 self.fetchAssignments(
                     for: evaluationContext,
+                    diagnostics: diagnostics,
                     context: context,
                     completion: completion
                 )
@@ -88,6 +91,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private func fetchAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        diagnostics: Data?,
         context: DatadogContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
@@ -96,7 +100,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 url: url(with: context),
                 evaluationContext: evaluationContext,
                 context: context,
-                customHeaders: customHeaders
+                customHeaders: customHeaders,
+                diagnostics: diagnostics
             )
             fetch(request) { [assignmentFetchQueue, featureScope] result in
                 assignmentFetchQueue.async {
