@@ -50,7 +50,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         self.startTime = startTime
         self.loggingIntegration = tracer.loggingIntegration
         self.operationName = operationName
-        self.tags = tags.flattened
+        self.tags = tags
         self.logFields = []
         self.isFinished = false
         self.eventBuilder = eventBuilder

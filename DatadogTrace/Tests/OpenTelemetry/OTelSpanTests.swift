@@ -391,6 +391,20 @@ final class OTelSpanTests: XCTestCase {
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 
+    func testSetGlobalAttributeWithBothSamplingTags_itAppliesThemInKeyOrder() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(
+            featureScope: featureScope,
+            tags: ["manual": ["keep": true, "drop": true]]
+        )
+
+        // When
+        tracer.spanBuilder(spanName: "Span").startSpan().end()
+
+        // Then
+        XCTAssertEqual(try featureScope.spanEventsWritten().count, 1, "The span should be kept")
+    }
+
     func testStatus_whenStatusIsNotSet() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
