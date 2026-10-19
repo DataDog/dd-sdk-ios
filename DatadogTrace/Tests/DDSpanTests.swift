@@ -136,6 +136,8 @@ class DDSpanTests: XCTestCase {
             tags: [
                 "local": ["foo": ["bar": "bar-value"]],
                 "overridden": "local-value",
+                "collision": ["foo": "nested-value"],
+                "collision.foo": "literal-value",
             ]
         )
         span.finish()
@@ -148,6 +150,7 @@ class DDSpanTests: XCTestCase {
                 "global.foo": "foo-value",
                 "local.foo.bar": "bar-value",
                 "overridden": "local-value",
+                "collision.foo": "literal-value",
             ]
         )
     }
