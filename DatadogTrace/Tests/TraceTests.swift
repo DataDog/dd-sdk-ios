@@ -112,7 +112,7 @@ class TraceTests: XCTestCase {
         XCTAssertEqual(tracer.samplerProvider.sampler.samplingRate, 100)
         XCTAssertNil(tracer.spanEventBuilder.service)
         XCTAssertNil(tracer.loggingIntegration.service)
-        XCTAssertTrue(tracer.tags.tags.isEmpty)
+        XCTAssertTrue(tracer.tags.isEmpty)
         XCTAssertNil(core.get(feature: NetworkInstrumentationFeature.self))
         XCTAssertEqual(tracer.spanEventBuilder.networkInfoEnabled, false)
         XCTAssertNil(tracer.spanEventBuilder.eventsMapper)
@@ -167,17 +167,7 @@ class TraceTests: XCTestCase {
 
         // Then
         let tracer = Tracer.shared(in: core).dd
-        // `DatadogTracer.init` flattens any `Dictionary`-valued tag (e.g. `random`'s "dictionary-attribute")
-        // into dotted-key leaf tags — see `flattenedTags(_:)` in `OTTagValue.swift`. Built by hand here,
-        // rather than by calling `flattenedTags` itself, so a bug in that function wouldn't be reproduced
-        // identically on both sides of the assertion.
-        var expectedTags = random
-        let nestedDictionary = random["dictionary-attribute"] as! [String: Int]
-        expectedTags["dictionary-attribute"] = nil
-        for (key, value) in nestedDictionary {
-            expectedTags["dictionary-attribute.\(key)"] = value
-        }
-        DDAssertDictionariesEqual(tracer.tags.tags, expectedTags)
+        DDAssertDictionariesEqual(tracer.tags, random)
     }
 
     func testWhenEnabledWithURLSessionTracking() throws {

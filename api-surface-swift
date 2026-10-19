@@ -258,7 +258,6 @@ public protocol OTSpan: Sendable
     func tracer() -> OTTracer
     func setOperationName(_ operationName: String)
     func setTag(key: String, value: OTTagValue)
-    func setTag(key: String, value: [String: OTTagValue])
     func log(fields: [String: Encodable & Sendable], timestamp: Date)
     func setBaggageItem(key: String, value: String)
     func baggageItem(withKey key: String) -> String?

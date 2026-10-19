@@ -68,7 +68,6 @@ internal struct DDNoopSpan: OTSpan {
     func baggageItem(withKey key: String) -> String? { nil }
     func setBaggageItem(key: String, value: String) {}
     func setTag(key: String, value: OTTagValue) {}
-    func setTag(key: String, value: [String: OTTagValue]) {}
     @discardableResult
     func setActive() -> OTSpan { self }
 }

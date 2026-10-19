@@ -35,7 +35,7 @@ extension DDSpan {
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: FlattenedTags(tags: tags, owners: [:]),
+            tags: tags,
             eventBuilder: eventBuilder,
             eventWriter: eventWriter
         )
@@ -55,7 +55,7 @@ extension DDSpan {
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: FlattenedTags(tags: tags, owners: [:]),
+            tags: tags,
             eventBuilder: eventBuilder,
             eventWriter: eventWriter
         )

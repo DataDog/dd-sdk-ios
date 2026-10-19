@@ -1,6 +1,6 @@
 # Unreleased
 
-- [IMPROVEMENT] `OTSpan.setTag` now flattens `Dictionary` tag values into one tag per leaf field (e.g. `context.foo`) instead of serializing the whole dictionary as a single JSON string tag. See [#3067][]
+- [IMPROVEMENT] Flatten dictionary values in span tags into one tag per leaf field (e.g. `context.foo`) instead of a single JSON string tag. See [#3067][]
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
 - [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
 - [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
@@ -1257,7 +1257,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2987]: https://github.com/DataDog/dd-sdk-ios/pull/2987
 [#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
 [#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
-[#3067]: https://github.com/DataDog/dd-sdk-ios/pull/3067
 [#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051
 [#3057]: https://github.com/DataDog/dd-sdk-ios/pull/3057
 [#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
@@ -1302,6 +1301,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
+[#3067]: https://github.com/DataDog/dd-sdk-ios/pull/3067
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
