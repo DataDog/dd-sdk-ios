@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 @_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogRUM
@@ -1683,7 +1683,7 @@ extension URLSessionRUMResourcesHandlerTests {
 
     func testPreparedResource_callbacksRequireExactOriginalLiveSubscriber() throws {
         let owner = RUMContextHandoff.Owner()
-        let capture = RUMURLSessionContext(owner: owner, value: .init(rumContext: .mockWith(sessionID: UUID().uuidString, viewID: UUID().uuidString), sceneIdentifier: "original", hasPendingUserAction: false, excludedUserActionID: nil))
+        let capture = RUMURLSessionContext(owner: owner, value: .init(rumContext: .mockWith(sessionID: UUID(), viewID: UUID().uuidString), sceneIdentifier: "original", hasPendingUserAction: false, excludedUserActionID: nil))
         let request = URLRequest(url: try XCTUnwrap(URL(string: "https://example.com/callback-ownership")))
         for replacementPoint in ["none", "attributes", "metrics"] {
             let original = PreparedResourceSubscriber()

@@ -5215,8 +5215,8 @@ extension RUMViewScopeTests {
             let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
             XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).count, 1)
             XCTAssertEqual(event.action.id, action.actionUUID.toRUMDataFormat)
-            XCTAssertEqual(event.action.resource.count, fails ? 0 : 1)
-            XCTAssertEqual(event.action.error.count, fails ? 1 : 0)
+            XCTAssertEqual(try XCTUnwrap(event.action.resource).count, fails ? 0 : 1)
+            XCTAssertEqual(try XCTUnwrap(event.action.error).count, fails ? 1 : 0)
         }
     }
 }

@@ -2556,6 +2556,7 @@ extension MonitorTests {
 }
 
 private struct PreparedResourceFeature: DatadogRemoteFeature {
+    let performanceOverride: PerformancePresetOverride? = nil
     static let name = RUMFeature.name
     let requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     let messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
