@@ -812,7 +812,10 @@ final class OwnedOperationMonitorTests: XCTestCase {
         let recorded = try XCTUnwrap(written.last { $0.view.id == original.viewUUID.toRUMDataFormat })
         XCTAssertEqual(recorded.session.id, capture.value.rumContext?.sessionID)
         XCTAssertEqual(recorded.view.id, capture.value.rumContext?.viewID)
-        XCTAssertEqual(recorded.featureFlags?.featureFlagsInfo["operation-flag"] as? Bool, true)
+        XCTAssertEqual(
+            (recorded.featureFlags?.featureFlagsInfo["operation-flag"] as? AnyCodable)?.value as? Bool,
+            true
+        )
         XCTAssertTrue(written.filter { $0.view.id == peer.viewUUID.toRUMDataFormat }.allSatisfy {
             $0.featureFlags?.featureFlagsInfo["operation-flag"] == nil
         })
@@ -838,7 +841,7 @@ final class OwnedOperationMonitorTests: XCTestCase {
         XCTAssertNil(peer.featureFlags["operation-flag"])
         XCTAssertEqual(fallbacks.wrappedValue, 0)
         XCTAssertFalse(try writtenViews().contains {
-            $0.featureFlags?.featureFlagsInfo["operation-flag"] as? Bool == false
+            ($0.featureFlags?.featureFlagsInfo["operation-flag"] as? AnyCodable)?.value as? Bool == false
         })
     }
 
@@ -900,7 +903,9 @@ final class OwnedOperationMonitorTests: XCTestCase {
             let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
             let events = try fixture.storedEvents(in: storage).compactMap { data -> RUMResourceEvent? in
                 let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-                guard object["type"] as? String == "resource" else { return nil }
+                guard object["type"] as? String == "resource" else {
+                    return nil
+                }
                 return try JSONDecoder().decode(RUMResourceEvent.self, from: data)
             }
             XCTAssertEqual(events.count, 1)

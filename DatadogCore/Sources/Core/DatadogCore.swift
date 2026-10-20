@@ -489,10 +489,10 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             bus.publishFlagEvaluationOwner(owner, active: false)
             receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
             bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: false)
-            stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
-            stoppedFeatures.values.forEach { ($0.feature as? RUMOperationFeatureRetiring)?.retireOperationOrigin() }
-            retiredHandoff?.retire()
         }
+        stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
+        stoppedFeatures.values.forEach { ($0.feature as? RUMOperationFeatureRetiring)?.retireOperationOrigin() }
+        retiredHandoff?.retire()
         remoteConfigurationProvider?.stop()
         _featureStores.mutate { stores in
             stores.entries = [:]
