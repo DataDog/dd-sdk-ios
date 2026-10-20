@@ -662,6 +662,21 @@ final class FirstFlagsCallbackTests: XCTestCase {
         XCTAssertEqual(calls.wrappedValue, 1)
     }
 
+    func testCompatibilityDefaultDoesNotDeliverOrRetainCaptures() {
+        let client: any FlagsClientProtocol = CompatibilityFlagsClient()
+        var probe: LifetimeProbe? = LifetimeProbe()
+        weak var weakProbe = probe
+        let subscription = client.onFirstFlags { [probe] _ in
+            withExtendedLifetime(probe) {}
+            XCTFail("Compatibility default must never deliver an event")
+        }
+        probe = nil
+        XCTAssertNil(weakProbe, "The default must not retain the listener even while its token is retained")
+        DispatchQueue.concurrentPerform(iterations: 100) { _ in subscription.cancel() }
+        subscription.cancel()
+        withExtendedLifetime(client) {}
+    }
+
     func testEventValueSemanticsPreserveEmptyAndInputOrder() {
         var keys = ["b", "a", "b"]
         let event = FlagsClientEvent(type: .configurationChanged, flagsChanged: keys)
@@ -695,4 +710,15 @@ private final class FirstFlagsStateListener: FlagsStateListener {
     private let callback: (FlagsClientState) -> Void
     init(_ callback: @escaping (FlagsClientState) -> Void) { self.callback = callback }
     func flagsStateDidChange(_ newState: FlagsClientState) { callback(newState) }
+}
+
+/// Intentionally omits onFirstFlags to exercise the public compatibility default through the protocol.
+private final class CompatibilityFlagsClient: FlagsClientProtocol {
+    func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
+        completion(.success(()))
+    }
+
+    func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
+        FlagDetails(key: key, value: defaultValue)
+    }
 }

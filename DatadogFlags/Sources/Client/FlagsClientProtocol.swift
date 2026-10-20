@@ -21,6 +21,9 @@ public protocol FlagsClientProtocol: AnyObject {
 
     /// Calls the handler once per registration with the complete keys of the first accepted disk or network configuration.
     ///
+    /// Conformers that do not implement this method use a compatibility default that never invokes
+    /// or retains the listener and returns an inert subscription.
+    ///
     /// Exception: a no-op fallback client immediately calls each registration on the registering thread
     /// with a configuration-changed event and an empty key list. This completes the notification only:
     /// the fallback remains in the error state, evaluations return defaults with providerNotReady,
@@ -115,6 +118,15 @@ public protocol FlagsClientProtocol: AnyObject {
 }
 
 extension FlagsClientProtocol {
+    /// Compatibility default for conformers without first-flags notifications.
+    ///
+    /// Never invokes or retains the listener. Returns an inert, thread-safe subscription.
+    /// SDK-owned clients implement their own delivery behaviour.
+    @discardableResult
+    public func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        NOPFlagsSubscription()
+    }
+
     /// Default state observable for backward compatibility with external conformers.
     ///
     /// External implementations of ``FlagsClientProtocol`` that don't provide their own

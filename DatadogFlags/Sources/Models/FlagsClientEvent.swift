@@ -14,7 +14,7 @@ public struct FlagsClientEvent: Sendable {
     /// Key ordering is unspecified.
     public let flagsChanged: [String]
 
-    internal init(type: FlagsClientEventType, flagsChanged: [String]) {
+    public init(type: FlagsClientEventType, flagsChanged: [String]) {
         self.type = type
         self.flagsChanged = flagsChanged
     }
