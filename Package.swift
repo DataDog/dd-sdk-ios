@@ -195,8 +195,13 @@ let package = Package(
 
         .target(
             name: "DatadogSessionReplay",
-            dependencies: ["DatadogInternal"],
+            dependencies: ["DatadogInternal", "DatadogWebP"],
             path: "DatadogSessionReplay/Sources"
+        ),
+        .target(
+            name: "DatadogWebP",
+            path: "DatadogSessionReplay/WebP",
+            cSettings: [.headerSearchPath(".")]
         ),
         .testTarget(
             name: "DatadogSessionReplayTests",
