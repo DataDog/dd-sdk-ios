@@ -33,10 +33,21 @@ internal final class RUMApplicationState {
 /// to decide on how to track off-view events and crashes.
 internal enum RUMOffViewEventsHandlingRule: Equatable {
     struct Constants {
+        #if os(macOS)
+        // macOS apps have no background state. This view holds events that arrive with no active view, for example after the last
+        // window closes or in a menu bar app. It reuses the "Background" view handling, but keeps its own name so it is not read
+        // as an iOS background period.
+        // TODO: RUM-19085 Confirm the name and URL with the macOS RFC reviewers.
+        /// The name of the view created when receiving an event while there is no active view.
+        static let backgroundViewName = "NoActiveView"
+        /// The url of the view created when receiving an event while there is no active view.
+        static let backgroundViewURL = "com/datadog/no-active-view/view"
+        #else
         /// The name of the view created when receiving an event while there is no active view and Background Events Tracking is enabled.
         static let backgroundViewName = "Background"
         /// The url of the view created when receiving an event while there is no active view and Background Events Tracking is enabled.
         static let backgroundViewURL = "com/datadog/background/view"
+        #endif
         /// The name of the view created when receiving an event before any view was started in the initial session.
         static let applicationLaunchViewName = "ApplicationLaunch"
         /// The url of the view created when receiving an event before any view was started in the initial session.
@@ -66,6 +77,14 @@ internal enum RUMOffViewEventsHandlingRule: Equatable {
         isBETEnabled: Bool,
         command: RUMCommand?
     ) {
+        #if os(macOS)
+        // macOS apps are always in the foreground and often run with no view, so once a view was tracked, events with no active view
+        // are kept by default, without Background Events Tracking.
+        let tracksEventsWithNoActiveView = true
+        #else
+        let tracksEventsWithNoActiveView = !isAppInForeground && isBETEnabled
+        #endif
+
         if let session = sessionState {
             guard session.isSampled else {
                 self = .doNotHandle // when session is NOT sampled, do not track off-view events at all
@@ -104,7 +123,7 @@ internal enum RUMOffViewEventsHandlingRule: Equatable {
                     self = .doNotHandle
                 }
             } else {
-                if !isAppInForeground && isBETEnabled {
+                if tracksEventsWithNoActiveView {
                     if applicationState?.wasPreviousSessionStopped == true && command?.canStartBackgroundViewAfterSessionStop == false {
                         self = .doNotHandle
                     } else {
