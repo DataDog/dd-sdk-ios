@@ -24,6 +24,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// Maximum response body bytes buffered per task in registered-delegate mode.
     static let maxBufferedBodySize = 512 * 1_024 // 512 KB
 
+    /// Identifies this instance for task preparation, including across delegate rebinding.
+    private let preparationID = UUID()
+
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.
     private let queue = DispatchQueue(
@@ -136,14 +139,12 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
                 // Only perform interception if this swizzler should handle this task
                 // This allows the swizzler chain to continue for tasks we don't handle
-                var injectedTraceContexts = [RequestInstrumentationContext]()
-
                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
-                let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                task.dd.override(currentRequest: request)
-                injectedTraceContexts = traceContexts
-
-                self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
+                task.dd.prepareOnce(for: self.preparationID) {
+                    let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                    task.dd.override(currentRequest: request)
+                    self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
+                }
             }
         )
 

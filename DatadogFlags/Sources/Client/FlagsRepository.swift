@@ -88,7 +88,63 @@ internal final class FlagsRepository {
     private var didStartInitialization = false
 
     @ReadWriteLock
-    private var flagsData: FlagsData?
+    private var cachedFlagsData: CachedFlagsData?
+
+    private var flagsData: FlagsData? {
+        get { cachedFlagsData?.data }
+        // Replace assignments and lookup hashes together under the same lock.
+        set { cachedFlagsData = newValue.map { CachedFlagsData(data: $0) } }
+    }
+
+    struct CachedFlagsData {
+        enum LookupResult: Equatable {
+            case resolved(FlagAssignment?)
+            case missingHash
+        }
+
+        static let lookupCacheLimit = 1_024
+        let data: FlagsData
+        // Swift String equality treats canonically equivalent Unicode sequences as equal.
+        private(set) var lookupKeys: [Data: String] = [:]
+
+        func cachedAssignment(for key: String, supportsObfuscation: Bool) -> LookupResult {
+            guard data.obfuscation != nil else {
+                return .resolved(data.flags[key])
+            }
+            guard supportsObfuscation else {
+                return .resolved(nil)
+            }
+            guard let lookupKey = lookupKeys[Data(key.utf8)] else {
+                return .missingHash
+            }
+            return .resolved(data.flags[lookupKey])
+        }
+
+        mutating func flagAssignment(for key: String) -> FlagAssignment? {
+            guard let obfuscation = data.obfuscation else {
+                return data.flags[key]
+            }
+            let keyBytes = Data(key.utf8)
+            if let lookupKey = lookupKeys[keyBytes] {
+                return data.flags[lookupKey]
+            }
+            let lookupKey = obfuscation.lookupKey(for: key)
+            if lookupKeys.count >= Self.lookupCacheLimit { lookupKeys.removeAll(keepingCapacity: true) }
+            lookupKeys[keyBytes] = lookupKey
+            return data.flags[lookupKey]
+        }
+    }
+
+    // A missing or delayed context must not expose encoded assignments to legacy bridges.
+    @ReadWriteLock
+    private var supportsFlagKeyObfuscation = false
+
+    private var readableFlagsData: FlagsData? {
+        guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
+            return nil
+        }
+        return data
+    }
 
     /// Version counter for `flagsData`. Incremented on every write to detect
     /// when a newer request has succeeded while an older request was in-flight.
@@ -125,6 +181,9 @@ internal final class FlagsRepository {
         self.featureScope = featureScope
         self.initializationTimeout = initializationTimeout
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
+        featureScope.context { [weak self] context in
+            self?.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
+        }
         readState()
     }
 
@@ -180,7 +239,7 @@ internal final class FlagsRepository {
                 completion(.failure(.clientNotInitialized))
                 return
             }
-            let timeoutState: FlagsClientState = self.flagsData?.context == context ? .stale : .error
+            let timeoutState: FlagsClientState = self.readableFlagsData?.context == context ? .stale : .error
             let accepted = self.stateManager.updateState(
                 timeoutState,
                 unlessCurrentStateIs: [.ready, .stale]
@@ -204,7 +263,13 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            self.flagsData = data
+            var cachedData = data
+            cachedData?.flags = data?.flags.mapValues { assignment in
+                var cachedAssignment = assignment
+                cachedAssignment.reason = "CACHED"
+                return cachedAssignment
+            } ?? [:]
+            self.flagsData = cachedData
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -268,7 +333,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.context
+        return readableFlagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
@@ -276,15 +341,32 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.flags[key]
+        let supportsObfuscation = supportsFlagKeyObfuscation
+        switch cachedFlagsData?.cachedAssignment(for: key, supportsObfuscation: supportsObfuscation) {
+        case .resolved(let assignment): return assignment
+        case nil: return nil
+        case .missingHash: break
+        }
+
+        var assignment: FlagAssignment?
+        _cachedFlagsData.mutate { cached in
+            // A refresh or reset can replace the snapshot after the read. Recheck it under the write lock.
+            guard cached?.data.obfuscation == nil || supportsObfuscation else {
+                return
+            }
+            assignment = cached?.flagAssignment(for: key)
+        }
+        return assignment
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
-        guard stateManager.currentState != .error else {
+        guard stateManager.currentState != .error,
+              let data = readableFlagsData,
+              data.obfuscation == nil else {
             return nil
         }
-        return flagsData?.flags
+        return data.flags
     }
 
     func setEvaluationContext(
@@ -299,15 +381,13 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 ?? (initializationCompletion == nil ? completion : nil)
         }
 
-        // Chain after disk read completes to ensure correct hadFlags determination
+        // Wait for disk loading before fetching assignments.
         whenFlagsDataRead { [weak self] in
             guard let self else {
                 takeCompletion()?(.failure(.clientNotInitialized))
                 return
             }
 
-            let hadFlags = self.flagsData != nil
-            let cachedContext = self.flagsData?.context
             let versionAtStart = self.flagsDataVersion
             if initializationCompletion == nil {
                 self.stateManager.updateState(.reconciling)
@@ -315,15 +395,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
                 switch result {
-                case .success(let flags):
+                case .success(let response):
                     guard let self else {
                         takeCompletion()?(.failure(.clientNotInitialized))
                         return
                     }
                     self.flagsData = .init(
-                        flags: flags,
+                        flags: response.flags,
                         context: context,
-                        date: self.dateProvider.now
+                        date: self.dateProvider.now,
+                        obfuscation: response.obfuscation
                     )
                     self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()
@@ -350,7 +431,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     // serving flags from a different user/context.
                     let operationCompletion = takeCompletion()
                     let newState: FlagsClientState
-                    if hadFlags && cachedContext == context {
+                    // Source detection can finish while the request is in flight.
+                    if self?.readableFlagsData?.context == context {
                         newState = .stale
                     } else {
                         // Clear cached data to prevent cross-context flag leakage.

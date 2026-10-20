@@ -21,7 +21,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         super.setUp()
         appStateManager = AppStateManagerMock()
         mockParent = RUMContextProviderMock()
-        mockDependencies = .mockWith(appStateManager: appStateManager)
+        mockDependencies = .mockWith(appStateManager: appStateManager, timeseriesCollector: TimeseriesCollectorMock(hasData: true))
         mockWriter = FileWriterMock()
         mockContext = .mockWith(
             launchInfo: .mockWith(
@@ -79,6 +79,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.startupType, .coldStart)
 
         // Common properties
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertNil(event.account)
         XCTAssertNil(event.buildId)
         XCTAssertNotNil(event.buildVersion)
@@ -99,6 +100,28 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         // Profiling Status
         XCTAssertEqual(event.dd.profiling?.status, .running)
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
+    }
+
+    func testTTIDCommand_whenAppRunsAsAppExtension_createsAppLaunchVitalEventWithIsMainProcessFalse() throws {
+        // Given
+        let activeView: RUMViewScope = .mockWith(path: "ViewPath", name: "ViewName")
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2.0)
+        )
+        mockContext = .mockWith(
+            applicationBundleType: .iOSAppExtension,
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: mockContext.launchInfo.processLaunchDate
+            )
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: activeView)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
     }
 
     func testTTIDCommand_sanitizesContextAttributesBeforeWriting() throws {

@@ -69,17 +69,27 @@ public enum Profiling {
             sampleRate: configuration.debugSDK ? 100 : ProfilingTelemetryController.defaultSampleRate,
             telemetry: core.telemetry
         )
-        try? core.register(
-            feature: ProfilerFeature(
-                core: core,
-                configuration: configuration,
-                requestBuilder: RequestBuilder(
-                    customUploadURL: configuration.customEndpoint,
-                    telemetry: core.telemetry
-                ),
-                telemetryController: telemetryController
+        do {
+            try core.register(
+                feature: ProfilerFeature(
+                    core: core,
+                    configuration: configuration,
+                    requestBuilder: RequestBuilder(
+                        customUploadURL: configuration.customEndpoint,
+                        telemetry: core.telemetry
+                    ),
+                    telemetryController: telemetryController
+                )
             )
-        )
+            let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
+            let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
+            core.telemetry.configuration(
+                profilingApplicationLaunchSampleRate: Double(appLaunchSampleRate.normalizedSampleRate),
+                profilingSampleRate: Double(continuousSampleRate.normalizedSampleRate)
+            )
+        } catch {
+            consolePrint("\(error)", .error)
+        }
 
         core.set(context: ProfilingContext(status: .current))
     }

@@ -360,6 +360,11 @@ public final class objc_TraceURLSessionTracking: NSObject
     public init(firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
     public func setRedactedStatusCodes(_ codes: [NSNumber])
+    public func setSpanCustomization(_ spanCustomization: @escaping @Sendable (objc_TraceInterceptedRequest, objc_OTSpan, URLResponse?, Error?) -> Void)
+public final class objc_TraceInterceptedRequest: NSObject
+    public var url: URL?
+    public var httpMethod: String?
+    public var httpBody: Data?
 public final class objc_Trace: NSObject
     public static func enable(with configuration: objc_TraceConfiguration)
     public static func enable(with configuration: objc_TraceConfiguration, instanceName: String?)
@@ -595,7 +600,9 @@ public class objc_RUMActionEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMActionEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMActionEventSessionRUMSessionType
 public enum objc_RUMActionEventSessionRUMSessionType: Int
     case user
@@ -981,7 +988,13 @@ public class objc_RUMErrorEventErrorThreads: NSObject
     public var state: String?
 public class objc_RUMErrorEventErrorWasmModules: NSObject
     public var buildId: String
+    public var debugInfoType: objc_RUMErrorEventErrorWasmModulesDebugInfoType
     public var url: String
+public enum objc_RUMErrorEventErrorWasmModulesDebugInfoType: Int
+    case none
+    case dwarf
+    case sourcemap
+    case unknown
 public class objc_RUMErrorEventExecutionContext: NSObject
     public var id: String
     public var name: String?
@@ -1001,7 +1014,9 @@ public class objc_RUMErrorEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMErrorEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMErrorEventSessionRUMSessionType
 public enum objc_RUMErrorEventSessionRUMSessionType: Int
     case user
@@ -1272,7 +1287,9 @@ public class objc_RUMLongTaskEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMLongTaskEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMLongTaskEventSessionRUMSessionType
 public enum objc_RUMLongTaskEventSessionRUMSessionType: Int
     case user
@@ -1613,7 +1630,9 @@ public class objc_RUMResourceEventResourceWorker: NSObject
     public var start: NSNumber
 public class objc_RUMResourceEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMResourceEventSessionRUMSessionType
 public enum objc_RUMResourceEventSessionRUMSessionType: Int
     case user
@@ -1793,7 +1812,9 @@ public class objc_RUMTimeseriesCpuEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMTimeseriesCpuEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType
 public enum objc_RUMTimeseriesCpuEventSessionRUMSessionType: Int
     case user
@@ -1985,7 +2006,9 @@ public class objc_RUMTimeseriesMemoryEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMTimeseriesMemoryEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType
 public enum objc_RUMTimeseriesMemoryEventSessionRUMSessionType: Int
     case user
@@ -2258,8 +2281,10 @@ public enum objc_RUMViewEventPrivacyReplayLevel: Int
     case maskUserInput
 public class objc_RUMViewEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isActive: NSNumber?
+    public var isMainProcess: NSNumber?
     public var sampledForReplay: NSNumber?
     public var type: objc_RUMViewEventSessionRUMSessionType
 public enum objc_RUMViewEventSessionRUMSessionType: Int
@@ -2696,8 +2721,10 @@ public enum objc_RUMViewUpdateEventPrivacyReplayLevel: Int
     case maskUserInput
 public class objc_RUMViewUpdateEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isActive: NSNumber?
+    public var isMainProcess: NSNumber?
     public var sampledForReplay: NSNumber?
     public var type: objc_RUMViewUpdateEventSessionRUMSessionType
 public enum objc_RUMViewUpdateEventSessionRUMSessionType: Int
@@ -3098,7 +3125,9 @@ public class objc_RUMVitalAppLaunchEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMVitalAppLaunchEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType
 public enum objc_RUMVitalAppLaunchEventSessionRUMSessionType: Int
     case user
@@ -3339,7 +3368,9 @@ public class objc_RUMVitalDurationEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMVitalDurationEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalDurationEventSessionRUMSessionType
 public enum objc_RUMVitalDurationEventSessionRUMSessionType: Int
     case user
@@ -3569,7 +3600,9 @@ public class objc_RUMVitalOperationStepEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMVitalOperationStepEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType
 public enum objc_RUMVitalOperationStepEventSessionRUMSessionType: Int
     case user
@@ -3700,6 +3733,8 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var numberOfDisplays: NSNumber?
     public var plugins: [objc_TelemetryConfigurationEventTelemetryConfigurationPlugins]?
     public var premiumSampleRate: NSNumber?
+    public var profilingAnrEnabled: NSNumber?
+    public var profilingApplicationLaunchSampleRate: NSNumber?
     public var profilingSampleRate: NSNumber?
     public var propagateTraceBaggage: NSNumber?
     public var reactNativeVersion: String?
@@ -3711,6 +3746,8 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var selectedTracingPropagators: [Int]?
     public var sendLogsAfterSessionExpiration: NSNumber?
     public var sessionPersistence: objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersistence
+    public var sessionReplayCanvasRecording: NSNumber?
+    public var sessionReplayCanvasRecordingQuality: objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber?
     public var silentMultipleInit: NSNumber?
@@ -3801,6 +3838,11 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersist
     case localStorage
     case cookie
     case memory
+public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality: Int
+    case none
+    case low
+    case medium
+    case high
 public enum objc_TelemetryConfigurationEventTelemetryConfigurationTraceContextInjection: Int
     case none
     case all

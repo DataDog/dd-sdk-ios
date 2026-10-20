@@ -43,6 +43,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// If this view ever had session replay
     private var hasReplay: Bool
 
+    /// If timeseries data was ever collected for the session while this view was active
+    private var hasTimeseries: Bool
+
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
     /// View attributes.
@@ -159,6 +162,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.dependencies = dependencies
         self.isInitialView = isInitialView
         self.hasReplay = false
+        self.hasTimeseries = false
         self.identity = identity
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
@@ -219,6 +223,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 extension RUMViewScope {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         let wasActiveView = isActiveView
+        let command = command.resolvingResourceOwners(in: [self])
 
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
@@ -512,6 +517,9 @@ extension RUMViewScope {
             hasReplay = hasReplay || hasContextReplay
         }
 
+        let hasCollectedTimeseries = dependencies.timeseriesCollector?.hasCollectedData(sessionID: self.context.sessionID.toRUMDataFormat) ?? false
+        hasTimeseries = hasTimeseries || hasCollectedTimeseries
+
         let attributes: [AttributeKey: AttributeValue]
         if isActiveView {
             // View event attributes
@@ -679,8 +687,10 @@ extension RUMViewScope {
             service: context.service,
             session: .init(
                 hasReplay: hasReplay,
+                hasTimeseries: hasTimeseries,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 sampledForReplay: nil,
                 type: dependencies.sessionType
             ),
@@ -698,7 +708,7 @@ extension RUMViewScope {
                 let update = previousEvent.update(from: event)
                 lastSentViewEvent = event
                 consecutiveViewUpdatesCount += 1
-                writer.write(value: update, completion: completionHandler)
+                writer.write(value: update, metadata: update.metadata(), completion: completionHandler)
             } else {
                 writer.write(
                     value: event,
@@ -852,7 +862,9 @@ extension RUMViewScope {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
+                hasTimeseries: dependencies.timeseriesCollector?.hasCollectedData(sessionID: self.context.sessionID.toRUMDataFormat) ?? false,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -944,7 +956,9 @@ extension RUMViewScope {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
+                hasTimeseries: dependencies.timeseriesCollector?.hasCollectedData(sessionID: self.context.sessionID.toRUMDataFormat) ?? false,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,

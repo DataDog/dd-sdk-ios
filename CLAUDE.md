@@ -15,6 +15,7 @@ Use these skills (via `/skill-name`) for common workflows:
 | Skill | When to use |
 |---|---|
 | `dd-sdk-ios:git-branch` | Creating a new branch for a JIRA ticket or feature |
+| `dd-sdk-ios:setting-up-worktree` | Creating a git worktree ready to build and test |
 | `dd-sdk-ios:git-commit` | Committing changes (signed commits, message format) |
 | `dd-sdk-ios:open-pr` | Opening a pull request against `develop` |
 | `dd-sdk-ios:running-tests` | Running unit, module, or integration tests |

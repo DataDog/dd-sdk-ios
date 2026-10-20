@@ -432,6 +432,8 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             mauiVersion: configuration.mauiVersion,
             mobileVitalsUpdatePeriod: configuration.mobileVitalsUpdatePeriod,
             premiumSampleRate: nil,
+            profilingApplicationLaunchSampleRate: configuration.profilingApplicationLaunchSampleRate,
+            profilingSampleRate: configuration.profilingSampleRate,
             reactNativeVersion: nil,
             reactVersion: nil,
             remoteConfiguration: configuration.remoteConfiguration.map { .init($0) },

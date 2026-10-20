@@ -63,9 +63,12 @@ internal struct DataUploadStatus {
     /// attempts (i.e. the upload succeeded or failed due to unrecoverable client error).
     let needsRetry: Bool
 
+    /// Whether reconciliation resolved the entire batch without uploading any events.
+    let isReconciled: Bool
+
     // MARK: - Debug Info
 
-    /// The actual HTTP status code received in response (`nil` if transport error).
+    /// The actual upload HTTP status code (`nil` for a transport error or a batch resolved without uploading).
     let responseCode: Int?
 
     /// Upload status description printed to the console if SDK `.debug` verbosity is enabled.
@@ -84,6 +87,7 @@ extension DataUploadStatus {
 
         self.init(
             needsRetry: statusCode.needsRetry,
+            isReconciled: false,
             responseCode: httpResponse.statusCode,
             userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")",
             error: DataUploadError(status: httpResponse.statusCode),
@@ -94,6 +98,7 @@ extension DataUploadStatus {
     init(networkError: Error, attempt: UInt) {
         self.init(
             needsRetry: true, // retry this upload as it failed due to network transport isse
+            isReconciled: false,
             responseCode: nil,
             userDebugDescription: "[error: \(DDError(error: networkError).message)]", // e.g. "[error: A data connection is not currently allowed]"
             error: DataUploadError(networkError: networkError),
