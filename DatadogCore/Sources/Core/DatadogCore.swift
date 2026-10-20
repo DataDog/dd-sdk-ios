@@ -258,13 +258,16 @@ internal final class DatadogCore {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         if trackingConsent != consentPublisher.consent {
+            // Queues the context update before the migration. A write context read before the update
+            // has the previous consent, and its events are written before the migration runs. A write
+            // context read after it has the new consent.
+            consentPublisher.consent = trackingConsent
             contextProvider.queue.async { [allStorages] in
                 // RUM-3175: To prevent race conditions with ongoing "event write" operations,
                 // data migration must be synchronized on the context queue. This guarantees that
                 // all latest events have been written before migration occurs.
                 allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
             }
-            consentPublisher.consent = trackingConsent
         }
     }
 
