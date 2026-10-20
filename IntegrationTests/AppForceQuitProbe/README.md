@@ -21,10 +21,22 @@ JSON exports include receipt time, event interval and optional process ID. This 
 absence of a diagnostic does not establish a clean previous run. Older systems omit this collector.
 The probe does not use daily aggregate metrics as per-run evidence.
 
-The target behavior is force kill followed by quick relaunch, including removal of a stuck app.
-Test `fatal_hang`, then manually remove and quickly reopen the probe. That is a manual recovery
-positive, not a watchdog negative. A blocked main thread may prevent the lifecycle callbacks this
-hypothesis requires. A normal removal followed by a relaunch after more than 60 seconds is a negative.
+Build 0.1/4 adds three responsive broken journeys: **Infinite loader**, **Back does not navigate**,
+and **Empty page**. Assign a host trial ID, select a journey, then tap **Check UI responds**. For the
+Back journey, also tap **Back** and confirm that the page stays visible. These local controls make no
+network requests. Their counters and journey label survive in the previous-run checkpoint after a
+manual switcher removal and relaunch; they are context and never affect classification. A new process
+returns to the normal probe controls. **Return to probe controls** exits a journey without killing it.
+This build is a separate source/build cohort from earlier trials.
+
+The target behavior is force kill followed by quick relaunch after a user cannot progress. Run the
+three responsive journeys first. Test `fatal_hang` separately, then manually remove and quickly reopen
+the probe. That is a manual recovery positive. A blocked main thread may prevent the lifecycle
+callbacks this hypothesis requires. A normal removal followed by a relaunch after more than 60
+seconds is a negative.
+
+The background URLSession cancellation-reason option is documented in the root evidence notes and
+deferred. This probe does not create a background session, transfer, endpoint or background capability.
 
 `Verify reporter read refusal` runs the real filesystem reader against a dedicated file where a
 directory is expected. It does not modify the live report directory. `Restore startup reporter

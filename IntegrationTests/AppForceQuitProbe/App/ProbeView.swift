@@ -13,6 +13,14 @@ internal struct ProbeScreen: View {
     @State private var pendingFault: String?
 
     var body: some View {
+        if let journey = capture.current.journey {
+            ProbeJourneyScreen(capture: capture, journey: journey)
+        } else {
+            controls
+        }
+    }
+
+    private var controls: some View {
         Form {
             Section(header: Text("App force quit evidence probe")) {
                 Text("Local observations only. KSCrash enabled. Reporter lifecycle is an unvalidated hypothesis.")
@@ -43,6 +51,13 @@ internal struct ProbeScreen: View {
                 }
                 Button("Verify reporter read refusal") { capture.verifyReporterRefusal() }
                 Button("Restore startup reporter evidence") { capture.restoreReporterEvidence() }
+            }
+            Section(header: Text("Responsive broken journeys")) {
+                Text("Simulated local failures. The main thread stays responsive. No network requests.")
+                ForEach(ProbeJourneyKind.allCases, id: \.self) { kind in
+                    Button(kind.title) { capture.startJourney(kind) }
+                        .accessibilityIdentifier(kind.rawValue)
+                }
             }
             Section(header: Text("Faults affect this dedicated probe only")) {
                 ForEach(["managed_crash", "native_crash", "hang_5s", "fatal_hang", "memory"], id: \.self) { name in

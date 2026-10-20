@@ -357,6 +357,59 @@ private func reporterCurrent() -> ProbeRun {
     return value
 }
 
+@Test(arguments: ProbeJourneyKind.allCases)
+private func journeyEvidenceSurvivesProcessCheckpoint(kind: ProbeJourneyKind) throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var value = reporterPrior()
+    value.journey = ProbeJourneyState(
+        kind: kind, enteredAt: ProbeStamp(wall: 105, uptime: 55), backAttempts: 2, responseChecks: 3
+    )
+    try ProbeStore(directory: directory).checkpoint(value)
+    let loaded = try ProbeStore(directory: directory)
+    #expect(loaded.load().run == value)
+    #expect(loaded.load().reliable)
+}
+
+@Test
+private func earlierCheckpointsWithoutJourneyStillDecode() throws {
+    var value = reporterPrior()
+    value.journey = ProbeJourneyState(kind: .emptyPage, enteredAt: value.started)
+    var fields = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(value)) as? [String: Any])
+    fields.removeValue(forKey: "journey")
+    let restored = try JSONDecoder().decode(ProbeRun.self, from: JSONSerialization.data(withJSONObject: fields))
+    value.journey = nil
+    #expect(restored == value)
+}
+
+@Test(arguments: ProbeJourneyKind.allCases)
+private func journeyLabelsDoNotSupplyDetectionEvidence(kind: ProbeJourneyKind) {
+    let clean = ProbeReporterEvidence(read: .empty, crashedLastLaunch: false)
+    let crash = ProbeReporterEvidence(read: .capturedCrash, crashedLastLaunch: true)
+    var previous = reporterPrior()
+    var current = reporterCurrent()
+    let withoutJourney = ProbeClassifier.reporterLifecycle(
+        previous: previous, current: current, evidence: evidence(), reporter: clean
+    )
+    previous.journey = ProbeJourneyState(kind: kind, enteredAt: previous.started, responseChecks: 1)
+    current.journey = ProbeJourneyState(kind: kind, enteredAt: current.started)
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: previous, current: current, evidence: evidence(), reporter: clean
+        ) == withoutJourney
+    )
+    #expect(
+        ProbeClassifier.reporterLifecycle(
+            previous: previous, current: current, evidence: evidence(), reporter: crash
+        ).outcome == "cannot_confirm"
+    )
+    previous.terminationCallbackObserved = false
+    let missingCallback = ProbeClassifier.reporterLifecycle(
+        previous: previous, current: current, evidence: evidence(), reporter: clean
+    )
+    #expect(missingCallback.reasons.contains("missing_termination_callback"))
+}
+
 @Test
 private func reporterHypothesisDoesNotRequireDiscardAndRejectsEveryReporterFailure() {
     let retained = ProbeSceneEvidence(earliestOpen: ["a"], postConnectionOpen: ["a"])

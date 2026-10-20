@@ -33,7 +33,30 @@ internal struct ProbeRun: Codable, Equatable {
     var terminationCallbackObserved: Bool?
     var terminationObservedAt: ProbeStamp?
     var crashReporterInstalled: Bool?
+    // Host scenario context only; no classifier reads this field.
+    var journey: ProbeJourneyState?
     var vetoes: [String] = []
+}
+
+internal enum ProbeJourneyKind: String, CaseIterable, Codable {
+    case infiniteLoader = "infinite_loader"
+    case ineffectiveBack = "ineffective_back"
+    case emptyPage = "empty_page"
+
+    var title: String {
+        switch self {
+        case .infiniteLoader: return "Infinite loader"
+        case .ineffectiveBack: return "Back does not navigate"
+        case .emptyPage: return "Empty page"
+        }
+    }
+}
+
+internal struct ProbeJourneyState: Codable, Equatable {
+    var kind: ProbeJourneyKind
+    var enteredAt: ProbeStamp
+    var backAttempts = 0
+    var responseChecks = 0
 }
 
 internal struct ProbeSceneEvidence: Codable {

@@ -365,6 +365,35 @@ internal final class ProbeCapture: ObservableObject {
         }
     }
 
+    func startJourney(_ kind: ProbeJourneyKind) {
+        current.journey = ProbeJourneyState(kind: kind, enteredAt: Self.stamp())
+        record("journey_started_\(kind.rawValue)")
+    }
+
+    func checkJourneyResponse() {
+        guard current.journey != nil else {
+            return
+        }
+        current.journey?.responseChecks += 1
+        record("journey_response_check")
+    }
+
+    func attemptJourneyBack() {
+        guard current.journey?.kind == .ineffectiveBack else {
+            return
+        }
+        current.journey?.backAttempts += 1
+        record("journey_back_attempt")
+    }
+
+    func endJourney() {
+        guard current.journey != nil else {
+            return
+        }
+        current.journey = nil
+        record("journey_ended")
+    }
+
     func verifyReporterRefusal() {
         reporter = crashReporter?.verifyReadRefusal() ?? ProbeReporterEvidence()
         record("reporter_read_refusal_fixture")
