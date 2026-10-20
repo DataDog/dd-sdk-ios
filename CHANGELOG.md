@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Attribute a TTFD vital reported before the TTID is written to the view and connectivity active when `reportAppFullyDisplayed()` was called, instead of the TTID's view.
+
 # 3.20.0 / 19-10-2026
 
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.

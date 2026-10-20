@@ -25,7 +25,9 @@ internal class RUMAppLaunchManager {
     private var timeToFullDisplay: (
         duration: TimeInterval,
         vitalId: String,
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        view: RUMVitalAppLaunchEvent.View,
+        context: DatadogContext
     )?
     private var startupType: RUMVitalAppLaunchEvent.Vital.StartupType?
 
@@ -113,7 +115,7 @@ private extension RUMAppLaunchManager {
                     attributes: attributes,
                     context: context,
                     writer: writer,
-                    activeView: activeView,
+                    view: .init(activeView: activeView),
                     profiling: profiling
                 )
 
@@ -126,9 +128,9 @@ private extension RUMAppLaunchManager {
                         appLaunchMetric: .ttfd,
                         startupType: startupType,
                         attributes: timeToFullDisplay.attributes,
-                        context: context,
+                        context: timeToFullDisplay.context,
                         writer: writer,
-                        activeView: activeView,
+                        view: timeToFullDisplay.view,
                         profiling: profiling
                     )
 
@@ -193,7 +195,7 @@ private extension RUMAppLaunchManager {
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
         writer: Writer,
-        activeView: RUMViewScope?,
+        view: RUMVitalAppLaunchEvent.View,
         profiling: DDProfiling? = nil
     ) {
         let vital = RUMVitalAppLaunchEvent.Vital(
@@ -232,11 +234,7 @@ private extension RUMAppLaunchManager {
             synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
-            view: .init(
-                id: (activeView?.viewUUID).orNull.toRUMDataFormat,
-                name: activeView?.viewName,
-                url: activeView?.viewPath ?? ""
-            ),
+            view: view,
             vital: vital
         )
 
@@ -261,7 +259,10 @@ private extension RUMAppLaunchManager {
         let timeToFullDisplay = (
             duration: timeToInitialDisplay.map { max($0, ttfd) } ?? ttfd,
             vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            attributes: command.globalAttributes.merging(command.attributes) { $1 }
+            attributes: command.globalAttributes.merging(command.attributes) { $1 },
+            // Captured now so a TTFD held until the TTID completes keeps its own view and context.
+            view: RUMVitalAppLaunchEvent.View(activeView: activeView),
+            context: context
         )
         self.timeToFullDisplay = timeToFullDisplay
 
@@ -286,7 +287,7 @@ private extension RUMAppLaunchManager {
                     attributes: timeToFullDisplay.attributes,
                     context: context,
                     writer: writer,
-                    activeView: activeView,
+                    view: timeToFullDisplay.view,
                     profiling: profiling
                 )
             }
@@ -312,6 +313,16 @@ private extension RUMAppLaunchManager {
     func sendTTFDMessageToProfiler(vital: Vital) {
         let contextAttributes: [String: Encodable] = parent.rumContextAttributes
         dependencies.featureScope.send(message: .payload(OperationMessage(attributes: contextAttributes, operation: vital)))
+    }
+}
+
+private extension RUMVitalAppLaunchEvent.View {
+    init(activeView: RUMViewScope?) {
+        self.init(
+            id: (activeView?.viewUUID).orNull.toRUMDataFormat,
+            name: activeView?.viewName,
+            url: activeView?.viewPath ?? ""
+        )
     }
 }
 
