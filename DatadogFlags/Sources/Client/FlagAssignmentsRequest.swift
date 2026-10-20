@@ -20,6 +20,13 @@ extension URLRequest {
         request.setValue("application/vnd.api+json", forHTTPHeaderField: "Content-Type")
         request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
         request.setValue(context.clientToken, forHTTPHeaderField: "dd-client-token")
+        // Bridge SDKs that consume raw snapshots cannot resolve encoded keys yet.
+        if FlagKeyObfuscation.isSupported(source: context.source) {
+            request.setValue(
+                [FlagKeyObfuscation.capability].sorted().joined(separator: ","),
+                forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"
+            )
+        }
 
         if let applicationId = context.additionalContext(ofType: RUMCoreContext.self)?.applicationID {
             request.setValue(applicationId, forHTTPHeaderField: "dd-application-id")

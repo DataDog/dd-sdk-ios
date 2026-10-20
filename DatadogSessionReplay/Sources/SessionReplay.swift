@@ -94,7 +94,11 @@ public enum SessionReplay {
         let resources = ResourcesFeature(core: core, configuration: configuration)
         try core.register(feature: resources)
 
-        let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
+        let sessionReplay = try SessionReplayFeature(
+            core: core,
+            configuration: configuration,
+            resourcesWriter: resources.writer
+        )
         try core.register(feature: sessionReplay)
         core.set(
             context: SessionReplayCoreContext.Configuration(

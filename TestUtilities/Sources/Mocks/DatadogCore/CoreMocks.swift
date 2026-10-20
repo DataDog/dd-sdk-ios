@@ -317,6 +317,7 @@ extension DataUploadStatus: RandomMockable {
     public static func mockRandom() -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: .random(),
+            isReconciled: false,
             responseCode: .mockRandom(),
             userDebugDescription: .mockRandom(),
             error: nil,
@@ -326,13 +327,15 @@ extension DataUploadStatus: RandomMockable {
 
     public static func mockWith(
         needsRetry: Bool = .mockAny(),
-        responseCode: Int = .mockAny(),
+        isReconciled: Bool = false,
+        responseCode: Int? = .mockAny(),
         userDebugDescription: String = .mockAny(),
         error: DataUploadError? = nil,
         attempt: UInt = 0
     ) -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: needsRetry,
+            isReconciled: isReconciled,
             responseCode: responseCode,
             userDebugDescription: userDebugDescription,
             error: error,

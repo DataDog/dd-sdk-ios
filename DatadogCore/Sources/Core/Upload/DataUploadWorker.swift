@@ -121,6 +121,17 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         previous: previousUploadStatus
                     )
 
+                    if uploadStatus.isReconciled {
+                        DD.logger.debug("   → (\(self.featureName)) batch resolved by reconciliation, no upload needed")
+                        self.fileReader.markFileAsRead(batch.file, reason: .reconciled)
+                        previousUploadStatus = nil
+                        if files.isEmpty {
+                            self.delay.reset()
+                        }
+                        self.scheduleNextUpload(from: files, context: context)
+                        return
+                    }
+
                     previousUploadStatus = uploadStatus
                     sendUploadQualityMetric(status: uploadStatus)
 
@@ -171,15 +182,19 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
             }
 
-            if files.isEmpty {
-                self.scheduleNextCycle()
-            } else {
-                self.uploadFile(from: files, context: context)
-            }
+            self.scheduleNextUpload(from: files, context: context)
         }
 
         self.uploadWork = uploadWork
         queue.async(execute: uploadWork)
+    }
+
+    private func scheduleNextUpload(from files: [ReadableFile], context: DatadogContext) {
+        if files.isEmpty {
+            scheduleNextCycle()
+        } else {
+            uploadFile(from: files, context: context)
+        }
     }
 
     /// Sends all unsent data synchronously.

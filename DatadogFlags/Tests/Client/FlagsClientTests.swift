@@ -73,7 +73,39 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(fixture.exposures.logExposureCalls.count, 1)
     }
 
-    private func makeSubjectTransitionFixture() -> (
+    func testObfuscatedAssignmentsPreserveSubjectOptOutDuringRefresh() throws {
+        // Given
+        let obfuscation = try JSONDecoder().decode(
+            FlagKeyObfuscation.self,
+            from: Data(#"{"scheme":"flag-key-sha256-v1","salt":"000102030405060708090a0b0c0d0e0f"}"#.utf8)
+        )
+        let fixture = makeSubjectTransitionFixture(obfuscation: obfuscation)
+        fixture.client.setEvaluationContext(telemetryContext(.bool(true), subject: "A")) { _ in }
+        fixture.complete(0, .success(()))
+
+        // When: resolve both a cold and warm hash lookup, then switch subjects.
+        for _ in 0..<2 {
+            XCTAssertTrue(fixture.client.getBooleanValue(key: "flag", defaultValue: false))
+        }
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false), subject: "B")) { _ in }
+        XCTAssertTrue(fixture.client.getBooleanValue(key: "flag", defaultValue: false))
+        fixture.aggregator.sendEvaluations()
+
+        // Then
+        XCTAssertTrue(fixture.scope.eventsWritten.isEmpty)
+        XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
+        XCTAssertEqual(fixture.exposures.logExposureCalls.count, 3)
+        XCTAssertTrue(fixture.exposures.logExposureCalls.allSatisfy { $0.context.targetingKey == "A" })
+
+        fixture.complete(1, .success(()))
+        XCTAssertTrue(fixture.client.getBooleanValue(key: "flag", defaultValue: false))
+        fixture.aggregator.sendEvaluations()
+        XCTAssertEqual(fixture.scope.eventsWritten(ofType: FlagEvaluationEvent.self).count, 1)
+        XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, 1)
+        XCTAssertEqual(fixture.exposures.logExposureCalls.last?.context.targetingKey, "B")
+    }
+
+    private func makeSubjectTransitionFixture(obfuscation: FlagKeyObfuscation? = nil) -> (
         client: FlagsClient,
         aggregator: EvaluationAggregator,
         scope: FeatureScopeMock,
@@ -81,8 +113,8 @@ final class FlagsClientTests: XCTestCase {
         exposures: ExposureLoggerMock,
         complete: (Int, Result<Void, FlagsError>) -> Void
     ) {
-        let scope = FeatureScopeMock()
-        var pending: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        var pending: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
         let fetcher = FlagAssignmentsFetcherMock { _, completion in pending.append(completion) }
         let repository = FlagsRepository(
             clientName: "subject-transitions",
@@ -102,9 +134,11 @@ final class FlagsClientTests: XCTestCase {
             rumFlagEvaluationReporter: rum,
             configuration: .init(enableEvaluationTelemetryOptOutParameter: true)
         )
-        let flags = telemetryFlagsData(context: telemetryContext(nil)).flags
+        let flags = Dictionary(uniqueKeysWithValues: telemetryFlagsData(context: telemetryContext(nil)).flags.map {
+            (obfuscation?.lookupKey(for: $0.key) ?? $0.key, $0.value)
+        })
         return (client, aggregator, scope, rum, exposures, { index, result in
-            pending[index](result.map { flags })
+            pending[index](result.map { FlagAssignmentsResponse(flags: flags, obfuscation: obfuscation) })
         })
     }
 
