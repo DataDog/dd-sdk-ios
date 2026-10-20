@@ -237,7 +237,10 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         }
 
         override func willMove(toWindow newWindow: UIWindow?) {
-            notify(window: newWindow)
+            // Report attachment after UIKit assigns window; preserve early detach.
+            if newWindow == nil {
+                notify(window: nil)
+            }
             super.willMove(toWindow: newWindow)
         }
 

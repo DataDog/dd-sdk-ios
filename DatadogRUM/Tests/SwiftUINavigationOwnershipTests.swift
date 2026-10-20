@@ -1530,6 +1530,13 @@ extension SwiftUINavigationOwnershipTests {
                 $0.view.id == id && $0.view.name == "Reader Mount" && $0.view.isActive == true
             }
         }
+        let viewID = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID)
+        observer.removeFromSuperview()
+        try await awaitSemanticBoundary("reader-owner-removal", core: core) {
+            source.observationCount == 0 && state.currentIdentity == nil && rows.views.contains {
+                $0.view.id == viewID && $0.view.isActive == false
+            }
+        }
     }
 
     @MainActor
