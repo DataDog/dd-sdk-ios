@@ -116,6 +116,12 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             return false
         }
 
+        // Foreign completions still drive expiration, but are not activity in this view.
+        if let completion = command as? RUMResourceCompletionCommand,
+           !completion.updatesAction(in: self.context.activeViewID) {
+            return true
+        }
+
         lastActivityTime = command.time
         switch command {
         case is RUMStartViewCommand, is RUMStopViewCommand:
@@ -194,7 +200,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
+                hasTimeseries: dependencies.timeseriesCollector?.hasCollectedData(sessionID: self.context.sessionID.toRUMDataFormat) ?? false,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,

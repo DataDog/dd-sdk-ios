@@ -10,4 +10,12 @@ internal struct FlagsData: Equatable, Codable {
     var flags: [String: FlagAssignment]
     var context: FlagsEvaluationContext
     var date: Date
+    let obfuscation: FlagKeyObfuscation?
+
+    init(flags: [String: FlagAssignment], context: FlagsEvaluationContext, date: Date, obfuscation: FlagKeyObfuscation? = nil) {
+        self.flags = flags
+        self.context = context
+        self.date = date
+        self.obfuscation = obfuscation
+    }
 }

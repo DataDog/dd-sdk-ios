@@ -13,7 +13,7 @@ import OpenTelemetryApi
 
 class SpanEventBuilderTests: XCTestCase {
     func testBuildingBasicSpan() {
-        let context: DatadogContext = .mockWith(sdkVersion: "1.2.3")
+        let context: DatadogContext = .mockWith(version: "2.0.0", buildNumber: "42.1", sdkVersion: "1.2.3")
         let builder: SpanEventBuilder = .mockWith(service: "test-service-name")
 
         let span = builder.createSpanEvent(
@@ -45,6 +45,8 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(span.duration, 0.50, accuracy: 0.01)
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.tracerVersion, "1.2.3")
+        XCTAssertEqual(span.applicationVersion, "2.0.0")
+        XCTAssertEqual(span.applicationBuildNumber, "42.1")
         XCTAssertEqual(span.tags, ["foo": "bar", "bizz": "123"])
     }
 

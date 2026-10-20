@@ -1045,7 +1045,8 @@ public class objc_RUMActionEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMActionEventExecutionContextExecutionContextType {
@@ -1118,8 +1119,16 @@ public class objc_RUMActionEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMActionEventSessionRUMSessionType {
@@ -3028,9 +3037,40 @@ public class objc_RUMErrorEventErrorWasmModules: NSObject {
         root.swiftModel.buildId
     }
 
+    public var debugInfoType: objc_RUMErrorEventErrorWasmModulesDebugInfoType {
+        .init(swift: root.swiftModel.debugInfoType)
+    }
+
     public var url: String {
         root.swiftModel.url
     }
+}
+
+@objc(DDRUMErrorEventErrorWasmModulesDebugInfoType)
+@_spi(objc)
+public enum objc_RUMErrorEventErrorWasmModulesDebugInfoType: Int {
+    internal init(swift: RUMErrorEvent.Error.WasmModules.DebugInfoType?) {
+        switch swift {
+        case nil: self = .none
+        case .dwarf?: self = .dwarf
+        case .sourcemap?: self = .sourcemap
+        case .unknown?: self = .unknown
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.WasmModules.DebugInfoType? {
+        switch self {
+        case .none: return nil
+        case .dwarf: return .dwarf
+        case .sourcemap: return .sourcemap
+        case .unknown: return .unknown
+        }
+    }
+
+    case none
+    case dwarf
+    case sourcemap
+    case unknown
 }
 
 @objc(DDRUMErrorEventExecutionContext)
@@ -3048,7 +3088,8 @@ public class objc_RUMErrorEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMErrorEventExecutionContextExecutionContextType {
@@ -3152,8 +3193,16 @@ public class objc_RUMErrorEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMErrorEventSessionRUMSessionType {
@@ -4278,7 +4327,8 @@ public class objc_RUMLongTaskEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMLongTaskEventExecutionContextExecutionContextType {
@@ -4518,8 +4568,16 @@ public class objc_RUMLongTaskEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMLongTaskEventSessionRUMSessionType {
@@ -5506,7 +5564,8 @@ public class objc_RUMResourceEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMResourceEventExecutionContextExecutionContextType {
@@ -6259,8 +6318,16 @@ public class objc_RUMResourceEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMResourceEventSessionRUMSessionType {
@@ -7097,7 +7164,8 @@ public class objc_RUMTimeseriesCpuEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMTimeseriesCpuEventExecutionContextExecutionContextType {
@@ -7170,8 +7238,16 @@ public class objc_RUMTimeseriesCpuEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType {
@@ -8077,7 +8153,8 @@ public class objc_RUMTimeseriesMemoryEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMTimeseriesMemoryEventExecutionContextExecutionContextType {
@@ -8150,8 +8227,16 @@ public class objc_RUMTimeseriesMemoryEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType {
@@ -9420,7 +9505,8 @@ public class objc_RUMViewEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMViewEventExecutionContextExecutionContextType {
@@ -9548,12 +9634,20 @@ public class objc_RUMViewEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
 
     public var isActive: NSNumber? {
         root.swiftModel.session.isActive as NSNumber?
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var sampledForReplay: NSNumber? {
@@ -11636,7 +11730,8 @@ public class objc_RUMViewUpdateEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMViewUpdateEventExecutionContextExecutionContextType {
@@ -11764,12 +11859,20 @@ public class objc_RUMViewUpdateEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
 
     public var isActive: NSNumber? {
         root.swiftModel.session.isActive as NSNumber?
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var sampledForReplay: NSNumber? {
@@ -13705,7 +13808,8 @@ public class objc_RUMVitalAppLaunchEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMVitalAppLaunchEventExecutionContextExecutionContextType {
@@ -13778,8 +13882,16 @@ public class objc_RUMVitalAppLaunchEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType {
@@ -14920,7 +15032,8 @@ public class objc_RUMVitalDurationEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMVitalDurationEventExecutionContextExecutionContextType {
@@ -14993,8 +15106,16 @@ public class objc_RUMVitalDurationEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMVitalDurationEventSessionRUMSessionType {
@@ -16074,7 +16195,8 @@ public class objc_RUMVitalOperationStepEventExecutionContext: NSObject {
     }
 
     public var name: String? {
-        root.swiftModel.executionContext!.name
+        set { root.swiftModel.executionContext!.name = newValue }
+        get { root.swiftModel.executionContext!.name }
     }
 
     public var type: objc_RUMVitalOperationStepEventExecutionContextExecutionContextType {
@@ -16147,8 +16269,16 @@ public class objc_RUMVitalOperationStepEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType {
@@ -16812,6 +16942,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.premiumSampleRate as NSNumber?
     }
 
+    public var profilingAnrEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.profilingAnrEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.profilingAnrEnabled as NSNumber? }
+    }
+
+    public var profilingApplicationLaunchSampleRate: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.profilingApplicationLaunchSampleRate = newValue?.doubleValue }
+        get { root.swiftModel.telemetry.configuration.profilingApplicationLaunchSampleRate as NSNumber? }
+    }
+
     public var profilingSampleRate: NSNumber? {
         set { root.swiftModel.telemetry.configuration.profilingSampleRate = newValue?.doubleValue }
         get { root.swiftModel.telemetry.configuration.profilingSampleRate as NSNumber? }
@@ -16861,6 +17001,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var sessionPersistence: objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersistence {
         .init(swift: root.swiftModel.telemetry.configuration.sessionPersistence)
+    }
+
+    public var sessionReplayCanvasRecording: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecording = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecording as NSNumber? }
+    }
+
+    public var sessionReplayCanvasRecordingQuality: objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality {
+        set { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecordingQuality = newValue.toSwift }
+        get { .init(swift: root.swiftModel.telemetry.configuration.sessionReplayCanvasRecordingQuality) }
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -17319,6 +17469,33 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersist
     case localStorage
     case cookie
     case memory
+}
+
+@objc(DDTelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality)
+@_spi(objc)
+public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.SessionReplayCanvasRecordingQuality?) {
+        switch swift {
+        case nil: self = .none
+        case .low?: self = .low
+        case .medium?: self = .medium
+        case .high?: self = .high
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.SessionReplayCanvasRecordingQuality? {
+        switch self {
+        case .none: return nil
+        case .low: return .low
+        case .medium: return .medium
+        case .high: return .high
+        }
+    }
+
+    case none
+    case low
+    case medium
+    case high
 }
 
 @objc(DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection)
@@ -18178,4 +18355,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/75aac05f07c331fffa8598919931106ed24bee63
+// Generated from https://github.com/DataDog/rum-events-format/tree/97acbf94b6d9ddde18f1ef26ff9e7e4075e7e10a

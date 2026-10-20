@@ -44,6 +44,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     /// Safe to store: it holds the core weakly and resolves the RUM feature on every call, so a
     /// session created after `Trace.enable()` is still seen.
     let sessionSampler: SessionSampler?
+    /// Optional callback to customize the span for each intercepted request.
+    let spanCustomization: Trace.Configuration.SpanCustomization?
 
     weak var tracer: DatadogTracer?
 
@@ -76,7 +78,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         traceContextInjection: TraceContextInjection,
         telemetry: Telemetry,
         redactedStatusCodes: Set<Int> = Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes,
-        sessionSampler: SessionSampler? = nil
+        sessionSampler: SessionSampler? = nil,
+        spanCustomization: Trace.Configuration.SpanCustomization? = nil
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
@@ -86,6 +89,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.telemetry = telemetry
         self.redactedStatusCodes = redactedStatusCodes
         self.sessionSampler = sessionSampler
+        self.spanCustomization = spanCustomization
     }
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
@@ -314,7 +318,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: startTime,
                 eventWriter: capturedRUMContext.map {
-                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                    LazySpanWriteContext(
+                        featureScope: tracer.featureScope,
+                        rumContextOverride: $0.rumContext.map(RUMContextOverride.replace) ?? .remove
+                    )
                 }
             )
         } else if Sampler(samplingRate: samplingRate).sample() {
@@ -352,7 +359,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: startTime,
                 eventWriter: capturedRUMContext.map {
-                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                    LazySpanWriteContext(
+                        featureScope: tracer.featureScope,
+                        rumContextOverride: $0.rumContext.map(RUMContextOverride.replace) ?? .remove
+                    )
                 }
             )
         } else {
@@ -418,6 +428,13 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
             #endif
         }
+
+        spanCustomization?(
+            .init(from: interception.request),
+            span,
+            resourceCompletion.httpResponse,
+            resourceCompletion.error
+        )
 
         span.finish(at: safeEndTime)
     }

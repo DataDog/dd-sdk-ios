@@ -12,121 +12,76 @@ import DatadogInternal
 @testable import TestUtilities
 
 class ResourcesWriterTests: XCTestCase {
+    let resources: [EnrichedResource] = [.mockWith(identifier: "1"), .mockWith(identifier: "2")]
     var scopeMock: FeatureScopeMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    let dateProvider = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
+    var availabilityStore: ResourceAvailabilityStore! // swiftlint:disable:this implicitly_unwrapped_optional
     var writer: ResourcesWriter! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         scopeMock = FeatureScopeMock()
-        writer = ResourcesWriter(scope: scopeMock)
+        availabilityStore = ResourceAvailabilityStore(scope: scopeMock, dateProvider: dateProvider)
+        writer = ResourcesWriter(scope: scopeMock, availabilityStore: availabilityStore)
     }
 
     override func tearDown() {
         writer = nil
+        availabilityStore = nil
         scopeMock = nil
     }
 
-    func testWhenInitialized_itSetsUpDataStore() {
-        XCTAssertNotNil(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.storeCreationKey))
-        XCTAssertNil(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey))
-        XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
-    }
-
-    func test_whenWritesResources_itDoesWriteRecordsToScope() {
+    func test_whenWritesResources_itWritesEachIdentifierOnce() {
         // When
-        writer.write(resources: [.mockRandom()])
-        writer.write(resources: [.mockRandom()])
-        writer.write(resources: [.mockRandom()])
+        writer.write(resources: resources + resources)
+        writer.write(resources: resources)
 
         // Then
-        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self).count, 3)
-        XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
+        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), resources)
+        XCTAssertTrue(scopeMock.dataStoreMock.storage.isEmpty)
     }
 
-    func test_whenWritesSameResourcesToCore_itRemovesDuplicates() throws {
+    func test_whenWriterIsRecreated_itWritesPreviouslyScheduledResources() {
         // Given
-        scopeMock.dataStoreMock.setValue(Date().timeIntervalSince1970.asData(), forKey: ResourcesWriter.Constants.storeCreationKey)
+        writer.write(resources: resources)
 
         // When
-        writer.write(resources: [.mockWith(identifier: "1")])
-        writer.write(resources: [.mockWith(identifier: "1")])
+        writer = ResourcesWriter(scope: scopeMock, availabilityStore: availabilityStore)
+        writer.write(resources: resources)
 
         // Then
-        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self).count, 1)
-        XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
-        let data = try XCTUnwrap(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey)?.data(expectedVersion: ResourcesWriter.Constants.currentStoreVersion))
-        XCTAssertGreaterThan(data.count, 0)
+        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), resources + resources)
     }
 
-    func test_whenReadsKnownDuplicates_itDoesNotWriteRecordsToScope() throws {
+    func test_whenConfirmationExpires_itWritesTheResource() {
         // Given
-        let knownIdentifiersData = Set(["1"]).asData(JSONEncoder())!
-        scopeMock.dataStoreMock.setValue(knownIdentifiersData, forKey: ResourcesWriter.Constants.knownResourcesKey, version: ResourcesWriter.Constants.currentStoreVersion)
-        scopeMock.dataStoreMock.setValue(Date().timeIntervalSince1970.asData(), forKey: ResourcesWriter.Constants.storeCreationKey, version: ResourcesWriter.Constants.currentStoreVersion)
-        let writer = ResourcesWriter(scope: scopeMock)
+        let resource: EnrichedResource = .mockAny()
+        availabilityStore.insert([resource.identifier], forApplicationID: resource.context.application.id)
+        writer.write(resources: [resource])
+        XCTAssertTrue(scopeMock.eventsWritten(ofType: EnrichedResource.self).isEmpty)
 
         // When
-        writer.write(resources: [.mockWith(identifier: "1")])
+        dateProvider.now.addTimeInterval(30.days)
+        writer.write(resources: [resource])
 
         // Then
-        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self).count, 0)
-        XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
+        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), [resource])
     }
 
-    func test_whenDataStoreIsOlderThan30Days_itClearsKnownDuplicates() throws {
+    func test_whenApplicationsShareAnIdentifier_itDeduplicatesEachApplicationSeparately() {
         // Given
-        let knownIdentifiersData = Set(["2", "1"]).asData(JSONEncoder())!
-        scopeMock.dataStoreMock.setValue(knownIdentifiersData, forKey: ResourcesWriter.Constants.knownResourcesKey)
-        scopeMock.dataStoreMock.setValue(
-            (Date().timeIntervalSince1970 - 31.days).asData(),
-            forKey: ResourcesWriter.Constants.storeCreationKey,
-            version: ResourcesWriter.Constants.currentStoreVersion
-        )
-
-        let writer = ResourcesWriter(scope: scopeMock)
+        let confirmedResource: EnrichedResource = .mockWith(identifier: "shared", context: .init("confirmed-app"))
+        let unconfirmedResources: [EnrichedResource] = [
+            .mockWith(identifier: "shared", context: .init("other-app")),
+            .mockWith(identifier: "shared", context: .init("another-app"))
+        ]
+        availabilityStore.insert([confirmedResource.identifier], forApplicationID: confirmedResource.context.application.id)
 
         // When
-        XCTAssertNil(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey))
-        writer.write(resources: [.mockWith(identifier: "1")])
+        writer.write(resources: [confirmedResource] + unconfirmedResources)
+        writer.write(resources: [confirmedResource] + unconfirmedResources)
 
         // Then
-        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self).count, 1)
-        XCTAssertEqual(
-            scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey)?.data(expectedVersion: ResourcesWriter.Constants.currentStoreVersion),
-            Set(["1"]).asData(JSONEncoder())
-        )
-        XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
-    }
-
-    func test_whenKnownResourcesAreBroken_itLogsTelemetry() {
-        // Given
-        let brokenData = "broken".data(using: .utf8)!
-        scopeMock.dataStoreMock.setValue(
-            brokenData,
-            forKey: ResourcesWriter.Constants.knownResourcesKey,
-            version: ResourcesWriter.Constants.currentStoreVersion
-        )
-
-        // When
-        _ = ResourcesWriter(scope: scopeMock)
-
-        // Then
-        XCTAssertTrue(scopeMock.telemetryMock.messages[0].asError?.message.contains("Failed to decode known identifiers - ") ?? false)
-    }
-
-    func test_whenDataStoreCreationIsBroken_itLogsTelemetry() {
-        // Given
-        let brokenData = "broken".data(using: .utf8)!
-        scopeMock.dataStoreMock.setValue(
-            brokenData,
-            forKey: ResourcesWriter.Constants.storeCreationKey,
-            version: ResourcesWriter.Constants.currentStoreVersion
-        )
-
-        // When
-        _ = ResourcesWriter(scope: scopeMock)
-
-        // Then
-        XCTAssertEqual(scopeMock.telemetryMock.messages[0].asError?.message, "Failed to decode store creation - invalidData")
+        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), unconfirmedResources)
     }
 }
 #endif

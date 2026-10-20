@@ -412,6 +412,8 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.batchUploadFrequency, batchUploadFrequency)
         XCTAssertEqual(event?.telemetry.configuration.dartVersion, dartVersion)
         XCTAssertEqual(event?.telemetry.configuration.mobileVitalsUpdatePeriod, mobileVitalsUpdatePeriod)
+        XCTAssertNil(event?.telemetry.configuration.profilingApplicationLaunchSampleRate)
+        XCTAssertNil(event?.telemetry.configuration.profilingSampleRate)
         XCTAssertEqual(event?.telemetry.configuration.sessionSampleRate, sessionSampleRate)
         XCTAssertEqual(event?.telemetry.configuration.telemetrySampleRate, telemetrySampleRate)
         XCTAssertEqual(event?.telemetry.configuration.swiftuiViewTrackingEnabled, swiftUIViewTrackingEnabled)
@@ -437,6 +439,25 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.useTracing, useTracing)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
         XCTAssertEqual(event?.application?.id, applicationID, "It should attribute the event to the RUM application even with no session")
+    }
+
+    func testSendTelemetryConfiguration_serializesProfilingSampleRates() throws {
+        // Given
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let telemetry = TelemetryMock(with: receiver)
+
+        // When
+        telemetry.configuration(profilingApplicationLaunchSampleRate: 12.5, profilingSampleRate: 37.5)
+
+        // Then
+        let event = try XCTUnwrap(featureScope.eventsWritten(ofType: TelemetryConfigurationEvent.self).first)
+        let data = try JSONEncoder().encode(event)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let telemetryJSON = try XCTUnwrap(json["telemetry"] as? [String: Any])
+        let configurationJSON = try XCTUnwrap(telemetryJSON["configuration"] as? [String: Any])
+        XCTAssertEqual(configurationJSON["profiling_application_launch_sample_rate"] as? Double, 12.5)
+        XCTAssertEqual(configurationJSON["profiling_sample_rate"] as? Double, 37.5)
+        XCTAssertNil(configurationJSON["profiling_anr_enabled"])
     }
 
     // MARK: - Track Resource Headers Configuration Telemetry

@@ -149,6 +149,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
+        XCTAssertEqual(event.session.hasTimeseries, false)
         DDTAssertValidRUMUUID(event.view.id)
         XCTAssertEqual(event.view.url, "UIViewController")
         XCTAssertEqual(event.view.name, "ViewName")
@@ -179,6 +180,126 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
         XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
+    }
+
+    func testWhenAppRunsAsMainProcess_itSendsIsMainProcessTrue() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        let context = DatadogContext.mockWith(applicationBundleType: .iOSApp)
+
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, true)
+    }
+
+    func testWhenAppRunsAsAppExtension_itSendsIsMainProcessFalse() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        let context = DatadogContext.mockWith(applicationBundleType: .iOSAppExtension)
+
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
+    func testWhenAppRunsAsAppExtension_itSendsIsMainProcessFalseOnErrorEvent() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let context = DatadogContext.mockWith(applicationBundleType: .iOSAppExtension)
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime.addingTimeInterval(1), message: .mockAny()),
+            context: context,
+            writer: writer
+        )
+
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.session.isMainProcess, false)
+    }
+
+    func testWhenAppRunsAsAppExtension_itSendsIsMainProcessFalseOnLongTaskEvent() throws {
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+        let context = DatadogContext.mockWith(applicationBundleType: .iOSAppExtension)
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: startViewDate,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startViewDate, identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddLongTaskCommand(time: startViewDate.addingTimeInterval(1), attributes: [:], duration: 1.0),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
+        XCTAssertEqual(event.session.isMainProcess, false)
     }
 
     func testWhenSessionReplayHasNoExperimentalFeatures_itSendsEmptyExperimentalFeatures() throws {
@@ -2263,6 +2384,7 @@ class RUMViewScopeTests: XCTestCase {
         let completionExpectation = expectation(description: "Error processing completion")
 
         let hasReplay: Bool = .mockRandom()
+        let hasTimeseries: Bool = .mockRandom()
         let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -2272,7 +2394,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: [.viewUpdates: false]),
+            dependencies: .mockWith(featureFlags: [.viewUpdates: false], timeseriesCollector: TimeseriesCollectorMock(hasData: hasTimeseries)),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -2315,6 +2437,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(error.session.type, .user)
         XCTAssertEqual(error.session.hasReplay, hasReplay)
+        XCTAssertEqual(error.session.hasTimeseries, hasTimeseries)
         DDTAssertValidRUMUUID(error.view.id)
         XCTAssertEqual(error.view.url, "UIViewController")
         XCTAssertEqual(error.view.name, "ViewName")
@@ -3570,6 +3693,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
+        let hasTimeseries: Bool = .mockRandom()
         let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -3580,7 +3704,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: [.viewUpdates: false]),
+            dependencies: .mockWith(featureFlags: [.viewUpdates: false], timeseriesCollector: TimeseriesCollectorMock(hasData: hasTimeseries)),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -3618,6 +3742,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
+        XCTAssertEqual(event.session.hasTimeseries, hasTimeseries)
         XCTAssertNil(event.connectivity)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.date, longTaskStartingDate.timeIntervalSince1970.dd.toInt64Milliseconds)
@@ -4834,6 +4959,62 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(events[0].session.hasReplay, false)
         XCTAssertEqual(events[1].session.hasReplay, true)
         XCTAssertEqual(events[2].session.hasReplay, true)
+    }
+
+    func testViewUpdate_onceTimeseriesHasCollectedDataItRemainsTrue() throws {
+        // Given
+        let timeseriesCollector = TimeseriesCollectorMock(hasData: false)
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(featureFlags: [.viewUpdates: false], timeseriesCollector: timeseriesCollector),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // When
+        timeseriesCollector.hasData = true
+        currentTime.addTimeInterval(0.5)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-500000000ns"),
+                context: context,
+                writer: writer
+            )
+        )
+
+        timeseriesCollector.hasData = false
+        currentTime.addTimeInterval(0.5)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-500000000ns"),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
+        XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
+        XCTAssertEqual(events[0].session.hasTimeseries, false)
+        XCTAssertEqual(events[1].session.hasTimeseries, true)
+        XCTAssertEqual(events[2].session.hasTimeseries, true)
     }
 
     // MARK: - View Attributes

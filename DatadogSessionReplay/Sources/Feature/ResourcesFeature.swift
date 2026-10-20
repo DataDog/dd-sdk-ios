@@ -15,18 +15,26 @@ internal class ResourcesFeature: DatadogRemoteFeature {
     let performanceOverride: PerformancePresetOverride?
 
     let requestBuilder: FeatureRequestBuilder
+    let availabilityStore: ResourceAvailabilityStore
+    let writer: ResourcesWriter
 
     init(
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) {
+        let scope = core.scope(for: ResourcesFeature.self)
+        let availabilityStore = ResourceAvailabilityStore(scope: scope)
+        self.availabilityStore = availabilityStore
+        self.writer = ResourcesWriter(scope: scope, availabilityStore: availabilityStore)
         self.requestBuilder = ResourceRequestBuilder(
             customUploadURL: configuration.customEndpoint,
+            availabilityStore: availabilityStore,
             telemetry: core.telemetry
         )
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: SessionReplay.maxObjectSize,
-            maxObjectSize: SessionReplay.maxObjectSize
+            maxObjectSize: SessionReplay.maxObjectSize,
+            maxFileAgeForRead: 48.hours
         )
     }
 }

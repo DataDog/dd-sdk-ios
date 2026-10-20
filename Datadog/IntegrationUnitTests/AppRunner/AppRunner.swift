@@ -6,7 +6,7 @@
 
 import XCTest
 import DatadogInternal
-import TestUtilities
+@testable import TestUtilities
 @testable import DatadogCore
 @testable import DatadogRUM
 
@@ -143,6 +143,7 @@ internal class AppRunner {
     private var appDirectory: (() -> Directory)!
     private var processInfo: ProcessInfoMock!
     private var notificationCenterProvider: NotificationCenterProvider!
+    private var monotonicClock: MonotonicClockMock!
     private var dateProvider: DateProviderMock!
     /// Only set once RUM is enabled (see `enableRUM()`); advanced separately from `dateProvider` via `advanceMediaTime(by:)`.
     private var mediaTimeProvider: MediaTimeProviderMock?
@@ -162,6 +163,7 @@ internal class AppRunner {
         appDirectory = { Directory(url: temporaryDirectory) }
         processInfo = ProcessInfoMock(environment: launchType.processInfoEnvironment)
         notificationCenterProvider = Self.makeTestNotificationCenterProvider()
+        monotonicClock = MonotonicClockMock()
         dateProvider = DateProviderMock(now: launchType.processLaunchDate)
         appStateProvider = AppStateProviderMock(state: launchType.initialAppState)
         appLaunchHandler = AppLaunchHandlerMock(
@@ -233,6 +235,7 @@ internal class AppRunner {
 
     /// Advances the current test time by the specified interval.
     func advanceTime(by interval: TimeInterval) {
+        monotonicClock.advance(by: interval)
         dateProvider.now.addTimeInterval(interval)
     }
 
@@ -312,6 +315,7 @@ internal class AppRunner {
     func enableRUM(_ rumSetup: RUMSetup = { _ in }) {
         var config = RUM.Configuration(applicationID: "mock-application-id")
         config.dateProvider = dateProvider
+        config.monotonicClock = monotonicClock
         let mediaTimeProvider = MediaTimeProviderMock(current: 0)
         self.mediaTimeProvider = mediaTimeProvider
         config.mediaTimeProvider = mediaTimeProvider

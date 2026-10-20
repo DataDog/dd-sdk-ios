@@ -129,7 +129,9 @@ internal class RUMFeatureOperationManager {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
+                hasTimeseries: dependencies.timeseriesCollector?.hasCollectedData(sessionID: parent.context.sessionID.toRUMDataFormat) ?? false,
                 id: parent.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,

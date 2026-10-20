@@ -18,11 +18,14 @@ internal protocol TimeseriesCollecting: AnyObject {
     func pause(sessionID: String)
     func resume(sessionID: String)
     func stop(sessionID: String)
-    /// Reports that a RUM interaction was just processed, so the collector can self-enforce
-    /// the session inactivity timeout even if no further commands ever arrive to call `stop(sessionID:)`.
-    func noteActivity(sessionID: String, at time: Date)
+    /// Restarts sampling if a delayed foreground interaction kept a self-stopped session alive.
+    /// Called after the monitor publishes the updated session activity.
+    func noteActivity(sessionID: String)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
+    /// Whether at least one sample was collected for the session identified by `sessionID`.
+    /// Safe to call from any thread.
+    func hasCollectedData(sessionID: String) -> Bool
 }
 
 /// Collects memory and CPU samples at configurable intervals (default: 1 s) during a RUM session and flushes them
@@ -63,12 +66,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
-    /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
-    /// even if the RUM command pipeline never notifies this collector of the session's expiry.
-    private var sessionStartTime: Date = .distantPast
-    /// The time of the last RUM interaction reported via `noteActivity(sessionID:at:)`, used to self-enforce
-    /// `RUMSessionScope.Constants.sessionTimeoutDuration` even when the app goes idle with no RUM commands.
-    private var lastActivityTime: Date = .distantPast
     private let now: () -> Date
     private let mediaTimeProvider: CACurrentMediaTimeProvider
     /// The wall-clock date and monotonic media time captured together at the start of the current session,
@@ -80,6 +77,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Whether replay was reported active at any point during the session, OR-accumulated in `sample()`
     /// (mirrors `RUMViewScope`). Stays `nil` until observed, so sessions without Session Replay omit the field.
     private var hasReplay: Bool? = nil
+    /// IDs of the last `maxRetainedSampledSessions` sampled sessions, so late events from a stopped session still report its data.
+    /// Lock-protected because RUM scopes read it from their own thread through `hasCollectedData(sessionID:)`.
+    @ReadWriteLock
+    private var sampledSessionIDs: [String] = []
+    private static let maxRetainedSampledSessions = 2
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -235,6 +237,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             self.flushMemory()
             self.flushCPU()
+            self.sessionID = ""
         }
     }
 
@@ -246,16 +249,20 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
-    /// Records that a RUM interaction happened, resetting the inactivity clock this collector uses to
-    /// self-enforce `RUMSessionScope.Constants.sessionTimeoutDuration` (see `sample()`).
-    /// No-ops if `sessionID` no longer matches the currently active session.
-    func noteActivity(sessionID: String, at time: Date) {
+    /// Restarts a self-stopped timer after a delayed foreground interaction keeps the session alive.
+    /// Background pauses and sessions still expired according to the monitor remain stopped.
+    func noteActivity(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID else {
+            guard let self = self, self.sessionID == sessionID, !self.isPaused, self.timer == nil,
+                  self.activeContextReader?.isSessionExpired(sessionID: sessionID) == false else {
                 return
             }
-            self.lastActivityTime = time
+            self.timer = self.makeTimer()
         }
+    }
+
+    func hasCollectedData(sessionID: String) -> Bool {
+        return sampledSessionIDs.contains(sessionID)
     }
 
     private func makeTimer() -> DispatchSourceTimer {
@@ -288,9 +295,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
 
         // Self-enforce `RUMSessionScope`'s lifetime rules in case this session expired with no RUM
-        // command arriving to call `stop(sessionID:)`. Compared against `now()`, not the anchored
-        // `currentDate`, since `Monitor`'s expiry state is tracked in wall-clock `Date`s.
-        if activeContextReader?.isSessionExpired(sessionID: sessionID, at: now()) == true {
+        // command arriving to call `stop(sessionID:)`. Session lifetime is measured on `Monitor`'s own
+        // monotonic clock, so neither `now()` nor the anchored `currentDate` takes part in the check.
+        if activeContextReader?.isSessionExpired(sessionID: sessionID) == true {
             timer?.cancel()
             timer = nil
             flushMemory()
@@ -304,6 +311,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             let footprintKB = bytes / 1_024
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
             memoryBuffer.append(MemorySample(timestamp: timestamp, footprintKB: footprintKB, percent: memoryPercent))
+            markSessionAsSampled()
             if memoryBuffer.count >= batchSize {
                 flushMemory()
             }
@@ -311,10 +319,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         if collectTypes.contains(.cpu), let cpuUsage = cpuUsageProvider() {
             cpuBuffer.append(CPUSample(timestamp: timestamp, usage: cpuUsage))
+            markSessionAsSampled()
             if cpuBuffer.count >= batchSize {
                 flushCPU()
             }
         }
+    }
+
+    private func markSessionAsSampled() {
+        guard !sampledSessionIDs.contains(sessionID) else {
+            return
+        }
+        sampledSessionIDs = Array((sampledSessionIDs + [sessionID]).suffix(Self.maxRetainedSampledSessions))
     }
 
     private func flushMemory() {
@@ -350,7 +366,13 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 device: context.normalizedDevice(),
                 os: context.os,
                 service: context.service,
-                session: .init(hasReplay: hasReplay, id: sessionID, type: sessionType),
+                session: .init(
+                    hasReplay: hasReplay,
+                    hasTimeseries: true,
+                    id: sessionID,
+                    isMainProcess: context.applicationBundleType != .iOSAppExtension,
+                    type: sessionType
+                ),
                 source: .init(rawValue: context.source) ?? .ios,
                 synthetics: syntheticsTest,
                 timeseries: .init(
@@ -404,7 +426,13 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 device: context.normalizedDevice(),
                 os: context.os,
                 service: context.service,
-                session: .init(hasReplay: hasReplay, id: sessionID, type: sessionType),
+                session: .init(
+                    hasReplay: hasReplay,
+                    hasTimeseries: true,
+                    id: sessionID,
+                    isMainProcess: context.applicationBundleType != .iOSAppExtension,
+                    type: sessionType
+                ),
                 source: .init(rawValue: context.source) ?? .ios,
                 synthetics: syntheticsTest,
                 timeseries: .init(

@@ -12,6 +12,7 @@ class BatchMetricsTests: XCTestCase {
         typealias RemovalReason = BatchDeletedMetric.RemovalReason
 
         XCTAssertEqual(RemovalReason.intakeCode(responseCode: 202).toString(), "intake-code-202")
+        XCTAssertEqual(RemovalReason.reconciled.toString(), "reconciled")
         XCTAssertEqual(RemovalReason.obsolete.toString(), "obsolete")
         XCTAssertEqual(RemovalReason.purged.toString(), "purged")
         XCTAssertEqual(RemovalReason.invalid.toString(), "invalid")
@@ -22,6 +23,7 @@ class BatchMetricsTests: XCTestCase {
         typealias RemovalReason = BatchDeletedMetric.RemovalReason
 
         XCTAssertTrue(RemovalReason.intakeCode(responseCode: 202).includeInMetric)
+        XCTAssertTrue(RemovalReason.reconciled.includeInMetric)
         XCTAssertTrue(RemovalReason.obsolete.includeInMetric)
         XCTAssertTrue(RemovalReason.purged.includeInMetric)
         XCTAssertTrue(RemovalReason.invalid.includeInMetric)
