@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session.
+- [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
 - [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
@@ -1309,6 +1309,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
 [#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
+[#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
