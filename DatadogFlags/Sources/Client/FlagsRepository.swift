@@ -417,7 +417,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             return FlagEvaluationSnapshot(
                 context: context,
                 assignment: readable ? assignment : nil,
-                telemetryOptedOut: state.telemetry.isOptedOut(evaluating: context)
+                // Unreadable assignments must not discard the stored subject's reporting policy.
+                telemetryOptedOut: state.telemetry.isOptedOut(evaluating: state.data?.context)
             )
         }
 
