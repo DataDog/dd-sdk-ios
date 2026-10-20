@@ -1490,11 +1490,12 @@ extension SwiftUINavigationOwnershipTests {
             in: core,
             rows: rows
         )
-        let source = RUMNavigationTransitions(currentDestination: .init(
+        var initialDestination = RUMView(
             name: "Semantic Root",
-            path: "semantic/root",
             attributes: ["source": "host"]
-        ))
+        )
+        initialDestination.path = "semantic/root"
+        let source = RUMNavigationTransitions(currentDestination: initialDestination)
         let capture = SemanticHostCapture()
         let driver = SemanticHostDriver(
             core: core,
@@ -1543,7 +1544,8 @@ extension SwiftUINavigationOwnershipTests {
         ) as? [String: Any])
         XCTAssertEqual((encoded["context"] as? [String: Any])?["source"] as? String, "host")
         XCTAssertEqual(source.observationCount, 1)
-        try XCTUnwrap(driver.child.update)()
+        let updateCustomerState: () -> Void = try XCTUnwrap(driver.child.update)
+        updateCustomerState()
         try await awaitSemanticBoundary(
             "customer-state",
             core: core
