@@ -120,12 +120,24 @@ internal final class DatadogContextProvider {
     ///   - keyPath: A context's key path that supports reading from and writing to the resulting value.
     ///   - publisher: The context value publisher.
     func subscribe<Publisher>(_ keyPath: WritableKeyPath<DatadogContext, Publisher.Value>, to publisher: Publisher) where Publisher: ContextValuePublisher {
+        subscribe(to: publisher) { $0[keyPath: keyPath] = $1 }
+    }
+
+    /// Subscribes the context to a publisher whose values update several context properties at once.
+    ///
+    /// - Parameters:
+    ///   - publisher: The context value publisher.
+    ///   - update: Applies a published value to the context.
+    func subscribe<Publisher>(
+        to publisher: Publisher,
+        update: @escaping (inout DatadogContext, Publisher.Value) -> Void
+    ) where Publisher: ContextValuePublisher {
         let subscription = publisher.subscribe { [weak self] value in
-            self?.write { $0[keyPath: keyPath] = value }
+            self?.write { update(&$0, value) }
         }
 
         write {
-            $0[keyPath: keyPath] = publisher.initialValue
+            update(&$0, publisher.initialValue)
             self.subscriptions.append(subscription)
         }
     }

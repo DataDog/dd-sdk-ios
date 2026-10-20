@@ -1621,6 +1621,7 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     /// Changes the consent like the core: the context reflects it right away, and features receive it from the bus.
     func set(trackingConsent: TrackingConsent) {
         contextValue.trackingConsent = trackingConsent
+        contextValue.trackingConsentRevision += 1
         heldContexts.append(contextValue)
         if !holdsMessages {
             deliverHeldMessages()

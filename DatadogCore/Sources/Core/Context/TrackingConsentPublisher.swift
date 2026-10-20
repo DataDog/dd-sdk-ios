@@ -9,20 +9,31 @@ import DatadogInternal
 
 /// Publishes the user consent to receiver.
 internal final class TrackingConsentPublisher: ContextValuePublisher {
-    let initialValue: TrackingConsent
+    /// A tracking consent and its revision.
+    struct Value: Equatable {
+        let consent: TrackingConsent
+        /// The number of consent changes before this value, so a change back to an earlier consent is still visible.
+        let revision: UInt64
+    }
 
-    private var receiver: ContextValueReceiver<TrackingConsent>?
+    let initialValue: Value
+
+    private var receiver: ContextValueReceiver<Value>?
+    private var revision: UInt64 = 0
 
     var consent: TrackingConsent {
-        didSet { receiver?(consent) }
+        didSet {
+            revision &+= 1
+            receiver?(Value(consent: consent, revision: revision))
+        }
     }
 
     init(consent: TrackingConsent) {
-        self.initialValue = consent
+        self.initialValue = Value(consent: consent, revision: 0)
         self.consent = consent
     }
 
-    func publish(to receiver: @escaping ContextValueReceiver<TrackingConsent>) {
+    func publish(to receiver: @escaping ContextValueReceiver<Value>) {
         self.receiver = receiver
     }
 
