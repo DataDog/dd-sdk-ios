@@ -526,6 +526,42 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .maxDuration)
     }
 
+    func testGivenStoppedSession_whenUserResumesWithAnInteraction_itClearsTheStoppedSessionStateForCrashes() throws {
+        // Given
+        let currentTime = Date()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(
+                samplingRate: 100,
+                fatalErrorContext: fatalErrorContext
+            )
+        )
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime.addingTimeInterval(1), isUserInteraction: true),
+            context: .mockAny(),
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
+            context: .mockAny(),
+            writer: writer
+        )
+        let stoppedState = try XCTUnwrap(fatalErrorContext.sessionState)
+        XCTAssertTrue(stoppedState.wasStopped, "A crash now must not be reported")
+
+        // When
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: true),
+            context: .mockAny(),
+            writer: writer
+        )
+
+        // Then
+        let resumedState = try XCTUnwrap(fatalErrorContext.sessionState)
+        XCTAssertNotEqual(resumedState.sessionUUID, stoppedState.sessionUUID)
+        XCTAssertFalse(resumedState.wasStopped, "After resuming, crashes must be reported again")
+    }
+
     func testGivenStoppedSession_whenNewOneIsStarted_itSetsExplicitStopPrecondition() {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()

@@ -10,6 +10,32 @@ import TestUtilities
 @testable import DatadogRUM
 
 class RUMOffViewEventsHandlingRuleTests: XCTestCase {
+    func testWhenSessionWasStopped_itDoesNotHandleOffViewEvents() {
+        let stoppedSession: RUMSessionState = .mockWith(
+            isSampled: true,
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: .mockRandom(),
+            wasStopped: true
+        )
+
+        for isAppInForeground in [true, false] {
+            for isBETEnabled in [true, false] {
+                let rule = RUMOffViewEventsHandlingRule(
+                    applicationState: nil,
+                    sessionState: stoppedSession,
+                    isAppInForeground: isAppInForeground,
+                    isBETEnabled: isBETEnabled,
+                    command: nil
+                )
+                XCTAssertEqual(
+                    rule,
+                    .doNotHandle,
+                    "foreground: \(isAppInForeground), BET: \(isBETEnabled)"
+                )
+            }
+        }
+    }
+
     func testOffViewHandlingRules() {
         struct Case {
             let description: String

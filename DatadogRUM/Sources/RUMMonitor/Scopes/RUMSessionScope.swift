@@ -57,7 +57,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     isInitialSession: state.isInitialSession,
                     hasTrackedAnyView: true,
                     didStartWithReplay: state.didStartWithReplay,
-                    hasTimeseries: state.hasTimeseries
+                    hasTimeseries: state.hasTimeseries,
+                    wasStopped: state.wasStopped
                 )
             }
         }
@@ -333,7 +334,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 isInitialSession: state.isInitialSession,
                 hasTrackedAnyView: state.hasTrackedAnyView,
                 didStartWithReplay: state.didStartWithReplay,
-                hasTimeseries: true
+                hasTimeseries: true,
+                wasStopped: state.wasStopped
             )
         }
 
@@ -344,6 +346,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
+                // Persist the stop, so a crash reported in the next process is not attributed to this session:
+                state = RUMSessionState(
+                    sessionUUID: state.sessionUUID,
+                    isSampled: state.isSampled,
+                    isInitialSession: state.isInitialSession,
+                    hasTrackedAnyView: state.hasTrackedAnyView,
+                    didStartWithReplay: state.didStartWithReplay,
+                    hasTimeseries: state.hasTimeseries,
+                    wasStopped: true
+                )
 
             case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)

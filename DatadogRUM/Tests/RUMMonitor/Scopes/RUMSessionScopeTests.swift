@@ -606,6 +606,30 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(actualSessionState, expectedSessionState)
     }
 
+    func testWhenSessionIsStopped_itUpdatesFatalErrorContextWithStoppedSessionState() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            dependencies: .mockWith(fatalErrorContext: fatalErrorContext)
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime), context: context, writer: writer)
+        XCTAssertEqual(fatalErrorContext.sessionState?.wasStopped, false)
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: sessionStartTime + 1), context: context, writer: writer)
+
+        // Then
+        let sessionState = try XCTUnwrap(fatalErrorContext.sessionState)
+        XCTAssertEqual(sessionState.sessionUUID, scope.sessionUUID.rawValue)
+        XCTAssertTrue(sessionState.wasStopped)
+        XCTAssertTrue(sessionState.hasTrackedAnyView)
+        XCTAssertNil(fatalErrorContext.view, "There is no active view after the stop")
+    }
+
     func testWhenTimeseriesCollectorHasCollectedData_itUpdatesFatalErrorContextWithSessionState() throws {
         let fatalErrorContext = FatalErrorContextNotifierMock()
         let timeseriesCollector = TimeseriesCollectorMock(hasData: false)

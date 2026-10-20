@@ -114,6 +114,37 @@ class CrashContextCoreProviderTests: XCTestCase {
         XCTAssertEqual(provider.currentCrashContext?.lastRUMSessionState?.sessionUUID, sessionState.sessionUUID)
     }
 
+    func testRUMSessionStateKeepsStoppedFlagWhenEncoded() throws {
+        // Given
+        let sessionState: RUMSessionState = .mockWith(wasStopped: true)
+
+        // When
+        let data = try JSONEncoder().encode(sessionState)
+        let decoded = try JSONDecoder().decode(RUMSessionState.self, from: data)
+
+        // Then
+        XCTAssertEqual(decoded, sessionState)
+        XCTAssertTrue(decoded.wasStopped)
+    }
+
+    func testRUMSessionStateFromOlderSDKVersionIsNotStopped() throws {
+        // Given
+        let json = """
+        {
+            "sessionUUID": "\(UUID().uuidString)",
+            "isSampled": true,
+            "isInitialSession": true,
+            "hasTrackedAnyView": true
+        }
+        """
+
+        // When
+        let decoded = try JSONDecoder().decode(RUMSessionState.self, from: Data(json.utf8))
+
+        // Then
+        XCTAssertFalse(decoded.wasStopped)
+    }
+
     // MARK: - Callback Tests
 
     func testItInvokesCallbackOnContextChange() {

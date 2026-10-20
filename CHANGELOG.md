@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session.
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
 - [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
