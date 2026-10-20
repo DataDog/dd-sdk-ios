@@ -1505,6 +1505,9 @@ extension SwiftUINavigationOwnershipTests {
             state.finalDetach(admission: admission)
             capture.retain(in: self, fixture: fixture)
         }
+        try await awaitSemanticBoundary("owned-reader-container", core: core) {
+            container.window === fixture.window
+        }
         capture.record("before-UIKit-attachment", proposedScene: "")
         container.addSubview(observer)
         capture.record("after-UIKit-attachment", proposedScene: fixture.identifier.rawValue)
