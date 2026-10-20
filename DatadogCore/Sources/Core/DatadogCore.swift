@@ -123,7 +123,10 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
-        self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
+        self.contextProvider.subscribe(to: consentPublisher) { context, value in
+            context.trackingConsent = value.consent
+            context.trackingConsentRevision = value.revision
+        }
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
