@@ -157,8 +157,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         // Store the last foreground view that was active before the session expired or was stopped.
         // This allows the next session to lazily restart the same view if needed.
-        let lastActiveForegroundView = activeSession?.viewScopes.first(where: { $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL })
-        lastActiveView = lastActiveForegroundView ?? lastActiveView
+        // While a session is active, follow its active view: a view that was closed must not be restored later.
+        if let activeSession {
+            lastActiveView = activeSession.viewScopes.first(where: { $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL })
+        }
 
         if command is RUMStopSessionCommand {
             applicationState.wasAnySessionStopped = true

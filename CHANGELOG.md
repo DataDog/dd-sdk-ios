@@ -5,6 +5,7 @@
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
 - [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3322][]
+- [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3322][]
 
 # 3.20.0 / 19-10-2026
 
