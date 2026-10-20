@@ -23,6 +23,11 @@ internal final class RUMSwiftUIViewFoundation {
     private var transitionArbiter: RUMSwiftUIInteractiveTransitionArbiter?
     private var traitPublisher: AnyObject?
     private var eligibilityCarrier: RUMSwiftUIViewEligibilityCarrier?
+    private var notificationCenter: NotificationCenter?
+
+    var sceneLifecycleNotificationCenter: NotificationCenter? {
+        isValid ? notificationCenter : nil
+    }
 
     init?(
         instrumentation: RUMInstrumentation,
@@ -76,6 +81,7 @@ internal final class RUMSwiftUIViewFoundation {
         )
         guard carrier.install() else { return false }
         eligibilityCarrier = carrier
+        self.notificationCenter = notificationCenter
         isActive = true
         transitionArbiter = RUMSwiftUIInteractiveTransitionArbiter(
             notificationCenter: notificationCenter,
@@ -112,6 +118,7 @@ internal final class RUMSwiftUIViewFoundation {
 
     /// Invalidates local resources without submitting replacement-feature work.
     func retire() {
+        notificationCenter = nil
         eligibilityCarrier?.retire()
         isRetired = true
         isActive = false

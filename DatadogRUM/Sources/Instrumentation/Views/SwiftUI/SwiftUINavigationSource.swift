@@ -28,6 +28,11 @@ internal final class RUMNavigationTransitions {
     private var preparedDestinations: [String: RUMView] = [:]
     private var observers: [UUID: (Snapshot) -> Void] = [:]
 
+    #if DD_SDK_COMPILED_FOR_TESTING
+    internal var observationCount: Int { observers.count }
+    internal var testingBeforeInitialDelivery: (() -> Void)?
+    #endif
+
     internal init() {}
 
     internal convenience init(currentDestination: RUMView) {
@@ -90,6 +95,9 @@ internal final class RUMNavigationTransitions {
         let id = UUID()
         observers[id] = observer
         if let currentSnapshot {
+            #if DD_SDK_COMPILED_FOR_TESTING
+            testingBeforeInitialDelivery?()
+            #endif
             observer(currentSnapshot)
         }
         return id
@@ -340,20 +348,30 @@ internal final class RUMNavigationObservedTransitions {
         destination: @MainActor (State) -> RUMNavigationDestination,
         metadata: RUMNavigationMetadata
     ) {
-        guard !stopped else { return }
+        guard !stopped else {
+            return
+        }
         inputGeneration &+= 1
         let generation = inputGeneration
-        guard accepts(generation: generation) else { return }
+        guard accepts(generation: generation) else {
+            return
+        }
 
         let resolved = destination(state)
-        guard accepts(generation: generation) else { return }
+        guard accepts(generation: generation) else {
+            return
+        }
 
         // Projection, application-defined equality and metadata hashing can
         // synchronously emit another accepted input. A newer delivery wins.
         let changed = resolved.identity != currentIdentity
-        guard accepts(generation: generation), changed else { return }
+        guard accepts(generation: generation), changed else {
+            return
+        }
         let view = metadata.view(for: resolved)
-        guard accepts(generation: generation) else { return }
+        guard accepts(generation: generation) else {
+            return
+        }
 
         let previousIdentity = currentIdentity
         let isInitial = previousIdentity == nil
@@ -370,11 +388,15 @@ internal final class RUMNavigationObservedTransitions {
     }
 
     private func accepts(generation: UInt64) -> Bool {
-        guard !stopped, generation == inputGeneration else { return false }
+        guard !stopped, generation == inputGeneration else {
+            return false
+        }
         let admitted = acceptsDelivery()
         // An obsolete invocation must not stop the newer nested delivery,
         // even when its admission callback returned false.
-        guard !stopped, generation == inputGeneration else { return false }
+        guard !stopped, generation == inputGeneration else {
+            return false
+        }
         guard admitted else {
             stop()
             return false
