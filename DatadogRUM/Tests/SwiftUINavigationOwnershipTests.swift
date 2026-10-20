@@ -2978,7 +2978,7 @@ extension SwiftUINavigationOwnershipTests {
                     try await awaitSemanticBoundary("observed-legacy-content-" + path, core: real) {
                         let activeID: String?
                         if path == "off" {
-                            activeID = feature?.monitor.activeView?.id
+                            activeID = feature?.monitor.activeView.id
                         } else {
                             activeID = feature?.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID
                         }
