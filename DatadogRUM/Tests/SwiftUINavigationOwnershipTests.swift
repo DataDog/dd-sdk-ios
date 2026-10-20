@@ -1581,12 +1581,11 @@ extension SwiftUINavigationOwnershipTests {
         core.flush()
         XCTAssertEqual(snapshot()?.viewID, firstID)
         attemptedPhase = "committed-detail"
+        var detailDestination = RUMView(name: "Semantic Detail")
+        detailDestination.path = "semantic/detail"
         source.willNavigate(
             id: "detail",
-            destination: .init(
-                name: "Semantic Detail",
-                path: "semantic/detail"
-            )
+            destination: detailDestination
         )
         source.commit(id: "detail")
         feature.monitor.addAction(
@@ -1653,12 +1652,11 @@ extension SwiftUINavigationOwnershipTests {
         ) {
             snapshot()?.viewName == "Covered Destination"
         }
+        var returnedDestination = RUMView(name: "Semantic Root")
+        returnedDestination.path = "semantic/root"
         source.willNavigate(
             id: "return",
-            destination: .init(
-                name: "Semantic Root",
-                path: "semantic/root"
-            )
+            destination: returnedDestination
         )
         source.commit(id: "return")
         try await awaitSemanticBoundary(
