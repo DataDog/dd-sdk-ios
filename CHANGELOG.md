@@ -9,6 +9,7 @@
 - [IMPROVEMENT] Reduce image resource sizes with WebP encoding and speed up image hashing in Session Replay's experimental composition tree recorder. See [#3336][]
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app.
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3322][]
+- [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3322][]
 
 # 3.20.0 / 19-10-2026
 
