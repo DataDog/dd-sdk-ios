@@ -1,6 +1,9 @@
 # Unreleased
 
 - [IMPROVEMENT] Flatten dictionary values in span tags set through Swift APIs into one tag per leaf field (e.g. `context.foo`) instead of a single JSON string tag. See [#3067][]
+
+# 3.20.0 / 19-10-2026
+
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
 - [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
 - [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
