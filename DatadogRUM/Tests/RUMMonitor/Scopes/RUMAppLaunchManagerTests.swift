@@ -533,6 +533,55 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         ])
     }
 
+    func testTTFDCommand_whenReceivedAfterTTIDBeforeStartupType_usesTTFDViewAndContext() throws {
+        // Given
+        let appStateManager = AppStateManagerMock()
+        appStateManager.shouldDeferPreviousAppStateInfoCallback = true
+        mockDependencies = .mockWith(appStateManager: appStateManager)
+        manager = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: mockDependencies,
+            telemetryController: .init()
+        )
+
+        let ttidView: RUMViewScope = .mockWith(path: "ApplicationLaunch", name: "ApplicationLaunch")
+        let ttfdView: RUMViewScope = .mockWith(path: "HomeViewPath", name: "HomeView")
+        let ttidContext: DatadogContext = .mockWith(
+            launchInfo: mockContext.launchInfo,
+            networkConnectionInfo: .mockWith(reachability: .no)
+        )
+        let ttfdContext: DatadogContext = .mockWith(
+            launchInfo: mockContext.launchInfo,
+            networkConnectionInfo: .mockWith(reachability: .yes)
+        )
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(ttidCommand, context: ttidContext, writer: mockWriter, activeView: ttidView)
+        manager.process(ttfdCommand, context: ttfdContext, writer: mockWriter, activeView: ttfdView)
+        appStateManager.completePreviousAppStateInfo()
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(vitalEvents.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
+
+        let ttidEvent = try XCTUnwrap(vitalEvents.first)
+        XCTAssertEqual(ttidEvent.view.id, ttidView.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(ttidEvent.view.name, "ApplicationLaunch")
+        XCTAssertEqual(ttidEvent.connectivity?.status, .notConnected)
+
+        let ttfdEvent = try XCTUnwrap(vitalEvents.last)
+        XCTAssertEqual(ttfdEvent.view.id, ttfdView.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(ttfdEvent.view.name, "HomeView")
+        XCTAssertEqual(ttfdEvent.view.url, "HomeViewPath")
+        XCTAssertEqual(ttfdEvent.connectivity?.status, .connected)
+    }
+
     func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() throws {
         // Given
         let processLaunchDate = Date()
