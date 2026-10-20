@@ -28,8 +28,9 @@ public struct RUMSessionState: Codable, Equatable {
     /// If the timeseries collector has collected data for this session. Starts `false` and is refreshed by the session
     /// once the first sample is collected, so a crash reported in the next process can still tell.
     public let hasTimeseries: Bool
-    /// If this session was stopped with `stopSession()`. Events after the stop, including a crash reported
-    /// in the next process, must not be attributed to it.
+    /// If tracking was stopped with `stopSession()` and has not resumed with a view since. It is set on the stopped session
+    /// and carried to a session started after it, until that session tracks a view. A crash reported in the next process
+    /// is dropped while it is `true`, like the events dropped during the same period.
     public let wasStopped: Bool
 
     /// Creates a RUM Session State
@@ -40,7 +41,7 @@ public struct RUMSessionState: Codable, Equatable {
     ///   - hasTrackedAnyView: If this session has ever tracked any view (used to reason about "application launch" events).
     ///   - didStartWithReplay: If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
     ///   - hasTimeseries: If the timeseries collector has collected data for this session.
-    ///   - wasStopped: If this session was stopped with `stopSession()`.
+    ///   - wasStopped: If tracking was stopped with `stopSession()` and has not resumed with a view since.
     public init(
         sessionUUID: UUID,
         isSampled: Bool,

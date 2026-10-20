@@ -71,8 +71,10 @@ internal enum RUMOffViewEventsHandlingRule: Equatable {
                 self = .doNotHandle // when session is NOT sampled, do not track off-view events at all
                 return
             }
-            guard !session.wasStopped else {
-                self = .doNotHandle // when session was stopped, nothing after the stop belongs to it
+            // Crash recovery has no live `applicationState`, so it relies on the stop saved with the session.
+            // Live events keep using `applicationState`, which lets user actions resume tracking after the stop.
+            if applicationState == nil && session.wasStopped {
+                self = .doNotHandle
                 return
             }
 

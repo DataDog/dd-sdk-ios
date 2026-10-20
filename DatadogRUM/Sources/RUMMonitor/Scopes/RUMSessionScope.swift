@@ -58,7 +58,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     hasTrackedAnyView: true,
                     didStartWithReplay: state.didStartWithReplay,
                     hasTimeseries: state.hasTimeseries,
-                    wasStopped: state.wasStopped
+                    wasStopped: false // tracking resumed with this view
                 )
             }
         }
@@ -178,7 +178,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             isSampled: sampler.isSampled,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: false,
-            didStartWithReplay: context.hasReplay
+            didStartWithReplay: context.hasReplay,
+            // A session started by an event after `stopSession()` keeps the stop until it tracks a view, as live events do:
+            wasStopped: applicationState.wasPreviousSessionStopped && resumingViewScope == nil
         )
         self.interactionToNextViewMetric = dependencies.interactionToNextViewMetricFactory()
 

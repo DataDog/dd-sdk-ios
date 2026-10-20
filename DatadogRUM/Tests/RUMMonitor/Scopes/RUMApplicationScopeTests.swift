@@ -526,7 +526,34 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .maxDuration)
     }
 
-    func testGivenStoppedSession_whenUserResumesWithAnInteraction_itClearsTheStoppedSessionStateForCrashes() throws {
+    func testGivenStoppedSession_whenNonInteractionEventStartsNewSession_itKeepsCrashesSuppressed() throws {
+        // Given
+        let currentTime = Date()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground(since: currentTime))
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: false, fatalErrorContext: fatalErrorContext)
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("view")), context: context, writer: writer)
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(1)), context: context, writer: writer)
+        let stoppedState = try XCTUnwrap(fatalErrorContext.sessionState)
+        XCTAssertTrue(stoppedState.wasStopped)
+
+        // When
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime.addingTimeInterval(2)), context: context, writer: writer)
+
+        // Then
+        let state = try XCTUnwrap(fatalErrorContext.sessionState)
+        XCTAssertNotEqual(state.sessionUUID, stoppedState.sessionUUID, "The error starts a new session")
+        XCTAssertTrue(state.wasStopped, "An event that does not resume tracking must keep the stop")
+        XCTAssertEqual(
+            RUMOffViewEventsHandlingRule(applicationState: nil, sessionState: state, isAppInForeground: true, isBETEnabled: .mockRandom(), command: nil),
+            .doNotHandle,
+            "A crash now must stay dropped"
+        )
+    }
+
+    func testGivenStoppedSession_whenTrackingResumesWithAView_itClearsTheStoppedSessionStateForCrashes() throws {
         // Given
         let currentTime = Date()
         let fatalErrorContext = FatalErrorContextNotifierMock()
@@ -551,7 +578,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // When
         _ = scope.process(
-            command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: true),
+            command: RUMStartViewCommand.mockWith(time: currentTime.addingTimeInterval(3), identity: ViewIdentifier("resumed")),
             context: .mockAny(),
             writer: writer
         )
@@ -559,7 +586,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // Then
         let resumedState = try XCTUnwrap(fatalErrorContext.sessionState)
         XCTAssertNotEqual(resumedState.sessionUUID, stoppedState.sessionUUID)
-        XCTAssertFalse(resumedState.wasStopped, "After resuming, crashes must be reported again")
+        XCTAssertFalse(resumedState.wasStopped, "After tracking resumes, crashes must be reported again")
     }
 
     func testGivenStoppedSession_whenNewOneIsStarted_itSetsExplicitStopPrecondition() {

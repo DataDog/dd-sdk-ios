@@ -36,6 +36,22 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
         }
     }
 
+    func testWhenSessionWasStopped_liveEventsKeepUsingApplicationState() {
+        let resumedAfterStop: RUMSessionState = .mockWith(isSampled: true, isInitialSession: false, hasTrackedAnyView: true, wasStopped: true)
+
+        // A user action may still start a view after the stop, as before:
+        XCTAssertEqual(
+            RUMOffViewEventsHandlingRule(
+                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 1, wasPreviousSessionStopped: true),
+                sessionState: resumedAfterStop,
+                isAppInForeground: false,
+                isBETEnabled: true,
+                command: RUMCommandMock(canStartBackgroundViewAfterSessionStop: true)
+            ),
+            .handleInBackgroundView
+        )
+    }
+
     func testOffViewHandlingRules() {
         struct Case {
             let description: String
