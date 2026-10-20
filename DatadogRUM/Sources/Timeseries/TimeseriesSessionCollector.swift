@@ -193,6 +193,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// No-ops if `sessionID` no longer matches the currently active session (e.g. a call left over from a
     /// session that has since ended and been replaced — see `RUMSessionScope.Constants` for expiry rules).
     func pause(sessionID: String) {
+        let hasContextReplay = activeContextReader?.hasReplay
         queue.async { [weak self] in
             guard let self = self, self.sessionID == sessionID else {
                 return
@@ -204,7 +205,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.timer = nil
             self.isPaused = true
             if !self.memoryBuffer.isEmpty || !self.cpuBuffer.isEmpty {
-                self.refreshHasReplay(self.activeContextReader?.hasReplay)
+                self.refreshHasReplay(hasContextReplay)
             }
             self.flushMemory()
             self.flushCPU()

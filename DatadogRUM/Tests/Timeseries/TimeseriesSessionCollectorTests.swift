@@ -515,6 +515,20 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let oldEvents = oldScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertEqual(oldEvents.count, 1)
         XCTAssertEqual(oldEvents.last?.session.hasReplay, true, "replay at `stop()` call time was lost")
+
+        // Same, for a `pause()` queued before the session boundary
+        let (pausedCollector, pausedScope) = makeCollector()
+        let pausedReader = CallerThreadReplayReaderMock()
+        pausedCollector.activeContextReader = pausedReader
+        pausedCollector.start(sessionID: "paused-session", applicationID: "app-1", sessionType: .user)
+        settle(0.45)
+
+        pausedCollector.pause(sessionID: "paused-session")
+        pausedCollector.flush() // barrier: waits for `pause()` to finish on the collector's queue
+
+        let pausedEvents = pausedScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertEqual(pausedEvents.count, 1)
+        XCTAssertEqual(pausedEvents.last?.session.hasReplay, true, "replay at `pause()` call time was lost")
     }
 
     func testItPopulatesSessionSampleRateFromConstructorInjectedValue() {
