@@ -79,6 +79,11 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             return
         }
 
+        if let nested = value as? [String: OTTagValue] {
+            setTag(key: key, value: nested)
+            return
+        }
+
         if ddContext.span(self, willSetTagWithKey: key, value: value) {
             _tags.mutate { $0[key] = value }
         }

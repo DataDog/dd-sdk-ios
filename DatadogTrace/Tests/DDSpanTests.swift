@@ -88,6 +88,81 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(events[1].spans.first?.tags, defaultTags.merging(customTags) { _, custom in custom })
     }
 
+    func testWhenSettingDictionaryTags_theyAreFlattenedIntoLeafTags() throws {
+        let core = PassthroughCoreMock()
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: .mockAny())
+
+        // When
+        span.setTag(key: "flat", value: ["foo": "foo-value", "bar": "bar-value"])
+        span.setTag(key: "nested", value: ["foo": ["bar": "bar-value"]])
+        span.setTag(key: "mixed", value: ["a": "1", "b": 2])
+        span.setTag(key: "mixedNested", value: ["a": ["b": 1], "c": "x"])
+        span.setTag(key: "collision", value: ["ctx": ["foo": "nested-value"], "ctx.foo": "literal-value"])
+        span.finish()
+
+        // Then
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(
+            events.first?.spans.first?.tags,
+            [
+                "flat.foo": "foo-value",
+                "flat.bar": "bar-value",
+                "nested.foo.bar": "bar-value",
+                "mixed.a": "1",
+                "mixed.b": "2",
+                "mixedNested.a.b": "1",
+                "mixedNested.c": "x",
+                "collision.ctx.foo": "literal-value",
+            ]
+        )
+    }
+
+    func testWhenStartingSpanWithDictionaryTags_theyAreFlattenedIntoLeafTags() throws {
+        let core = PassthroughCoreMock()
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            tags: [
+                "global": ["foo": "foo-value"],
+                "overridden": ["foo": "foo-value"],
+                "globalDotted.foo": "global-value",
+                "globalNested": ["foo": "global-value"],
+            ]
+        )
+
+        // When
+        let span = tracer.startSpan(
+            operationName: .mockAny(),
+            tags: [
+                "local": ["foo": ["bar": "bar-value"]],
+                "overridden": "local-value",
+                "collision": ["foo": "nested-value"],
+                "collision.foo": "literal-value",
+                "globalDotted": ["foo": "local-value"],
+                "globalNested.foo": "local-value",
+            ]
+        )
+        span.finish()
+
+        // Then
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(
+            events.first?.spans.first?.tags,
+            [
+                "global.foo": "foo-value",
+                "local.foo.bar": "bar-value",
+                "overridden": "local-value",
+                "collision.foo": "literal-value",
+                "globalDotted.foo": "local-value",
+                "globalNested.foo": "local-value",
+            ]
+        )
+    }
+
     func testSettingBaggageItems() {
         // Given
         let span: DDSpan = .mockWith(
@@ -186,6 +261,18 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(context.samplingDecision.decisionMaker, .agentRate)
 
         span.keepTrace()
+
+        XCTAssertEqual(context.samplingDecision.samplingPriority, .manualKeep)
+        XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)
+    }
+
+    func testWhenSettingDictionaryWithBothSamplingTags_itAppliesThemInKeyOrder() {
+        let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: "the span") as! DDSpan
+        let context = span.context as! DDSpanContext
+
+        span.setTag(key: "manual", value: ["keep": true, "drop": true])
 
         XCTAssertEqual(context.samplingDecision.samplingPriority, .manualKeep)
         XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)

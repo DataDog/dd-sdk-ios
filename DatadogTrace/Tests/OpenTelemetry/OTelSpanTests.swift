@@ -356,7 +356,10 @@ final class OTelSpanTests: XCTestCase {
             featureScope: featureScope,
             tags: [
                 "global": "keep_me",
-                "key3": "replace_me"
+                "key3": "replace_me",
+                "nested": ["foo": "nested_value"],
+                "collision": ["foo": "nested_value"],
+                "collision.foo": "literal_value",
             ]
         )
 
@@ -377,6 +380,8 @@ final class OTelSpanTests: XCTestCase {
         let expectedTags =
         [
             "global": "keep_me",
+            "nested.foo": "nested_value",
+            "collision.foo": "literal_value",
             "key": "true",
             "key2": "value2",
             "key3": "3",
@@ -384,6 +389,20 @@ final class OTelSpanTests: XCTestCase {
             "span.kind": "internal",
         ]
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
+    }
+
+    func testSetGlobalAttributeWithBothSamplingTags_itAppliesThemInKeyOrder() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(
+            featureScope: featureScope,
+            tags: ["manual": ["keep": true, "drop": true]]
+        )
+
+        // When
+        tracer.spanBuilder(spanName: "Span").startSpan().end()
+
+        // Then
+        XCTAssertEqual(try featureScope.spanEventsWritten().count, 1, "The span should be kept")
     }
 
     func testStatus_whenStatusIsNotSet() throws {
