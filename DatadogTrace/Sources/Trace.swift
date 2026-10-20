@@ -76,7 +76,7 @@ public enum Trace {
                 telemetry: core.telemetry,
                 redactedStatusCodes: urlSessionTracking.redactedStatusCodes,
                 sessionSampler: core.sessionSampler,
-                spanCustomization: configuration.urlSessionTracking?.spanCustomization
+                spanCustomization: urlSessionTracking.spanCustomization
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)

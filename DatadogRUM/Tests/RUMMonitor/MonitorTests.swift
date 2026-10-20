@@ -474,6 +474,7 @@ private class TimeseriesCollectorStub: TimeseriesCollecting {
         activitySessionIDs.append(sessionID)
     }
     func flush() {}
+    func hasCollectedData(sessionID: String) -> Bool { false }
 }
 
 // MARK: - Convenience

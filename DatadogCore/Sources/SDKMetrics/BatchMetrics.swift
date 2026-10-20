@@ -72,6 +72,8 @@ internal enum BatchDeletedMetric {
         /// user errors, others, like 400, will indicate faults within the SDK. It is important to note that not all status codes will appear
         /// in this field, as the SDKs implement retry mechanisms for certain codes, e.g. 503 (see: ``DataUploadStatus``).
         case intakeCode(responseCode: Int?)
+        /// Reconciliation confirmed that the batch no longer needs uploading.
+        case reconciled
         /// The batch become obsolete (older than allowed limit for this track's intake).
         case obsolete
         /// The batch was deleted due to exceeding allowed max size for batches directory.
@@ -83,11 +85,23 @@ internal enum BatchDeletedMetric {
         /// and we don't send "Batch Deleted" metric for this case.
         case flushed
 
+        /// Whether the batch was removed after an intake response or reconciliation.
+        var isUploadCompletion: Bool {
+            switch self {
+            case .intakeCode, .reconciled:
+                return true
+            case .obsolete, .purged, .invalid, .flushed:
+                return false
+            }
+        }
+
         /// Converts the removal reason to the string value expected for `batchRemovalReasonKey`.
         func toString() -> String {
             switch self {
             case .intakeCode(let responseCode):
                 return "intake-code-\(responseCode.map { String($0) } ?? "unknown")"
+            case .reconciled:
+                return "reconciled"
             case .obsolete:
                 return "obsolete"
             case .purged:
@@ -102,7 +116,7 @@ internal enum BatchDeletedMetric {
         /// Indicates whether the metric should be sent for this removal reason.
         var includeInMetric: Bool {
             switch self {
-            case .intakeCode, .obsolete, .purged, .invalid:
+            case .intakeCode, .reconciled, .obsolete, .purged, .invalid:
                 return true
             case .flushed:
                 return false

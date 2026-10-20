@@ -35,6 +35,7 @@ class DataUploadStatusTests: XCTestCase {
         statusCodesExpectingNoRetry.forEach { statusCode, _ in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockAny(), attempt: 0)
             XCTAssertFalse(status.needsRetry, "Upload should not be retried for status code \(statusCode)")
+            XCTAssertFalse(status.isReconciled)
         }
     }
 
@@ -52,12 +53,14 @@ class DataUploadStatusTests: XCTestCase {
         unexpectedStatusCodes.forEach { statusCode in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockAny(), attempt: 0)
             XCTAssertFalse(status.needsRetry, "Upload should not be retried for status code \(statusCode)")
+            XCTAssertFalse(status.isReconciled)
         }
     }
 
     func testWhenUploadFinishesWithError_itSetsNeedsRetryFlagToTrue() {
         let status = DataUploadStatus(networkError: ErrorMock(), attempt: 0)
         XCTAssertTrue(status.needsRetry, "Upload should be retried if it finished with error")
+        XCTAssertFalse(status.isReconciled)
     }
 
     // MARK: - Test `.userDebugDescription`

@@ -10,7 +10,7 @@ import DatadogInternal
 internal protocol FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
 }
 
@@ -62,10 +62,10 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         // Repository callbacks can invoke application code; keep them off shared SDK work queues.
-        let completion: (Result<[String: FlagAssignment], FlagsError>) -> Void = { result in
+        let completion: (Result<FlagAssignmentsResponse, FlagsError>) -> Void = { result in
             DispatchQueue.global(qos: .utility).async {
                 completion(result)
             }
@@ -89,7 +89,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private func fetchAssignments(
         for evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
-        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         do {
             let request = try URLRequest.flagAssignmentsRequest(
@@ -102,6 +102,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 assignmentFetchQueue.async {
                     Self.handleFetchResult(
                         result,
+                        supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
                         featureScope: featureScope,
                         completion: completion
                     )
@@ -116,13 +117,17 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private static func handleFetchResult(
         _ result: Result<Data, Error>,
+        supportsObfuscation: Bool,
         featureScope: any FeatureScope,
-        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         switch result {
         case .success(let data):
             do {
                 let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
+                guard response.obfuscation == nil || supportsObfuscation else {
+                    throw FlagsError.invalidResponse
+                }
 
                 // Log any flags that failed to decode to telemetry
                 if !response.failedFlags.isEmpty {
@@ -142,7 +147,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     }
                 }
 
-                completion(.success(response.flags))
+                completion(.success(response))
             } catch {
                 featureScope.telemetry.error(
                     "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response",

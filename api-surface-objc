@@ -598,6 +598,7 @@ public class objc_RUMActionEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMActionEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMActionEventSessionRUMSessionType
@@ -1011,6 +1012,7 @@ public class objc_RUMErrorEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMErrorEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMErrorEventSessionRUMSessionType
@@ -1283,6 +1285,7 @@ public class objc_RUMLongTaskEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMLongTaskEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMLongTaskEventSessionRUMSessionType
@@ -1625,6 +1628,7 @@ public class objc_RUMResourceEventResourceWorker: NSObject
     public var start: NSNumber
 public class objc_RUMResourceEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMResourceEventSessionRUMSessionType
@@ -1806,6 +1810,7 @@ public class objc_RUMTimeseriesCpuEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMTimeseriesCpuEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType
@@ -1999,6 +2004,7 @@ public class objc_RUMTimeseriesMemoryEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMTimeseriesMemoryEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType
@@ -2273,6 +2279,7 @@ public enum objc_RUMViewEventPrivacyReplayLevel: Int
     case maskUserInput
 public class objc_RUMViewEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isActive: NSNumber?
     public var isMainProcess: NSNumber?
@@ -2712,6 +2719,7 @@ public enum objc_RUMViewUpdateEventPrivacyReplayLevel: Int
     case maskUserInput
 public class objc_RUMViewUpdateEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isActive: NSNumber?
     public var isMainProcess: NSNumber?
@@ -3115,6 +3123,7 @@ public class objc_RUMVitalAppLaunchEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMVitalAppLaunchEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType
@@ -3357,6 +3366,7 @@ public class objc_RUMVitalDurationEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMVitalDurationEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalDurationEventSessionRUMSessionType
@@ -3588,6 +3598,7 @@ public class objc_RUMVitalOperationStepEventOperatingSystem: NSObject
     public var versionMajor: String
 public class objc_RUMVitalOperationStepEventSession: NSObject
     public var hasReplay: NSNumber?
+    public var hasTimeseries: NSNumber?
     public var id: String
     public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType
@@ -3733,6 +3744,8 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var selectedTracingPropagators: [Int]?
     public var sendLogsAfterSessionExpiration: NSNumber?
     public var sessionPersistence: objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersistence
+    public var sessionReplayCanvasRecording: NSNumber?
+    public var sessionReplayCanvasRecordingQuality: objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber?
     public var silentMultipleInit: NSNumber?
@@ -3823,6 +3836,11 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersist
     case localStorage
     case cookie
     case memory
+public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality: Int
+    case none
+    case low
+    case medium
+    case high
 public enum objc_TelemetryConfigurationEventTelemetryConfigurationTraceContextInjection: Int
     case none
     case all

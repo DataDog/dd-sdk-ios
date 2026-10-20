@@ -21,6 +21,24 @@ class ImmutableRequestTests: XCTestCase {
         XCTAssertEqual(immutable.httpMethod, original.httpMethod)
     }
 
+    func testReadingHTTPBody() {
+        var original: URLRequest = .mockAny()
+        original.httpBody = .mockRandom()
+        let immutable = ImmutableRequest(request: original)
+        XCTAssertEqual(immutable.httpBody, original.httpBody)
+    }
+
+    func testHTTPBodyIsCapturedAtInitialization() {
+        let body: Data = .mockRandom()
+        var original: URLRequest = .mockAny()
+        original.httpBody = body
+        let immutable = ImmutableRequest(request: original)
+
+        original.httpBody = .mockRandom()
+
+        XCTAssertEqual(immutable.httpBody, body)
+    }
+
     func testReadingDatadogOriginHeader() {
         let expectedValue: String = .mockRandom(length: 128)
         let original: URLRequest = .mockWith(

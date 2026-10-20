@@ -16,6 +16,8 @@ public struct ImmutableRequest {
     public let url: URL?
     /// The HTTP method of the request.
     public let httpMethod: String?
+    /// The body data of the request.
+    public let httpBody: Data?
     /// The value of `x-datadog-origin` header (if any).
     public let ddOriginHeaderValue: String?
     /// A reference to the original `URLRequest` object provided during initialization. Direct use is discouraged
@@ -25,6 +27,7 @@ public struct ImmutableRequest {
     public init(request: URLRequest) {
         self.url = request.url
         self.httpMethod = request.httpMethod
+        self.httpBody = request.httpBody
         // RUM-3183: As observed in https://github.com/DataDog/dd-sdk-ios/issues/1638, accessing `request.allHTTPHeaderFields` is not
         // safe and can lead to crashes with undefined root cause. To avoid issues we should prefer `request.value(forHTTPHeaderField:)`
         // when interacting with `URLRequest`.

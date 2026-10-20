@@ -10,20 +10,24 @@ import DatadogInternal
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
     private static let decoder = JSONDecoder()
+    // Older native SDKs and React Native bridges accept only version 1.
+    private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
 
     let featureScope: FeatureScope
 
     func setFlagsData(_ flagsData: FlagsData, forClientNamed clientName: String) {
-        guard let data = encodeFlagsData(flagsData) else {
+        guard let encoded = encodeFlagsData(flagsData) else {
             return
         }
 
-        setEncodedFlagsData(data, forClientNamed: clientName)
+        setEncodedFlagsData(encoded.data, forClientNamed: clientName, version: encoded.version)
     }
 
-    func encodeFlagsData(_ flagsData: FlagsData) -> Data? {
+    func encodeFlagsData(_ flagsData: FlagsData) -> (data: Data, version: DataStoreKeyVersion)? {
         do {
-            return try Self.encoder.encode(flagsData)
+            let data = try Self.encoder.encode(flagsData)
+            let version = flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : Self.encodedAssignmentsVersion
+            return (data, version)
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
@@ -31,19 +35,23 @@ internal struct FlagsDataStore {
         }
     }
 
-    func setEncodedFlagsData(_ data: Data, forClientNamed clientName: String) {
-        featureScope.dataStore.setValue(data, forKey: clientName)
+    func setEncodedFlagsData(_ data: Data, forClientNamed clientName: String, version: DataStoreKeyVersion) {
+        featureScope.dataStore.setValue(data, forKey: clientName, version: version)
     }
 
     func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {
         featureScope.dataStore.value(forKey: clientName) { result in
-            guard let data = result.data() else {
+            let encodedData = result.data(expectedVersion: Self.encodedAssignmentsVersion)
+            guard let data = encodedData ?? result.data() else {
                 callback(nil)
                 return
             }
 
             do {
                 let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
+                guard (flagsData.obfuscation != nil) == (encodedData != nil) else {
+                    throw FlagsError.invalidResponse
+                }
                 callback(flagsData)
             } catch let error {
                 DD.logger.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)
