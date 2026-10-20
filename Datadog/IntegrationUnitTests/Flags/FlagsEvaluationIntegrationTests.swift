@@ -88,6 +88,63 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
 /// Exercises native assignment loading and telemetry uploads over a loopback HTTP connection.
 final class FlagsEvaluationLocalIntakeTests: XCTestCase {
     @MainActor
+    func testSubjectSwitchDoesNotUploadPreviousSubjectsOptedOutEvaluations() throws {
+        let ready = expectation(description: "local intake ready")
+        let server = try FlagsLocalIntake(ready: ready)
+        server.start()
+        wait(for: [ready], timeout: 5)
+        defer { server.stop() }
+        let instanceName = "flags-subject-switch-\(UUID().uuidString)"
+        let core = Datadog.initialize(
+            with: .init(clientToken: "local-intake-token", env: "local-test"),
+            trackingConsent: .granted,
+            instanceName: instanceName
+        )
+        defer { Datadog.internalFlushAndDeinitialize(instanceName: instanceName) }
+        RUM.enable(with: .init(applicationID: UUID().uuidString, customEndpoint: try server.url("rum")), in: core)
+        Flags.enable(
+            with: .init(
+                customFlagsEndpoint: try server.url("assignments"),
+                customExposureEndpoint: try server.url("exposures"),
+                customEvaluationEndpoint: try server.url("evaluations")
+            ),
+            in: core
+        )
+        let client = FlagsClient.create(configuration: .init(enableEvaluationTelemetryOptOutParameter: true), in: core)
+        let nativeCore = try XCTUnwrap(core as? DatadogCore)
+        let monitor = RUMMonitor.shared(in: core)
+        let loaded = expectation(description: "A loaded")
+        client.setEvaluationContext(localContext(optOut: true, subject: "A")) { _ in loaded.fulfill() }
+        wait(for: [loaded], timeout: 5)
+        let received = expectation(description: "B request held")
+        server.holdAssignments(onRequest: { received.fulfill() })
+        let refreshed = expectation(description: "B loaded")
+        client.setEvaluationContext(localContext(optOut: false, subject: "B")) { _ in refreshed.fulfill() }
+        wait(for: [received], timeout: 5)
+
+        monitor.startView(key: "A", name: "A pending switch")
+        XCTAssertTrue(client.getBooleanValue(key: "hidden-flag", defaultValue: false))
+        nativeCore.flush()
+        monitor.stopView(key: "A")
+        nativeCore.flushAndUpload()
+        XCTAssertTrue(try server.events(at: "evaluations").isEmpty)
+        XCTAssertFalse(try server.events(at: "rum").contains { ($0["feature_flags"] as? [String: Any])?["hidden-flag"] != nil })
+        XCTAssertEqual(try server.events(at: "exposures").count, 1)
+
+        server.releaseAssignments(status: 200)
+        wait(for: [refreshed], timeout: 5)
+        monitor.startView(key: "B", name: "B ready")
+        XCTAssertTrue(client.getBooleanValue(key: "visible-flag", defaultValue: false))
+        nativeCore.flush()
+        monitor.stopView(key: "B")
+        nativeCore.flushAndUpload()
+        let evaluations = try server.events(at: "evaluations").flatMap { $0["flagEvaluations"] as? [[String: Any]] ?? [] }
+        XCTAssertEqual(evaluations.compactMap { ($0["flag"] as? [String: Any])?["key"] as? String }, ["visible-flag"])
+        XCTAssertTrue(try server.events(at: "rum").contains { ($0["feature_flags"] as? [String: Any])?["visible-flag"] != nil })
+        XCTAssertEqual(try server.events(at: "exposures").count, 2)
+    }
+
+    @MainActor
     func testWhenOptedOut_itPreservesExposureAndRUMWithoutEvaluationTelemetry() throws {
         try runLocalIntake(enabled: true, optOut: true)
     }

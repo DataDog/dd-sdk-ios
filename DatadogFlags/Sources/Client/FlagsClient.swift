@@ -38,17 +38,25 @@ import DatadogInternal
 public final class FlagsClient {
     /// Configuration for an individual Flags client.
     public struct Configuration {
-        /// Enables evaluation telemetry suppression through the `dd_evaluation_telemetry_opt_out` context attribute.
+        /// Enables per-subject opt-out from customer-facing feature flag evaluation reporting.
         ///
-        /// Only a boolean `true` suppresses new evaluation events, counts, and automatic RUM flag annotations.
-        /// Exposure logging remains unchanged. Previously recorded telemetry is not removed.
+        /// This controls flag evaluation reporting, not Datadog SDK internal telemetry.
+        /// Do not use it to disable SDK diagnostics.
+        ///
+        /// Enabling this option alone does not suppress data.
+        /// When enabled, setting `dd_evaluation_telemetry_opt_out` to boolean `true` suppresses new evaluation events,
+        /// evaluation counts, and automatic RUM flag annotations.
+        /// Flag evaluation and experiment exposure logging remain unchanged.
+        /// Previously recorded telemetry is not removed.
         /// The attribute remains available for targeting and exposure reporting.
         ///
         /// Default: `false`.
         public var enableEvaluationTelemetryOptOutParameter: Bool
 
         /// Creates configuration for an individual Flags client.
-        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables the evaluation telemetry control. Default: `false`.
+        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
+        ///   not SDK internal telemetry. Suppression requires `dd_evaluation_telemetry_opt_out` to be boolean `true`.
+        ///   Default: `false`.
         public init(enableEvaluationTelemetryOptOutParameter: Bool = false) {
             self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
         }
@@ -70,10 +78,6 @@ public final class FlagsClient {
     private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
     private let configuration: Configuration
-
-    /// The latest requested policy must not depend on assignment loading, persistence, or network completion.
-    @ReadWriteLock
-    private var telemetryContext: FlagsEvaluationContext?
 
     private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
 
@@ -255,13 +259,13 @@ extension FlagsClient: FlagsClientProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        telemetryContext = context
         repository.setEvaluationContext(context, completion: completion)
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        let context = repository.context
-        let trackEvaluationTelemetry = !isEvaluationTelemetryOptedOut(in: telemetryContext ?? context)
+        let snapshot = repository.evaluationSnapshot(for: key)
+        let context = snapshot.context
+        let trackEvaluationTelemetry = !configuration.enableEvaluationTelemetryOptOutParameter || !snapshot.telemetryOptedOut
         let defaultAssignment = FlagAssignment(
             allocationKey: "",
             variationKey: "",
@@ -281,7 +285,7 @@ extension FlagsClient: FlagsClientProtocol {
             return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
         }
 
-        guard let flagAssignment = repository.flagAssignment(for: key) else {
+        guard let flagAssignment = snapshot.assignment else {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,

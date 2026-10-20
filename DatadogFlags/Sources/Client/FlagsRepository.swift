@@ -21,9 +21,61 @@ internal protocol FlagsRepositoryProtocol {
 
     func flagAssignment(for key: String) -> FlagAssignment?
 
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot
+
     func flagAssignments() -> [String: FlagAssignment]?
 
     func reset()
+}
+
+internal struct FlagEvaluationSnapshot {
+    let context: FlagsEvaluationContext?
+    let assignment: FlagAssignment?
+    let telemetryOptedOut: Bool
+}
+
+/// Retain decisions only while their subjects have installed or pending assignments.
+internal struct SubjectTelemetryPolicy {
+    private var requestedSubject: String?
+    private var decisions: [String: Bool] = [:]
+    private var pending: [String: Int] = [:]
+
+    mutating func begin(_ context: FlagsEvaluationContext, installed: FlagsEvaluationContext?) {
+        requestedSubject = context.targetingKey
+        decisions[context.targetingKey] = Self.isOptedOut(context)
+        pending[context.targetingKey, default: 0] += 1
+        prune(installed: installed)
+    }
+
+    mutating func finish(_ subject: String, installed: FlagsEvaluationContext?) {
+        if let count = pending[subject] {
+            pending[subject] = count > 1 ? count - 1 : nil
+        }
+        prune(installed: installed)
+    }
+
+    mutating func install(_ context: FlagsEvaluationContext?) {
+        if let context, decisions[context.targetingKey] == nil {
+            decisions[context.targetingKey] = Self.isOptedOut(context)
+        }
+        prune(installed: context)
+    }
+
+    func isOptedOut(evaluating context: FlagsEvaluationContext?) -> Bool {
+        let requested = requestedSubject.flatMap { decisions[$0] } ?? false
+        let evaluated = context.map { decisions[$0.targetingKey] ?? Self.isOptedOut($0) } ?? false
+        return requested || evaluated
+    }
+
+    private mutating func prune(installed: FlagsEvaluationContext?) {
+        decisions = decisions.filter {
+            $0.key == requestedSubject || $0.key == installed?.targetingKey || pending[$0.key] != nil
+        }
+    }
+
+    private static func isOptedOut(_ context: FlagsEvaluationContext) -> Bool {
+        context.attributes["dd_evaluation_telemetry_opt_out"] == .bool(true)
+    }
 }
 
 internal typealias FlagsInitializationTimeoutCancellation = () -> Void
@@ -87,8 +139,23 @@ internal final class FlagsRepository {
     private let initializationLock = NSLock()
     private var didStartInitialization = false
 
+    private struct EvaluationState {
+        var data: FlagsData?
+        var telemetry = SubjectTelemetryPolicy()
+    }
+
     @ReadWriteLock
-    private var flagsData: FlagsData?
+    private var evaluationState = EvaluationState()
+
+    private var flagsData: FlagsData? {
+        get { evaluationState.data }
+        set {
+            _evaluationState.mutate {
+                $0.data = newValue
+                $0.telemetry.install(newValue?.context)
+            }
+        }
+    }
 
     /// Version counter for `flagsData`. Incremented on every write to detect
     /// when a newer request has succeeded while an older request was in-flight.
@@ -285,6 +352,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         return flagsData?.flags[key]
     }
 
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot {
+        waitForFlagsDataRead()
+        let snapshot = evaluationState
+        let data = stateManager.currentState == .error ? nil : snapshot.data
+        return FlagEvaluationSnapshot(
+            context: data?.context,
+            assignment: data?.flags[key],
+            telemetryOptedOut: snapshot.telemetry.isOptedOut(evaluating: data?.context)
+        )
+    }
+
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error else {
@@ -297,6 +375,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        _evaluationState.mutate {
+            $0.telemetry.begin(context, installed: $0.data?.context)
+        }
         let initializationCompletion = makeInitializationCompletion(completion, context: context) {
             stateManager.updateState(.reconciling)
         }
@@ -320,6 +401,12 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             }
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+                // A public initialization timeout does not terminate this request.
+                defer {
+                    self?._evaluationState.mutate {
+                        $0.telemetry.finish(context.targetingKey, installed: $0.data?.context)
+                    }
+                }
                 switch result {
                 case .success(let flags):
                     guard let self else {
