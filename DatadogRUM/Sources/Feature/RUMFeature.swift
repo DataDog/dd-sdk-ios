@@ -30,6 +30,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMCont
     /// The scene-tracking mode frozen when this feature is enabled.
     let isMultiSceneTrackingEnabled: Bool
     let rumContextHandoffOwner: RUMContextHandoff.Owner?
+    let operationOrigin: RUMOperationOrigin?
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
@@ -79,6 +80,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMCont
             issuedOwner = nil
         }
         rumContextHandoffOwner = issuedOwner
+        let operationOrigin = issuedOwner.map { RUMOperationOrigin(core: core, owner: $0) }
+        self.operationOrigin = operationOrigin
         var initializationCompleted = false
         defer {
             if !initializationCompleted, let owner = issuedOwner {
@@ -164,7 +167,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMCont
             }
         }()
 
-        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, sessionSamplingStore] sessionScope in
+        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, sessionSamplingStore, operationOrigin] sessionScope in
+            operationOrigin?.setSession(sessionScope?.sessionUUID.toRUMDataFormat)
             if let sessionScope {
                 let sessionID = sessionScope.sessionUUID.toRUMDataFormat
                 sessionSamplingStore.setSession(id: sessionID, sampler: sessionScope.sampler)
@@ -301,7 +305,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMCont
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
             monotonicClock: configuration.monotonicClock,
             initialSessionUUID: initialSessionUUID,
-            timeseriesCollector: timeseriesCollector
+            timeseriesCollector: timeseriesCollector,
+            operationOrigin: operationOrigin
         )
 
         self.monitor = Monitor(
@@ -533,8 +538,11 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMCont
 
         // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
+        operationOrigin?.attach(feature: self, monitor: monitor)
         initializationCompleted = true
     }
+
+    deinit { operationOrigin?.retire() }
 }
 
 extension RUMFeature {
@@ -662,4 +670,16 @@ private extension RUM.Configuration.VitalsFrequency {
         case .rare:     return 1
         }
     }
+}
+
+extension RUMFeature: RUMOperationOriginProviding, RUMOperationFeatureRetiring {
+    func isOperationMonitor(_ monitor: AnyObject) -> Bool { self.monitor === monitor }
+
+    func isOperationSessionActive(start: TimeInterval, lastInteraction: TimeInterval) -> Bool {
+        let now = monitor.applicationScope.dependencies.monotonicClock.elapsedTime
+        return !RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now)
+            && !RUMSessionScope.hasExpired(sessionStart: start, now: now)
+    }
+
+    func retireOperationOrigin() { operationOrigin?.retire() }
 }

@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
 import Foundation
 
 internal struct VitalsReaders {
@@ -55,6 +55,7 @@ internal struct RUMScopeDependencies {
     let timeseriesCollector: TimeseriesCollecting?
     let accessibilityReader: AccessibilityReading?
     let onSessionUpdate: RUM.SessionUpdater
+    let operationOrigin: RUMOperationOrigin?
     let viewCache: ViewCache
     /// The RUM context necessary for tracking fatal errors like Crashes or fatal App Hangs.
     let fatalErrorContext: FatalErrorContextNotifying
@@ -114,7 +115,8 @@ internal struct RUMScopeDependencies {
         sessionType: RUMSessionType?,
         monotonicClock: MonotonicClock,
         initialSessionUUID: RUMUUID? = nil,
-        timeseriesCollector: TimeseriesCollecting? = nil
+        timeseriesCollector: TimeseriesCollecting? = nil,
+        operationOrigin: RUMOperationOrigin? = nil
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -137,6 +139,7 @@ internal struct RUMScopeDependencies {
         self.timeseriesCollector = timeseriesCollector
         self.accessibilityReader = accessibilityReader
         self.onSessionUpdate = onSessionUpdate
+        self.operationOrigin = operationOrigin
         self.viewCache = viewCache
         self.fatalErrorContext = fatalErrorContext
         self.telemetry = featureScope.telemetry

@@ -74,6 +74,29 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
     }
 
+    func testMessageReceiver_checksQuota_whenCustomEndpointIsConfigured() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let feature = ProfilerFeature(
+            core: core,
+            configuration: .init(customEndpoint: .mockRandom()),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            quotaChecker: quotaChecker,
+            userDefaults: userDefaults
+        )
+        let context: DatadogContext = .mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
+        )
+
+        // When
+        _ = feature.messageReceiver.receive(message: .context(context), from: core)
+
+        // Then
+        XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
+    }
+
     func testProfilingSamplerProvider_isDeterministicForSameSessionID() {
         // Given
         let continuousSampleRate: SampleRate = 80
