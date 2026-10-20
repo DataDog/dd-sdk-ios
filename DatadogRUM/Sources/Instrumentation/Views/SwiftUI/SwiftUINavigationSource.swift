@@ -7,6 +7,9 @@
 #if canImport(SwiftUI) && os(iOS)
 import Foundation
 import Combine
+#if compiler(>=6.4) && canImport(Observation)
+import Observation
+#endif
 import DatadogInternal
 
 /// A stable, type-erased source of committed navigation destinations.
@@ -305,6 +308,11 @@ internal final class RUMNavigationObservedTransitions {
     private var cancellable: AnyCancellable?
     private var stopped = false
     private var inputGeneration: UInt64 = 0
+    #if compiler(>=6.4) && canImport(Observation)
+    private var observedCurrentDestination: (@MainActor () -> RUMNavigationDestination)?
+    private var observedUpdates: PassthroughSubject<RUMNavigationDestination, Never>?
+    private var observedGeneration: UInt64 = 0
+    #endif
 
     init<State, Updates: Publisher>(
         updates: Updates,
@@ -335,9 +343,73 @@ internal final class RUMNavigationObservedTransitions {
         }
     }
 
+    #if compiler(>=6.4) && canImport(Observation)
+    /// Reads one accepted-state property and rearms synchronously after didSet.
+    /// The Publisher projection guard remains the single metadata/commit path.
+    convenience init(
+        observingCurrentDestination: @MainActor @escaping () -> RUMNavigationDestination,
+        acceptsDelivery: @MainActor @escaping () -> Bool,
+        metadata: RUMNavigationMetadata = .automatic
+    ) {
+        let updates = PassthroughSubject<RUMNavigationDestination, Never>()
+        self.init(
+            updates: updates,
+            acceptsDelivery: acceptsDelivery,
+            destination: { $0 },
+            metadata: metadata
+        )
+        guard !stopped else {
+            return
+        }
+        observedCurrentDestination = observingCurrentDestination
+        observedUpdates = updates
+        armCurrentDestinationObservation()
+    }
+
+    private func armCurrentDestinationObservation() {
+        guard !stopped, let projection = observedCurrentDestination,
+              let updates = observedUpdates else {
+            return
+        }
+        observedGeneration &+= 1
+        let generation = observedGeneration
+        inputGeneration &+= 1
+        guard accepts(generation: inputGeneration) else {
+            return
+        }
+        let destination = withObservationTracking(options: [.didSet]) {
+            projection()
+        } onChange: { [weak self] event in
+            guard event.kind == .didSet else {
+                return
+            }
+            if Thread.isMainThread {
+                MainActor.assumeIsolated {
+                    self?.armCurrentDestinationObservation()
+                }
+            } else {
+                // Invalid background mutation remains safe; only the latest
+                // accepted state is available when main resumes.
+                DispatchQueue.main.async { [weak self] in
+                    self?.armCurrentDestinationObservation()
+                }
+            }
+        }
+        guard !stopped, observedGeneration == generation else {
+            return
+        }
+        updates.send(destination)
+    }
+    #endif
+
     func stop() {
         stopped = true
         inputGeneration &+= 1
+        #if compiler(>=6.4) && canImport(Observation)
+        observedGeneration &+= 1
+        observedCurrentDestination = nil
+        observedUpdates = nil
+        #endif
         cancellable?.cancel()
         cancellable = nil
         currentIdentity = nil

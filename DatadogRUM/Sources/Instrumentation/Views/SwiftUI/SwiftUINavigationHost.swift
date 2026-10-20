@@ -10,12 +10,21 @@ import SwiftUI
 import UIKit
 import DatadogInternal
 
+/// Defers accepted-state observation until the original host is admitted.
+@available(iOS 27.0, *)
+@MainActor
+internal enum RUMNavigationHostInput {
+    case automatic
+    case transitions(RUMNavigationTransitions)
+    case observing(@MainActor (@escaping @MainActor () -> Bool) -> RUMNavigationObservedTransitions)
+}
+
 /// Tracks one admitted semantic container without changing its content identity.
 @available(iOS 27.0, *)
 @MainActor
 internal struct RUMNavigationHost<Content: View>: View {
     private weak var core: DatadogCoreProtocol?
-    private let transitions: RUMNavigationTransitions
+    private let input: RUMNavigationHostInput
     private let content: Content
     #if DD_SDK_COMPILED_FOR_TESTING
     private var testingOnHostUpdate:
@@ -29,9 +38,56 @@ internal struct RUMNavigationHost<Content: View>: View {
         @ViewBuilder content: () -> Content
     ) {
         self.core = core
-        self.transitions = transitions
+        self.input = .transitions(transitions)
         self.content = content()
     }
+
+    init(
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.core = core
+        self.input = .automatic
+        self.content = content()
+    }
+
+    init<State, Updates: Publisher>(
+        observing updates: Updates,
+        destination: @MainActor @escaping (State) -> RUMNavigationDestination,
+        metadata: RUMNavigationMetadata = .automatic,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        @ViewBuilder content: () -> Content
+    ) where Updates.Output == State, Updates.Failure == Never {
+        self.core = core
+        self.input = .observing { acceptsDelivery in
+            RUMNavigationObservedTransitions(
+                updates: updates,
+                acceptsDelivery: acceptsDelivery,
+                destination: destination,
+                metadata: metadata
+            )
+        }
+        self.content = content()
+    }
+
+    #if compiler(>=6.4) && canImport(Observation)
+    init(
+        observingCurrentDestination: @MainActor @escaping () -> RUMNavigationDestination,
+        metadata: RUMNavigationMetadata = .automatic,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.core = core
+        self.input = .observing { acceptsDelivery in
+            RUMNavigationObservedTransitions(
+                observingCurrentDestination: observingCurrentDestination,
+                acceptsDelivery: acceptsDelivery,
+                metadata: metadata
+            )
+        }
+        self.content = content()
+    }
+    #endif
 
     #if DD_SDK_COMPILED_FOR_TESTING
     init(
@@ -50,6 +106,17 @@ internal struct RUMNavigationHost<Content: View>: View {
         )
         self.testingOnHostUpdate = testingOnHostUpdate
     }
+
+    func withTestingOnHostUpdate(
+        _ callback: @escaping (
+            RUMSemanticNavigationHostState, RUMSwiftUIViewCallbackAdmission?,
+            RUMSceneIdentifierReader.ObserverView?
+        ) -> Void
+    ) -> Self {
+        var copy = self
+        copy.testingOnHostUpdate = callback
+        return copy
+    }
     #endif
 
     var body: some View {
@@ -62,7 +129,7 @@ internal struct RUMNavigationHost<Content: View>: View {
         }
         var modifier = RUMSemanticNavigationHostModifier(
             binding: binding,
-            transitions: transitions
+            input: input
         )
         #if DD_SDK_COMPILED_FOR_TESTING
         modifier.testingOnHostUpdate = testingOnHostUpdate
@@ -88,6 +155,11 @@ internal final class RUMSemanticNavigationHostState {
     private weak var observer: RUMSceneIdentifierReader.ObserverView?
     private weak var configuredTransitions: RUMNavigationTransitions?
     private(set) var selectedTransitions: RUMNavigationTransitions?
+    private var observedTransitions: RUMNavigationObservedTransitions?
+    private var configuredObservationFactory:
+        (@MainActor (@escaping @MainActor () -> Bool) -> RUMNavigationObservedTransitions)?
+    private var sourceConfigurationGeneration: UInt64 = 0
+    private var isConfiguringObservation = false
     private var observationID: UUID?
     private var observationGeneration: UInt64 = 0
     private var attachmentGeneration: UInt64 = 0
@@ -106,9 +178,15 @@ internal final class RUMSemanticNavigationHostState {
     deinit {
         // The source retains a weak callback. Remove its token on main even if
         // an external owner releases this state from another thread.
-        if let source = selectedTransitions, let observationID {
+        let source = selectedTransitions
+        let observationID = observationID
+        let observation = observedTransitions
+        if source != nil || observation != nil {
             DispatchQueue.main.async {
-                source.removeObserver(observationID)
+                if let source, let observationID {
+                    source.removeObserver(observationID)
+                }
+                observation?.stop()
             }
         }
     }
@@ -117,9 +195,17 @@ internal final class RUMSemanticNavigationHostState {
         transitions: RUMNavigationTransitions,
         binding: RUMSwiftUIViewFoundationBinding?
     ) -> RUMSwiftUIViewCallbackAdmission? {
+        configure(input: .transitions(transitions), binding: binding)
+    }
+
+    func configure(
+        input: RUMNavigationHostInput,
+        binding: RUMSwiftUIViewFoundationBinding?
+    ) -> RUMSwiftUIViewCallbackAdmission? {
         guard let binding else {
             if admission != nil {
                 finish(stopOccurrence: true)
+                configuredObservationFactory = nil
                 if let registration {
                     trackingEpoch.retire(registration)
                 }
@@ -132,6 +218,7 @@ internal final class RUMSemanticNavigationHostState {
             if admission?.binding.epoch == binding.epoch,
                admission?.binding.lifetime === binding.lifetime {
                 finish(stopOccurrence: false)
+                configuredObservationFactory = nil
                 _ = trackingEpoch.enter(binding)
                 registration = nil
                 admission = nil
@@ -142,6 +229,7 @@ internal final class RUMSemanticNavigationHostState {
            !current.isValid || current.binding.epoch != binding.epoch
             || current.binding.lifetime !== binding.lifetime {
             finish(stopOccurrence: current.isValid)
+            configuredObservationFactory = nil
             admission = nil
         }
         if admission == nil {
@@ -156,10 +244,53 @@ internal final class RUMSemanticNavigationHostState {
             registration = callback
             requiresReaderMount = hasMounted
         }
-        if selectedTransitions == nil {
-            configuredTransitions = transitions
+        if selectedTransitions == nil, observedTransitions == nil,
+           configuredObservationFactory == nil, !isConfiguringObservation {
+            switch input {
+            case .automatic:
+                configuredTransitions = nil
+            case .transitions(let transitions):
+                configuredTransitions = transitions
+            case .observing(let makeObservation):
+                configuredObservationFactory = makeObservation
+            }
+        }
+        if !requiresReaderMount, let expected = admission,
+           !prepareObservedTransitions(admission: expected) {
+            return nil
         }
         return admission
+    }
+
+    private func prepareObservedTransitions(
+        admission expected: RUMSwiftUIViewCallbackAdmission
+    ) -> Bool {
+        guard let makeObservation = configuredObservationFactory else {
+            return true
+        }
+        guard observedTransitions == nil else {
+            return true
+        }
+        guard !isConfiguringObservation, admits(expected) else {
+            return false
+        }
+        sourceConfigurationGeneration &+= 1
+        let generation = sourceConfigurationGeneration
+        isConfiguringObservation = true
+        let observation = makeObservation { [weak self, weak expected] in
+            guard let self, let expected else {
+                return false
+            }
+            return self.sourceConfigurationGeneration == generation && self.admits(expected)
+        }
+        isConfiguringObservation = false
+        guard sourceConfigurationGeneration == generation, admits(expected) else {
+            observation.stop()
+            return false
+        }
+        observedTransitions = observation
+        configuredTransitions = observation.transitions
+        return true
     }
 
     func register(
@@ -192,6 +323,11 @@ internal final class RUMSemanticNavigationHostState {
     ) {
         guard admits(expected), observer?.currentSceneIdentifier == scene,
               expected.admits(sceneIdentifier: scene) else {
+            return
+        }
+        // A disconnected host may return without SwiftUI rebuilding its value.
+        // Recreate only its pinned input, after this actual reader proves ownership.
+        guard prepareObservedTransitions(admission: expected) else {
             return
         }
         requiresReaderMount = false
@@ -401,6 +537,7 @@ internal final class RUMSemanticNavigationHostState {
         let previous = activeOccurrence
         let originalAdmission = admission
         let source = selectedTransitions
+        let observation = observedTransitions
         let id = observationID
         observationGeneration &+= 1
         attachmentGeneration &+= 1
@@ -410,6 +547,12 @@ internal final class RUMSemanticNavigationHostState {
         activeOccurrence = nil
         latestSnapshot = nil
         selectedTransitions = nil
+        if configuredObservationFactory != nil {
+            configuredTransitions = nil
+        }
+        observedTransitions = nil
+        sourceConfigurationGeneration &+= 1
+        isConfiguringObservation = false
         observationID = nil
         _ = originalAdmission?.withSession { $0.suppressionState.disappear() }
         if let source, let id {
@@ -422,6 +565,7 @@ internal final class RUMSemanticNavigationHostState {
                 binding: originalAdmission.binding
             )
         }
+        observation?.stop()
     }
 }
 
@@ -429,7 +573,7 @@ internal final class RUMSemanticNavigationHostState {
 @MainActor
 private struct RUMSemanticNavigationHostModifier: ViewModifier {
     let binding: RUMSwiftUIViewFoundationBinding?
-    let transitions: RUMNavigationTransitions
+    let input: RUMNavigationHostInput
     @State private var state = RUMSemanticNavigationHostState()
     @Environment(\.rumSceneIdentifier)
     private var sceneIdentifier
@@ -441,7 +585,7 @@ private struct RUMSemanticNavigationHostModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         let admission = state.configure(
-            transitions: transitions,
+            input: input,
             binding: binding
         )
         #if DD_SDK_COMPILED_FOR_TESTING
