@@ -1480,6 +1480,56 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testSemanticNavigationHost_whenReaderFirstAttaches_itBeginsTheSceneOwnedOccurrence() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Semantic SwiftUI tracking requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        defer { fixture.restore() }
+        let core = makeSemanticCore()
+        defer { core.stop() }
+        let rows = SemanticHostRows()
+        let feature = try makeSemanticFeature(in: core, rows: rows)
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        let source = RUMNavigationTransitions(currentDestination: .init(name: "Reader Mount"))
+        let state = RUMSemanticNavigationHostState()
+        let admission = try XCTUnwrap(state.configure(transitions: source, binding: binding))
+        let controller = UIViewController()
+        fixture.window.rootViewController = controller
+        fixture.window.makeKeyAndVisible()
+        let container = try XCTUnwrap(controller.view)
+        let capture = SemanticReaderHandshakeCapture(state: state, source: source)
+        let observer = capture.makeObserver(state: state, admission: admission)
+        capture.observer = observer
+        state.register(observer: observer, admission: admission)
+        defer {
+            observer.removeFromSuperview()
+            state.finalDetach(admission: admission)
+            capture.retain(in: self, fixture: fixture)
+        }
+        capture.record("before-UIKit-attachment", proposedScene: "")
+        container.addSubview(observer)
+        capture.record("after-UIKit-attachment", proposedScene: fixture.identifier.rawValue)
+        XCTAssertTrue(observer.window === fixture.window)
+        XCTAssertEqual(observer.currentSceneIdentifier, fixture.identifier)
+        XCTAssertTrue(fixture.window.rootViewController === controller)
+        XCTAssertEqual(source.observationCount, 1)
+        XCTAssertTrue(state.selectedTransitions === source)
+        XCTAssertNotNil(state.currentIdentity)
+        // Preserve a failed synchronous handshake before waiting on its mapper.
+        guard source.observationCount == 1, state.currentIdentity != nil else {
+            return
+        }
+        try await awaitSemanticBoundary("reader-scene-owned-view", core: core) {
+            guard let context = feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier)),
+                  let id = context.viewID else {
+                return false
+            }
+            return context.viewName == "Reader Mount" && rows.views.contains {
+                $0.view.id == id && $0.view.name == "Reader Mount" && $0.view.isActive == true
+            }
+        }
+    }
+
+    @MainActor
     func testSemanticNavigationHost_preservesStateSourceAndActionOwnersAcrossReconstructionAndManualOverride() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Semantic SwiftUI tracking requires iOS 27") }
         let fixture = try SemanticHostWindow()
@@ -2126,8 +2176,12 @@ extension SwiftUINavigationOwnershipTests {
                     "legacy-content-tracking",
                     core: realCore
                 ) {
-                    feature?.monitor.rumContextSnapshot(for: .processRepresentative)?.viewName == "Legacy Content"
-                        && rows.views.contains { $0.view.name == "Legacy Content" && $0.view.isActive == true }
+                    guard let active = feature?.monitor.activeView, let id = active.id else {
+                        return false
+                    }
+                    return active.name == "Legacy Content" && rows.views.contains {
+                        $0.view.id == id && $0.view.name == "Legacy Content" && $0.view.isActive == true
+                    }
                 }
             }
             try XCTUnwrap(driver.child.update)()
@@ -2174,6 +2228,85 @@ private final class SemanticHostCapture {
         } else {
             configurationUpdates += 1
             if admission == nil { self.observer = nil }
+        }
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private final class SemanticReaderHandshakeCapture {
+    weak var observer: RUMSceneIdentifierReader.ObserverView?
+    private weak var state: RUMSemanticNavigationHostState?
+    private weak var source: RUMNavigationTransitions?
+    private var callbacks: [[String: Any]] = []
+
+    init(state: RUMSemanticNavigationHostState, source: RUMNavigationTransitions) {
+        self.state = state
+        self.source = source
+    }
+
+    func record(_ phase: String, proposedScene: String) {
+        callbacks.append([
+            "ordinal": callbacks.count, "phase": phase, "proposed_scene": proposedScene,
+            "observer_identity": observer.map { String(describing: ObjectIdentifier($0)) } ?? "",
+            "actual_window": observer?.window.map { String(describing: ObjectIdentifier($0)) } ?? "",
+            "actual_scene": observer?.currentSceneIdentifier?.rawValue ?? "",
+            "selected_source": state?.selectedTransitions.map { String(describing: ObjectIdentifier($0)) } ?? "",
+            "active_occurrence": state?.currentIdentity ?? "", "source_observers": source?.observationCount ?? -1
+        ])
+    }
+
+    func makeObserver(
+        state: RUMSemanticNavigationHostState,
+        admission: RUMSwiftUIViewCallbackAdmission
+    ) -> RUMSceneIdentifierReader.ObserverView {
+        RUMSceneIdentifierReader.ObserverView(
+            admission: admission,
+            onChange: { [weak state, weak admission, self] attachment in
+                guard let state, let admission else {
+                    return
+                }
+                let proposed: String
+                if case .attached(let scene?) = attachment {
+                    proposed = scene.rawValue
+                } else {
+                    proposed = ""
+                }
+                record("change-before", proposedScene: proposed)
+                state.reconcile(attachment: attachment, admission: admission)
+                record("change-after", proposedScene: proposed)
+            },
+            onMount: { [weak state, weak admission, self] scene in
+                guard let state, let admission else {
+                    return
+                }
+                record("mount-before", proposedScene: scene.rawValue)
+                state.readerDidMount(in: scene, admission: admission)
+                record("mount-after", proposedScene: scene.rawValue)
+            },
+            applicationSupportsMultipleScenes: true
+        )
+    }
+
+    func retain(in test: XCTestCase, fixture: SemanticHostWindow) {
+        let payload: [String: Any] = [
+            "schema_version": 1, "family": "semantic-navigation-reader-handshake",
+            "pid": Int(ProcessInfo.processInfo.processIdentifier),
+            "scene_identifier": fixture.identifier.rawValue,
+            "owned_window": String(describing: ObjectIdentifier(fixture.window)),
+            "callbacks": callbacks,
+            "scope": "Reader/host first-attachment discriminator; no rendered SwiftUI or release-gate credit"
+        ]
+        do {
+            let attachment = XCTAttachment(
+                data: try JSONSerialization.data(withJSONObject: payload),
+                uniformTypeIdentifier: "public.json"
+            )
+            attachment.name = "semantic-navigation-reader-handshake"
+            attachment.lifetime = .keepAlways
+            test.add(attachment)
+        } catch {
+            XCTFail("Could not retain reader mount observations")
         }
     }
 }
