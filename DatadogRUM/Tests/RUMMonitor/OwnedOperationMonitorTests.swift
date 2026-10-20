@@ -757,5 +757,183 @@ final class OwnedOperationMonitorTests: XCTestCase {
         XCTAssertTrue(original.monitor.applicationScope.activeSession === session)
         XCTAssertEqual(original.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
     }
+
+    func testCapturedFlagsStayWithTheirViewDuringOperationRetirement() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        fixture.startView("original")
+        fixture.drain()
+        let capture = try fixture.capture("original")
+        let session = try XCTUnwrap(fixture.feature.monitor.applicationScope.activeSession)
+        let original = try XCTUnwrap(session.viewScopes.first { $0.viewName == "original" })
+        fixture.start("flag-operation", capture: capture)
+        fixture.startView("peer")
+        fixture.drain()
+        let peer = try XCTUnwrap(session.viewScopes.first { $0.viewName == "peer" })
+        let ownership = try XCTUnwrap(fixture.receiver.messages.last?.ownership)
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertTrue(ownership.origin.owner === capture.owner)
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let fallbacks = ReadWriteLock(wrappedValue: 0)
+        func sendFlag(_ value: Bool) {
+            let payload = RUMCapturedFlagEvaluationMessage(
+                evaluation: .init(flagKey: "operation-flag", value: value),
+                capture: .init(owner: capture.owner, value: capture.value)
+            )
+            fixture.core.send(message: .payload(payload), else: { fallbacks.mutate { $0 += 1 } })
+        }
+        func writtenViews() throws -> [RUMViewEvent] {
+            var baselines: [String: [String: RUMViewEvent]] = [:]
+            var result: [RUMViewEvent] = []
+            for data in try fixture.storedEvents(in: storage) {
+                let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                let view: RUMViewEvent
+                switch object["type"] as? String {
+                case "view":
+                    view = try JSONDecoder().decode(RUMViewEvent.self, from: data)
+                case "view_update":
+                    let update = try JSONDecoder().decode(RUMViewUpdateEvent.self, from: data)
+                    view = try XCTUnwrap(baselines[update.session.id]?[update.view.id]).apply(update: update)
+                default:
+                    continue
+                }
+                baselines[view.session.id, default: [:]][view.view.id] = view
+                result.append(view)
+            }
+            return result
+        }
+
+        sendFlag(true)
+        fixture.drain()
+        XCTAssertEqual(original.featureFlags["operation-flag"] as? Bool, true)
+        XCTAssertNil(peer.featureFlags["operation-flag"])
+        let written = try writtenViews()
+        let recorded = try XCTUnwrap(written.last { $0.view.id == original.viewUUID.toRUMDataFormat })
+        XCTAssertEqual(recorded.session.id, capture.value.rumContext?.sessionID)
+        XCTAssertEqual(recorded.view.id, capture.value.rumContext?.viewID)
+        XCTAssertEqual(recorded.featureFlags?.featureFlagsInfo["operation-flag"] as? Bool, true)
+        XCTAssertTrue(written.filter { $0.view.id == peer.viewUUID.toRUMDataFormat }.allSatisfy {
+            $0.featureFlags?.featureFlagsInfo["operation-flag"] == nil
+        })
+
+        let interaction = session.lastInteraction
+        let views = session.viewScopes.map(\.viewUUID)
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        fixture.core.bus.queue.suspend()
+        var suspended = true
+        defer { if suspended { fixture.core.bus.queue.resume() } }
+        sendFlag(false)
+        fixture.core.deactivateRUMContextHandoff(owner: capture.owner)
+        XCTAssertFalse(capture.owner.isValid)
+        fixture.core.bus.queue.resume()
+        suspended = false
+        fixture.drain()
+
+        XCTAssertFalse(ownership.isValid)
+        XCTAssertTrue(fixture.feature.monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(session.lastInteraction, interaction)
+        XCTAssertEqual(session.viewScopes.map(\.viewUUID), views)
+        XCTAssertEqual(original.featureFlags["operation-flag"] as? Bool, true)
+        XCTAssertNil(peer.featureFlags["operation-flag"])
+        XCTAssertEqual(fallbacks.wrappedValue, 0)
+        XCTAssertFalse(try writtenViews().contains {
+            $0.featureFlags?.featureFlagsInfo["operation-flag"] as? Bool == false
+        })
+    }
+
+    func testPreparedResourcesKeepTheirOwnerAndReleaseAfterOperationRetirement() throws {
+        try requireOwnedOperations()
+        weak var releasedSession: RUMSessionScope?
+        weak var releasedView: RUMViewScope?
+        weak var releasedResource: RUMResourceScope?
+        let held = try autoreleasepool { () throws -> (
+            pending: RUMResourcePreparationReceipt,
+            committed: RUMResourcePreparationReceipt,
+            retiring: RUMResourcePreparationReceipt,
+            ownership: RUMOperationOwnership
+        ) in
+            let fixture = try Fixture()
+            defer { fixture.tearDown() }
+            let monitor = fixture.feature.monitor
+            fixture.startView("original")
+            fixture.drain()
+            let capture = try fixture.capture("original")
+            let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+            let original = try XCTUnwrap(session.viewScopes.first { $0.viewName == "original" })
+            releasedSession = session
+            releasedView = original
+            let context = RUMURLSessionContext(owner: capture.owner, value: capture.value)
+            let pending = try XCTUnwrap(monitor.prepareResource(capturing: context))
+            let committed = try XCTUnwrap(monitor.prepareResource(capturing: context))
+            monitor.processResource(command: RUMStartResourceCommand.mockWith(
+                resourceKey: committed.identity.resourceKey, time: fixture.clock.now
+            ), preparation: committed.identity)
+            let retiring = try XCTUnwrap(monitor.prepareResource(capturing: context))
+            monitor.processResource(command: RUMStartResourceCommand.mockWith(
+                resourceKey: retiring.identity.resourceKey, time: fixture.clock.now
+            ), preparation: retiring.identity)
+            fixture.start("resource-operation", capture: capture)
+            fixture.startView("peer")
+            var stop = RUMStopViewCommand(
+                time: fixture.clock.now, attributes: [:], identity: ViewIdentifier("original")
+            )
+            stop.target = .scene(.init(rawValue: "original"))
+            monitor.process(command: stop)
+            fixture.drain()
+            let peer = try XCTUnwrap(session.viewScopes.first { $0.viewName == "peer" })
+            let ownership = try XCTUnwrap(fixture.receiver.messages.last?.ownership)
+            XCTAssertTrue(ownership.isValid)
+            XCTAssertFalse(original.isActiveView)
+            XCTAssertTrue(original.hasPendingResourcePreparations)
+            XCTAssertEqual(original.resourceScopes.count, 2)
+            releasedResource = try XCTUnwrap(original.resourceScopes[retiring.identity.resourceKey])
+            XCTAssertTrue(peer.resourceScopes.isEmpty)
+
+            var completion = RUMStopResourceCommand.mockWith(
+                resourceKey: committed.identity.resourceKey, kind: .native, httpStatusCode: 200
+            )
+            completion.time = fixture.clock.now
+            completion.isAutomatic = true
+            monitor.processResource(command: completion, preparation: committed.identity)
+            fixture.drain()
+            let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+            let events = try fixture.storedEvents(in: storage).compactMap { data -> RUMResourceEvent? in
+                let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                guard object["type"] as? String == "resource" else { return nil }
+                return try JSONDecoder().decode(RUMResourceEvent.self, from: data)
+            }
+            XCTAssertEqual(events.count, 1)
+            XCTAssertEqual(events.first?.session.id, capture.value.rumContext?.sessionID)
+            XCTAssertEqual(events.first?.view.id, capture.value.rumContext?.viewID)
+            XCTAssertEqual(original.resourceScopes.count, 1)
+            XCTAssertTrue(original.resourceScopes[retiring.identity.resourceKey] === releasedResource)
+            XCTAssertTrue(original.hasPendingResourcePreparations)
+            XCTAssertTrue(peer.resourceScopes.isEmpty)
+
+            fixture.core.deactivateRUMContextHandoff(owner: capture.owner)
+            fixture.drain()
+            XCTAssertFalse(ownership.isValid)
+            let interaction = session.lastInteraction
+            fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+            monitor.abandonResourcePreparation(pending.identity)
+            fixture.drain()
+            XCTAssertFalse(original.hasPendingResourcePreparations)
+            XCTAssertTrue(session.viewScopes.contains { $0 === original })
+            XCTAssertTrue(original.resourceScopes[retiring.identity.resourceKey] === releasedResource)
+            XCTAssertTrue(peer.isActiveView)
+            XCTAssertTrue(peer.resourceScopes.isEmpty)
+            XCTAssertEqual(session.lastInteraction, interaction)
+            return (pending, committed, retiring, ownership)
+        }
+        XCTAssertNil(releasedSession)
+        XCTAssertNil(releasedView)
+        XCTAssertNil(releasedResource)
+        XCTAssertNil(held.pending.publisher)
+        XCTAssertNil(held.committed.publisher)
+        XCTAssertNil(held.retiring.publisher)
+        XCTAssertFalse(held.ownership.isValid)
+        withExtendedLifetime(held) {}
+    }
 }
 #endif
