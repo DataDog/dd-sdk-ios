@@ -2161,8 +2161,12 @@ final class RUMResourceCompletionFixture {
         #endif
     }
 
-    init(applicationScope: Bool = false) {
-        let dependencies = RUMScopeDependencies.mockWith(samplingRate: 100, trackFrustrations: true, monotonicClock: monotonicClock)
+    init(applicationScope: Bool = false, multiSceneTracking: Bool = false) {
+        var flags = RUM.Configuration.FeatureFlags.defaults
+        flags[.multiSceneTracking] = multiSceneTracking
+        let dependencies = RUMScopeDependencies.mockWith(
+            samplingRate: 100, trackFrustrations: true, featureFlags: flags, monotonicClock: monotonicClock
+        )
         context = .mockWith(sdkInitDate: time, launchInfo: .mockWith(launchReason: .userLaunch))
         application = RUMApplicationScope(dependencies: dependencies)
         session = applicationScope ? nil : .mockWith(parent: application, startTime: time, dependencies: dependencies)
@@ -2175,10 +2179,40 @@ final class RUMResourceCompletionFixture {
         _ = (session as RUMScope? ?? application).process(command: command, context: context, writer: writer)
         time.addTimeInterval(0.01)
     }
-    func startView(_ key: String) { send(RUMStartViewCommand.mockWith(identity: ViewIdentifier(key))) }
-    func startAction(_ name: String) { send(RUMStartUserActionCommand.mockWith(actionType: actionType, name: name)) }
-    func stopAction() { send(RUMStopUserActionCommand.mockWith(actionType: actionType)) }
-    func startResource(_ key: String) { send(RUMStartResourceCommand.mockWith(resourceKey: key, url: "https://example.com/transfer")) }
+    func startView(_ key: String, target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStartViewCommand.mockWith(identity: ViewIdentifier(key))
+        command.target = target
+        send(command)
+    }
+    func startAction(_ name: String, target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStartUserActionCommand.mockWith(actionType: actionType, name: name)
+        command.target = target
+        send(command)
+    }
+    func stopAction(target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStopUserActionCommand.mockWith(actionType: actionType)
+        command.target = target
+        send(command)
+    }
+    func startResource(_ key: String, target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStartResourceCommand.mockWith(resourceKey: key, url: "https://example.com/transfer")
+        command.target = target
+        send(command)
+    }
+
+    func completeResource(_ key: String, error: Bool) {
+        if error {
+            var command = RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: key, source: .network, httpStatusCode: 200
+            )
+            command.attributes["completion-source"] = "old-resource"
+            send(command)
+        } else {
+            var command = RUMStopResourceCommand.mockWith(resourceKey: key, kind: .native, httpStatusCode: 200)
+            command.attributes["completion-source"] = "old-resource"
+            send(command)
+        }
+    }
     func stopResource(_ key: String) { send(RUMStopResourceCommand.mockWith(resourceKey: key, kind: .native, httpStatusCode: 200)) }
     func failResource(_ key: String) { send(RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: key, source: .network, httpStatusCode: 200)) }
 
