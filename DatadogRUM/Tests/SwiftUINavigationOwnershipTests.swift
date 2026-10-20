@@ -1997,9 +1997,12 @@ extension SwiftUINavigationOwnershipTests {
         ))
         let sibling = UIViewController()
         controlledSibling = sibling
-        host.addChild(sibling)
-        host.view.addSubview(sibling.view)
-        sibling.didMove(toParent: host)
+        let container = try XCTUnwrap(host.parent)
+        container.addChild(sibling)
+        container.view.addSubview(sibling.view)
+        sibling.didMove(toParent: container)
+        XCTAssertTrue(sibling.parent === host.parent)
+        XCTAssertFalse(sibling.view.isDescendant(of: host.view))
         func snapshot() -> RUMCoreContext? {
             feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))
         }
@@ -2030,9 +2033,11 @@ extension SwiftUINavigationOwnershipTests {
         XCTAssertTrue(mountedEligibility.sibling)
 
         attemptedPhase = "transient-reader-remount"
-        let readerParent = try XCTUnwrap(observer.superview)
-        observer.removeFromSuperview()
-        readerParent.addSubview(observer)
+        let hostingParent = try XCTUnwrap(host.view.superview)
+        XCTAssertTrue(hostingParent === container.view)
+        host.view.removeFromSuperview()
+        hostingParent.addSubview(host.view)
+        XCTAssertTrue(host.parent === container)
         // Resume after the queued detach decision, rather than requiring a
         // particular scheduling latency or treating a delay as a measurement.
         await withCheckedContinuation { continuation in
@@ -2419,9 +2424,16 @@ private final class SemanticHostWindow {
 
     func install<Content: View>(_ content: Content) -> UIHostingController<Content> {
         let host = UIHostingController(rootView: content)
-        window.rootViewController = host
+        let container = UIViewController()
+        window.rootViewController = container
+        container.addChild(host)
+        host.view.frame = container.view.bounds
+        host.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        container.view.addSubview(host.view)
+        host.didMove(toParent: container)
         window.makeKeyAndVisible()
-        XCTAssertTrue(window.rootViewController === host && window.windowScene === scene)
+        XCTAssertTrue(window.rootViewController === container && window.windowScene === scene)
+        XCTAssertTrue(host.parent === container && host.view.superview === container.view)
         return host
     }
 
