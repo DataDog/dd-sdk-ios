@@ -18,6 +18,9 @@ extension Trace.Configuration {
         /// The HTTP method of the request (e.g. `"GET"`, `"POST"`).
         public let httpMethod: String?
         /// The body data of the request.
+        ///
+        /// It is `nil` if the body is provided through `httpBodyStream` or if the task was created with
+        /// `uploadTask(with:from:)` or `uploadTask(with:fromFile:)`, as the body is not part of the `URLRequest` then.
         public let httpBody: Data?
     }
 }
@@ -26,6 +29,6 @@ internal extension Trace.Configuration.InterceptedRequest {
     init(from request: ImmutableRequest) {
         self.url = request.url
         self.httpMethod = request.httpMethod
-        self.httpBody = request.unsafeOriginal.httpBody
+        self.httpBody = request.httpBody
     }
 }

@@ -11,6 +11,7 @@ public struct FlagsClientEvent: Sendable {
     /// Supplied keys of the first accepted configuration, not a per-flag change or all server flags.
     /// An empty array represents a valid empty configuration or immediate completion by a no-op fallback client.
     /// Fallback completion does not indicate successful initialization. These keys do not pin assignment values.
+    /// Keys use the configuration's encoding and may be obfuscated lookup keys rather than plaintext flag names.
     /// Key ordering is unspecified.
     public let flagsChanged: [String]
 

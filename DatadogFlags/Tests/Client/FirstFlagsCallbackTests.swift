@@ -43,7 +43,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
     func testDiskAndNetworkWinnerKeysFollowAcceptedInstallation() throws {
         for diskFirst in [true, false] {
             let store = FirstFlagsCallbackStore()
-            var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+            var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
             let repository = FlagsRepository(
                 clientName: "test",
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
@@ -61,9 +61,9 @@ final class FirstFlagsCallbackTests: XCTestCase {
             let encoded = try JSONEncoder().encode(data(["disk"]))
             if diskFirst {
                 store.readCompletion?(.value(encoded, dataStoreDefaultKeyVersion))
-                response?(.success(["network": .mockAny()]))
+                response?(.success(.init(flags: ["network": .mockAny()])))
             } else {
-                response?(.success(["network": .mockAny()]))
+                response?(.success(.init(flags: ["network": .mockAny()])))
                 store.readCompletion?(.value(encoded, dataStoreDefaultKeyVersion))
             }
             wait(for: [delivered], timeout: 5)
@@ -76,9 +76,53 @@ final class FirstFlagsCallbackTests: XCTestCase {
         }
     }
 
+    func testObfuscatedWinnerKeysPreservePlaintextLookupAndReplay() throws {
+        let metadata = Data(#"{"scheme":"flag-key-sha256-v1","salt":"000102030405060708090a0b0c0d0e0f"}"#.utf8)
+        let obfuscation = try JSONDecoder().decode(FlagKeyObfuscation.self, from: metadata)
+        let diskKey = obfuscation.lookupKey(for: "disk")
+        let networkKey = obfuscation.lookupKey(for: "network")
+        for diskFirst in [true, false] {
+            let store = FirstFlagsCallbackStore()
+            var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
+            let repository = FlagsRepository(
+                clientName: "test",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(context: .mockWith(source: "ios"), dataStore: store),
+                initializationTimeout: nil
+            )
+            let delivered = expectation(description: "obfuscated winner delivered")
+            let events = ReadWriteLock<[[String]]>(wrappedValue: [])
+            _ = repository.onFirstFlags { event in
+                events.mutate { $0.append(event.flagsChanged) }
+                delivered.fulfill()
+            }
+            repository.setEvaluationContext(.mockAny()) { _ in }
+            let disk = FlagsData(flags: [diskKey: .mockAny()], context: .mockAny(), date: .mockAny(), obfuscation: obfuscation)
+            let encoded = try JSONEncoder().encode(disk)
+            let network = FlagAssignmentsResponse(flags: [networkKey: .mockAny()], obfuscation: obfuscation)
+            if diskFirst {
+                store.readCompletion?(.value(encoded, 2))
+                XCTAssertEqual(repository.flagAssignment(for: "disk")?.reason, "CACHED")
+                response?(.success(network))
+            } else {
+                response?(.success(network))
+                store.readCompletion?(.value(encoded, 2))
+            }
+            wait(for: [delivered], timeout: 5)
+            XCTAssertEqual(events.wrappedValue, [[diskFirst ? diskKey : networkKey]])
+            XCTAssertNotNil(repository.flagAssignment(for: "network"))
+            XCTAssertNil(repository.flagAssignments(), "Legacy inventory must not expose encoded assignments")
+            repository.reset()
+            _ = repository.onFirstFlags { event in
+                XCTAssertEqual(event.flagsChanged, [diskFirst ? diskKey : networkKey])
+            }
+        }
+    }
+
     func testDiskDoesNotWaitForAsynchronousNetworkResponse() throws {
         let store = FirstFlagsCallbackStore()
-        var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         let repository = FlagsRepository(
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
@@ -98,7 +142,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
         wait(for: [delivered], timeout: 5)
         XCTAssertEqual(keys.wrappedValue, [])
         XCTAssertNotNil(response)
-        response?(.success(["later": .mockAny()]))
+        response?(.success(.init(flags: ["later": .mockAny()])))
         _ = repository.onFirstFlags { XCTAssertEqual($0.flagsChanged, []) }
     }
 
@@ -145,7 +189,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
     func testFirstFlagsDoesNotWaitForBlockedContextCompletion() throws {
         for networkSuccess in [true, false] {
             let store = FirstFlagsCallbackStore()
-            var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+            var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
             let repository = FlagsRepository(
                 clientName: "test",
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
@@ -169,7 +213,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             }
             if networkSuccess {
                 let success = response!
-                DispatchQueue.global().async { success(.success(["network": .mockAny()])) }
+                DispatchQueue.global().async { success(.success(.init(flags: ["network": .mockAny()]))) }
             } else {
                 response?(.failure(.invalidResponse))
                 store.readCompletion?(.value(try JSONEncoder().encode(data(["disk"])), dataStoreDefaultKeyVersion))
@@ -183,7 +227,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
     func testFallbackOnlyCacheReservesWhenItBecomesActive() throws {
         for failureAfterActivation in [true, false] {
             let store = FirstFlagsCallbackStore()
-            var responses: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
             let repository = FlagsRepository(
                 clientName: "test",
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
@@ -207,7 +251,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             wait(for: [delivered], timeout: 5)
             XCTAssertEqual(events.wrappedValue, [["cached"]])
             XCTAssertEqual(repository.flagAssignment(for: "cached")?.reason, "CACHED")
-            responses[0](.success(["obsolete": .mockAny()]))
+            responses[0](.success(.init(flags: ["obsolete": .mockAny()])))
             XCTAssertEqual(repository.flagAssignments()?.keys.sorted(), ["cached"])
             _ = repository.onFirstFlags { XCTAssertEqual($0.flagsChanged, ["cached"]) }
         }
@@ -215,7 +259,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
 
     func testFallbackOnlyDiskCannotReserveBeforeAcceptedNetwork() throws {
         let store = FirstFlagsCallbackStore()
-        var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         let repository = FlagsRepository(
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
@@ -230,13 +274,13 @@ final class FirstFlagsCallbackTests: XCTestCase {
         }
         repository.setEvaluationContext(.init(targetingKey: "different")) { _ in }
         store.readCompletion?(.value(try JSONEncoder().encode(data(["fallback"])), dataStoreDefaultKeyVersion))
-        response?(.success(["network": .mockAny()]))
+        response?(.success(.init(flags: ["network": .mockAny()])))
         wait(for: [delivered], timeout: 5)
     }
 
     func testFirstFlagsDoesNotWaitForBlockedReadyListener() {
         let store = FirstFlagsCallbackStore()
-        var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         let repository = FlagsRepository(
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
@@ -266,7 +310,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
         }
         repository.setEvaluationContext(.mockAny()) { _ in }
         let success = response!
-        DispatchQueue.global().async { success(.success(["network": .mockAny()])) }
+        DispatchQueue.global().async { success(.success(.init(flags: ["network": .mockAny()]))) }
         wait(for: [entered, delivered], timeout: 2)
         release.signal()
         wait(for: [finished], timeout: 2)
@@ -275,7 +319,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
 
     func testRejectedSuccessCannotReserveBeforeLatestRequest() {
         let store = FirstFlagsCallbackStore()
-        var responses: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
         let repository = FlagsRepository(
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
@@ -291,9 +335,9 @@ final class FirstFlagsCallbackTests: XCTestCase {
         }
         repository.setEvaluationContext(.init(targetingKey: "obsolete")) { _ in }
         repository.setEvaluationContext(.init(targetingKey: "latest")) { _ in }
-        responses[0](.success(["obsolete": .mockAny()]))
+        responses[0](.success(.init(flags: ["obsolete": .mockAny()])))
         XCTAssertTrue(events.wrappedValue.isEmpty)
-        responses[1](.success(["latest": .mockAny()]))
+        responses[1](.success(.init(flags: ["latest": .mockAny()])))
         wait(for: [delivered], timeout: 5)
         XCTAssertEqual(events.wrappedValue, [["latest"]])
         XCTAssertEqual(repository.flagAssignments()?.keys.sorted(), ["latest"])
@@ -303,7 +347,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
         for cached in [Data?.none, Data("invalid".utf8)] {
             let scope = FeatureScopeMock()
             if let cached { scope.dataStore.setValue(cached, forKey: "test") }
-            var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+            var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
             let repository = FlagsRepository(
                 clientName: "test",
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
@@ -325,7 +369,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             repository.setEvaluationContext(.mockAny()) { result in
                 if case .failure(let error) = result { XCTFail("Unexpected failure: \(error)") }
             }
-            response?(.success([:]))
+            response?(.success(.init(flags: [:])))
             wait(for: [delivered], timeout: 5)
             XCTAssertEqual(events.wrappedValue.map(\.flagsChanged), [[]])
         }
@@ -334,7 +378,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
     func testNetworkCallbackCanResetAndRegisterFromAnotherThreadWithoutTrailingWrites() {
         let repository = FlagsRepository(
             clientName: "test",
-            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completion(.success(["network": .mockAny()])) },
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completion(.success(.init(flags: ["network": .mockAny()]))) },
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(),
             initializationTimeout: nil
@@ -365,7 +409,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
 
     func testTimeoutAndResetDoNotCompleteOrCancelFirstFlags() {
         var timeout: (() -> Void)?
-        var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         let repository = FlagsRepository(
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
@@ -384,10 +428,10 @@ final class FirstFlagsCallbackTests: XCTestCase {
         timeout?()
         repository.reset()
         XCTAssertEqual(calls.wrappedValue, 0)
-        response?(.success(["obsolete": .mockAny()]))
+        response?(.success(.init(flags: ["obsolete": .mockAny()])))
         XCTAssertEqual(calls.wrappedValue, 0)
         repository.setEvaluationContext(.mockAny()) { _ in }
-        response?(.success([:]))
+        response?(.success(.init(flags: [:])))
         wait(for: [delivered], timeout: 5)
         XCTAssertEqual(calls.wrappedValue, 1)
     }
@@ -396,7 +440,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
         for error in [FlagsError.invalidResponse, .networkError(NSError(domain: "test", code: 1))] {
             for sameContext in [false, true] {
                 let store = FirstFlagsCallbackStore()
-                var response: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+                var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
                 var fetches = 0
                 let repository = FlagsRepository(
                     clientName: "test",
@@ -420,7 +464,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 repository.setEvaluationContext(context) { result in
                     if case .failure(let error) = result { XCTFail("Unexpected failure: \(error)") }
                 }
-                response?(.success(["first": .mockAny()]))
+                response?(.success(.init(flags: ["first": .mockAny()])))
                 wait(for: [delivered], timeout: 5)
                 XCTAssertEqual(events.wrappedValue.count, 1)
                 let first = events.wrappedValue[0]
@@ -461,7 +505,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
     }
 
     func testConcurrentNetworkInstallationsPublishOnlyOneFirstEvent() {
-        var responses: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
         let repository = FlagsRepository(
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
@@ -477,7 +521,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
         }
         for _ in 0..<20 { repository.setEvaluationContext(.mockAny()) { _ in } }
         DispatchQueue.concurrentPerform(iterations: 20) { index in
-            responses[index](.success([String(index): .mockAny()]))
+            responses[index](.success(.init(flags: [String(index): .mockAny()])))
         }
         wait(for: [delivered], timeout: 5)
         XCTAssertEqual(events.wrappedValue.count, 1)

@@ -1809,51 +1809,68 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(receivedHttpBody, "httpBody should be nil when the request has no body")
     }
 
-    func testGivenSpanCustomization_whenCalledConcurrently_itSafelyReadsInterceptedRequestProperties() {
+    func testGivenSpanCustomization_whenMultipleInterceptionsCompleteConcurrently_itCallsCustomizationWithEachRequest() {
         // This test simulates multiple URLSession tasks completing simultaneously on different background
-        // threads, each triggering `spanCustomization`. It verifies that reading `InterceptedRequest`
-        // properties is thread-safe: `url` and `httpMethod` are pre-captured value-type snapshots;
-        // `httpBody` is backed by immutable NSData, safe for concurrent reads.
-        let concurrentCount = 5
+        // threads, each triggering `spanCustomization` through `interceptionDidComplete`. It verifies that
+        // each callback receives the `InterceptedRequest` captured for its own request.
+        let concurrentCount = 10
+        let allSpansWritten = expectation(description: "All spans written")
+        allSpansWritten.expectedFulfillmentCount = concurrentCount
+        core.onEventWriteContext = { _ in allSpansWritten.fulfill() }
 
         var receivedUrls: [URL?] = Array(repeating: nil, count: concurrentCount)
         var receivedMethods: [String?] = Array(repeating: nil, count: concurrentCount)
         var receivedBodies: [Data?] = Array(repeating: nil, count: concurrentCount)
         let lock = NSLock()
 
-        let spanCustomization: Trace.Configuration.SpanCustomization = { request, _, _, _ in
-            // Read all InterceptedRequest properties — must be safe from any background thread
-            let url = request.url
-            let method = request.httpMethod
-            let body = request.httpBody
-            guard let index = Int(url?.lastPathComponent ?? "") else {
-                return
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            spanCustomization: { request, _, _, _ in
+                guard let index = Int(request.url?.lastPathComponent ?? "") else {
+                    return
+                }
+                lock.lock()
+                receivedUrls[index] = request.url
+                receivedMethods[index] = request.httpMethod
+                receivedBodies[index] = request.httpBody
+                lock.unlock()
             }
-            lock.lock()
-            receivedUrls[index] = url
-            receivedMethods[index] = method
-            receivedBodies[index] = body
-            lock.unlock()
-        }
+        )
 
-        // Given - prepare one intercepted request per concurrent "task"
-        let requests: [Trace.Configuration.InterceptedRequest] = (0..<concurrentCount).map { i in
+        // Given - prepare one interception per concurrent "task"
+        let interceptions: [URLSessionTaskInterception] = (0..<concurrentCount).map { i in
             let request: ImmutableRequest = .mockWith(
                 url: URL(string: "https://www.example.com/api/\(i)")!,
                 httpMethod: "POST",
                 httpBody: "body-\(i)".data(using: .utf8)
             )
-            return .init(from: request)
+            let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+            interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+            interception.register(
+                metrics: .mockWith(
+                    fetch: .init(
+                        start: .mockDecember15th2019At10AMUTC(),
+                        end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                    )
+                )
+            )
+            return interception
         }
 
-        // When - call the customization concurrently from background threads
-        // (simulating multiple URLSession tasks finishing simultaneously)
+        // When - complete all interceptions concurrently from background threads
         callConcurrently(
-            closures: requests.map { request in { spanCustomization(request, DDNoopSpan(), nil, nil) } },
-            iterations: 10
+            closures: interceptions.map { interception in { handler.interceptionDidComplete(interception: interception) } }
         )
 
-        // Then - all callbacks must complete with correct, non-corrupted property values
+        // Then
+        waitForExpectations(timeout: 2)
         for i in 0..<concurrentCount {
             XCTAssertEqual(receivedUrls[i]?.absoluteString, "https://www.example.com/api/\(i)")
             XCTAssertEqual(receivedMethods[i], "POST")

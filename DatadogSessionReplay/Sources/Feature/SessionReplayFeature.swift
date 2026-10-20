@@ -25,9 +25,9 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: ResourcesWriting
     ) throws {
-        let resourcesWriter = ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
         let srContextPublisher = SRContextPublisher(core: core)
         let recordingComponents = try RecordingComponents(
             core: core,
