@@ -3401,6 +3401,8 @@ extension SwiftUINavigationOwnershipTests {
             let real: DatadogCore?
             let rows = SemanticHostRows()
             var feature: RUMFeature?
+            let customSubscriber = mode == "custom" ? RUMCommandSubscriberMock() : nil
+            defer { withExtendedLifetime(customSubscriber) {} }
             if mode == "nop" {
                 real = nil
                 core = NOPDatadogCore()
@@ -3411,7 +3413,8 @@ extension SwiftUINavigationOwnershipTests {
                 feature = try makeSemanticFeature(in: instance, rows: rows, enabled: mode == "custom")
                 if mode == "custom" {
                     let handler = try XCTUnwrap(feature?.instrumentation.viewsHandler as? RUMSceneViewsHandler)
-                    handler.subscriber = RUMCommandSubscriberMock()
+                    handler.subscriber = customSubscriber
+                    XCTAssertTrue(handler.subscriber === customSubscriber)
                 }
             }
             defer { real?.stop() }
@@ -3461,8 +3464,12 @@ extension SwiftUINavigationOwnershipTests {
         try verifyNativeReentrancy(binding: XCTUnwrap(capture.admission).binding)
         let state = try XCTUnwrap(capture.state)
         let admission = try XCTUnwrap(capture.admission)
+        let originalPath = try XCTUnwrap(capture.path)
         original.stop()
         XCTAssertFalse(admission.isValid)
+        originalPath.wrappedValue = [.detail(secret: "accepted-after-sdk-stop")]
+        XCTAssertEqual(driver.path, [.detail(secret: "accepted-after-sdk-stop")])
+        XCTAssertNil(state.source(for: admission))
         driver.core = NOPDatadogCore()
         let directory = temporaryUniqueCoreDirectory()
         try directory.create()

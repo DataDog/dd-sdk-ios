@@ -872,9 +872,7 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
     ) {
         reconciliationEntry &+= 1
         let entry = reconciliationEntry
-        guard accepts(entry: entry, admission: expected) else {
-            return
-        }
+        // Application binding effects remain independent of SDK admission.
         let path = read()
         guard accepts(entry: entry, admission: expected) else {
             return
