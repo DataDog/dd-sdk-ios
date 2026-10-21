@@ -17,6 +17,7 @@ repository. The rows below are the current authority for each topic.
 | Change a fragile area | [Known concerns](KNOWN_CONCERNS.md) |
 | Write or change a swizzle | [Swizzling](SWIZZLING.md) |
 | Contribute to the project | [Contribution guidelines](../CONTRIBUTING.md) |
+| Examine documentation links before a commit or a pull request | [Documentation gate](DEVELOPMENT.md#documentation-gate) |
 
 ## Feature documentation
 
