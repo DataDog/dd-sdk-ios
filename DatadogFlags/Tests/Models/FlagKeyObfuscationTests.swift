@@ -236,6 +236,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             waitForExpectations(timeout: 1)
             XCTAssertEqual(repository.flagAssignment(for: "flag"), changed)
         }
+        repository.flush()
         let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"]?.data(expectedVersion: 2))
         XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: stored).obfuscation?.salt.bytes, Array(repeating: 255, count: 16))
         let restored = makeRepository(scope: scope, fetcher: FlagAssignmentsFetcherMock { _, completion in
