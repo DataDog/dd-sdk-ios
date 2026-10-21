@@ -3539,12 +3539,24 @@ private final class NativeHostCapture {
     var boundaries: [NativeBoundaryObservation] = []
     var proofs: [[String: Any]] = []
     var retainedOutgoingStates: [RUMViewTrackingState] = []
+    var boundaryHookEvents = 0
+    var unmatchedSourceCallbacks = 0
+    var lastProofDiagnostic: [String: Any] = [:]
 
     func observeBoundaries() {
         RUMNativeNavigationTesting.onBoundary = { [weak self] source, observer, state, admission, configuration in
-            guard let self, let source, source === self.state?.source else {
+            guard let self else {
                 return
             }
+            self.boundaryHookEvents += 1
+            guard let source else {
+                return
+            }
+            if source !== self.state?.source {
+                self.unmatchedSourceCallbacks += 1
+            }
+            // Retain weak observations before the offered source is known.
+            // The proof still requires the exact current source.
             if let existing = self.boundaries.first(where: { $0.state === state && $0.observer === observer }) {
                 existing.originConfiguration = configuration
             } else {
@@ -3565,38 +3577,137 @@ private final class NativeHostCapture {
         fixture: SemanticHostWindow,
         rows: SemanticHostRows
     ) -> [String: Any]? {
-        guard let viewID, let current = admission, current.isValid,
-              let source = state?.source,
-              let row = rows.views.last(where: { $0.view.id == viewID && $0.view.isActive == true }),
-              let json = try? JSONSerialization.jsonObject(with: JSONEncoder().encode(row)),
-              let token = Self.values(named: "native_test_claim", in: json).first as? String,
-              let eligible = current.foundation?.makeEligibilityCheck() else {
+        var predicates: [String: Bool] = [:]
+        lastProofDiagnostic = [
+            "requested_view_id": viewID ?? "", "requested_depth": depth,
+            "boundary_hook_events": boundaryHookEvents,
+            "unmatched_source_callbacks": unmatchedSourceCallbacks,
+            "observed_boundary_count": boundaries.count,
+            "absent_predicates": "not evaluated because an earlier guard failed"
+        ]
+        defer { lastProofDiagnostic["top_level_predicates"] = predicates }
+        func checked(_ name: String, _ value: Bool) -> Bool {
+            predicates[name] = value
+            return value
+        }
+        func failed(_ name: String) -> [String: Any]? {
+            predicates[name] = false
+            lastProofDiagnostic["failed_predicate"] = name
             return nil
         }
+        guard let viewID else {
+            return failed("view_id_present")
+        }
+        predicates["view_id_present"] = true
+        guard let current = admission else {
+            return failed("admission_present")
+        }
+        predicates["admission_present"] = true
+        guard checked("admission_valid", current.isValid) else {
+            return failed("admission_valid")
+        }
+        guard let source = state?.source else {
+            return failed("native_source_present")
+        }
+        predicates["native_source_present"] = true
+        guard let row = rows.views.last(where: { $0.view.id == viewID && $0.view.isActive == true }) else {
+            return failed("active_mapper_row_present")
+        }
+        predicates["active_mapper_row_present"] = true
+        let encoded: Data
+        do {
+            encoded = try JSONEncoder().encode(row)
+            predicates["mapper_encoding_succeeded"] = true
+        } catch {
+            lastProofDiagnostic["encoding_error_type"] = String(reflecting: type(of: error))
+            return failed("mapper_encoding_succeeded")
+        }
+        let json: Any
+        do {
+            json = try JSONSerialization.jsonObject(with: encoded)
+            predicates["mapper_decoding_succeeded"] = true
+        } catch {
+            lastProofDiagnostic["decoding_error_type"] = String(reflecting: type(of: error))
+            return failed("mapper_decoding_succeeded")
+        }
+        let claim = Self.values(named: "native_test_claim", in: json).first
+        predicates["mapper_claim_present"] = claim != nil
+        guard let token = claim as? String else {
+            return failed("mapper_claim_is_string")
+        }
+        predicates["mapper_claim_is_string"] = true
+        guard let eligible = current.foundation?.makeEligibilityCheck() else {
+            return failed("eligibility_available")
+        }
+        predicates["eligibility_available"] = true
+        var boundaryPredicates: [[String: Bool]] = []
         let matching = boundaries.filter { boundary in
-            guard let state = boundary.state, let admission = boundary.admission,
-                  let observer = boundary.observer, admission.isValid,
-                  boundary.source === source, state.admission?.matches(admission) == true,
-                  admission.binding.epoch == current.binding.epoch,
-                  admission.binding.lifetime === current.binding.lifetime,
-                  observer.window === fixture.window, observer.currentSceneIdentifier == fixture.identifier,
-                  state.sceneIdentifier == fixture.identifier,
-                  state.activeLifecycleGeneration != nil,
-                  boundary.originConfiguration?.descriptor.attributes["native_test_depth"] as? Int == depth,
-                  let configuration = state.configuration,
-                  configuration.isCurrentDestination,
-                  configuration.descriptor.attributes["native_test_claim"] as? String == token,
-                  configuration.descriptor.attributes["native_test_depth"] as? Int == depth,
-                  let controller = observer.nearestViewController,
-                  !eligible(controller) else {
+            var checks: [String: Bool] = [:]
+            defer { boundaryPredicates.append(checks) }
+            func checked(_ name: String, _ value: Bool) -> Bool {
+                checks[name] = value
+                return value
+            }
+            guard let state = boundary.state else {
+                checks["state_present"] = false
                 return false
             }
-            return true
+            checks["state_present"] = true
+            guard let admission = boundary.admission else {
+                checks["admission_present"] = false
+                return false
+            }
+            checks["admission_present"] = true
+            guard let observer = boundary.observer else {
+                checks["reader_present"] = false
+                return false
+            }
+            checks["reader_present"] = true
+            guard checked("admission_valid", admission.isValid),
+                  checked("source_matches", boundary.source === source),
+                  checked("state_admission_matches", state.admission?.matches(admission) == true),
+                  checked("epoch_matches", admission.binding.epoch == current.binding.epoch),
+                  checked("lifetime_matches", admission.binding.lifetime === current.binding.lifetime),
+                  checked("window_matches", observer.window === fixture.window),
+                  checked("reader_scene_matches", observer.currentSceneIdentifier == fixture.identifier),
+                  checked("state_scene_matches", state.sceneIdentifier == fixture.identifier),
+                  checked("active_occurrence", state.activeLifecycleGeneration != nil),
+                  checked("origin_depth_matches", boundary.originConfiguration?.descriptor.attributes["native_test_depth"] as? Int == depth)
+            else {
+                return false
+            }
+            guard let configuration = state.configuration else {
+                checks["configuration_present"] = false
+                return false
+            }
+            checks["configuration_present"] = true
+            guard checked("current_destination", configuration.isCurrentDestination),
+                  checked("claim_matches", configuration.descriptor.attributes["native_test_claim"] as? String == token),
+                  checked("depth_matches", configuration.descriptor.attributes["native_test_depth"] as? Int == depth)
+            else {
+                return false
+            }
+            guard let controller = observer.nearestViewController else {
+                checks["controller_present"] = false
+                return false
+            }
+            checks["controller_present"] = true
+            return checked("controller_ineligible", !eligible(controller))
         }
-        guard matching.count == 1, let selected = matching.first,
-              let reader = selected.observer, let boundary = selected.state else {
-            return nil
+        lastProofDiagnostic["boundary_predicates"] = boundaryPredicates
+        lastProofDiagnostic["matching_count"] = matching.count
+        guard checked("exactly_one_match", matching.count == 1), let selected = matching.first else {
+            return failed("exactly_one_match")
         }
+        guard let reader = selected.observer else {
+            return failed("selected_reader_present")
+        }
+        predicates["selected_reader_present"] = true
+        guard let boundary = selected.state else {
+            return failed("selected_state_present")
+        }
+        predicates["selected_state_present"] = true
+        lastProofDiagnostic["failed_predicate"] = "none"
         return [
             "view_id": viewID, "depth": depth, "claim": token,
             "tracking_state": String(describing: ObjectIdentifier(boundary)),
@@ -3773,6 +3884,9 @@ private extension SwiftUINavigationOwnershipTests {
                 "admission_valid": capture.admission?.isValid == true,
                 "has_native_source": capture.state?.source != nil,
                 "actual_boundary_proofs": capture.proofs,
+                "boundary_hook_events": capture.boundaryHookEvents,
+                "unmatched_source_callbacks": capture.unmatchedSourceCallbacks,
+                "last_boundary_proof_diagnostic": capture.lastProofDiagnostic,
                 "views": views, "actions": actions,
                 "scope": "Rendered native typed-array component; no actual interactive OS transition or final-release claim"
             ]
