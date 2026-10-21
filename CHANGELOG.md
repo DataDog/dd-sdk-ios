@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FIX] Attribute a TTFD vital reported before the TTID is written to the view and connectivity active when `reportAppFullyDisplayed()` was called, instead of the TTID's view.
+- [FIX] Attribute a TTFD vital reported before the TTID is written to the view and connectivity active when `reportAppFullyDisplayed()` was called, instead of the TTID's view. See [#3331][]. (Thanks [@thedavidharris][])
 
 # 3.20.0 / 19-10-2026
 
