@@ -20,12 +20,12 @@ Pod::Spec.new do |s|
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
 
-  s.source_files = ["DatadogSessionReplay/Sources/**/*.swift",
-                    "DatadogSessionReplay/WebP/**/*.{c,h}"]
-  s.private_header_files = ["DatadogSessionReplay/WebP/**/*.h"]
+  s.source_files = ["DatadogSessionReplay/Sources/**/*.swift"]
+  s.ios.source_files = ["DatadogSessionReplay/WebP/**/*.{c,h}"]
+  s.ios.private_header_files = ["DatadogSessionReplay/WebP/**/*.h"]
   s.preserve_paths = ["DatadogSessionReplay/WebP/include/module.modulemap",
                       "DatadogSessionReplay/WebP/{COPYING,PATENTS,AUTHORS}"]
-  s.pod_target_xcconfig = {
+  s.ios.pod_target_xcconfig = {
     'SWIFT_INCLUDE_PATHS' => '$(PODS_TARGET_SRCROOT)/DatadogSessionReplay/WebP/include',
     'HEADER_SEARCH_PATHS' => '$(PODS_TARGET_SRCROOT)/DatadogSessionReplay/WebP'
   }

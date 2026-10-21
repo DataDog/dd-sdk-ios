@@ -195,7 +195,13 @@ let package = Package(
 
         .target(
             name: "DatadogSessionReplay",
-            dependencies: ["DatadogInternal", "DatadogWebP"],
+            dependencies: [
+                .target(name: "DatadogInternal"),
+                .target(
+                    name: "DatadogWebP",
+                    condition: .when(platforms: [.iOS])
+                ),
+            ],
             path: "DatadogSessionReplay/Sources"
         ),
         .target(
