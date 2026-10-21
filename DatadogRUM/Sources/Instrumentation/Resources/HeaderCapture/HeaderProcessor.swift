@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Processes HTTP headers from intercepted URLSession requests, applying security filtering,
 /// size limits, and header resolution based on the configured `TrackResourceHeaders`.
@@ -158,6 +159,7 @@ internal struct HeaderProcessor {
 
     /// Shared filtering logic: iterates over the ordered capture list to ensure default headers
     /// get budget priority over custom ones. Applies security pattern, excluded set, and size limits.
+    /// A header that would exceed the total size budget is skipped, and later headers that still fit are captured.
     /// All output keys are lowercased for cross-platform consistency.
     private func filterHeaders(
         _ valuesByLowercasedName: [String: String],
@@ -184,8 +186,11 @@ internal struct HeaderProcessor {
             let truncatedValue = truncateValue(value)
             let entrySize = name.utf8.count + truncatedValue.utf8.count
 
-            // Enforce total size budget
-            guard totalSize + entrySize <= Self.maxTotalSize else { break }
+            // Enforce total size budget, skipping headers that don't fit
+            guard totalSize + entrySize <= Self.maxTotalSize else {
+                DD.logger.debug("Skipping header '\(name)': adding it would exceed the \(Self.maxTotalSize) byte limit.")
+                continue
+            }
 
             result[name] = truncatedValue
             totalSize += entrySize

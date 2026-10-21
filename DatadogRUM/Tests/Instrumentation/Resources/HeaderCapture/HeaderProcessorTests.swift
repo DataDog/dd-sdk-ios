@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogRUM
 
 class HeaderProcessorTests: XCTestCase {
@@ -340,16 +341,23 @@ class HeaderProcessorTests: XCTestCase {
 
     // MARK: - Total Size Limit
 
-    func testItEnforces2KBTotalSizeLimit() {
+    func testWhenHeaderExceedsTotalSizeLimit_itSkipsItAndCapturesLaterHeadersThatFit() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
         // Given
         var headerNames: [String] = []
         var requestHeaders: [String: String] = [:]
-        for i in 0..<50 {
-            let name = "x-header-\(i)"
+        for i in 10..<25 {
+            let name = "x-h-\(i)"
             headerNames.append(name)
-            // Each value is 100 bytes, 50 headers = ~5KB > 2KB limit
-            requestHeaders[name] = String(repeating: "x", count: 100)
+            // 15 headers of 6-byte name + 128-byte value = 2010 bytes
+            requestHeaders[name] = String(repeating: "x", count: 128)
         }
+        // 133 bytes, does not fit; 8 bytes, still fits after it
+        headerNames += ["x-big", "x-small"]
+        requestHeaders["x-big"] = String(repeating: "x", count: 128)
+        requestHeaders["x-small"] = "1"
         let processor = HeaderProcessor(config: .custom([.matchHeaders(headerNames)]))
 
         // When
@@ -358,9 +366,11 @@ class HeaderProcessorTests: XCTestCase {
             responseHeaders: [:]
         )
 
-        // Then - Total size should be at most 2KB
-        let totalSize = result.request.reduce(0) { $0 + $1.key.utf8.count + $1.value.utf8.count }
-        XCTAssertLessThanOrEqual(totalSize, 2_048)
+        // Then
+        XCTAssertNil(result.request["x-big"])
+        XCTAssertEqual(result.request["x-small"], "1")
+        XCTAssertEqual(result.request.count, 16)
+        XCTAssertEqual(dd.logger.debugLog?.message, "Skipping header 'x-big': adding it would exceed the 2048 byte limit.")
     }
 
     // MARK: - Nil Input
