@@ -779,7 +779,9 @@ final class FlagsClientTests: XCTestCase {
     }
 
     func testIndependentExposureTrackingPreservesDeduplicationAndDoLog() throws {
-        let core = SingleFeatureCoreMock<FlagsFeature>()
+        let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
+
         Flags.enable(in: core)
         let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
         let context = FlagsEvaluationContext(targetingKey: "captured-user")
@@ -800,26 +802,45 @@ final class FlagsClientTests: XCTestCase {
         client.sendFlagExposure(key: "other-flag", assignment: assignment, context: context)
         core.get(feature: FlagsFeature.self)?.flush()
 
-        let events = core.events(ofType: ExposureEvent.self)
+        let events = core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self)
         XCTAssertEqual(events.count, 2)
         XCTAssertEqual(events.map(\.serialID), [123, 124])
-        XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+        XCTAssertTrue(core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self).isEmpty)
     }
 
-    func testIndependentTrackingRespectsDisabledFeatures() throws {
-        let messageReceiver = FeatureMessageReceiverMock()
-        let core = SingleFeatureCoreMock<FlagsFeature>(messageReceiver: messageReceiver)
-        Flags.enable(with: .init(trackExposures: false, trackEvaluations: false), in: core)
-        let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+    func testIndependentTrackingRespectsEnabledFeatures() throws {
+        for trackExposures in [false, true] {
+            for trackEvaluations in [false, true] {
+                let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
+                defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
-        client.sendFlagExposure(key: "flag", assignment: .mockAnyBoolean(doLog: true), context: .mockAny())
-        client.sendFlagEvaluationEvent(key: "flag", assignment: .mockAnyBoolean(), context: .mockAny(), errorCode: nil)
-        client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: .mockAny(), errorCode: "FLAG_NOT_FOUND")
-        core.get(feature: FlagsFeature.self)?.flush()
+                Flags.enable(with: .init(trackExposures: trackExposures, trackEvaluations: trackEvaluations), in: core)
+                let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+                let context = FlagsEvaluationContext(targetingKey: "captured-user")
+                let assignment = FlagAssignment.mockAnyBoolean(doLog: true)
 
-        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
-        XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
-        XCTAssertFalse(messageReceiver.messages.contains(where: \.isRUMMessage))
+                client.sendFlagExposure(key: "flag", assignment: assignment, context: context)
+                client.sendFlagEvaluationEvent(key: "flag", assignment: assignment, context: context, errorCode: nil)
+                client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: context, errorCode: "FLAG_NOT_FOUND")
+                core.get(feature: FlagsFeature.self)?.flush()
+
+                let configuration = "trackExposures=\(trackExposures), trackEvaluations=\(trackEvaluations)"
+                let exposures = core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self)
+                let evaluations = core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self)
+                XCTAssertEqual(exposures.count, trackExposures ? 1 : 0, configuration)
+                XCTAssertEqual(evaluations.count, trackEvaluations ? 2 : 0, configuration)
+                if trackEvaluations {
+                    let success = try XCTUnwrap(evaluations.first { $0.flag.key == "flag" }, configuration)
+                    XCTAssertEqual(success.evaluationCount, 1, configuration)
+                    XCTAssertNil(success.error, configuration)
+
+                    let error = try XCTUnwrap(evaluations.first { $0.flag.key == "missing" }, configuration)
+                    XCTAssertEqual(error.evaluationCount, 1, configuration)
+                    XCTAssertEqual(error.error?.message, "FLAG_NOT_FOUND", configuration)
+                    XCTAssertTrue(error.runtimeDefaultUsed == true, configuration)
+                }
+            }
+        }
     }
 
     func testSendFlagEvaluation() {
