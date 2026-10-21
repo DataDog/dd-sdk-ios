@@ -67,6 +67,7 @@ private extension RUMAppLaunchManager {
         }
 
         self.timeToInitialDisplay = ttid
+        let rumContext = parent.context
         let ttidVitalId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
@@ -112,6 +113,7 @@ private extension RUMAppLaunchManager {
                     startupType: startupType,
                     attributes: attributes,
                     context: context,
+                    rumContext: rumContext,
                     writer: writer,
                     activeView: activeView,
                     profiling: profiling
@@ -127,6 +129,7 @@ private extension RUMAppLaunchManager {
                         startupType: startupType,
                         attributes: timeToFullDisplay.attributes,
                         context: context,
+                        rumContext: rumContext,
                         writer: writer,
                         activeView: activeView,
                         profiling: profiling
@@ -192,6 +195,7 @@ private extension RUMAppLaunchManager {
         startupType: RUMVitalAppLaunchEvent.Vital.StartupType,
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
+        rumContext: RUMContext,
         writer: Writer,
         activeView: RUMViewScope?,
         profiling: DDProfiling? = nil
@@ -208,7 +212,7 @@ private extension RUMAppLaunchManager {
         let vitalEvent = RUMVitalAppLaunchEvent(
             dd: .init(profiling: profiling),
             account: .init(context: context),
-            application: .init(id: parent.context.rumApplicationID),
+            application: .init(id: rumContext.rumApplicationID),
             buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
@@ -223,7 +227,7 @@ private extension RUMAppLaunchManager {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
-                id: parent.context.sessionID.toRUMDataFormat,
+                id: rumContext.sessionID.toRUMDataFormat,
                 isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
@@ -284,6 +288,7 @@ private extension RUMAppLaunchManager {
                     startupType: startupType,
                     attributes: timeToFullDisplay.attributes,
                     context: context,
+                    rumContext: parent.context,
                     writer: writer,
                     activeView: activeView,
                     profiling: profiling

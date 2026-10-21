@@ -717,4 +717,99 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 0)
     }
+
+    func testAppLaunchCallback_whenSessionIsReleased_itUsesAcceptedSessionOwnership() throws {
+        for includesTTFD in [false, true] {
+            let stateManager = AppStateManagerMock()
+            stateManager.shouldDeferPreviousAppStateInfoCallback = true
+            let acceptedContext = mockParent.context
+            var parent: RUMContextProviderMock? = RUMContextProviderMock(context: acceptedContext)
+            weak var weakParent = parent
+            let dependencies = RUMScopeDependencies.mockWith(appStateManager: stateManager)
+            let writer = FileWriterMock()
+            let subject = RUMAppLaunchManager(
+                parent: try XCTUnwrap(parent),
+                dependencies: dependencies,
+                telemetryController: .init()
+            )
+            let ttid: RUMTimeToInitialDisplayCommand = .mockWith(
+                time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+            )
+
+            subject.process(ttid, context: mockContext, writer: writer)
+            if includesTTFD {
+                let ttfd: RUMTimeToFullDisplayCommand = .mockWith(
+                    time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+                )
+                subject.process(ttfd, context: mockContext, writer: writer)
+            }
+            XCTAssertTrue(writer.events(ofType: RUMVitalAppLaunchEvent.self).isEmpty)
+
+            parent = nil
+            XCTAssertNil(weakParent)
+            stateManager.completePreviousAppStateInfo()
+
+            let events = writer.events(ofType: RUMVitalAppLaunchEvent.self)
+            XCTAssertEqual(events.count, includesTTFD ? 2 : 1)
+            XCTAssertEqual(events.first?.vital.appLaunchMetric, .ttid)
+            if includesTTFD {
+                XCTAssertEqual(events.last?.vital.appLaunchMetric, .ttfd)
+            }
+            for event in events {
+                XCTAssertEqual(event.application.id, acceptedContext.rumApplicationID)
+                XCTAssertEqual(event.session.id, acceptedContext.sessionID.toRUMDataFormat)
+            }
+            withExtendedLifetime(subject) {}
+        }
+    }
+
+    func testAppLaunchCallback_whenContextChangesBeforeDelivery_itUsesAcceptedSessionAndViewOwners() throws {
+        let stateManager = AppStateManagerMock()
+        stateManager.shouldDeferPreviousAppStateInfoCallback = true
+        let dependencies = RUMScopeDependencies.mockWith(appStateManager: stateManager)
+        mockParent.context.sessionID = RUMUUID(
+            rawValue: try XCTUnwrap(UUID(uuidString: "11111111-1111-1111-1111-111111111111"))
+        )
+        let acceptedContext = mockParent.context
+        let subject = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: dependencies,
+            telemetryController: .init()
+        )
+        let activeView: RUMViewScope = .mockWith(path: "retained-view", name: "Retained View")
+        let ttid: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+        let ttfd: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        subject.process(ttid, context: mockContext, writer: mockWriter, activeView: activeView)
+        subject.process(ttfd, context: mockContext, writer: mockWriter, activeView: activeView)
+        XCTAssertTrue(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).isEmpty)
+        mockParent.context = RUMContext(
+            rumApplicationID: "replacement-" + acceptedContext.rumApplicationID,
+            sessionID: .nullUUID,
+            isSessionActive: false,
+            sessionPrecondition: nil,
+            activeViewID: nil,
+            activeViewPath: nil,
+            activeViewName: nil,
+            activeUserActionID: nil
+        )
+        stateManager.completePreviousAppStateInfo()
+
+        let events = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
+        for event in events {
+            XCTAssertEqual(event.application.id, acceptedContext.rumApplicationID)
+            XCTAssertEqual(event.session.id, acceptedContext.sessionID.toRUMDataFormat)
+            XCTAssertNotEqual(event.application.id, mockParent.context.rumApplicationID)
+            XCTAssertNotEqual(event.session.id, mockParent.context.sessionID.toRUMDataFormat)
+            XCTAssertEqual(event.view.id, activeView.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(event.view.name, "Retained View")
+            XCTAssertEqual(event.view.url, "retained-view")
+        }
+    }
 }
