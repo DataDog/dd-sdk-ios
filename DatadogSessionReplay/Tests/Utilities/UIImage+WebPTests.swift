@@ -323,42 +323,6 @@ struct UIImageWebPTests {
     }
 }
 
-fileprivate extension UIImage {
-    convenience init?(
-        pixels: [UInt8],
-        width: Int,
-        height: Int,
-        scale: CGFloat = 1,
-        bitsPerPixel: Int = 32,
-        bytesPerRow: Int? = nil,
-        colorSpace: CGColorSpace? = nil,
-        bitmapInfo: CGBitmapInfo = .byteOrder32Big.union(
-            CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
-        )
-    ) {
-        guard
-            let provider = CGDataProvider(data: Data(pixels) as CFData),
-            let space = colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB),
-            let cgImage = CGImage(
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bitsPerPixel: bitsPerPixel,
-                bytesPerRow: bytesPerRow ?? width * (bitsPerPixel / UInt8.bitWidth),
-                space: space,
-                bitmapInfo: bitmapInfo,
-                provider: provider,
-                decode: nil,
-                shouldInterpolate: false,
-                intent: .defaultIntent
-            )
-        else {
-            return nil
-        }
-        self.init(cgImage: cgImage, scale: scale, orientation: .up)
-    }
-}
-
 fileprivate extension CGImage {
     static func make(data: Data) -> CGImage? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
