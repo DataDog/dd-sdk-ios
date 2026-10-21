@@ -464,6 +464,12 @@ extension SwiftUINavigationOwnershipTests {
             )
             var attachedRegistrations = 0
             var events: [String] = []
+            let onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
+            if hasMountCallback {
+                onMount = { _ in events.append("mount") }
+            } else {
+                onMount = nil
+            }
             let reader = RUMSceneIdentifierReader(
                 admission: admission,
                 applicationSupportsMultipleScenes: true,
@@ -474,7 +480,7 @@ extension SwiftUINavigationOwnershipTests {
                     }
                     foundation.registerAuthority(observer: observer, trackingState: state, admission: admission)
                 },
-                onMount: hasMountCallback ? { _ in events.append("mount") } : nil,
+                onMount: onMount,
                 onChange: { _ in }
             )
             let observer = RUMSceneIdentifierReader.ObserverView(
