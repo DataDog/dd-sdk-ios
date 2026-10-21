@@ -25,26 +25,36 @@ internal class ResourceProcessor: ResourceProcessing {
     func process(resources: [Resource], context: EnrichedResource.Context) {
         interceptResources?(resources)
         queue.run { [weak self] in
+            guard let self = self else {
+                return
+            }
+
             let resources = resources
-                .compactMap {
-                    let identifier = $0.calculateIdentifier()
-                    let isProcessed = self?.processedIdentifiers.contains(identifier) == true
-                    if !isProcessed {
-                        self?.processedIdentifiers.insert(identifier)
+                .compactMap { resource -> EnrichedResource? in
+                    let identifier = resource.calculateIdentifier()
+                    guard !identifier.isEmpty, !self.processedIdentifiers.contains(identifier) else {
+                        return nil
                     }
-                    return !isProcessed ? EnrichedResource(
+
+                    let data = resource.calculateData()
+                    // Avoid uploading empty resources
+                    guard !data.isEmpty else {
+                        return nil
+                    }
+
+                    self.processedIdentifiers.insert(identifier)
+
+                    return EnrichedResource(
                         identifier: identifier,
-                        data: $0.calculateData(),
-                        mimeType: $0.mimeType,
+                        data: data,
+                        mimeType: resource.mimeType,
                         context: context
-                    ) : nil
+                    )
                 }
             guard !resources.isEmpty else {
                 return
             }
-            self?.resourcesWriter.write(
-                resources: resources
-            )
+            self.resourcesWriter.write(resources: resources)
         }
     }
 

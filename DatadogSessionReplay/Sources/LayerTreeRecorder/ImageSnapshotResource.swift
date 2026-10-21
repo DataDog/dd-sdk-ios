@@ -5,22 +5,21 @@
  */
 
 #if os(iOS)
-import DatadogInternal
 import UIKit
 
 internal struct ImageSnapshotResource: Resource {
     let image: UIImage
 
     var mimeType: String {
-        "image/png"
+        "image/webp"
     }
 
     func calculateIdentifier() -> String {
-        image.dd.identifier
+        image.contentHash.map { $0 + ".webp" } ?? ""
     }
 
     func calculateData() -> Data {
-        image.dd.pngData() ?? Data()
+        image.webPData() ?? Data()
     }
 }
 #endif
