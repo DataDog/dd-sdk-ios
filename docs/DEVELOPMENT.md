@@ -40,7 +40,7 @@ If you're about to make a change that modifies public API significantly, changes
 
 ## Documentation Gate
 
-The documentation gate uses [FactoryKit](https://github.com/ddoghq/factorykit) to examine tracked documentation. It blocks a change that adds a broken local link or anchor. It also blocks a change that removes a selected design or guide from the [documentation map](README.md). Findings that exist before the change do not block. The gate also gives advisory reminders to review the affected documentation.
+The documentation gate uses [FactoryKit](https://github.com/ddoghq/factorykit) to examine tracked documentation. It blocks a change that adds a broken local link or anchor. Findings that exist before the change do not block. The gate also gives advisory reminders to review the affected documentation.
 
 `scripts/foundation_check.py` selects the entry documents and the Literate designs and guides. `factoryspec.yaml` and `factory/` record that selection.
 
