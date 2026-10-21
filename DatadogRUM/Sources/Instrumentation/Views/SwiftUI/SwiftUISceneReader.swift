@@ -167,10 +167,10 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         let observer = ObserverView(
             admission: admission,
             onChange: onChange,
-            onMount: onMount,
             applicationSupportsMultipleScenes: applicationSupportsMultipleScenes
         )
         guard admission.isValid else { return observer }
+        observer.onMount = mountCallback(for: observer)
         onCreate?(observer)
         if let initialSceneIdentifier, admission.admits(sceneIdentifier: initialSceneIdentifier) {
             onInitialMount?(initialSceneIdentifier)
@@ -191,10 +191,26 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         guard admission.isValid else { return }
         observer.rebind(admission: admission)
         onCreate?(observer)
-        observer.onMount = onMount
+        observer.onMount = mountCallback(for: observer)
         observer.onChange = onChange
         onReconcile?(observer.currentAttachment)
         observer.notifyCurrentAttachment()
+    }
+
+    /// Creation can precede window attachment. Retry the same registration only
+    /// after the reader proves its scene, before publishing the existing mount.
+    @MainActor
+    private func mountCallback(for observer: ObserverView) -> @MainActor (RUMSceneIdentifier) -> Void {
+        { [weak observer] sceneIdentifier in
+            guard let observer, admission.isValid else {
+                return
+            }
+            onCreate?(observer)
+            guard admission.isValid else {
+                return
+            }
+            onMount?(sceneIdentifier)
+        }
     }
 
     final class ObserverView: UIView {

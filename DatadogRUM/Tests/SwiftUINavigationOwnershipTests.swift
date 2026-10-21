@@ -427,6 +427,141 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testSceneReader_whenCreatedBeforeAttachment_itRegistersAuthorityOnMount() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Owned SwiftUI tracking requires iOS 27")
+        }
+        let fixture = try SemanticHostWindow()
+        defer { fixture.restore() }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let foundation = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation)
+        let binding = try XCTUnwrap(foundation.makeBinding())
+        let eligible = try XCTUnwrap(foundation.makeEligibilityCheck())
+        let host = fixture.install(Text("Reader attachment"))
+        let container = try XCTUnwrap(host.parent)
+        let sibling = UIViewController()
+        container.addChild(sibling)
+        container.view.addSubview(sibling.view)
+        sibling.didMove(toParent: container)
+        defer {
+            sibling.willMove(toParent: nil)
+            sibling.view.removeFromSuperview()
+            sibling.removeFromParent()
+        }
+
+        for hasMountCallback in [false, true] {
+            let holder = RUMSwiftUIViewTrackingEpoch()
+            let callback = try XCTUnwrap(holder.enter(binding))
+            let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
+            defer { holder.retire(callback) }
+            let state = try XCTUnwrap(admission.withSession { $0.trackingState })
+            _ = state.reconcile(
+                configuration: configuration(generation: 1),
+                attachment: .attached(fixture.identifier),
+                isAppeared: true
+            )
+            var attachedRegistrations = 0
+            var events: [String] = []
+            let reader = RUMSceneIdentifierReader(
+                admission: admission,
+                applicationSupportsMultipleScenes: true,
+                onCreate: { observer in
+                    if observer.window != nil {
+                        attachedRegistrations += 1
+                        events.append("register")
+                    }
+                    foundation.registerAuthority(observer: observer, trackingState: state, admission: admission)
+                },
+                onMount: hasMountCallback ? { _ in events.append("mount") } : nil,
+                onChange: { _ in }
+            )
+            let observer = RUMSceneIdentifierReader.ObserverView(
+                admission: admission,
+                onChange: { _ in },
+                applicationSupportsMultipleScenes: true
+            )
+            defer { observer.removeFromSuperview() }
+            reader.update(observer: observer)
+            XCTAssertNil(observer.window)
+            XCTAssertEqual(attachedRegistrations, 0)
+            XCTAssertTrue(eligible(host))
+
+            host.view.addSubview(observer)
+            XCTAssertTrue(observer.window === fixture.window)
+            XCTAssertEqual(observer.currentSceneIdentifier, fixture.identifier)
+            XCTAssertTrue(observer.nearestViewController === host)
+            XCTAssertEqual(attachedRegistrations, 1)
+            XCTAssertEqual(events, hasMountCallback ? ["register", "mount"] : ["register"])
+            XCTAssertFalse(eligible(host))
+            XCTAssertTrue(eligible(sibling))
+
+            observer.notifyCurrentAttachment()
+            XCTAssertEqual(attachedRegistrations, 1)
+            observer.removeFromSuperview()
+            XCTAssertTrue(eligible(host))
+            host.view.addSubview(observer)
+            XCTAssertEqual(attachedRegistrations, 2)
+            XCTAssertFalse(eligible(host))
+            XCTAssertTrue(eligible(sibling))
+
+            holder.retire(callback)
+            observer.notifyCurrentAttachment()
+            XCTAssertEqual(attachedRegistrations, 2)
+            XCTAssertTrue(eligible(host))
+            XCTAssertTrue(eligible(sibling))
+        }
+    }
+
+    @MainActor
+    func testSceneReader_whenMountRegistrationRetiresAdmission_itDoesNotPublishMount() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Owned SwiftUI tracking requires iOS 27")
+        }
+        let fixture = try SemanticHostWindow()
+        defer { fixture.restore() }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        let holder = RUMSwiftUIViewTrackingEpoch()
+        let callback = try XCTUnwrap(holder.enter(binding))
+        let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
+        defer { holder.retire(callback) }
+        let host = fixture.install(Text("Reader retirement"))
+        var attachedRegistrations = 0
+        var mounts = 0
+        let reader = RUMSceneIdentifierReader(
+            admission: admission,
+            applicationSupportsMultipleScenes: true,
+            onCreate: { observer in
+                if observer.window != nil {
+                    attachedRegistrations += 1
+                    holder.retire(callback)
+                }
+            },
+            onMount: { _ in mounts += 1 },
+            onChange: { _ in }
+        )
+        let observer = RUMSceneIdentifierReader.ObserverView(
+            admission: admission,
+            onChange: { _ in },
+            applicationSupportsMultipleScenes: true
+        )
+        defer { observer.removeFromSuperview() }
+        reader.update(observer: observer)
+        host.view.addSubview(observer)
+        XCTAssertEqual(attachedRegistrations, 1)
+        XCTAssertFalse(admission.isValid)
+        XCTAssertEqual(mounts, 0)
+        observer.removeFromSuperview()
+        host.view.addSubview(observer)
+        XCTAssertEqual(attachedRegistrations, 1)
+        XCTAssertEqual(mounts, 0)
+    }
+
+    @MainActor
     func testSceneReader_whenIdentifierIsNilForeignOrSessionExpired_itRefusesCallbacks() throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let core = makeHandoffCore()
