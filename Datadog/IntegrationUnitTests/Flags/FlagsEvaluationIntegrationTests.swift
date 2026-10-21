@@ -15,6 +15,14 @@ import Network
 /// Covers integration scenarios for flag evaluation logging.
 final class FlagsEvaluationIntegrationTests: XCTestCase {
     func testImmediateOptOutLoopbackDeliveryAndTelemetry() throws {
+        try runOptOutLoopbackDeliveryAndTelemetry(mode: .immediate)
+    }
+
+    func testFutureOptOutLoopbackDeliveryAndTelemetry() throws {
+        try runOptOutLoopbackDeliveryAndTelemetry(mode: .futureExperimentsOnly)
+    }
+
+    private func runOptOutLoopbackDeliveryAndTelemetry(mode: FlagsClient.ExperimentationOptOutMode) throws {
         let server = try OptOutAssignmentServer()
         defer { server.stop() }
         let listening = expectation(description: "loopback listening")
@@ -24,7 +32,7 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
         defer { try? core.flushAndTearDown() }
         Flags.enable(with: .init(customFlagsEndpoint: endpoint, evaluationFlushInterval: 60), in: core)
-        let client = FlagsClient.create(experimentationOptOutMode: .immediate, in: core)
+        let client = FlagsClient.create(experimentationOptOutMode: mode, in: core)
 
         let initial = expectation(description: "eligible response")
         client.setEvaluationContext(.init(targetingKey: "subject")) { result in
@@ -37,7 +45,7 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         let withdrawn = expectation(description: "ordinary fallback")
         client.setEvaluationContext(.init(
             targetingKey: "subject",
-            attributes: ["dd_experimentation_opt_out_at": .string("2099-01-01T00:00:00Z")]
+            attributes: ["dd_experimentation_opt_out_at": .string("2099-01-01T02:00:00.123456789+02:00")]
         )) { result in
             if case .failure(let error) = result { XCTFail("\(error)") }
             withdrawn.fulfill()
@@ -49,6 +57,9 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         XCTAssertEqual(client.getDoubleValue(key: "double", defaultValue: 0), 1.5)
         XCTAssertEqual(client.getObjectValue(key: "object", defaultValue: .null), .dictionary(["ordinary": .bool(true)]))
         XCTAssertEqual(server.options, [false, true])
+        if mode == .futureExperimentsOnly {
+            XCTAssertTrue(client.getBooleanValue(key: "older", defaultValue: false))
+        }
 
         let invalid = expectation(description: "invalid context")
         client.setEvaluationContext(.init(
@@ -66,7 +77,7 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         try core.flushAndTearDown()
         let exposures = core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self)
         let evaluations = core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self)
-        XCTAssertEqual(exposures.count, 1, "Only the eligible experiment logs an exposure")
+        XCTAssertEqual(exposures.count, mode == .immediate ? 1 : 2, "Future mode preserves exposures for older allocations")
         XCTAssertFalse(evaluations.isEmpty, "Experimentation opt-out does not disable evaluation telemetry")
     }
 
@@ -170,13 +181,14 @@ private final class OptOutAssignmentServer {
             }
             let request = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any]
             let attributes = (request?["data"] as? [String: Any])?["attributes"] as? [String: Any]
-            let optedOut = (attributes?["evaluation_options"] as? [String: Any])?["experimentation_opt_out"] as? Bool == true
+            let mode = (attributes?["evaluation_options"] as? [String: Any])?["experimentation_opt_out_mode"] as? String
+            let optedOut = mode == "immediate" || mode == "future_experiments_only"
             self.capturedOptions.append(optedOut)
             let values: [String: FlagAssignment.Variation] = [
                 "flag": .boolean(!optedOut), "string": .string("ordinary"), "integer": .integer(42),
                 "double": .double(1.5), "object": .object(.dictionary(["ordinary": .bool(true)]))
             ]
-            let flags = values.mapValues { value in
+            var flags = values.mapValues { value in
                 FlagAssignment(
                     allocationKey: optedOut ? "ordinary" : "experiment",
                     variationKey: "variant",
@@ -185,7 +197,21 @@ private final class OptOutAssignmentServer {
                     doLog: !optedOut
                 )
             }
-            let response = FlagAssignmentsResponse(flags: flags, experimentationOptOut: optedOut)
+            if mode == "future_experiments_only" {
+                flags["older"] = FlagAssignment(
+                    allocationKey: "older-experiment",
+                    variationKey: "older-variant",
+                    variation: .boolean(true),
+                    reason: "TARGETING_MATCH",
+                    doLog: true
+                )
+            }
+            let response = FlagAssignmentsResponse(
+                flags: flags,
+                experimentationOptOut: mode == "immediate" ? true : nil,
+                experimentationOptOutMode: mode == "future_experiments_only" ? mode : nil,
+                experimentationOptOutAt: mode == "future_experiments_only" ? "2099-01-01T00:00:00.123456789Z" : nil
+            )
             guard let payload = try? JSONEncoder().encode(response) else {
                 connection.cancel()
                 return

@@ -96,7 +96,7 @@ internal final class FlagsRepository {
     private struct OptOutRequest {
         var generation: UInt64 = 0
         var context: FlagsEvaluationContext?
-        var isOptedOut = false
+        var policy: ExperimentationOptOut?
         var isInvalid = false
     }
 
@@ -159,11 +159,13 @@ internal final class FlagsRepository {
         guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
             return nil
         }
-        if experimentationOptOutMode == .immediate {
+        if experimentationOptOutMode != .disabled {
             let request = optOutRequest
             guard !request.isInvalid,
                   request.context == data.context,
-                  request.isOptedOut == (data.experimentationOptOut == true) else { return nil }
+                  request.policy == data.effectiveOptOut else { return nil }
+        } else if data.effectiveOptOut != nil {
+            return nil
         }
         return data
     }
@@ -372,7 +374,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        if experimentationOptOutMode == .immediate, readableFlagsData == nil {
+        if readableFlagsData == nil {
             return nil
         }
         let supportsObfuscation = supportsFlagKeyObfuscation
@@ -408,17 +410,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
         var request = OptOutRequest()
-        if experimentationOptOutMode == .immediate {
-            let optedOut = Result { try context.experimentationOptOut() }
+        if experimentationOptOutMode != .disabled {
+            let optedOut = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
             _optOutRequest.mutate { current in
                 current.generation &+= 1
                 current.context = context
                 switch optedOut {
                 case .success(let value):
-                    current.isOptedOut = value
+                    current.policy = value
                     current.isInvalid = false
                 case .failure:
-                    current.isOptedOut = false
+                    current.policy = nil
                     current.isInvalid = true
                     featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
                 }
@@ -454,7 +456,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 self.stateManager.updateState(.reconciling, if: { self.isCurrentRequest(request.generation) })
             }
 
-            self.flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: request.isOptedOut) { [weak self] result in
+            self.flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: request.policy) { [weak self] result in
                 guard let self else {
                     takeCompletion()?(.failure(.clientNotInitialized))
                     return
@@ -464,7 +466,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     return
                 }
                 let validated = result.flatMap { response -> Result<FlagAssignmentsResponse, FlagsError> in
-                    guard !request.isOptedOut || response.experimentationOptOut == true else {
+                    guard request.policy?.isAcknowledged(by: response) != false else {
                         return .failure(.invalidResponse)
                     }
                     return .success(response)
@@ -476,7 +478,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         context: context,
                         date: self.dateProvider.now,
                         obfuscation: response.obfuscation,
-                        experimentationOptOut: request.isOptedOut ? true : nil
+                        experimentationOptOutPolicy: request.policy
                     )
                     var accepted = false
                     self._optOutRequest.mutate { current in
@@ -524,7 +526,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         if let data = self.flagsData,
                            data.context == context,
                            data.obfuscation == nil || self.supportsFlagKeyObfuscation,
-                           self.experimentationOptOutMode == .disabled || current.isOptedOut == (data.experimentationOptOut == true) {
+                           current.policy == data.effectiveOptOut {
                             newState = .stale
                         } else {
                             self.flagsData = nil

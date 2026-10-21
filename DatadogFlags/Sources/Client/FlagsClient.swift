@@ -43,6 +43,9 @@ public final class FlagsClient {
         /// Exclude subjects with a valid RFC3339 timestamp from experiment allocations immediately.
         /// This includes future timestamps. Ordinary feature allocations remain available.
         case immediate
+        /// Exclude allocations activated at or after the subject's opt-out timestamp.
+        /// Allocations with unknown activation times are excluded. Older allocations remain available.
+        case futureExperimentsOnly
     }
 
     /// The default client name used when no name is specified.
@@ -120,6 +123,7 @@ public final class FlagsClient {
     ///
     /// The mode is fixed for this named client. A repeated creation returns the existing client.
     /// Supply a string RFC3339 timestamp in `dd_experimentation_opt_out_at` to exclude a subject.
+    /// Future-experiments-only mode keeps allocations activated before that time available.
     /// Omit that attribute for subjects who can participate. Invalid values return application defaults.
     /// This does not change evaluation telemetry settings.
     ///

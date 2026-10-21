@@ -1579,6 +1579,7 @@ public final class FlagsClient
     public enum ExperimentationOptOutMode
         case disabled
         case immediate
+        case futureExperimentsOnly
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func create(experimentationOptOutMode: ExperimentationOptOutMode,name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol

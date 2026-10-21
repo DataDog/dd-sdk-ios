@@ -19,6 +19,7 @@ final class FlagsRepositoryTests: XCTestCase {
             (nil, false, "absent"),
             (.string("2026-10-21T12:00:00Z"), true, "UTC"),
             (.string("2026-10-21T12:00:00.123456789+02:00"), true, "fraction and offset"),
+            (.string("2026-10-21T12:00:00.123456789123Z"), true, "precision beyond nanoseconds"),
             (.string("2099-01-01T00:00:00Z"), true, "future applies immediately"),
             (.string(""), nil, "empty"),
             (.string("not-a-date"), nil, "malformed"),
@@ -33,9 +34,16 @@ final class FlagsRepositoryTests: XCTestCase {
             (.null, nil, "null")
         ]
         for (value, expected, label) in values {
-            for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate] {
+            for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate, .futureExperimentsOnly] {
                 let fetcher = FlagAssignmentsFetcherMock { _, complete in
-                    complete(.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], experimentationOptOut: true)))
+                    let timestamp: String?
+                    if case .string(let value) = value { timestamp = value } else { timestamp = nil }
+                    complete(.success(.init(
+                        flags: ["flag": .mockAnyBoolean(doLog: false)],
+                        experimentationOptOut: true,
+                        experimentationOptOutMode: mode == .futureExperimentsOnly ? "future_experiments_only" : nil,
+                        experimentationOptOutAt: timestamp
+                    )))
                 }
                 let repository = FlagsRepository(
                     clientName: UUID().uuidString,
@@ -53,12 +61,130 @@ final class FlagsRepositoryTests: XCTestCase {
                     complete.fulfill()
                 }
                 waitForExpectations(timeout: 1)
-                XCTAssertEqual(invalid, mode == .immediate && expected == nil, label)
+                XCTAssertEqual(invalid, mode != .disabled && expected == nil, label)
                 XCTAssertEqual(repository.hasInvalidContext, invalid, label)
-                XCTAssertEqual(fetcher.experimentationOptOutRequests, invalid ? [] : [mode == .immediate && expected == true], label)
+                XCTAssertEqual(fetcher.experimentationOptOutRequests, invalid ? [] : [mode != .disabled && expected == true], label)
                 XCTAssertEqual(repository.flagAssignment(for: "flag") == nil, invalid, label)
             }
         }
+    }
+
+    func testFutureOptOutRequiresExactAcknowledgement() throws {
+        let cutoff = "2026-10-21T12:00:00.123456789Z"
+        let cases: [(String?, String?, Bool)] = [
+            (nil, nil, false),
+            ("immediate", cutoff, false),
+            ("future_experiments_only", nil, false),
+            ("future_experiments_only", "invalid", false),
+            ("future_experiments_only", "2026-10-21T12:00:00.123456788Z", false),
+            ("future_experiments_only", "2026-10-21T12:00:00.123456790Z", false),
+            ("future_experiments_only", "2026-10-21T14:00:00.123456789+02:00", true),
+            ("future_experiments_only", "2026-10-21T12:00:00.1234567890Z", true),
+            ("future_experiments_only", "2026-10-21T12:00:00.123456789123Z", true),
+            ("future_experiments_only", cutoff, true)
+        ]
+        for (mode, acknowledged, accepted) in cases {
+            let repository = FlagsRepository(
+                clientName: UUID().uuidString,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                    complete(.success(.init(
+                        flags: ["flag": .mockAnyBoolean()],
+                        experimentationOptOut: true,
+                        experimentationOptOutMode: mode,
+                        experimentationOptOutAt: acknowledged
+                    )))
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                experimentationOptOutMode: .futureExperimentsOnly
+            )
+            let completed = expectation(description: "acknowledgement")
+            repository.setEvaluationContext(.init(targetingKey: "subject", attributes: [
+                "dd_experimentation_opt_out_at": .string(cutoff)
+            ])) { result in
+                if case .success = result { XCTAssertTrue(accepted) }
+                if case .failure = result { XCTAssertFalse(accepted) }
+                completed.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+            XCTAssertEqual(repository.flagAssignment(for: "flag") != nil, accepted)
+        }
+    }
+
+    func testFutureOptOutCacheSeparatesModeAndCutoffAcrossRestart() throws {
+        let cutoff = "2026-10-21T12:00:00.123456789Z"
+        let context = FlagsEvaluationContext(targetingKey: "subject", attributes: [
+            "dd_experimentation_opt_out_at": .string(cutoff)
+        ])
+        let name = UUID().uuidString
+        let original = FlagsRepository(
+            clientName: name,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                complete(.success(.init(
+                    flags: ["flag": .mockAnyBoolean()],
+                    experimentationOptOutMode: "future_experiments_only",
+                    experimentationOptOutAt: cutoff
+                )))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            experimentationOptOutMode: .futureExperimentsOnly
+        )
+        let loaded = expectation(description: "first delivery")
+        original.setEvaluationContext(context) { _ in loaded.fulfill() }
+        waitForExpectations(timeout: 1)
+        featureScope.dataStore.flush()
+        for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate, .futureExperimentsOnly] {
+            let restored = FlagsRepository(
+                clientName: name,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                    complete(.failure(.networkError(URLError(.notConnectedToInternet))))
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                experimentationOptOutMode: mode
+            )
+            featureScope.dataStore.flush()
+            XCTAssertNil(restored.flagAssignment(for: "flag"))
+            restored.setEvaluationContext(context) { _ in }
+            XCTAssertEqual(restored.flagAssignment(for: "flag") != nil, mode == .futureExperimentsOnly)
+            restored.setEvaluationContext(.init(targetingKey: "subject", attributes: [
+                "dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00.123456788Z")
+            ])) { _ in }
+            XCTAssertNil(restored.flagAssignment(for: "flag"))
+        }
+    }
+
+    func testFutureOptOutCutoffChangeRejectsLateResponse() throws {
+        let cutoffs = ["2026-10-21T12:00:00.123456789Z", "2026-10-21T12:00:00.123456788Z"]
+        var completions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock { _, complete in completions.append(complete) }
+        let repository = FlagsRepository(
+            clientName: UUID().uuidString,
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            experimentationOptOutMode: .futureExperimentsOnly
+        )
+        featureScope.dataStore.flush()
+        for cutoff in cutoffs {
+            repository.setEvaluationContext(.init(targetingKey: "subject", attributes: [
+                "dd_experimentation_opt_out_at": .string(cutoff)
+            ])) { _ in }
+        }
+        XCTAssertEqual(fetcher.experimentationOptOutPolicies, cutoffs.map { .futureExperimentsOnly(cutoff: $0) })
+        completions[1](.success(.init(
+            flags: ["new": .mockAnyBoolean()],
+            experimentationOptOutMode: "future_experiments_only",
+            experimentationOptOutAt: cutoffs[1]
+        )))
+        completions[0](.success(.init(
+            flags: ["old": .mockAnyBoolean()],
+            experimentationOptOutMode: "future_experiments_only",
+            experimentationOptOutAt: cutoffs[0]
+        )))
+        XCTAssertNotNil(repository.flagAssignment(for: "new"))
+        XCTAssertNil(repository.flagAssignment(for: "old"))
     }
 
     func testImmediateOptOutRejectsLegacyCacheAndLateResponses() throws {

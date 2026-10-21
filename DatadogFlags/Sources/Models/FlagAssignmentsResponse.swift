@@ -11,17 +11,23 @@ internal struct FlagAssignmentsResponse: Equatable {
     let failedFlags: [String: String] // key -> error description
     let obfuscation: FlagKeyObfuscation?
     let experimentationOptOut: Bool?
+    let experimentationOptOutMode: String?
+    let experimentationOptOutAt: String?
 
     init(
         flags: [String: FlagAssignment],
         failedFlags: [String: String] = [:],
         obfuscation: FlagKeyObfuscation? = nil,
-        experimentationOptOut: Bool? = nil
+        experimentationOptOut: Bool? = nil,
+        experimentationOptOutMode: String? = nil,
+        experimentationOptOutAt: String? = nil
     ) {
         self.flags = flags
         self.failedFlags = failedFlags
         self.obfuscation = obfuscation
         self.experimentationOptOut = experimentationOptOut
+        self.experimentationOptOutMode = experimentationOptOutMode
+        self.experimentationOptOutAt = experimentationOptOutAt
     }
 }
 
@@ -34,6 +40,8 @@ extension FlagAssignmentsResponse: Codable {
         case obfuscation
         case evaluationOptions = "evaluation_options"
         case experimentationOptOut = "experimentation_opt_out"
+        case experimentationOptOutMode = "experimentation_opt_out_mode"
+        case experimentationOptOutAt = "dd_experimentation_opt_out_at"
     }
 
     init(from decoder: any Decoder) throws {
@@ -42,6 +50,13 @@ extension FlagAssignmentsResponse: Codable {
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
         let options = try? attributesContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .evaluationOptions)
         experimentationOptOut = try? options?.decode(Bool.self, forKey: .experimentationOptOut)
+        if let options, options.contains(.experimentationOptOutMode) {
+            // Preserve a malformed mode as invalid instead of treating it as an absent legacy acknowledgement.
+            experimentationOptOutMode = (try? options.decode(String.self, forKey: .experimentationOptOutMode)) ?? ""
+        } else {
+            experimentationOptOutMode = nil
+        }
+        experimentationOptOutAt = try? options?.decode(String.self, forKey: .experimentationOptOutAt)
 
         // Decode all flags (including those with unknown variation types)
         let allFlags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
@@ -82,9 +97,11 @@ extension FlagAssignmentsResponse: Codable {
         var dataContainer = rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         var attributesContainer = dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
         try attributesContainer.encode(flags, forKey: .flags)
-        if let experimentationOptOut {
+        if experimentationOptOut != nil || experimentationOptOutMode != nil || experimentationOptOutAt != nil {
             var options = attributesContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .evaluationOptions)
-            try options.encode(experimentationOptOut, forKey: .experimentationOptOut)
+            try options.encodeIfPresent(experimentationOptOut, forKey: .experimentationOptOut)
+            try options.encodeIfPresent(experimentationOptOutMode, forKey: .experimentationOptOutMode)
+            try options.encodeIfPresent(experimentationOptOutAt, forKey: .experimentationOptOutAt)
         }
         if let obfuscation {
             try attributesContainer.encode(true, forKey: .obfuscated)

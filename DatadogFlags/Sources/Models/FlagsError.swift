@@ -31,7 +31,7 @@ public enum FlagsError: Error {
     /// This may occur if required configuration parameters are missing or malformed.
     case invalidConfiguration
 
-    /// `dd_experimentation_opt_out_at` must be an RFC3339 timestamp when immediate opt-out is enabled.
+    /// `dd_experimentation_opt_out_at` must be an RFC3339 timestamp when experimentation opt-out is enabled.
     case invalidContext
 
     /// The first evaluation context did not become ready before the configured initialization timeout.

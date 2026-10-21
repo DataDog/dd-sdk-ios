@@ -13,18 +13,25 @@ internal struct FlagsData: Equatable, Codable {
     let obfuscation: FlagKeyObfuscation?
     // Optional for compatibility with snapshots written before opt-out support.
     let experimentationOptOut: Bool?
+    let experimentationOptOutPolicy: ExperimentationOptOut?
+
+    var effectiveOptOut: ExperimentationOptOut? {
+        experimentationOptOutPolicy ?? (experimentationOptOut == true ? .immediate : nil)
+    }
 
     init(
         flags: [String: FlagAssignment],
         context: FlagsEvaluationContext,
         date: Date,
         obfuscation: FlagKeyObfuscation? = nil,
-        experimentationOptOut: Bool? = nil
+        experimentationOptOut: Bool? = nil,
+        experimentationOptOutPolicy: ExperimentationOptOut? = nil
     ) {
         self.flags = flags
         self.context = context
         self.date = date
         self.obfuscation = obfuscation
         self.experimentationOptOut = experimentationOptOut
+        self.experimentationOptOutPolicy = experimentationOptOutPolicy
     }
 }

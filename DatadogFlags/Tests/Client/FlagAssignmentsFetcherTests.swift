@@ -14,12 +14,42 @@ import DatadogInternal
 final class FlagAssignmentsFetcherTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testFutureOptOutRequiresTypedModeAndExactCutoffAcknowledgement() throws {
+        let cases: [(String, Bool)] = [
+            (#"{}"#, false),
+            (#"{"experimentation_opt_out": true}"#, false),
+            (#"{"experimentation_opt_out_mode": true, "dd_experimentation_opt_out_at": "2026-10-21T12:00:00.123456789Z"}"#, false),
+            (#"{"experimentation_opt_out_mode": "future_experiments_only", "dd_experimentation_opt_out_at": 123}"#, false),
+            (#"{"experimentation_opt_out_mode": "future_experiments_only", "dd_experimentation_opt_out_at": "2026-10-21T12:00:00.123456788Z"}"#, false),
+            (#"{"experimentation_opt_out_mode": "future_experiments_only", "dd_experimentation_opt_out_at": "2026-10-21T14:00:00.123456789+02:00"}"#, true)
+        ]
+        for (options, expected) in cases {
+            let bytes = Data("{\"data\":{\"attributes\":{\"flags\":{},\"evaluation_options\":\(options)}}}".utf8)
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                featureScope: featureScope,
+                fetch: { _, complete in complete(.success(bytes)) }
+            )
+            var succeeded = false
+            fetcher.flagAssignments(
+                for: .mockAny(),
+                experimentationOptOut: .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00.123456789Z")
+            ) {
+                if case .success = $0 { succeeded = true }
+            }
+            XCTAssertEqual(succeeded, expected, options)
+        }
+    }
+
     func testOptedOutRequestRequiresBooleanAcknowledgement() {
         for acknowledgement in [
             "", #", "evaluation_options": {"experimentation_opt_out": false}"#,
             #", "evaluation_options": {"experimentation_opt_out": "true"}"#,
             #", "evaluation_options": {"experimentation_opt_out": null}"#,
-            #", "evaluation_options": {"experimentation_opt_out": true}"#
+            #", "evaluation_options": {"experimentation_opt_out": true}"#,
+            #", "evaluation_options": {"experimentation_opt_out_mode": true, "experimentation_opt_out": true}"#,
+            #", "evaluation_options": {"experimentation_opt_out_mode": "future_experiments_only", "experimentation_opt_out": true}"#
         ] {
             for optedOut in [false, true] {
                 let bytes = Data(#"{"data":{"attributes":{"flags":{}"#.utf8)
@@ -31,10 +61,10 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                     fetch: { _, complete in complete(.success(bytes)) }
                 )
                 var succeeded = false
-                fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: optedOut) {
+                fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: optedOut ? .immediate : nil) {
                     if case .success = $0 { succeeded = true }
                 }
-                XCTAssertEqual(succeeded, !optedOut || acknowledgement.hasSuffix("true}"))
+                XCTAssertEqual(succeeded, !optedOut || (acknowledgement.hasSuffix("true}") && !acknowledgement.contains("experimentation_opt_out_mode")))
             }
         }
     }

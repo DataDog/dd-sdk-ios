@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FEATURE] Add immediate per-subject experimentation opt-out to Flags clients through the `dd_experimentation_opt_out_at` context attribute.
+- [FEATURE] Add immediate and future-experiments-only per-subject opt-out to Flags clients through the `dd_experimentation_opt_out_at` context attribute.
 
 # 3.20.0 / 19-10-2026
 

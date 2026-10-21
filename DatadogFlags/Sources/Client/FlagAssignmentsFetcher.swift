@@ -10,7 +10,7 @@ import DatadogInternal
 internal protocol FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        experimentationOptOut: Bool,
+        experimentationOptOut: ExperimentationOptOut?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
 }
@@ -20,7 +20,7 @@ extension FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
-        flagAssignments(for: evaluationContext, experimentationOptOut: false, completion: completion)
+        flagAssignments(for: evaluationContext, experimentationOptOut: nil, completion: completion)
     }
 }
 
@@ -65,7 +65,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        experimentationOptOut: Bool,
+        experimentationOptOut: ExperimentationOptOut?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         featureScope.context { [weak self] context in
@@ -89,7 +89,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                             guard response.obfuscation == nil || FlagKeyObfuscation.isSupported(source: context.source) else {
                                 throw FlagsError.invalidResponse
                             }
-                            guard !experimentationOptOut || response.experimentationOptOut == true else {
+                            guard experimentationOptOut?.isAcknowledged(by: response) != false else {
                                 throw FlagsError.invalidResponse
                             }
 
