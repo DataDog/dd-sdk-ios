@@ -27,7 +27,8 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             { $0.variation = .boolean(false) },
             { $0.reason = "other" },
             { $0.doLog = false },
-            { $0.serialID = 43 }
+            { $0.serialID = 43 },
+            { $0.observeFullEvaluationData = true }
         ]
         for change in changes {
             var changed = cached
@@ -37,7 +38,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         let encoded = try JSONEncoder().encode(cached)
         let object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
         XCTAssertEqual(Set(object.keys), [
-            "allocationKey", "variationKey", "variationType", "variationValue", "reason", "doLog", "serialId"
+            "allocationKey", "variationKey", "variationType", "variationValue", "reason", "doLog", "serialId", "observeFullEvaluationData"
         ])
         XCTAssertEqual(object["reason"] as? String, "CACHED")
         let decoded = try JSONDecoder().decode(FlagAssignment.self, from: encoded)
