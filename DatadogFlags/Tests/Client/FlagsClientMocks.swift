@@ -168,7 +168,9 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     }
 
     func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot? {
-        guard let data = flagsData else { return nil }
+        guard let data = flagsData else {
+            return nil
+        }
         return .init(context: data.context, assignment: flagAssignment(for: key), observeFullEvaluationData: data.observeFullEvaluationData)
     }
 

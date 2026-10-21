@@ -308,7 +308,9 @@ extension FlagsClient: FlagsClientInternal {
 extension FlagsClient {
     @_spi(Internal)
     public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)? {
-        guard let snapshot = repository.assignmentsSnapshot() else { return nil }
+        guard let snapshot = repository.assignmentsSnapshot() else {
+            return nil
+        }
         return (snapshot.flags, snapshot.observeFullEvaluationData)
     }
 

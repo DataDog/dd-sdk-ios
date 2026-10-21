@@ -189,7 +189,8 @@ extension EvaluationAggregatorTests {
             let scope = FeatureScopeMock()
             let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
             aggregator.recordEvaluation(
-                for: "flag", assignment: .mockAnyBoolean(doLog: false),
+                for: "flag",
+                assignment: .mockAnyBoolean(doLog: false),
                 evaluationContext: .init(targetingKey: targetingKey, attributes: ["private": .string("CONTEXT_CANARY")]),
                 flagError: nil
             )
@@ -211,7 +212,8 @@ extension EvaluationAggregatorTests {
             assignment.observeFullEvaluationData = consent
             for canary in ["ONE", "TWO"] {
                 aggregator.recordEvaluation(
-                    for: "flag", assignment: assignment,
+                    for: "flag",
+                    assignment: assignment,
                     evaluationContext: .init(targetingKey: "", attributes: ["private": .string(canary)]),
                     flagError: "ERROR_CANARY_" + canary
                 )
@@ -229,8 +231,10 @@ extension EvaluationAggregatorTests {
     }
 
     func testAllStableErrorsAndAbsentErrorsInBothModes() throws {
-        let codes = ["PROVIDER_NOT_READY", "PROVIDER_FATAL", "FLAG_NOT_FOUND", "PARSE_ERROR",
-                     "TYPE_MISMATCH", "TARGETING_KEY_MISSING", "INVALID_CONTEXT", "GENERAL"]
+        let codes = [
+            "PROVIDER_NOT_READY", "PROVIDER_FATAL", "FLAG_NOT_FOUND", "PARSE_ERROR",
+            "TYPE_MISMATCH", "TARGETING_KEY_MISSING", "INVALID_CONTEXT", "GENERAL"
+        ]
         for consent in [false, true] {
             let scope = FeatureScopeMock()
             let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)

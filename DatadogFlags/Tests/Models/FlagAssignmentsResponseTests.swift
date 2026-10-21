@@ -454,9 +454,12 @@ final class FlagAssignmentsResponseTests: XCTestCase {
 
 extension FlagAssignmentsResponseTests {
     func testConsentIsTolerantAndPersistedWithTheWholeConfiguration() throws {
-        for field in ["", ", \"observeFullEvaluationData\": true", ", \"observeFullEvaluationData\": false",
-                      ", \"observeFullEvaluationData\": null", ", \"observeFullEvaluationData\": \"true\"",
-                      ", \"observeFullEvaluationData\": 1", ", \"observeFullEvaluationData\": {}"] {
+        let fields = [
+            "", ", \"observeFullEvaluationData\": true", ", \"observeFullEvaluationData\": false",
+            ", \"observeFullEvaluationData\": null", ", \"observeFullEvaluationData\": \"true\"",
+            ", \"observeFullEvaluationData\": 1", ", \"observeFullEvaluationData\": {}"
+        ]
+        for field in fields {
             let json = """
             {"data":{"attributes":{"flags":{"flag":{"allocationKey":"a","variationKey":"v",
             "variationType":"boolean","variationValue":true,"reason":"MATCH","doLog":false,
