@@ -14,6 +14,16 @@ internal class RUMAppLaunchManager {
         // Maximum time for an erroneous ttfd
         static let maxTTFDDuration: TimeInterval = 90 // 90 seconds
     }
+
+    internal struct TimeToFullDisplay {
+        let duration: TimeInterval
+        let vitalId: String
+        let attributes: [AttributeKey: AttributeValue]
+        let view: RUMVitalAppLaunchEvent.View
+        let context: DatadogContext
+        let profiling: DDProfiling?
+        let writer: Writer
+    }
     // MARK: - Properties
 
     private unowned let parent: RUMContextProvider
@@ -22,11 +32,15 @@ internal class RUMAppLaunchManager {
     private let sanitizer = RUMEventSanitizer()
 
     private var timeToInitialDisplay: Double?
-    private var timeToFullDisplay: (
-        duration: TimeInterval,
-        vitalId: String,
-        attributes: [AttributeKey: AttributeValue]
-    )?
+    private var timeToFullDisplay: TimeToFullDisplay?
+    /// To avoid keeping a potentially large context forever, `timeToFullDisplay` is deleted
+    /// after the TTFD event is written. We use this variable to track the fact TTFD already happened,
+    /// preventing writing more than one of these events.
+    private var timeToFullDisplayAlreadyReported = false
+    /// To avoid keeping a potentially large context forever, if the TTID was already rejected when
+    /// the TTFD is processed, this flag signals that condition. When `true`, the TTFD should be
+    /// rejected as well, preventing the data to be stored forever and never written.
+    private var timeToInitialDisplayRejected = false
     private var startupType: RUMVitalAppLaunchEvent.Vital.StartupType?
 
     private lazy var startupTypeHandler = StartupTypeHandler(telemetryController: telemetryController)
@@ -63,6 +77,8 @@ private extension RUMAppLaunchManager {
         guard shouldProcess(command: command, context: context),
               let ttid = time(from: command, context: context)
         else {
+            self.timeToFullDisplay = nil
+            self.timeToInitialDisplayRejected = true
             return
         }
 
@@ -74,8 +90,8 @@ private extension RUMAppLaunchManager {
             let ttfdVital = Vital(
                 id: timeToFullDisplay.vitalId,
                 name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttfd.name,
-                date: context.launchInfo.processLaunchDate,
-                serverTimeOffset: context.serverTimeOffset,
+                date: timeToFullDisplay.context.launchInfo.processLaunchDate,
+                serverTimeOffset: timeToFullDisplay.context.serverTimeOffset,
                 duration: max(ttid, timeToFullDisplay.duration).dd.toInt64Nanoseconds
             )
 
@@ -113,7 +129,7 @@ private extension RUMAppLaunchManager {
                     attributes: attributes,
                     context: context,
                     writer: writer,
-                    activeView: activeView,
+                    view: .init(activeView: activeView),
                     profiling: profiling
                 )
 
@@ -126,13 +142,16 @@ private extension RUMAppLaunchManager {
                         appLaunchMetric: .ttfd,
                         startupType: startupType,
                         attributes: timeToFullDisplay.attributes,
-                        context: context,
-                        writer: writer,
-                        activeView: activeView,
-                        profiling: profiling
+                        context: timeToFullDisplay.context,
+                        writer: timeToFullDisplay.writer,
+                        view: timeToFullDisplay.view,
+                        profiling: timeToFullDisplay.profiling
                     )
 
                     telemetryController.trackTTFD(duration: ttfd.dd.toInt64Nanoseconds)
+
+                    self.timeToFullDisplayAlreadyReported = true
+                    self.timeToFullDisplay = nil
                 }
 
                 telemetryController.sendMetric()
@@ -193,7 +212,7 @@ private extension RUMAppLaunchManager {
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
         writer: Writer,
-        activeView: RUMViewScope?,
+        view: RUMVitalAppLaunchEvent.View,
         profiling: DDProfiling? = nil
     ) {
         let vital = RUMVitalAppLaunchEvent.Vital(
@@ -232,11 +251,7 @@ private extension RUMAppLaunchManager {
             synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
-            view: .init(
-                id: (activeView?.viewUUID).orNull.toRUMDataFormat,
-                name: activeView?.viewName,
-                url: activeView?.viewPath ?? ""
-            ),
+            view: view,
             vital: vital
         )
 
@@ -258,10 +273,15 @@ private extension RUMAppLaunchManager {
         guard shouldProcess(command: command, context: context),
               let ttfd = time(from: command, context: context) else { return }
 
-        let timeToFullDisplay = (
+        let timeToFullDisplay = TimeToFullDisplay(
             duration: timeToInitialDisplay.map { max($0, ttfd) } ?? ttfd,
             vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            attributes: command.globalAttributes.merging(command.attributes) { $1 }
+            attributes: command.globalAttributes.merging(command.attributes) { $1 },
+            // Captured now so a TTFD held until the TTID completes keeps its own view and context.
+            view: RUMVitalAppLaunchEvent.View(activeView: activeView),
+            context: context,
+            profiling: context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling,
+            writer: writer
         )
         self.timeToFullDisplay = timeToFullDisplay
 
@@ -284,18 +304,25 @@ private extension RUMAppLaunchManager {
                     appLaunchMetric: .ttfd,
                     startupType: startupType,
                     attributes: timeToFullDisplay.attributes,
-                    context: context,
-                    writer: writer,
-                    activeView: activeView,
+                    context: timeToFullDisplay.context,
+                    writer: timeToFullDisplay.writer,
+                    view: timeToFullDisplay.view,
                     profiling: profiling
                 )
+
+                self.timeToFullDisplayAlreadyReported = true
+                self.timeToFullDisplay = nil
             }
         }
     }
 
     func shouldProcess(command: RUMTimeToFullDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to full display was already written
-        guard self.timeToFullDisplay == nil else {
+        guard
+            timeToFullDisplay == nil,
+            timeToFullDisplayAlreadyReported == false,
+            timeToInitialDisplayRejected == false
+        else {
             return false
         }
 
@@ -312,6 +339,16 @@ private extension RUMAppLaunchManager {
     func sendTTFDMessageToProfiler(vital: Vital) {
         let contextAttributes: [String: Encodable] = parent.rumContextAttributes
         dependencies.featureScope.send(message: .payload(OperationMessage(attributes: contextAttributes, operation: vital)))
+    }
+}
+
+private extension RUMVitalAppLaunchEvent.View {
+    init(activeView: RUMViewScope?) {
+        self.init(
+            id: (activeView?.viewUUID).orNull.toRUMDataFormat,
+            name: activeView?.viewName,
+            url: activeView?.viewPath ?? ""
+        )
     }
 }
 

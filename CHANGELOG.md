@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Attribute a TTFD vital reported before the TTID is written to the view and connectivity active when `reportAppFullyDisplayed()` was called, instead of the TTID's view. See [#3317][]. (Thanks [@thedavidharris][])
+
 # 3.20.0 / 19-10-2026
 
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
@@ -1302,6 +1304,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
+[#3317]: https://github.com/DataDog/dd-sdk-ios/pull/3317
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
