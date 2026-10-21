@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["candidate", "mode"],
+  "properties": {
+    "candidate": {"type": "object", "required": ["kind"], "properties": {"kind": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}}},
+    "comparison": {"type": ["object", "null"]},
+    "mode": {"enum": ["report-only", "gate"]}
+  }
+}

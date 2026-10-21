@@ -1,0 +1,25 @@
+# Repository-local Factoryspec. It declares the selected FactoryKit layers.
+# scripts/foundation_check.py remains the executable authority.
+schema_version: 1
+kind: factoryspec
+id: ddsdkios.repository
+description: dd-sdk-ios Foundation and Literate configuration.
+capabilities: [foundation, literate]
+checks:
+  - id: ddsdkios.foundation.report
+    description: Run the repository-owned Foundation report.
+    ref:
+      path: factory/checks/foundation-report.yaml
+      id: ddsdkios.foundation.report
+nudges:
+  - id: ddsdkios.foundation.documentation-review
+    description: Give the selected baseline documentation reminder.
+    ref:
+      path: factory/nudges/baseline-documentation-review.yaml
+      id: ddsdkios.foundation.documentation-review
+  - id: ddsdkios.literate.documentation-review
+    description: Give the selected Literate documentation reminder.
+    ref:
+      path: factory/nudges/literate-documentation-review.yaml
+      id: ddsdkios.literate.documentation-review
+skills: []

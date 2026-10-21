@@ -1,0 +1,12 @@
+schema_version: 1
+kind: check
+id: ddsdkios.foundation.report
+description: Run the repository-owned Foundation report and selected Literate check.
+adapter: foundation-report-v1
+implementation:
+  module: factorykit.document_checks
+  function: report_documents
+input_schema: factory/schemas/v1/check-input.schema.json
+output_schema: factory/schemas/v1/check-result.schema.json
+binding:
+  entry_point: scripts/foundation_check.py

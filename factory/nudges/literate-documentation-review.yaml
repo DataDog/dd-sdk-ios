@@ -1,0 +1,18 @@
+schema_version: 1
+kind: nudge
+id: ddsdkios.literate.documentation-review
+description: Give the selected Literate documentation review reminder.
+adapter: foundation-nudge-v1
+implementation:
+  module: factory.literate_extension
+  function: selected_literate_nudge
+input_schema: factory/schemas/v1/nudge-input.schema.json
+output_schema: factory/schemas/v1/nudge-result.schema.json
+guidance:
+  path: docs/README.md
+  heading: Documentation map
+binding:
+  entry_point: scripts/foundation_check.py
+  extension:
+    module: factory.literate_extension
+    function: selected_literate_nudge

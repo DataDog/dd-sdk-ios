@@ -13,53 +13,25 @@ The SDK powers mission-critical telemetry for thousands of customer apps. All ch
 
 ## Documentation Map
 
-```
-AGENTS.md                ← You are here (entry point)
-ZEN.md                   ← SDK philosophy and principles
-CONTRIBUTING.md          ← General contribution guidelines
-
-docs/
-├── ARCHITECTURE.md      ← Module structure, data flow, key abstractions, protocols,
-│                          thread safety, HTTP upload, dependencies
-├── CONVENTIONS.md       ← Naming, SwiftLint rules, conditional compilation,
-│                          generated models, file headers, commit/PR format
-├── ERROR_HANDLING.md    ← Customer-facing error safety + internal telemetry
-│                          error reporting (TelemetrySanitizableError)
-├── DEVELOPMENT.md       ← Recipes for adding features/commands/providers,
-│                          RFC process, build & test quick reference
-├── TESTING.md           ← Test conventions, mock infrastructure (.mockAny(),
-│                          .mockRandom(), .mockWith()), DatadogCoreProxy usage
-├── KNOWN_CONCERNS.md    ← Fragile areas requiring extra caution
-├── SWIZZLING.md         ← Mandatory swizzling patterns and real incidents
-├── LLM_FEATURE_DOCS_GUIDELINES.md  ← How to update *_FEATURE.md files
-├── sdk_performance.md              ← SDK performance benchmarks
-└── session_replay_performance.md   ← Session Replay performance benchmarks
-
-Feature-specific docs (in each module directory):
-├── DatadogRUM/RUM_FEATURE.md
-├── DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
-├── DatadogTrace/TRACE_FEATURE.md
-├── DatadogProfiling/PROFILING_FEATURE.md
-└── DatadogLogs/LOGS_FEATURE.md
-```
+The full documentation map is [`docs/README.md`](docs/README.md). It routes to SDK-wide docs, per-feature docs, and performance benchmarks.
 
 ## Where to Look First
 
 | Task | Start with |
 |------|-----------|
-| Understand module boundaries & data flow | `docs/ARCHITECTURE.md` |
-| Add a new feature, command, or provider | `docs/DEVELOPMENT.md` |
-| Write or fix tests | `docs/TESTING.md` |
-| Check naming, lint, commit format | `docs/CONVENTIONS.md` |
-| Touch swizzling code | `docs/SWIZZLING.md` |
-| Report an error to internal telemetry | `docs/ERROR_HANDLING.md` |
-| Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
-| Work on RUM specifically | `DatadogRUM/RUM_FEATURE.md` |
-| Work on Session Replay specifically | `DatadogSessionReplay/SESSION_REPLAY_FEATURE.md` |
-| Work on Trace (APM) specifically | `DatadogTrace/TRACE_FEATURE.md` |
-| Work on Profiling specifically | `DatadogProfiling/PROFILING_FEATURE.md` |
-| Work on Logs specifically | `DatadogLogs/LOGS_FEATURE.md` |
-| Update a `*_FEATURE.md` file | `docs/LLM_FEATURE_DOCS_GUIDELINES.md` |
+| Understand module boundaries & data flow | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| Add a new feature, command, or provider | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) |
+| Write or fix tests | [`docs/TESTING.md`](docs/TESTING.md) |
+| Check naming, lint, commit format | [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) |
+| Touch swizzling code | [`docs/SWIZZLING.md`](docs/SWIZZLING.md) |
+| Report an error to internal telemetry | [`docs/ERROR_HANDLING.md`](docs/ERROR_HANDLING.md) |
+| Modify a fragile area | [`docs/KNOWN_CONCERNS.md`](docs/KNOWN_CONCERNS.md) |
+| Work on RUM specifically | [`DatadogRUM/RUM_FEATURE.md`](DatadogRUM/RUM_FEATURE.md) |
+| Work on Session Replay specifically | [`DatadogSessionReplay/SESSION_REPLAY_FEATURE.md`](DatadogSessionReplay/SESSION_REPLAY_FEATURE.md) |
+| Work on Trace (APM) specifically | [`DatadogTrace/TRACE_FEATURE.md`](DatadogTrace/TRACE_FEATURE.md) |
+| Work on Profiling specifically | [`DatadogProfiling/PROFILING_FEATURE.md`](DatadogProfiling/PROFILING_FEATURE.md) |
+| Work on Logs specifically | [`DatadogLogs/LOGS_FEATURE.md`](DatadogLogs/LOGS_FEATURE.md) |
+| Update a `*_FEATURE.md` file | [`docs/LLM_FEATURE_DOCS_GUIDELINES.md`](docs/LLM_FEATURE_DOCS_GUIDELINES.md) |
 
 ## Critical Rules (always apply)
 

@@ -4,7 +4,7 @@
 
 The SDK is a **modular monorepo**:
 
-```
+```text
 DatadogInternal (shared protocols, types — Foundation only, no external deps)
     ├── DatadogCore (initialization, storage, upload)
     ├── DatadogLogs
@@ -66,7 +66,7 @@ Common oversights:
 
 ### Storage Pipeline
 
-```
+```text
 Feature writes event → AsyncWriter → FileWriter → FilesOrchestrator → disk file
                                                                          ↓
 DataUploadWorker (periodic) → DataReader → RequestBuilder → HTTPClient → Datadog backend
