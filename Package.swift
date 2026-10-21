@@ -199,7 +199,7 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(
                     name: "DatadogWebP",
-                    condition: .when(platforms: [.iOS])
+                    condition: .when(platforms: [.iOS, .macCatalyst])
                 ),
             ],
             path: "DatadogSessionReplay/Sources"
