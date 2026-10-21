@@ -18,8 +18,8 @@ import UniformTypeIdentifiers
 
 @Suite(.datadogTesting)
 struct UIImageWebPTests {
-    @Test(arguments: [CGFloat(1), 2, 3])
-    func preservesPixelDimensionsAndRowOrder(scale: CGFloat) throws {
+    @Test(arguments: [CGFloat(1), 2, 3], [false, true])
+    func preservesPixelDimensionsAndRowOrder(scale: CGFloat, resizing: Bool) throws {
         // Given
         let width = 64
         let height = 32
@@ -33,23 +33,16 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(
-            image.webPData()
-        )
+        let maxSize = resizing ? CGSize(width: 16, height: 16) : CGSize(width: 1_000, height: 1_000)
+        let data = try #require(image.webPData(maxSize: maxSize))
 
         // Then
-        let source = try #require(
-            CGImageSourceCreateWithData(data as CFData, nil)
-        )
+        let source = try #require(CGImageSourceCreateWithData(data as CFData, nil))
         #expect(CGImageSourceGetType(source) as String? == UTType.webP.identifier)
-        let decoded = try #require(
-            CGImage.make(data: data)
-        )
-        #expect(decoded.width == width)
-        #expect(decoded.height == height)
-        let output = try #require(
-            decoded.premultipliedRGBA()
-        )
+        let decoded = try #require(CGImage.make(data: data))
+        #expect(decoded.width == (resizing ? Int(16 * scale) : width))
+        #expect(decoded.height == (resizing ? Int(8 * scale) : height))
+        let output = try #require(decoded.premultipliedRGBA())
         let top = try #require(output.first)
         let bottom = try #require(output.last)
         let colorTolerance = 15
@@ -79,14 +72,10 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(
-            image.webPData()
-        )
+        let data = try #require(image.webPData())
 
         // Then
-        let output = try #require(
-            CGImage.make(data: data)?.premultipliedRGBA()
-        )
+        let output = try #require(CGImage.make(data: data)?.premultipliedRGBA())
         #expect(output.map { $0.alpha } == alphaValues)
         let halfOpacityRed = output[1]
         let colorTolerance = 3
@@ -116,14 +105,10 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(
-            image.webPData()
-        )
+        let data = try #require(image.webPData())
 
         // Then
-        let output = try #require(
-            CGImage.make(data: data)?.premultipliedRGBA()
-        )
+        let output = try #require(CGImage.make(data: data)?.premultipliedRGBA())
         let secondRowPixel = output[width]
         let expected = (
             red: 120,
@@ -138,8 +123,8 @@ struct UIImageWebPTests {
         #expect(secondRowPixel.alpha == expected.alpha)
     }
 
-    @Test(arguments: [CGImageAlphaInfo.none, .noneSkipFirst, .noneSkipLast])
-    func encodesOpaqueImages(alphaInfo: CGImageAlphaInfo) throws {
+    @Test(arguments: [CGImageAlphaInfo.none, .noneSkipFirst, .noneSkipLast], [false, true])
+    func encodesOpaqueImages(alphaInfo: CGImageAlphaInfo, resizing: Bool) throws {
         // Given
         let inputPixel: [UInt8] = switch alphaInfo {
         case .noneSkipFirst: [0, 120, 60, 30]
@@ -164,7 +149,7 @@ struct UIImageWebPTests {
 
         // When
         let data = try #require(
-            image.webPData()
+            image.webPData(maxSize: resizing ? CGSize(width: 8, height: 4) : image.size)
         )
 
         // Then
@@ -193,9 +178,7 @@ struct UIImageWebPTests {
         let expected = try #require(image.cgImage?.premultipliedRGBA()?.first)
 
         // When
-        let data = try #require(
-            image.webPData()
-        )
+        let data = try #require(image.webPData())
 
         // Then
         let pixel = try #require(CGImage.make(data: data)?.premultipliedRGBA()?.first)
@@ -219,12 +202,10 @@ struct UIImageWebPTests {
         )
     }
 
-    @Test
-    func convertsDisplayP3ToSRGB() throws {
+    @Test(arguments: [false, true])
+    func convertsDisplayP3ToSRGB(resizing: Bool) throws {
         // Given
-        let colorSpace = try #require(
-            CGColorSpace(name: CGColorSpace.displayP3)
-        )
+        let colorSpace = try #require(CGColorSpace(name: CGColorSpace.displayP3))
         let color: [UInt8] = [120, 160, 50, 255]
         let image = try #require(
             UIImage(
@@ -238,7 +219,7 @@ struct UIImageWebPTests {
 
         // When
         let data = try #require(
-            image.webPData()
+            image.webPData(maxSize: resizing ? CGSize(width: 8, height: 8) : image.size)
         )
 
         // Then
@@ -279,24 +260,84 @@ struct UIImageWebPTests {
         }
 
         // Then
-        let decoded = try #require(
-            CGImage.make(data: data)
-        )
+        let decoded = try #require(CGImage.make(data: data))
         #expect(decoded.width == 16)
         #expect(decoded.height == 16)
         let pixel = try #require(decoded.premultipliedRGBA()?.first)
         #expect(pixel.alpha == 128)
     }
 
+    @Test
+    func preservesTransparencyWhenResizing() throws {
+        // Given
+        let pixel: [UInt8] = [128, 0, 0, 128]
+        let image = try #require(
+            UIImage(pixels: Array(repeating: pixel, count: 16 * 8).flatMap { $0 }, width: 16, height: 8)
+        )
+
+        // When
+        let data = try #require(image.webPData(maxSize: CGSize(width: 8, height: 4)))
+
+        // Then
+        let decoded = try #require(CGImage.make(data: data))
+        #expect(decoded.width == 8)
+        #expect(decoded.height == 4)
+        let output = try #require(decoded.premultipliedRGBA())
+        let colorTolerance = 3
+        #expect(
+            output.allSatisfy {
+                $0.alpha == 128
+                && abs(Int($0.red) - 128) <= colorTolerance
+                && Int($0.green) <= colorTolerance
+                && Int($0.blue) <= colorTolerance
+            }
+        )
+    }
+
     @Test(arguments: [(16_384, 1), (1, 16_384)])
-    func rejectsImagesLargerThanWebPLimit(width: Int, height: Int) throws {
+    func encodesVeryWideAndTallImages(width: Int, height: Int) throws {
         // Given
         let image = try #require(
             UIImage(pixels: [UInt8](repeating: 0, count: width * height * 4), width: width, height: height)
         )
 
         // When
-        let data = image.webPData()
+        let data = try #require(image.webPData())
+
+        // Then
+        let decoded = try #require(CGImage.make(data: data))
+        #expect(decoded.width == (width > 1 ? 1_000 : 1))
+        #expect(decoded.height == (height > 1 ? 1_000 : 1))
+    }
+
+    @Test(
+        arguments: [
+            CGSize.zero,
+            CGSize(width: -1, height: 1),
+            CGSize(width: CGFloat.nan, height: 1),
+            CGSize(width: 1, height: CGFloat.infinity)
+        ]
+    )
+    func rejectsInvalidMaximumSize(maxSize: CGSize) throws {
+        // Given
+        let image = try #require(UIImage(pixels: [255, 0, 0, 255], width: 1, height: 1))
+
+        // When
+        let data = image.webPData(maxSize: maxSize)
+
+        // Then
+        #expect(data == nil)
+    }
+
+    @Test(arguments: [(16_384, 1), (1, 16_384)])
+    func rejectsOutputLargerThanWebPLimit(width: Int, height: Int) throws {
+        // Given
+        let image = try #require(
+            UIImage(pixels: [UInt8](repeating: 0, count: width * height * 4), width: width, height: height)
+        )
+
+        // When
+        let data = image.webPData(maxSize: CGSize(width: 16_384, height: 16_384))
 
         // Then
         #expect(data == nil)
