@@ -16,7 +16,11 @@ Swift `String` contains valid Unicode scalars, and the public native/OpenFeature
 
 ## Validation and release gate
 
-This change was prepared on Linux aarch64, with no Swift, Xcode, Apple SDKs, CocoaPods or simulator. Swift grammar checks are not compilation. Native XCTest, lint, API surface generation and actual artifact/wire execution remain **unverified** here.
+The editing workspace is Linux aarch64 without Swift, Xcode, Apple SDKs, CocoaPods or a simulator. Apple validation ran remotely on the native repository's Xcode 26 / Swift 6.2 runner.
+
+[Artifact validation job 2162788628](https://gitlab.ddbuild.io/DataDog/dd-sdk-ios/-/jobs/2162788628) passed with native commit `768090df0426e2aadd12d550f6ad0371b32dd13f` and provider commit `57d5840122567bc1127c4f7e1a9436af44429a40`. The job ran 55 provider tests, built the actual SPM SDK/provider probe, verified 72 evaluations in 35 buckets and 24 unchanged assignment requests, and passed CocoaPods static and dynamic iOS simulator tests with OpenFeature 0.3.0. Wire assertions include retry after HTTP 500, protected/full consent, refresh before flush, offline restoration, default/error results, disabled tracking and DoLog false. The executable SHA-256 was `68e229f902a521981f8b95e5c2c922f526908cdc424a22b3158e9912be4fd90c`; source identities, lockfiles, command logs and captured wire bodies are retained as job artifacts.
+
+Native lint, API surface verification and SPI documentation builds also passed. The focused native Flags XCTest job and broader platform CI must be checked separately; the macOS wire probe is not proof of every supported platform. The provider's normal Xcode 16.2 CI cannot build the paired native package's Swift 6.2 tools manifest and still requires a compatible runner.
 
 On macOS with Xcode 26 / Swift 6.2 (already required by this SDK):
 

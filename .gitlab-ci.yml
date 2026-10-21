@@ -724,3 +724,22 @@ Flags PII Artifact Validation:
     paths:
       - pii-evidence/
     expire_in: 30 days
+
+Flags PII Unit Tests:
+  stage: test
+  needs:
+    - job: Build Dependencies
+      artifacts: true
+  rules:
+    - !reference [.test-pipeline-job, rules]
+  timeout: 30m
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
+    - make clean repo-setup ENV=ci
+    - make test-ios SCHEME="DatadogFlags" OS="$DEFAULT_IOS_OS" PLATFORM="iOS Simulator" DEVICE="iPhone 17 Pro"
+  artifacts:
+    when: always
+    paths:
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
+    expire_in: 30 days
