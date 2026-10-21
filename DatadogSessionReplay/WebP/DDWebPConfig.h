@@ -16,7 +16,11 @@
 #define DD_WEBP_CONFIG_H
 
 #define WEBP_USE_THREAD 1
+
+// SwiftPM builds WebP separately, so its API must remain visible to the Swift target.
+#ifndef SWIFT_PACKAGE
 #define WEBP_EXTERN extern __attribute__((visibility("hidden")))
+#endif
 #define SHARPYUV_EXTERN extern __attribute__((visibility("hidden")))
 #pragma GCC visibility push(hidden)
 
