@@ -439,8 +439,16 @@ extension SwiftUINavigationOwnershipTests {
         let foundation = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation)
         let binding = try XCTUnwrap(foundation.makeBinding())
         let eligible = try XCTUnwrap(foundation.makeEligibilityCheck())
-        let host = fixture.install(Text("Reader attachment"))
-        let container = try XCTUnwrap(host.parent)
+        let container = UIViewController()
+        let host = UIViewController()
+        fixture.window.rootViewController = container
+        container.addChild(host)
+        host.view.frame = container.view.bounds
+        host.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        container.view.addSubview(host.view)
+        host.didMove(toParent: container)
+        fixture.window.makeKeyAndVisible()
+        XCTAssertTrue(host.view.window === fixture.window)
         let sibling = UIViewController()
         container.addChild(sibling)
         container.view.addSubview(sibling.view)
@@ -535,7 +543,10 @@ extension SwiftUINavigationOwnershipTests {
         let callback = try XCTUnwrap(holder.enter(binding))
         let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
         defer { holder.retire(callback) }
-        let host = fixture.install(Text("Reader retirement"))
+        let host = UIViewController()
+        fixture.window.rootViewController = host
+        fixture.window.makeKeyAndVisible()
+        XCTAssertTrue(host.view.window === fixture.window)
         var attachedRegistrations = 0
         var mounts = 0
         let reader = RUMSceneIdentifierReader(

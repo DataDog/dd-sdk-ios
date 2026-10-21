@@ -1102,7 +1102,8 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         let view = metadata.view(for: destination)
         var attributes = view.attributes
         #if DD_SDK_COMPILED_FOR_TESTING
-        attributes["native_test_claim"] = container.uuidString + ":" + String(depth) + ":" + String(generation)
+        let testSlot = depth > 0 && depth <= slots.count ? slots[depth - 1] : rootSlot
+        attributes["native_test_claim"] = container.uuidString + ":" + String(depth) + ":" + testSlot.uuidString
         attributes["native_test_depth"] = depth
         #endif
         let slot = depth > 0 && depth <= slots.count ? slots[depth - 1] : rootSlot
