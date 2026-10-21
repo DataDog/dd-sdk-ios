@@ -14,6 +14,31 @@ import DatadogInternal
 final class FlagAssignmentsFetcherTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testOptedOutRequestRequiresBooleanAcknowledgement() {
+        for acknowledgement in [
+            "", #", "evaluation_options": {"experimentation_opt_out": false}"#,
+            #", "evaluation_options": {"experimentation_opt_out": "true"}"#,
+            #", "evaluation_options": {"experimentation_opt_out": null}"#,
+            #", "evaluation_options": {"experimentation_opt_out": true}"#
+        ] {
+            for optedOut in [false, true] {
+                let bytes = Data(#"{"data":{"attributes":{"flags":{}"#.utf8)
+                    + Data(acknowledgement.utf8) + Data("}}}".utf8)
+                let fetcher = FlagAssignmentsFetcher(
+                    customEndpoint: nil,
+                    customHeaders: nil,
+                    featureScope: featureScope,
+                    fetch: { _, complete in complete(.success(bytes)) }
+                )
+                var succeeded = false
+                fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: optedOut) {
+                    if case .success = $0 { succeeded = true }
+                }
+                XCTAssertEqual(succeeded, !optedOut || acknowledgement.hasSuffix("true}"))
+            }
+        }
+    }
+
     func testFlagAssignments() throws {
         // Given
         featureScope.contextMock = .mockWith(site: .us3)

@@ -36,6 +36,15 @@ import DatadogInternal
 /// let themeColor = client.getStringValue(key: "theme-color", defaultValue: "blue")
 /// ```
 public final class FlagsClient {
+    /// Controls whether the client honors each subject's experimentation opt-out timestamp.
+    public enum ExperimentationOptOutMode {
+        /// Ignore the `dd_experimentation_opt_out_at` context attribute.
+        case disabled
+        /// Exclude subjects with a valid RFC3339 timestamp from experiment allocations immediately.
+        /// This includes future timestamps. Ordinary feature allocations remain available.
+        case immediate
+    }
+
     /// The default client name used when no name is specified.
     ///
     /// Use this constant when you need to reference the default client by name.
@@ -45,6 +54,7 @@ public final class FlagsClient {
         static let providerNotReady = "PROVIDER_NOT_READY"
         static let flagNotFound = "FLAG_NOT_FOUND"
         static let typeMismatch = "TYPE_MISMATCH"
+        static let invalidContext = "INVALID_CONTEXT"
     }
 
     private let repository: any FlagsRepositoryProtocol
@@ -103,10 +113,30 @@ public final class FlagsClient {
         name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
+        create(experimentationOptOutMode: .disabled, name: name, in: core)
+    }
+
+    /// Creates a client with an explicit experimentation opt-out mode.
+    ///
+    /// The mode is fixed for this named client. A repeated creation returns the existing client.
+    /// Supply a string RFC3339 timestamp in `dd_experimentation_opt_out_at` to exclude a subject.
+    /// Omit that attribute for subjects who can participate. Invalid values return application defaults.
+    /// This does not change evaluation telemetry settings.
+    ///
+    /// - Parameters:
+    ///   - name: A unique name for this client.
+    ///   - experimentationOptOutMode: Whether to honor the opt-out timestamp.
+    ///   - core: The Datadog SDK core instance.
+    @discardableResult
+    public static func create(
+        experimentationOptOutMode: ExperimentationOptOutMode,
+        name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClientProtocol {
         // To ensure the correct registration order between Core and Features,
         // the entire initialization flow is synchronized on the main thread.
         runOnMainThreadSync {
-            doCreate(name: name, in: core)
+            doCreate(name: name, in: core, experimentationOptOutMode: experimentationOptOutMode)
         }
     }
 
@@ -154,7 +184,8 @@ public final class FlagsClient {
 
     internal static func doCreate(
         name: String,
-        in core: DatadogCoreProtocol
+        in core: DatadogCoreProtocol,
+        experimentationOptOutMode: ExperimentationOptOutMode = .disabled
     ) -> FlagsClientProtocol {
         guard let feature = core.get(feature: FlagsFeature.self) else {
             reportIssue(
@@ -186,7 +217,8 @@ public final class FlagsClient {
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
-                initializationTimeout: feature.initializationTimeout
+                initializationTimeout: feature.initializationTimeout,
+                experimentationOptOutMode: experimentationOptOutMode
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
@@ -218,6 +250,16 @@ extension FlagsClient: FlagsClientProtocol {
             reason: "DEFAULT",
             doLog: false
         )
+
+        guard !repository.hasInvalidContext else {
+            evaluationLogger.logEvaluation(
+                for: key,
+                assignment: defaultAssignment,
+                evaluationContext: .empty,
+                flagError: EvaluationError.invalidContext
+            )
+            return FlagDetails(key: key, value: defaultValue, error: .invalidContext)
+        }
 
         guard let context = repository.context else {
             evaluationLogger.logEvaluation(

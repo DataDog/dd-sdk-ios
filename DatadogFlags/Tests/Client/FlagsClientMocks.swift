@@ -185,6 +185,7 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
 }
 
 final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
+    var experimentationOptOutRequests: [Bool] = []
     var flagAssignmentsStub: (
         (
             FlagsEvaluationContext,
@@ -205,8 +206,10 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: Bool,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
+        experimentationOptOutRequests.append(experimentationOptOut)
         flagAssignmentsStub?(evaluationContext, completion)
     }
 }

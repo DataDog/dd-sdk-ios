@@ -13,6 +13,27 @@ import DatadogInternal
 final class FlagAssignmentsRequestTests: XCTestCase {
     private let testURL = URL(string: "https://test.example.com/precompute-assignments")!
 
+    func testExperimentationOptOutUsesEvaluationOptions() throws {
+        for optedOut in [false, true] {
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: testURL,
+                evaluationContext: .init(targetingKey: "subject"),
+                context: .mockAny(),
+                customHeaders: nil,
+                experimentationOptOut: optedOut
+            )
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
+            let data = try XCTUnwrap(body["data"] as? [String: Any])
+            let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
+            let options = attributes["evaluation_options"] as? [String: Any]
+            if optedOut {
+                XCTAssertEqual(options?["experimentation_opt_out"] as? Bool, true)
+            } else {
+                XCTAssertNil(options, "Legacy requests remain unchanged")
+            }
+        }
+    }
+
     func testFlagAssignmentsRequest() throws {
         // Given
         let evaluationContext = FlagsEvaluationContext(

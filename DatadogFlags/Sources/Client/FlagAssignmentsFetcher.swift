@@ -10,8 +10,18 @@ import DatadogInternal
 internal protocol FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: Bool,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
+}
+
+extension FlagAssignmentsFetching {
+    func flagAssignments(
+        for evaluationContext: FlagsEvaluationContext,
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
+    ) {
+        flagAssignments(for: evaluationContext, experimentationOptOut: false, completion: completion)
+    }
 }
 
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
@@ -55,6 +65,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: Bool,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         featureScope.context { [weak self] context in
@@ -67,7 +78,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     url: self.url(with: context),
                     evaluationContext: evaluationContext,
                     context: context,
-                    customHeaders: self.customHeaders
+                    customHeaders: self.customHeaders,
+                    experimentationOptOut: experimentationOptOut
                 )
                 self.fetch(request) { [featureScope] result in
                     switch result {
@@ -75,6 +87,9 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         do {
                             let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
                             guard response.obfuscation == nil || FlagKeyObfuscation.isSupported(source: context.source) else {
+                                throw FlagsError.invalidResponse
+                            }
+                            guard !experimentationOptOut || response.experimentationOptOut == true else {
                                 throw FlagsError.invalidResponse
                             }
 

@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add immediate per-subject experimentation opt-out to Flags clients through the `dd_experimentation_opt_out_at` context attribute.
+
 # 3.20.0 / 19-10-2026
 
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.

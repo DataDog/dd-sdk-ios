@@ -45,6 +45,32 @@ final class FlagsStateManagerTests: XCTestCase {
         XCTAssertEqual(manager.currentState, .ready)
     }
 
+    func testObsoleteRequestCannotPublishStateOrNotify() {
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+        manager.updateState(.reconciling)
+        var callbackCalled = false
+        let accepted = manager.updateState(.ready, if: { false }) { callbackCalled = true }
+        XCTAssertFalse(accepted)
+        XCTAssertFalse(callbackCalled)
+        XCTAssertEqual(manager.currentState, .reconciling)
+        XCTAssertEqual(listener.states, [.notReady, .reconciling])
+    }
+
+    func testContextChangeInCompletionDoesNotEmitOldReadyNotification() {
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+        var currentRequest = true
+        manager.updateState(.ready, if: { currentRequest }) {
+            currentRequest = false
+            manager.updateState(.error)
+        }
+        XCTAssertEqual(manager.currentState, .error)
+        XCTAssertEqual(listener.states, [.notReady, .error])
+    }
+
     func testListenerReceivesCurrentStateOnAdd() {
         let manager = FlagsStateManager()
         manager.updateState(.ready)

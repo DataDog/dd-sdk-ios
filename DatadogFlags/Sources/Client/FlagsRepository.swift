@@ -13,6 +13,7 @@ internal protocol FlagsRepositoryProtocol {
     var context: FlagsEvaluationContext? { get }
 
     var state: FlagsStateObservable { get }
+    var hasInvalidContext: Bool { get }
 
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
@@ -24,6 +25,10 @@ internal protocol FlagsRepositoryProtocol {
     func flagAssignments() -> [String: FlagAssignment]?
 
     func reset()
+}
+
+extension FlagsRepositoryProtocol {
+    var hasInvalidContext: Bool { false }
 }
 
 internal typealias FlagsInitializationTimeoutCancellation = () -> Void
@@ -83,6 +88,17 @@ internal final class FlagsRepository {
     private let featureScope: any FeatureScope
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
+    private let experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode
+
+    @ReadWriteLock
+    private var optOutRequest = OptOutRequest()
+
+    private struct OptOutRequest {
+        var generation: UInt64 = 0
+        var context: FlagsEvaluationContext?
+        var isOptedOut = false
+        var isInvalid = false
+    }
 
     private let initializationLock = NSLock()
     private var didStartInitialization = false
@@ -143,6 +159,12 @@ internal final class FlagsRepository {
         guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
             return nil
         }
+        if experimentationOptOutMode == .immediate {
+            let request = optOutRequest
+            guard !request.isInvalid,
+                  request.context == data.context,
+                  request.isOptedOut == (data.experimentationOptOut == true) else { return nil }
+        }
         return data
     }
 
@@ -173,13 +195,15 @@ internal final class FlagsRepository {
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
-        scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
+        scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil,
+        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
         self.initializationTimeout = initializationTimeout
+        self.experimentationOptOutMode = experimentationOptOutMode
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         featureScope.context { [weak self] context in
             self?.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
@@ -213,6 +237,7 @@ internal final class FlagsRepository {
     private func makeInitializationCompletion(
         _ completion: @escaping (Result<Void, FlagsError>) -> Void,
         context: FlagsEvaluationContext,
+        requestGeneration: UInt64,
         beforeScheduling: () -> Void
     ) -> InitializationCompletion? {
         initializationLock.lock()
@@ -242,7 +267,8 @@ internal final class FlagsRepository {
             let timeoutState: FlagsClientState = self.readableFlagsData?.context == context ? .stale : .error
             let accepted = self.stateManager.updateState(
                 timeoutState,
-                unlessCurrentStateIs: [.ready, .stale]
+                unlessCurrentStateIs: [.ready, .stale],
+                if: { self.isCurrentRequest(requestGeneration) }
             ) {
                 completion(.failure(.initializationTimedOut))
             }
@@ -323,10 +349,15 @@ internal final class FlagsRepository {
         }
         featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
     }
+
+    private func isCurrentRequest(_ generation: UInt64) -> Bool {
+        experimentationOptOutMode == .disabled || optOutRequest.generation == generation
+    }
 }
 
 extension FlagsRepository: FlagsRepositoryProtocol {
     var state: FlagsStateObservable { stateManager }
+    var hasInvalidContext: Bool { optOutRequest.isInvalid }
 
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
@@ -339,6 +370,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     func flagAssignment(for key: String) -> FlagAssignment? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error else {
+            return nil
+        }
+        if experimentationOptOutMode == .immediate, readableFlagsData == nil {
             return nil
         }
         let supportsObfuscation = supportsFlagKeyObfuscation
@@ -373,8 +407,31 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        let initializationCompletion = makeInitializationCompletion(completion, context: context) {
-            stateManager.updateState(.reconciling)
+        var request = OptOutRequest()
+        if experimentationOptOutMode == .immediate {
+            let optedOut = Result { try context.experimentationOptOut() }
+            _optOutRequest.mutate { current in
+                current.generation &+= 1
+                current.context = context
+                switch optedOut {
+                case .success(let value):
+                    current.isOptedOut = value
+                    current.isInvalid = false
+                case .failure:
+                    current.isOptedOut = false
+                    current.isInvalid = true
+                    featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
+                }
+                request = current
+            }
+            if request.isInvalid {
+                stateManager.updateState(.error, if: { self.isCurrentRequest(request.generation) })
+                completion(.failure(.invalidContext))
+                return
+            }
+        }
+        let initializationCompletion = makeInitializationCompletion(completion, context: context, requestGeneration: request.generation) {
+            stateManager.updateState(.reconciling, if: { self.isCurrentRequest(request.generation) })
         }
         let takeCompletion: () -> ((Result<Void, FlagsError>) -> Void)? = {
             initializationCompletion?.take()
@@ -387,41 +444,69 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 takeCompletion()?(.failure(.clientNotInitialized))
                 return
             }
+            guard self.isCurrentRequest(request.generation) else {
+                takeCompletion()?(.failure(.invalidResponse))
+                return
+            }
 
             let versionAtStart = self.flagsDataVersion
             if initializationCompletion == nil {
-                self.stateManager.updateState(.reconciling)
+                self.stateManager.updateState(.reconciling, if: { self.isCurrentRequest(request.generation) })
             }
 
-            self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
-                switch result {
-                case .success(let response):
-                    guard let self else {
-                        takeCompletion()?(.failure(.clientNotInitialized))
-                        return
+            self.flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: request.isOptedOut) { [weak self] result in
+                guard let self else {
+                    takeCompletion()?(.failure(.clientNotInitialized))
+                    return
+                }
+                guard self.isCurrentRequest(request.generation) else {
+                    takeCompletion()?(.failure(.invalidResponse))
+                    return
+                }
+                let validated = result.flatMap { response -> Result<FlagAssignmentsResponse, FlagsError> in
+                    guard !request.isOptedOut || response.experimentationOptOut == true else {
+                        return .failure(.invalidResponse)
                     }
-                    self.flagsData = .init(
+                    return .success(response)
+                }
+                switch validated {
+                case .success(let response):
+                    let data = FlagsData(
                         flags: response.flags,
                         context: context,
                         date: self.dateProvider.now,
-                        obfuscation: response.obfuscation
+                        obfuscation: response.obfuscation,
+                        experimentationOptOut: request.isOptedOut ? true : nil
                     )
-                    self._flagsDataVersion.mutate { $0 += 1 }
-                    self.writeState()
+                    var accepted = false
+                    self._optOutRequest.mutate { current in
+                        guard self.experimentationOptOutMode == .disabled || current.generation == request.generation else {
+                            return
+                        }
+                        self.flagsData = data
+                        self._flagsDataVersion.mutate { $0 += 1 }
+                        self.writeState()
+                        accepted = true
+                    }
+                    guard accepted else {
+                        takeCompletion()?(.failure(.invalidResponse))
+                        return
+                    }
                     let operationCompletion = takeCompletion()
                     if initializationCompletion != nil {
-                        self.stateManager.updateState(.ready) {
+                        let published = self.stateManager.updateState(.ready, if: { self.isCurrentRequest(request.generation) }) {
                             operationCompletion?(.success(()))
                         }
+                        if !published { operationCompletion?(.failure(.invalidResponse)) }
                     } else {
-                        self.stateManager.updateState(.ready)
-                        operationCompletion?(.success(()))
+                        let published = self.stateManager.updateState(.ready, if: { self.isCurrentRequest(request.generation) })
+                        operationCompletion?(published ? .success(()) : .failure(.invalidResponse))
                     }
                 case .failure(let error):
                     // Only update state if no newer request has succeeded.
                     // This prevents an older failing request from clearing data
                     // written by a newer successful request.
-                    guard self?.flagsDataVersion == versionAtStart else {
+                    guard self.flagsDataVersion == versionAtStart else {
                         takeCompletion()?(.failure(error))
                         return
                     }
@@ -430,23 +515,28 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     // Only use cached flags if they match the requested context to avoid
                     // serving flags from a different user/context.
                     let operationCompletion = takeCompletion()
-                    let newState: FlagsClientState
-                    // Source detection can finish while the request is in flight.
-                    if self?.readableFlagsData?.context == context {
-                        newState = .stale
-                    } else {
-                        // Clear cached data to prevent cross-context flag leakage.
-                        // Without this, flagAssignment() could return the previous
-                        // user's flags while in .error state.
-                        self?.flagsData = nil
-                        newState = .error
+                    var newState: FlagsClientState = .error
+                    self._optOutRequest.mutate { current in
+                        guard self.experimentationOptOutMode == .disabled || current.generation == request.generation else {
+                            return
+                        }
+                        // The current generation is locked here. Do not read optOutRequest again.
+                        if let data = self.flagsData,
+                           data.context == context,
+                           data.obfuscation == nil || self.supportsFlagKeyObfuscation,
+                           self.experimentationOptOutMode == .disabled || current.isOptedOut == (data.experimentationOptOut == true) {
+                            newState = .stale
+                        } else {
+                            self.flagsData = nil
+                        }
                     }
                     if initializationCompletion != nil {
-                        self?.stateManager.updateState(newState) {
+                        let published = self.stateManager.updateState(newState, if: { self.isCurrentRequest(request.generation) }) {
                             operationCompletion?(.failure(error))
                         }
+                        if !published { operationCompletion?(.failure(error)) }
                     } else {
-                        self?.stateManager.updateState(newState)
+                        self.stateManager.updateState(newState, if: { self.isCurrentRequest(request.generation) })
                         operationCompletion?(.failure(error))
                     }
                 }
@@ -455,6 +545,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func reset() {
+        _optOutRequest.mutate { current in
+            current = OptOutRequest(generation: current.generation &+ 1)
+        }
         // Clear disk first, then memory, then update state.
         // This prevents race conditions where a listener reacts to the state
         // change and queries the data store before disk is cleared.

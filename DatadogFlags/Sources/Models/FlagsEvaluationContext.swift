@@ -64,3 +64,45 @@ public struct FlagsEvaluationContext: Equatable, Codable {
         self.attributes = attributes
     }
 }
+
+extension FlagsEvaluationContext {
+    /// Parse the customer-owned timestamp without coercing other context value types.
+    internal func experimentationOptOut() throws -> Bool {
+        guard let value = attributes["dd_experimentation_opt_out_at"] else {
+            return false
+        }
+        guard case .string(let timestamp) = value else { throw FlagsError.invalidContext }
+        // Require a full date, time and offset. Foundation also accepts incomplete ISO8601 dates.
+        let pattern = #"^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?(?:[Zz]|[+-][0-9]{2}:[0-9]{2})\z"#
+        guard timestamp.range(of: pattern, options: .regularExpression) != nil else {
+            throw FlagsError.invalidContext
+        }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let normalized = timestamp.uppercased()
+        // ISO8601DateFormatter normalizes impossible dates and timezone offsets. Reject those first.
+        let fields = normalized.prefix(19).split { !$0.isNumber }.compactMap { Int($0) }
+        guard fields.count == 6 else { throw FlagsError.invalidContext }
+        let components = DateComponents(
+            year: fields[0],
+            month: fields[1],
+            day: fields[2],
+            hour: fields[3],
+            minute: fields[4],
+            second: fields[5]
+        )
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
+        guard components.isValidDate(in: calendar) else { throw FlagsError.invalidContext }
+        if normalized.last != "Z" {
+            let offset = normalized.suffix(5).split(separator: ":").compactMap { Int($0) }
+            guard offset.count == 2, offset[0] < 24, offset[1] < 60 else { throw FlagsError.invalidContext }
+        }
+        if formatter.date(from: normalized) != nil {
+            return true
+        }
+        formatter.formatOptions = [.withInternetDateTime]
+        guard formatter.date(from: normalized) != nil else { throw FlagsError.invalidContext }
+        return true
+    }
+}

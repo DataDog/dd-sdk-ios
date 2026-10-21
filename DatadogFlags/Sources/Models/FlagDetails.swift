@@ -18,6 +18,9 @@ public enum FlagEvaluationError: Error {
 
     /// The flag value type doesn't match the requested type.
     case typeMismatch
+
+    /// The evaluation context contains an invalid experimentation opt-out timestamp.
+    case invalidContext
 }
 
 /// Detailed information about a feature flag evaluation.
