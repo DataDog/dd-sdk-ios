@@ -645,6 +645,183 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNil(typeMismatchDetails.reason)
     }
 
+    func testIndependentTrackingOperations() throws {
+        for trackExposure in [false, true] {
+            for trackEvaluation in [false, true] {
+                let exposureLogger = ExposureLoggerMock()
+                let evaluationLogger = EvaluationLoggerMock()
+                let rumReporter = RUMFlagEvaluationReporterMock()
+                let client: FlagsClientInternal = FlagsClient(
+                    repository: FlagsRepositoryMock { _, _ in XCTFail("Tracking must not fetch configuration") },
+                    exposureLogger: exposureLogger,
+                    evaluationLogger: evaluationLogger,
+                    rumFlagEvaluationReporter: rumReporter
+                )
+                let context = FlagsEvaluationContext(targetingKey: "captured-user", attributes: ["tier": .string("premium")])
+                let assignment = FlagAssignment(
+                    allocationKey: "allocation",
+                    variationKey: "variant",
+                    variation: .boolean(true),
+                    reason: "TARGETING_MATCH",
+                    doLog: true,
+                    serialID: 123
+                )
+
+                if trackExposure {
+                    client.sendFlagExposure(key: "flag", assignment: assignment, context: context)
+                }
+                if trackEvaluation {
+                    client.sendFlagEvaluationEvent(key: "flag", assignment: assignment, context: context, errorCode: nil)
+                }
+
+                XCTAssertEqual(exposureLogger.logExposureCalls.count, trackExposure ? 1 : 0)
+                XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, trackEvaluation ? 1 : 0)
+                XCTAssertTrue(rumReporter.sendFlagEvaluationCalls.isEmpty)
+                if trackExposure {
+                    let call = try XCTUnwrap(exposureLogger.logExposureCalls.first)
+                    XCTAssertEqual(call.flagKey, "flag")
+                    XCTAssertEqual(call.assignment, assignment)
+                    XCTAssertEqual(call.context, context)
+                }
+                if trackEvaluation {
+                    let call = try XCTUnwrap(evaluationLogger.logEvaluationCalls.first)
+                    XCTAssertEqual(call.flagKey, "flag")
+                    XCTAssertEqual(call.assignment, assignment)
+                    XCTAssertEqual(call.context, context)
+                    XCTAssertNil(call.error)
+                }
+            }
+        }
+    }
+
+    func testIndependentEvaluationTrackingHandlesDefaultsAndErrors() throws {
+        let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
+        let rumReporter = RUMFlagEvaluationReporterMock()
+        let client: FlagsClientInternal = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: exposureLogger,
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: rumReporter
+        )
+        let context = FlagsEvaluationContext(targetingKey: "captured-user")
+        let errors: [String?] = [
+            nil, "PROVIDER_NOT_READY", "PROVIDER_FATAL", "FLAG_NOT_FOUND", "PARSE_ERROR", "TYPE_MISMATCH",
+            "TARGETING_KEY_MISSING", "INVALID_CONTEXT", "GENERAL", "customer-sensitive-error", ""
+        ]
+
+        for error in errors {
+            client.sendFlagEvaluationEvent(key: "flag", assignment: nil, context: context, errorCode: error)
+
+            let call = try XCTUnwrap(evaluationLogger.logEvaluationCalls.last)
+            XCTAssertEqual(call.flagKey, "flag")
+            XCTAssertEqual(call.context, context)
+            XCTAssertEqual(call.assignment.reason, "DEFAULT")
+            XCTAssertEqual(call.assignment.variationKey, "")
+            XCTAssertEqual(call.assignment.allocationKey, "")
+            XCTAssertFalse(call.assignment.doLog)
+            XCTAssertEqual(call.error, error == "customer-sensitive-error" || error == "" ? "GENERAL" : error)
+        }
+
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, errors.count)
+        XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
+        XCTAssertTrue(rumReporter.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testIndependentEvaluationTrackingUsesNativeAggregation() throws {
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 60
+        )
+        let exposureLogger = ExposureLoggerMock()
+        let rumReporter = RUMFlagEvaluationReporterMock()
+        let client: FlagsClientInternal = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: exposureLogger,
+            evaluationLogger: EvaluationLogger(aggregator: aggregator),
+            rumFlagEvaluationReporter: rumReporter
+        )
+        let context = FlagsEvaluationContext(targetingKey: "captured-user", attributes: ["tier": .string("premium")])
+        let assignment = FlagAssignment(
+            allocationKey: "allocation", variationKey: "variant", variation: .boolean(true), reason: "MATCH", doLog: false
+        )
+
+        client.sendFlagEvaluationEvent(key: "success", assignment: assignment, context: context, errorCode: nil)
+        client.sendFlagEvaluationEvent(key: "success", assignment: assignment, context: context, errorCode: nil)
+        client.sendFlagEvaluationEvent(key: "default", assignment: nil, context: context, errorCode: nil)
+        client.sendFlagEvaluationEvent(key: "error", assignment: assignment, context: context, errorCode: "TYPE_MISMATCH")
+        aggregator.sendEvaluations()
+
+        let events = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 3)
+        let success = try XCTUnwrap(events.first { $0.flag.key == "success" })
+        XCTAssertEqual(success.evaluationCount, 2)
+        XCTAssertEqual(success.variant?.key, "variant")
+        XCTAssertEqual(success.allocation?.key, "allocation")
+        XCTAssertNil(success.runtimeDefaultUsed)
+        XCTAssertNil(success.error)
+        for key in ["default", "error"] {
+            let event = try XCTUnwrap(events.first { $0.flag.key == key })
+            XCTAssertEqual(event.evaluationCount, 1)
+            XCTAssertTrue(event.runtimeDefaultUsed == true)
+            XCTAssertNil(event.variant)
+            XCTAssertNil(event.allocation)
+            XCTAssertEqual(event.error?.message, key == "error" ? "TYPE_MISMATCH" : nil)
+        }
+        for event in events {
+            XCTAssertEqual(event.targetingKey, "captured-user")
+            XCTAssertEqual(event.context?.evaluation?["tier"], .string("premium"))
+        }
+        XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
+        XCTAssertTrue(rumReporter.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testIndependentExposureTrackingPreservesDeduplicationAndDoLog() throws {
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        Flags.enable(in: core)
+        let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+        let context = FlagsEvaluationContext(targetingKey: "captured-user")
+        var assignment = FlagAssignment(
+            allocationKey: "allocation",
+            variationKey: "variant",
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: true,
+            serialID: 123
+        )
+
+        client.sendFlagExposure(key: "flag", assignment: assignment, context: context)
+        client.sendFlagExposure(key: "flag", assignment: assignment, context: context)
+        assignment.serialID = 124
+        client.sendFlagExposure(key: "flag", assignment: assignment, context: context)
+        assignment.doLog = false
+        client.sendFlagExposure(key: "other-flag", assignment: assignment, context: context)
+        core.get(feature: FlagsFeature.self)?.flush()
+
+        let events = core.events(ofType: ExposureEvent.self)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.map(\.serialID), [123, 124])
+        XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+    }
+
+    func testIndependentTrackingRespectsDisabledFeatures() throws {
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<FlagsFeature>(messageReceiver: messageReceiver)
+        Flags.enable(with: .init(trackExposures: false, trackEvaluations: false), in: core)
+        let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+
+        client.sendFlagExposure(key: "flag", assignment: .mockAnyBoolean(doLog: true), context: .mockAny())
+        client.sendFlagEvaluationEvent(key: "flag", assignment: .mockAnyBoolean(), context: .mockAny(), errorCode: nil)
+        client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: .mockAny(), errorCode: "FLAG_NOT_FOUND")
+        core.get(feature: FlagsFeature.self)?.flush()
+
+        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+        XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+        XCTAssertFalse(messageReceiver.messages.contains(where: \.isRUMMessage))
+    }
+
     func testSendFlagEvaluation() {
         // Given
         let exposureLogger = ExposureLoggerMock()

@@ -263,18 +263,8 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
-        exposureLogger.logExposure(
-            for: key,
-            assignment: assignment,
-            evaluationContext: context
-        )
-
-        evaluationLogger.logEvaluation(
-            for: key,
-            assignment: assignment,
-            evaluationContext: context,
-            flagError: nil
-        )
+        sendFlagExposure(key: key, assignment: assignment, context: context)
+        sendFlagEvaluationEvent(key: key, assignment: assignment, context: context, errorCode: nil)
 
         rumFlagEvaluationReporter.sendFlagEvaluation(
             flagKey: key,
@@ -294,5 +284,38 @@ extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         trackEvaluation(key: key, assignment: assignment, context: context)
+    }
+
+    @_spi(Internal)
+    public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        // Hook errors can contain arbitrary customer data. Only forward standard OpenFeature codes.
+        let sanitizedErrorCode: String?
+        switch errorCode {
+        case nil:
+            sanitizedErrorCode = nil
+        case "PROVIDER_NOT_READY", "PROVIDER_FATAL", "FLAG_NOT_FOUND", "PARSE_ERROR", "TYPE_MISMATCH",
+             "TARGETING_KEY_MISSING", "INVALID_CONTEXT", "GENERAL":
+            sanitizedErrorCode = errorCode
+        default:
+            sanitizedErrorCode = "GENERAL"
+        }
+
+        evaluationLogger.logEvaluation(
+            for: key,
+            assignment: assignment ?? FlagAssignment(
+                allocationKey: "",
+                variationKey: "",
+                variation: .unknown(""),
+                reason: "DEFAULT",
+                doLog: false
+            ),
+            evaluationContext: context,
+            flagError: sanitizedErrorCode
+        )
     }
 }

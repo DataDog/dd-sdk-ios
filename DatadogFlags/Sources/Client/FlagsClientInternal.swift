@@ -12,9 +12,24 @@ public protocol FlagsClientInternal: AnyObject {
     @_spi(Internal)
     func getFlagAssignments() -> [String: FlagAssignment]?
 
+    /// Records exposure, evaluation, and RUM tracking according to the enabled native features.
+    /// Use the separate operations below for independently selected tracking hooks.
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+
+    /// Records only an exposure, using the assignment and context captured by the caller.
+    /// Does not fetch configuration, record an evaluation event, or report to RUM.
+    /// > Warning: This is an internal method and can break in the future.
+    @_spi(Internal)
+    func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+
+    /// Records only an evaluation event. A missing assignment represents a runtime default.
+    /// `errorCode` must be an OpenFeature error code; unrecognized codes are reported as `GENERAL`.
+    /// Does not fetch configuration, record an exposure, or report to RUM.
+    /// > Warning: This is an internal method and can break in the future.
+    @_spi(Internal)
+    func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
 }
 
 extension FlagsClientInternal {
@@ -26,6 +41,16 @@ extension FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        // no-op
+    }
+
+    @_spi(Internal)
+    public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        // no-op
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
         // no-op
     }
 }

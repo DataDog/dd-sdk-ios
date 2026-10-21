@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
+@_spi(Internal)
 @testable import DatadogFlags
 
 final class FallbackFlagsClientTests: XCTestCase {
@@ -117,5 +118,17 @@ final class FallbackFlagsClientTests: XCTestCase {
             Ensure that a client named 'default' is created before using it.
             """
         )
+    }
+
+    func testIndependentTrackingIsNoOp() {
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+
+        client.sendFlagExposure(key: "flag", assignment: .mockAny(), context: .mockAny())
+        client.sendFlagEvaluationEvent(key: "flag", assignment: .mockAny(), context: .mockAny(), errorCode: nil)
+        client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: .mockAny(), errorCode: "FLAG_NOT_FOUND")
+
+        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+        XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
     }
 }
