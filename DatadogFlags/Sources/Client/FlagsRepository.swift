@@ -85,7 +85,7 @@ internal final class FlagsRepository {
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
-    private let featureScope: any FeatureScope
+    private let flagsDataStore: FlagsDataStore
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
     private let experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode
@@ -198,12 +198,13 @@ internal final class FlagsRepository {
         featureScope: any FeatureScope,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil,
-        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
+        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled,
+        flagsDataStore: FlagsDataStore? = nil
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
-        self.featureScope = featureScope
+        self.flagsDataStore = flagsDataStore ?? featureScope.flagsDataStore
         self.initializationTimeout = initializationTimeout
         self.experimentationOptOutMode = experimentationOptOutMode
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
@@ -283,7 +284,7 @@ internal final class FlagsRepository {
     }
 
     private func readState() {
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
+        flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
             guard let self else {
                 // Signal even if self is nil to unblock any waiting getters
                 DispatchQueue.global(qos: .userInitiated).async {
@@ -343,13 +344,6 @@ internal final class FlagsRepository {
         if shouldExecuteNow {
             callback()
         }
-    }
-
-    private func writeState() {
-        guard let flagsData else {
-            return
-        }
-        featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
     }
 
     private func isCurrentRequest(_ generation: UInt64) -> Bool {
@@ -422,7 +416,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 case .failure:
                     current.policy = nil
                     current.isInvalid = true
-                    featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
+                    flagsDataStore.removeFlagsData(forClientNamed: clientName)
                 }
                 request = current
             }
@@ -480,6 +474,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         obfuscation: response.obfuscation,
                         experimentationOptOutPolicy: request.policy
                     )
+                    // Encode outside the request lock so synchronous getters can continue.
+                    let encoded = self.flagsDataStore.encodeFlagsData(data)
                     var accepted = false
                     self._optOutRequest.mutate { current in
                         guard self.experimentationOptOutMode == .disabled || current.generation == request.generation else {
@@ -487,7 +483,10 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         }
                         self.flagsData = data
                         self._flagsDataVersion.mutate { $0 += 1 }
-                        self.writeState()
+                        // Submit writes in the same order as accepted memory snapshots.
+                        if let encoded {
+                            self.flagsDataStore.setEncodedFlagsData(encoded, forClientNamed: self.clientName)
+                        }
                         accepted = true
                     }
                     guard accepted else {
@@ -547,14 +546,14 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func reset() {
+        var generation: UInt64 = 0
         _optOutRequest.mutate { current in
             current = OptOutRequest(generation: current.generation &+ 1)
+            generation = current.generation
+            // Order removal with accepted writes and clear memory before notifying listeners.
+            flagsDataStore.removeFlagsData(forClientNamed: clientName)
+            flagsData = nil
         }
-        // Clear disk first, then memory, then update state.
-        // This prevents race conditions where a listener reacts to the state
-        // change and queries the data store before disk is cleared.
-        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
-        flagsData = nil
-        stateManager.updateState(.notReady)
+        stateManager.updateState(.notReady, if: { self.optOutRequest.generation == generation })
     }
 }

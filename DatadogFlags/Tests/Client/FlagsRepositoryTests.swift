@@ -14,6 +14,147 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testGettersDoNotWaitForSnapshotEncoding() throws {
+        for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate, .futureExperimentsOnly] {
+            let encodingStarted = DispatchSemaphore(value: 0)
+            let finishEncoding = DispatchSemaphore(value: 0)
+            let getterFinished = DispatchSemaphore(value: 0)
+            let completed = expectation(description: "response completed")
+            let repository = FlagsRepository(
+                clientName: "encoding",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                    complete(.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)])))
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                experimentationOptOutMode: mode,
+                flagsDataStore: FlagsDataStore(featureScope: featureScope) { data in
+                    encodingStarted.signal()
+                    XCTAssertEqual(finishEncoding.wait(timeout: .now() + 5), .success)
+                    return try JSONEncoder().encode(data)
+                }
+            )
+            DispatchQueue.global().async {
+                repository.setEvaluationContext(.init(targetingKey: "subject")) { _ in completed.fulfill() }
+            }
+            XCTAssertEqual(encodingStarted.wait(timeout: .now() + 2), .success)
+            DispatchQueue.global().async {
+                XCTAssertFalse(repository.hasInvalidContext)
+                _ = repository.flagAssignment(for: "flag")
+                getterFinished.signal()
+            }
+            let finishedWhileEncoding = getterFinished.wait(timeout: .now() + 1)
+            finishEncoding.signal()
+            waitForExpectations(timeout: 3)
+            XCTAssertEqual(finishedWhileEncoding, .success, "Getters must not wait for snapshot encoding")
+        }
+    }
+
+    func testNewContextDuringEncodingRejectsOldSnapshot() throws {
+        try assertSnapshotRejectedDuringEncoding(change: .newContext)
+    }
+
+    func testResetDuringEncodingRejectsOldSnapshot() throws {
+        try assertSnapshotRejectedDuringEncoding(change: .reset)
+    }
+
+    func testInvalidContextDuringEncodingRejectsOldSnapshot() throws {
+        try assertSnapshotRejectedDuringEncoding(change: .invalidContext)
+    }
+
+    private enum ChangeDuringEncoding {
+        case newContext
+        case reset
+        case invalidContext
+    }
+
+    private func assertSnapshotRejectedDuringEncoding(change: ChangeDuringEncoding) throws {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let scope = FeatureScopeMock()
+            let encodingStarted = DispatchSemaphore(value: 0)
+            let finishEncoding = DispatchSemaphore(value: 0)
+            let completed = expectation(description: "old response rejected")
+            let repository = FlagsRepository(
+                clientName: "encoding",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { context, complete in
+                    complete(.success(.init(flags: [context.targetingKey: .mockAnyBoolean(doLog: false)])))
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                experimentationOptOutMode: mode,
+                flagsDataStore: FlagsDataStore(featureScope: scope) { data in
+                    if data.context.targetingKey == "old" {
+                        encodingStarted.signal()
+                        XCTAssertEqual(finishEncoding.wait(timeout: .now() + 5), .success)
+                    }
+                    return try JSONEncoder().encode(data)
+                }
+            )
+            DispatchQueue.global().async {
+                repository.setEvaluationContext(.init(targetingKey: "old")) { result in
+                    guard case .failure(.invalidResponse) = result else {
+                        completed.fulfill()
+                        return XCTFail("Superseded response must be rejected")
+                    }
+                    completed.fulfill()
+                }
+            }
+            XCTAssertEqual(encodingStarted.wait(timeout: .now() + 2), .success)
+            switch change {
+            case .newContext:
+                repository.setEvaluationContext(.init(targetingKey: "new")) { result in
+                    if case .failure(let error) = result { XCTFail("\(error)") }
+                }
+            case .reset:
+                repository.reset()
+            case .invalidContext:
+                repository.setEvaluationContext(.init(targetingKey: "invalid", attributes: [
+                    "dd_experimentation_opt_out_at": .bool(true)
+                ])) { result in
+                    guard case .failure(.invalidContext) = result else {
+                        return XCTFail("Expected invalid context")
+                    }
+                }
+            }
+            finishEncoding.signal()
+            waitForExpectations(timeout: 3)
+            scope.dataStore.flush()
+            XCTAssertNil(repository.flagAssignment(for: "old"))
+            if case .newContext = change {
+                XCTAssertEqual(repository.context?.targetingKey, "new")
+                XCTAssertNotNil(repository.flagAssignment(for: "new"))
+                let bytes = try XCTUnwrap(scope.dataStoreMock.value(forKey: "encoding")?.data())
+                let persisted = try JSONDecoder().decode(FlagsData.self, from: bytes)
+                XCTAssertEqual(persisted.context.targetingKey, "new")
+                XCTAssertNotNil(persisted.flags["new"])
+                XCTAssertNil(persisted.flags["old"])
+            } else {
+                XCTAssertNil(repository.context)
+                XCTAssertTrue(scope.dataStoreMock.storage.isEmpty)
+                XCTAssertEqual(repository.state.currentState, change == .reset ? .notReady : .error)
+            }
+        }
+    }
+
+    func testEncodingFailurePreservesInMemoryAssignments() {
+        let repository = FlagsRepository(
+            clientName: "encoding-failure",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                complete(.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)])))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            experimentationOptOutMode: .immediate,
+            flagsDataStore: FlagsDataStore(featureScope: featureScope) { _ in throw ErrorMock() }
+        )
+        repository.setEvaluationContext(.init(targetingKey: "subject")) { result in
+            if case .failure(let error) = result { XCTFail("\(error)") }
+        }
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.state.currentState, .ready)
+        XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
+    }
+
     func testImmediateOptOutContextValidationAndForwarding() throws {
         let values: [(AnyValue?, Bool?, String)] = [
             (nil, false, "absent"),

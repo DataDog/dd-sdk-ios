@@ -8,21 +8,42 @@ import Foundation
 import DatadogInternal
 
 internal struct FlagsDataStore {
-    private static let encoder = JSONEncoder()
     private static let decoder = JSONDecoder()
     // Older native SDKs and React Native bridges accept only version 1.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
 
     let featureScope: FeatureScope
+    private let encode: (FlagsData) throws -> Data
+
+    struct EncodedFlagsData {
+        let data: Data
+        let version: DataStoreKeyVersion
+    }
+
+    init(featureScope: FeatureScope, encode: @escaping (FlagsData) throws -> Data = { try JSONEncoder().encode($0) }) {
+        self.featureScope = featureScope
+        self.encode = encode
+    }
 
     func setFlagsData(_ flagsData: FlagsData, forClientNamed clientName: String) {
+        if let encoded = encodeFlagsData(flagsData) {
+            setEncodedFlagsData(encoded, forClientNamed: clientName)
+        }
+    }
+
+    func setEncodedFlagsData(_ encoded: EncodedFlagsData, forClientNamed clientName: String) {
+        featureScope.dataStore.setValue(encoded.data, forKey: clientName, version: encoded.version)
+    }
+
+    func encodeFlagsData(_ flagsData: FlagsData) -> EncodedFlagsData? {
         do {
-            let data = try Self.encoder.encode(flagsData)
+            let data = try encode(flagsData)
             let version = flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : Self.encodedAssignmentsVersion
-            featureScope.dataStore.setValue(data, forKey: clientName, version: version)
+            return EncodedFlagsData(data: data, version: version)
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
+            return nil
         }
     }
 

@@ -79,6 +79,20 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         let evaluations = core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self)
         XCTAssertEqual(exposures.count, mode == .immediate ? 1 : 2, "Future mode preserves exposures for older allocations")
         XCTAssertFalse(evaluations.isEmpty, "Experimentation opt-out does not disable evaluation telemetry")
+        for key in ["flag", "string", "integer", "double", "object"] {
+            let evaluation = try XCTUnwrap(evaluations.first { $0.flag.key == key && $0.allocation?.key == "ordinary" })
+            XCTAssertNil(evaluation.error)
+            XCTAssertNil(evaluation.runtimeDefaultUsed)
+            XCTAssertEqual(evaluation.targetingKey, "subject")
+            XCTAssertEqual(evaluation.evaluationCount, 1)
+        }
+        if mode == .futureExperimentsOnly {
+            let evaluation = try XCTUnwrap(evaluations.first { $0.flag.key == "older" })
+            XCTAssertNil(evaluation.error)
+            XCTAssertNil(evaluation.runtimeDefaultUsed)
+            XCTAssertEqual(evaluation.allocation?.key, "older-experiment")
+            XCTAssertEqual(evaluation.evaluationCount, 1)
+        }
     }
 
     private enum Fixtures {
