@@ -263,6 +263,13 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             trackingState: trackingState,
             admission: admission
         )
+        #if DD_SDK_COMPILED_FOR_TESTING
+        if #available(iOS 27.0, *) {
+            RUMNativeNavigationTesting.onBoundary?(
+                navigationOccurrenceSource, observer, trackingState, admission, configuration
+            )
+        }
+        #endif
         #endif
 
         }

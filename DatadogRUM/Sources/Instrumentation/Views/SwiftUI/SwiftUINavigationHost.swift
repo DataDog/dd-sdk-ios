@@ -665,4 +665,514 @@ private struct RUMSemanticNavigationHostModifier: ViewModifier {
         )
     }
 }
+/// Owns native destination builders while retaining the application's path binding.
+@available(iOS 27.0, *)
+@MainActor
+internal struct RUMNavigationStack<Route: Hashable, Root: View, Destination: View>: View {
+    private weak var core: DatadogCoreProtocol?
+    private let path: Binding<[Route]>
+    private let metadata: RUMNavigationMetadata
+    private let root: Root
+    private let destination: (Route) -> Destination
+    @State private var state = RUMNativeNavigationState<Route>()
+    #if DD_SDK_COMPILED_FOR_TESTING
+    private var testingOnNativeUpdate: ((
+        RUMNativeNavigationState<Route>, RUMSwiftUIViewCallbackAdmission?,
+        RUMSceneIdentifierReader.ObserverView?, Binding<[Route]>
+    ) -> Void)?
+
+    func withTestingOnNativeUpdate(_ callback: @escaping (
+        RUMNativeNavigationState<Route>, RUMSwiftUIViewCallbackAdmission?,
+        RUMSceneIdentifierReader.ObserverView?, Binding<[Route]>
+    ) -> Void) -> Self {
+        var copy = self
+        copy.testingOnNativeUpdate = callback
+        return copy
+    }
+    #endif
+
+    init(
+        path: Binding<[Route]>,
+        metadata: RUMNavigationMetadata = .automatic,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        @ViewBuilder root: () -> Root,
+        @ViewBuilder destination: @escaping (Route) -> Destination
+    ) {
+        self.core = core
+        self.path = path
+        self.metadata = metadata
+        self.root = root()
+        self.destination = destination
+    }
+
+    var body: some View {
+        let binding: RUMSwiftUIViewFoundationBinding?
+        if let feature = core?.get(feature: RUMFeature.self), feature.isMultiSceneTrackingEnabled {
+            binding = feature.instrumentation.swiftUIViewFoundation?.makeBinding()
+        } else {
+            binding = nil
+        }
+        let admission = state.configure(binding: binding)
+        state.reconcile(acceptedPath: { path.wrappedValue }, metadata: metadata, admission: admission)
+        #if DD_SDK_COMPILED_FOR_TESTING
+        testingOnNativeUpdate?(state, admission, nil, forwardedPath)
+        #endif
+        return NavigationStack(path: forwardedPath) {
+            RUMNativeNavigationBoundary<Route, Root>(
+                route: nil, state: state, admission: admission, content: root
+            )
+            .navigationDestination(for: Route.self) { route in
+                RUMNativeNavigationBoundary(
+                    route: route, state: state, admission: admission, content: destination(route)
+                )
+            }
+        }
+        .background {
+            if let admission,
+               let center = admission.foundation?.sceneLifecycleNotificationCenter {
+                RUMSceneIdentifierReader(
+                    admission: admission,
+                    applicationSupportsMultipleScenes: true,
+                    onCreate: { observer in
+                        state.register(observer: observer, admission: admission)
+                        #if DD_SDK_COMPILED_FOR_TESTING
+                        testingOnNativeUpdate?(state, admission, observer, forwardedPath)
+                        #endif
+                    },
+                    onMount: { state.reconcile(attachment: .attached($0), admission: admission) },
+                    onReconcile: { state.reconcile(attachment: $0, admission: admission) },
+                    onChange: { state.reconcile(attachment: $0, admission: admission) }
+                )
+                .onReceive(center.publisher(for: UIScene.didDisconnectNotification)) { [weak state] notification in
+                    guard let scene = notification.object as? UIScene else {
+                        return
+                    }
+                    if Thread.isMainThread {
+                        MainActor.assumeIsolated {
+                            state?.sceneDidDisconnect(scene, admission: admission)
+                        }
+                    } else {
+                        DispatchQueue.main.async { [weak state, weak scene] in
+                            guard let scene else {
+                                return
+                            }
+                            state?.sceneDidDisconnect(scene, admission: admission)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var forwardedPath: Binding<[Route]> {
+        Binding(
+            get: { path.wrappedValue },
+            set: { proposal, transaction in
+                let original = state.admission
+                state.reconcile(
+                    acceptedPath: {
+                        path.transaction(transaction).wrappedValue = proposal
+                        // A rejecting or normalizing setter owns the accepted value.
+                        return path.wrappedValue
+                    },
+                    metadata: metadata,
+                    admission: original
+                )
+            }
+        )
+    }
+}
+
+/// Keeps path claims separate from actual reader-proven destination materialization.
+@available(iOS 27.0, *)
+@MainActor
+internal final class RUMNativeNavigationState<Route: Hashable> {
+    private struct Position: Hashable {
+        let container: UUID
+        let slot: UUID
+        let depth: Int
+    }
+
+    final class Claim {
+        fileprivate var route: Route?
+        fileprivate var depth: Int
+        fileprivate var isValid: Bool = true
+
+        fileprivate init(route: Route?, depth: Int) {
+            self.route = route
+            self.depth = depth
+        }
+    }
+
+    private let container = UUID()
+    private let rootSlot = UUID()
+    private var acceptedSlots: [UUID] = []
+    private let epoch = RUMSwiftUIViewTrackingEpoch()
+    private var registration: RUMSwiftUIViewTrackingEpoch.Callback?
+    private(set) var admission: RUMSwiftUIViewCallbackAdmission?
+    private(set) var source: RUMSwiftUINavigationOccurrenceSource?
+    private weak var observer: RUMSceneIdentifierReader.ObserverView?
+    private var acceptedPath: [Route] = []
+    private var hasAcceptedPath = false
+    private var generation: UInt64 = 0
+    private var needsInitialReconciliation = true
+    private var metadata = RUMNavigationMetadata.automatic
+    private var attachment: RUMViewTrackingState.Attachment = .detached
+    private var detachGeneration: UInt64 = 0
+    private var reconciliationEntry: UInt64 = 0
+
+    #if DD_SDK_COMPILED_FOR_TESTING
+    var acceptedDepth: Int { acceptedPath.count }
+    #endif
+
+    func configure(binding: RUMSwiftUIViewFoundationBinding?) -> RUMSwiftUIViewCallbackAdmission? {
+        if let binding, let current = admission, current.isValid,
+           current.binding.epoch == binding.epoch,
+           current.binding.lifetime === binding.lifetime {
+            return current
+        }
+        reconciliationEntry &+= 1
+        let entry = reconciliationEntry
+        let previousSource = source
+        let previousAdmission = admission
+        let previousRegistration = registration
+        admission = nil
+        registration = nil
+        source = nil
+        observer = nil
+        attachment = .detached
+        detachGeneration &+= 1
+        needsInitialReconciliation = true
+        if let previousAdmission {
+            _ = previousSource?.cancelNavigationOwnedOccurrences(admission: previousAdmission)
+        }
+        guard reconciliationEntry == entry else {
+            return nil
+        }
+        if let previousRegistration {
+            epoch.retire(previousRegistration)
+        }
+        guard reconciliationEntry == entry else {
+            return nil
+        }
+        guard let binding, let callback = epoch.enter(binding),
+              let next = RUMSwiftUIViewCallbackAdmission(holder: epoch, callback: callback) else {
+            return nil
+        }
+        registration = callback
+        admission = next
+        source = RUMSwiftUINavigationOccurrenceSource(binding: binding)
+        return next
+    }
+
+    func reconcile(
+        acceptedPath read: () -> [Route],
+        metadata: RUMNavigationMetadata,
+        admission expected: RUMSwiftUIViewCallbackAdmission?
+    ) {
+        reconciliationEntry &+= 1
+        let entry = reconciliationEntry
+        guard accepts(entry: entry, admission: expected) else {
+            return
+        }
+        let path = read()
+        guard accepts(entry: entry, admission: expected) else {
+            return
+        }
+        reconcile(path: path, metadata: metadata, admission: expected)
+    }
+
+    func reconcile(
+        path: [Route],
+        metadata: RUMNavigationMetadata,
+        admission expected: RUMSwiftUIViewCallbackAdmission?
+    ) {
+        if let expected {
+            guard admits(expected) else {
+                return
+            }
+        } else if admission != nil {
+            return
+        }
+        reconciliationEntry &+= 1
+        let entry = reconciliationEntry
+        let previous = acceptedPath
+        let previousSlots = acceptedSlots
+        let previouslyAccepted = hasAcceptedPath
+        let initiallyRequired = needsInitialReconciliation
+        let offeredSource = source
+        let priorGeneration = generation
+        // Route equality and metadata belong to the application and may reenter.
+        let changed = previouslyAccepted && previous != path
+        var prefixCount = 0
+        for (before, after) in zip(previous, path) {
+            guard before == after else {
+                break
+            }
+            prefixCount += 1
+        }
+        let slots = Array(previousSlots.prefix(prefixCount))
+            + (prefixCount..<path.count).map { _ in UUID() }
+        let nextGeneration = changed || (!previouslyAccepted && !path.isEmpty)
+            ? priorGeneration &+ 1 : priorGeneration
+        let change: RUMSwiftUINavigationOccurrenceSource.DestinationChange
+        if initiallyRequired {
+            change = .initial(requiresBootstrap: !path.isEmpty)
+        } else if !changed {
+            change = .unchanged
+        } else if path.count < previous.count, Array(previous.prefix(path.count)) == path {
+            change = .retainedReveal
+        } else {
+            change = .replacement
+        }
+        let configuration = configuration(
+            route: path.last,
+            depth: path.count,
+            path: path,
+            slots: slots,
+            metadata: metadata,
+            generation: nextGeneration
+        )
+        guard accepts(entry: entry, admission: expected), source === offeredSource else {
+            return
+        }
+        acceptedPath = path
+        acceptedSlots = slots
+        hasAcceptedPath = true
+        self.metadata = metadata
+        generation = nextGeneration
+        guard let expected, let offeredSource else {
+            return
+        }
+        needsInitialReconciliation = false
+        offeredSource.acceptDestination(
+            occurrenceKey: configuration.occurrenceKey,
+            bindingGeneration: configuration.bindingGeneration,
+            change: change,
+            admission: expected
+        )
+        guard accepts(entry: entry, admission: expected), source === offeredSource else {
+            return
+        }
+        _ = offeredSource.reconcileCurrentDestination(configuration: configuration, admission: expected)
+    }
+
+    func makeClaim(for route: Route?) -> Claim {
+        reconciliationEntry &+= 1
+        let entry = reconciliationEntry
+        let original = admission
+        let path = acceptedPath
+        let depth = depth(for: route, path: path)
+        let claim = Claim(route: route, depth: depth)
+        claim.isValid = accepts(entry: entry, admission: original)
+        return claim
+    }
+
+    func configuration(
+        for route: Route?,
+        retaining claim: Claim,
+        admission expected: RUMSwiftUIViewCallbackAdmission?
+    ) -> RUMViewTrackingState.Configuration? {
+        guard let expected, admits(expected) else {
+            return nil
+        }
+        reconciliationEntry &+= 1
+        let entry = reconciliationEntry
+        let path = acceptedPath
+        let slots = acceptedSlots
+        let originalMetadata = metadata
+        let originalGeneration = generation
+        let originalSource = source
+        let priorRoute = claim.route
+        let priorDepth = claim.depth
+        let currentDepth = depth(for: route, path: path)
+        let selectedDepth = !claim.isValid || priorRoute != route || priorDepth > path.count ? currentDepth : priorDepth
+        let configuration = configuration(
+            route: route,
+            depth: selectedDepth,
+            path: path,
+            slots: slots,
+            metadata: originalMetadata,
+            generation: originalGeneration
+        )
+        guard accepts(entry: entry, admission: expected), source === originalSource else {
+            return nil
+        }
+        claim.route = route
+        claim.depth = selectedDepth
+        claim.isValid = true
+        return configuration
+    }
+
+    func source(for expected: RUMSwiftUIViewCallbackAdmission) -> RUMSwiftUINavigationOccurrenceSource? {
+        admits(expected) ? source : nil
+    }
+
+    func register(
+        observer: RUMSceneIdentifierReader.ObserverView,
+        admission expected: RUMSwiftUIViewCallbackAdmission
+    ) {
+        guard admits(expected) else {
+            return
+        }
+        self.observer = observer
+    }
+
+    func reconcile(
+        attachment: RUMViewTrackingState.Attachment,
+        admission expected: RUMSwiftUIViewCallbackAdmission
+    ) {
+        guard admits(expected) else {
+            return
+        }
+        detachGeneration &+= 1
+        if case .attached(let scene?) = attachment {
+            guard observer?.currentSceneIdentifier == scene, expected.admits(sceneIdentifier: scene) else {
+                return
+            }
+            self.attachment = attachment
+            if needsInitialReconciliation {
+                reconcile(path: acceptedPath, metadata: metadata, admission: expected)
+            }
+            return
+        }
+        self.attachment = .detached
+        let generation = detachGeneration
+        // Root content disappears during a push; only the container reader owns teardown.
+        DispatchQueue.main.async { [self, expected] in
+            guard admits(expected), self.detachGeneration == generation, self.attachment == .detached else {
+                return
+            }
+            _ = source?.cancelNavigationOwnedOccurrences(admission: expected)
+            needsInitialReconciliation = true
+        }
+    }
+
+    func sceneDidDisconnect(_ scene: UIScene, admission expected: RUMSwiftUIViewCallbackAdmission) {
+        guard admits(expected) else {
+            return
+        }
+        let identifier = RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)
+        if let current = observer?.window?.windowScene,
+           current.session.persistentIdentifier == identifier.rawValue, current !== scene {
+            return
+        }
+        guard attachment == .attached(identifier) else {
+            return
+        }
+        observer?.markSceneDisconnected(identifier)
+        source?.sceneDidDisconnect(identifier, admission: expected)
+        attachment = .detached
+        detachGeneration &+= 1
+    }
+
+    private func admits(_ expected: RUMSwiftUIViewCallbackAdmission) -> Bool {
+        expected.isValid && admission?.matches(expected) == true
+    }
+
+    private func accepts(entry: UInt64, admission expected: RUMSwiftUIViewCallbackAdmission?) -> Bool {
+        guard reconciliationEntry == entry else {
+            return false
+        }
+        if let expected {
+            return admits(expected)
+        }
+        return admission == nil
+    }
+
+    private func depth(for route: Route?, path: [Route]) -> Int {
+        guard let route else {
+            return 0
+        }
+        return path.lastIndex(of: route).map { $0 + 1 } ?? max(path.count, 1)
+    }
+
+    private func configuration(
+        route: Route?,
+        depth: Int,
+        path: [Route],
+        slots: [UUID],
+        metadata: RUMNavigationMetadata,
+        generation: UInt64
+    ) -> RUMViewTrackingState.Configuration {
+        let destination: RUMNavigationDestination
+        if let route {
+            destination = .route(route, occurrence: depth)
+        } else {
+            destination = .root(NativeRoot.root)
+        }
+        let view = metadata.view(for: destination)
+        var attributes = view.attributes
+        #if DD_SDK_COMPILED_FOR_TESTING
+        attributes["native_test_claim"] = container.uuidString + ":" + String(depth) + ":" + String(generation)
+        attributes["native_test_depth"] = depth
+        #endif
+        let slot = depth > 0 && depth <= slots.count ? slots[depth - 1] : rootSlot
+        return .init(
+            occurrenceKey: RUMViewOccurrenceKey(Position(container: container, slot: slot, depth: depth)),
+            bindingGeneration: generation,
+            descriptor: .init(name: view.name, path: view.path ?? view.name, attributes: attributes),
+            isCurrentDestination: depth == path.count && route == path.last
+        )
+    }
+
+    private enum NativeRoot: Hashable {
+        case root
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View {
+    let route: Route?
+    let state: RUMNativeNavigationState<Route>
+    let admission: RUMSwiftUIViewCallbackAdmission?
+    let content: Content
+    @State private var claim: RUMNativeNavigationState<Route>.Claim
+
+    init(
+        route: Route?,
+        state: RUMNativeNavigationState<Route>,
+        admission: RUMSwiftUIViewCallbackAdmission?,
+        content: Content
+    ) {
+        self.route = route
+        self.state = state
+        self.admission = admission
+        self.content = content
+        _claim = State(initialValue: state.makeClaim(for: route))
+    }
+
+    var body: some View {
+        let configuration = state.configuration(for: route, retaining: claim, admission: admission)
+        let source = admission.flatMap { state.source(for: $0) }
+        return content.background {
+            if let admission, admission.isValid, let configuration, let source,
+               state.source(for: admission) === source {
+                rumMultiSceneTrackedContent(
+                    Color.clear,
+                    binding: admission.binding,
+                    name: configuration.descriptor.name,
+                    path: configuration.descriptor.path,
+                    attributes: configuration.descriptor.attributes,
+                    configuration: configuration,
+                    navigationOccurrenceSource: source
+                )
+            }
+        }
+    }
+}
+
+#if DD_SDK_COMPILED_FOR_TESTING
+/// Observes the real SDK boundary registration without owning its lifetime.
+@available(iOS 27.0, *)
+@MainActor
+internal enum RUMNativeNavigationTesting {
+    static var onBoundary: ((
+        RUMSwiftUINavigationOccurrenceSource?, RUMSceneIdentifierReader.ObserverView,
+        RUMViewTrackingState, RUMSwiftUIViewCallbackAdmission, RUMViewTrackingState.Configuration?
+    ) -> Void)?
+}
+#endif
+
 #endif

@@ -3203,4 +3203,613 @@ private struct ObservedHostRoot: View {
         }
     }
 }
+@MainActor
+extension SwiftUINavigationOwnershipTests {
+    func testNativeNavigationStack_whenAcceptedPathChanges_itTracksMaterializedOccurrences() async throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Native semantic navigation requires iOS 27")
+        }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        let rows = SemanticHostRows()
+        let feature = try makeSemanticFeature(in: core, rows: rows)
+        let driver = NativeHostDriver(core: core)
+        let capture = NativeHostCapture()
+        let previousHook = RUMNativeNavigationTesting.onBoundary
+        capture.observeBoundaries()
+        defer { RUMNativeNavigationTesting.onBoundary = previousHook }
+        var phase = "root"
+        var completed = false
+        var ids: [String] = []
+        defer {
+            retainNativeHostEvidence(
+                phase: phase,
+                completed: completed,
+                fixture: fixture,
+                rows: rows,
+                driver: driver,
+                capture: capture,
+                ids: ids
+            )
+            fixture.restore()
+            core.stop()
+        }
+        _ = fixture.install(NativeHostRoot(driver: driver, capture: capture))
+        func snapshot() -> RUMCoreContext? {
+            feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))
+        }
+        try await awaitSemanticBoundary("native-root", core: core) {
+            snapshot()?.viewName == "Root" && driver.child.states == [0]
+                && capture.observer?.currentSceneIdentifier == fixture.identifier
+                && rows.views.contains { $0.view.id == snapshot()?.viewID && $0.view.isActive == true }
+        }
+        try await awaitSemanticBoundary("native-root-reader", core: core) {
+            capture.proof(viewID: snapshot()?.viewID, depth: 0, fixture: fixture, rows: rows) != nil
+        }
+        capture.proofs.append(try XCTUnwrap(capture.proof(viewID: snapshot()?.viewID, depth: 0, fixture: fixture, rows: rows)))
+        let session = try XCTUnwrap(snapshot()?.sessionID)
+        ids.append(try XCTUnwrap(snapshot()?.viewID))
+        try XCTUnwrap(driver.child.update)()
+        try await awaitSemanticBoundary("native-customer-state", core: core) {
+            driver.child.states.last == 1
+        }
+
+        phase = "rejected-binding-proposal"
+        driver.acceptsProposals = false
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        try XCTUnwrap(capture.path).transaction(transaction).wrappedValue = [.detail(secret: "rejected")]
+        XCTAssertEqual(driver.path, [])
+        XCTAssertEqual(driver.forwardedTransactions.last, true)
+        core.flush()
+        XCTAssertEqual(snapshot()?.viewID, ids.last)
+        XCTAssertFalse(rows.views.contains { $0.view.name == "Detail" })
+        driver.acceptsProposals = true
+
+        let secret = "native-associated-value-stays-local"
+        for depth in [1, 2] {
+            phase = "accepted-depth-\(depth)"
+            try XCTUnwrap(capture.path).wrappedValue = Array(repeating: .detail(secret: secret), count: depth)
+            try await awaitSemanticBoundary("native-depth-\(depth)", core: core) {
+                driver.materializedDepths.contains(depth) && snapshot()?.viewName == "Detail"
+                    && snapshot()?.viewID != ids.last
+                    && rows.views.contains { $0.view.id == snapshot()?.viewID && $0.view.isActive == true }
+            }
+            try await awaitSemanticBoundary("native-reader-depth-\(depth)", core: core) {
+                capture.proof(viewID: snapshot()?.viewID, depth: depth, fixture: fixture, rows: rows) != nil
+            }
+            capture.proofs.append(try XCTUnwrap(capture.proof(viewID: snapshot()?.viewID, depth: depth, fixture: fixture, rows: rows)))
+            let id = try XCTUnwrap(snapshot()?.viewID)
+            XCTAssertFalse(ids.contains(id))
+            XCTAssertEqual(snapshot()?.sessionID, session)
+            ids.append(id)
+            if depth == 2 {
+                // Keep the real outgoing state alive through the retained reveal.
+                let outgoing = try XCTUnwrap(capture.boundaries.first {
+                    $0.state?.activeLifecycleGeneration != nil
+                        && $0.state?.configuration?.descriptor.attributes["native_test_depth"] as? Int == 2
+                }?.state)
+                capture.retainedOutgoingStates.append(outgoing)
+            }
+            feature.monitor.addAction(
+                type: .custom,
+                name: "native-owned-\(depth)",
+                attributes: [:],
+                explicitTarget: .scene(fixture.identifier)
+            )
+            try await awaitSemanticBoundary("native-action-\(depth)", core: core) {
+                rows.actions.contains { $0.action.target?.name == "native-owned-\(depth)" }
+            }
+            XCTAssertEqual(rows.actions.first { $0.action.target?.name == "native-owned-\(depth)" }?.view.id, id)
+        }
+
+        for depth in [1, 0] {
+            phase = "reveal-depth-\(depth)"
+            try XCTUnwrap(capture.path).wrappedValue = Array(repeating: .detail(secret: secret), count: depth)
+            try await awaitSemanticBoundary("native-reveal-\(depth)", core: core) {
+                snapshot()?.viewName == (depth == 0 ? "Root" : "Detail") && snapshot()?.viewID != ids.last
+            }
+            try await awaitSemanticBoundary("native-reader-depth-\(depth)", core: core) {
+                capture.proof(viewID: snapshot()?.viewID, depth: depth, fixture: fixture, rows: rows) != nil
+            }
+            capture.proofs.append(try XCTUnwrap(capture.proof(viewID: snapshot()?.viewID, depth: depth, fixture: fixture, rows: rows)))
+            let id = try XCTUnwrap(snapshot()?.viewID)
+            XCTAssertFalse(ids.contains(id))
+            ids.append(id)
+        }
+        XCTAssertEqual(driver.child.states.last, 1)
+        XCTAssertFalse(String(decoding: try JSONEncoder().encode(rows.views), as: UTF8.self).contains(secret))
+        XCTAssertTrue(fixture.window.windowScene === fixture.scene)
+        XCTAssertTrue(capture.observer?.window === fixture.window)
+        phase = "manual-owner"
+        feature.monitor.startView(
+            key: "native-manual-override",
+            name: "Manual Override",
+            attributes: [:],
+            sceneIdentifier: fixture.identifier
+        )
+        try await awaitSemanticBoundary("native-manual-owner", core: core) {
+            snapshot()?.viewName == "Manual Override"
+        }
+        let manualID = try XCTUnwrap(snapshot()?.viewID)
+        feature.monitor.addAction(
+            type: .custom,
+            name: "native-manual-action",
+            attributes: [:],
+            explicitTarget: .scene(fixture.identifier)
+        )
+        try await awaitSemanticBoundary("native-manual-action", core: core) {
+            rows.actions.contains { $0.action.target?.name == "native-manual-action" }
+        }
+        XCTAssertEqual(rows.actions.first { $0.action.target?.name == "native-manual-action" }?.view.id, manualID)
+        feature.monitor.stopView(
+            key: "native-manual-override",
+            attributes: [:],
+            sceneIdentifier: fixture.identifier
+        )
+        try await awaitSemanticBoundary("native-manual-reveal", core: core) {
+            snapshot()?.viewName == "Root"
+        }
+        let revealed = try XCTUnwrap(snapshot()?.viewID)
+        XCTAssertFalse(ids.contains(revealed))
+        ids.append(revealed)
+        phase = "container-removal"
+        let finalID = try XCTUnwrap(ids.last)
+        driver.visible = false
+        try await awaitSemanticBoundary("native-container-removal", core: core) {
+            rows.views.contains { $0.view.id == finalID && $0.view.isActive == false }
+        }
+        phase = "initially-restored-equal-routes"
+        let restored = NativeHostDriver(core: core)
+        restored.path = [.detail(secret: secret), .detail(secret: secret)]
+        let restoredCapture = NativeHostCapture()
+        restoredCapture.observeBoundaries()
+        _ = fixture.install(NativeHostRoot(driver: restored, capture: restoredCapture))
+        try await awaitSemanticBoundary("native-restored-depth-two", core: core) {
+            snapshot()?.viewName == "Detail" && snapshot()?.viewID != finalID
+                && restoredCapture.proof(viewID: snapshot()?.viewID, depth: 2, fixture: fixture, rows: rows) != nil
+        }
+        let restoredID = try XCTUnwrap(snapshot()?.viewID)
+        restoredCapture.proofs.append(try XCTUnwrap(restoredCapture.proof(viewID: restoredID, depth: 2, fixture: fixture, rows: rows)))
+        try XCTUnwrap(restoredCapture.path).wrappedValue = [.detail(secret: secret)]
+        try await awaitSemanticBoundary("native-restored-retained-depth-one", core: core) {
+            snapshot()?.viewName == "Detail" && snapshot()?.viewID != restoredID
+                && restoredCapture.proof(viewID: snapshot()?.viewID, depth: 1, fixture: fixture, rows: rows) != nil
+        }
+        restoredCapture.proofs.append(try XCTUnwrap(restoredCapture.proof(viewID: snapshot()?.viewID, depth: 1, fixture: fixture, rows: rows)))
+        XCTAssertEqual(snapshot()?.sessionID, session)
+        retainNativeHostEvidence(
+            phase: "restored-and-retained-equal-routes",
+            completed: true,
+            fixture: fixture,
+            rows: rows,
+            driver: restored,
+            capture: restoredCapture,
+            ids: [restoredID, try XCTUnwrap(snapshot()?.viewID)]
+        )
+        completed = true
+    }
+
+    func testNativeNavigationStack_whenAdmissionRetires_itRejectsStaleCallbacksAndPreservesUnusedTracking() async throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Native semantic navigation requires iOS 27")
+        }
+        let fixture = try SemanticHostWindow()
+        defer { fixture.restore() }
+        for mode in ["off", "nop", "custom"] {
+            let core: DatadogCoreProtocol
+            let real: DatadogCore?
+            let rows = SemanticHostRows()
+            var feature: RUMFeature?
+            if mode == "nop" {
+                real = nil
+                core = NOPDatadogCore()
+            } else {
+                let instance = makeSemanticCore()
+                real = instance
+                core = instance
+                feature = try makeSemanticFeature(in: instance, rows: rows, enabled: mode == "custom")
+                if mode == "custom" {
+                    let handler = try XCTUnwrap(feature?.instrumentation.viewsHandler as? RUMSceneViewsHandler)
+                    handler.subscriber = RUMCommandSubscriberMock()
+                }
+            }
+            defer { real?.stop() }
+            let driver = NativeHostDriver(core: core)
+            driver.trackLegacyContent = mode == "off"
+            let capture = NativeHostCapture()
+            _ = fixture.install(NativeHostRoot(driver: driver, capture: capture))
+            try await awaitSemanticBoundary("native-unused-\(mode)", core: real) {
+                capture.updates > 0 && driver.child.states == [0] && capture.admission == nil
+            }
+            XCTAssertNil(capture.state?.source)
+            XCTAssertNil(capture.observer)
+            if mode == "off" {
+                try await awaitSemanticBoundary("native-unused-legacy", core: real) {
+                    feature?.monitor.activeView.name == "Native Legacy Content"
+                        && rows.views.contains { $0.view.name == "Native Legacy Content" && $0.view.isActive == true }
+                }
+            }
+            try XCTUnwrap(driver.child.update)()
+            try await awaitSemanticBoundary("native-unused-content-\(mode)", core: real) {
+                driver.child.states.last == 1
+            }
+            retainNativeHostEvidence(
+                phase: "unused-\(mode)",
+                completed: true,
+                fixture: fixture,
+                rows: rows,
+                driver: driver,
+                capture: capture,
+                ids: []
+            )
+        }
+
+        let original = makeSemanticCore()
+        defer { original.stop() }
+        let previousHook = RUMNativeNavigationTesting.onBoundary
+        defer { RUMNativeNavigationTesting.onBoundary = previousHook }
+        let originalRows = SemanticHostRows()
+        let originalFeature = try makeSemanticFeature(in: original, rows: originalRows)
+        let driver = NativeHostDriver(core: original)
+        let capture = NativeHostCapture()
+        capture.observeBoundaries()
+        _ = fixture.install(NativeHostRoot(driver: driver, capture: capture))
+        try await awaitSemanticBoundary("native-original", core: original) {
+            originalFeature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewName == "Root"
+        }
+        try verifyNativeReentrancy(binding: XCTUnwrap(capture.admission).binding)
+        let state = try XCTUnwrap(capture.state)
+        let admission = try XCTUnwrap(capture.admission)
+        original.stop()
+        XCTAssertFalse(admission.isValid)
+        driver.core = NOPDatadogCore()
+        let directory = temporaryUniqueCoreDirectory()
+        try directory.create()
+        defer { try? directory.delete() }
+        let peer = makeSemanticCore(directory: directory)
+        defer { peer.stop() }
+        let peerRows = SemanticHostRows()
+        let peerFeature = try makeSemanticFeature(in: peer, rows: peerRows)
+        let peerDriver = NativeHostDriver(core: peer)
+        let peerCapture = NativeHostCapture()
+        _ = fixture.install(NativeHostRoot(driver: peerDriver, capture: peerCapture))
+        try await awaitSemanticBoundary("native-peer", core: peer) {
+            peerFeature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewName == "Root"
+        }
+        let peerID = try XCTUnwrap(peerFeature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID)
+        let drained = expectation(description: "Original native callback drained")
+        DispatchQueue.main.async {
+            state.reconcile(path: [.detail(secret: "stale")], metadata: .automatic, admission: admission)
+            state.reconcile(attachment: .detached, admission: admission)
+            drained.fulfill()
+        }
+        await fulfillment(of: [drained], timeout: 10)
+        peer.flush()
+        XCTAssertEqual(peerFeature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID, peerID)
+        XCTAssertFalse(peerRows.views.contains { $0.view.name == "Detail" })
+        retainNativeHostEvidence(
+            phase: "peer-after-original-retirement",
+            completed: true,
+            fixture: fixture,
+            rows: peerRows,
+            driver: peerDriver,
+            capture: peerCapture,
+            ids: [peerID]
+        )
+    }
+}
+
+private enum NativeHostRoute: Hashable {
+    case detail(secret: String)
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private final class NativeHostDriver: ObservableObject {
+    @Published var core: DatadogCoreProtocol
+    @Published var path: [NativeHostRoute] = []
+    @Published var visible = true
+    var acceptsProposals = true
+    var trackLegacyContent = false
+    var forwardedTransactions: [Bool] = []
+    var materializedDepths: [Int] = []
+    let child = OrdinarySwiftUIViewDriver()
+
+    init(core: DatadogCoreProtocol) {
+        self.core = core
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private final class NativeHostCapture {
+    weak var state: RUMNativeNavigationState<NativeHostRoute>?
+    weak var admission: RUMSwiftUIViewCallbackAdmission?
+    weak var observer: RUMSceneIdentifierReader.ObserverView?
+    var path: Binding<[NativeHostRoute]>?
+    var updates = 0
+    var boundaries: [NativeBoundaryObservation] = []
+    var proofs: [[String: Any]] = []
+    var retainedOutgoingStates: [RUMViewTrackingState] = []
+
+    func observeBoundaries() {
+        RUMNativeNavigationTesting.onBoundary = { [weak self] source, observer, state, admission, configuration in
+            guard let self, let source, source === self.state?.source else {
+                return
+            }
+            if let existing = self.boundaries.first(where: { $0.state === state && $0.observer === observer }) {
+                existing.originConfiguration = configuration
+            } else {
+                self.boundaries.append(NativeBoundaryObservation(
+                    source: source,
+                    observer: observer,
+                    state: state,
+                    admission: admission,
+                    originConfiguration: configuration
+                ))
+            }
+        }
+    }
+
+    func proof(
+        viewID: String?,
+        depth: Int,
+        fixture: SemanticHostWindow,
+        rows: SemanticHostRows
+    ) -> [String: Any]? {
+        guard let viewID, let current = admission, current.isValid,
+              let source = state?.source,
+              let row = rows.views.last(where: { $0.view.id == viewID && $0.view.isActive == true }),
+              let json = try? JSONSerialization.jsonObject(with: JSONEncoder().encode(row)),
+              let token = Self.values(named: "native_test_claim", in: json).first as? String,
+              let eligible = current.foundation?.makeEligibilityCheck() else {
+            return nil
+        }
+        let matching = boundaries.filter { boundary in
+            guard let state = boundary.state, let admission = boundary.admission,
+                  let observer = boundary.observer, admission.isValid,
+                  boundary.source === source, state.admission?.matches(admission) == true,
+                  admission.binding.epoch == current.binding.epoch,
+                  admission.binding.lifetime === current.binding.lifetime,
+                  observer.window === fixture.window, observer.currentSceneIdentifier == fixture.identifier,
+                  state.sceneIdentifier == fixture.identifier,
+                  state.activeLifecycleGeneration != nil,
+                  boundary.originConfiguration?.descriptor.attributes["native_test_depth"] as? Int == depth,
+                  let configuration = state.configuration,
+                  configuration.isCurrentDestination,
+                  configuration.descriptor.attributes["native_test_claim"] as? String == token,
+                  configuration.descriptor.attributes["native_test_depth"] as? Int == depth,
+                  let controller = observer.nearestViewController,
+                  !eligible(controller) else {
+                return false
+            }
+            return true
+        }
+        guard matching.count == 1, let selected = matching.first,
+              let reader = selected.observer, let boundary = selected.state else {
+            return nil
+        }
+        return [
+            "view_id": viewID, "depth": depth, "claim": token,
+            "tracking_state": String(describing: ObjectIdentifier(boundary)),
+            "reader": String(describing: ObjectIdentifier(reader)),
+            "source": String(describing: ObjectIdentifier(source)),
+            "scene": fixture.identifier.rawValue,
+            "window": String(describing: ObjectIdentifier(fixture.window)),
+            "native_controller_ineligible_for_automatic_tracking": true,
+            "original_admission_valid": true,
+            "retained_outgoing_states": retainedOutgoingStates.map { state in
+                [
+                    "state": String(describing: ObjectIdentifier(state)),
+                    "admission_valid": state.admission?.isValid == true,
+                    "has_active_occurrence": state.activeLifecycleGeneration != nil,
+                    "selected_current_boundary": state === boundary
+                ] as [String: Any]
+            }
+        ]
+    }
+
+    private static func values(named key: String, in value: Any) -> [Any] {
+        if let dictionary = value as? [String: Any] {
+            return dictionary.flatMap { name, child in
+                name == key ? [child] : values(named: key, in: child)
+            }
+        }
+        if let array = value as? [Any] {
+            return array.flatMap { values(named: key, in: $0) }
+        }
+        return []
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private final class NativeBoundaryObservation {
+    weak var source: RUMSwiftUINavigationOccurrenceSource?
+    weak var observer: RUMSceneIdentifierReader.ObserverView?
+    weak var state: RUMViewTrackingState?
+    weak var admission: RUMSwiftUIViewCallbackAdmission?
+    var originConfiguration: RUMViewTrackingState.Configuration?
+
+    init(
+        source: RUMSwiftUINavigationOccurrenceSource,
+        observer: RUMSceneIdentifierReader.ObserverView,
+        state: RUMViewTrackingState,
+        admission: RUMSwiftUIViewCallbackAdmission,
+        originConfiguration: RUMViewTrackingState.Configuration?
+    ) {
+        self.source = source
+        self.observer = observer
+        self.state = state
+        self.admission = admission
+        self.originConfiguration = originConfiguration
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private struct NativeHostRoot: View {
+    @ObservedObject var driver: NativeHostDriver
+    let capture: NativeHostCapture
+
+    @ViewBuilder private var root: some View {
+        if driver.trackLegacyContent {
+            OrdinarySwiftUIViewChild(driver: driver.child)
+                .trackRUMView(name: "Native Legacy Content", in: driver.core)
+        } else {
+            OrdinarySwiftUIViewChild(driver: driver.child)
+        }
+    }
+
+    @ViewBuilder var body: some View {
+        if driver.visible {
+            RUMNavigationStack(
+                path: Binding(get: { driver.path }, set: { proposal, transaction in
+                    driver.forwardedTransactions.append(transaction.disablesAnimations)
+                    if driver.acceptsProposals {
+                        driver.path = proposal
+                    }
+                }),
+                in: driver.core,
+                root: { root },
+                destination: { _ in
+                    Text("Native detail")
+                        .onAppear { driver.materializedDepths.append(driver.path.count) }
+                }
+            )
+            .withTestingOnNativeUpdate { state, admission, observer, path in
+                capture.state = state
+                capture.admission = admission
+                capture.path = path
+                capture.updates += 1
+                if let observer {
+                    capture.observer = observer
+                }
+            }
+        }
+    }
+}
+
+@MainActor
+private extension SwiftUINavigationOwnershipTests {
+    @available(iOS 27.0, *)
+    func verifyNativeReentrancy(binding: RUMSwiftUIViewFoundationBinding) throws {
+        let state = RUMNativeNavigationState<NativeReentryRoute>()
+        let admission = try XCTUnwrap(state.configure(binding: binding))
+        defer { _ = state.configure(binding: nil) }
+        let initial = NativeReentryRoute(1)
+        let outer = NativeReentryRoute(2)
+        let newest = NativeReentryRoute(3)
+        state.reconcile(path: [initial], metadata: .automatic, admission: admission)
+        initial.onEquality = {
+            state.reconcile(path: [newest, newest], metadata: .automatic, admission: admission)
+        }
+        state.reconcile(path: [outer], metadata: .automatic, admission: admission)
+        XCTAssertEqual(state.acceptedDepth, 2)
+
+        let metadata = RUMNavigationMetadata.automatic.overriding(outer, name: "Outer")
+        outer.onHash = {
+            state.reconcile(path: [newest, newest, newest], metadata: .automatic, admission: admission)
+        }
+        state.reconcile(path: [outer], metadata: metadata, admission: admission)
+        XCTAssertEqual(state.acceptedDepth, 3)
+
+        state.reconcile(path: [initial], metadata: .automatic, admission: admission)
+        let claim = state.makeClaim(for: initial)
+        initial.onEquality = {
+            state.reconcile(path: [newest, newest], metadata: .automatic, admission: admission)
+        }
+        XCTAssertNil(state.configuration(for: outer, retaining: claim, admission: admission))
+        XCTAssertEqual(state.acceptedDepth, 2)
+
+        state.reconcile(
+            acceptedPath: {
+                state.reconcile(path: [newest, newest, newest], metadata: .automatic, admission: admission)
+                return [outer]
+            },
+            metadata: .automatic,
+            admission: admission
+        )
+        XCTAssertEqual(state.acceptedDepth, 3)
+
+        newest.onEquality = { _ = state.configure(binding: nil) }
+        state.reconcile(path: [outer, outer, outer], metadata: .automatic, admission: admission)
+        XCTAssertNil(state.admission)
+        XCTAssertNil(state.source)
+        XCTAssertEqual(state.acceptedDepth, 3)
+    }
+
+    @available(iOS 27.0, *)
+    func retainNativeHostEvidence(
+        phase: String,
+        completed: Bool,
+        fixture: SemanticHostWindow,
+        rows: SemanticHostRows,
+        driver: NativeHostDriver,
+        capture: NativeHostCapture,
+        ids: [String]
+    ) {
+        do {
+            let views = try JSONSerialization.jsonObject(with: JSONEncoder().encode(rows.views))
+            let actions = try JSONSerialization.jsonObject(with: JSONEncoder().encode(rows.actions))
+            let evidence: [String: Any] = [
+                "schema_version": 1, "family": "native-navigation-materialization",
+                "phase": phase, "completed": completed,
+                "pid": Int(ProcessInfo.processInfo.processIdentifier),
+                "scene_identifier": fixture.identifier.rawValue,
+                "owned_window": String(describing: ObjectIdentifier(fixture.window)),
+                "reader_window": capture.observer?.window.map { String(describing: ObjectIdentifier($0)) } ?? "",
+                "reader_scene": capture.observer?.currentSceneIdentifier?.rawValue ?? "",
+                "path_depth": driver.path.count, "materialized_depths": driver.materializedDepths,
+                "customer_states": driver.child.states, "view_ids": ids,
+                "admission_valid": capture.admission?.isValid == true,
+                "has_native_source": capture.state?.source != nil,
+                "actual_boundary_proofs": capture.proofs,
+                "views": views, "actions": actions,
+                "scope": "Rendered native typed-array component; no actual interactive OS transition or final-release claim"
+            ]
+            let attachment = XCTAttachment(
+                data: try JSONSerialization.data(withJSONObject: evidence),
+                uniformTypeIdentifier: "public.json"
+            )
+            attachment.name = "native-navigation-materialization-" + phase
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        } catch {
+            XCTFail("Could not retain native navigation evidence")
+        }
+    }
+}
+
+/// Customer equality/hash callbacks deliberately reenter the native coordinator.
+private final class NativeReentryRoute: Hashable {
+    let value: Int
+    var onEquality: (@MainActor () -> Void)?
+    var onHash: (@MainActor () -> Void)?
+
+    init(_ value: Int) {
+        self.value = value
+    }
+
+    static func == (lhs: NativeReentryRoute, rhs: NativeReentryRoute) -> Bool {
+        let callback = lhs.onEquality ?? rhs.onEquality
+        lhs.onEquality = nil
+        rhs.onEquality = nil
+        if let callback {
+            MainActor.assumeIsolated { callback() }
+        }
+        return lhs.value == rhs.value
+    }
+
+    func hash(into hasher: inout Hasher) {
+        let callback = onHash
+        onHash = nil
+        if let callback {
+            MainActor.assumeIsolated { callback() }
+        }
+        hasher.combine(value)
+    }
+}
+
 #endif
