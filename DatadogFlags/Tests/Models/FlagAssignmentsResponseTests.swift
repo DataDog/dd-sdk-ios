@@ -451,3 +451,29 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertNil(assignment.variation(as: Double.self))
     }
 }
+
+extension FlagAssignmentsResponseTests {
+    func testConsentIsTolerantAndPersistedWithTheWholeConfiguration() throws {
+        for field in ["", ", \"observeFullEvaluationData\": true", ", \"observeFullEvaluationData\": false",
+                      ", \"observeFullEvaluationData\": null", ", \"observeFullEvaluationData\": \"true\"",
+                      ", \"observeFullEvaluationData\": 1", ", \"observeFullEvaluationData\": {}"] {
+            let json = """
+            {"data":{"attributes":{"flags":{"flag":{"allocationKey":"a","variationKey":"v",
+            "variationType":"boolean","variationValue":true,"reason":"MATCH","doLog":false,
+            "observeFullEvaluationData":true}}\(field)}}}
+            """
+            let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(json.utf8))
+            let expected = field == ", \"observeFullEvaluationData\": true"
+            XCTAssertEqual(response.observeFullEvaluationData, expected)
+            XCTAssertEqual(response.flags["flag"]?.observeFullEvaluationData, expected)
+            let data = FlagsData(flags: response.flags, context: .mockAny(), date: .mockAny(), observeFullEvaluationData: expected)
+            let encoded = try JSONEncoder().encode(data)
+            XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: encoded), data)
+            var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+            legacy.removeValue(forKey: "observeFullEvaluationData")
+            let restored = try JSONDecoder().decode(FlagsData.self, from: JSONSerialization.data(withJSONObject: legacy))
+            XCTAssertFalse(restored.observeFullEvaluationData)
+            XCTAssertEqual(restored.flags["flag"]?.observeFullEvaluationData, false)
+        }
+    }
+}

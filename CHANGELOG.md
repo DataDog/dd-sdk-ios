@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Protect Flags evaluation telemetry by default: hash targeting keys, omit evaluation context, preserve evaluation-time consent through cache/refresh, and report stable error codes. Full evaluation data requires explicit configuration consent.
+
 # 3.20.0 / 19-10-2026
 
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.

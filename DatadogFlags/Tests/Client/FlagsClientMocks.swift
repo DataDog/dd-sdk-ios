@@ -167,6 +167,11 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         setEvaluationContextStub?(context, completion)
     }
 
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot? {
+        guard let data = flagsData else { return nil }
+        return .init(context: data.context, assignment: flagAssignment(for: key), observeFullEvaluationData: data.observeFullEvaluationData)
+    }
+
     func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
         var cached = flagsData.map { FlagsRepository.CachedFlagsData(data: $0) }
         return cached?.flagAssignment(for: key)
@@ -177,6 +182,10 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
             return nil
         }
         return data.flags
+    }
+
+    func assignmentsSnapshot() -> FlagsData? {
+        flagsData?.obfuscation == nil ? flagsData : nil
     }
 
     func reset() {

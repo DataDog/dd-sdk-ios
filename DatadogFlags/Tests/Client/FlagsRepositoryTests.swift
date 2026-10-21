@@ -1030,3 +1030,49 @@ private final class ClosureFlagsStateListener: FlagsStateListener {
         onStateChange(newState)
     }
 }
+
+extension FlagsRepositoryTests {
+    func testConsentSurvivesRefreshOfflineAndDelayedBridgeEmission() throws {
+        for initialConsent in [false, true] {
+            let scope = FeatureScopeMock()
+            let context = FlagsEvaluationContext(targetingKey: "jane.doe@datadoghq.com", attributes: ["private": .string("CANARY")])
+            let assignment = FlagAssignment.mockAnyBoolean(doLog: false)
+            let disk = FlagsData(flags: ["flag": assignment], context: context, date: .mockAny(), observeFullEvaluationData: initialConsent)
+            scope.dataStoreMock.setValue(try JSONEncoder().encode(disk), forKey: "privacy")
+            let fetcher = FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            }
+            let repository = FlagsRepository(clientName: "privacy", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope)
+            scope.dataStore.flush()
+            let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+            let client = FlagsClient(repository: repository, exposureLogger: ExposureLoggerMock(), evaluationLogger: EvaluationLogger(aggregator: aggregator), rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock())
+            let captured = try XCTUnwrap(client.getFlagAssignmentsWithConsent())
+            XCTAssertEqual(captured.observeFullEvaluationData, initialConsent)
+            let offline = expectation(description: "offline")
+            client.setEvaluationContext(context) { _ in offline.fulfill() }
+            waitForExpectations(timeout: 1)
+            XCTAssertEqual(repository.state.currentState, .stale)
+            XCTAssertEqual(client.getBooleanDetails(key: "flag", defaultValue: false).observeFullEvaluationData, initialConsent)
+            XCTAssertEqual(client.getBooleanDetails(key: "missing", defaultValue: false).observeFullEvaluationData, initialConsent)
+            XCTAssertEqual(client.getStringDetails(key: "flag", defaultValue: "fallback").observeFullEvaluationData, initialConsent)
+            fetcher.flagAssignmentsStub = { _, completion in
+                completion(.success(.init(flags: ["flag": assignment], observeFullEvaluationData: !initialConsent)))
+            }
+            let refreshed = expectation(description: "refresh")
+            client.setEvaluationContext(context) { _ in refreshed.fulfill() }
+            waitForExpectations(timeout: 1)
+            client.sendFlagEvaluation(key: "bridge", assignment: assignment, context: context, observeFullEvaluationData: captured.observeFullEvaluationData, flagError: "HOSTILE_ERROR")
+            aggregator.sendEvaluations()
+            let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+            XCTAssertEqual(events.count, 4)
+            XCTAssertTrue(events.allSatisfy { ($0.context != nil) == initialConsent })
+            XCTAssertTrue(events.allSatisfy { $0.targetingKey == (initialConsent ? context.targetingKey : "sha256_b4698f9b6d186781fa8dc59e533578fa2d8379a46b1cf6db85cda6aa9c99e51b") })
+            XCTAssertEqual(events.first { $0.flag.key == "bridge" }?.error?.message, "GENERAL")
+            XCTAssertEqual(client.getBooleanDetails(key: "flag", defaultValue: false).observeFullEvaluationData, !initialConsent)
+            repository.reset()
+            XCTAssertFalse(client.getBooleanDetails(key: "flag", defaultValue: false).observeFullEvaluationData)
+            aggregator.sendEvaluations()
+            XCTAssertEqual(scope.eventsWritten(ofType: FlagEvaluationEvent.self).filter { $0.error?.message == "PROVIDER_NOT_READY" }.count, 1)
+        }
+    }
+}

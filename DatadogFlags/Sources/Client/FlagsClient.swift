@@ -211,7 +211,8 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        let defaultAssignment = FlagAssignment(
+        let snapshot = repository.evaluationSnapshot(for: key)
+        var defaultAssignment = FlagAssignment(
             allocationKey: "",
             variationKey: "",
             variation: .unknown(""),
@@ -219,7 +220,8 @@ extension FlagsClient: FlagsClientProtocol {
             doLog: false
         )
 
-        guard let context = repository.context else {
+        defaultAssignment.observeFullEvaluationData = snapshot?.observeFullEvaluationData ?? false
+        guard let snapshot else {
             evaluationLogger.logEvaluation(
                 for: key,
                 assignment: defaultAssignment,
@@ -229,14 +231,17 @@ extension FlagsClient: FlagsClientProtocol {
             return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
         }
 
-        guard let flagAssignment = repository.flagAssignment(for: key) else {
+        let context = snapshot.context
+        guard let flagAssignment = snapshot.assignment else {
             evaluationLogger.logEvaluation(
                 for: key,
                 assignment: defaultAssignment,
                 evaluationContext: context,
                 flagError: EvaluationError.flagNotFound
             )
-            return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
+            var details = FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
+            details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+            return details
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
@@ -246,10 +251,12 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: context,
                 flagError: EvaluationError.typeMismatch
             )
-            return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
+            var details = FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
+            details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+            return details
         }
 
-        let details = FlagDetails(
+        var details = FlagDetails(
             key: key,
             value: value,
             variant: flagAssignment.variationKey,
@@ -257,6 +264,7 @@ extension FlagsClient: FlagsClientProtocol {
             allocationKey: flagAssignment.allocationKey.isEmpty ? nil : flagAssignment.allocationKey
         )
 
+        details.observeFullEvaluationData = snapshot.observeFullEvaluationData
         trackEvaluation(key: key, assignment: flagAssignment, context: context)
 
         return details
@@ -294,5 +302,30 @@ extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         trackEvaluation(key: key, assignment: assignment, context: context)
+    }
+}
+
+extension FlagsClient {
+    @_spi(Internal)
+    public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)? {
+        guard let snapshot = repository.assignmentsSnapshot() else { return nil }
+        return (snapshot.flags, snapshot.observeFullEvaluationData)
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        observeFullEvaluationData: Bool,
+        flagError: String?
+    ) {
+        var assignment = assignment
+        assignment.observeFullEvaluationData = observeFullEvaluationData
+        if let flagError {
+            evaluationLogger.logEvaluation(for: key, assignment: assignment, evaluationContext: context, flagError: flagError)
+        } else {
+            trackEvaluation(key: key, assignment: assignment, context: context)
+        }
     }
 }

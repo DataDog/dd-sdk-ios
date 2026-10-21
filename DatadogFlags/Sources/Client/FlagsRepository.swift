@@ -19,9 +19,13 @@ internal protocol FlagsRepositoryProtocol {
         completion: @escaping (Result<Void, FlagsError>) -> Void
     )
 
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot?
+
     func flagAssignment(for key: String) -> FlagAssignment?
 
     func flagAssignments() -> [String: FlagAssignment]?
+
+    func assignmentsSnapshot() -> FlagsData?
 
     func reset()
 }
@@ -337,36 +341,48 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
+        evaluationSnapshot(for: key)?.assignment
+    }
+
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error else {
             return nil
         }
         let supportsObfuscation = supportsFlagKeyObfuscation
-        switch cachedFlagsData?.cachedAssignment(for: key, supportsObfuscation: supportsObfuscation) {
-        case .resolved(let assignment): return assignment
-        case nil: return nil
-        case .missingHash: break
+        if let cached = cachedFlagsData,
+           cached.data.obfuscation == nil || supportsObfuscation,
+           case .resolved(let assignment) = cached.cachedAssignment(for: key, supportsObfuscation: supportsObfuscation) {
+            return .init(context: cached.data.context, assignment: assignment, observeFullEvaluationData: cached.data.observeFullEvaluationData)
         }
 
-        var assignment: FlagAssignment?
+        var snapshot: FlagEvaluationSnapshot?
         _cachedFlagsData.mutate { cached in
-            // A refresh or reset can replace the snapshot after the read. Recheck it under the write lock.
-            guard cached?.data.obfuscation == nil || supportsObfuscation else {
+            // Read context, assignment and consent together even if refresh replaces the cache.
+            guard let data = cached?.data, data.obfuscation == nil || supportsObfuscation else {
                 return
             }
-            assignment = cached?.flagAssignment(for: key)
+            snapshot = .init(
+                context: data.context,
+                assignment: cached?.flagAssignment(for: key),
+                observeFullEvaluationData: data.observeFullEvaluationData
+            )
         }
-        return assignment
+        return snapshot
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
+        assignmentsSnapshot()?.flags
+    }
+
+    func assignmentsSnapshot() -> FlagsData? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error,
               let data = readableFlagsData,
               data.obfuscation == nil else {
             return nil
         }
-        return data.flags
+        return data
     }
 
     func setEvaluationContext(
@@ -404,7 +420,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         flags: response.flags,
                         context: context,
                         date: self.dateProvider.now,
-                        obfuscation: response.obfuscation
+                        obfuscation: response.obfuscation,
+                        observeFullEvaluationData: response.observeFullEvaluationData
                     )
                     self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()

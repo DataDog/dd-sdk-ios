@@ -78,6 +78,10 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     /// was not found, evaluation failed, or no allocation was associated with this evaluation.
     public var allocationKey: String?
 
+    /// Internal evaluation-time consent for adapters. Never reconstructed from live configuration.
+    @_spi(Internal)
+    public var observeFullEvaluationData: Bool = false
+
     /// Creates detailed flag evaluation information.
     ///
     /// - Parameters:
