@@ -582,6 +582,42 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(ttfdEvent.connectivity?.status, .connected)
     }
 
+    func testTTFDCommand_whenReceivedAfterTTIDBeforeStartupType_usesTTFDWriter() {
+        // Given
+        let appStateManager = AppStateManagerMock()
+        appStateManager.shouldDeferPreviousAppStateInfoCallback = true
+        mockDependencies = .mockWith(appStateManager: appStateManager)
+        manager = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: mockDependencies,
+            telemetryController: .init()
+        )
+
+        let ttidWriter = FileWriterMock()
+        let ttfdWriter = FileWriterMock()
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(ttidCommand, context: mockContext, writer: ttidWriter)
+        manager.process(ttfdCommand, context: mockContext, writer: ttfdWriter)
+        appStateManager.completePreviousAppStateInfo()
+
+        // Then
+        XCTAssertEqual(
+            ttidWriter.events(ofType: RUMVitalAppLaunchEvent.self).map(\.vital.appLaunchMetric),
+            [.ttid]
+        )
+        XCTAssertEqual(
+            ttfdWriter.events(ofType: RUMVitalAppLaunchEvent.self).map(\.vital.appLaunchMetric),
+            [.ttfd]
+        )
+    }
+
     func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() throws {
         // Given
         let processLaunchDate = Date()
