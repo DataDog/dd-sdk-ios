@@ -490,11 +490,13 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         func result(from state: RepositoryState, assignment: FlagAssignment?) -> FlagEvaluationSnapshot {
             let readable = !hasError && (state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation)
             let context = readable ? state.flagsData?.context : nil
+            // Until a context is requested, a pending cache read may still contain an opt-out.
+            let isPolicyLoading = state.shouldWaitForFlagsDataRead && !state.hasStartedEvaluationContextRequest
             return FlagEvaluationSnapshot(
                 context: context,
                 assignment: readable ? assignment : nil,
                 // Unreadable assignments must not discard the stored subject's reporting policy.
-                telemetryOptedOut: state.telemetry.isOptedOut(evaluating: state.flagsData?.context)
+                telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: state.flagsData?.context)
             )
         }
 

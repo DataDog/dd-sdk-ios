@@ -43,9 +43,9 @@ public final class FlagsClient {
         /// This controls flag evaluation reporting, not Datadog SDK internal telemetry.
         /// Do not use it to disable SDK diagnostics.
         ///
-        /// Enabling this option alone does not suppress data.
         /// When enabled, setting `dd_evaluation_telemetry_opt_out` to boolean `true` suppresses new evaluation events,
         /// evaluation counts, and automatic RUM flag annotations.
+        /// Before the first context update, evaluation telemetry is also suppressed until the cached policy is loaded.
         /// Flag evaluation and experiment exposure logging remain unchanged.
         /// Previously recorded telemetry is not removed.
         /// The attribute remains available for targeting and exposure reporting.
@@ -55,7 +55,8 @@ public final class FlagsClient {
 
         /// Creates configuration for an individual Flags client.
         /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
-        ///   not SDK internal telemetry. Suppression requires `dd_evaluation_telemetry_opt_out` to be boolean `true`.
+        ///   not SDK internal telemetry. Suppresses while the initial cached policy is unknown, then requires
+        ///   `dd_evaluation_telemetry_opt_out` to be boolean `true`.
         ///   Default: `false`.
         public init(enableEvaluationTelemetryOptOutParameter: Bool = false) {
             self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter

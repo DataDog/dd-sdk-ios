@@ -16,6 +16,118 @@ final class FlagsRepositoryTests: XCTestCase {
 
     // MARK: - Initialization Latency
 
+    func testTelemetryPolicy_whenInitialCacheReadIsDelayed_suppressesUntilPolicyIsKnown() throws {
+        for enabled in [false, true] {
+            for cachedOptOut: Bool? in [nil, false, true] {
+                // Given a cache read that outlasts the synchronous getter's timeout
+                let cachedData = cachedOptOut.map { optedOut in
+                    FlagsData(
+                        flags: ["flag": .mockAnyBoolean()],
+                        context: FlagsEvaluationContext(
+                            targetingKey: "cached-user",
+                            attributes: ["dd_evaluation_telemetry_opt_out": .bool(optedOut)]
+                        ),
+                        date: .mockAny()
+                    )
+                }
+                let cachedValue = try cachedData.map {
+                    DataStoreValueResult.value(try JSONEncoder().encode($0), dataStoreDefaultKeyVersion)
+                } ?? .noValue
+                let dataStore = DelayedReadDataStore(storage: ["client": cachedValue])
+                let repository = FlagsRepository(
+                    clientName: "client",
+                    flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+                    dateProvider: DateProviderMock(),
+                    featureScope: FeatureScopeMock(dataStore: dataStore),
+                    readTimeout: 0,
+                    initializationTimeout: nil
+                )
+                defer {
+                    dataStore.resumeRead()
+                    dataStore.flush()
+                    repository.flush()
+                }
+                let evaluations = EvaluationLoggerMock()
+                let exposures = ExposureLoggerMock()
+                let rum = RUMFlagEvaluationReporterMock()
+                let client = FlagsClient(
+                    repository: repository,
+                    exposureLogger: exposures,
+                    evaluationLogger: evaluations,
+                    rumFlagEvaluationReporter: rum,
+                    configuration: .init(enableEvaluationTelemetryOptOutParameter: enabled)
+                )
+                wait(for: [dataStore.readStarted], timeout: 1)
+
+                // When evaluated before any context or cached policy is known
+                let initialDetails = client.getDetails(key: "flag", defaultValue: false)
+
+                // Then the default is returned, with telemetry suppressed only when the control is enabled
+                XCTAssertEqual(initialDetails.error, .providerNotReady)
+                XCTAssertFalse(initialDetails.value)
+                let initialEventCount = enabled ? 0 : 1
+                XCTAssertEqual(evaluations.logEvaluationCalls.count, initialEventCount)
+                XCTAssertTrue(exposures.logExposureCalls.isEmpty)
+                XCTAssertTrue(rum.sendFlagEvaluationCalls.isEmpty)
+
+                // When the cache read completes, its policy applies without affecting cached values or exposures
+                dataStore.resumeRead()
+                dataStore.flush()
+                let details = client.getDetails(key: "flag", defaultValue: false)
+                let shouldSuppress = enabled && cachedOptOut == true
+                XCTAssertEqual(evaluations.logEvaluationCalls.count, initialEventCount + (shouldSuppress ? 0 : 1))
+                XCTAssertEqual(exposures.logExposureCalls.count, cachedData == nil ? 0 : 1)
+                XCTAssertEqual(rum.sendFlagEvaluationCalls.count, cachedData != nil && !shouldSuppress ? 1 : 0)
+                XCTAssertEqual(details.error, cachedData == nil ? .providerNotReady : nil)
+                XCTAssertEqual(details.value, cachedData?.flags["flag"]?.variation(as: Bool.self) ?? false)
+            }
+        }
+    }
+
+    func testTelemetryPolicy_whenContextIsRequestedBeforeCacheRead_usesRequestedDecision() throws {
+        for optedOut in [false, true] {
+            // Given a pending cache read with the opposite reporting decision
+            let cachedData = FlagsData(
+                flags: ["flag": .mockAnyBoolean()],
+                context: FlagsEvaluationContext(
+                    targetingKey: "subject",
+                    attributes: ["dd_evaluation_telemetry_opt_out": .bool(!optedOut)]
+                ),
+                date: .mockAny()
+            )
+            let dataStore = DelayedReadDataStore(storage: [
+                "client": .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+            ])
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(dataStore: dataStore),
+                readTimeout: 0,
+                initializationTimeout: nil
+            )
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                repository.flush()
+            }
+            wait(for: [dataStore.readStarted], timeout: 1)
+            XCTAssertTrue(repository.evaluationSnapshot(for: "flag").telemetryOptedOut)
+
+            // When the application supplies an explicit context before disk or network completes
+            repository.setEvaluationContext(FlagsEvaluationContext(
+                targetingKey: "subject",
+                attributes: ["dd_evaluation_telemetry_opt_out": .bool(optedOut)]
+            )) { _ in }
+
+            // Then the requested decision applies immediately and survives the delayed cache read
+            XCTAssertEqual(repository.evaluationSnapshot(for: "flag").telemetryOptedOut, optedOut)
+            dataStore.resumeRead()
+            dataStore.flush()
+            XCTAssertEqual(repository.evaluationSnapshot(for: "flag").telemetryOptedOut, optedOut)
+        }
+    }
+
     func testTelemetryPolicy_whenFetchSupersedesInitialCacheRead_preservesLatestDecision() throws {
         for optedOut in [false, true] {
             // Given an older cache whose reporting decision differs from the requested context
