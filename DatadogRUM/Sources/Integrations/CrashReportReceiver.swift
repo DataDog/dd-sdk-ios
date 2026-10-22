@@ -85,6 +85,15 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             timeSinceAppStart: timeSinceAppStart
         )
 
+        // The stopped session state and the view reset reach the crash context separately, so a crash between them
+        // can still find the last view of the stopped session. It must not be attributed to that session.
+        if let lastRUMSessionState = context.lastRUMSessionState,
+           lastRUMSessionState.wasStopped,
+           context.lastRUMViewEvent?.session.id == RUMUUID(rawValue: lastRUMSessionState.sessionUUID).toRUMDataFormat {
+            DD.logger.debug("There was a crash after the RUM session was stopped, so it is not reported.")
+            return false
+        }
+
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if var lastRUMViewEvent = context.lastRUMViewEvent {
             if let lastRUMAttributes = context.lastRUMAttributes {

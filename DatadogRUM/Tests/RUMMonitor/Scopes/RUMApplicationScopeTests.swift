@@ -553,6 +553,29 @@ class RUMApplicationScopeTests: XCTestCase {
         )
     }
 
+    func testGivenStopWithPendingResource_whenResourceCompletes_itKeepsCrashesSuppressed() throws {
+        // Given
+        let currentTime = Date()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground(since: currentTime))
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100, fatalErrorContext: fatalErrorContext)
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("view")), context: context, writer: writer)
+        _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "pending", time: currentTime.addingTimeInterval(1)), context: context, writer: writer)
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)), context: context, writer: writer)
+        let stoppedState = try XCTUnwrap(fatalErrorContext.sessionState)
+        XCTAssertTrue(stoppedState.wasStopped)
+
+        // When
+        _ = scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "pending", time: currentTime.addingTimeInterval(3)), context: context, writer: writer)
+
+        // Then
+        let state = try XCTUnwrap(fatalErrorContext.sessionState)
+        XCTAssertNotEqual(state.sessionUUID, stoppedState.sessionUUID, "The resource completion starts a new session")
+        XCTAssertTrue(state.wasStopped, "The stop must be known before the stopped session ends")
+    }
+
     func testGivenStoppedSession_whenTrackingResumesWithAView_itClearsTheStoppedSessionStateForCrashes() throws {
         // Given
         let currentTime = Date()
