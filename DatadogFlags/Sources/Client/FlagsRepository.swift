@@ -21,11 +21,63 @@ internal protocol FlagsRepositoryProtocol {
 
     func flagAssignment(for key: String) -> FlagAssignment?
 
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot
+
     func flagAssignments() -> [String: FlagAssignment]?
 
     func reset()
 
     func flush()
+}
+
+internal struct FlagEvaluationSnapshot {
+    let context: FlagsEvaluationContext?
+    let assignment: FlagAssignment?
+    let telemetryOptedOut: Bool
+}
+
+/// Retain decisions only while their subjects have installed or pending assignments.
+internal struct SubjectTelemetryPolicy {
+    private var requestedSubject: String?
+    private var decisions: [String: Bool] = [:]
+    private var pending: [String: Int] = [:]
+
+    mutating func begin(_ context: FlagsEvaluationContext, installed: FlagsEvaluationContext?) {
+        requestedSubject = context.targetingKey
+        decisions[context.targetingKey] = Self.isOptedOut(context)
+        pending[context.targetingKey, default: 0] += 1
+        prune(installed: installed)
+    }
+
+    mutating func finish(_ subject: String, installed: FlagsEvaluationContext?) {
+        if let count = pending[subject] {
+            pending[subject] = count > 1 ? count - 1 : nil
+        }
+        prune(installed: installed)
+    }
+
+    mutating func install(_ context: FlagsEvaluationContext?) {
+        if let context, decisions[context.targetingKey] == nil {
+            decisions[context.targetingKey] = Self.isOptedOut(context)
+        }
+        prune(installed: context)
+    }
+
+    func isOptedOut(evaluating context: FlagsEvaluationContext?) -> Bool {
+        let requested = requestedSubject.flatMap { decisions[$0] } ?? false
+        let evaluated = context.map { decisions[$0.targetingKey] ?? Self.isOptedOut($0) } ?? false
+        return requested || evaluated
+    }
+
+    private mutating func prune(installed: FlagsEvaluationContext?) {
+        decisions = decisions.filter {
+            $0.key == requestedSubject || $0.key == installed?.targetingKey || pending[$0.key] != nil
+        }
+    }
+
+    private static func isOptedOut(_ context: FlagsEvaluationContext) -> Bool {
+        context.attributes["dd_evaluation_telemetry_opt_out"] == .bool(true)
+    }
 }
 
 internal typealias FlagsInitializationTimeoutCancellation = () -> Void
@@ -144,11 +196,15 @@ internal final class FlagsRepository {
     /// Synchronizes assignments, request supersession, and disk-read lifecycle. Client-state transitions
     /// acquire this lock before the state-manager lock; listeners and completions run after unlocking.
     private struct RepositoryState {
+        var telemetry = SubjectTelemetryPolicy()
         var activeFlagsData: CachedFlagsData?
         var flagsData: FlagsData? {
             get { activeFlagsData?.data }
             // Replace assignments and lookup hashes together under the repository lock.
-            set { activeFlagsData = newValue.map { CachedFlagsData(data: $0) } }
+            set {
+                activeFlagsData = newValue.map { CachedFlagsData(data: $0) }
+                telemetry.install(newValue?.context)
+            }
         }
         var cachedFlagsData: FlagsData?
         // A missing or delayed context must not expose encoded assignments to legacy bridges.
@@ -423,26 +479,46 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
+        evaluationSnapshot(for: key).assignment
+    }
+
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot {
         waitForFlagsDataRead()
-        guard stateManager.currentState != .error else {
-            return nil
-        }
+        let hasError = stateManager.currentState == .error
         let snapshot = repositoryState
+
+        func result(from state: RepositoryState, assignment: FlagAssignment?) -> FlagEvaluationSnapshot {
+            let readable = !hasError && (state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation)
+            let context = readable ? state.flagsData?.context : nil
+            // Until a context is requested, a pending cache read may still contain an opt-out.
+            let isPolicyLoading = state.shouldWaitForFlagsDataRead && !state.hasStartedEvaluationContextRequest
+            return FlagEvaluationSnapshot(
+                context: context,
+                assignment: readable ? assignment : nil,
+                // Unreadable assignments must not discard the stored subject's reporting policy.
+                telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: state.flagsData?.context)
+            )
+        }
+
+        guard !hasError else {
+            return result(from: snapshot, assignment: nil)
+        }
         switch snapshot.activeFlagsData?.cachedAssignment(for: key, supportsObfuscation: snapshot.supportsFlagKeyObfuscation) {
-        case .resolved(let assignment): return assignment
-        case nil: return nil
+        case .resolved(let assignment): return result(from: snapshot, assignment: assignment)
+        case nil: return result(from: snapshot, assignment: nil)
         case .missingHash: break
         }
 
-        var assignment: FlagAssignment?
+        var resolved = result(from: snapshot, assignment: nil)
         _repositoryState.mutate { state in
             // A refresh or reset can replace the snapshot after the read. Recheck it under the write lock.
-            guard state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation else {
-                return
+            var assignment: FlagAssignment?
+            if state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation {
+                assignment = state.activeFlagsData?.flagAssignment(for: key)
             }
-            assignment = state.activeFlagsData?.flagAssignment(for: key)
+            resolved = result(from: state, assignment: assignment)
         }
-        return assignment
+        return resolved
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
@@ -466,6 +542,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         // Request registration, assignments, and client state use the same synchronization boundary.
         // Listener delivery and public completions must remain outside this lock.
         _repositoryState.mutate { state in
+            state.telemetry.begin(context, installed: state.flagsData?.context)
             state.contextUpdateID += 1
             contextUpdateID = state.contextUpdateID
             versionAtStart = state.flagsDataVersion
@@ -514,6 +591,13 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             guard let self else {
                 complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
                 return
+            }
+
+            // A public initialization timeout does not terminate this request.
+            defer {
+                self._repositoryState.mutate { state in
+                    state.telemetry.finish(context.targetingKey, installed: state.flagsData?.context)
+                }
             }
 
             switch result {

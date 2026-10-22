@@ -516,6 +516,52 @@ final class FlagKeyObfuscationTests: XCTestCase {
         }
     }
 
+    func testUnreadableCachedAssignmentsPreserveTelemetryOptOut() throws {
+        let response = try decode(flags: [digest: assignment], metadata: metadata())
+        for enabled in [false, true] {
+            for value in [AnyValue.bool(true), .bool(false), .string("true")] {
+                // Given: disk loading completes before source capability detection.
+                let scope = DeferredFlagsContextScope()
+                let context = FlagsEvaluationContext(
+                    targetingKey: "cached-subject",
+                    attributes: ["dd_evaluation_telemetry_opt_out": value]
+                )
+                scope.flagsDataStore.setFlagsData(
+                    FlagsData(flags: response.flags, context: context, date: .mockAny(), obfuscation: response.obfuscation),
+                    forClientNamed: "client"
+                )
+                let repository = FlagsRepository(
+                    clientName: "client",
+                    flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+                    dateProvider: DateProviderMock(),
+                    featureScope: scope
+                )
+                let evaluations = EvaluationLoggerMock()
+                let exposures = ExposureLoggerMock()
+                let rum = RUMFlagEvaluationReporterMock()
+                let client = FlagsClient(
+                    repository: repository,
+                    exposureLogger: exposures,
+                    evaluationLogger: evaluations,
+                    rumFlagEvaluationReporter: rum,
+                    configuration: .init(enableEvaluationTelemetryOptOutParameter: enabled)
+                )
+
+                // When: evaluate before detection and after detecting an unsupported source.
+                XCTAssertEqual(client.getDetails(key: "flag", defaultValue: false).error, .providerNotReady)
+                scope.completeContext(source: "react-native")
+                XCTAssertEqual(client.getDetails(key: "flag", defaultValue: false).error, .providerNotReady)
+
+                // Then: privacy policy survives, but unreadable assignments remain hidden.
+                XCTAssertNil(repository.context)
+                XCTAssertNil(client.snapshot())
+                XCTAssertTrue(exposures.logExposureCalls.isEmpty)
+                XCTAssertTrue(rum.sendFlagEvaluationCalls.isEmpty)
+                XCTAssertEqual(evaluations.logEvaluationCalls.count, enabled && value == .bool(true) ? 0 : 2)
+            }
+        }
+    }
+
     func testMissingSourceCallbackDoesNotPreventRepositoryCompletion() {
         let repository = FlagsRepository(
             clientName: "client",
