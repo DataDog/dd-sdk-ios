@@ -712,7 +712,7 @@ Flags PII Artifact Validation:
     - mkdir -p .pii-provider/dd-openfeature-provider-swift
     - git -C .pii-provider/dd-openfeature-provider-swift init
     - git -C .pii-provider/dd-openfeature-provider-swift remote add origin https://github.com/DataDog/dd-openfeature-provider-swift.git
-    - git -C .pii-provider/dd-openfeature-provider-swift fetch --depth=1 origin 57d5840122567bc1127c4f7e1a9436af44429a40
+    - git -C .pii-provider/dd-openfeature-provider-swift fetch --depth=1 origin a90606193c1fc27fdab43cdd5f466575cf2f7b01
     - git -C .pii-provider/dd-openfeature-provider-swift checkout --detach FETCH_HEAD
     - bundle install --gemfile .pii-provider/dd-openfeature-provider-swift/Gemfile
     - >-
