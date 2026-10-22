@@ -12,6 +12,7 @@ internal final class FirstFlagsCallbacks {
     private struct State {
         var event: FlagsClientEvent?
         var isPublished = false
+        var isInvalidated = false
         var pending: [Registration] = []
     }
 
@@ -19,8 +20,14 @@ internal final class FirstFlagsCallbacks {
     private var state = State()
 
     deinit {
+        invalidate()
+    }
+
+    /// Repository teardown must cancel unclaimed registrations even while publication retains this helper.
+    func invalidate() {
         var registrations: [Registration] = []
         _state.mutate { state in
+            state.isInvalidated = true
             registrations = state.pending
             state.pending = []
         }
@@ -30,7 +37,7 @@ internal final class FirstFlagsCallbacks {
     func reserve(keys: [String]) -> (() -> Void)? {
         var reserved = false
         _state.mutate { state in
-            guard state.event == nil else {
+            guard !state.isInvalidated, state.event == nil else {
                 return
             }
             state.event = FlagsClientEvent(type: .configurationChanged, flagsChanged: keys)
@@ -45,10 +52,16 @@ internal final class FirstFlagsCallbacks {
     func register(_ callback: @escaping FlagsClientEventListener) -> any FlagsSubscription {
         let registration = Registration(callback: callback, owner: self)
         var replay: FlagsClientEvent?
+        var invalidated = false
         _state.mutate { state in
+            guard !state.isInvalidated else {
+                invalidated = true
+                return
+            }
             replay = state.isPublished ? state.event : nil
-            if replay == nil { state.pending.append(registration) }
+            state.pending.append(registration)
         }
+        if invalidated { registration.cancel() }
         if let replay { registration.deliver(replay) }
         return registration
     }
@@ -57,18 +70,31 @@ internal final class FirstFlagsCallbacks {
         var event: FlagsClientEvent?
         var registrations: [Registration] = []
         _state.mutate { state in
-            guard !state.isPublished, let reserved = state.event else {
+            guard !state.isInvalidated, !state.isPublished, let reserved = state.event else {
                 return
             }
             state.isPublished = true
             event = reserved
+            // Keep unclaimed registrations reachable by repository teardown during the broadcast.
             registrations = state.pending
-            state.pending = []
         }
         guard let event else {
             return
         }
         registrations.forEach { $0.deliver(event) }
+    }
+
+    private func claim(_ registration: Registration) -> FlagsClientEventListener? {
+        var claimed: FlagsClientEventListener?
+        _state.mutate { state in
+            guard !state.isInvalidated else {
+                return
+            }
+            // Claiming and invalidation share one boundary, including during capture destruction.
+            claimed = registration.takeCallback()
+            state.pending.removeAll { $0 === registration }
+        }
+        return claimed
     }
 
     private func remove(_ registration: Registration) {
@@ -88,23 +114,23 @@ internal final class FirstFlagsCallbacks {
         }
 
         func cancel() {
-            var released: FlagsClientEventListener?
-            _callback.mutate { callback in
-                released = callback
-                callback = nil
-            }
+            let released = takeCallback()
             owner?.remove(self)
             // Captured objects may run application code in deinit; release them outside both locks.
             withExtendedLifetime(released) {}
         }
 
-        func deliver(_ event: FlagsClientEvent) {
-            var claimed: FlagsClientEventListener?
+        func takeCallback() -> FlagsClientEventListener? {
+            var taken: FlagsClientEventListener?
             _callback.mutate { callback in
-                // Taking the callback is the delivery-start boundary shared with cancellation.
-                claimed = callback
+                taken = callback
                 callback = nil
             }
+            return taken
+        }
+
+        func deliver(_ event: FlagsClientEvent) {
+            let claimed = owner?.claim(self)
             claimed?(event)
         }
     }

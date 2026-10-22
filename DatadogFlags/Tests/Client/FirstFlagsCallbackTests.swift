@@ -605,6 +605,100 @@ final class FirstFlagsCallbackTests: XCTestCase {
         wait(for: [finished], timeout: 5)
     }
 
+    func testRepositoryDestructionCancelsUnclaimedBroadcastCallbacks() throws {
+        let store = FirstFlagsCallbackStore()
+        var repository: FlagsRepository? = FlagsRepository(
+            clientName: "test",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: store)
+        )
+        weak var weakRepository = repository
+        let entered = expectation(description: "first handler claimed")
+        let finished = expectation(description: "claimed handler finishes")
+        let laterDelivery = expectation(description: "unclaimed handler must not run")
+        laterDelivery.isInverted = true
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        _ = repository!.onFirstFlags { _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+            finished.fulfill()
+        }
+        var probe: LifetimeProbe? = LifetimeProbe()
+        weak var weakProbe = probe
+        let subscription = repository!.onFirstFlags { [probe] _ in
+            withExtendedLifetime(probe) {}
+            laterDelivery.fulfill()
+        }
+        probe = nil
+        store.readCompletion?(.value(try JSONEncoder().encode(data(["disk"])), dataStoreDefaultKeyVersion))
+        wait(for: [entered], timeout: 2)
+        repository = nil
+        XCTAssertNil(weakRepository)
+        XCTAssertNil(weakProbe, "Repository destruction must release unclaimed captures while the first handler blocks")
+        release.signal()
+        wait(for: [finished], timeout: 2)
+        wait(for: [laterDelivery], timeout: 0.2)
+        withExtendedLifetime(subscription) {}
+    }
+
+    func testInvalidationDuringBroadcastReleasesCapturesOutsideLocks() {
+        let callbacks = ReadWriteLock(wrappedValue: FirstFlagsCallbacks())
+        let entered = expectation(description: "first handler entered")
+        let finished = expectation(description: "broadcast returned")
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        _ = callbacks.wrappedValue.register { _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        var probe: LifetimeProbe? = LifetimeProbe(onDeinit: {
+            // Re-enter the helper from capture destruction; neither owner nor registration lock may be held.
+            let subscription = callbacks.wrappedValue.register { _ in XCTFail("Invalidated owner replayed") }
+            subscription.cancel()
+            callbacks.wrappedValue.invalidate()
+        })
+        weak var weakProbe = probe
+        let subscription = callbacks.wrappedValue.register { [probe] _ in
+            withExtendedLifetime(probe) {}
+            XCTFail("Unclaimed callback delivered after invalidation")
+        }
+        probe = nil
+        let publish = callbacks.wrappedValue.reserve(keys: ["first"])
+        DispatchQueue.global().async { publish?(); finished.fulfill() }
+        wait(for: [entered], timeout: 2)
+        callbacks.wrappedValue.invalidate()
+        XCTAssertNil(weakProbe)
+        XCTAssertNil(callbacks.wrappedValue.reserve(keys: ["later"]))
+        release.signal()
+        wait(for: [finished], timeout: 2)
+        withExtendedLifetime(subscription) {}
+    }
+
+    func testInvalidationPreventsClaimsWhileReleasingEarlierCaptures() {
+        let callbacks = FirstFlagsCallbacks()
+        let entered = expectation(description: "first handler entered")
+        let release = DispatchSemaphore(value: 0)
+        let finished = DispatchSemaphore(value: 0)
+        _ = callbacks.register { _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        var probe: LifetimeProbe? = LifetimeProbe(onDeinit: {
+            // Resume publication while invalidation is still releasing this earlier capture.
+            release.signal()
+            XCTAssertEqual(finished.wait(timeout: .now() + 5), .success)
+        })
+        _ = callbacks.register { [probe] _ in withExtendedLifetime(probe) {} }
+        probe = nil
+        _ = callbacks.register { _ in XCTFail("Invalidation must prevent every later unclaimed callback") }
+        let publish = callbacks.reserve(keys: ["first"])
+        DispatchQueue.global().async { publish?(); finished.signal() }
+        wait(for: [entered], timeout: 2)
+        callbacks.invalidate()
+    }
+
     func testClaimedHandlerCanCancelItselfAndOtherThreadDoesNotWait() {
         let callbacks = ReadWriteLock(wrappedValue: FirstFlagsCallbacks())
         let subscription = ReadWriteLock<(any FlagsSubscription)?>(wrappedValue: nil)

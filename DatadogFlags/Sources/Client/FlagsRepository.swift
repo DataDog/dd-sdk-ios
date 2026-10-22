@@ -242,6 +242,10 @@ internal final class FlagsRepository {
         readState()
     }
 
+    deinit {
+        firstFlags.invalidate()
+    }
+
     private static func scheduleInitializationTimeout(
         _ timeout: TimeInterval,
         _ action: @escaping () -> Void
