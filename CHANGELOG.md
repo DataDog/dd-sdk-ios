@@ -1,6 +1,8 @@
 # Unreleased
 
 - [FEATURE] Add immediate and future-experiments-only per-subject opt-out to Flags clients through the `dd_experimentation_opt_out_at` context attribute.
+- [FIX] Use consistent Gregorian timestamp validation and UTC year bounds for Flags experimentation opt-out and acknowledgements.
+- [FIX] Reject experimentation-filtered Flags responses when no subject opt-out applies.
 
 # 3.20.0 / 19-10-2026
 

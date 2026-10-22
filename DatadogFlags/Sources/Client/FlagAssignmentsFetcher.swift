@@ -89,7 +89,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                             guard response.obfuscation == nil || FlagKeyObfuscation.isSupported(source: context.source) else {
                                 throw FlagsError.invalidResponse
                             }
-                            guard experimentationOptOut?.isAcknowledged(by: response) != false else {
+                            guard ExperimentationOptOut.accepts(response, for: experimentationOptOut) else {
                                 throw FlagsError.invalidResponse
                             }
 
