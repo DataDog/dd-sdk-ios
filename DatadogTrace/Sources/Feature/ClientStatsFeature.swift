@@ -104,7 +104,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     /// Records a finished span. While the app may be suspended, it is also flushed to storage within
     /// `suspendableFlushDelay`.
     func record(_ snapshot: SpanSnapshot) {
-        concentrator.add(snapshot)
+        concentrator.add(snapshot, now: dateProvider.now.timeIntervalSince1970.dd.toNanoseconds)
         if appMayBeSuspended {
             scheduleSuspendableFlush()
         }

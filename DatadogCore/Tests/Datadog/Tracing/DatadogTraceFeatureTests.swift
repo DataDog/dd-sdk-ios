@@ -291,7 +291,7 @@ class DatadogTraceFeatureTests: XCTestCase {
         for group in 0..<100 {
             for duration: UInt64 in [1_000_000, 60_000_000_000] {
                 for isError in [false, true] {
-                    concentrator.add(.mockWith(resource: "GET /\(group)", isError: isError, startTime: end - duration, duration: duration))
+                    concentrator.add(.mockWith(resource: "GET /\(group)", isError: isError, startTime: end - duration, duration: duration), now: end)
                 }
             }
         }

@@ -677,7 +677,13 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// Records a span snapshot into the appropriate time bucket.
     /// Ineligible spans are silently discarded. This method dispatches
     /// asynchronously and returns immediately without blocking the caller.
-    func add(_ snapshot: SpanSnapshot) {
+    ///
+    /// - Parameters:
+    ///   - snapshot: The finished span.
+    ///   - now: Current time in nanoseconds. A span that ends after the window following `now`, for
+    ///     example one finished at a future date, is recorded in that window, so it cannot create a
+    ///     bucket the periodic flush does not export.
+    func add(_ snapshot: SpanSnapshot, now: Nanoseconds) {
         guard Self.isEligible(snapshot) else {
             return
         }
@@ -700,7 +706,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
             }
 
             let bucketKey = max(
-                Self.alignTimestamp(endTime, bucketDuration: bucketDuration),
+                min(Self.alignTimestamp(endTime, bucketDuration: bucketDuration), latestBucketKey(now: now)),
                 oldestTs
             )
             let bucket = buckets[bucketKey, default: StatsBucket(start: bucketKey, duration: bucketDuration)]
@@ -938,6 +944,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
     }
 
     /// Aligns a nanosecond timestamp to the bucket boundary.
+    /// The latest window a span can be recorded in: the one after the window of `now`.
+    private func latestBucketKey(now: Nanoseconds) -> UInt64 {
+        let (latest, didOverflow) = Self.alignTimestamp(now, bucketDuration: bucketDuration).addingReportingOverflow(bucketDuration)
+        return didOverflow ? Self.alignTimestamp(.max, bucketDuration: bucketDuration) : latest
+    }
+
     static func alignTimestamp(_ ts: UInt64, bucketDuration: UInt64) -> UInt64 {
         return ts - ts % bucketDuration
     }
