@@ -146,6 +146,7 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     let state: FlagsStateObservable = NOPStateObservable.notReady
     var setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
     private var telemetry = SubjectTelemetryPolicy()
+    var flushCallsCount = 0
 
     var context: FlagsEvaluationContext? {
         flagsData?.context
@@ -191,6 +192,10 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
 
     func reset() {
         flagsData = nil
+    }
+
+    func flush() {
+        flushCallsCount += 1
     }
 }
 

@@ -380,3 +380,9 @@ extension FlagsClient: FlagsClientInternal {
         )
     }
 }
+
+extension FlagsClient: FlagsClientFlushable {
+    func flush() {
+        repository.flush()
+    }
+}

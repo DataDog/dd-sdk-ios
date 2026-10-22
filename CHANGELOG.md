@@ -1,5 +1,9 @@
 # Unreleased
 
+- [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
+- [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
+- [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
+
 # 3.20.0 / 19-10-2026
 
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
@@ -1263,6 +1267,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
 [#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
 [#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
+[#3078]: https://github.com/DataDog/dd-sdk-ios/pull/3078
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 [#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
 [#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
@@ -1302,6 +1307,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
+[#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

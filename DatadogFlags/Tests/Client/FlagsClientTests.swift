@@ -49,10 +49,13 @@ final class FlagsClientTests: XCTestCase {
     func testLateAssignmentResponseCannotRestoreAnOlderSubjectsOptIn() {
         let fixture = makeSubjectTransitionFixture()
         fixture.client.setEvaluationContext(telemetryContext(.bool(false), subject: "A")) { _ in }
+        fixture.complete(0, .success(()))
+
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false), subject: "A")) { _ in }
         fixture.client.setEvaluationContext(telemetryContext(.bool(true), subject: "A")) { _ in }
         fixture.client.setEvaluationContext(telemetryContext(.bool(false), subject: "B")) { _ in }
 
-        fixture.complete(0, .success(()))
+        fixture.complete(1, .success(()))
         XCTAssertTrue(fixture.client.getBooleanValue(key: "flag", defaultValue: false))
         fixture.aggregator.sendEvaluations()
         XCTAssertTrue(fixture.scope.eventsWritten.isEmpty)
