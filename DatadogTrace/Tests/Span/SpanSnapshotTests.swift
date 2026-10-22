@@ -130,6 +130,29 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
     }
 
+    func testDeploymentUsesTheTraceConfigurationServiceOverTheCoreService() throws {
+        for (traceService, expectedService) in [("trace-service", "trace-service"), (nil, "core-service")] {
+            let capture = SpanSnapshotCapture()
+            let builder = SpanEventBuilder(
+                service: traceService,
+                networkInfoEnabled: false,
+                eventsMapper: nil,
+                bundleWithRUM: false,
+                statsComputationEnabled: true,
+                telemetry: NOPTelemetry()
+            )
+            let tracer: DatadogTracer = .mockWith(
+                featureScope: FeatureScopeMock(context: .mockWith(service: "core-service")),
+                spanEventBuilder: builder,
+                onSpanFinished: capture.capture
+            )
+
+            tracer.startSpan(operationName: "span").finish()
+
+            XCTAssertEqual(try XCTUnwrap(capture.snapshot).deployment.service, expectedService)
+        }
+    }
+
     func testInvalidServiceOverrideFallsBackToConfiguredService() throws {
         let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
@@ -893,9 +916,9 @@ class SpanSnapshotTests: XCTestCase {
         let deployments = capture.snapshots.map(\.deployment)
         XCTAssertEqual(deployments.map(\.version), ["1.0.0", "2.0.0"])
         XCTAssertEqual(deployments.map(\.env), ["staging", "staging"])
-        XCTAssertEqual(deployments.map(\.service), ["ios-app", "ios-app"])
 
-        let uploadedVersions = (core.events() as [SpanEventsEnvelope]).flatMap(\.spans).map(\.applicationVersion)
-        XCTAssertEqual(uploadedVersions, deployments.map(\.version), "Stats and uploaded spans report the same version")
+        let uploadedSpans = (core.events() as [SpanEventsEnvelope]).flatMap(\.spans)
+        XCTAssertEqual(uploadedSpans.map(\.applicationVersion), deployments.map(\.version), "Stats and uploaded spans report the same version")
+        XCTAssertEqual(uploadedSpans.map(\.serviceName), deployments.map(\.service), "Stats and uploaded spans report the same service")
     }
 }
