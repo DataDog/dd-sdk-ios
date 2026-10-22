@@ -81,6 +81,7 @@ internal final class FlagsRepository {
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let flagSelection: CanonicalFlagSelection?
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
 
@@ -172,6 +173,7 @@ internal final class FlagsRepository {
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
+        flagSelection: CanonicalFlagSelection? = nil,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
     ) {
@@ -179,6 +181,7 @@ internal final class FlagsRepository {
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.flagSelection = flagSelection
         self.initializationTimeout = initializationTimeout
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         featureScope.context { [weak self] context in
@@ -263,7 +266,8 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            var cachedData = data
+            // A cache written under another selection holds a different set of flags.
+            var cachedData = data?.flagSelection == self.flagSelection ? data : nil
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
                 cachedAssignment.reason = "CACHED"
@@ -404,7 +408,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         flags: response.flags,
                         context: context,
                         date: self.dateProvider.now,
-                        obfuscation: response.obfuscation
+                        obfuscation: response.obfuscation,
+                        flagSelection: self.flagSelection
                     )
                     self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()
