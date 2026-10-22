@@ -511,4 +511,4 @@ import DatadogRUM
 let monitor = RUMMonitor.shared(in: core)
 ```
 
-[1]: /real_user_monitoring/session_replay/mobile/privacy_options?platform=ios
+[1]: https://docs.datadoghq.com/real_user_monitoring/session_replay/mobile/privacy_options?platform=ios
