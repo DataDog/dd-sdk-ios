@@ -354,9 +354,10 @@ class HeaderProcessorTests: XCTestCase {
             // 15 headers of 6-byte name + 128-byte value = 2010 bytes
             requestHeaders[name] = String(repeating: "x", count: 128)
         }
-        // 133 bytes, does not fit; 8 bytes, still fits after it
-        headerNames += ["x-big", "x-small"]
+        // 133 and 134 bytes, do not fit; 8 bytes, still fits after them
+        headerNames += ["x-big", "x-big2", "x-small"]
         requestHeaders["x-big"] = String(repeating: "x", count: 128)
+        requestHeaders["x-big2"] = String(repeating: "x", count: 128)
         requestHeaders["x-small"] = "1"
         let processor = HeaderProcessor(config: .custom([.matchHeaders(headerNames)]))
 
@@ -368,9 +369,10 @@ class HeaderProcessorTests: XCTestCase {
 
         // Then
         XCTAssertNil(result.request["x-big"])
+        XCTAssertNil(result.request["x-big2"])
         XCTAssertEqual(result.request["x-small"], "1")
         XCTAssertEqual(result.request.count, 16)
-        XCTAssertEqual(dd.logger.debugLog?.message, "Skipping header 'x-big': adding it would exceed the 2048 byte limit.")
+        XCTAssertEqual(dd.logger.debugLog?.message, "Skipping headers 'x-big', 'x-big2': adding them would exceed the 2048 byte limit.")
     }
 
     // MARK: - Nil Input

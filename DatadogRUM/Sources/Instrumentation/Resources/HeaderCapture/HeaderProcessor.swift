@@ -60,9 +60,16 @@ internal struct HeaderProcessor {
     )
 
     private let config: RUM.Configuration.URLSessionTracking.TrackResourceHeaders
+    /// Ordered request header names to capture, without reserved and sensitive headers.
+    private let requestCaptureList: [String]
+    /// Ordered response header names to capture, without sensitive headers.
+    private let responseCaptureList: [String]
 
     init(config: RUM.Configuration.URLSessionTracking.TrackResourceHeaders) {
         self.config = config
+        let (request, response) = Self.buildCaptureList(for: config)
+        self.requestCaptureList = request.filter { !Self.reservedRequestHeaders.contains($0) && !Self.matchesSecurityPattern($0) }
+        self.responseCaptureList = response.filter { !Self.matchesSecurityPattern($0) }
     }
 
     /// Processes request and response headers based on the configured rules.
@@ -79,9 +86,8 @@ internal struct HeaderProcessor {
         case .disabled:
             return (request: [:], response: [:])
         case .defaults, .custom:
-            let (captureRequest, captureResponse) = buildCaptureList()
-            let request = filterRequestHeaders(requestHeaders, capturedHeaders: captureRequest)
-            let response = filterResponseHeaders(responseHeaders, capturedHeaders: captureResponse)
+            let request = filterRequestHeaders(requestHeaders, capturedHeaders: requestCaptureList)
+            let response = filterResponseHeaders(responseHeaders, capturedHeaders: responseCaptureList)
             return (request: request, response: response)
         }
     }
@@ -90,7 +96,9 @@ internal struct HeaderProcessor {
 
     /// Resolves the ordered list of header names to capture for request and response based on the configuration rules.
     /// Default headers are always placed first to ensure they get budget priority over custom headers.
-    private func buildCaptureList() -> (request: [String], response: [String]) {
+    private static func buildCaptureList(
+        for config: RUM.Configuration.URLSessionTracking.TrackResourceHeaders
+    ) -> (request: [String], response: [String]) {
         let rules: [RUM.Configuration.URLSessionTracking.HeaderCaptureRule]
 
         switch config {
@@ -139,7 +147,7 @@ internal struct HeaderProcessor {
         }
         // Build a case-insensitive lookup from the raw headers (values only, keys will be lowercased in output)
         let normalized = Dictionary(headers.map { ($0.key.lowercased(), $0.value) }, uniquingKeysWith: { _, last in last })
-        return filterHeaders(normalized, capturedHeaders: capturedHeaders, excluded: Self.reservedRequestHeaders)
+        return filterHeaders(normalized, capturedHeaders: capturedHeaders)
     }
 
     /// Filters response headers.
@@ -158,13 +166,13 @@ internal struct HeaderProcessor {
     }
 
     /// Shared filtering logic: iterates over the ordered capture list to ensure default headers
-    /// get budget priority over custom ones. Applies security pattern, excluded set, and size limits.
-    /// A header that would exceed the total size budget is skipped, and later headers that still fit are captured.
+    /// get budget priority over custom ones. Applies size limits; reserved and sensitive headers are
+    /// already removed from the capture lists. A header that would exceed the total size budget is skipped,
+    /// and later headers that still fit are captured.
     /// All output keys are lowercased for cross-platform consistency.
     private func filterHeaders(
         _ valuesByLowercasedName: [String: String],
-        capturedHeaders: [String],
-        excluded: Set<String> = []
+        capturedHeaders: [String]
     ) -> [String: String] {
         guard !valuesByLowercasedName.isEmpty else {
             return [:]
@@ -172,14 +180,11 @@ internal struct HeaderProcessor {
 
         var result: [String: String] = [:]
         var totalSize = 0
+        var skippedHeaders: [String] = []
 
         for name in capturedHeaders {
             // Look up the header value in the input (name is already lowercased)
             guard let value = valuesByLowercasedName[name] else { continue }
-            // Skip iOS reserved headers
-            guard !excluded.contains(name) else { continue }
-            // Skip sensitive headers (auth, cookies, tokens, etc.)
-            guard !matchesSecurityPattern(name) else { continue }
             // Enforce max header count
             guard result.count < Self.maxHeaderCount else { break }
 
@@ -188,12 +193,17 @@ internal struct HeaderProcessor {
 
             // Enforce total size budget, skipping headers that don't fit
             guard totalSize + entrySize <= Self.maxTotalSize else {
-                DD.logger.debug("Skipping header '\(name)': adding it would exceed the \(Self.maxTotalSize) byte limit.")
+                skippedHeaders.append(name)
                 continue
             }
 
             result[name] = truncatedValue
             totalSize += entrySize
+        }
+
+        if !skippedHeaders.isEmpty {
+            let names = skippedHeaders.map { "'\($0)'" }.joined(separator: ", ")
+            DD.logger.debug("Skipping headers \(names): adding them would exceed the \(Self.maxTotalSize) byte limit.")
         }
 
         return result
@@ -214,7 +224,7 @@ internal struct HeaderProcessor {
     }
 
     /// Checks whether the header name matches the security regex pattern.
-    private func matchesSecurityPattern(_ lowercasedName: String) -> Bool {
+    private static func matchesSecurityPattern(_ lowercasedName: String) -> Bool {
         let range = NSRange(lowercasedName.startIndex..., in: lowercasedName)
         return Self.securityPattern.firstMatch(in: lowercasedName, range: range) != nil
     }
