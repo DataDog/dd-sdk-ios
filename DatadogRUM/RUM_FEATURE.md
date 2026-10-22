@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-19
+last_updated: 2026-10-22
 sdk_version: 3.20.0
-verified_against_commit: 56ffa64c5
+verified_against_commit: 0041ff766
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -116,7 +116,7 @@ RUM.enable(
         // Requires Crash Reporting for stack traces
         appHangThreshold: 2.0,
         
-        // Track watchdog terminations as RUM errors
+        // Track watchdog terminations as RUM errors (ignored on macOS)
         // Default: false
         trackWatchdogTerminations: false,
         
