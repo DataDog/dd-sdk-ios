@@ -1017,6 +1017,89 @@ final class FlagsRepositoryTests: XCTestCase {
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
     }
+
+    // MARK: - Flag Selection
+
+    func testCachedFlagsDataWithMatchingFlagSelectionIsLoaded() throws {
+        // Given
+        let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: ["checkout.*"])
+        let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: selection)
+        try featureScope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "cached")
+
+        // When
+        let repository = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: ["checkout.*"])
+        )
+        featureScope.dataStore.flush()
+
+        // Then
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context, .mockAny())
+    }
+
+    func testCachedFlagsDataWithDifferentFlagSelectionIsNotLoaded() throws {
+        let mobile = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        let cases: [(cached: CanonicalFlagSelection?, configured: CanonicalFlagSelection?)] = [
+            (mobile, CanonicalFlagSelection(tags: ["web"], keyPatterns: [])),
+            (mobile, CanonicalFlagSelection(tags: [], keyPatterns: ["mobile"])),
+            (nil, mobile),
+            (mobile, nil),
+            (CanonicalFlagSelection(tags: ["caf\u{00E9}"], keyPatterns: []), CanonicalFlagSelection(tags: ["cafe\u{0301}"], keyPatterns: [])),
+        ]
+
+        for (cached, configured) in cases {
+            // Given
+            let scope = FeatureScopeMock()
+            let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: cached)
+            try scope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "cached")
+
+            // When
+            let repository = FlagsRepository(
+                clientName: "cached",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                flagSelection: configured
+            )
+            scope.dataStore.flush()
+
+            // Then
+            XCTAssertNil(repository.flagAssignment(for: "flag"), "cached: \(String(describing: cached)), configured: \(String(describing: configured))")
+            XCTAssertNil(repository.flagAssignments())
+            XCTAssertNil(repository.context)
+        }
+    }
+
+    func testFetchedFlagsDataIsPersistedWithFlagSelection() throws {
+        // Given
+        let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        let repository = FlagsRepository(
+            clientName: "persisted",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(.init(flags: ["flag": .mockAny()])))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: selection
+        )
+        featureScope.dataStore.flush()
+        let completed = expectation(description: "completed")
+
+        // When
+        repository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        featureScope.dataStore.flush()
+        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["persisted"]?.data())
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: persisted).flagSelection, selection)
+    }
 }
 
 private final class ClosureFlagsStateListener: FlagsStateListener {

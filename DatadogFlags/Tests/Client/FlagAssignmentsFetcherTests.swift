@@ -21,10 +21,11 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: [:],
+            flagSelection: nil,
             featureScope: featureScope,
             fetch: { request, completion in
                 capturedRequest = request
-                completion(.success(.mockAnyFlagAssignmentsResponse()))
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
             }
         )
         let completed = expectation(description: "completed")
@@ -51,6 +52,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: [:],
+            flagSelection: nil,
             featureScope: featureScope,
             fetch: { _, completion in
                 completion(.failure(URLError(.notConnectedToInternet)))
@@ -76,9 +78,10 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: [:],
+            flagSelection: nil,
             featureScope: featureScope,
             fetch: { _, completion in
-                completion(.success(Data()))
+                completion(.success((Data(), .mockAny())))
             }
         )
         let completedWithInvalidResponseError = expectation(description: "completedWithInvalidResponseError")
@@ -101,10 +104,11 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: customEndpoint,
             customHeaders: ["X-Custom-Header": "custom-value"],
+            flagSelection: nil,
             featureScope: featureScope,
             fetch: { request, completion in
                 capturedRequest = request
-                completion(.success(.mockAnyFlagAssignmentsResponse()))
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
             }
         )
 
@@ -119,6 +123,107 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         waitForExpectations(timeout: 0)
         XCTAssertEqual(capturedRequest?.url, customEndpoint)
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
+    }
+
+    func testFlagAssignmentsSendsFlagSelection() throws {
+        // Given
+        var capturedRequest: URLRequest?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: ["checkout.*"]),
+            featureScope: featureScope,
+            fetch: { request, completion in
+                capturedRequest = request
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+            }
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        let body = try XCTUnwrap(capturedRequest?.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let data = try XCTUnwrap(json["data"] as? [String: Any])
+        let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
+        let flagSelection = try XCTUnwrap(attributes["flag_selection"] as? [String: [String]])
+        XCTAssertEqual(flagSelection, ["tags": ["mobile"], "key_patterns": ["checkout.*"]])
+    }
+
+    func testFlagAssignmentsReportsIgnoredFlagSelection() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let response = try XCTUnwrap(
+            HTTPURLResponse(
+                url: .mockAny(),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["DD-Flag-Selection-Ignored": "too_many_values"]
+            )
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: featureScope,
+            fetch: { _, completion in
+                completion(.success((.mockAnyFlagAssignmentsResponse(), response)))
+            }
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(try XCTUnwrap(capturedResult?.get()).flags, .mockAny())
+        XCTAssertEqual(
+            dd.logger.errorMessages,
+            ["`Flags.Configuration.flagSelection` was ignored by the server (too_many_values). Loaded the full flag configuration."]
+        )
+        let telemetry = featureScope.telemetryMock.messages
+        XCTAssertEqual(telemetry.count, 1)
+        let debug = try XCTUnwrap(telemetry.firstDebug())
+        XCTAssertEqual(debug.message, "Flag selection ignored")
+        XCTAssertEqual(debug.attributes?.count, 1)
+        XCTAssertEqual(debug.attributes?["reason"] as? String, "too_many_values")
+    }
+
+    func testFlagAssignmentsWithoutIgnoredHeaderLogsNothing() {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: featureScope,
+            fetch: { _, completion in
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+            }
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
 
     func testFlagsEndpointForAllSites() {

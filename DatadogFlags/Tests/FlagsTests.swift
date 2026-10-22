@@ -16,6 +16,7 @@ final class FlagsTests: XCTestCase {
         // Then
         XCTAssertNil(config.customExposureEndpoint)
         XCTAssertEqual(config.initializationTimeout, 5)
+        XCTAssertNil(config.flagSelection)
     }
 
     func testConfigurationInitializerSetsInitializationTimeout() {
@@ -54,6 +55,7 @@ final class FlagsTests: XCTestCase {
         config.customFlagsHeaders = .mockRandom()
         config.initializationTimeout = 2.5
         config.customExposureEndpoint = .mockRandom()
+        config.flagSelection = .init(tags: [" mobile ", "mobile"], keyPatterns: ["checkout.*"])
         let core = FeatureRegistrationCoreMock()
 
         // When
@@ -65,6 +67,9 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(flags.performanceOverride?.maxObjectsInFile, 50)
         XCTAssertEqual(flagAssignmentFetcher.customEndpoint, config.customFlagsEndpoint)
         XCTAssertEqual(flagAssignmentFetcher.customHeaders, config.customFlagsHeaders)
+        let expectedFlagSelection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: ["checkout.*"])
+        XCTAssertEqual(flags.flagSelection, expectedFlagSelection)
+        XCTAssertEqual(flagAssignmentFetcher.flagSelection, expectedFlagSelection)
         XCTAssertEqual(flags.initializationTimeout, config.initializationTimeout)
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)

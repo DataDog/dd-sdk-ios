@@ -17,15 +17,18 @@ internal protocol FlagAssignmentsFetching {
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
+    let flagSelection: CanonicalFlagSelection?
 
     private let featureScope: any FeatureScope
-    private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+    private let fetch: (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
 
     private static let decoder = JSONDecoder()
+    private static let flagSelectionIgnoredHeader = "DD-Flag-Selection-Ignored"
 
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
+        flagSelection: CanonicalFlagSelection?,
         featureScope: any FeatureScope
     ) {
         let configuration = URLSessionConfiguration.ephemeral
@@ -36,6 +39,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         self.init(
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
+            flagSelection: flagSelection,
             featureScope: featureScope,
             fetch: urlSession.fetch
         )
@@ -44,11 +48,13 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
+        flagSelection: CanonicalFlagSelection?,
         featureScope: any FeatureScope,
-        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+        fetch: @escaping (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
     ) {
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
+        self.flagSelection = flagSelection
         self.featureScope = featureScope
         self.fetch = fetch
     }
@@ -67,11 +73,16 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     url: self.url(with: context),
                     evaluationContext: evaluationContext,
                     context: context,
-                    customHeaders: self.customHeaders
+                    customHeaders: self.customHeaders,
+                    flagSelection: self.flagSelection
                 )
                 self.fetch(request) { [featureScope] result in
                     switch result {
-                    case .success(let data):
+                    case let .success((data, httpResponse)):
+                        if let reason = httpResponse.value(forHTTPHeaderField: Self.flagSelectionIgnoredHeader) {
+                            DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration.")
+                            featureScope.telemetry.debug("Flag selection ignored", attributes: ["reason": reason])
+                        }
                         do {
                             let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
                             guard response.obfuscation == nil || FlagKeyObfuscation.isSupported(source: context.source) else {
@@ -150,7 +161,7 @@ extension DatadogSite {
 extension URLSession {
     fileprivate func fetch(
         _ request: URLRequest,
-        completion: @escaping (Result<Data, Error>) -> Void
+        completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void
     ) {
         let task = self.dataTask(with: request) { data, response, error in
             if let error {
@@ -167,7 +178,7 @@ extension URLSession {
                 return
             }
 
-            completion(.success(data))
+            completion(.success((data, httpResponse)))
         }
         task.resume()
     }

@@ -114,6 +114,14 @@ public enum Flags {
         /// Default: `true`.
         public var rumIntegrationEnabled: Bool
 
+        /// Loads only the flags that match these tags or key patterns.
+        ///
+        /// The selection is fixed when the feature is enabled. A selection over a limit is not sent:
+        /// the SDK logs an error and loads every flag. See ``Flags/FlagSelection`` for the matching rules and limits.
+        ///
+        /// Default: `nil` (every flag is loaded).
+        public var flagSelection: FlagSelection?
+
         /// Creates a configuration for the Datadog Flags feature.
         ///
         /// - Parameters:
@@ -127,6 +135,7 @@ public enum Flags {
         ///   - trackEvaluations: Enables evaluation logging to the evaluations intake endpoint. Default: `true`.
         ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
+        ///   - flagSelection: Loads only the flags that match these tags or key patterns. Default: `nil`.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
@@ -137,7 +146,8 @@ public enum Flags {
             customEvaluationEndpoint: URL? = nil,
             trackEvaluations: Bool = true,
             evaluationFlushInterval: TimeInterval = 10.0,
-            rumIntegrationEnabled: Bool = true
+            rumIntegrationEnabled: Bool = true,
+            flagSelection: FlagSelection? = nil
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
@@ -149,6 +159,38 @@ public enum Flags {
             self.trackEvaluations = trackEvaluations
             self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
+            self.flagSelection = flagSelection
+        }
+    }
+
+    /// Selects the flags a client loads, by tag or by key pattern.
+    ///
+    /// A flag is loaded if it has any of the `tags` or its key matches any of the `keyPatterns`.
+    /// Tags match exactly and are case-sensitive. Key patterns are case-sensitive and must match the whole key;
+    /// only `*` is special, and it matches any run of characters, including none.
+    ///
+    /// Leading and trailing Unicode whitespace is trimmed from every value, empty values are dropped,
+    /// and duplicates are removed. Each list accepts at most 31 values, and each tag and key pattern is at most
+    /// 200 UTF-8 bytes. Evaluating a flag outside the selection returns the default value with
+    /// ``FlagEvaluationError/flagNotFound``.
+    public struct FlagSelection {
+        /// Tags to select. A flag is selected if it has any of these tags.
+        public var tags: [String]
+
+        /// Whole-key patterns to select, where `*` matches any run of characters.
+        public var keyPatterns: [String]
+
+        /// Creates a flag selection.
+        ///
+        /// - Parameters:
+        ///   - tags: Tags to select. Default: `[]`.
+        ///   - keyPatterns: Whole-key patterns to select, where `*` matches any run of characters. Default: `[]`.
+        public init(
+            tags: [String] = [],
+            keyPatterns: [String] = []
+        ) {
+            self.tags = tags
+            self.keyPatterns = keyPatterns
         }
     }
 
