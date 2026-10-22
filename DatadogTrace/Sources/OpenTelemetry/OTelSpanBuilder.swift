@@ -135,7 +135,8 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             attributes: attributes,
             kind: spanKind,
             name: spanName,
-            parentSpanID: parentContext?.spanId,
+            // An invalid parent context starts a new trace, so the span has no parent.
+            parentSpanID: parentContext?.isValid == true ? parentContext?.spanId : nil,
             spanContext: spanContext,
             spanKind: spanKind,
             spanLinks: spanLinks,

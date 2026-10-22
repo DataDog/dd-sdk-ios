@@ -108,6 +108,15 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
     }
 
+    func testZeroParentSpanIDIsATraceRoot() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        tracer.startSpan(operationName: "root", childOf: DDSpanContext.mockWith(spanID: .invalid)).finish()
+        let snapshot = try XCTUnwrap(capture.snapshot)
+        XCTAssertTrue(snapshot.isTopLevel)
+        XCTAssertNil(snapshot.parentSpanID)
+    }
+
     func testEachSpanUsesItsOwnStartTimeDefaultService() throws {
         let scope = FeatureScopeMock(context: .mockWith(service: "parent-default"), deferEventWriteContext: true)
         let capture = SpanSnapshotCapture()
@@ -261,21 +270,29 @@ class SpanSnapshotTests: XCTestCase {
         parent.end()
     }
 
-    func testOpenTelemetrySpanWithAnInvalidParentIsTopLevel() throws {
-        let capture = SpanSnapshotCapture()
-        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+    func testOpenTelemetrySpanWithAnInvalidParentIsATraceRoot() throws {
+        // OpenTelemetry considers a context invalid when either its trace ID or its span ID is invalid.
+        let invalidParents = [
+            OpenTelemetryApi.SpanContext.create(traceId: .invalid, spanId: .invalid, traceFlags: TraceFlags(), traceState: TraceState()),
+            OpenTelemetryApi.SpanContext.create(traceId: .invalid, spanId: .random(), traceFlags: TraceFlags(), traceState: TraceState())
+        ]
+        for invalidParent in invalidParents {
+            let core = PassthroughCoreMock()
+            let capture = SpanSnapshotCapture()
+            let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
-        let invalidParent = OpenTelemetryApi.SpanContext.create(
-            traceId: .invalid,
-            spanId: .invalid,
-            traceFlags: TraceFlags(),
-            traceState: TraceState()
-        )
-        tracer.spanBuilder(spanName: "root").setParent(invalidParent).startSpan().end()
+            tracer.spanBuilder(spanName: "root").setParent(invalidParent).startSpan().end()
 
-        let snapshot = try XCTUnwrap(capture.snapshot)
-        XCTAssertTrue(snapshot.isTopLevel)
-        XCTAssertTrue(StatsConcentrator.isEligible(snapshot))
+            let snapshot = try XCTUnwrap(capture.snapshot)
+            XCTAssertTrue(snapshot.isTopLevel)
+            XCTAssertNil(snapshot.parentSpanID)
+            let concentrator = StatsConcentrator(now: snapshot.startTime)
+            concentrator.add(snapshot)
+            let group = try XCTUnwrap(concentrator.flush(now: snapshot.startTime, force: true).first?.stats.first)
+            XCTAssertEqual(group.isTraceRoot, .true)
+            let uploadedSpan = try XCTUnwrap((core.events() as [SpanEventsEnvelope]).first?.spans.first)
+            XCTAssertNil(uploadedSpan.parentID)
+        }
     }
 
     func testOpenTelemetrySampledOutServiceEntryStillContributesStats() throws {
