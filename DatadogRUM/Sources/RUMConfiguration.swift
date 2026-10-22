@@ -210,6 +210,8 @@ extension RUM {
         ///
         /// Read more about watchdog terminations at https://developer.apple.com/documentation/xcode/addressing-watchdog-terminations
         ///
+        /// Ignored on macOS, where watchdog terminations are not reported.
+        ///
         /// Default: `false`.
         public var trackWatchdogTerminations: Bool
 
