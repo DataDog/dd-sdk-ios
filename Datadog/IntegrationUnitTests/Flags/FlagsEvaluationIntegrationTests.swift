@@ -439,7 +439,12 @@ final class FlagsEvaluationLocalIntakeTests: XCTestCase {
         }
         wait(for: [changedReceived], timeout: 5)
         XCTAssertEqual(cachedClient.state.currentState, .reconciling)
-        XCTAssertEqual(cachedClient.getBooleanDetails(key: "visible-flag", defaultValue: false).reason, "CACHED")
+        // Disk assignments cannot serve a different targeting context before a successful fetch.
+        let pending = cachedClient.getBooleanDetails(key: "visible-flag", defaultValue: false)
+        XCTAssertFalse(pending.value)
+        XCTAssertEqual(pending.error, .providerNotReady)
+        XCTAssertNil(pending.reason)
+        XCTAssertNil(pending.variant)
         server.releaseAssignments(status: 500)
         wait(for: [changedFailed], timeout: 5)
         XCTAssertEqual(cachedClient.state.currentState, .error)
@@ -451,14 +456,14 @@ final class FlagsEvaluationLocalIntakeTests: XCTestCase {
         XCTAssertTrue(keys.contains("visible-flag"))
         XCTAssertTrue(keys.contains("failed-default"))
         let exposures = try server.events(at: "exposures")
-        XCTAssertEqual(exposures.count, 3)
+        XCTAssertEqual(exposures.count, 2)
         for exposure in exposures {
             let subject = try XCTUnwrap(exposure["subject"] as? [String: Any])
             let attributes = try XCTUnwrap(subject["attributes"] as? [String: Any])
             XCTAssertEqual(attributes["dd_evaluation_telemetry_opt_out"] as? Bool, true)
         }
         XCTAssertEqual(server.requests.filter { $0.url?.path == "/assignments" }.count, 3)
-        print("Local cache intake: initialEnabled=\(initialEnabled), assignments=3, exposures=3, evaluations=\(evaluations.count), state=error")
+        print("Local cache intake: initialEnabled=\(initialEnabled), assignments=3, exposures=2, evaluations=\(evaluations.count), state=error")
     }
 }
 
