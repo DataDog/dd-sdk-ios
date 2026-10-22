@@ -33,6 +33,7 @@
 		096C255A304AD16F0095E25E /* AccessibilityHierarchyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 096C2558304AD16F0095E25E /* AccessibilityHierarchyDetector.swift */; };
 		096C255B304AD16F0095E25E /* MacOSAccessibilityHierarchyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 096C2559304AD16F0095E25E /* MacOSAccessibilityHierarchyDetector.swift */; };
 		096C255D304AD2BA0095E25E /* CommonExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 096C255C304AD2BA0095E25E /* CommonExtensions.swift */; };
+		098B780A308A408800BCBA72 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 098B7809308A408800BCBA72 /* PrivacyInfo.xcprivacy */; };
 		09977EB62FB4DB6300AC9361 /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09977EB52FB4DB6300AC9361 /* Feature.swift */; };
 		099CD2993029FF52003F8C74 /* NotificationCenterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 099CD2983029FF52003F8C74 /* NotificationCenterProvider.swift */; };
 		09A3FBCA303DA8540028BD5D /* RUMActionsHandler_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A3FBC9303DA8540028BD5D /* RUMActionsHandler_macOSTests.swift */; };
@@ -2077,6 +2078,7 @@
 		096C2558304AD16F0095E25E /* AccessibilityHierarchyDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHierarchyDetector.swift; sourceTree = "<group>"; };
 		096C2559304AD16F0095E25E /* MacOSAccessibilityHierarchyDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSAccessibilityHierarchyDetector.swift; sourceTree = "<group>"; };
 		096C255C304AD2BA0095E25E /* CommonExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonExtensions.swift; sourceTree = "<group>"; };
+		098B7809308A408800BCBA72 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../DatadogInternal/Resources/PrivacyInfo.xcprivacy; sourceTree = SOURCE_ROOT; };
 		09977EB52FB4DB6300AC9361 /* Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feature.swift; sourceTree = "<group>"; };
 		099CD2983029FF52003F8C74 /* NotificationCenterProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterProvider.swift; sourceTree = "<group>"; };
 		09A3FBC9303DA8540028BD5D /* RUMActionsHandler_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMActionsHandler_macOSTests.swift; sourceTree = "<group>"; };
@@ -7132,6 +7134,7 @@
 				09977EB52FB4DB6300AC9361 /* Feature.swift */,
 				099CD2983029FF52003F8C74 /* NotificationCenterProvider.swift */,
 				3C08F9CF2C2D652D002B0FF2 /* Storage.swift */,
+				098B7809308A408800BCBA72 /* PrivacyInfo.xcprivacy */,
 				D23039CA298D5235001A1FA3 /* Attributes */,
 				6167E6FB2B81EBD100C3CA2D /* BacktraceReporting */,
 				D227A0A22C76229400C83324 /* Benchmarks */,
@@ -8794,6 +8797,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				098B780A308A408800BCBA72 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
