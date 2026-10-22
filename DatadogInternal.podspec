@@ -24,4 +24,8 @@ Pod::Spec.new do |s|
 
   s.source_files = ["DatadogInternal/Sources/**/*.swift"]
 
+  s.resource_bundle = {
+    "DatadogInternal" => "DatadogInternal/Resources/PrivacyInfo.xcprivacy"
+  }
+
 end
