@@ -252,9 +252,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
     /// Synchronously flushes any buffered samples without stopping or pausing sampling. **Blocks the caller thread.**
     func flush() {
+        let hasContextReplay = activeContextReader?.hasReplay
         queue.sync {
             if !memoryBuffer.isEmpty || !cpuBuffer.isEmpty {
-                refreshHasReplay(activeContextReader?.hasReplay)
+                refreshHasReplay(hasContextReplay)
             }
             flushMemory()
             flushCPU()
