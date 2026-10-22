@@ -10,8 +10,18 @@ import UIKit
 
 @_implementationOnly import DatadogWebP
 
+private let defaultWebPMaxSize = CGSize(width: 1_000, height: 1_000)
+
 extension UIImage {
-    internal func webPData(maxSize: CGSize = .init(width: 1_000, height: 1_000)) -> Data? {
+    internal func webPData(maxSize: CGSize = defaultWebPMaxSize) -> Data? {
+        guard let cgImage, let size = webPPixelSize(maxSize: maxSize) else {
+            return nil
+        }
+
+        return cgImage.webPData(width: size.width, height: size.height)
+    }
+
+    internal func webPPixelSize(maxSize: CGSize = defaultWebPMaxSize) -> (width: Int, height: Int)? {
         guard
             let cgImage,
             maxSize.width.isFinite, maxSize.width > 0,
@@ -21,10 +31,10 @@ extension UIImage {
         }
 
         let ratio = max(1, size.width / maxSize.width, size.height / maxSize.height)
-        let width = max(1, Int((CGFloat(cgImage.width) / ratio).rounded(.down)))
-        let height = max(1, Int((CGFloat(cgImage.height) / ratio).rounded(.down)))
+        let width = max(1, Int((CGFloat(cgImage.width) / ratio).rounded()))
+        let height = max(1, Int((CGFloat(cgImage.height) / ratio).rounded()))
 
-        return cgImage.webPData(width: width, height: height)
+        return (width, height)
     }
 }
 

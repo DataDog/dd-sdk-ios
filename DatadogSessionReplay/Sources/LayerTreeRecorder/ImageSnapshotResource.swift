@@ -15,7 +15,14 @@ internal struct ImageSnapshotResource: Resource {
     }
 
     func calculateIdentifier() -> String {
-        image.contentHash.map { $0 + ".webp" } ?? ""
+        guard
+            let hash = image.contentHash,
+            let size = image.webPPixelSize()
+        else {
+            return ""
+        }
+
+        return "\(hash)-\(size.width)x\(size.height).webp"
     }
 
     func calculateData() -> Data {

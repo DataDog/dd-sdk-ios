@@ -294,6 +294,30 @@ struct UIImageWebPTests {
         )
     }
 
+    @Test(arguments: [CGFloat(1), 3], [false, true])
+    func preservesThinDimensionWhenResizing(scale: CGFloat, vertical: Bool) throws {
+        // Given
+        let longDimension = Int(1_001 * scale)
+        let width = vertical ? 3 : longDimension
+        let height = vertical ? longDimension : 3
+        let image = try #require(
+            UIImage(
+                pixels: [UInt8](repeating: 0, count: width * height * 4),
+                width: width,
+                height: height,
+                scale: scale
+            )
+        )
+
+        // When
+        let data = try #require(image.webPData())
+
+        // Then
+        let decoded = try #require(CGImage.make(data: data))
+        #expect(decoded.width == (vertical ? 3 : Int(1_000 * scale)))
+        #expect(decoded.height == (vertical ? Int(1_000 * scale) : 3))
+    }
+
     @Test(arguments: [(16_384, 1), (1, 16_384)])
     func encodesVeryWideAndTallImages(width: Int, height: Int) throws {
         // Given

@@ -434,6 +434,7 @@
 		5B25BA723088C20200FA058F /* UIImage+ContentHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA713088C20200FA058F /* UIImage+ContentHash.swift */; };
 		5B25BA743088C25500FA058F /* UIImage+ContentHashTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA733088C25500FA058F /* UIImage+ContentHashTests.swift */; };
 		5B25BA763088D05100FA058F /* UIImage+Pixels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA753088D05100FA058F /* UIImage+Pixels.swift */; };
+		5B25BA783089EF5800FA058F /* ImageSnapshotResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA773089EF5800FA058F /* ImageSnapshotResourceTests.swift */; };
 		5B2835E12FFFF2CA00C6F0E4 /* UILabel+SRWireframe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2835E02FFFF2C300C6F0E4 /* UILabel+SRWireframe.swift */; };
 		5B2DFB3D300296690042945D /* CALayer+Semantics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2DFB3C300296610042945D /* CALayer+Semantics.swift */; };
 		5B2DFB3F3002989A0042945D /* SemanticObservationMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2DFB3E300298930042945D /* SemanticObservationMapping.swift */; };
@@ -2445,6 +2446,7 @@
 		5B25BA713088C20200FA058F /* UIImage+ContentHash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+ContentHash.swift"; sourceTree = "<group>"; };
 		5B25BA733088C25500FA058F /* UIImage+ContentHashTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+ContentHashTests.swift"; sourceTree = "<group>"; };
 		5B25BA753088D05100FA058F /* UIImage+Pixels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Pixels.swift"; sourceTree = "<group>"; };
+		5B25BA773089EF5800FA058F /* ImageSnapshotResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSnapshotResourceTests.swift; sourceTree = "<group>"; };
 		5B2835E02FFFF2C300C6F0E4 /* UILabel+SRWireframe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UILabel+SRWireframe.swift"; sourceTree = "<group>"; };
 		5B2DFB3C300296610042945D /* CALayer+Semantics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayer+Semantics.swift"; sourceTree = "<group>"; };
 		5B2DFB3E300298930042945D /* SemanticObservationMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticObservationMapping.swift; sourceTree = "<group>"; };
@@ -4714,6 +4716,7 @@
 				5BB771BB2FEF3A6F00C95960 /* LayerRecordBuilderTests.swift */,
 				759302022FF0000100000001 /* LayerSnapshotProcessorTests.swift */,
 				759302042FF0000100000001 /* LayerTreeSnapshotMocks.swift */,
+				5B25BA773089EF5800FA058F /* ImageSnapshotResourceTests.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -9586,6 +9589,7 @@
 				61054FB52A6EE1BA00AAA894 /* UISliderRecorderTests.swift in Sources */,
 				5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */,
 				61054FB22A6EE1BA00AAA894 /* UILabelRecorderTests.swift in Sources */,
+				5B25BA783089EF5800FA058F /* ImageSnapshotResourceTests.swift in Sources */,
 				5B3AF8AA2E4B3AE9009E5375 /* EnrichedResourceTests.swift in Sources */,
 				5BE0EA2F2E66F25200216E1C /* Path+SessionReplayTests.swift in Sources */,
 				D2C5D52D2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift in Sources */,
