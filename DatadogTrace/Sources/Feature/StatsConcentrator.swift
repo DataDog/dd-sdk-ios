@@ -701,6 +701,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
             // off-queue) keeps the decision ordered with consent changes and the revoke clear, so a
             // span recorded around a revocation cannot slip past or be re-added after the buffer is
             // cleared.
+            // TODO: RUM-19155 After consent is granted again, spans that finish before the message bus
+            // delivers the grant are dropped here, although their context is already granted.
             guard currentConsent != .notGranted else {
                 return
             }
