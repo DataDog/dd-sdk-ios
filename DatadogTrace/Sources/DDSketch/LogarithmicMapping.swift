@@ -77,6 +77,9 @@ internal struct LogarithmicMapping {
     }
 
     /// Returns the bin index for a positive value.
+    ///
+    /// Rounds down, like sketches-go, which the intake decodes sketches with. The Java and Python ports
+    /// round up and are not compatible with this mapping's encoded `gamma` and zero `indexOffset`.
     func index(for value: Double) -> Int {
         let rawIndex = log(value) * multiplier + indexOffset
         if rawIndex >= 0 {

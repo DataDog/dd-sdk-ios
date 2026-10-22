@@ -144,6 +144,8 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             tracer: tracer,
             eventBuilder: tracer.spanEventBuilder,
             eventWriter: writer,
+            // TODO: RUM-19009 A local parent passed as a bare `SpanContext` has no service, so a child that
+            // changes the service is not detected as a service entry.
             parentForStats: parentContext?.isValid == true && parentContext?.isRemote == true
                 ? .remote
                 : resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
