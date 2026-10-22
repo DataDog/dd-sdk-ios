@@ -88,7 +88,9 @@ extension SpanSnapshot {
         }()
         // Service-entry classification is internal to stats. Keep a remote parent's ID:
         // a local service entry is not necessarily the root of the distributed trace.
-        let isTopLevel = event.parentID == nil || isServiceEntry || event.tags[SpanTags.topLevel] == "1"
+        // An invalid OpenTelemetry parent context starts a new trace, but its zero span ID is still copied.
+        let hasParent = event.parentID.map { $0 != .invalid } ?? false
+        let isTopLevel = !hasParent || isServiceEntry || event.tags[SpanTags.topLevel] == "1"
         let isMeasured = event.tags[SpanTags.measured] == "1"
         let serviceSource = event.tags["_dd.svc_src"] ?? ""
 

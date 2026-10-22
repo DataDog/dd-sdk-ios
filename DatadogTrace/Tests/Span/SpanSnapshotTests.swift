@@ -103,7 +103,7 @@ class SpanSnapshotTests: XCTestCase {
     func testUnknownParentMetadataDoesNotImplyRemoteParent() throws {
         let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
-        let context: DDSpanContext = .mockAny()
+        let context: DDSpanContext = .mockWith(spanID: SpanID(rawValue: 1))
         tracer.startSpan(operationName: "child", childOf: context).finish()
         XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
     }
@@ -236,6 +236,23 @@ class SpanSnapshotTests: XCTestCase {
         }
         XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
         parent.end()
+    }
+
+    func testOpenTelemetrySpanWithAnInvalidParentIsTopLevel() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+
+        let invalidParent = OpenTelemetryApi.SpanContext.create(
+            traceId: .invalid,
+            spanId: .invalid,
+            traceFlags: TraceFlags(),
+            traceState: TraceState()
+        )
+        tracer.spanBuilder(spanName: "root").setParent(invalidParent).startSpan().end()
+
+        let snapshot = try XCTUnwrap(capture.snapshot)
+        XCTAssertTrue(snapshot.isTopLevel)
+        XCTAssertTrue(StatsConcentrator.isEligible(snapshot))
     }
 
     func testOpenTelemetrySampledOutServiceEntryStillContributesStats() throws {
