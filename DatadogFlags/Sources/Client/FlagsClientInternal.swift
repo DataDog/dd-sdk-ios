@@ -25,6 +25,7 @@ public protocol FlagsClientInternal: AnyObject {
     func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 
     /// Records only an evaluation event. A missing assignment represents a runtime default.
+    /// Respects the client's telemetry opt-out configuration using the supplied context.
     /// `errorCode` must be an OpenFeature error code; unrecognized codes are reported as `GENERAL`.
     /// Does not fetch configuration, record an exposure, or report to RUM.
     /// > Warning: This is an internal method and can break in the future.

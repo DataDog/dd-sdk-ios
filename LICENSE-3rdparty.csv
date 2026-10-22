@@ -14,3 +14,4 @@ import (tools),https://github.com/krzysztofzablocki/Difference.git,MIT,Copyright
 import (tools),https://github.com/pointfreeco/swift-snapshot-testing,MIT,Copyright (c) 2019 Point-Free, Inc.
 import (tools),https://github.com/ncreated/Framing,MIT,Copyright (c) 2016 Maciek Grzybowski
 import (tools),https://github.com/ncreated/argparse-zsh,MIT,Copyright (c) 2023 Yaacov Zamir and 2024 Maciek Grzybowski (fork)
+import,libwebp,BSD-3-Clause,Copyright 2010 Google Inc. All rights reserved.
