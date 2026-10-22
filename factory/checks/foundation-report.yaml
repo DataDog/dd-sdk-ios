@@ -1,7 +1,7 @@
 schema_version: 1
 kind: check
 id: ddsdkios.foundation.report
-description: Run the repository-owned Foundation report and selected Literate check.
+description: Run the repository-owned Foundation report.
 adapter: foundation-report-v1
 implementation:
   module: factorykit.document_checks

@@ -39,7 +39,7 @@ Always show the user what will be committed and get explicit approval before run
 make docs-gate SNAPSHOT=index AGAINST=HEAD OPTIONAL=1
 ```
 
-It checks that the staged changes introduce no broken documentation links or anchors, and that the selected designs and guides are still routed from `docs/README.md`. See [Documentation Gate](../../../docs/DEVELOPMENT.md#documentation-gate).
+It checks that the staged changes introduce no broken documentation links or anchors, and that `AGENTS.md` still links to `docs/README.md`. See [Documentation Gate](../../../docs/DEVELOPMENT.md#documentation-gate).
 
 - **`block`**: do not commit. Show the new findings, fix them, re-stage, and run the gate again.
 - **`allow` with advisories**: review the affected docs (architecture, `*_FEATURE.md`, guides) against the staged change before you propose the message. A correct doc needs no edit.
