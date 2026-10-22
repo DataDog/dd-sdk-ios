@@ -1,0 +1,4 @@
+module DatadogWebP {
+    header "DDWebP.h"
+    export *
+}
