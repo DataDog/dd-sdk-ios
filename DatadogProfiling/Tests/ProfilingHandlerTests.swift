@@ -237,6 +237,114 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
     }
 
+    // MARK: - Attachments bounded by the sampled range
+
+    func testWriteWithEventsStartingAfterLastSample_doesNotAttachThem() throws {
+        // Given
+        let profile = try startProfilerAndFlushSampledProfile()
+        let afterLastSample = dd_pprof_get_end_timestamp_s(profile) + 60
+        let hang = durationEvent(id: "late-hang", type: .error, startingAt: afterLastSample)
+        let longTask = durationEvent(id: "late-long-task", type: .longTask, startingAt: afterLastSample)
+
+        // When
+        handler.write(
+            profile: profile,
+            operation: .continuousProfiling,
+            rumVitals: [],
+            hangs: [hang],
+            longTasks: [longTask]
+        )
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), [])
+        XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), [])
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], [])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [])
+    }
+
+    func testWriteWithEventsStartingBeforeLastSample_attachesThem() throws {
+        // Given
+        let profile = try startProfilerAndFlushSampledProfile()
+        let beforeLastSample = dd_pprof_get_end_timestamp_s(profile) - 1
+        let hang = durationEvent(id: "hang-id", type: .error, startingAt: beforeLastSample)
+        let longTask = durationEvent(id: "long-task-id", type: .longTask, startingAt: beforeLastSample)
+
+        // When
+        handler.write(
+            profile: profile,
+            operation: .continuousProfiling,
+            rumVitals: [],
+            hangs: [hang],
+            longTasks: [longTask]
+        )
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), ["hang-id"])
+        XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), ["long-task-id"])
+    }
+
+    func testWriteWithMixedEvents_attachesOnlyThoseStartingBeforeLastSample() throws {
+        // Given
+        let profile = try startProfilerAndFlushSampledProfile()
+        let lastSample = dd_pprof_get_end_timestamp_s(profile)
+        let covered = durationEvent(id: "covered", type: .longTask, startingAt: lastSample - 1)
+        let late = durationEvent(id: "late", type: .longTask, startingAt: lastSample + 60)
+
+        // When
+        handler.write(
+            profile: profile,
+            operation: .continuousProfiling,
+            rumVitals: [],
+            longTasks: [covered, late]
+        )
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), ["covered"])
+    }
+
+    func testWriteWithServerTimeOffset_comparesEventsAgainstCorrectedSampledRange() throws {
+        // Given — the event sits between the uncorrected and the corrected last sample, so it is
+        // only attached when the comparison uses the corrected range.
+        let serverTimeOffset: TimeInterval = 60
+        handler.currentServerTimeOffset = serverTimeOffset
+        let profile = try startProfilerAndFlushSampledProfile()
+        let uncorrectedEnd = dd_pprof_get_end_timestamp_s(profile)
+        let hang = durationEvent(id: "hang-id", type: .error, startingAt: uncorrectedEnd + serverTimeOffset / 2)
+
+        // When
+        handler.write(profile: profile, operation: .continuousProfiling, rumVitals: [], hangs: [hang])
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), ["hang-id"])
+    }
+
+    /// A `DurationEvent` starting at `startingAt` epoch seconds, to position it against a profile's
+    /// sampled range.
+    private func durationEvent(
+        id: String,
+        type: DurationEvent.EventType,
+        startingAt start: TimeInterval,
+        duration: Int64 = 100
+    ) -> DurationEvent {
+        DurationEvent(id: id, type: type, start: start.dd.toInt64Nanoseconds, duration: duration)
+    }
+
+    private func eventIDs(ofType type: String, in rumEvents: [[String: Any]]) -> [String] {
+        rumEvents
+            .filter { $0["type"] as? String == type }
+            .compactMap { $0["id"] as? String }
+    }
+
     private func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
         let rumEventsData = try XCTUnwrap(metadata.rumEvents)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
@@ -250,7 +358,7 @@ final class ProfilingHandlerTests: XCTestCase {
         trace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), trace, 1)
         dd_free(trace)
