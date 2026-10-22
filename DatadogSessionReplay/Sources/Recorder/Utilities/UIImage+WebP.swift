@@ -49,6 +49,11 @@ extension CGImage {
         let result = withUnsafeMutablePointer(to: &writer) { writer in
             picture.writer = dd_WebPMemoryWrite
             picture.custom_ptr = UnsafeMutableRawPointer(writer)
+
+            defer {
+                picture.custom_ptr = nil
+            }
+
             return dd_WebPEncode(&config, &picture)
         }
 
