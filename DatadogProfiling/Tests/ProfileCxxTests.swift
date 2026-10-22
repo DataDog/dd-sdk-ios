@@ -308,6 +308,36 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertEqual(secondTimestamp, originalStart + 3, accuracy: 0.001)
     }
 
+    func testProfileTimestamps_areExportedOnTheSameSleepInclusiveClockAsTheSampler() throws {
+        // Given — a sample stamped exactly as `mach_sampling_profiler` stamps one.
+        // `profile::_epoch_offset` is captured once at construction and never refreshed, so it and
+        // the sampler must read the same clock, and that clock must count time spent asleep.
+        // Note this only discriminates on a host that has accumulated sleep: on one that never
+        // slept, CLOCK_MONOTONIC_RAW and CLOCK_UPTIME_RAW are identical and the check is vacuous.
+        let profile = dd_pprof_create(10_000_000)
+        defer { dd_pprof_destroy(profile) }
+        let stackTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        stackTrace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
+        )
+        defer { dd_free(stackTrace) }
+
+        // When
+        dd_pprof_add_samples(profile, stackTrace, 1)
+
+        // Then — the exported timestamp is real wall-clock time. Moving either the sampler or
+        // `monotonic_epoch_offset()` back to CLOCK_UPTIME_RAW desynchronises them by however long the
+        // device has slept this boot, which is unbounded.
+        XCTAssertEqual(
+            dd_pprof_get_start_timestamp_s(profile),
+            Date().timeIntervalSince1970,
+            accuracy: 1,
+            "Sample timestamps must convert to real wall-clock time"
+        )
+    }
+
     func testProfileSerialization_withNilProfile_returnsZero() {
         // When
         var data: UnsafeMutablePointer<UInt8>?

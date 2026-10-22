@@ -24,7 +24,6 @@ final class ProfilingHandlerTests: XCTestCase {
         core = PassthroughCoreMock()
         handler = ProfilingHandlerMock(
             attributes: [:],
-            currentServerTimeOffset: .zero,
             featureScope: core.scope(for: ProfilerFeature.self),
             telemetryController: .init(),
             encoder: JSONEncoder()
@@ -177,38 +176,6 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(errorEvent["duration_ns"] as? NSNumber, NSNumber(value: hang.duration))
     }
 
-    func testWrite_withServerTimeOffset_updatesExportedProfileDatesAndRumVitalTimestamps() throws {
-        // Given
-        let serverTimeOffset: TimeInterval = 2
-        let vitalDate = Date(timeIntervalSince1970: 10)
-        handler.currentServerTimeOffset = serverTimeOffset
-        let vital = Vital.mockWith(
-            id: "vital-id",
-            name: "vital-name",
-            operationKey: nil,
-            stepType: nil,
-            date: vitalDate,
-            serverTimeOffset: serverTimeOffset
-        )
-
-        let profile = try startProfilerAndFlushSampledProfile()
-        let originalStart = dd_pprof_get_start_timestamp_s(profile)
-        let originalEnd = dd_pprof_get_end_timestamp_s(profile)
-
-        // When
-        handler.write(profile: profile, operation: .appLaunch, rumVitals: [vital])
-
-        // Then
-        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertEqual(event.start.timeIntervalSince1970, originalStart + serverTimeOffset, accuracy: 0.001)
-        XCTAssertEqual(event.end.timeIntervalSince1970, originalEnd + serverTimeOffset, accuracy: 0.001)
-
-        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let vitalsFromJson = try typedRUMEvents(from: metadata).filter { $0["type"] as? String == "vital" }
-        let start = try XCTUnwrap(vitalsFromJson.first?["start_ns"] as? Int64)
-        XCTAssertEqual(start, vitalDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds)
-    }
-
     func testWrite_capturesOperationBeforeEventWriteContextIsExecuted() throws {
         // Given
         let profile = try startProfilerAndFlushSampledProfile()
@@ -216,7 +183,6 @@ final class ProfilingHandlerTests: XCTestCase {
         let telemetry = TelemetryMock()
         let handler = ProfilingHandlerMock(
             attributes: [:],
-            currentServerTimeOffset: .zero,
             featureScope: featureScope,
             telemetryController: .init(telemetry: telemetry),
             encoder: JSONEncoder()
@@ -250,7 +216,7 @@ final class ProfilingHandlerTests: XCTestCase {
         trace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), trace, 1)
         dd_free(trace)
@@ -261,20 +227,17 @@ final class ProfilingHandlerTests: XCTestCase {
 
 private final class ProfilingHandlerMock: ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue]
-    var currentServerTimeOffset: TimeInterval
     var featureScope: FeatureScope
     var telemetryController: ProfilingTelemetryController
     var encoder: JSONEncoder
 
     init(
         attributes: [AttributeKey: AttributeValue],
-        currentServerTimeOffset: TimeInterval,
         featureScope: FeatureScope,
         telemetryController: ProfilingTelemetryController,
         encoder: JSONEncoder
     ) {
         self.attributes = attributes
-        self.currentServerTimeOffset = currentServerTimeOffset
         self.featureScope = featureScope
         self.telemetryController = telemetryController
         self.encoder = encoder
