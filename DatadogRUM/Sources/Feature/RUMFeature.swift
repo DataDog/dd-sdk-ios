@@ -112,6 +112,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         )
         #endif
 
+        // Slow frames are measured on the render loop. Without an observer (macOS and watchOS for now),
+        // tracking them would report an empty, perfectly smooth view instead of no data.
+        let tracksSlowFrames = configuration.trackSlowFrames && renderLoopObserver != nil
+
         let distributedTracing: (FirstPartyHosts, SampleRate)? = {
             switch configuration.urlSessionTracking?.firstPartyHostsTracing {
             case let .trace(hosts, sampleRate, _):
@@ -206,7 +210,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
-                configuration.trackSlowFrames
+                tracksSlowFrames
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
@@ -223,7 +227,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 )
                 viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
 
-                if configuration.trackSlowFrames {
+                if tracksSlowFrames {
                     viewEndedController.add(
                         metric: ViewHitchesMetric(
                             maxCount: ViewHitchesReader.Constants.maxCollectedHitches,
