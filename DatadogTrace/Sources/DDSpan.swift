@@ -215,7 +215,12 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
                 onSpanFinished(SpanSnapshot(
                     from: event,
                     startTime: self.startTime,
-                    deployment: DeploymentIdentity(env: context.env, version: context.version, service: context.service),
+                    // The default service of spans, which `Trace.Configuration.service` can override.
+                    deployment: DeploymentIdentity(
+                        env: context.env,
+                        version: context.version,
+                        service: self.eventBuilder.service ?? context.service
+                    ),
                     isServiceEntry: hasRemoteParent || crossesServiceBoundary
                 ))
             }

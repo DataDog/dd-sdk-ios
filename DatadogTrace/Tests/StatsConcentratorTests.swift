@@ -937,6 +937,31 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(StatsUtils.stochasticRound(18_446_744_073_709_549_568), 18_446_744_073_709_549_568)
     }
 
+    // MARK: - Future Timestamps
+
+    func testWhenSpansEndInManyFutureWindows_theyAreKeptInTheWindowAfterNow() {
+        let concentrator = makeConcentrator(now: 0)
+        let window = StatsConcentrator.defaultBucketDuration
+
+        for index: UInt64 in 0..<1_000 {
+            concentrator.add(.mockWith(startTime: index * window, duration: 100, isTopLevel: true), now: 0)
+        }
+
+        let buckets = concentrator.flush(now: 0, force: true)
+        XCTAssertEqual(buckets.map(\.start).sorted(), [0, window])
+        XCTAssertEqual(buckets.flatMap(\.stats).reduce(0) { $0 + $1.hits }, 1_000)
+    }
+
+    func testWhenNoFlushRanForALongTime_aSpanEndingNowKeepsItsWindow() {
+        // For example, after the app was suspended for an hour.
+        let concentrator = makeConcentrator(now: 0)
+        let hour: UInt64 = 3_600_000_000_000
+
+        concentrator.add(.mockWith(startTime: hour, duration: 100, isTopLevel: true), now: hour)
+
+        XCTAssertEqual(concentrator.flush(now: hour, force: true).map(\.start), [hour])
+    }
+
     // MARK: - Saturated Timestamps
 
     func testGivenSaturatedStartTime_whenAddingSpan_itAggregatesItWithoutOverflowing() throws {
@@ -1277,5 +1302,13 @@ private extension StatsConcentrator {
     /// Delivers a consent change whose revision the test does not write under.
     func updateConsent(_ consent: TrackingConsent) {
         updateConsent(consent, revision: 0)
+    }
+}
+
+extension StatsConcentrator {
+    /// Records a snapshot at the time it ends, which never moves it to another window.
+    func add(_ snapshot: SpanSnapshot) {
+        let (end, didOverflow) = snapshot.startTime.addingReportingOverflow(snapshot.duration)
+        add(snapshot, now: didOverflow ? .max : end)
     }
 }

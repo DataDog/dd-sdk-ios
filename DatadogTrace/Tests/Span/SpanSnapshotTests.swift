@@ -103,9 +103,18 @@ class SpanSnapshotTests: XCTestCase {
     func testUnknownParentMetadataDoesNotImplyRemoteParent() throws {
         let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
-        let context: DDSpanContext = .mockAny()
+        let context: DDSpanContext = .mockWith(spanID: SpanID(rawValue: 1))
         tracer.startSpan(operationName: "child", childOf: context).finish()
         XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testZeroParentSpanIDIsATraceRoot() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        tracer.startSpan(operationName: "root", childOf: DDSpanContext.mockWith(spanID: .invalid)).finish()
+        let snapshot = try XCTUnwrap(capture.snapshot)
+        XCTAssertTrue(snapshot.isTopLevel)
+        XCTAssertNil(snapshot.parentSpanID)
     }
 
     func testEachSpanUsesItsOwnStartTimeDefaultService() throws {
@@ -128,6 +137,29 @@ class SpanSnapshotTests: XCTestCase {
         scope.flushDeferredEventWriteContexts()
         XCTAssertEqual(capture.snapshot?.service, "child-default")
         XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testDeploymentUsesTheTraceConfigurationServiceOverTheCoreService() throws {
+        for (traceService, expectedService) in [("trace-service", "trace-service"), (nil, "core-service")] {
+            let capture = SpanSnapshotCapture()
+            let builder = SpanEventBuilder(
+                service: traceService,
+                networkInfoEnabled: false,
+                eventsMapper: nil,
+                bundleWithRUM: false,
+                statsComputationEnabled: true,
+                telemetry: NOPTelemetry()
+            )
+            let tracer: DatadogTracer = .mockWith(
+                featureScope: FeatureScopeMock(context: .mockWith(service: "core-service")),
+                spanEventBuilder: builder,
+                onSpanFinished: capture.capture
+            )
+
+            tracer.startSpan(operationName: "span").finish()
+
+            XCTAssertEqual(try XCTUnwrap(capture.snapshot).deployment.service, expectedService)
+        }
     }
 
     func testInvalidServiceOverrideFallsBackToConfiguredService() throws {
@@ -236,6 +268,31 @@ class SpanSnapshotTests: XCTestCase {
         }
         XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
         parent.end()
+    }
+
+    func testOpenTelemetrySpanWithAnInvalidParentIsATraceRoot() throws {
+        // OpenTelemetry considers a context invalid when either its trace ID or its span ID is invalid.
+        let invalidParents = [
+            OpenTelemetryApi.SpanContext.create(traceId: .invalid, spanId: .invalid, traceFlags: TraceFlags(), traceState: TraceState()),
+            OpenTelemetryApi.SpanContext.create(traceId: .invalid, spanId: .random(), traceFlags: TraceFlags(), traceState: TraceState())
+        ]
+        for invalidParent in invalidParents {
+            let core = PassthroughCoreMock()
+            let capture = SpanSnapshotCapture()
+            let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+
+            tracer.spanBuilder(spanName: "root").setParent(invalidParent).startSpan().end()
+
+            let snapshot = try XCTUnwrap(capture.snapshot)
+            XCTAssertTrue(snapshot.isTopLevel)
+            XCTAssertNil(snapshot.parentSpanID)
+            let concentrator = StatsConcentrator(now: snapshot.startTime)
+            concentrator.add(snapshot)
+            let group = try XCTUnwrap(concentrator.flush(now: snapshot.startTime, force: true).first?.stats.first)
+            XCTAssertEqual(group.isTraceRoot, .true)
+            let uploadedSpan = try XCTUnwrap((core.events() as [SpanEventsEnvelope]).first?.spans.first)
+            XCTAssertNil(uploadedSpan.parentID)
+        }
     }
 
     func testOpenTelemetrySampledOutServiceEntryStillContributesStats() throws {
@@ -876,9 +933,9 @@ class SpanSnapshotTests: XCTestCase {
         let deployments = capture.snapshots.map(\.deployment)
         XCTAssertEqual(deployments.map(\.version), ["1.0.0", "2.0.0"])
         XCTAssertEqual(deployments.map(\.env), ["staging", "staging"])
-        XCTAssertEqual(deployments.map(\.service), ["ios-app", "ios-app"])
 
-        let uploadedVersions = (core.events() as [SpanEventsEnvelope]).flatMap(\.spans).map(\.applicationVersion)
-        XCTAssertEqual(uploadedVersions, deployments.map(\.version), "Stats and uploaded spans report the same version")
+        let uploadedSpans = (core.events() as [SpanEventsEnvelope]).flatMap(\.spans)
+        XCTAssertEqual(uploadedSpans.map(\.applicationVersion), deployments.map(\.version), "Stats and uploaded spans report the same version")
+        XCTAssertEqual(uploadedSpans.map(\.serviceName), deployments.map(\.service), "Stats and uploaded spans report the same service")
     }
 }

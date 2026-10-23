@@ -113,13 +113,24 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
         let traceId: TraceId
         let spanId = SpanId.random()
         let traceState: TraceState
+        let parentSpanID: SpanId?
+        let parentForStats: DDSpanContext.StatsParent
 
         if let parentContext = parentContext, parentContext.isValid {
             traceId = parentContext.traceId
             traceState = parentContext.traceState
+            parentSpanID = parentContext.spanId
+            // TODO: RUM-19009 A local parent passed as a bare `SpanContext` has no service, so a child that
+            // changes the service is not detected as a service entry.
+            parentForStats = parentContext.isRemote
+                ? .remote
+                : resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
         } else {
+            // An invalid parent context starts a new trace, so the span has no parent.
             traceId = TraceId.random()
             traceState = .init()
+            parentSpanID = nil
+            parentForStats = resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
         }
 
         let spanContext = SpanContext.create(
@@ -135,7 +146,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             attributes: attributes,
             kind: spanKind,
             name: spanName,
-            parentSpanID: parentContext?.spanId,
+            parentSpanID: parentSpanID,
             spanContext: spanContext,
             spanKind: spanKind,
             spanLinks: spanLinks,
@@ -143,9 +154,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             tracer: tracer,
             eventBuilder: tracer.spanEventBuilder,
             eventWriter: writer,
-            parentForStats: parentContext?.isValid == true && parentContext?.isRemote == true
-                ? .remote
-                : resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
+            parentForStats: parentForStats
         )
         return createdSpan
     }

@@ -104,7 +104,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     /// Records a finished span. While the app may be suspended, it is also flushed to storage within
     /// `suspendableFlushDelay`.
     func record(_ snapshot: SpanSnapshot) {
-        concentrator.add(snapshot)
+        concentrator.add(snapshot, now: dateProvider.now.timeIntervalSince1970.dd.toNanoseconds)
         if appMayBeSuspended {
             scheduleSuspendableFlush()
         }
@@ -198,6 +198,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
 }
 
 extension ClientStatsFeature: DataClearable {
+    // TODO: RUM-19156 A span that finishes just before the clear can still be recorded after it, because
+    // its write context runs later. The span itself is stored after the clear too, so this is not specific to stats.
     func clearAllData() {
         concentrator.clearAllData()
     }
