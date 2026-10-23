@@ -2906,6 +2906,54 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - View Hitches
 
+    func testGivenNoRenderLoopObserver_itDoesNotReportSlowRendering() throws {
+        // Given
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(renderLoopObserver: nil),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: .mockAny(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: .mockAny()
+        )
+
+        // When
+        _ = scope.process(command: RUMStartViewCommand.mockWith(), context: context, writer: writer)
+
+        // Then
+        let view = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last?.view)
+        XCTAssertNil(view.isSlowRendered, "It must not claim a measurement it could not make")
+    }
+
+    func testGivenRenderLoopObserver_whenNoRefreshRateIsSampled_itReportsNotSlowRendered() throws {
+        // Given
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(renderLoopObserver: RenderLoopObserverStub()),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: .mockAny(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: .mockAny()
+        )
+
+        // When
+        _ = scope.process(command: RUMStartViewCommand.mockWith(), context: context, writer: writer)
+
+        // Then
+        let view = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last?.view)
+        XCTAssertEqual(view.isSlowRendered, false)
+    }
+
     func testWhenThereAreHitches_theViewUpdatesContainsSlowFrames() {
         // Given
         var hitches: [Hitch] = []
@@ -5141,4 +5189,9 @@ class RUMViewScopeTests: XCTestCase {
         .tap
         #endif
     }
+}
+
+private final class RenderLoopObserverStub: RenderLoopObserver {
+    func register(_ renderLoopReader: RenderLoopReader) {}
+    func unregister(_ renderLoopReader: RenderLoopReader) {}
 }
