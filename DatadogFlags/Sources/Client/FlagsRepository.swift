@@ -13,7 +13,6 @@ internal protocol FlagsRepositoryProtocol {
     var context: FlagsEvaluationContext? { get }
 
     var state: FlagsStateObservable { get }
-    var hasInvalidContext: Bool { get }
 
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
@@ -22,13 +21,65 @@ internal protocol FlagsRepositoryProtocol {
 
     func flagAssignment(for key: String) -> FlagAssignment?
 
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot
+
     func flagAssignments() -> [String: FlagAssignment]?
 
     func reset()
+
+    func flush()
 }
 
-extension FlagsRepositoryProtocol {
-    var hasInvalidContext: Bool { false }
+internal struct FlagEvaluationSnapshot {
+    let context: FlagsEvaluationContext?
+    let assignment: FlagAssignment?
+    let telemetryOptedOut: Bool
+    var requestedContext: FlagsEvaluationContext? = nil
+    var error: FlagEvaluationError? = nil
+}
+
+/// Retain decisions only while their subjects have installed or pending assignments.
+internal struct SubjectTelemetryPolicy {
+    private var requestedSubject: String?
+    private var decisions: [String: Bool] = [:]
+    private var pending: [String: Int] = [:]
+
+    mutating func begin(_ context: FlagsEvaluationContext, installed: FlagsEvaluationContext?) {
+        requestedSubject = context.targetingKey
+        decisions[context.targetingKey] = Self.isOptedOut(context)
+        pending[context.targetingKey, default: 0] += 1
+        prune(installed: installed)
+    }
+
+    mutating func finish(_ subject: String, installed: FlagsEvaluationContext?) {
+        if let count = pending[subject] {
+            pending[subject] = count > 1 ? count - 1 : nil
+        }
+        prune(installed: installed)
+    }
+
+    mutating func install(_ context: FlagsEvaluationContext?) {
+        if let context, decisions[context.targetingKey] == nil {
+            decisions[context.targetingKey] = Self.isOptedOut(context)
+        }
+        prune(installed: context)
+    }
+
+    func isOptedOut(evaluating context: FlagsEvaluationContext?) -> Bool {
+        let requested = requestedSubject.flatMap { decisions[$0] } ?? false
+        let evaluated = context.map { decisions[$0.targetingKey] ?? Self.isOptedOut($0) } ?? false
+        return requested || evaluated
+    }
+
+    private mutating func prune(installed: FlagsEvaluationContext?) {
+        decisions = decisions.filter {
+            $0.key == requestedSubject || $0.key == installed?.targetingKey || pending[$0.key] != nil
+        }
+    }
+
+    private static func isOptedOut(_ context: FlagsEvaluationContext) -> Bool {
+        context.attributes["dd_evaluation_telemetry_opt_out"] == .bool(true)
+    }
 }
 
 internal typealias FlagsInitializationTimeoutCancellation = () -> Void
@@ -75,42 +126,36 @@ private final class InitializationCompletion {
     }
 }
 
-internal final class FlagsRepository {
-    private enum Constants {
-        static let readTimeout: TimeInterval = 0.1
-    }
+private struct PendingCacheReadCallback {
+    let takeCompletion: () -> InitializationCompletion.Completion?
+    let callback: (InitializationCompletion.Completion?) -> Void
 
+    // Claim results before any application callback can delay cancellation of their timeouts.
+    func prepare() -> () -> Void {
+        let completion = takeCompletion()
+        return { callback(completion) }
+    }
+}
+
+internal final class FlagsRepository {
     let clientName: String
     private let stateManager = FlagsStateManager()
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
-    private let flagsDataStore: FlagsDataStore
+    private let featureScope: any FeatureScope
+    private let readTimeout: TimeInterval
+    private let cachePersistenceQueue = DispatchQueue(
+        label: "com.datadoghq.ios-sdk-flags-cache-persistence",
+        autoreleaseFrequency: .workItem,
+        target: .global(qos: .utility)
+    )
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
     private let experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode
 
     @ReadWriteLock
-    private var optOutRequest = OptOutRequest()
-
-    private struct OptOutRequest {
-        var generation: UInt64 = 0
-        var context: FlagsEvaluationContext?
-        var policy: ExperimentationOptOut?
-        var isInvalid = false
-    }
-
-    private let initializationLock = NSLock()
-    private var didStartInitialization = false
-
-    @ReadWriteLock
-    private var cachedFlagsData: CachedFlagsData?
-
-    private var flagsData: FlagsData? {
-        get { cachedFlagsData?.data }
-        // Replace assignments and lookup hashes together under the same lock.
-        set { cachedFlagsData = newValue.map { CachedFlagsData(data: $0) } }
-    }
+    private var repositoryState = RepositoryState()
 
     struct CachedFlagsData {
         enum LookupResult: Equatable {
@@ -151,65 +196,119 @@ internal final class FlagsRepository {
         }
     }
 
-    // A missing or delayed context must not expose encoded assignments to legacy bridges.
-    @ReadWriteLock
-    private var supportsFlagKeyObfuscation = false
+    /// Synchronizes assignments, request supersession, and disk-read lifecycle. Client-state transitions
+    /// acquire this lock before the state-manager lock; listeners and completions run after unlocking.
+    private struct RepositoryState {
+        var experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
+        var requestedOptOut: ExperimentationOptOut?
+        var hasInvalidContext = false
+        var telemetry = SubjectTelemetryPolicy()
+        var activeFlagsData: CachedFlagsData?
+        var flagsData: FlagsData? {
+            get { activeFlagsData?.data }
+            // Replace assignments and lookup hashes together under the repository lock.
+            set {
+                activeFlagsData = newValue.map { CachedFlagsData(data: $0) }
+                telemetry.install(newValue?.context)
+            }
+        }
+        var cachedFlagsData: FlagsData?
+        // A missing or delayed context must not expose encoded assignments to legacy bridges.
+        var supportsFlagKeyObfuscation = false
 
-    private var readableFlagsData: FlagsData? {
-        guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
+        var readableFlagsData: FlagsData? {
+            guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
+                return nil
+            }
+            if experimentationOptOutMode != .disabled {
+                guard !hasInvalidContext,
+                      latestRequestedContext == data.context,
+                      requestedOptOut == data.experimentationOptOutPolicy else { return nil }
+            } else if data.experimentationOptOutPolicy != nil {
+                return nil
+            }
+            return data
+        }
+        /// Advances on accepted fetches and reset; zero means the initial disk read can still apply.
+        var flagsDataVersion: UInt64 = 0
+        /// Advances on every context request and reset, even when assignments have not changed.
+        var contextUpdateID: UInt64 = 0
+        var hasStartedEvaluationContextRequest = false
+        var latestRequestedContext: FlagsEvaluationContext?
+        var pendingDiskReadCallbacks: [PendingCacheReadCallback] = []
+        var initialFlagsDataGroup: DispatchGroup? = {
+            let group = DispatchGroup()
+            group.enter()
+            return group
+        }()
+
+        var shouldWaitForFlagsDataRead: Bool {
+            initialFlagsDataGroup != nil
+        }
+
+        mutating func applyInitialFlagsData(_ data: FlagsData?) -> [PendingCacheReadCallback] {
+            // A successful fetch or reset supersedes both active and fallback data from disk.
+            if flagsDataVersion == 0 {
+                cachedFlagsData = data
+
+                let isInitialReadStillAuthoritative = !hasStartedEvaluationContextRequest
+                let isReconcilingSameContext = data.map {
+                    latestRequestedContext == $0.context
+                } ?? false
+
+                if isInitialReadStillAuthoritative || isReconcilingSameContext {
+                    flagsData = data
+                }
+            }
+
+            return finishWaitingForInitialFlagsData()
+        }
+
+        mutating func finishWaitingForInitialFlagsData() -> [PendingCacheReadCallback] {
+            // Leave only once, waking all getters even if a late disk read follows a fetch or reset.
+            initialFlagsDataGroup?.leave()
+            initialFlagsDataGroup = nil
+            let callbacks = pendingDiskReadCallbacks
+            pendingDiskReadCallbacks = []
+            return callbacks
+        }
+
+        func flagsData(matching context: FlagsEvaluationContext) -> FlagsData? {
+            if let data = flagsData, data.context == context,
+               data.experimentationOptOutPolicy == requestedOptOut {
+                return data
+            }
+            if let data = cachedFlagsData, data.context == context,
+               data.experimentationOptOutPolicy == requestedOptOut {
+                return data
+            }
             return nil
         }
-        if experimentationOptOutMode != .disabled {
-            let request = optOutRequest
-            guard !request.isInvalid,
-                  request.context == data.context,
-                  request.policy == data.effectiveOptOut else { return nil }
-        } else if data.effectiveOptOut != nil {
-            return nil
-        }
-        return data
     }
-
-    /// Version counter for `flagsData`. Incremented on every write to detect
-    /// when a newer request has succeeded while an older request was in-flight.
-    @ReadWriteLock
-    private var flagsDataVersion: UInt64 = 0
-
-    /// Tracks disk read state and pending callbacks for async operations.
-    /// When `isComplete` is false, callbacks are queued and executed once disk read finishes.
-    /// When `isComplete` is true, callbacks execute immediately.
-    @ReadWriteLock
-    private var diskReadState = DiskReadState()
-
-    private struct DiskReadState {
-        var isComplete = false
-        var pendingCallbacks: [() -> Void] = []
-    }
-
-    /// Semaphore for blocking synchronous getters until disk read completes.
-    /// Sync getters (context, flagAssignment, flagAssignments) block because callers
-    /// explicitly request data synchronously and expect cached values if available.
-    private let readSemaphore = DispatchSemaphore(value: 0)
 
     init(
         clientName: String,
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
+        readTimeout: TimeInterval = 0.1,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil,
-        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled,
-        flagsDataStore: FlagsDataStore? = nil
+        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
-        self.flagsDataStore = flagsDataStore ?? featureScope.flagsDataStore
+        self.featureScope = featureScope
+        self.readTimeout = readTimeout
         self.initializationTimeout = initializationTimeout
         self.experimentationOptOutMode = experimentationOptOutMode
+        self.repositoryState = RepositoryState(experimentationOptOutMode: experimentationOptOutMode)
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         featureScope.context { [weak self] context in
-            self?.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
+            self?._repositoryState.mutate { state in
+                state.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
+            }
         }
         readState()
     }
@@ -240,24 +339,14 @@ internal final class FlagsRepository {
     private func makeInitializationCompletion(
         _ completion: @escaping (Result<Void, FlagsError>) -> Void,
         context: FlagsEvaluationContext,
-        requestGeneration: UInt64,
-        beforeScheduling: () -> Void
+        contextUpdateID: UInt64
     ) -> InitializationCompletion? {
-        initializationLock.lock()
-        guard !didStartInitialization else {
-            initializationLock.unlock()
-            return nil
-        }
-        didStartInitialization = true
-        initializationLock.unlock()
-
         guard let initializationTimeout,
               initializationTimeout.isFinite,
               initializationTimeout > 0 else {
             return nil
         }
 
-        beforeScheduling()
         let initializationCompletion = InitializationCompletion(completion: completion)
         let cancelTimeout = scheduleInitializationTimeout(initializationTimeout) { [weak self, initializationCompletion] in
             guard let completion = initializationCompletion.take() else {
@@ -267,132 +356,198 @@ internal final class FlagsRepository {
                 completion(.failure(.clientNotInitialized))
                 return
             }
-            let timeoutState: FlagsClientState = self.readableFlagsData?.context == context ? .stale : .error
-            let accepted = self.stateManager.updateState(
-                timeoutState,
-                unlessCurrentStateIs: [.ready, .stale],
-                if: { self.isCurrentRequest(requestGeneration) }
-            ) {
-                completion(.failure(.initializationTimedOut))
+            var notifyListeners: (() -> Void)?
+            self._repositoryState.mutate { state in
+                guard contextUpdateID == state.contextUpdateID else {
+                    return
+                }
+                let timeoutState: FlagsClientState = state.readableFlagsData?.context == context ? .stale : .error
+                notifyListeners = self.stateManager.updateStateWithoutNotifying(
+                    timeoutState,
+                    unlessCurrentStateIs: [.ready, .stale]
+                )
             }
-            if !accepted {
-                completion(.failure(.initializationTimedOut))
-            }
+            completion(.failure(.initializationTimedOut))
+            notifyListeners?()
         }
         initializationCompletion.armTimeoutCancellation(cancelTimeout)
         return initializationCompletion
     }
 
     private func readState() {
-        flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
-            guard let self else {
-                // Signal even if self is nil to unblock any waiting getters
-                DispatchQueue.global(qos: .userInitiated).async {
-                    readSemaphore.signal()
-                }
-                return
-            }
+        // Retain the read lifecycle, not the repository, so the group is balanced even after deallocation.
+        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [_repositoryState] data in
             var cachedData = data
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
                 cachedAssignment.reason = "CACHED"
                 return cachedAssignment
             } ?? [:]
-            self.flagsData = cachedData
-
-            // Mark complete and grab pending callbacks atomically
-            var callbacks: [() -> Void] = []
-            self._diskReadState.mutate { state in
-                state.isComplete = true
-                callbacks = state.pendingCallbacks
-                state.pendingCallbacks = []
+            var callbacks: [PendingCacheReadCallback] = []
+            _repositoryState.mutate { state in
+                callbacks = state.applyInitialFlagsData(cachedData)
             }
 
-            // Signal semaphore for blocking getters (on elevated queue to avoid priority inversion)
-            DispatchQueue.global(qos: .userInitiated).async {
-                readSemaphore.signal()
-            }
+            // Pending failures report `.clientNotInitialized` if the repository has been released.
+            Self.executePendingDiskReadCallbacks(callbacks.map { $0.prepare() })
+        }
+    }
 
-            // Execute async callbacks outside the lock
-            for callback in callbacks {
+    private static func executePendingDiskReadCallbacks(_ callbacks: [() -> Void]) {
+        // Disk reads can release callbacks on DatadogCore's shared read/write queue.
+        // Keep callbacks off that queue and independent of other application completions.
+        for callback in callbacks {
+            DispatchQueue.global(qos: .utility).async {
                 callback()
             }
         }
     }
 
-    /// Blocks until disk read completes (up to timeout).
+    /// Blocks until the initial disk read completes or is superseded (up to timeout).
     /// Used by synchronous getters where callers expect cached data if available.
     private func waitForFlagsDataRead() {
-        guard !diskReadState.isComplete else {
+        guard let group = repositoryState.initialFlagsDataGroup else {
             return
         }
-        _ = readSemaphore.wait(timeout: .now() + Constants.readTimeout)
+        _ = group.wait(timeout: .now() + readTimeout)
     }
 
-    /// Executes the callback after disk read completes without blocking.
-    /// Used by setEvaluationContext to avoid blocking the caller's thread.
-    private func whenFlagsDataRead(_ callback: @escaping () -> Void) {
+    /// Runs immediately if the initial read finished or a fetch or reset superseded it.
+    /// Otherwise queues the callback until then; queued callbacks run on a global utility queue.
+    /// Used on fetch failure so cached flags can be used without delaying the network request.
+    private func whenCacheReady(_ callback: PendingCacheReadCallback) {
         var shouldExecuteNow = false
-        _diskReadState.mutate { state in
-            if state.isComplete {
-                shouldExecuteNow = true
+        _repositoryState.mutate { state in
+            if state.shouldWaitForFlagsDataRead {
+                state.pendingDiskReadCallbacks.append(callback)
             } else {
-                state.pendingCallbacks.append(callback)
+                shouldExecuteNow = true
             }
         }
 
         if shouldExecuteNow {
-            callback()
+            callback.prepare()()
         }
     }
 
-    private func isCurrentRequest(_ generation: UInt64) -> Bool {
-        experimentationOptOutMode == .disabled || optOutRequest.generation == generation
+    private func writeState(_ flagsData: FlagsData, version: UInt64) {
+        let flagsDataStore = featureScope.flagsDataStore
+        let clientName = clientName
+
+        cachePersistenceQueue.async { [weak self] in
+            guard self?.repositoryState.flagsDataVersion == version else {
+                return
+            }
+
+            guard let encodedFlagsData = flagsDataStore.encodeFlagsData(flagsData) else {
+                return
+            }
+
+            guard self?.repositoryState.flagsDataVersion == version else {
+                return
+            }
+
+            flagsDataStore.setEncodedFlagsData(encodedFlagsData.data, forClientNamed: clientName, version: encodedFlagsData.version)
+        }
+    }
+
+    private func applyFailedContextUpdate(
+        for context: FlagsEvaluationContext,
+        contextUpdateID: UInt64,
+        versionAtStart: UInt64
+    ) -> (() -> Void)? {
+        // Only the latest request can select fallback data, unless a success for its
+        // context already supplied fresh assignments while it was in flight.
+        var notifyListeners: (() -> Void)?
+        _repositoryState.mutate { state in
+            guard contextUpdateID == state.contextUpdateID, state.flagsDataVersion == versionAtStart else {
+                return
+            }
+
+            let newState: FlagsClientState
+
+            // Only use cached flags if they match the requested context to avoid
+            // serving flags from a different user/context.
+            if let matchingFlagsData = state.flagsData(matching: context),
+               matchingFlagsData.obfuscation == nil || state.supportsFlagKeyObfuscation {
+                state.flagsData = matchingFlagsData
+                newState = .stale
+            } else {
+                // Drop active flags to prevent cross-context leakage. Keep the fallback cache:
+                // it can only be selected by a later request with a matching context.
+                state.flagsData = nil
+                newState = .error
+            }
+            notifyListeners = stateManager.updateStateWithoutNotifying(newState)
+        }
+
+        return notifyListeners
     }
 }
 
 extension FlagsRepository: FlagsRepositoryProtocol {
     var state: FlagsStateObservable { stateManager }
-    var hasInvalidContext: Bool { optOutRequest.isInvalid }
+    var hasInvalidContext: Bool { experimentationOptOutMode != .disabled && repositoryState.hasInvalidContext }
 
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error else {
             return nil
         }
-        return readableFlagsData?.context
+        return repositoryState.readableFlagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
+        evaluationSnapshot(for: key).assignment
+    }
+
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot {
         waitForFlagsDataRead()
-        guard stateManager.currentState != .error else {
-            return nil
+        let hasError = stateManager.currentState == .error
+        let snapshot = repositoryState
+
+        func result(from state: RepositoryState, assignment: FlagAssignment?) -> FlagEvaluationSnapshot {
+            let readable = !hasError && state.readableFlagsData != nil
+            let context = readable ? state.flagsData?.context : nil
+            // Until a context is requested, a pending cache read may still contain an opt-out.
+            let isPolicyLoading = state.shouldWaitForFlagsDataRead && state.latestRequestedContext == nil
+            let telemetryContext = state.experimentationOptOutMode == .disabled
+                ? state.flagsData?.context : (state.latestRequestedContext ?? state.flagsData?.context)
+            return FlagEvaluationSnapshot(
+                context: context,
+                assignment: readable ? assignment : nil,
+                // Unreadable assignments must not discard the stored subject's reporting policy.
+                telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: telemetryContext),
+                requestedContext: state.experimentationOptOutMode == .disabled ? nil : state.latestRequestedContext,
+                error: state.hasInvalidContext ? .invalidContext : nil
+            )
         }
-        if readableFlagsData == nil {
-            return nil
+
+        guard !hasError else {
+            return result(from: snapshot, assignment: nil)
         }
-        let supportsObfuscation = supportsFlagKeyObfuscation
-        switch cachedFlagsData?.cachedAssignment(for: key, supportsObfuscation: supportsObfuscation) {
-        case .resolved(let assignment): return assignment
-        case nil: return nil
+        switch snapshot.activeFlagsData?.cachedAssignment(for: key, supportsObfuscation: snapshot.supportsFlagKeyObfuscation) {
+        case .resolved(let assignment): return result(from: snapshot, assignment: assignment)
+        case nil: return result(from: snapshot, assignment: nil)
         case .missingHash: break
         }
 
-        var assignment: FlagAssignment?
-        _cachedFlagsData.mutate { cached in
+        var resolved = result(from: snapshot, assignment: nil)
+        _repositoryState.mutate { state in
             // A refresh or reset can replace the snapshot after the read. Recheck it under the write lock.
-            guard cached?.data.obfuscation == nil || supportsObfuscation else {
-                return
+            var assignment: FlagAssignment?
+            if state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation {
+                assignment = state.activeFlagsData?.flagAssignment(for: key)
             }
-            assignment = cached?.flagAssignment(for: key)
+            resolved = result(from: state, assignment: assignment)
         }
-        return assignment
+        return resolved
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error,
-              let data = readableFlagsData,
+              let data = repositoryState.readableFlagsData,
               data.obfuscation == nil else {
             return nil
         }
@@ -403,157 +558,181 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        var request = OptOutRequest()
-        if experimentationOptOutMode != .disabled {
-            let optedOut = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
-            _optOutRequest.mutate { current in
-                current.generation &+= 1
-                current.context = context
-                switch optedOut {
-                case .success(let value):
-                    current.policy = value
-                    current.isInvalid = false
-                case .failure:
-                    current.policy = nil
-                    current.isInvalid = true
-                    flagsDataStore.removeFlagsData(forClientNamed: clientName)
-                }
-                request = current
-            }
-            if request.isInvalid {
-                stateManager.updateState(.error, if: { self.isCurrentRequest(request.generation) })
-                completion(.failure(.invalidContext))
+        let parsedPolicy = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
+        let policy = try? parsedPolicy.get()
+        let invalidContext: Bool
+        if case .failure = parsedPolicy { invalidContext = true } else { invalidContext = false }
+        var contextUpdateID: UInt64 = 0
+        var versionAtStart: UInt64 = 0
+        var isFirstContextUpdate = false
+        var notifyReconciling: (() -> Void)?
+        // Request registration, assignments, and client state use the same synchronization boundary.
+        // Listener delivery and public completions must remain outside this lock.
+        _repositoryState.mutate { state in
+            state.telemetry.begin(context, installed: state.flagsData?.context)
+            state.contextUpdateID += 1
+            contextUpdateID = state.contextUpdateID
+            versionAtStart = state.flagsDataVersion
+            isFirstContextUpdate = !state.hasStartedEvaluationContextRequest
+            state.latestRequestedContext = context
+            state.requestedOptOut = policy
+            state.hasInvalidContext = invalidContext
+            if invalidContext {
+                // Retain the last successful snapshot for a later valid context or offline restart.
+                state.telemetry.finish(context.targetingKey, installed: state.flagsData?.context)
+                notifyReconciling = stateManager.updateStateWithoutNotifying(.error)
                 return
             }
+            state.hasStartedEvaluationContextRequest = true
+            // Apply the same context check whether the initial disk read wins or loses the race.
+            if state.flagsDataVersion == 0 {
+                state.flagsData = state.flagsData(matching: context)
+            }
+            notifyReconciling = stateManager.updateStateWithoutNotifying(.reconciling)
         }
-        let initializationCompletion = makeInitializationCompletion(completion, context: context, requestGeneration: request.generation) {
-            stateManager.updateState(.reconciling, if: { self.isCurrentRequest(request.generation) })
+        notifyReconciling?()
+        guard !invalidContext else {
+            completion(.failure(.invalidContext))
+            return
         }
-        let takeCompletion: () -> ((Result<Void, FlagsError>) -> Void)? = {
+        let initializationCompletion = isFirstContextUpdate
+            ? makeInitializationCompletion(completion, context: context, contextUpdateID: contextUpdateID)
+            : nil
+        let takeCompletion = {
             initializationCompletion?.take()
                 ?? (initializationCompletion == nil ? completion : nil)
         }
-
-        // Wait for disk loading before fetching assignments.
-        whenFlagsDataRead { [weak self] in
-            guard let self else {
-                takeCompletion()?(.failure(.clientNotInitialized))
+        func complete(
+            _ result: Result<Void, FlagsError>,
+            notifyListeners: (() -> Void)?,
+            completion operationCompletion: InitializationCompletion.Completion?,
+            pendingCompletions: [() -> Void] = []
+        ) {
+            guard let notifyListeners else {
+                operationCompletion?(result)
                 return
             }
-            guard self.isCurrentRequest(request.generation) else {
-                takeCompletion()?(.failure(.invalidResponse))
-                return
-            }
 
-            let versionAtStart = self.flagsDataVersion
+            // Publish state before completion: dd-openfeature-provider-swift reads `currentState`
+            // in its failure callback to detect stale assignments. With an initialization timeout,
+            // a completion still owned by this helper must also run before listeners.
+            Self.executePendingDiskReadCallbacks(pendingCompletions)
+            if initializationCompletion != nil {
+                operationCompletion?(result)
+            }
+            notifyListeners()
             if initializationCompletion == nil {
-                self.stateManager.updateState(.reconciling, if: { self.isCurrentRequest(request.generation) })
+                operationCompletion?(result)
+            }
+        }
+
+        flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: policy) { [weak self] result in
+            guard let self else {
+                complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
+                return
             }
 
-            self.flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: request.policy) { [weak self] result in
-                guard let self else {
-                    takeCompletion()?(.failure(.clientNotInitialized))
-                    return
+            // A public initialization timeout does not terminate this request.
+            defer {
+                self._repositoryState.mutate { state in
+                    state.telemetry.finish(context.targetingKey, installed: state.flagsData?.context)
                 }
-                guard self.isCurrentRequest(request.generation) else {
-                    takeCompletion()?(.failure(.invalidResponse))
-                    return
-                }
-                let validated = result.flatMap { response -> Result<FlagAssignmentsResponse, FlagsError> in
-                    guard request.policy?.isAcknowledged(by: response) != false else {
-                        return .failure(.invalidResponse)
+            }
+
+            let validated = result.flatMap { response -> Result<FlagAssignmentsResponse, FlagsError> in
+                ExperimentationOptOut.accepts(response, for: policy) ? .success(response) : .failure(.invalidResponse)
+            }
+            switch validated {
+            case .success(let response):
+                // Claim success before processing assignments or publishing ready can race the timeout.
+                let operationCompletion = takeCompletion()
+                let flagsData = FlagsData(
+                    flags: response.flags,
+                    context: context,
+                    date: self.dateProvider.now,
+                    obfuscation: response.obfuscation,
+                    experimentationOptOutPolicy: policy
+                )
+                var versionAfterSuccess: UInt64?
+                var callbacks: [PendingCacheReadCallback] = []
+                var notifyListeners: (() -> Void)?
+                self._repositoryState.mutate { state in
+                    // Accept an older success for the current context only if no success or reset
+                    // superseded its starting version. The latest request's success always applies.
+                    let isLatestRequest = contextUpdateID == state.contextUpdateID
+                    let isFreshForLatestContext = state.latestRequestedContext == context
+                        && state.flagsDataVersion == versionAtStart
+                    guard isLatestRequest || (self.experimentationOptOutMode == .disabled && isFreshForLatestContext) else {
+                        return
                     }
-                    return .success(response)
+                    state.flagsData = flagsData
+                    state.cachedFlagsData = flagsData
+                    state.flagsDataVersion += 1
+                    versionAfterSuccess = state.flagsDataVersion
+                    callbacks = state.finishWaitingForInitialFlagsData()
+                    notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
-                switch validated {
-                case .success(let response):
-                    let data = FlagsData(
-                        flags: response.flags,
-                        context: context,
-                        date: self.dateProvider.now,
-                        obfuscation: response.obfuscation,
-                        experimentationOptOutPolicy: request.policy
+                guard let versionAfterSuccess else {
+                    let result: Result<Void, FlagsError> = self.experimentationOptOutMode == .disabled
+                        ? .success(()) : .failure(.invalidResponse)
+                    complete(result, notifyListeners: nil, completion: operationCompletion)
+                    return
+                }
+                let pendingCompletions = callbacks.map { $0.prepare() }
+                self.writeState(flagsData, version: versionAfterSuccess)
+                complete(
+                    .success(()),
+                    notifyListeners: notifyListeners,
+                    completion: operationCompletion,
+                    pendingCompletions: pendingCompletions
+                )
+            case .failure(let error):
+                self.whenCacheReady(PendingCacheReadCallback(takeCompletion: takeCompletion) { [weak self] operationCompletion in
+                    guard let self else {
+                        complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: operationCompletion)
+                        return
+                    }
+
+                    let notifyListeners = self.applyFailedContextUpdate(
+                        for: context,
+                        contextUpdateID: contextUpdateID,
+                        versionAtStart: versionAtStart
                     )
-                    // Encode outside the request lock so synchronous getters can continue.
-                    let encoded = self.flagsDataStore.encodeFlagsData(data)
-                    var accepted = false
-                    self._optOutRequest.mutate { current in
-                        guard self.experimentationOptOutMode == .disabled || current.generation == request.generation else {
-                            return
-                        }
-                        self.flagsData = data
-                        self._flagsDataVersion.mutate { $0 += 1 }
-                        // Submit writes in the same order as accepted memory snapshots.
-                        if let encoded {
-                            self.flagsDataStore.setEncodedFlagsData(encoded, forClientNamed: self.clientName)
-                        }
-                        accepted = true
-                    }
-                    guard accepted else {
-                        takeCompletion()?(.failure(.invalidResponse))
-                        return
-                    }
-                    let operationCompletion = takeCompletion()
-                    if initializationCompletion != nil {
-                        let published = self.stateManager.updateState(.ready, if: { self.isCurrentRequest(request.generation) }) {
-                            operationCompletion?(.success(()))
-                        }
-                        if !published { operationCompletion?(.failure(.invalidResponse)) }
-                    } else {
-                        let published = self.stateManager.updateState(.ready, if: { self.isCurrentRequest(request.generation) })
-                        operationCompletion?(published ? .success(()) : .failure(.invalidResponse))
-                    }
-                case .failure(let error):
-                    // Only update state if no newer request has succeeded.
-                    // This prevents an older failing request from clearing data
-                    // written by a newer successful request.
-                    guard self.flagsDataVersion == versionAtStart else {
-                        takeCompletion()?(.failure(error))
-                        return
-                    }
-                    // State must be updated before calling completion —
-                    // dd-openfeature-provider-swift checks currentState in the callback.
-                    // Only use cached flags if they match the requested context to avoid
-                    // serving flags from a different user/context.
-                    let operationCompletion = takeCompletion()
-                    var newState: FlagsClientState = .error
-                    self._optOutRequest.mutate { current in
-                        guard self.experimentationOptOutMode == .disabled || current.generation == request.generation else {
-                            return
-                        }
-                        // The current generation is locked here. Do not read optOutRequest again.
-                        if let data = self.flagsData,
-                           data.context == context,
-                           data.obfuscation == nil || self.supportsFlagKeyObfuscation,
-                           current.policy == data.effectiveOptOut {
-                            newState = .stale
-                        } else {
-                            self.flagsData = nil
-                        }
-                    }
-                    if initializationCompletion != nil {
-                        let published = self.stateManager.updateState(newState, if: { self.isCurrentRequest(request.generation) }) {
-                            operationCompletion?(.failure(error))
-                        }
-                        if !published { operationCompletion?(.failure(error)) }
-                    } else {
-                        self.stateManager.updateState(newState, if: { self.isCurrentRequest(request.generation) })
-                        operationCompletion?(.failure(error))
-                    }
-                }
+                    complete(.failure(error), notifyListeners: notifyListeners, completion: operationCompletion)
+                })
             }
         }
     }
 
     func reset() {
-        var generation: UInt64 = 0
-        _optOutRequest.mutate { current in
-            current = OptOutRequest(generation: current.generation &+ 1)
-            generation = current.generation
-            // Order removal with accepted writes and clear memory before notifying listeners.
-            flagsDataStore.removeFlagsData(forClientNamed: clientName)
-            flagsData = nil
+        let flagsDataStore = featureScope.flagsDataStore
+        let clientName = clientName
+        var callbacks: [PendingCacheReadCallback] = []
+        var notifyListeners: (() -> Void)?
+
+        _repositoryState.mutate { state in
+            state.flagsData = nil
+            state.cachedFlagsData = nil
+            state.flagsDataVersion += 1
+            state.contextUpdateID += 1
+            state.latestRequestedContext = nil
+            state.requestedOptOut = nil
+            state.hasInvalidContext = false
+            callbacks = state.finishWaitingForInitialFlagsData()
+            notifyListeners = stateManager.updateStateWithoutNotifying(.notReady)
+            // Order removal with reset so newer successes enqueue their writes after it.
+            cachePersistenceQueue.async {
+                flagsDataStore.removeFlagsData(forClientNamed: clientName)
+            }
         }
-        stateManager.updateState(.notReady, if: { self.optOutRequest.generation == generation })
+        let pendingCompletions = callbacks.map { $0.prepare() }
+        // Drain outside the lock: queued writes read the repository state.
+        cachePersistenceQueue.sync {}
+        Self.executePendingDiskReadCallbacks(pendingCompletions)
+        notifyListeners?()
+    }
+
+    func flush() {
+        cachePersistenceQueue.sync {}
     }
 }

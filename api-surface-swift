@@ -1580,8 +1580,13 @@ public final class FlagsClient
         case disabled
         case immediate
         case futureExperimentsOnly
+    public struct Configuration
+        public var experimentationOptOutMode: ExperimentationOptOutMode
+        public var enableEvaluationTelemetryOptOutParameter: Bool
+        public init(enableEvaluationTelemetryOptOutParameter: Bool = false,experimentationOptOutMode: ExperimentationOptOutMode = .disabled)
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
+    public static func create(configuration: Configuration,name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func create(experimentationOptOutMode: ExperimentationOptOutMode,name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
 [?] extension FlagsClient: FlagsClientProtocol

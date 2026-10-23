@@ -1,13 +1,13 @@
 # Per-subject experimentation opt-out
 
-Select an opt-out mode when creating the Flags client. The default is disabled.
+Select an opt-out mode in `FlagsClient.Configuration` when creating the client. The default is disabled.
 The application owns the subject's preference and timestamp.
 
 ```swift
 import DatadogFlags
 
 // Initialize Datadog and enable Flags before creating the client.
-let client = FlagsClient.create(experimentationOptOutMode: .immediate)
+let client = FlagsClient.create(configuration: .init(experimentationOptOutMode: .immediate))
 
 // Omit this attribute when the subject can participate in experimentation.
 let context = FlagsEvaluationContext(
@@ -34,7 +34,10 @@ client.setEvaluationContext(context) { result in
 | `.immediate` | Skip all experiment allocations, including experiments already in progress. |
 | `.futureExperimentsOnly` | Skip experiment allocations activated at or after the timestamp, or with an unknown activation time. |
 
-Both enabled modes use the same customer-owned RFC3339 timestamp. A future timestamp does not schedule exclusion.
+Both enabled modes use the same customer-owned RFC3339 timestamp.
+In `.immediate` mode, any valid timestamp excludes the subject now, including a future timestamp.
+In `.futureExperimentsOnly` mode, a future timestamp keeps allocations activated before that timestamp available.
+Supply the actual opt-out time to exclude allocations activated from that time onward.
 Use a full `YYYY-MM-DDTHH:mm:ss` date and time, followed by `Z` or a numeric `+HH:mm` or `-HH:mm` offset.
 `T` and `Z` may be lowercase. An optional decimal fraction is preserved to nanosecond precision;
 additional digits are truncated without rounding. Dates use the proleptic Gregorian calendar,
@@ -52,8 +55,17 @@ Future mode requires the same mode and cutoff instant, compared at nanosecond pr
 When no opt-out applies, the client rejects responses explicitly marked as filtered for experimentation.
 An unsupported service cannot silently return experimental assignments. The SDK uses only cached assignments
 that match the current context and opt-out policy. Otherwise it returns application defaults.
+A missing acknowledgement reports `invalidResponse` through the context completion and sets the client to `error` when no matching cache exists.
+A later `setEvaluationContext` call can fetch assignments again.
 
-Opt-out does not disable evaluation telemetry or RUM flag annotations. Excluded experiment allocations do not produce exposures.
+With either enabled mode, context isolation also applies when the timestamp attribute is absent.
+Before the first context update, and while a different context is pending, evaluations return defaults with `providerNotReady`.
+A malformed timestamp returns `invalidContext`. Disabled mode keeps previous assignments available while a refresh is pending.
+An invalid context does not overwrite or delete the last successful disk snapshot.
+
+Experimentation opt-out does not disable evaluation telemetry or RUM flag annotations.
+Pending, failed, and invalid contexts retain the requested subject identity in evaluation telemetry.
+The independent `enableEvaluationTelemetryOptOutParameter` option can suppress that telemetry without changing assignments or exposures. Excluded experiment allocations do not produce exposures.
 Older allocations retained by future mode still produce their normal exposures. No withdrawal event is added.
 Immediate withdrawal can change an enrolled subject's experience. Account for that change in experiment analysis.
 

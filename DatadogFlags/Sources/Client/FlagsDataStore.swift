@@ -8,43 +8,35 @@ import Foundation
 import DatadogInternal
 
 internal struct FlagsDataStore {
+    private static let encoder = JSONEncoder()
     private static let decoder = JSONDecoder()
     // Older native SDKs and React Native bridges accept only version 1.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
 
     let featureScope: FeatureScope
-    private let encode: (FlagsData) throws -> Data
-
-    struct EncodedFlagsData {
-        let data: Data
-        let version: DataStoreKeyVersion
-    }
-
-    init(featureScope: FeatureScope, encode: @escaping (FlagsData) throws -> Data = { try JSONEncoder().encode($0) }) {
-        self.featureScope = featureScope
-        self.encode = encode
-    }
 
     func setFlagsData(_ flagsData: FlagsData, forClientNamed clientName: String) {
-        if let encoded = encodeFlagsData(flagsData) {
-            setEncodedFlagsData(encoded, forClientNamed: clientName)
+        guard let encoded = encodeFlagsData(flagsData) else {
+            return
         }
+
+        setEncodedFlagsData(encoded.data, forClientNamed: clientName, version: encoded.version)
     }
 
-    func setEncodedFlagsData(_ encoded: EncodedFlagsData, forClientNamed clientName: String) {
-        featureScope.dataStore.setValue(encoded.data, forKey: clientName, version: encoded.version)
-    }
-
-    func encodeFlagsData(_ flagsData: FlagsData) -> EncodedFlagsData? {
+    func encodeFlagsData(_ flagsData: FlagsData) -> (data: Data, version: DataStoreKeyVersion)? {
         do {
-            let data = try encode(flagsData)
+            let data = try Self.encoder.encode(flagsData)
             let version = flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : Self.encodedAssignmentsVersion
-            return EncodedFlagsData(data: data, version: version)
+            return (data, version)
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
             return nil
         }
+    }
+
+    func setEncodedFlagsData(_ data: Data, forClientNamed clientName: String, version: DataStoreKeyVersion) {
+        featureScope.dataStore.setValue(data, forKey: clientName, version: version)
     }
 
     func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {

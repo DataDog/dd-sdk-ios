@@ -45,30 +45,53 @@ final class FlagsStateManagerTests: XCTestCase {
         XCTAssertEqual(manager.currentState, .ready)
     }
 
-    func testObsoleteRequestCannotPublishStateOrNotify() {
+    func testDeferredNotificationUpdatesStateBeforeDeliveryAndAllowsReentrantAccess() throws {
         let manager = FlagsStateManager()
-        let listener = MockStateListener()
+        let listener = ReentrantMockStateListener(manager: manager)
         manager.addListener(listener)
-        manager.updateState(.reconciling)
-        var callbackCalled = false
-        let accepted = manager.updateState(.ready, if: { false }) { callbackCalled = true }
-        XCTAssertFalse(accepted)
-        XCTAssertFalse(callbackCalled)
-        XCTAssertEqual(manager.currentState, .reconciling)
-        XCTAssertEqual(listener.states, [.notReady, .reconciling])
+
+        let notifyListeners = try XCTUnwrap(manager.updateStateWithoutNotifying(.ready))
+
+        XCTAssertEqual(manager.currentState, .ready)
+        XCTAssertEqual(listener.statesObserved, [.notReady])
+        XCTAssertNil(manager.updateStateWithoutNotifying(.error, unlessCurrentStateIs: [.ready]))
+
+        notifyListeners()
+
+        XCTAssertEqual(listener.statesObserved, [.notReady, .ready])
+        XCTAssertEqual(listener.currentStatesRead, [.notReady, .ready])
     }
 
-    func testContextChangeInCompletionDoesNotEmitOldReadyNotification() {
+    func testDeferredNotificationDoesNotDeliverSupersededStateEvenAfterReturningToSameState() throws {
         let manager = FlagsStateManager()
         let listener = MockStateListener()
         manager.addListener(listener)
-        var currentRequest = true
-        manager.updateState(.ready, if: { currentRequest }) {
-            currentRequest = false
-            manager.updateState(.error)
+        let notifyOlderReady = try XCTUnwrap(manager.updateStateWithoutNotifying(.ready))
+
+        manager.updateState(.reconciling)
+        manager.updateState(.ready)
+        notifyOlderReady()
+
+        XCTAssertEqual(listener.states, [.notReady, .reconciling, .ready])
+    }
+
+    func testReentrantTransitionDoesNotDeliverSupersededStateToRemainingListeners() {
+        let manager = FlagsStateManager()
+        let firstListener = MockStateListener()
+        let secondListener = MockStateListener()
+        firstListener.onStateChange = { state in
+            if state == .ready {
+                manager.updateState(.reconciling)
+            }
         }
-        XCTAssertEqual(manager.currentState, .error)
-        XCTAssertEqual(listener.states, [.notReady, .error])
+        manager.addListener(firstListener)
+        manager.addListener(secondListener)
+
+        manager.updateState(.ready)
+
+        XCTAssertEqual(manager.currentState, .reconciling)
+        XCTAssertEqual(firstListener.states, [.notReady, .ready, .reconciling])
+        XCTAssertEqual(secondListener.states, [.notReady, .reconciling])
     }
 
     func testListenerReceivesCurrentStateOnAdd() {
@@ -167,9 +190,7 @@ final class FlagsStateManagerTests: XCTestCase {
 
     func testConcurrentUpdatesAreThreadSafe() {
         // Verify thread safety under concurrent load.
-        // Note: Strict ordering of notifications is not guaranteed for concurrent updates,
-        // but this is acceptable because concurrent state updates don't occur in production
-        // (FlagsRepository operations are sequential).
+        // Notifications already executing may overlap; superseded pending notifications are skipped.
         let manager = FlagsStateManager()
         let listener = ConcurrentMockStateListener()
         manager.addListener(listener)
@@ -218,9 +239,11 @@ final class FlagsStateManagerTests: XCTestCase {
 
 private final class MockStateListener: FlagsStateListener {
     var states: [FlagsClientState] = []
+    var onStateChange: ((FlagsClientState) -> Void)?
 
     func flagsStateDidChange(_ newState: FlagsClientState) {
         states.append(newState)
+        onStateChange?(newState)
     }
 }
 
