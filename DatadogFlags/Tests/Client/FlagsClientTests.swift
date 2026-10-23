@@ -1059,6 +1059,44 @@ final class FlagsClientTests: XCTestCase {
         }
     }
 
+    func testIndependentRUMTrackingRespectsTelemetryOptOut() {
+        let values: [AnyValue?] = [nil, .bool(false), .bool(true), .null, .string("true"), .int(1)]
+        for enabled in [false, true] {
+            for value in values {
+                let fixture = makeTelemetryFixture(enabled: enabled)
+                fixture.repository.setEvaluationContextStub = { _, _ in XCTFail("Tracking must not fetch configuration") }
+                let context = telemetryContext(value, subject: "captured-user")
+
+                fixture.client.sendFlagRUMEvaluation(key: "flag", variant: "variant", context: context)
+
+                let expectedCount = enabled && value == .bool(true) ? 0 : 1
+                XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, expectedCount)
+                if expectedCount == 1 {
+                    XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.first?.0, "flag")
+                    XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.first?.1 as? String, "variant")
+                }
+                XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+                XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
+                XCTAssertEqual(fixture.repository.context, telemetryContext(nil))
+            }
+        }
+    }
+
+    func testIndependentRUMTrackingRespectsIntegrationSetting() throws {
+        for enabled in [false, true] {
+            let messageReceiver = FeatureMessageReceiverMock()
+            let core = SingleFeatureCoreMock<FlagsFeature>(messageReceiver: messageReceiver)
+            Flags.enable(with: .init(rumIntegrationEnabled: enabled), in: core)
+            let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+
+            client.sendFlagRUMEvaluation(key: "flag", variant: "variant", context: .mockAny())
+
+            XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, enabled ? 1 : 0)
+            XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+            XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+        }
+    }
+
     func testIndependentEvaluationTrackingHandlesDefaultsAndErrors() throws {
         let exposureLogger = ExposureLoggerMock()
         let evaluationLogger = EvaluationLoggerMock()

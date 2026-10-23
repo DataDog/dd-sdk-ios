@@ -82,4 +82,13 @@ extension FallbackFlagsClient: FlagsClientInternal {
             """
         )
     }
+
+    func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
+        DD.logger.error(
+            """
+            Using fallback client to track '\(key)'. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+    }
 }

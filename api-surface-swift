@@ -1592,16 +1592,19 @@ public final class FlagsClient
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 public protocol FlagsClientInternal: AnyObject
     func getFlagAssignments() -> [String: FlagAssignment]?
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 [?] extension FlagsClientInternal
     public func getFlagAssignments() -> [String: FlagAssignment]?
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 public protocol FlagsClientProtocol: AnyObject
     var state: FlagsStateObservable
     func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)

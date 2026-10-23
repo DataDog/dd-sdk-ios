@@ -415,6 +415,14 @@ extension FlagsClient: FlagsClientInternal {
             flagError: sanitizedErrorCode
         )
     }
+
+    @_spi(Internal)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
+        guard !isEvaluationTelemetryOptedOut(in: context) else {
+            return
+        }
+        rumFlagEvaluationReporter.sendFlagEvaluation(flagKey: key, value: variant)
+    }
 }
 
 extension FlagsClient: FlagsClientFlushable {

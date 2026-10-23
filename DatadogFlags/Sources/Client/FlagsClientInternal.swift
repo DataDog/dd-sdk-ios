@@ -31,6 +31,12 @@ public protocol FlagsClientInternal: AnyObject {
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+
+    /// Records only a RUM flag annotation, respecting the client's telemetry opt-out configuration.
+    /// Does not fetch configuration, record an exposure, or record an evaluation event.
+    /// > Warning: This is an internal method and can break in the future.
+    @_spi(Internal)
+    func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 }
 
 extension FlagsClientInternal {
@@ -52,6 +58,11 @@ extension FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        // no-op
+    }
+
+    @_spi(Internal)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
         // no-op
     }
 }
