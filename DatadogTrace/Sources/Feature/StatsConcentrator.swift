@@ -677,7 +677,13 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// Records a span snapshot into the appropriate time bucket.
     /// Ineligible spans are silently discarded. This method dispatches
     /// asynchronously and returns immediately without blocking the caller.
-    func add(_ snapshot: SpanSnapshot) {
+    ///
+    /// - Parameters:
+    ///   - snapshot: The finished span.
+    ///   - now: Current time in nanoseconds. A span that ends after the window following `now`, for
+    ///     example one finished at a future date, is recorded in that window, so it cannot create a
+    ///     bucket the periodic flush does not export.
+    func add(_ snapshot: SpanSnapshot, now: Nanoseconds) {
         guard Self.isEligible(snapshot) else {
             return
         }
@@ -695,12 +701,14 @@ internal final class StatsConcentrator: @unchecked Sendable {
             // off-queue) keeps the decision ordered with consent changes and the revoke clear, so a
             // span recorded around a revocation cannot slip past or be re-added after the buffer is
             // cleared.
+            // TODO: RUM-19155 After consent is granted again, spans that finish before the message bus
+            // delivers the grant are dropped here, although their context is already granted.
             guard currentConsent != .notGranted else {
                 return
             }
 
             let bucketKey = max(
-                Self.alignTimestamp(endTime, bucketDuration: bucketDuration),
+                min(Self.alignTimestamp(endTime, bucketDuration: bucketDuration), latestBucketKey(at: now)),
                 oldestTs
             )
             let bucket = buckets[bucketKey, default: StatsBucket(start: bucketKey, duration: bucketDuration)]
@@ -935,6 +943,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
             peerTags: group.peerTags,
             serviceSource: key.serviceSource
         )
+    }
+
+    /// The latest window a span recorded at `timestamp` can be in: the one after the window of `timestamp`.
+    private func latestBucketKey(at timestamp: Nanoseconds) -> UInt64 {
+        let (latest, didOverflow) = Self.alignTimestamp(timestamp, bucketDuration: bucketDuration).addingReportingOverflow(bucketDuration)
+        return didOverflow ? Self.alignTimestamp(.max, bucketDuration: bucketDuration) : latest
     }
 
     /// Aligns a nanosecond timestamp to the bucket boundary.

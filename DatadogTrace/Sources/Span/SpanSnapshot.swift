@@ -88,7 +88,9 @@ extension SpanSnapshot {
         }()
         // Service-entry classification is internal to stats. Keep a remote parent's ID:
         // a local service entry is not necessarily the root of the distributed trace.
-        let isTopLevel = event.parentID == nil || isServiceEntry || event.tags[SpanTags.topLevel] == "1"
+        // The zero span ID is reserved for a root span.
+        let parentSpanID = event.parentID == .invalid ? nil : event.parentID
+        let isTopLevel = parentSpanID == nil || isServiceEntry || event.tags[SpanTags.topLevel] == "1"
         let isMeasured = event.tags[SpanTags.measured] == "1"
         let serviceSource = event.tags["_dd.svc_src"] ?? ""
 
@@ -102,7 +104,7 @@ extension SpanSnapshot {
         self.init(
             traceID: event.traceID,
             spanID: event.spanID,
-            parentSpanID: event.parentID,
+            parentSpanID: parentSpanID,
             service: event.serviceName,
             operationName: event.operationName,
             resource: event.resource,
