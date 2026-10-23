@@ -48,7 +48,7 @@ internal final class LayerTreeRecordingCoordinator: RecordingController {
         self.telemetry = telemetry
         self.recordingEnabled = startRecordingImmediately
 
-        srContextPublisher.setHasReplay(false)
+        srContextPublisher.setHasReplay(false, sessionID: nil)
 
         screenChangeMonitor.handler = { [weak self] changeset in
             Task { @MainActor [weak self] in
@@ -106,7 +106,7 @@ internal final class LayerTreeRecordingCoordinator: RecordingController {
 
     @MainActor
     private func updateHasReplay() {
-        srContextPublisher.setHasReplay(isSampled && recordingEnabled)
+        srContextPublisher.setHasReplay(isSampled && recordingEnabled, sessionID: currentRUMContext?.sessionID)
     }
 
     @MainActor
