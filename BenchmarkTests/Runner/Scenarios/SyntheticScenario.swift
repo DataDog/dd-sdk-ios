@@ -108,6 +108,10 @@ internal struct SyntheticScenario: Scenario {
     func instrument(with info: AppInfo) {
         _scenario.instrument(with: info)
     }
+
+    func instrumentBaseline(with info: AppInfo) {
+        _scenario.instrumentBaseline(with: info)
+    }
 }
 
 /// The Synthetics benchmark run.
@@ -115,10 +119,12 @@ internal struct SyntheticScenario: Scenario {
 /// The run specifies the execution context of a benchmark scenrio.
 /// Each execution will collect different type of benchmarking data:
 ///     - The `baseline` run collects various metrics during the scenario execution **without**
-///     the Datadog SDK being initialised.
+///     the Datadog SDK being initialised, unless the scenario enables the Features that
+///     the code under test is built on.
 ///     -  The `instrumented` run collects the same metrics as `baseline` but **with** the
 ///     Datadog SDK initialised. Comparing the `baseline` and `instrumented` runs will provide
-///     the overhead of the SDK for each metric.
+///     the overhead of the SDK, or of the code under test when the `baseline` run enables
+///     Features, for each metric.
 ///     - The `profiling` run will only collect traces of the SDK internal processes.
 internal enum SyntheticRun: String {
     case baseline
