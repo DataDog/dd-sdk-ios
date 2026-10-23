@@ -92,6 +92,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             timeSinceAppStart: timeSinceAppStart
         )
 
+        // After `stopSession()`, a crash with no RUM view is not reported until a new view resumes tracking.
+        if context.isRUMSessionStopped && context.lastRUMViewEvent == nil {
+            DD.logger.debug("There was a crash after the RUM session was stopped, so it is not reported.")
+            return true // handled: dropped on purpose
+        }
+
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if var lastRUMViewEvent = context.lastRUMViewEvent {
             if let lastRUMAttributes = context.lastRUMAttributes {
