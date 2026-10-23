@@ -22,7 +22,7 @@ final class AppLaunchMetricControllerTests: XCTestCase {
             )
         )
         let coldStartRule: ColdStartRule = .appUpdate
-        let controller = AppLaunchMetricController(telemetry: telemetry)
+        let controller = AppLaunchMetricController(sampleRate: 100, telemetry: telemetry)
 
         // When
         controller.track(coldStartRule: coldStartRule)
@@ -39,14 +39,13 @@ final class AppLaunchMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.taskPolicyRole, datadogContext.launchInfo.raw.taskPolicyRole)
         XCTAssertEqual(metric.pois.count, 5)
 
-        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
-        XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
     }
 
     func testTrackingLargeTTID() throws {
         // Given
         let datadogContext: DatadogContext = .mockRandom()
-        let controller = AppLaunchMetricController(telemetry: telemetry)
+        let controller = AppLaunchMetricController(sampleRate: 100, telemetry: telemetry)
         let duration: TimeInterval = 1_000
 
         // When
@@ -61,14 +60,13 @@ final class AppLaunchMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.pois.count, 5)
         XCTAssertFalse(metric.errorMessage?.isEmpty ?? true)
 
-        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
-        XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
     }
 
     func testTrackingLaunchNotSupported() throws {
         // Given
         let datadogContext: DatadogContext = .mockRandom()
-        let controller = AppLaunchMetricController(telemetry: telemetry)
+        let controller = AppLaunchMetricController(sampleRate: 100, telemetry: telemetry)
         let duration: TimeInterval = 1_000
 
         // When
@@ -83,15 +81,14 @@ final class AppLaunchMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.pois.count, 5)
         XCTAssertFalse(metric.errorMessage?.isEmpty ?? true)
 
-        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
-        XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
     }
 
     func testTrackingAppLaunchMetric_withTTFDRecordedFirst() throws {
         // Given
         let datadogContext: DatadogContext = .mockRandom()
         let vitalEvent: RUMVitalAppLaunchEvent = .mockAny()
-        let controller = AppLaunchMetricController(telemetry: telemetry)
+        let controller = AppLaunchMetricController(sampleRate: 100, telemetry: telemetry)
         let ttfdDuration: Int64 = 1_000
 
         // When
@@ -108,15 +105,14 @@ final class AppLaunchMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.pois.count, 5)
         XCTAssertEqual(metric.ttfdDurationNs, ttfdDuration)
 
-        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
-        XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
     }
 
     func testTrackingMoreThanOneTTID() throws {
         // Given
         let datadogContext: DatadogContext = .mockRandom()
         let vitalEvent: RUMVitalAppLaunchEvent = .mockAny()
-        let controller = AppLaunchMetricController(telemetry: telemetry)
+        let controller = AppLaunchMetricController(sampleRate: 100, telemetry: telemetry)
 
         // When
         controller.track(ttidEvent: vitalEvent, context: datadogContext)
@@ -133,8 +129,7 @@ final class AppLaunchMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.pois.count, 5)
         XCTAssertEqual(metric.extraTTIDsCount, 2)
 
-        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
-        XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: AppLaunchMetric.Constants.name))
     }
 
     func testTrackingMultipleAppLaunchMetrics() throws {
@@ -142,7 +137,7 @@ final class AppLaunchMetricControllerTests: XCTestCase {
         let iterations = 10
         let datadogContext: DatadogContext = .mockRandom()
         let vitalEvent: RUMVitalAppLaunchEvent = .mockAny()
-        let controller = AppLaunchMetricController(telemetry: telemetry)
+        let controller = AppLaunchMetricController(sampleRate: 100, telemetry: telemetry)
         let appLaunchMetric = try XCTUnwrap(AppLaunchMetric(vitalEvent: vitalEvent, context: datadogContext))
 
         // When
@@ -162,6 +157,11 @@ final class AppLaunchMetricControllerTests: XCTestCase {
             XCTAssertEqual(metric.taskPolicyRole, datadogContext.launchInfo.raw.taskPolicyRole)
             XCTAssertEqual(metric.pois.count, 5)
         }
+    }
+
+    func testDefaultSampleRate() {
+        let controller = AppLaunchMetricController(telemetry: telemetry)
+        XCTAssertEqual(controller.sampleRate, 20)
     }
 }
 
