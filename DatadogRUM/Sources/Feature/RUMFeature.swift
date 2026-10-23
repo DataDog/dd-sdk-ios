@@ -266,8 +266,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider,
-            replayState: replayState
+            dateProvider: configuration.dateProvider
         )
 
         timeseriesCollector?.activeContextReader = monitor

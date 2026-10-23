@@ -128,17 +128,14 @@ internal class Monitor: RUMCommandSubscriber {
     @ReadWriteLock
     private var sessionActivitySnapshot: (sessionID: String?, sessionStart: TimeInterval?, lastInteraction: TimeInterval?) = (nil, nil, nil)
 
-    private let replayState: HasReplayMessageReceiver?
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
 
     init(
         dependencies: RUMScopeDependencies,
-        dateProvider: DateProvider,
-        replayState: HasReplayMessageReceiver? = nil
+        dateProvider: DateProvider
     ) {
-        self.replayState = replayState
         self.featureScope = dependencies.featureScope
         self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
@@ -160,18 +157,8 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             let transformedCommand = self.transform(command: command)
-            let previousSessionID = self.sessionActivitySnapshot.sessionID
-
-            if let previousSessionID = previousSessionID {
-                self.replayState?.update(sessionID: previousSessionID, hasReplay: context.hasReplay)
-            }
 
             _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
-
-            if let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat,
-               currentSessionID != previousSessionID {
-                self.replayState?.update(sessionID: currentSessionID, hasReplay: context.hasReplay)
-            }
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)

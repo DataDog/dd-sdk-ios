@@ -33,14 +33,14 @@ class HasReplayMessageReceiverTests: XCTestCase {
         // Then
         XCTAssertEqual(receiver.hasReplay(sessionID: firstID), true)
 
-        // When — a later context message of the same session carries no replay baggage
+        // When — later context messages of the same session report replay stopped, or carry no replay baggage
+        _ = receiver.receive(message: contextMessage(sessionID: first, hasReplay: false), from: NOPDatadogCore())
         _ = receiver.receive(message: contextMessage(sessionID: first, hasReplay: nil), from: NOPDatadogCore())
 
-        // Then — the state is cleared
-        XCTAssertNil(receiver.hasReplay(sessionID: firstID))
+        // Then — the session keeps reporting replay, so a flush still pending for it does not lose it
+        XCTAssertEqual(receiver.hasReplay(sessionID: firstID), true)
 
-        // When — the first session reports replay, then a new session appears with that stale state attached
-        receiver.update(sessionID: firstID, hasReplay: true)
+        // When — a new session appears with the first session's stale state attached
         _ = receiver.receive(message: contextMessage(sessionID: second, hasReplay: true), from: NOPDatadogCore())
 
         // Then — the new session does not inherit it, and the previous session keeps its own
