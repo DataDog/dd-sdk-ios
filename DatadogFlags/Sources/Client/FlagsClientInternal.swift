@@ -26,6 +26,19 @@ public protocol FlagsClientInternal: AnyObject {
         flagError: String?
     )
 
+    /// Replays with a validated telemetry key: nil omits the key; an empty string remains present.
+    /// The original context still controls exposures and subject telemetry opt-out. Its attributes
+    /// are retained only when the captured consent enables full evaluation data.
+    @_spi(Internal)
+    func sendFlagEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        telemetryTargetingKey: String?,
+        observeFullEvaluationData: Bool,
+        flagError: String?
+    )
+
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
@@ -55,6 +68,18 @@ extension FlagsClientInternal {
         key: String,
         assignment: FlagAssignment,
         context: FlagsEvaluationContext,
+        observeFullEvaluationData: Bool,
+        flagError: String?
+    ) {
+        // No-op for unavailable clients.
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        telemetryTargetingKey: String?,
         observeFullEvaluationData: Bool,
         flagError: String?
     ) {

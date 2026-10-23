@@ -1593,10 +1593,12 @@ public final class FlagsClient
 [?] extension FlagsClient
     public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
     public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,observeFullEvaluationData: Bool,flagError: String?)
+    public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,flagError: String?)
 public protocol FlagsClientInternal: AnyObject
     func getFlagAssignments() -> [String: FlagAssignment]?
     func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
     func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,observeFullEvaluationData: Bool,flagError: String?)
+    func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,flagError: String?)
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 [?] extension FlagsClientInternal
     public func getFlagAssignments() -> [String: FlagAssignment]?
@@ -1604,6 +1606,7 @@ public protocol FlagsClientInternal: AnyObject
 [?] extension FlagsClientInternal
     public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
     public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,observeFullEvaluationData: Bool,flagError: String?)
+    public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,flagError: String?)
 public protocol FlagsClientProtocol: AnyObject
     var state: FlagsStateObservable
     func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)

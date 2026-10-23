@@ -97,6 +97,27 @@ final class FallbackFlagsClientTests: XCTestCase {
         )
     }
 
+    func testNullableTelemetryReplayOnFallbackClientIsNoOp() {
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        Flags.enable(in: core)
+        let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        for targetingKey in [nil, ""] as [String?] {
+            client.sendFlagEvaluation(
+                key: "flag",
+                assignment: .mockAny(),
+                context: .mockAny(),
+                telemetryTargetingKey: targetingKey,
+                observeFullEvaluationData: true,
+                flagError: "FLAG_NOT_FOUND"
+            )
+        }
+
+        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
+    }
+
     func testSendFlagEvaluation() {
         // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()

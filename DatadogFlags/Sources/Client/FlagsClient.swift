@@ -327,7 +327,13 @@ extension FlagsClient: FlagsClientProtocol {
         return details
     }
 
-    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
+    private func trackEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        trackEvaluationTelemetry: Bool,
+        telemetryContext: FlagsEvaluationContext? = nil
+    ) {
         exposureLogger.logExposure(
             for: key,
             assignment: assignment,
@@ -341,7 +347,7 @@ extension FlagsClient: FlagsClientProtocol {
         evaluationLogger.logEvaluation(
             for: key,
             assignment: assignment,
-            evaluationContext: context,
+            evaluationContext: telemetryContext ?? context,
             flagError: nil
         )
 
@@ -411,19 +417,49 @@ extension FlagsClient {
         observeFullEvaluationData: Bool,
         flagError: String?
     ) {
+        sendFlagEvaluation(
+            key: key,
+            assignment: assignment,
+            context: context,
+            telemetryTargetingKey: context.hasTargetingKey ? context.targetingKey : nil,
+            observeFullEvaluationData: observeFullEvaluationData,
+            flagError: flagError
+        )
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        telemetryTargetingKey: String?,
+        observeFullEvaluationData: Bool,
+        flagError: String?
+    ) {
         var assignment = assignment
         assignment.observeFullEvaluationData = observeFullEvaluationData
+        var telemetryContext = FlagsEvaluationContext(
+            targetingKey: telemetryTargetingKey ?? "",
+            attributes: context.attributes
+        )
+        telemetryContext.hasTargetingKey = telemetryTargetingKey != nil
         let trackEvaluationTelemetry = !isEvaluationTelemetryOptedOut(in: context)
         if let flagError {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: assignment,
-                evaluationContext: context,
+                evaluationContext: telemetryContext,
                 flagError: flagError
             )
         } else {
-            trackEvaluation(key: key, assignment: assignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
+            trackEvaluation(
+                key: key,
+                assignment: assignment,
+                context: context,
+                trackEvaluationTelemetry: trackEvaluationTelemetry,
+                telemetryContext: telemetryContext
+            )
         }
     }
 }
