@@ -130,7 +130,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             traceId = TraceId.random()
             traceState = .init()
             parentSpanID = nil
-            parentForStats = .unknown
+            parentForStats = resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
         }
 
         let spanContext = SpanContext.create(
