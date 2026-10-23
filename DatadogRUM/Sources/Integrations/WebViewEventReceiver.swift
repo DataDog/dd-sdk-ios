@@ -22,6 +22,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// The view cache containing ids of current and previous views.
     let viewCache: ViewCache
 
+    /// The timeseries collector, used to tell if the current session has collected timeseries data.
+    let timeseriesCollector: TimeseriesCollecting?
+
     /// Creates a new receiver.
     ///
     /// - Parameters:
@@ -29,16 +32,19 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - dateProvider: The date provider.
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     ///   - viewCache: The RUM view cache.
+    ///   - timeseriesCollector: The timeseries collector, or `nil` if timeseries collection is not enabled.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         commandSubscriber: RUMCommandSubscriber,
-        viewCache: ViewCache
+        viewCache: ViewCache,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) {
         self.featureScope = featureScope
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
         self.viewCache = viewCache
+        self.timeseriesCollector = timeseriesCollector
     }
 
     /// Writes a Browser RUM event to the core.
@@ -118,6 +124,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                     session["has_replay"] = context.hasReplay
                 }
                 session["is_main_process"] = context.applicationBundleType != .iOSAppExtension
+                session["has_timeseries"] = self.timeseriesCollector?.hasCollectedData(sessionID: rum.sessionID) ?? false
 
                 event["session"] = session
             }
