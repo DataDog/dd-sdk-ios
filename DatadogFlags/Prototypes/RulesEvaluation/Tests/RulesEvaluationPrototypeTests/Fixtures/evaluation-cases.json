@@ -1,0 +1,2254 @@
+[
+  {
+    "attributes": {
+      "should_disable_feature": true
+    },
+    "defaultValue": true,
+    "flag": "boolean-false-assignment",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": false
+    },
+    "targetingKey": "alice",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "should_disable_feature": false
+    },
+    "defaultValue": true,
+    "flag": "boolean-false-assignment",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "bob",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "unknown_attribute": "value"
+    },
+    "defaultValue": true,
+    "flag": "boolean-false-assignment",
+    "result": {
+      "reason": "DEFAULT",
+      "value": true
+    },
+    "targetingKey": "charlie",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "size": 5
+    },
+    "defaultValue": "unknown",
+    "flag": "comparator-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "small"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "size": 10
+    },
+    "defaultValue": "unknown",
+    "flag": "comparator-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "medium"
+    },
+    "targetingKey": "bob",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "size": 25
+    },
+    "defaultValue": "unknown",
+    "flag": "comparator-operator-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "unknown"
+    },
+    "targetingKey": "charlie",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "size": 26
+    },
+    "defaultValue": "unknown",
+    "flag": "comparator-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "large"
+    },
+    "targetingKey": "david",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "UK"
+    },
+    "defaultValue": "unknown",
+    "flag": "comparator-operator-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "unknown"
+    },
+    "targetingKey": "elize",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": 0,
+    "flag": "disabled_flag",
+    "result": {
+      "reason": "DISABLED",
+      "value": 0
+    },
+    "targetingKey": "alice",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": 0,
+    "flag": "disabled_flag",
+    "result": {
+      "reason": "DISABLED",
+      "value": 0
+    },
+    "targetingKey": "bob",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "age": 50
+    },
+    "defaultValue": 0,
+    "flag": "disabled_flag",
+    "result": {
+      "reason": "DISABLED",
+      "value": 0
+    },
+    "targetingKey": "charlie",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": "default_value",
+    "flag": "empty_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "default_value"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": "default_value",
+    "flag": "empty_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "default_value"
+    },
+    "targetingKey": "bob",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "age": 50
+    },
+    "defaultValue": "default_value",
+    "flag": "empty_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "default_value"
+    },
+    "targetingKey": "charlie",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "content_type": "minimal"
+    },
+    "defaultValue": "default_value",
+    "flag": "empty-string-variation",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ""
+    },
+    "targetingKey": "empty_user",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "content_type": "full"
+    },
+    "defaultValue": "default_value",
+    "flag": "empty-string-variation",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "detailed_content"
+    },
+    "targetingKey": "full_user",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "content_type": "unknown"
+    },
+    "defaultValue": "default_value",
+    "flag": "empty-string-variation",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "default_value"
+    },
+    "targetingKey": "default_user",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "plan_tier": "free"
+    },
+    "defaultValue": 999,
+    "flag": "falsy-value-assignments",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 0
+    },
+    "targetingKey": "zero_user",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "plan_tier": "premium"
+    },
+    "defaultValue": 999,
+    "flag": "falsy-value-assignments",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 100
+    },
+    "targetingKey": "premium_user",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "plan_tier": "trial"
+    },
+    "defaultValue": 999,
+    "flag": "falsy-value-assignments",
+    "result": {
+      "reason": "DEFAULT",
+      "value": 999
+    },
+    "targetingKey": "unknown_user",
+    "variationType": "INTEGER"
+  },
+  {
+    "description": "GT requires a numeric configured operand. A flag with a string operand must return a parse error rather than falling through to the catch-all allocation.",
+    "attributes": {
+      "age": 42
+    },
+    "defaultValue": "default",
+    "flag": "invalid-gt-condition-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "invalid-gt",
+    "variationType": "STRING"
+  },
+  {
+    "description": "ONE_OF requires an array configured operand. A flag with a scalar operand must return a parse error rather than falling through to the catch-all allocation.",
+    "attributes": {
+      "role": "admin"
+    },
+    "defaultValue": "default",
+    "flag": "invalid-one-of-condition-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "invalid-one-of",
+    "variationType": "STRING"
+  },
+  {
+    "description": "IS_NULL requires a boolean configured operand. A flag with a string operand must return a parse error rather than falling through to the catch-all allocation.",
+    "attributes": {
+      "deleted_at": null
+    },
+    "defaultValue": "default",
+    "flag": "invalid-is-null-condition-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "invalid-is-null",
+    "variationType": "STRING"
+  },
+  {
+    "description": "A valid flag in the same configuration must still evaluate after malformed condition operands are isolated.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "valid-flag-after-invalid-config",
+    "result": {
+      "reason": "STATIC",
+      "value": "expected"
+    },
+    "targetingKey": "valid-neighbor",
+    "variationType": "STRING"
+  },
+  {
+    "description": "The malformed flag has totalShards above the unsigned 32-bit range. SDKs must return a parse error without poisoning the full configuration.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "overflow-total-shards-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "description": "The malformed flag has a negative shard range start. SDKs must return a parse error without poisoning the full configuration.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "negative-shard-range-start-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "description": "A valid flag in the same config must still evaluate after invalid shard-bound flags are skipped.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "valid-flag-after-invalid-config",
+    "result": {
+      "reason": "STATIC",
+      "value": "expected"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "alice",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "bob",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "canada",
+      "email": "barbara@example.com"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "barbara",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "age": 40
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "charlie",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "age": 25,
+      "country": "Mexico",
+      "email": "test@test.com"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "debra",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {},
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "1",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Mexico"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "2",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "age": 50,
+      "country": "UK"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "3",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Germany"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "4",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Germany"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "5",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Germany"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "6",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "age": 12,
+      "country": "US"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "7",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "age": 60,
+      "country": "Italy"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "8",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "email": "email@email.com"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "9",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {},
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "10",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {},
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "11",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "US"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "12",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Canada"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": true
+    },
+    "targetingKey": "13",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {},
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "14",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Denmark"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "15",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "Norway"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "16",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "UK"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "17",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "UK"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "18",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "attributes": {
+      "country": "UK"
+    },
+    "defaultValue": false,
+    "flag": "kill-switch",
+    "result": {
+      "reason": "STATIC",
+      "value": false
+    },
+    "targetingKey": "19",
+    "variationType": "BOOLEAN"
+  },
+  {
+    "description": "The malformed flag has allocations encoded as a string instead of an array. SDKs must return a parse error without poisoning the full configuration.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "malformed-allocations-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "description": "A valid flag in the same config must still evaluate after the malformed flag is skipped.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "valid-flag-after-invalid-config",
+    "result": {
+      "reason": "STATIC",
+      "value": "expected"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {},
+    "defaultValue": "unknown",
+    "flag": "microsecond-date-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "active"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "US"
+    },
+    "defaultValue": "unknown",
+    "flag": "microsecond-date-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "active"
+    },
+    "targetingKey": "bob",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "version": "1.0.0"
+    },
+    "defaultValue": "unknown",
+    "flag": "microsecond-date-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "active"
+    },
+    "targetingKey": "charlie",
+    "variationType": "STRING"
+  },
+  {
+    "description": "The malformed flag has a split that omits required shards. SDKs must return a parse error without poisoning the full configuration.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "missing-split-shards-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "description": "A valid flag in the same config must still evaluate after the missing-shards flag is skipped.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "valid-flag-after-invalid-config",
+    "result": {
+      "reason": "STATIC",
+      "value": "expected"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": {
+      "hello": "world"
+    },
+    "flag": "no_allocations_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": {
+        "hello": "world"
+      }
+    },
+    "targetingKey": "alice",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": {
+      "hello": "world"
+    },
+    "flag": "no_allocations_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": {
+        "hello": "world"
+      }
+    },
+    "targetingKey": "bob",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "age": 50
+    },
+    "defaultValue": {
+      "hello": "world"
+    },
+    "flag": "no_allocations_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": {
+        "hello": "world"
+      }
+    },
+    "targetingKey": "charlie",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "size": 5
+    },
+    "defaultValue": "default-null",
+    "flag": "null-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "old"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "size": 10
+    },
+    "defaultValue": "default-null",
+    "flag": "null-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "new"
+    },
+    "targetingKey": "bob",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "size": null
+    },
+    "defaultValue": "default-null",
+    "flag": "null-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "old"
+    },
+    "targetingKey": "charlie",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "size": 26
+    },
+    "defaultValue": "default-null",
+    "flag": "null-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "new"
+    },
+    "targetingKey": "david",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "UK"
+    },
+    "defaultValue": "default-null",
+    "flag": "null-operator-test",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "old"
+    },
+    "targetingKey": "elize",
+    "variationType": "STRING"
+  },
+  {
+    "description": "The malformed flag has a null shard range before a catch-all allocation. SDKs must return a parse error without poisoning the full configuration.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "null-shard-range-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {},
+    "defaultValue": 42,
+    "flag": "numeric_flag",
+    "result": {
+      "reason": "STATIC",
+      "value": 3.1415926
+    },
+    "targetingKey": null,
+    "variationType": "NUMERIC"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": 0,
+    "flag": "numeric_flag",
+    "result": {
+      "reason": "STATIC",
+      "value": 3.1415926
+    },
+    "targetingKey": "alice",
+    "variationType": "NUMERIC"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": 0,
+    "flag": "numeric_flag",
+    "result": {
+      "reason": "STATIC",
+      "value": 3.1415926
+    },
+    "targetingKey": "bob",
+    "variationType": "NUMERIC"
+  },
+  {
+    "attributes": {
+      "age": 50
+    },
+    "defaultValue": 0,
+    "flag": "numeric_flag",
+    "result": {
+      "reason": "STATIC",
+      "value": 3.1415926
+    },
+    "targetingKey": "charlie",
+    "variationType": "NUMERIC"
+  },
+  {
+    "attributes": {},
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "DEFAULT",
+      "value": 0
+    },
+    "targetingKey": "race-default",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "number": 1
+    },
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 1
+    },
+    "targetingKey": "alice",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "number": 2
+    },
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "DEFAULT",
+      "value": 0
+    },
+    "targetingKey": "bob",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "number": 3
+    },
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 3
+    },
+    "targetingKey": "charlie",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "number": 4
+    },
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 3
+    },
+    "targetingKey": "derek",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "number": "1"
+    },
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 1
+    },
+    "targetingKey": "erica",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "number": 1
+    },
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 1
+    },
+    "targetingKey": "frank",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {
+      "number": 123456789
+    },
+    "defaultValue": 0,
+    "flag": "numeric-one-of",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": 2
+    },
+    "targetingKey": "george",
+    "variationType": "INTEGER"
+  },
+  {
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "empty-targeting-key-flag",
+    "result": {
+      "reason": "STATIC",
+      "value": "on-value"
+    },
+    "targetingKey": "",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "version": "1.15.0"
+    },
+    "defaultValue": "unknown",
+    "flag": "start-and-end-date-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "current"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "version": "0.20.1"
+    },
+    "defaultValue": "unknown",
+    "flag": "start-and-end-date-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "current"
+    },
+    "targetingKey": "bob",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "version": "2.1.13"
+    },
+    "defaultValue": "unknown",
+    "flag": "start-and-end-date-test",
+    "result": {
+      "reason": "DEFAULT",
+      "value": "current"
+    },
+    "targetingKey": "charlie",
+    "variationType": "STRING"
+  },
+  {
+    "description": "The flag and surrounding UFC config include unknown object fields that SDKs must ignore while evaluating the known schema fields.",
+    "attributes": {
+      "country": "US"
+    },
+    "defaultValue": "default",
+    "flag": "unknown-fields-tolerance-flag",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "on"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "description": "The first allocation uses an unknown operator and the second is a catch-all trap. SDKs must return a parse error without falling through to the catch-all allocation.",
+    "attributes": {
+      "country": "US"
+    },
+    "defaultValue": "default",
+    "flag": "operator-grease-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": "default"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "description": "A valid flag in the same config must still evaluate after the unknown-operator flag is skipped.",
+    "attributes": {
+      "country": "US"
+    },
+    "defaultValue": "default",
+    "flag": "valid-flag-after-invalid-config",
+    "result": {
+      "reason": "STATIC",
+      "value": "expected"
+    },
+    "targetingKey": "alice",
+    "variationType": "STRING"
+  },
+  {
+    "description": "A flag whose variation violates its declared type returns a parse error while the rest of the configuration remains usable.",
+    "attributes": {},
+    "defaultValue": 0,
+    "flag": "variant-type-mismatch-flag",
+    "result": {
+      "errorCode": "PARSE_ERROR",
+      "reason": "ERROR",
+      "value": 0
+    },
+    "targetingKey": "user-1",
+    "variationType": "INTEGER"
+  },
+  {
+    "description": "A valid flag in the same configuration continues to evaluate when a malformed neighboring flag returns a parse error.",
+    "attributes": {},
+    "defaultValue": "default",
+    "flag": "valid-flag-after-invalid-config",
+    "result": {
+      "reason": "STATIC",
+      "value": "expected"
+    },
+    "targetingKey": "valid-neighbor",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": 0,
+    "flag": "flag-that-does-not-exist",
+    "result": {
+      "errorCode": "FLAG_NOT_FOUND",
+      "reason": "ERROR",
+      "value": 0
+    },
+    "targetingKey": "alice",
+    "variationType": "NUMERIC"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": 0,
+    "flag": "flag-that-does-not-exist",
+    "result": {
+      "errorCode": "FLAG_NOT_FOUND",
+      "reason": "ERROR",
+      "value": 0
+    },
+    "targetingKey": "bob",
+    "variationType": "NUMERIC"
+  },
+  {
+    "attributes": {
+      "age": 50
+    },
+    "defaultValue": 0,
+    "flag": "flag-that-does-not-exist",
+    "result": {
+      "errorCode": "FLAG_NOT_FOUND",
+      "reason": "ERROR",
+      "value": 0
+    },
+    "targetingKey": "charlie",
+    "variationType": "NUMERIC"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": {
+      "foo": "bar"
+    },
+    "flag": "json-config-flag",
+    "result": {
+      "reason": "SPLIT",
+      "value": {
+        "float": 1,
+        "integer": 1,
+        "string": "one"
+      }
+    },
+    "targetingKey": "alice",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": {
+      "foo": "bar"
+    },
+    "flag": "json-config-flag",
+    "result": {
+      "reason": "SPLIT",
+      "value": {
+        "float": 2,
+        "integer": 2,
+        "string": "two"
+      }
+    },
+    "targetingKey": "bob",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "age": 50
+    },
+    "defaultValue": {
+      "foo": "bar"
+    },
+    "flag": "json-config-flag",
+    "result": {
+      "reason": "SPLIT",
+      "value": {
+        "float": 2,
+        "integer": 2,
+        "string": "two"
+      }
+    },
+    "targetingKey": "charlie",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "Force Empty": true
+    },
+    "defaultValue": {
+      "foo": "bar"
+    },
+    "flag": "json-config-flag",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": {}
+    },
+    "targetingKey": "diana",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "country": "US",
+      "email": "alice@mycompany.com"
+    },
+    "defaultValue": {
+      "message": "Hello, world!"
+    },
+    "flag": "no_allocations_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": {
+        "message": "Hello, world!"
+      }
+    },
+    "targetingKey": "alice",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "country": "Canada",
+      "email": "bob@example.com"
+    },
+    "defaultValue": {
+      "message": "Hello, world!"
+    },
+    "flag": "no_allocations_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": {
+        "message": "Hello, world!"
+      }
+    },
+    "targetingKey": "bob",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "age": 50
+    },
+    "defaultValue": {
+      "message": "Hello, world!"
+    },
+    "flag": "no_allocations_flag",
+    "result": {
+      "reason": "DEFAULT",
+      "value": {
+        "message": "Hello, world!"
+      }
+    },
+    "targetingKey": "charlie",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {},
+    "defaultValue": {},
+    "flag": "special-characters",
+    "result": {
+      "reason": "SPLIT",
+      "value": {
+        "a": "kümmert",
+        "b": "schön"
+      }
+    },
+    "targetingKey": "ash",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {},
+    "defaultValue": {},
+    "flag": "special-characters",
+    "result": {
+      "reason": "SPLIT",
+      "value": {
+        "a": "піклуватися",
+        "b": "любов"
+      }
+    },
+    "targetingKey": "ben",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {},
+    "defaultValue": {},
+    "flag": "special-characters",
+    "result": {
+      "reason": "SPLIT",
+      "value": {
+        "a": "照顾",
+        "b": "漂亮"
+      }
+    },
+    "targetingKey": "cameron",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {},
+    "defaultValue": {},
+    "flag": "special-characters",
+    "result": {
+      "reason": "SPLIT",
+      "value": {
+        "a": "🤗",
+        "b": "🌸"
+      }
+    },
+    "targetingKey": "darryl",
+    "variationType": "JSON"
+  },
+  {
+    "attributes": {
+      "string_with_spaces": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": " a b c d e f "
+    },
+    "targetingKey": "string_with_spaces",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_space": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": " "
+    },
+    "targetingKey": "string_with_only_one_space",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_spaces": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "       "
+    },
+    "targetingKey": "string_with_only_multiple_spaces",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_dots": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ".a.b.c.d.e.f."
+    },
+    "targetingKey": "string_with_dots",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_dot": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "."
+    },
+    "targetingKey": "string_with_only_one_dot",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_dots": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "......."
+    },
+    "targetingKey": "string_with_only_multiple_dots",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_comas": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ",a,b,c,d,e,f,"
+    },
+    "targetingKey": "string_with_comas",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_coma": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ","
+    },
+    "targetingKey": "string_with_only_one_coma",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_comas": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ",,,,,,,"
+    },
+    "targetingKey": "string_with_only_multiple_comas",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_colons": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ":a:b:c:d:e:f:"
+    },
+    "targetingKey": "string_with_colons",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_colon": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ":"
+    },
+    "targetingKey": "string_with_only_one_colon",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_colons": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ":::::::"
+    },
+    "targetingKey": "string_with_only_multiple_colons",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_semicolons": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ";a;b;c;d;e;f;"
+    },
+    "targetingKey": "string_with_semicolons",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_semicolon": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ";"
+    },
+    "targetingKey": "string_with_only_one_semicolon",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_semicolons": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ";;;;;;;"
+    },
+    "targetingKey": "string_with_only_multiple_semicolons",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_slashes": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "/a/b/c/d/e/f/"
+    },
+    "targetingKey": "string_with_slashes",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_slash": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "/"
+    },
+    "targetingKey": "string_with_only_one_slash",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_slashes": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "///////"
+    },
+    "targetingKey": "string_with_only_multiple_slashes",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_dashes": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "-a-b-c-d-e-f-"
+    },
+    "targetingKey": "string_with_dashes",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_dash": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "-"
+    },
+    "targetingKey": "string_with_only_one_dash",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_dashes": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "-------"
+    },
+    "targetingKey": "string_with_only_multiple_dashes",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_underscores": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "_a_b_c_d_e_f_"
+    },
+    "targetingKey": "string_with_underscores",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_underscore": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "_"
+    },
+    "targetingKey": "string_with_only_one_underscore",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_underscores": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "_______"
+    },
+    "targetingKey": "string_with_only_multiple_underscores",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_plus_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "+a+b+c+d+e+f+"
+    },
+    "targetingKey": "string_with_plus_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_plus_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "+"
+    },
+    "targetingKey": "string_with_only_one_plus_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_plus_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "+++++++"
+    },
+    "targetingKey": "string_with_only_multiple_plus_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_equal_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "=a=b=c=d=e=f="
+    },
+    "targetingKey": "string_with_equal_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_equal_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "="
+    },
+    "targetingKey": "string_with_only_one_equal_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_equal_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "======="
+    },
+    "targetingKey": "string_with_only_multiple_equal_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_dollar_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "$a$b$c$d$e$f$"
+    },
+    "targetingKey": "string_with_dollar_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_dollar_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "$"
+    },
+    "targetingKey": "string_with_only_one_dollar_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_dollar_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "$$$$$$$"
+    },
+    "targetingKey": "string_with_only_multiple_dollar_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_at_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "@a@b@c@d@e@f@"
+    },
+    "targetingKey": "string_with_at_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_at_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "@"
+    },
+    "targetingKey": "string_with_only_one_at_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_at_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "@@@@@@@"
+    },
+    "targetingKey": "string_with_only_multiple_at_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_amp_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "&a&b&c&d&e&f&"
+    },
+    "targetingKey": "string_with_amp_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_amp_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "&"
+    },
+    "targetingKey": "string_with_only_one_amp_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_amp_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "&&&&&&&"
+    },
+    "targetingKey": "string_with_only_multiple_amp_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_hash_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "#a#b#c#d#e#f#"
+    },
+    "targetingKey": "string_with_hash_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_hash_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "#"
+    },
+    "targetingKey": "string_with_only_one_hash_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_hash_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "#######"
+    },
+    "targetingKey": "string_with_only_multiple_hash_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_percentage_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "%a%b%c%d%e%f%"
+    },
+    "targetingKey": "string_with_percentage_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_percentage_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "%"
+    },
+    "targetingKey": "string_with_only_one_percentage_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_percentage_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "%%%%%%%"
+    },
+    "targetingKey": "string_with_only_multiple_percentage_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_tilde_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "~a~b~c~d~e~f~"
+    },
+    "targetingKey": "string_with_tilde_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_tilde_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "~"
+    },
+    "targetingKey": "string_with_only_one_tilde_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_tilde_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "~~~~~~~"
+    },
+    "targetingKey": "string_with_only_multiple_tilde_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_asterix_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "*a*b*c*d*e*f*"
+    },
+    "targetingKey": "string_with_asterix_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_asterix_sign": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "*"
+    },
+    "targetingKey": "string_with_only_one_asterix_sign",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_asterix_signs": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "*******"
+    },
+    "targetingKey": "string_with_only_multiple_asterix_signs",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_single_quotes": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "'a'b'c'd'e'f'"
+    },
+    "targetingKey": "string_with_single_quotes",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_single_quote": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "'"
+    },
+    "targetingKey": "string_with_only_one_single_quote",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_single_quotes": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "'''''''"
+    },
+    "targetingKey": "string_with_only_multiple_single_quotes",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_question_marks": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "?a?b?c?d?e?f?"
+    },
+    "targetingKey": "string_with_question_marks",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_question_mark": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "?"
+    },
+    "targetingKey": "string_with_only_one_question_mark",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_question_marks": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "???????"
+    },
+    "targetingKey": "string_with_only_multiple_question_marks",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_exclamation_marks": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "!a!b!c!d!e!f!"
+    },
+    "targetingKey": "string_with_exclamation_marks",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_exclamation_mark": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "!"
+    },
+    "targetingKey": "string_with_only_one_exclamation_mark",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_exclamation_marks": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "!!!!!!!"
+    },
+    "targetingKey": "string_with_only_multiple_exclamation_marks",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_opening_parentheses": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "(a(b(c(d(e(f("
+    },
+    "targetingKey": "string_with_opening_parentheses",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_opening_parenthese": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "("
+    },
+    "targetingKey": "string_with_only_one_opening_parenthese",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_opening_parentheses": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": "((((((("
+    },
+    "targetingKey": "string_with_only_multiple_opening_parentheses",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_closing_parentheses": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ")a)b)c)d)e)f)"
+    },
+    "targetingKey": "string_with_closing_parentheses",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_one_closing_parenthese": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ")"
+    },
+    "targetingKey": "string_with_only_one_closing_parenthese",
+    "variationType": "STRING"
+  },
+  {
+    "attributes": {
+      "string_with_only_multiple_closing_parentheses": true
+    },
+    "defaultValue": "default_value",
+    "flag": "string_flag_with_special_characters",
+    "result": {
+      "reason": "TARGETING_MATCH",
+      "value": ")))))))"
+    },
+    "targetingKey": "string_with_only_multiple_closing_parentheses",
+    "variationType": "STRING"
+  }
+]
