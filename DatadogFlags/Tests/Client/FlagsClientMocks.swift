@@ -145,6 +145,8 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     var flagsData: FlagsData?
     let state: FlagsStateObservable = NOPStateObservable.notReady
     var setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
+    private var telemetry = SubjectTelemetryPolicy()
+    var flushCallsCount = 0
 
     var context: FlagsEvaluationContext? {
         flagsData?.context
@@ -164,19 +166,22 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        telemetry.begin(context, installed: flagsData?.context)
         setEvaluationContextStub?(context, completion)
-    }
-
-    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot? {
-        guard let data = flagsData else {
-            return nil
-        }
-        return .init(context: data.context, assignment: flagAssignment(for: key), observeFullEvaluationData: data.observeFullEvaluationData)
     }
 
     func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
         var cached = flagsData.map { FlagsRepository.CachedFlagsData(data: $0) }
         return cached?.flagAssignment(for: key)
+    }
+
+    func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot {
+        FlagEvaluationSnapshot(
+            context: flagsData?.context,
+            assignment: flagAssignment(for: key),
+            telemetryOptedOut: telemetry.isOptedOut(evaluating: flagsData?.context),
+            observeFullEvaluationData: flagsData?.observeFullEvaluationData ?? false
+        )
     }
 
     func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
@@ -192,6 +197,10 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
 
     func reset() {
         flagsData = nil
+    }
+
+    func flush() {
+        flushCallsCount += 1
     }
 }
 

@@ -40,10 +40,3 @@ internal struct FlagsData: Equatable, Codable {
         )
     }
 }
-
-/// One read of the configuration used by an evaluation, including missing-flag results.
-internal struct FlagEvaluationSnapshot {
-    let context: FlagsEvaluationContext
-    let assignment: FlagAssignment?
-    let observeFullEvaluationData: Bool
-}
