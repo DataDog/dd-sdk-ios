@@ -168,9 +168,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         if command is RUMStopSessionCommand {
             applicationState.wasAnySessionStopped = true
-            // Record the stop now: a stopped session with pending resources is kept until they complete,
-            // and a session started meanwhile must still know that tracking was stopped.
-            applicationState.wasPreviousSessionStopped = true
         }
 
         // Resolve once before a retained owner can finish during session broadcast.

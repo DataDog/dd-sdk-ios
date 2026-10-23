@@ -1180,8 +1180,14 @@ public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public var sessionState: RUMSessionState?
     public var view: RUMViewEvent?
     public var globalAttributes: [String: Encodable] = [:]
+    /// How many times `sessionDidStop()` was called.
+    public var sessionStopCount = 0
 
     public init() {}
+
+    public func sessionDidStop() {
+        sessionStopCount += 1
+    }
 }
 
 /// A `MonotonicClock` that reads elapsed time from a `DateProvider`, so a test that already simulates

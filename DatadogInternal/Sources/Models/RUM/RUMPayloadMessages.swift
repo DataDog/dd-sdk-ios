@@ -10,6 +10,9 @@ import Foundation
 public enum RUMPayloadMessages {
     /// Message to send when RUM view is reset.
     public static let viewReset = "rum-view-reset"
+    /// Message to send when the RUM session is stopped with `stopSession()`. It resets the RUM view, and a crash with no
+    /// RUM view is not reported until a new view is tracked.
+    public static let sessionStop = "rum-session-stop"
 }
 
 /// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
@@ -28,10 +31,6 @@ public struct RUMSessionState: Codable, Equatable {
     /// If the timeseries collector has collected data for this session. Starts `false` and is refreshed by the session
     /// once the first sample is collected, so a crash reported in the next process can still tell.
     public let hasTimeseries: Bool
-    /// If tracking was stopped with `stopSession()` and has not resumed with a view since. It is set on the stopped session
-    /// and carried to a session started after it, until that session tracks a view. A crash reported in the next process
-    /// is dropped while it is `true`, like the events dropped during the same period.
-    public let wasStopped: Bool
 
     /// Creates a RUM Session State
     /// - Parameters:
@@ -41,15 +40,13 @@ public struct RUMSessionState: Codable, Equatable {
     ///   - hasTrackedAnyView: If this session has ever tracked any view (used to reason about "application launch" events).
     ///   - didStartWithReplay: If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
     ///   - hasTimeseries: If the timeseries collector has collected data for this session.
-    ///   - wasStopped: If tracking was stopped with `stopSession()` and has not resumed with a view since.
     public init(
         sessionUUID: UUID,
         isSampled: Bool,
         isInitialSession: Bool,
         hasTrackedAnyView: Bool,
         didStartWithReplay: Bool?,
-        hasTimeseries: Bool = false,
-        wasStopped: Bool = false
+        hasTimeseries: Bool = false
     ) {
         self.sessionUUID = sessionUUID
         self.isSampled = isSampled
@@ -57,7 +54,6 @@ public struct RUMSessionState: Codable, Equatable {
         self.hasTrackedAnyView = hasTrackedAnyView
         self.didStartWithReplay = didStartWithReplay
         self.hasTimeseries = hasTimeseries
-        self.wasStopped = wasStopped
     }
 
     public init(from decoder: Decoder) throws {
@@ -71,7 +67,6 @@ public struct RUMSessionState: Codable, Equatable {
         // indicated a rejected (non-sampled) session in the previous encoding.
         isSampled = try container.decodeIfPresent(Bool.self, forKey: .isSampled) ?? (sessionUUID != UUID.dd.nullUUID)
         hasTimeseries = try container.decodeIfPresent(Bool.self, forKey: .hasTimeseries) ?? false
-        wasStopped = try container.decodeIfPresent(Bool.self, forKey: .wasStopped) ?? false
     }
 }
 

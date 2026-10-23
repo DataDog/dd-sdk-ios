@@ -10,48 +10,6 @@ import TestUtilities
 @testable import DatadogRUM
 
 class RUMOffViewEventsHandlingRuleTests: XCTestCase {
-    func testWhenSessionWasStopped_itDoesNotHandleOffViewEvents() {
-        let stoppedSession: RUMSessionState = .mockWith(
-            isSampled: true,
-            isInitialSession: .mockRandom(),
-            hasTrackedAnyView: .mockRandom(),
-            wasStopped: true
-        )
-
-        for isAppInForeground in [true, false] {
-            for isBETEnabled in [true, false] {
-                let rule = RUMOffViewEventsHandlingRule(
-                    applicationState: nil,
-                    sessionState: stoppedSession,
-                    isAppInForeground: isAppInForeground,
-                    isBETEnabled: isBETEnabled,
-                    command: nil
-                )
-                XCTAssertEqual(
-                    rule,
-                    .doNotHandle,
-                    "foreground: \(isAppInForeground), BET: \(isBETEnabled)"
-                )
-            }
-        }
-    }
-
-    func testWhenSessionWasStopped_liveEventsKeepUsingApplicationState() {
-        let resumedAfterStop: RUMSessionState = .mockWith(isSampled: true, isInitialSession: false, hasTrackedAnyView: true, wasStopped: true)
-
-        // A user action may still start a view after the stop, as before:
-        XCTAssertEqual(
-            RUMOffViewEventsHandlingRule(
-                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 1, wasPreviousSessionStopped: true),
-                sessionState: resumedAfterStop,
-                isAppInForeground: false,
-                isBETEnabled: true,
-                command: RUMCommandMock(canStartBackgroundViewAfterSessionStop: true)
-            ),
-            .handleInBackgroundView
-        )
-    }
-
     func testOffViewHandlingRules() {
         struct Case {
             let description: String

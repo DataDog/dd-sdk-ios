@@ -29,8 +29,7 @@ extension RUMSessionState: AnyMockable, RandomMockable {
         isInitialSession: Bool = .mockAny(),
         hasTrackedAnyView: Bool = .mockAny(),
         didStartWithReplay: Bool? = .mockAny(),
-        hasTimeseries: Bool = false,
-        wasStopped: Bool = false
+        hasTimeseries: Bool = false
     ) -> RUMSessionState {
         return RUMSessionState(
             sessionUUID: sessionUUID,
@@ -38,8 +37,7 @@ extension RUMSessionState: AnyMockable, RandomMockable {
             isInitialSession: isInitialSession,
             hasTrackedAnyView: hasTrackedAnyView,
             didStartWithReplay: didStartWithReplay,
-            hasTimeseries: hasTimeseries,
-            wasStopped: wasStopped
+            hasTimeseries: hasTimeseries
         )
     }
 }

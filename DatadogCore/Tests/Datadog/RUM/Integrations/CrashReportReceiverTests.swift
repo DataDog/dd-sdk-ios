@@ -356,82 +356,6 @@ class CrashReportReceiverTests: XCTestCase {
         )
     }
 
-    func testGivenCrashBeforeViewResetReachesContext_whenSessionWasStopped_itIsDropped() throws {
-        // Given
-        let currentDate: Date = .mockDecember15th2019At10AMUTC()
-        let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
-        let sessionUUID: UUID = .mockRandom()
-        let stoppedRUMSessionState: RUMSessionState = .mockWith(sessionUUID: sessionUUID, isSampled: true, hasTrackedAnyView: true, wasStopped: true)
-
-        let crashContext: CrashContext = .mockWith(
-            trackingConsent: .granted,
-            lastRUMViewEvent: .mockRandomWith(sessionID: sessionUUID, crashCount: 0), // the view reset has not arrived yet
-            lastRUMSessionState: stoppedRUMSessionState,
-            lastIsAppInForeground: .mockRandom()
-        )
-        let receiver: CrashReportReceiver = .mockWith(featureScope: featureScope, dateProvider: RelativeDateProvider(using: currentDate))
-
-        // When
-        _ = receiver.receive(message: .payload(Crash(report: .mockWith(date: crashDate), context: crashContext)), from: NOPDatadogCore())
-
-        // Then
-        XCTAssertTrue(featureScope.eventsWritten.isEmpty, "A crash after `stopSession()` must not be attributed to the stopped session")
-    }
-
-    func testGivenCrashInViewOfAnotherSession_whenSessionStateIsStopped_itIsStillReported() throws {
-        // Given
-        let currentDate: Date = .mockDecember15th2019At10AMUTC()
-        let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
-        let stoppedRUMSessionState: RUMSessionState = .mockWith(sessionUUID: .mockRandom(), isSampled: true, hasTrackedAnyView: true, wasStopped: true)
-
-        let crashContext: CrashContext = .mockWith(
-            trackingConsent: .granted,
-            lastRUMViewEvent: .mockRandomWith(sessionID: .mockRandom(), crashCount: 0),
-            lastRUMSessionState: stoppedRUMSessionState,
-            lastIsAppInForeground: .mockRandom()
-        )
-        let receiver: CrashReportReceiver = .mockWith(featureScope: featureScope, dateProvider: RelativeDateProvider(using: currentDate))
-
-        // When
-        XCTAssertTrue(receiver.receive(message: .payload(Crash(report: .mockWith(date: crashDate), context: crashContext)), from: NOPDatadogCore()))
-
-        // Then
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty, "Only the stopped session's own view is skipped")
-    }
-
-    func testGivenCrashAfterSessionWasStopped_whenSending_itIsDropped() throws {
-        // Given
-        let currentDate: Date = .mockDecember15th2019At10AMUTC()
-        let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
-        let stoppedRUMSessionState: RUMSessionState = .mockWith(
-            sessionUUID: .mockRandom(),
-            isSampled: true,
-            isInitialSession: .mockRandom(),
-            hasTrackedAnyView: .mockRandom(),
-            wasStopped: true
-        )
-
-        let crashReport: DDCrashReport = .mockWith(date: crashDate)
-        let crashContext: CrashContext = .mockWith(
-            trackingConsent: .granted,
-            lastRUMViewEvent: nil, // the stop ended the active view
-            lastRUMSessionState: stoppedRUMSessionState,
-            lastIsAppInForeground: .mockRandom()
-        )
-
-        let receiver: CrashReportReceiver = .mockWith(
-            featureScope: featureScope,
-            dateProvider: RelativeDateProvider(using: currentDate),
-            trackBackgroundEvents: .mockRandom()
-        )
-
-        // When
-        _ = receiver.receive(message: .payload(Crash(report: crashReport, context: crashContext)), from: NOPDatadogCore())
-
-        // Then
-        XCTAssertTrue(featureScope.eventsWritten.isEmpty, "A crash after `stopSession()` must not be attributed to the stopped session")
-    }
-
     #if os(macOS)
     func testOnMacOS_givenCrashAfterLastViewClosed_whenSending_itSendsCrashInNoActiveView() throws {
         // Given
@@ -469,6 +393,31 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(view.view.url, "com/datadog/no-active-view/view")
     }
     #endif
+
+    func testGivenCrashAfterSessionWasStopped_whenSending_itIsDroppedAndHandled() throws {
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: nil, // the stop reset the view
+            lastRUMSessionState: Bool.random() ? .mockWith(isSampled: true, hasTrackedAnyView: .mockRandom()) : nil,
+            lastIsAppInForeground: .mockRandom(),
+            isRUMSessionStopped: true
+        )
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            trackBackgroundEvents: .mockRandom()
+        )
+
+        // When
+        let handled = receiver.receive(message: .payload(Crash(report: .mockWith(date: crashDate), context: crashContext)), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(handled, "The crash is handled by dropping it, so no fallback must run")
+        XCTAssertTrue(featureScope.eventsWritten.isEmpty, "A crash after `stopSession()` must not be reported until a view resumes tracking")
+    }
 
     func testGivenCrashDuringBackgroundRUMSessionWithNoActiveView_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
         // Given
