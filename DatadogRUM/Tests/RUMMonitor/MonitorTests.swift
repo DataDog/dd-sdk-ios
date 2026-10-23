@@ -414,51 +414,44 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(collector.isPreviousSessionExpiredOnActivity, false)
     }
 
-    // MARK: - hasReplay snapshot
+    // MARK: - hasReplay state
 
-    func testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession() throws {
+    func testHasReplayState_isReportedPerSessionFromTheCommandContext() throws {
         let dateProvider = DateProviderMock()
         featureScope = FeatureScopeMock(
             context: .mockWith(additionalContext: [SessionReplayCoreContext.HasReplay(value: true)])
         )
-
-        // Given — no timeseries collector configured
-        let monitorWithoutCollector = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
-            dateProvider: dateProvider
-        )
-
-        // When
-        monitorWithoutCollector.startView(key: "foo")
-
-        // Then — the snapshot is never updated
-        XCTAssertNil((monitorWithoutCollector as RUMActiveContextReader).hasReplay)
-
-        // Given — a timeseries collector configured
+        let replayState = HasReplayMessageReceiver()
         let collector = TimeseriesCollectorStub()
+        collector.replayState = replayState
         let monitor = Monitor(
             dependencies: .mockWith(
                 featureScope: featureScope,
                 monotonicClock: DateProviderMonotonicClock(dateProvider: dateProvider),
                 timeseriesCollector: collector
             ),
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            replayState: replayState
         )
-        let activeContextReader: RUMActiveContextReader = monitor
-        collector.activeContextReader = activeContextReader
 
+        // When
         monitor.startView(key: "foo")
-        XCTAssertEqual(activeContextReader.hasReplay, true)
+        let firstID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+
+        // Then
+        XCTAssertEqual(replayState.hasReplay(sessionID: firstID), true)
 
         // When — the session expires (starting a new one within a single `process(command:)` call) while
         // the context still carries the previous session's (now stale) `hasReplay` value
         dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1) // exceeds session max duration
         monitor.startView(key: "bar")
+        let secondID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
 
         // Then — the stale value is not carried over into the new session
-        XCTAssertNil(activeContextReader.hasReplay)
+        XCTAssertNotEqual(secondID, firstID)
+        XCTAssertNil(replayState.hasReplay(sessionID: secondID))
 
-        // When — the session ends while the snapshot (`nil`) lags behind the command's context (`true`)
+        // When — the session ends while its recorded replay state (`nil`) lags behind the command's context (`true`)
         dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
         monitor.startView(key: "baz")
 
@@ -469,13 +462,14 @@ class MonitorTests: XCTestCase {
 
 private class TimeseriesCollectorStub: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
+    var replayState: HasReplayMessageReceiver?
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
     func pause(sessionID: String) {}
     func resume(sessionID: String) {}
     var hasReplayWhenStopped: Bool?
 
     func stop(sessionID: String) {
-        hasReplayWhenStopped = activeContextReader?.hasReplay
+        hasReplayWhenStopped = replayState?.hasReplay(sessionID: sessionID)
     }
     var activitySessionIDs: [String] = []
     var isPreviousSessionExpiredOnActivity: Bool?

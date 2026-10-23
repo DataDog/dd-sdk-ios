@@ -58,6 +58,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
     /// `Monitor`'s conformance is safe to read from any thread.
     weak var activeContextReader: RUMActiveContextReader?
+    private let replayState: HasReplayMessageReceiver?
 
     private var memoryBuffer: [MemorySample] = []
     private var cpuBuffer: [CPUSample] = []
@@ -75,8 +76,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// The date of the most recently emitted sample, used as a floor when re-anchoring in `resume()`.
     private var lastSampleDate: Date?
     /// Whether replay was reported active at any point during the session, OR-accumulated in `sample()` and
-    /// before `pause()`/`stop()`/`flush()` flush (mirrors `RUMViewScope`). Stays `nil` until observed, so
-    /// sessions without Session Replay omit the field.
+    /// before each flush (mirrors `RUMViewScope`). Stays `nil` until observed, so sessions without Session
+    /// Replay omit the field.
     private var hasReplay: Bool? = nil
     /// IDs of the last `maxRetainedSampledSessions` sampled sessions, so late events from a stopped session still report its data.
     /// Lock-protected because RUM scopes read it from their own thread through `hasCollectedData(sessionID:)`.
@@ -99,8 +100,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         syntheticsTest: RUMSyntheticsTest? = nil,
         sessionSampleRate: Double = 100,
         now: @escaping () -> Date = Date.init,
-        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
+        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider(),
+        replayState: HasReplayMessageReceiver? = nil
     ) {
+        self.replayState = replayState
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
         self.collectTypes = collectTypes
@@ -193,7 +196,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// No-ops if `sessionID` no longer matches the currently active session (e.g. a call left over from a
     /// session that has since ended and been replaced — see `RUMSessionScope.Constants` for expiry rules).
     func pause(sessionID: String) {
-        let hasContextReplay = activeContextReader?.hasReplay
         queue.async { [weak self] in
             guard let self = self, self.sessionID == sessionID else {
                 return
@@ -204,9 +206,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.timer?.cancel()
             self.timer = nil
             self.isPaused = true
-            if !self.memoryBuffer.isEmpty || !self.cpuBuffer.isEmpty {
-                self.refreshHasReplay(hasContextReplay)
-            }
             self.flushMemory()
             self.flushCPU()
         }
@@ -233,7 +232,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Stops sampling and flushes any remaining buffered data points.
     /// No-ops if `sessionID` no longer matches the currently active session.
     func stop(sessionID: String) {
-        let hasContextReplay = activeContextReader?.hasReplay
         queue.async { [weak self] in
             guard let self = self, self.sessionID == sessionID else {
                 return
@@ -241,9 +239,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.timer?.cancel()
             self.timer = nil
             self.isPaused = false
-            if !self.memoryBuffer.isEmpty || !self.cpuBuffer.isEmpty {
-                self.refreshHasReplay(hasContextReplay)
-            }
             self.flushMemory()
             self.flushCPU()
             self.sessionID = ""
@@ -252,11 +247,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
     /// Synchronously flushes any buffered samples without stopping or pausing sampling. **Blocks the caller thread.**
     func flush() {
-        let hasContextReplay = activeContextReader?.hasReplay
         queue.sync {
-            if !memoryBuffer.isEmpty || !cpuBuffer.isEmpty {
-                refreshHasReplay(hasContextReplay)
-            }
             flushMemory()
             flushCPU()
         }
@@ -303,7 +294,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
         lastSampleDate = currentDate
 
-        refreshHasReplay(activeContextReader?.hasReplay)
+        refreshHasReplay()
 
         // Self-enforce `RUMSessionScope`'s lifetime rules in case this session expired with no RUM
         // command arriving to call `stop(sessionID:)`. Session lifetime is measured on `Monitor`'s own
@@ -344,8 +335,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         sampledSessionIDs = Array((sampledSessionIDs + [sessionID]).suffix(Self.maxRetainedSampledSessions))
     }
 
-    private func refreshHasReplay(_ hasContextReplay: Bool?) {
-        if let hasContextReplay = hasContextReplay {
+    private func refreshHasReplay() {
+        if let hasContextReplay = replayState?.hasReplay(sessionID: sessionID) {
             hasReplay = (hasReplay ?? false) || hasContextReplay
         }
     }
@@ -354,6 +345,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         guard !memoryBuffer.isEmpty else {
             return
         }
+        refreshHasReplay()
         let batch = memoryBuffer
         memoryBuffer = []
         let sessionID = self.sessionID
@@ -414,6 +406,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         guard !cpuBuffer.isEmpty else {
             return
         }
+        refreshHasReplay()
         let batch = cpuBuffer
         cpuBuffer = []
         let sessionID = self.sessionID

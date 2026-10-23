@@ -101,12 +101,9 @@ internal enum RUMInternalErrorSource: String, Decodable {
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
 /// Exposes monitor state for readers that operate outside the `RUMCommand` pipeline
-/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to the
-/// replay state or `RUMSessionScope`'s own session lifetime rules.
+/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to
+/// `RUMSessionScope`'s own session lifetime rules.
 internal protocol RUMActiveContextReader: AnyObject {
-    /// The most recently observed `DatadogContext.hasReplay` value, or `nil` if no command has been
-    /// processed yet. Conformers must guarantee this is safe to read from any thread.
-    var hasReplay: Bool? { get }
     /// Whether the session identified by `sessionID` has expired (exceeded its max duration or inactivity
     /// timeout) as of now, evaluated against a live, single source of truth instead of a shadow copy of
     /// that state. Session lifetime is measured on a monotonic clock owned by the conformer, so there is no
@@ -131,24 +128,17 @@ internal class Monitor: RUMCommandSubscriber {
     @ReadWriteLock
     private var sessionActivitySnapshot: (sessionID: String?, sessionStart: TimeInterval?, lastInteraction: TimeInterval?) = (nil, nil, nil)
 
-    @ReadWriteLock
-    private var hasReplaySnapshot: Bool? = nil
-
-    /// Updates the replay state snapshot exposed through `RUMActiveContextReader`. Called both from
-    /// `process(command:)` and from `HasReplayMessageReceiver`, since Session Replay toggles `hasReplay`
-    /// through the core context bus, not through a `RUMCommand`.
-    func update(hasReplay: Bool?) {
-        hasReplaySnapshot = hasReplay
-    }
-
+    private let replayState: HasReplayMessageReceiver?
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
 
     init(
         dependencies: RUMScopeDependencies,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        replayState: HasReplayMessageReceiver? = nil
     ) {
+        self.replayState = replayState
         self.featureScope = dependencies.featureScope
         self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
@@ -172,20 +162,15 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
             let previousSessionID = self.sessionActivitySnapshot.sessionID
 
-            if self.applicationScope.dependencies.timeseriesCollector != nil {
-                self.update(hasReplay: context.hasReplay)
+            if let previousSessionID = previousSessionID {
+                self.replayState?.update(sessionID: previousSessionID, hasReplay: context.hasReplay)
             }
 
             _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
 
-            if self.applicationScope.dependencies.timeseriesCollector != nil {
-                let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat
-                // If a session boundary was just crossed, `context.hasReplay` still reflects the previous
-                // session's Session Replay decision (SR hasn't recomputed it for the new session yet), so
-                // carrying it over would leak stale replay state into the new session.
-                if previousSessionID != nil && currentSessionID != previousSessionID {
-                    self.update(hasReplay: nil)
-                }
+            if let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat,
+               currentSessionID != previousSessionID {
+                self.replayState?.update(sessionID: currentSessionID, hasReplay: context.hasReplay)
             }
 
             if let debugging = self.debugging {
@@ -260,8 +245,6 @@ internal class Monitor: RUMCommandSubscriber {
 }
 
 extension Monitor: RUMActiveContextReader {
-    var hasReplay: Bool? { hasReplaySnapshot }
-
     func isSessionExpired(sessionID: String) -> Bool {
         let activity = sessionActivitySnapshot
         guard activity.sessionID == sessionID,
