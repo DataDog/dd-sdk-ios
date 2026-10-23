@@ -1,11 +1,13 @@
 # Unreleased
 
 - [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
+- [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3322][]
+- [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3322][]
+- [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
 - [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
-- [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3322][]
-- [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3322][]
+- [IMPROVEMENT] Reduce image resource sizes with WebP encoding and speed up image hashing in Session Replay's experimental composition tree recorder. See [#3336][]
 
 # 3.20.0 / 19-10-2026
 
@@ -1310,7 +1312,9 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
+[#3330]: https://github.com/DataDog/dd-sdk-ios/pull/3330
 [#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
+[#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3322]: https://github.com/DataDog/dd-sdk-ios/pull/3322
 

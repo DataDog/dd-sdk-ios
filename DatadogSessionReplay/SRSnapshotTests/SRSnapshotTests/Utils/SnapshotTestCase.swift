@@ -144,7 +144,8 @@ internal class SnapshotTestCase: XCTestCase {
             resourcesWriter: ResourcesWriter(
                 scope: resourcesScope,
                 availabilityStore: ResourceAvailabilityStore(scope: resourcesScope)
-            )
+            ),
+            telemetry: NOPTelemetry()
         )
 
         let snapshotProcessor = SnapshotProcessor(
