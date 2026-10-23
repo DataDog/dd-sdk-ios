@@ -138,6 +138,7 @@ private struct PendingCacheReadCallback {
 internal final class FlagsRepository {
     let clientName: String
     private let stateManager = FlagsStateManager()
+    private let requestDiagnostics = FlagsRequestDiagnostics()
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
@@ -535,6 +536,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        let diagnostics = requestDiagnostics.accept()
         var contextUpdateID: UInt64 = 0
         var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false
@@ -587,7 +589,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             }
         }
 
-        flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+        flagAssignmentsFetcher.flagAssignments(for: context, diagnostics: diagnostics) { [weak self] result in
             guard let self else {
                 complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
                 return
