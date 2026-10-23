@@ -360,7 +360,9 @@ final class FlagsClientTests: XCTestCase {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             let client = FlagsClient.create(configuration: .init(experimentationOptOutMode: mode), name: "\(mode)", in: core)
             client.setEvaluationContext(invalid) { result in
-                guard case .failure(.invalidContext) = result else { return XCTFail("Configuration must forward the mode") }
+                guard case .failure(.invalidContext) = result else {
+                    return XCTFail("Configuration must forward the mode")
+                }
             }
             XCTAssertEqual(client.getDetails(key: "flag", defaultValue: false).error, .invalidContext)
         }

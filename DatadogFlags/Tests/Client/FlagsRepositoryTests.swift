@@ -109,7 +109,9 @@ final class FlagsRepositoryTests: XCTestCase {
             scope.dataStore.flush()
             let persisted = try XCTUnwrap(scope.dataStoreMock.value(forKey: "retained")?.data())
             repository.setEvaluationContext(.init(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .null])) { result in
-                guard case .failure(.invalidContext) = result else { return XCTFail("Expected invalid context") }
+                guard case .failure(.invalidContext) = result else {
+                    return XCTFail("Expected invalid context")
+                }
             }
             XCTAssertNil(repository.evaluationSnapshot(for: "flag").assignment)
             repository.flush()
@@ -138,13 +140,15 @@ final class FlagsRepositoryTests: XCTestCase {
             let repository = FlagsRepository(
                 clientName: UUID().uuidString,
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { context, complete in
-                    complete(.success(.init(flags: ["flag": .init(
-                        allocationKey: context.targetingKey,
-                        variationKey: context.targetingKey,
-                        variation: .string(context.targetingKey),
-                        reason: "TARGETING_MATCH",
-                        doLog: false
-                    )])))
+                    complete(.success(.init(flags: [
+                        "flag": .init(
+                            allocationKey: context.targetingKey,
+                            variationKey: context.targetingKey,
+                            variation: .string(context.targetingKey),
+                            reason: "TARGETING_MATCH",
+                            doLog: false
+                        )
+                    ])))
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(),

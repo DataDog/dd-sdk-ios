@@ -236,7 +236,9 @@ final class FlagsEvaluationLocalIntakeTests: XCTestCase {
 
                 attributes["dd_experimentation_opt_out_at"] = .bool(true)
                 client.setEvaluationContext(.init(targetingKey: "subject", attributes: attributes)) { result in
-                    guard case .failure(.invalidContext) = result else { return XCTFail("Expected invalid context") }
+                    guard case .failure(.invalidContext) = result else {
+                        return XCTFail("Expected invalid context")
+                    }
                 }
                 XCTAssertEqual(client.getBooleanDetails(key: "local-flag", defaultValue: true).error, .invalidContext)
                 Datadog.internalFlushAndDeinitialize(instanceName: instanceName)
