@@ -30,6 +30,14 @@ extension ProfilingHandler {
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil
     ) {
+        dd_pprof_set_server_time_offset_ns(profile, currentServerTimeOffset.dd.toInt64Nanoseconds)
+        let lastSample = dd_pprof_get_end_timestamp_s(profile)
+
+        // A cycle flushed on resume after the app was suspended mid-cycle
+        // would otherwise attach events not covered by any of its samples.
+        let hangs = hangs?.filter { $0.couldBeSampled(byProfileEndingAt: lastSample) }
+        let longTasks = longTasks?.filter { $0.couldBeSampled(byProfileEndingAt: lastSample) }
+
         var attributes = self.attributes
 
         if rumVitals.isEmpty == false {
@@ -63,9 +71,6 @@ extension ProfilingHandler {
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue]
     ) {
-        let timeOffsetInNanoseconds = currentServerTimeOffset.dd.toInt64Nanoseconds
-        dd_pprof_set_server_time_offset_ns(profile, timeOffsetInNanoseconds)
-
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
@@ -127,6 +132,15 @@ extension ProfilingHandler {
 
     private func tag(_ key: String, _ value: String) -> String {
         "\(key):\(value)"
+    }
+}
+
+private extension DurationEvent {
+    /// Whether this event starts at or before `profileEnd`, expressed in epoch seconds.
+    ///
+    /// Only the upper bound is checked because an event may start before the profile's first sample.
+    func couldBeSampled(byProfileEndingAt profileEnd: TimeInterval) -> Bool {
+        start <= profileEnd.dd.toInt64Nanoseconds
     }
 }
 

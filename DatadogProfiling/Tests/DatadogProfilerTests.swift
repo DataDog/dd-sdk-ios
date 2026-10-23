@@ -928,7 +928,7 @@ extension DatadogProfilerTests {
         optimisticTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), optimisticTrace, 1)
         dd_free(optimisticTrace)
@@ -1177,7 +1177,7 @@ extension DatadogProfilerTests {
         partialTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), partialTrace, 1)
         dd_free(partialTrace)
@@ -1215,7 +1215,7 @@ extension DatadogProfilerTests {
         launchTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), launchTrace, 1)
         dd_free(launchTrace)
@@ -1271,7 +1271,7 @@ extension DatadogProfilerTests {
         launchTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), launchTrace, 1)
         dd_free(launchTrace)
@@ -3172,7 +3172,7 @@ private extension DatadogProfilerTests {
         trace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(profile, trace, 1)
         dd_free(trace)
