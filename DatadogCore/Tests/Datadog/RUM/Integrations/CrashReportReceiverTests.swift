@@ -432,6 +432,44 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.isEmpty, "A crash after `stopSession()` must not be attributed to the stopped session")
     }
 
+    #if os(macOS)
+    func testOnMacOS_givenCrashAfterLastViewClosed_whenSending_itSendsCrashInNoActiveView() throws {
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
+        let sessionState: RUMSessionState = .mockWith(
+            sessionUUID: .mockRandom(),
+            isSampled: true,
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: true
+        )
+
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: nil, // the last window closed, so no view was active
+            lastRUMSessionState: sessionState,
+            lastIsAppInForeground: true // macOS apps are always in the foreground
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            trackBackgroundEvents: false // BET disabled
+        )
+
+        // When
+        XCTAssertTrue(receiver.receive(message: .payload(Crash(report: crashReport, context: crashContext)), from: NOPDatadogCore()))
+
+        // Then
+        let error = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        let view = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(error.session.id, sessionState.sessionUUID.uuidString.lowercased())
+        XCTAssertEqual(view.view.name, "NoActiveView")
+        XCTAssertEqual(view.view.url, "com/datadog/no-active-view/view")
+    }
+    #endif
+
     func testGivenCrashDuringBackgroundRUMSessionWithNoActiveView_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
