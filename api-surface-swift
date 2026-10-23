@@ -1576,12 +1576,18 @@ public struct SessionReplayPrivacyView<Content: View>: View
 # ----------------------------------
 
 public final class FlagsClient
+    public enum ExperimentationOptOutMode
+        case disabled
+        case immediate
+        case futureExperimentsOnly
     public struct Configuration
+        public var experimentationOptOutMode: ExperimentationOptOutMode
         public var enableEvaluationTelemetryOptOutParameter: Bool
-        public init(enableEvaluationTelemetryOptOutParameter: Bool = false)
+        public init(enableEvaluationTelemetryOptOutParameter: Bool = false,experimentationOptOutMode: ExperimentationOptOutMode = .disabled)
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func create(configuration: Configuration,name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
+    public static func create(experimentationOptOutMode: ExperimentationOptOutMode,name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
 [?] extension FlagsClient: FlagsClientProtocol
     public var state: FlagsStateObservable
@@ -1679,6 +1685,7 @@ public enum FlagEvaluationError: Error
     case providerNotReady
     case flagNotFound
     case typeMismatch
+    case invalidContext
 public struct FlagDetails<T>: Equatable where T: Equatable
     public var key: String
     public var value: T
@@ -1701,6 +1708,7 @@ public enum FlagsError: Error
     case invalidResponse
     case clientNotInitialized
     case invalidConfiguration
+    case invalidContext
     case initializationTimedOut
 public struct FlagsEvaluationContext: Equatable, Codable
     public let targetingKey: String

@@ -1,5 +1,8 @@
 # Unreleased
 
+- [FEATURE] Flags: Add per-subject experimentation opt-out through `FlagsClient.Configuration.experimentationOptOutMode` and `FlagsClient.create(configuration:name:in:)`. The `dd_experimentation_opt_out_at` context attribute supports `.immediate` and `.futureExperimentsOnly` modes. Adds `FlagsError.invalidContext` and `FlagEvaluationError.invalidContext`; exhaustive switches need the new case. See [#3338][]
+- [FIX] Use consistent Gregorian timestamp validation and UTC year bounds for Flags experimentation opt-out and acknowledgements.
+- [FIX] Reject experimentation-filtered Flags responses when no subject opt-out applies.
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
@@ -1350,3 +1353,5 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@thedavidharris]: https://github.com/thedavidharris
 [@noremac]: https://github.com/noremac
 [@saladdays831]: https://github.com/saladdays831
+
+[#3338]: https://github.com/DataDog/dd-sdk-ios/pull/3338

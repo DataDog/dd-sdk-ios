@@ -36,8 +36,24 @@ import DatadogInternal
 /// let themeColor = client.getStringValue(key: "theme-color", defaultValue: "blue")
 /// ```
 public final class FlagsClient {
+    /// Controls whether the client honors each subject's experimentation opt-out timestamp.
+    public enum ExperimentationOptOutMode {
+        /// Ignore the `dd_experimentation_opt_out_at` context attribute.
+        case disabled
+        /// Exclude subjects with a valid RFC3339 timestamp from experiment allocations immediately.
+        /// This includes future timestamps. Ordinary feature allocations remain available.
+        case immediate
+        /// Exclude allocations activated at or after the subject's opt-out timestamp.
+        /// Allocations with unknown activation times are excluded. Older allocations remain available.
+        case futureExperimentsOnly
+    }
+
     /// Configuration for an individual Flags client.
     public struct Configuration {
+        /// Controls whether the client honors the subject's experimentation opt-out timestamp.
+        /// The default is `.disabled`. This does not change evaluation telemetry settings.
+        public var experimentationOptOutMode: ExperimentationOptOutMode
+
         /// Enables per-subject opt-out from customer-facing feature flag evaluation reporting.
         ///
         /// This controls flag evaluation reporting, not Datadog SDK internal telemetry.
@@ -54,12 +70,18 @@ public final class FlagsClient {
         public var enableEvaluationTelemetryOptOutParameter: Bool
 
         /// Creates configuration for an individual Flags client.
-        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
+        /// - Parameters:
+        ///   - enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
         ///   not SDK internal telemetry. Suppresses while the initial cached policy is unknown, then requires
         ///   `dd_evaluation_telemetry_opt_out` to be boolean `true`.
         ///   Default: `false`.
-        public init(enableEvaluationTelemetryOptOutParameter: Bool = false) {
+        ///   - experimentationOptOutMode: Whether to honor the subject's opt-out timestamp. Default: `.disabled`.
+        public init(
+            enableEvaluationTelemetryOptOutParameter: Bool = false,
+            experimentationOptOutMode: ExperimentationOptOutMode = .disabled
+        ) {
             self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
+            self.experimentationOptOutMode = experimentationOptOutMode
         }
     }
 
@@ -72,6 +94,7 @@ public final class FlagsClient {
         static let providerNotReady = "PROVIDER_NOT_READY"
         static let flagNotFound = "FLAG_NOT_FOUND"
         static let typeMismatch = "TYPE_MISMATCH"
+        static let invalidContext = "INVALID_CONTEXT"
     }
 
     private let repository: any FlagsRepositoryProtocol
@@ -161,6 +184,22 @@ public final class FlagsClient {
         }
     }
 
+    /// Creates a client with an experimentation opt-out mode.
+    /// Use `Configuration` to set this mode together with other client options.
+    ///
+    /// - Parameters:
+    ///   - experimentationOptOutMode: Whether to honor the subject's opt-out timestamp.
+    ///   - name: A unique client name. Defaults to `defaultName`.
+    ///   - core: The Datadog SDK core instance.
+    @discardableResult
+    public static func create(
+        experimentationOptOutMode: ExperimentationOptOutMode,
+        name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClientProtocol {
+        create(configuration: .init(experimentationOptOutMode: experimentationOptOutMode), name: name, in: core)
+    }
+
     /// Returns an existing `FlagsClient` instance by name.
     ///
     /// Use this method to retrieve a client that was previously created with ``create(name:in:)``.
@@ -221,6 +260,19 @@ public final class FlagsClient {
         }
 
         if let client = feature.clientRegistry.client(named: name) {
+            if let existing = client as? FlagsClient,
+               existing.configuration.experimentationOptOutMode != configuration.experimentationOptOutMode {
+                reportIssue(
+                    """
+                    Attempted to create a `FlagsClient` named '\(name)' with experimentation opt-out mode \
+                    `.\(configuration.experimentationOptOutMode)`, but one already exists with mode \
+                    `.\(existing.configuration.experimentationOptOutMode)`. \
+                    The existing client will be used, and new configuration will be ignored.
+                    """,
+                    in: core
+                )
+                return client
+            }
             reportIssue(
                 """
                 Attempted to create a `FlagsClient` named '\(name)', but one already exists. \
@@ -238,7 +290,8 @@ public final class FlagsClient {
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
-                initializationTimeout: feature.initializationTimeout
+                initializationTimeout: feature.initializationTimeout,
+                experimentationOptOutMode: configuration.experimentationOptOutMode
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
@@ -275,12 +328,23 @@ extension FlagsClient: FlagsClientProtocol {
             doLog: false
         )
 
+        if snapshot.error == .invalidContext {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
+                for: key,
+                assignment: defaultAssignment,
+                evaluationContext: snapshot.requestedContext ?? .empty,
+                flagError: EvaluationError.invalidContext
+            )
+            return FlagDetails(key: key, value: defaultValue, error: .invalidContext)
+        }
+
         guard let context else {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: defaultAssignment,
-                evaluationContext: .empty,
+                evaluationContext: snapshot.requestedContext ?? .empty,
                 flagError: EvaluationError.providerNotReady
             )
             return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)

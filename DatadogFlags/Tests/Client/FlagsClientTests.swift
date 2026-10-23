@@ -349,6 +349,29 @@ final class FlagsClientTests: XCTestCase {
         )
     }
 
+    func testConfigurationForwardsExperimentationModeAndPreservesNamedClient() {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+        XCTAssertEqual(FlagsClient.Configuration().experimentationOptOutMode, .disabled)
+        let invalid = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .bool(true)])
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let client = FlagsClient.create(configuration: .init(experimentationOptOutMode: mode), name: "\(mode)", in: core)
+            client.setEvaluationContext(invalid) { result in
+                guard case .failure(.invalidContext) = result else {
+                    return XCTFail("Configuration must forward the mode")
+                }
+            }
+            XCTAssertEqual(client.getDetails(key: "flag", defaultValue: false).error, .invalidContext)
+        }
+        let original = FlagsClient.create(name: "existing", in: core)
+        let duplicate = FlagsClient.create(configuration: .init(experimentationOptOutMode: .immediate), name: "existing", in: core)
+        XCTAssertIdentical(original, duplicate)
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("mode `.immediate`") && $0.contains("mode `.disabled`") })
+    }
+
     func testCreate() {
         // Given
         let printFunction = PrintFunctionSpy()
