@@ -64,4 +64,22 @@ extension FallbackFlagsClient: FlagsClientInternal {
             """
         )
     }
+
+    func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        DD.logger.error(
+            """
+            Using fallback client to track '\(key)'. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+    }
+
+    func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        DD.logger.error(
+            """
+            Using fallback client to track '\(key)'. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+    }
 }

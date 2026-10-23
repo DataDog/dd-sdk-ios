@@ -120,15 +120,53 @@ final class FallbackFlagsClientTests: XCTestCase {
         )
     }
 
-    func testIndependentTrackingIsNoOp() {
+    func testSendFlagExposure() {
+        // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()
         let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
-        client.sendFlagExposure(key: "flag", assignment: .mockAny(), context: .mockAny())
-        client.sendFlagEvaluationEvent(key: "flag", assignment: .mockAny(), context: .mockAny(), errorCode: nil)
-        client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: .mockAny(), errorCode: "FLAG_NOT_FOUND")
+        // When
+        client.sendFlagExposure(key: .mockAny(), assignment: .mockAny(), context: .mockAny())
 
+        // Then
+        XCTAssertEqual(dd.logger.errorMessages, [
+            """
+            Using fallback client to track '\(String.mockAny())'. \
+            Ensure that a client named 'default' is created before using it.
+            """
+        ])
         XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
         XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+    }
+
+    func testSendFlagEvaluationEvent() {
+        let assignments: [FlagAssignment?] = [.mockAny(), nil]
+        for assignment in assignments {
+            // Given
+            let core = SingleFeatureCoreMock<FlagsFeature>()
+            let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+            let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
+
+            // When
+            client.sendFlagEvaluationEvent(
+                key: .mockAny(),
+                assignment: assignment,
+                context: .mockAny(),
+                errorCode: assignment == nil ? "FLAG_NOT_FOUND" : nil
+            )
+
+            // Then
+            XCTAssertEqual(dd.logger.errorMessages, [
+                """
+                Using fallback client to track '\(String.mockAny())'. \
+                Ensure that a client named 'default' is created before using it.
+                """
+            ])
+            XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+            XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+        }
     }
 }
