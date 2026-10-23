@@ -120,6 +120,74 @@ final class FirstFlagsCallbackTests: XCTestCase {
         }
     }
 
+    func testUnreadableObfuscatedCacheDoesNotConsumeFirstFlags() throws {
+        let metadata = Data(#"{"scheme":"flag-key-sha256-v1","salt":"000102030405060708090a0b0c0d0e0f"}"#.utf8)
+        let obfuscation = try JSONDecoder().decode(FlagKeyObfuscation.self, from: metadata)
+        for diskBeforeContext in [true, false] {
+            let store = FirstFlagsCallbackStore()
+            var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
+            let repository = FlagsRepository(
+                clientName: "test",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(context: .mockWith(source: "react-native"), dataStore: store),
+                initializationTimeout: nil
+            )
+            let context = FlagsEvaluationContext.mockAny()
+            let disk = FlagsData(flags: [obfuscation.lookupKey(for: "disk"): .mockAny()], context: context, date: .mockAny(), obfuscation: obfuscation)
+            let encoded = try JSONEncoder().encode(disk)
+            let delivered = expectation(description: "first readable network flags")
+            _ = repository.onFirstFlags { event in
+                XCTAssertEqual(event.flagsChanged, ["network"])
+                delivered.fulfill()
+            }
+            if diskBeforeContext { store.readCompletion?(.value(encoded, 2)) }
+            repository.setEvaluationContext(context) { _ in }
+            if !diskBeforeContext { store.readCompletion?(.value(encoded, 2)) }
+            XCTAssertNil(repository.flagAssignment(for: "disk"))
+            response?(.success(.init(flags: ["network": .mockAny()])))
+            wait(for: [delivered], timeout: 5)
+            _ = repository.onFirstFlags { XCTAssertEqual($0.flagsChanged, ["network"]) }
+        }
+    }
+
+    func testDeferredCapabilityPublishesOnlyWhenObfuscatedFlagsBecomeReadable() throws {
+        let metadata = Data(#"{"scheme":"flag-key-sha256-v1","salt":"000102030405060708090a0b0c0d0e0f"}"#.utf8)
+        let obfuscation = try JSONDecoder().decode(FlagKeyObfuscation.self, from: metadata)
+        for fromDisk in [true, false] {
+            let scope = FirstFlagsDeferredContextScope()
+            var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
+            let repository = FlagsRepository(
+                clientName: "test",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                initializationTimeout: nil
+            )
+            let key = obfuscation.lookupKey(for: "flag")
+            let premature = expectation(description: "unreadable flags stay silent")
+            premature.isInverted = true
+            let subscription = repository.onFirstFlags { _ in premature.fulfill() }
+            if fromDisk {
+                let disk = FlagsData(flags: [key: .mockAny()], context: .mockAny(), date: .mockAny(), obfuscation: obfuscation)
+                scope.store.readCompletion?(.value(try JSONEncoder().encode(disk), 2))
+            } else {
+                repository.setEvaluationContext(.mockAny()) { _ in }
+                response?(.success(.init(flags: [key: .mockAny()], obfuscation: obfuscation)))
+            }
+            wait(for: [premature], timeout: 0.1)
+            subscription.cancel()
+            let delivered = expectation(description: "capability makes retained flags readable")
+            _ = repository.onFirstFlags { event in
+                XCTAssertEqual(event.flagsChanged, [key])
+                XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+                delivered.fulfill()
+            }
+            scope.completeContext()
+            wait(for: [delivered], timeout: 5)
+        }
+    }
+
     func testDiskDoesNotWaitForAsynchronousNetworkResponse() throws {
         let store = FirstFlagsCallbackStore()
         var response: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
@@ -859,4 +927,21 @@ private final class CompatibilityFlagsClient: FlagsClientProtocol {
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
         FlagDetails(key: key, value: defaultValue)
     }
+}
+
+private final class FirstFlagsDeferredContextScope: FeatureScope, @unchecked Sendable {
+    let store = FirstFlagsCallbackStore()
+    var dataStore: any DataStore { store }
+    let telemetry: any Telemetry = NOPTelemetry()
+    private var contextCallback: ((DatadogContext) -> Void)?
+
+    func context(_ block: @escaping (DatadogContext) -> Void) { contextCallback = block }
+    func completeContext() {
+        contextCallback?(.mockWith(source: "ios"))
+        contextCallback = nil
+    }
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { fallback() }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
+    func set(anonymousId: String?) { }
 }

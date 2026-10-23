@@ -291,9 +291,15 @@ internal final class FlagsRepository {
         self.initializationTimeout = initializationTimeout
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         featureScope.context { [weak self] context in
-            self?._repositoryState.mutate { state in
-                state.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
+            guard let self else {
+                return
             }
+            var publish: (() -> Void)?
+            self._repositoryState.mutate { state in
+                state.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
+                publish = state.readableFlagsData.flatMap { self.firstFlags.reserve(keys: Array($0.flags.keys)) }
+            }
+            Self.publishFirstFlags(publish)
         }
         readState()
     }
@@ -378,7 +384,7 @@ internal final class FlagsRepository {
             var publish: (() -> Void)?
             _repositoryState.mutate { state in
                 callbacks = state.applyInitialFlagsData(cachedData)
-                publish = state.flagsData.flatMap { firstFlags?.reserve(keys: Array($0.flags.keys)) }
+                publish = state.readableFlagsData.flatMap { firstFlags?.reserve(keys: Array($0.flags.keys)) }
             }
 
             // Pending failures report `.clientNotInitialized` if the repository has been released.
@@ -583,7 +589,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             // Apply the same context check whether the initial disk read wins or loses the race.
             if state.flagsDataVersion == 0 {
                 state.flagsData = state.flagsData(matching: context)
-                publish = state.flagsData.flatMap { firstFlags.reserve(keys: Array($0.flags.keys)) }
+                publish = state.readableFlagsData.flatMap { firstFlags.reserve(keys: Array($0.flags.keys)) }
             }
             notifyReconciling = stateManager.updateStateWithoutNotifying(.reconciling)
         }
@@ -657,7 +663,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         return
                     }
                     state.flagsData = flagsData
-                    publish = self.firstFlags.reserve(keys: Array(response.flags.keys))
+                    publish = state.readableFlagsData.flatMap { self.firstFlags.reserve(keys: Array($0.flags.keys)) }
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
                     versionAfterSuccess = state.flagsDataVersion
