@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
