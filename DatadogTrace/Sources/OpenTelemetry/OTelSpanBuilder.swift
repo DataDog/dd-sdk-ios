@@ -23,16 +23,17 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
         case spanContext(OpenTelemetryApi.SpanContext)
         case noParent
 
-        func context() -> OpenTelemetryApi.SpanContext? {
+        func resolved() -> (context: OpenTelemetryApi.SpanContext?, service: SpanService?) {
             switch self {
             case .currentSpan:
-                return OpenTelemetry.instance.contextProvider.activeSpan?.context
+                let span = OpenTelemetry.instance.contextProvider.activeSpan
+                return (span?.context, (span as? OTelSpan)?.ddSpan.ddContext.serviceForStats)
             case .span(let span):
-                return span.context
+                return (span.context, (span as? OTelSpan)?.ddSpan.ddContext.serviceForStats)
             case .spanContext(let context):
-                return context
+                return (context, nil)
             case .noParent:
-                return nil
+                return (nil, nil)
             }
         }
     }
@@ -107,17 +108,29 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
     }
 
     private func prepareSpan() -> OTelSpan {
-        let parentContext = parent.context()
+        let resolvedParent = parent.resolved()
+        let parentContext = resolvedParent.context
         let traceId: TraceId
         let spanId = SpanId.random()
         let traceState: TraceState
+        let parentSpanID: SpanId?
+        let parentForStats: DDSpanContext.StatsParent
 
         if let parentContext = parentContext, parentContext.isValid {
             traceId = parentContext.traceId
             traceState = parentContext.traceState
+            parentSpanID = parentContext.spanId
+            // TODO: RUM-19009 A local parent passed as a bare `SpanContext` has no service, so a child that
+            // changes the service is not detected as a service entry.
+            parentForStats = parentContext.isRemote
+                ? .remote
+                : resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
         } else {
+            // An invalid parent context starts a new trace, so the span has no parent.
             traceId = TraceId.random()
             traceState = .init()
+            parentSpanID = nil
+            parentForStats = resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
         }
 
         let spanContext = SpanContext.create(
@@ -133,14 +146,15 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             attributes: attributes,
             kind: spanKind,
             name: spanName,
-            parentSpanID: parentContext?.spanId,
+            parentSpanID: parentSpanID,
             spanContext: spanContext,
             spanKind: spanKind,
             spanLinks: spanLinks,
             startTime: startTime ?? Date(),
             tracer: tracer,
             eventBuilder: tracer.spanEventBuilder,
-            eventWriter: writer
+            eventWriter: writer,
+            parentForStats: parentForStats
         )
         return createdSpan
     }
