@@ -1178,10 +1178,18 @@ public func mockNoOpSessionUpdater() -> RUM.SessionUpdater {
 
 public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public var sessionState: RUMSessionState?
-    public var view: RUMViewEvent?
+    public var view: RUMViewEvent? {
+        didSet {
+            if sessionStopCount > 0, let view = view {
+                viewsPublishedAfterStop.append(view)
+            }
+        }
+    }
     public var globalAttributes: [String: Encodable] = [:]
     /// How many times `sessionDidStop()` was called.
     public var sessionStopCount = 0
+    /// The views published after `sessionDidStop()` was called.
+    public private(set) var viewsPublishedAfterStop: [RUMViewEvent] = []
 
     public init() {}
 

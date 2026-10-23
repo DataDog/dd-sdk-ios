@@ -153,6 +153,23 @@ class CrashContextCoreProviderTests: XCTestCase {
         XCTAssertEqual(provider.currentCrashContext?.isRUMSessionStopped, true)
     }
 
+    func testWhenSessionStateChangesAfterSessionStop_itKeepsTheStop() throws {
+        // Given
+        let provider = CrashContextCoreProvider()
+        let core = PassthroughCoreMock()
+        XCTAssertTrue(provider.receive(message: .context(.mockAny()), from: core))
+        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.sessionStop), from: core))
+
+        // When
+        let sessionState: RUMSessionState = .mockRandom()
+        XCTAssertTrue(provider.receive(message: .payload(sessionState), from: core))
+        provider.flush()
+
+        // Then
+        XCTAssertEqual(provider.currentCrashContext?.lastRUMSessionState, sessionState)
+        XCTAssertEqual(provider.currentCrashContext?.isRUMSessionStopped, true, "Only a new view clears the stop")
+    }
+
     func testWhenSDKContextChangesAfterSessionStop_itKeepsTheStop() throws {
         // Given
         let provider = CrashContextCoreProvider()

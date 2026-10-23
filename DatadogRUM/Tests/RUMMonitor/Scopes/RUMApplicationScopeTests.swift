@@ -604,7 +604,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // Then
         XCTAssertEqual(fatalErrorContext.sessionStopCount, 1)
-        XCTAssertNil(fatalErrorContext.view, "Only a resumed view may clear the stop in the crash context")
+        XCTAssertTrue(fatalErrorContext.viewsPublishedAfterStop.isEmpty, "Only a resumed view may clear the stop in the crash context")
     }
 
     func testGivenStoppedSession_whenAViewStarts_itPublishesTheViewToCrashContext() throws {
@@ -617,10 +617,10 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNil(fatalErrorContext.view)
 
         // When
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime.addingTimeInterval(2), identity: ViewIdentifier("resumed")), context: .mockAny(), writer: writer)
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime.addingTimeInterval(2), identity: ViewIdentifier("resumed"), name: "Resumed"), context: .mockAny(), writer: writer)
 
         // Then
-        XCTAssertNotNil(fatalErrorContext.view, "The resumed view clears the stop in the crash context")
+        XCTAssertEqual(fatalErrorContext.viewsPublishedAfterStop.last?.view.name, "Resumed", "The resumed view clears the stop in the crash context")
         XCTAssertEqual(fatalErrorContext.sessionStopCount, 1)
     }
 

@@ -642,7 +642,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(actualSessionState, expectedSessionState)
     }
 
-    func testWhenSessionIsStopped_itNotifiesTheStopOnce() throws {
+    func testWhenSampledSessionIsStopped_itNotifiesTheStopOnce() throws {
         let fatalErrorContext = FatalErrorContextNotifierMock()
 
         // Given
@@ -650,7 +650,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: sessionStartTime,
-            dependencies: .mockWith(samplingRate: .mockRandom(min: 0, max: 100), fatalErrorContext: fatalErrorContext)
+            dependencies: .mockWith(samplingRate: 100, fatalErrorContext: fatalErrorContext)
         )
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime, identity: ViewIdentifier("view")), context: context, writer: writer)
 
@@ -658,8 +658,28 @@ class RUMSessionScopeTests: XCTestCase {
         _ = scope.process(command: RUMStopSessionCommand.mockWith(time: sessionStartTime + 1), context: context, writer: writer)
 
         // Then
-        XCTAssertEqual(fatalErrorContext.sessionStopCount, 1, "Sampled or not, the stop is notified")
-        XCTAssertNil(fatalErrorContext.view, "There is no active view after the stop")
+        XCTAssertEqual(fatalErrorContext.sessionStopCount, 1)
+        XCTAssertTrue(fatalErrorContext.viewsPublishedAfterStop.isEmpty, "There is no active view after the stop")
+    }
+
+    func testWhenNotSampledSessionIsStopped_itNotifiesTheStopOnce() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            dependencies: .mockWith(samplingRate: 0, fatalErrorContext: fatalErrorContext)
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime, identity: ViewIdentifier("view")), context: context, writer: writer)
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: sessionStartTime + 1), context: context, writer: writer)
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.sessionStopCount, 1)
+        XCTAssertTrue(fatalErrorContext.viewsPublishedAfterStop.isEmpty, "There is no active view after the stop")
     }
 
     func testGivenStoppedSessionKeptForPendingResource_whenTimeseriesDataArrives_itDoesNotReplaceTheCurrentSessionState() throws {
