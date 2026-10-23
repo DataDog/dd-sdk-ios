@@ -183,8 +183,9 @@ internal class Monitor: RUMCommandSubscriber {
                 // If a session boundary was just crossed, `context.hasReplay` still reflects the previous
                 // session's Session Replay decision (SR hasn't recomputed it for the new session yet), so
                 // carrying it over would leak stale replay state into the new session.
-                let didStartNewSession = previousSessionID != nil && currentSessionID != previousSessionID
-                self.update(hasReplay: didStartNewSession ? nil : context.hasReplay)
+                if previousSessionID != nil && currentSessionID != previousSessionID {
+                    self.update(hasReplay: nil)
+                }
             }
 
             if let debugging = self.debugging {
