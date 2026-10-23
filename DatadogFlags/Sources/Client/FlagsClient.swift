@@ -267,7 +267,7 @@ extension FlagsClient: FlagsClientProtocol {
         let snapshot = repository.evaluationSnapshot(for: key)
         let context = snapshot.context
         let trackEvaluationTelemetry = !configuration.enableEvaluationTelemetryOptOutParameter || !snapshot.telemetryOptedOut
-        let defaultAssignment = FlagAssignment(
+        var defaultAssignment = FlagAssignment(
             allocationKey: "",
             variationKey: "",
             variation: .unknown(""),
@@ -275,6 +275,7 @@ extension FlagsClient: FlagsClientProtocol {
             doLog: false
         )
 
+        defaultAssignment.observeFullEvaluationData = snapshot.observeFullEvaluationData
         guard let context else {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
@@ -294,7 +295,9 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: context,
                 flagError: EvaluationError.flagNotFound
             )
-            return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
+            var details = FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
+            details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+            return details
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
@@ -305,10 +308,12 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: context,
                 flagError: EvaluationError.typeMismatch
             )
-            return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
+            var details = FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
+            details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+            return details
         }
 
-        let details = FlagDetails(
+        var details = FlagDetails(
             key: key,
             value: value,
             variant: flagAssignment.variationKey,
@@ -316,12 +321,19 @@ extension FlagsClient: FlagsClientProtocol {
             allocationKey: flagAssignment.allocationKey.isEmpty ? nil : flagAssignment.allocationKey
         )
 
+        details.observeFullEvaluationData = snapshot.observeFullEvaluationData
         trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
 
         return details
     }
 
-    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
+    private func trackEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        trackEvaluationTelemetry: Bool,
+        telemetryContext: FlagsEvaluationContext? = nil
+    ) {
         exposureLogger.logExposure(
             for: key,
             assignment: assignment,
@@ -335,7 +347,7 @@ extension FlagsClient: FlagsClientProtocol {
         evaluationLogger.logEvaluation(
             for: key,
             assignment: assignment,
-            evaluationContext: context,
+            evaluationContext: telemetryContext ?? context,
             flagError: nil
         )
 
@@ -385,5 +397,69 @@ extension FlagsClient: FlagsClientInternal {
 extension FlagsClient: FlagsClientFlushable {
     func flush() {
         repository.flush()
+    }
+}
+
+extension FlagsClient {
+    @_spi(Internal)
+    public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)? {
+        guard let snapshot = repository.assignmentsSnapshot() else {
+            return nil
+        }
+        return (snapshot.flags, snapshot.observeFullEvaluationData)
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        observeFullEvaluationData: Bool,
+        flagError: String?
+    ) {
+        sendFlagEvaluation(
+            key: key,
+            assignment: assignment,
+            context: context,
+            telemetryTargetingKey: context.hasTargetingKey ? context.targetingKey : nil,
+            observeFullEvaluationData: observeFullEvaluationData,
+            flagError: flagError
+        )
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluation(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext,
+        telemetryTargetingKey: String?,
+        observeFullEvaluationData: Bool,
+        flagError: String?
+    ) {
+        var assignment = assignment
+        assignment.observeFullEvaluationData = observeFullEvaluationData
+        var telemetryContext = FlagsEvaluationContext(
+            targetingKey: telemetryTargetingKey ?? "",
+            attributes: context.attributes
+        )
+        telemetryContext.hasTargetingKey = telemetryTargetingKey != nil
+        let trackEvaluationTelemetry = !isEvaluationTelemetryOptedOut(in: context)
+        if let flagError {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
+                for: key,
+                assignment: assignment,
+                evaluationContext: telemetryContext,
+                flagError: flagError
+            )
+        } else {
+            trackEvaluation(
+                key: key,
+                assignment: assignment,
+                context: context,
+                trackEvaluationTelemetry: trackEvaluationTelemetry,
+                telemetryContext: telemetryContext
+            )
+        }
     }
 }

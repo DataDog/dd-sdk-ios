@@ -22,6 +22,8 @@ public struct FlagAssignment: Equatable {
     public var reason: String
     public var doLog: Bool
     public var serialID: Int?
+    /// Consent captured with this assignment, including when bridged or restored from disk.
+    public var observeFullEvaluationData: Bool = false
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {
@@ -59,6 +61,7 @@ extension FlagAssignment: Codable {
         case reason
         case doLog
         case serialID = "serialId"
+        case observeFullEvaluationData
     }
 
     public init(from decoder: any Decoder) throws {
@@ -70,6 +73,7 @@ extension FlagAssignment: Codable {
         self.doLog = try container.decode(Bool.self, forKey: .doLog)
         // A malformed serial id decodes as absent so it cannot fail the whole response.
         self.serialID = try? container.decodeIfPresent(Int.self, forKey: .serialID)
+        self.observeFullEvaluationData = (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
 
         let variationType = try container.decode(String.self, forKey: .variationType)
 
@@ -105,6 +109,7 @@ extension FlagAssignment: Codable {
         try container.encode(reason, forKey: .reason)
         try container.encode(doLog, forKey: .doLog)
         try container.encodeIfPresent(serialID, forKey: .serialID)
+        try container.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
 
         switch variation {
         case .boolean(let value):

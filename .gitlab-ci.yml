@@ -151,6 +151,15 @@ API Surface Verify:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
     - make clean repo-setup ENV=ci
     - make api-surface-verify
+  after_script:
+    - mkdir -p api-surface-generated
+    - test ! -f /tmp/api-surface-swift-generated || cp /tmp/api-surface-swift-generated api-surface-generated/api-surface-swift
+    - test ! -f /tmp/api-surface-objc-generated || cp /tmp/api-surface-objc-generated api-surface-generated/api-surface-objc
+  artifacts:
+    when: always
+    paths:
+      - api-surface-generated/
+    expire_in: 7 days
 
 Feature Docs Verify:
   stage: lint
@@ -691,3 +700,27 @@ Sync GH Checks:
   stage: post
   script:
     - echo "All good"
+
+# FFL-3432 / FFL-3433: paired native/provider wire proof on the native Xcode 26 runner.
+Flags PII Artifact Validation:
+  stage: test
+  needs: []
+  rules:
+    - !reference [.test-pipeline-job, rules]
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
+    - mkdir -p .pii-provider/dd-openfeature-provider-swift
+    - git -C .pii-provider/dd-openfeature-provider-swift init
+    - git -C .pii-provider/dd-openfeature-provider-swift remote add origin https://github.com/DataDog/dd-openfeature-provider-swift.git
+    - git -C .pii-provider/dd-openfeature-provider-swift fetch --depth=1 origin a90606193c1fc27fdab43cdd5f466575cf2f7b01
+    - git -C .pii-provider/dd-openfeature-provider-swift checkout --detach FETCH_HEAD
+    - bundle install --gemfile .pii-provider/dd-openfeature-provider-swift/Gemfile
+    - >-
+      PII_SIMULATOR=$(xcrun simctl list devices available --json | python3 -c
+      'import json,sys; print(next(d["udid"] for devices in json.load(sys.stdin)["devices"].values() for d in devices if "iPhone" in d["name"]))')
+    - python3 -B .pii-provider/dd-openfeature-provider-swift/IntegrationTests/PII/run.py --sdk "$CI_PROJECT_DIR" --output pii-evidence --cocoapods-destination "platform=iOS Simulator,id=$PII_SIMULATOR"
+  artifacts:
+    when: always
+    paths:
+      - pii-evidence/
+    expire_in: 30 days

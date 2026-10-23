@@ -10,11 +10,17 @@ internal struct FlagAssignmentsResponse: Equatable {
     let flags: [String: FlagAssignment]
     let failedFlags: [String: String] // key -> error description
     let obfuscation: FlagKeyObfuscation?
+    let observeFullEvaluationData: Bool
 
-    init(flags: [String: FlagAssignment], failedFlags: [String: String] = [:], obfuscation: FlagKeyObfuscation? = nil) {
-        self.flags = flags
+    init(flags: [String: FlagAssignment], failedFlags: [String: String] = [:], obfuscation: FlagKeyObfuscation? = nil, observeFullEvaluationData: Bool = false) {
+        self.flags = flags.mapValues { assignment in
+            var assignment = assignment
+            assignment.observeFullEvaluationData = observeFullEvaluationData
+            return assignment
+        }
         self.failedFlags = failedFlags
         self.obfuscation = obfuscation
+        self.observeFullEvaluationData = observeFullEvaluationData
     }
 }
 
@@ -23,6 +29,7 @@ extension FlagAssignmentsResponse: Codable {
         case data
         case attributes
         case flags
+        case observeFullEvaluationData
         case obfuscated
         case obfuscation
     }
@@ -31,6 +38,9 @@ extension FlagAssignmentsResponse: Codable {
         let rootContainer = try decoder.container(keyedBy: CodingKeys.self)
         let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
+
+        // Only a literal boolean true opts in. Old or malformed fields fail closed.
+        observeFullEvaluationData = (try? attributesContainer.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
 
         // Decode all flags (including those with unknown variation types)
         let allFlags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
@@ -58,6 +68,8 @@ extension FlagAssignmentsResponse: Codable {
             if case .unknown(let typeName) = assignment.variation {
                 failedFlags[key] = "Unrecognized variation type \(typeName)"
             } else {
+                var assignment = assignment
+                assignment.observeFullEvaluationData = observeFullEvaluationData
                 successfulFlags[key] = assignment
             }
         }
@@ -71,6 +83,7 @@ extension FlagAssignmentsResponse: Codable {
         var dataContainer = rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         var attributesContainer = dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
         try attributesContainer.encode(flags, forKey: .flags)
+        try attributesContainer.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
         if let obfuscation {
             try attributesContainer.encode(true, forKey: .obfuscated)
             try attributesContainer.encode(obfuscation, forKey: .obfuscation)

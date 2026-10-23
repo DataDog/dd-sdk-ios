@@ -25,6 +25,8 @@ internal protocol FlagsRepositoryProtocol {
 
     func flagAssignments() -> [String: FlagAssignment]?
 
+    func assignmentsSnapshot() -> FlagsData?
+
     func reset()
 
     func flush()
@@ -34,6 +36,7 @@ internal struct FlagEvaluationSnapshot {
     let context: FlagsEvaluationContext?
     let assignment: FlagAssignment?
     let telemetryOptedOut: Bool
+    let observeFullEvaluationData: Bool
 }
 
 /// Retain decisions only while their subjects have installed or pending assignments.
@@ -496,7 +499,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 context: context,
                 assignment: readable ? assignment : nil,
                 // Unreadable assignments must not discard the stored subject's reporting policy.
-                telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: state.flagsData?.context)
+                telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: state.flagsData?.context),
+                observeFullEvaluationData: readable ? (state.flagsData?.observeFullEvaluationData ?? false) : false
             )
         }
 
@@ -522,13 +526,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
+        assignmentsSnapshot()?.flags
+    }
+
+    func assignmentsSnapshot() -> FlagsData? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error,
               let data = repositoryState.readableFlagsData,
               data.obfuscation == nil else {
             return nil
         }
-        return data.flags
+        return data
     }
 
     func setEvaluationContext(
@@ -608,7 +616,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     flags: response.flags,
                     context: context,
                     date: self.dateProvider.now,
-                    obfuscation: response.obfuscation
+                    obfuscation: response.obfuscation,
+                    observeFullEvaluationData: response.observeFullEvaluationData
                 )
                 var versionAfterSuccess: UInt64?
                 var callbacks: [PendingCacheReadCallback] = []

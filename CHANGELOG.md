@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Protect Flags evaluation telemetry by default: hash targeting keys, omit evaluation context, preserve evaluation-time consent through cache/refresh, and report stable error codes. Full evaluation data requires explicit configuration consent.
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]

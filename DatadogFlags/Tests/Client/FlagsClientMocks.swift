@@ -179,7 +179,8 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         FlagEvaluationSnapshot(
             context: flagsData?.context,
             assignment: flagAssignment(for: key),
-            telemetryOptedOut: telemetry.isOptedOut(evaluating: flagsData?.context)
+            telemetryOptedOut: telemetry.isOptedOut(evaluating: flagsData?.context),
+            observeFullEvaluationData: flagsData?.observeFullEvaluationData ?? false
         )
     }
 
@@ -188,6 +189,10 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
             return nil
         }
         return data.flags
+    }
+
+    func assignmentsSnapshot() -> FlagsData? {
+        flagsData?.obfuscation == nil ? flagsData : nil
     }
 
     func reset() {
