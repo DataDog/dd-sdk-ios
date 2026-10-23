@@ -34,6 +34,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let eventsMapper: RUMEventsMapper
     private let sanitizer = RUMEventSanitizer()
 
+    /// `is_slow_rendered` for views built from a crash. Platforms without a render loop observer never measure it.
+    #if os(macOS) || os(watchOS)
+    private static let defaultIsSlowRendered: Bool? = nil
+    #else
+    private static let defaultIsSlowRendered: Bool? = false
+    #endif
+
     // MARK: - Initialization
 
     init(
@@ -409,7 +416,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 interactionToNextPaintTime: nil,
                 interactionToNextViewTime: nil,
                 isActive: false, // we know it won't receive updates
-                isSlowRendered: false,
+                isSlowRendered: Self.defaultIsSlowRendered,
                 jsRefreshRate: nil,
                 largestContentfulPaint: nil,
                 largestContentfulPaintTargetSelector: nil,
