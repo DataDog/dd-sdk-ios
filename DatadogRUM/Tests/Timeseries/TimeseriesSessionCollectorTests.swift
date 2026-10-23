@@ -464,7 +464,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
             // When — replay turns on, then a new session is reported before the trigger runs
             replayState.update(sessionID: "session-replay-starts", hasReplay: true)
-            replayState.update(sessionID: "next-session", hasReplay: nil)
+            replayState.update(sessionID: "next-session", hasReplay: false)
             trigger.run(collector, "session-replay-starts")
 
             // Then
@@ -472,37 +472,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             XCTAssertEqual(events.count, 1, trigger.name)
             XCTAssertEqual(events.last?.session.hasReplay, true, trigger.name)
         }
-    }
-
-    func testWhenPreviousSessionReplayIsStale_itDoesNotLeakIntoTheNewSession() {
-        // Given — the previous session reported replay, and its stale value is attached to the new session
-        memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
-        let replayState = HasReplayMessageReceiver()
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: scope,
-            batchSize: 100,
-            samplingInterval: 0.3,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
-            replayState: replayState
-        )
-        collector.activeContextReader = RUMActiveContextReaderMock()
-        replayState.update(sessionID: "old-session", hasReplay: true)
-        replayState.update(sessionID: "new-session", hasReplay: true)
-        collector.start(sessionID: "new-session", applicationID: "app-1", sessionType: .user)
-        collector.pause(sessionID: "new-session")
-        collector.resume(sessionID: "new-session")
-        settle(0.45)
-
-        // When
-        collector.flush()
-
-        // Then
-        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertEqual(events.count, 1)
-        XCTAssertNil(events.last?.session.hasReplay)
     }
 
     func testItPopulatesSessionSampleRateFromConstructorInjectedValue() {

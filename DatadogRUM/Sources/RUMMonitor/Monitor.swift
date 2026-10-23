@@ -128,14 +128,17 @@ internal class Monitor: RUMCommandSubscriber {
     @ReadWriteLock
     private var sessionActivitySnapshot: (sessionID: String?, sessionStart: TimeInterval?, lastInteraction: TimeInterval?) = (nil, nil, nil)
 
+    private let replayState: HasReplayMessageReceiver?
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
 
     init(
         dependencies: RUMScopeDependencies,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        replayState: HasReplayMessageReceiver? = nil
     ) {
+        self.replayState = replayState
         self.featureScope = dependencies.featureScope
         self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
@@ -157,6 +160,10 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             let transformedCommand = self.transform(command: command)
+
+            // Record the replay state this command sees before processing it, as it may end or pause the session,
+            // which flushes the collector before the context message bus delivers that state.
+            self.replayState?.update(from: context)
 
             _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
 

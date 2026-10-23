@@ -413,14 +413,49 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(collector.activitySessionIDs, [sessionID, renewedID])
         XCTAssertEqual(collector.isPreviousSessionExpiredOnActivity, false)
     }
+
+    // MARK: - hasReplay state
+
+    func testWhenCommandEndsSession_itRecordsTheReplayStateItSeesBeforeStoppingTheCollector() throws {
+        let dateProvider = DateProviderMock()
+        let featureScope = FeatureScopeMock()
+        let replayState = HasReplayMessageReceiver()
+        let collector = TimeseriesCollectorStub()
+        collector.replayState = replayState
+        let monitor = Monitor(
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                monotonicClock: DateProviderMonotonicClock(dateProvider: dateProvider),
+                timeseriesCollector: collector
+            ),
+            dateProvider: dateProvider,
+            replayState: replayState
+        )
+        monitor.startView(key: "foo")
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+
+        // When — Session Replay starts for the session, and the command that ends it sees that before the
+        // context message bus delivers it
+        featureScope.contextMock = .mockWith(additionalContext: [SessionReplayCoreContext.HasReplay(value: true, sessionID: sessionID)])
+        dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1) // exceeds session max duration
+        monitor.startView(key: "bar")
+
+        // Then
+        XCTAssertEqual(collector.hasReplayWhenStopped, true)
+    }
 }
 
 private class TimeseriesCollectorStub: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
+    var replayState: HasReplayMessageReceiver?
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
     func pause(sessionID: String) {}
     func resume(sessionID: String) {}
-    func stop(sessionID: String) {}
+    var hasReplayWhenStopped: Bool?
+
+    func stop(sessionID: String) {
+        hasReplayWhenStopped = replayState?.hasReplay(sessionID: sessionID)
+    }
     var activitySessionIDs: [String] = []
     var isPreviousSessionExpiredOnActivity: Bool?
 
