@@ -644,7 +644,8 @@ extension RUMViewScope {
             interactionToNextPaintTime: nil,
             interactionToNextViewTime: interactionToNextViewTime.value?.dd.toInt64Nanoseconds,
             isActive: isActive,
-            isSlowRendered: isSlowRendered ?? false,
+            // Without a render loop observer, the refresh rate is never measured, so it stays unknown.
+            isSlowRendered: dependencies.renderLoopObserver == nil ? nil : (isSlowRendered ?? false),
             jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
             largestContentfulPaint: nil,
             largestContentfulPaintTargetSelector: nil,
