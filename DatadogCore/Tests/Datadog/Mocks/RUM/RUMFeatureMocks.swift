@@ -41,15 +41,13 @@ extension WebViewEventReceiver: AnyMockable {
         featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
-        viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
-        timeseriesCollector: TimeseriesCollecting? = nil
+        viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider())
     ) -> Self {
         .init(
             featureScope: featureScope,
             dateProvider: dateProvider,
             commandSubscriber: commandSubscriber,
-            viewCache: viewCache,
-            timeseriesCollector: timeseriesCollector
+            viewCache: viewCache
         )
     }
 }

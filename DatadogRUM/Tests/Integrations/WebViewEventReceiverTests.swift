@@ -240,7 +240,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            timeseriesCollector: TimeseriesCollectorMock(hasData: true)
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -271,7 +272,7 @@ class WebViewEventReceiverTests: XCTestCase {
             "session": [
                 "id": rumContext.sessionID,
                 "is_main_process": true,
-                "has_timeseries": false
+                "has_timeseries": true
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
@@ -402,49 +403,6 @@ class WebViewEventReceiverTests: XCTestCase {
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
             "session": ["id": rumContext.sessionID, "is_main_process": false, "has_timeseries": false] as [String: Any],
-            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
-            "ddtags": featureScope.contextMock.ddTags
-        ]
-
-        XCTAssertTrue(result, "It must accept the message")
-        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
-        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
-        DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
-    }
-
-    func testGivenSessionHasCollectedTimeseries_whenReceivingWebEvent_itSetsHasTimeseriesTrue() throws {
-        // Given
-        let dateProvider = RelativeDateProvider()
-        let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock = .mockWith(
-            additionalContext: [rumContext]
-        )
-
-        let receiver = WebViewEventReceiver(
-            featureScope: featureScope,
-            dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            timeseriesCollector: TimeseriesCollectorMock(hasData: true)
-        )
-
-        dateProvider.advance(bySeconds: 1)
-        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
-        let webEventMock: JSON = [
-            "application": ["id": String.mockRandom()],
-            "session": ["id": String.mockRandom()],
-            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": Int(date)
-        ]
-
-        // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
-
-        // Then
-        let expectedWebEventWritten: JSON = [
-            "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID, "is_main_process": true, "has_timeseries": true] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags
