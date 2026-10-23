@@ -108,13 +108,22 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
     }
 
-    func testZeroParentSpanIDIsATraceRoot() throws {
+    func testChildOfAnExtractedZeroParentIDIsATraceRoot() throws {
+        // The header reader accepts a zero parent ID, and the child copies it as its parent span ID.
         let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
-        tracer.startSpan(operationName: "root", childOf: DDSpanContext.mockWith(spanID: .invalid)).finish()
+        let reader = HTTPHeadersReader(httpHeaderFields: ["x-datadog-trace-id": "123", "x-datadog-parent-id": "0"])
+        let extracted = try XCTUnwrap(tracer.extract(reader: reader))
+
+        tracer.startSpan(operationName: "root", childOf: extracted).finish()
+
         let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertTrue(snapshot.isTopLevel)
         XCTAssertNil(snapshot.parentSpanID)
+        let concentrator = StatsConcentrator(now: snapshot.startTime)
+        concentrator.add(snapshot)
+        let group = try XCTUnwrap(concentrator.flush(now: snapshot.startTime, force: true).first?.stats.first)
+        XCTAssertEqual(group.isTraceRoot, .true)
     }
 
     func testEachSpanUsesItsOwnStartTimeDefaultService() throws {
