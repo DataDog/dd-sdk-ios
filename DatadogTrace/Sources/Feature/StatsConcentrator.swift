@@ -708,7 +708,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
             }
 
             let bucketKey = max(
-                min(Self.alignTimestamp(endTime, bucketDuration: bucketDuration), latestBucketKey(now: now)),
+                min(Self.alignTimestamp(endTime, bucketDuration: bucketDuration), latestBucketKey(at: now)),
                 oldestTs
             )
             let bucket = buckets[bucketKey, default: StatsBucket(start: bucketKey, duration: bucketDuration)]
@@ -945,13 +945,13 @@ internal final class StatsConcentrator: @unchecked Sendable {
         )
     }
 
-    /// Aligns a nanosecond timestamp to the bucket boundary.
-    /// The latest window a span can be recorded in: the one after the window of `now`.
-    private func latestBucketKey(now: Nanoseconds) -> UInt64 {
-        let (latest, didOverflow) = Self.alignTimestamp(now, bucketDuration: bucketDuration).addingReportingOverflow(bucketDuration)
+    /// The latest window a span recorded at `timestamp` can be in: the one after the window of `timestamp`.
+    private func latestBucketKey(at timestamp: Nanoseconds) -> UInt64 {
+        let (latest, didOverflow) = Self.alignTimestamp(timestamp, bucketDuration: bucketDuration).addingReportingOverflow(bucketDuration)
         return didOverflow ? Self.alignTimestamp(.max, bucketDuration: bucketDuration) : latest
     }
 
+    /// Aligns a nanosecond timestamp to the bucket boundary.
     static func alignTimestamp(_ ts: UInt64, bucketDuration: UInt64) -> UInt64 {
         return ts - ts % bucketDuration
     }
