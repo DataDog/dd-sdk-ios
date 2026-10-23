@@ -65,6 +65,51 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertLessThanOrEqual(diagnostics.max_probe_length, UInt64(DD_MEMORY_LIVE_SET_MAX_PROBE))
     }
 
+    func testCollidingSamplesRemainRemovableAcrossTableWraparound() {
+        let probeLimit = Int(DD_MEMORY_LIVE_SET_MAX_PROBE)
+        let bucket = Int(DD_MEMORY_LIVE_SET_CAPACITY) - 3
+        let addresses = collidingAddresses(count: probeLimit, bucket: bucket)
+        guard addresses.count == probeLimit else {
+            XCTFail("Could not construct enough colliding addresses")
+            return
+        }
+        for address in addresses {
+            XCTAssertEqual(insert(address, size: UInt64(address)), DD_MEMORY_LIVE_SET_INSERTED)
+        }
+
+        for address in addresses.dropLast() {
+            XCTAssertTrue(remove(address))
+            XCTAssertFalse(remove(address))
+        }
+        let survivor = addresses.last!
+        XCTAssertEqual(snapshot().map { UInt(bitPattern: $0.address) }, [survivor])
+        XCTAssertTrue(remove(survivor))
+        XCTAssertTrue(snapshot().isEmpty)
+    }
+
+    func testDuplicateAndDroppedSamplesDoNotKeepBucketNonempty() {
+        let probeLimit = Int(DD_MEMORY_LIVE_SET_MAX_PROBE)
+        let addresses = collidingAddresses(count: probeLimit + 1)
+        guard addresses.count == probeLimit + 1 else {
+            XCTFail("Could not construct enough colliding addresses")
+            return
+        }
+        for address in addresses.dropLast() {
+            XCTAssertEqual(insert(address, size: UInt64(address)), DD_MEMORY_LIVE_SET_INSERTED)
+        }
+        XCTAssertEqual(insert(addresses[0], size: 999), DD_MEMORY_LIVE_SET_DUPLICATE)
+        let rejected = addresses.last!
+        XCTAssertEqual(insert(rejected, size: 999), DD_MEMORY_LIVE_SET_DROPPED)
+        for address in addresses.dropLast() { XCTAssertTrue(remove(address)) }
+
+        var probeLength = 99
+        XCTAssertFalse(dd_memory_live_set_remove_with_probe_length_for_testing(
+            table, generation, UnsafeRawPointer(bitPattern: rejected), &probeLength
+        ))
+        XCTAssertEqual(probeLength, 0)
+        XCTAssertTrue(snapshot().isEmpty)
+    }
+
     func testSnapshotDiagnosticsRemainAtTheCaptureBoundary() {
         let storageBytes = dd_memory_live_snapshot_storage_bytes(snapshotStorage)
         XCTAssertGreaterThan(storageBytes, 0)
@@ -109,6 +154,11 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertEqual(staleResult, DD_MEMORY_LIVE_SET_STALE_GENERATION)
         let staleAddress = UnsafeRawPointer(bitPattern: 0x10000)
         XCTAssertFalse(dd_memory_live_set_remove(table, oldGeneration, staleAddress))
+        var probeLength = 99
+        XCTAssertFalse(dd_memory_live_set_remove_with_probe_length_for_testing(
+            table, generation, staleAddress, &probeLength
+        ))
+        XCTAssertEqual(probeLength, 0)
         XCTAssertTrue(snapshot().isEmpty)
         let diagnostics = dd_memory_live_set_diagnostics(table)
         XCTAssertEqual(diagnostics.stale_generation_rejections, 2)
@@ -122,7 +172,7 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertFalse(dd_memory_live_set_remove_with_probe_length_for_testing(
             table, generation, missingAddress, &probeLength
         ))
-        XCTAssertEqual(probeLength, 1)
+        XCTAssertEqual(probeLength, 0)
 
         let addresses = fillTableWithOneEntryPerBucket()
         guard addresses.count == Int(DD_MEMORY_LIVE_SET_CAPACITY) else {
@@ -139,14 +189,14 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertFalse(dd_memory_live_set_remove_with_probe_length_for_testing(
             table, generation, missingAddress, &probeLength
         ))
-        XCTAssertEqual(probeLength, Int(DD_MEMORY_LIVE_SET_MAX_PROBE))
+        XCTAssertEqual(probeLength, 0)
         XCTAssertEqual(dd_memory_live_set_diagnostics(table).probe_count, insertionProbeCount)
 
         generation = dd_memory_live_set_start(table)
         XCTAssertFalse(dd_memory_live_set_remove_with_probe_length_for_testing(
             table, generation, missingAddress, &probeLength
         ))
-        XCTAssertEqual(probeLength, 1)
+        XCTAssertEqual(probeLength, 0)
     }
 
     func testInvalidSnapshotsClearResultsAndRejectInconsistentOccupancy() {
@@ -639,9 +689,9 @@ final class MemoryLiveSetTests: XCTestCase {
         return []
     }
 
-    private func collidingAddresses(count: Int) -> [UInt] {
+    private func collidingAddresses(count: Int, bucket: Int? = nil) -> [UInt] {
         let first = UInt(0x10_0000)
-        let bucket = dd_memory_live_set_bucket(UnsafeRawPointer(bitPattern: first))
+        let bucket = bucket ?? dd_memory_live_set_bucket(UnsafeRawPointer(bitPattern: first))
         var result: [UInt] = []
         for index in 0..<1_000_000 {
             let address = first + UInt(index) * 16
