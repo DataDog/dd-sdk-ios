@@ -1576,8 +1576,12 @@ public struct SessionReplayPrivacyView<Content: View>: View
 # ----------------------------------
 
 public final class FlagsClient
+    public struct Configuration
+        public var enableEvaluationTelemetryOptOutParameter: Bool
+        public init(enableEvaluationTelemetryOptOutParameter: Bool = false)
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
+    public static func create(configuration: Configuration,name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
 [?] extension FlagsClient: FlagsClientProtocol
     public func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
