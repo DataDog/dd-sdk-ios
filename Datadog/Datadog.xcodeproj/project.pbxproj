@@ -107,6 +107,9 @@
 		1150CAEA30828282007338C7 /* memory_allocation_window.h in Headers */ = {isa = PBXBuildFile; fileRef = 1150CAE930828282007338C7 /* memory_allocation_window.h */; };
 		1150CAEC30828321007338C7 /* memory_allocation_window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1150CAEB30828321007338C7 /* memory_allocation_window.cpp */; };
 		1150CAEE3082835A007338C7 /* MemoryAllocationWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150CAED3082835A007338C7 /* MemoryAllocationWindowTests.swift */; };
+		1150CAF030828364007338C7 /* memory_pprof.h in Headers */ = {isa = PBXBuildFile; fileRef = 1150CAEF30828364007338C7 /* memory_pprof.h */; };
+		1150CAF2308283DE007338C7 /* MemoryPprofTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150CAF1308283DE007338C7 /* MemoryPprofTests.swift */; };
+		1150CAF4308283DF007338C7 /* memory_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1150CAF3308283DF007338C7 /* memory_pprof.cpp */; };
 		11522CC72F8B90E000752E87 /* DatadogProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */; };
 		115624BD3067CF10007FBEB2 /* ProfilingRequestBuilderError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115624BC3067CF0F007FBEB2 /* ProfilingRequestBuilderError.swift */; };
 		115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 115792E12F4504E900AEE829 /* binary_image_resolver.cpp */; };
@@ -2069,6 +2072,9 @@
 		1150CAE930828282007338C7 /* memory_allocation_window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_allocation_window.h; sourceTree = "<group>"; };
 		1150CAEB30828321007338C7 /* memory_allocation_window.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory_allocation_window.cpp; sourceTree = "<group>"; };
 		1150CAED3082835A007338C7 /* MemoryAllocationWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryAllocationWindowTests.swift; sourceTree = "<group>"; };
+		1150CAEF30828364007338C7 /* memory_pprof.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_pprof.h; sourceTree = "<group>"; };
+		1150CAF1308283DE007338C7 /* MemoryPprofTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryPprofTests.swift; sourceTree = "<group>"; };
+		1150CAF3308283DF007338C7 /* memory_pprof.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory_pprof.cpp; sourceTree = "<group>"; };
 		11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfilerTests.swift; sourceTree = "<group>"; };
 		115624BC3067CF0F007FBEB2 /* ProfilingRequestBuilderError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingRequestBuilderError.swift; sourceTree = "<group>"; };
 		115792E12F4504E900AEE829 /* binary_image_resolver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = binary_image_resolver.cpp; sourceTree = "<group>"; };
@@ -6708,6 +6714,7 @@
 				1199DEDE307CDD4900101B27 /* memory_live_set_testing.h */,
 				111F044F307E6DE700CDB469 /* poisson_allocation_sampler.h */,
 				1150CAE930828282007338C7 /* memory_allocation_window.h */,
+				1150CAEF30828364007338C7 /* memory_pprof.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -6731,6 +6738,7 @@
 				11D5191B30716A70008C003F /* memory_live_set.cpp */,
 				111F0451307E6E0800CDB469 /* poisson_allocation_sampler.cpp */,
 				1150CAEB30828321007338C7 /* memory_allocation_window.cpp */,
+				1150CAF3308283DF007338C7 /* memory_pprof.cpp */,
 			);
 			name = Mach;
 			path = ../Mach;
@@ -7328,6 +7336,7 @@
 				11D5191D30716AE0008C003F /* MemoryLiveSetTests.swift */,
 				111F0494307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift */,
 				1150CAED3082835A007338C7 /* MemoryAllocationWindowTests.swift */,
+				1150CAF1308283DE007338C7 /* MemoryPprofTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -7597,6 +7606,7 @@
 				D2E937282E53324A00FECA76 /* profile_pprof_packer.h in Headers */,
 				1150CAEA30828282007338C7 /* memory_allocation_window.h in Headers */,
 				D2E937262E53324100FECA76 /* profile.h in Headers */,
+				1150CAF030828364007338C7 /* memory_pprof.h in Headers */,
 				1157930A2F51F05100AEE829 /* binary_image_resolver_testing.h in Headers */,
 				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
 				11D519223074F977008C003F /* swift_alloc_hook_testing.h in Headers */,
@@ -9311,6 +9321,7 @@
 				115624BD3067CF10007FBEB2 /* ProfilingRequestBuilderError.swift in Sources */,
 				1121FD072F00000100297156 /* AggregationDiagnosticsMetric.swift in Sources */,
 				1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */,
+				1150CAF4308283DF007338C7 /* memory_pprof.cpp in Sources */,
 				1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */,
 				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
 				A1B2C3D42F90000100ABCDEF /* aggregation_worker.cpp in Sources */,
@@ -9960,6 +9971,7 @@
 				118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,
+				1150CAF2308283DE007338C7 /* MemoryPprofTests.swift in Sources */,
 				110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				0EFAE08216FC46BC84FEDF88 /* ProfilingHandlerTests.swift in Sources */,
 				11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */,
