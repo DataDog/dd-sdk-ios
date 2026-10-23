@@ -28,13 +28,7 @@ struct TimeseriesScenario: Scenario {
             trackingConsent: .granted
         )
 
-        var configuration = RUM.Configuration(
-            applicationID: info.applicationID,
-            uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-            uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
-            swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
-            swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
-        )
+        var configuration = RUM.Configuration.rumAuto(info: info)
         configuration.timeseries = timeseries
 
         RUM.enable(with: configuration)
