@@ -171,6 +171,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             sampler: DeterministicSampler(uuid: initialSessionUUID.rawValue, samplingRate: sessionSampleRate)
         )
 
+        var replayState: HasReplayMessageReceiver?
         let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
             let effectiveCollectTypes = timeseries.effectiveCollectTypes
             // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
@@ -179,6 +180,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             guard !effectiveCollectTypes.isEmpty else {
                 return nil
             }
+            let collectorReplayState = HasReplayMessageReceiver()
+            replayState = collectorReplayState
             return TimeseriesSessionCollector(
                 memoryReader: VitalMemoryReader(),
                 featureScope: featureScope,
@@ -187,7 +190,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 syntheticsTest: syntheticsTest,
                 sessionSampleRate: Double(sessionSampleRate),
                 now: { configuration.dateProvider.now },
-                mediaTimeProvider: configuration.mediaTimeProvider
+                mediaTimeProvider: configuration.mediaTimeProvider,
+                replayState: collectorReplayState
             )
         }
 
@@ -266,7 +270,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider
+            dateProvider: configuration.dateProvider,
+            replayState: replayState
         )
 
         timeseriesCollector?.activeContextReader = monitor
@@ -418,8 +423,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             messageReceivers.append(watchdogTermination)
         }
 
-        if timeseriesCollector != nil {
-            messageReceivers.append(HasReplayMessageReceiver(monitor: monitor))
+        if let replayState = replayState {
+            messageReceivers.append(replayState)
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
