@@ -143,6 +143,11 @@ internal class Monitor: RUMCommandSubscriber {
     @ReadWriteLock
     private var hasReplaySnapshot: Bool? = nil
 
+    /// Features for which usage telemetry was already sent by this monitor. Usage telemetry is sent once per
+    /// feature to signal adoption, without consuming the per-session telemetry budget on high-frequency APIs.
+    @ReadWriteLock
+    private var reportedUsages: Set<String> = []
+
     /// Updates the replay state snapshot exposed through `RUMActiveContextReader`. Called both from
     /// `process(command:)` and from `HasReplayMessageReceiver`, since Session Replay toggles `hasReplay`
     /// through the core context bus, not through a `RUMCommand`.
@@ -268,6 +273,16 @@ internal class Monitor: RUMCommandSubscriber {
     private func didUpdateAttributes() {
         fatalErrorContext.globalAttributes = attributes
     }
+
+    /// Sends usage telemetry for a public API call, only the first time the given feature is used.
+    /// Automatic instrumentation calls `process(command:)` directly, so it is not reported.
+    private func reportUsageOnce(_ feature: String, _ event: @autoclosure () -> UsageTelemetry.Event) {
+        var isFirstUsage = false
+        _reportedUsages.mutate { isFirstUsage = $0.insert(feature).inserted }
+        if isFirstUsage {
+            telemetry.usage(event: event())
+        }
+    }
 }
 
 extension Monitor: RUMActiveContextReader {
@@ -335,6 +350,7 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func stopSession() {
+        reportUsageOnce("stop-session", .stopSession)
         process(command: RUMStopSessionCommand(time: dateProvider.now))
     }
 
@@ -509,6 +525,7 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - actions
 
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        reportUsageOnce("add-action", .addAction)
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.now,
@@ -717,6 +734,7 @@ extension Monitor: RUMMonitorViewProtocol {
 
     #if !os(watchOS)
     func startView(viewController: DDViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        reportUsageOnce("start-view", .startView)
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -743,6 +761,7 @@ extension Monitor: RUMMonitorViewProtocol {
     #endif
 
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        reportUsageOnce("start-view", .startView)
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
