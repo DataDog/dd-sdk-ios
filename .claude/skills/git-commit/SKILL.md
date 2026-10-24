@@ -28,9 +28,22 @@ Third-party contributions skip the prefix.
 Always show the user what will be committed and get explicit approval before running `git commit`.
 
 1. Run `git diff --staged` and show the output
-2. Propose the commit message following the format below
-3. Ask: "Shall I commit with this message?"
-4. Only run `git commit -S -m "..."` after the user confirms
+2. Run the documentation gate on the staged changes (see below)
+3. Propose the commit message following the format below
+4. Ask: "Shall I commit with this message?"
+5. Only run `git commit -S -m "..."` after the user confirms
+
+## Documentation Gate
+
+```bash
+make docs-gate SNAPSHOT=index AGAINST=HEAD OPTIONAL=1
+```
+
+It checks that the staged changes introduce no broken documentation links or anchors, and that `AGENTS.md` still links to `docs/README.md`. See [Documentation Gate](../../../docs/DEVELOPMENT.md#documentation-gate).
+
+- **`block`**: do not commit. Show the new findings, fix them, re-stage, and run the gate again.
+- **`allow` with advisories**: review the affected docs (architecture, `*_FEATURE.md`, guides) against the staged change before you propose the message. A correct doc needs no edit.
+- **Skipped (runtime not installed)**: mention it in one line and continue. Never fail a commit for a missing runtime.
 
 ## Commit Command
 

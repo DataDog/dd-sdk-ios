@@ -50,6 +50,7 @@ gh pr create \
 ## Before Opening
 
 - [ ] `make lint` passes
+- [ ] `make docs-gate SNAPSHOT=HEAD OPTIONAL=1` reports `allow` for the whole branch (compares with the merge-base of `origin/develop`; see [Documentation Gate](../../../docs/DEVELOPMENT.md#documentation-gate))
 - [ ] `make test-ios-all` passes
 - [ ] `make api-surface-verify` passes (if public API changed)
 - [ ] CHANGELOG updated (if user-facing change)
