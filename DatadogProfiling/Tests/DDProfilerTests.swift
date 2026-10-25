@@ -37,7 +37,16 @@ final class DDProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Profiler should exist but not be running until started")
     }
 
-    func testDDProfiler_allocationFailureOnWorkerReleasesConcurrentFlushes() {
+    func testDDProfiler_allocationFailureOnWorkerReleasesConcurrentFlushes() throws {
+        let cache = try XCTUnwrap(binary_image_cache_shared_for_testing())
+        let symbol = try XCTUnwrap(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "malloc"))
+        let address = UInt64(UInt(bitPattern: symbol))
+        var originalImage = binary_image_t()
+        XCTAssertTrue(binary_image_cache_lookup_for_testing(cache, address, &originalImage))
+        let expectedFilename = String(cString: try XCTUnwrap(originalImage.filename))
+        let expectedUUID = UUID(uuid: originalImage.uuid)
+        let expectedLoadAddress = originalImage.load_address
+
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         let callbackStopCompleted = DispatchSemaphore(value: 0)
         let callbackOwner = Unmanaged.passUnretained(callbackStopCompleted).toOpaque()
@@ -84,6 +93,13 @@ final class DDProfilerTests: XCTestCase {
         XCTAssertEqual(clearedDiagnostics.dropped_batch_count, 0)
         XCTAssertEqual(clearedDiagnostics.dropped_sample_count, 0)
         XCTAssertEqual(clearedDiagnostics.max_pending_bytes, 0)
+
+        XCTAssertEqual(cache, binary_image_cache_shared_for_testing())
+        var retainedImage = binary_image_t()
+        XCTAssertTrue(binary_image_cache_lookup_for_testing(cache, address, &retainedImage))
+        XCTAssertEqual(retainedImage.load_address, expectedLoadAddress)
+        XCTAssertEqual(UUID(uuid: retainedImage.uuid), expectedUUID)
+        XCTAssertEqual(String(cString: try XCTUnwrap(retainedImage.filename)), expectedFilename)
     }
 
     func testDDProfiler_startTesting_withValidSampleRate_startsSuccessfully() {
