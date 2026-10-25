@@ -286,7 +286,6 @@ public:
             profiler = nullptr;
             delete profile;
             profile = nullptr;
-            delete image_cache;
             image_cache = nullptr;
         }
     }
