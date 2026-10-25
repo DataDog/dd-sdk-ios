@@ -23,6 +23,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     let profilingSamplerProvider: ProfilingSamplerProvider
     let telemetryController: ProfilingTelemetryController
+    let memoryProfiler: MemoryProfiler
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
 
@@ -40,21 +41,32 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
         telemetryController: ProfilingTelemetryController,
-        userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
+        userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard, //swiftlint:disable:this required_reason_api_name
+        memorySampleRate: SampleRate = 0
     ) {
         self.requestBuilder = requestBuilder
         self.telemetryController = telemetryController
 
         let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
+        // Internal inputs until RUM-18353 exposes configuration and RUM-18355
+        // connects captured memory windows to the existing profile writer.
+        let memorySampleRate = memorySampleRate.normalizedSampleRate
         self.profilingSamplerProvider = ProfilingSamplerProvider(
             continuousSampleRate: continuousSampleRate,
-            appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0
+            appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0,
+            memorySampleRate: memorySampleRate
         )
         let quotaChecker = ProfilingQuotaChecker(profilingSamplerProvider: profilingSamplerProvider)
 
+        let memoryProfiler = MemoryProfiler(
+            profilingSamplerProvider: profilingSamplerProvider
+        )
+        self.memoryProfiler = memoryProfiler
+
         Self.setProfilingEnabled(in: userDefaults)
         Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
+        userDefaults.setValue(memorySampleRate, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
 
         let datadogProfiler = DatadogProfiler(
             core: core,
@@ -65,6 +77,8 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         )
         self.messageReceiver = CombinedFeatureMessageReceiver([
             ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
+            // Always return false so CPU profiling also receives TTID.
+            memoryProfiler,
             quotaChecker,
             datadogProfiler
         ])

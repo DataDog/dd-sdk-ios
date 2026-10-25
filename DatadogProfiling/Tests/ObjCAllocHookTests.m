@@ -174,6 +174,11 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
 }
 
 - (void)testPartialFailureCompositionAndStop {
+    // Installation is permanent: lifecycle tests or pre-main startup may have
+    // installed these hooks already. A fresh-process run still covers failure
+    // between the two initial method installations.
+    dd_objc_alloc_hook_stop();
+    const bool wasInstalled = dd_objc_alloc_hook_diagnostics().alloc_installed;
     Class root = objc_getClass("NSObject");
     Method allocMethod = class_getClassMethod(root, sel_registerName("allocWithZone:"));
     Method deallocMethod = class_getInstanceMethod(root, sel_registerName("dealloc"));
@@ -183,7 +188,7 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
         return;
     }
 
-    // A third-party layer installed first must remain in the forwarding chain.
+    // A third-party layer must remain in the forwarding chain in either order.
     atomic_store(&beforeEnabled, true);
     beforeAllocNext = method_getImplementation(allocMethod);
     beforeDeallocNext = method_getImplementation(deallocMethod);
@@ -194,27 +199,30 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
                    DD_OBJC_ALLOC_HOOK_FAILED_INVALID_OBSERVER);
     XCTAssertFalse(dd_objc_alloc_hook_diagnostics().is_enabled);
 
-    // Simulate the second method failing after the first IMP was replaced.
-    dd_objc_alloc_hook_test_fail_after_alloc_once();
-    XCTAssertEqual(dd_objc_alloc_hook_start(observeAllocation, observeDeallocation),
-                   DD_OBJC_ALLOC_HOOK_FAILED_INSTALL);
-    dd_objc_alloc_hook_diagnostics_t partial = dd_objc_alloc_hook_diagnostics();
-    XCTAssertTrue(partial.alloc_installed);
-    XCTAssertFalse(partial.dealloc_installed);
-    XCTAssertFalse(partial.is_enabled);
-
     uint64_t beforeCount = atomic_load(&beforeAllocations);
-    @autoreleasepool {
-        DDObjCAllocFixture *fixture = [DDObjCAllocFixture new];
-        fixture.payload = 1;
-        XCTAssertEqual(fixture.payload, 1);
+    if (!wasInstalled) {
+        NSLog(@"Exercising initial Objective-C allocation-hook installation failure");
+        // Simulate the second method failing after the first IMP was replaced.
+        dd_objc_alloc_hook_test_fail_after_alloc_once();
+        XCTAssertEqual(dd_objc_alloc_hook_start(observeAllocation, observeDeallocation),
+                       DD_OBJC_ALLOC_HOOK_FAILED_INSTALL);
+        dd_objc_alloc_hook_diagnostics_t partial = dd_objc_alloc_hook_diagnostics();
+        XCTAssertTrue(partial.alloc_installed);
+        XCTAssertFalse(partial.dealloc_installed);
+        XCTAssertFalse(partial.is_enabled);
+
+        @autoreleasepool {
+            DDObjCAllocFixture *fixture = [DDObjCAllocFixture new];
+            fixture.payload = 1;
+            XCTAssertEqual(fixture.payload, 1);
+        }
+        XCTAssertGreaterThan(atomic_load(&beforeAllocations), beforeCount);
+        XCTAssertEqual(atomic_load(&targetAllocations), 0);
     }
-    XCTAssertGreaterThan(atomic_load(&beforeAllocations), beforeCount);
-    XCTAssertEqual(atomic_load(&targetAllocations), 0);
 
     // Retrying finishes the missing layer without re-capturing our own alloc IMP.
     XCTAssertEqual(dd_objc_alloc_hook_start(observeAllocation, observeDeallocation),
-                   DD_OBJC_ALLOC_HOOK_OK);
+                   wasInstalled ? DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED : DD_OBJC_ALLOC_HOOK_OK);
     dd_objc_alloc_hook_diagnostics_t installed = dd_objc_alloc_hook_diagnostics();
     XCTAssertTrue(installed.alloc_installed);
     XCTAssertTrue(installed.dealloc_installed);
@@ -280,10 +288,10 @@ static void afterDealloc(__unsafe_unretained id object, SEL selector);
     }
     XCTAssertEqual(dd_objc_alloc_hook_start(observeAllocation, observeDeallocation),
                    DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED);
-    XCTAssertFalse(dd_objc_alloc_hook_diagnostics().has_outer_alloc_hook);
+    XCTAssertEqual(dd_objc_alloc_hook_diagnostics().has_outer_alloc_hook, wasInstalled);
 
-    // An inner layer must be neutralised in place; removing its IMP would
-    // break the outer forwarding chain. Our observation continues.
+    // Neutralise the earlier layer in place; when installed before Datadog,
+    // removing its IMP would break forwarding. Observation continues either way.
     atomic_store(&beforeEnabled, false);
     beforeCount = atomic_load(&beforeAllocations);
     observedBefore = atomic_load(&targetAllocations);
