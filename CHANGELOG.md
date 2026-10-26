@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FIX] Stop reporting watchdog terminations on macOS, where abrupt terminations could be mislabeled as watchdog kills. See [#3320][]
+- [FIX] Stop reporting watchdog terminations on macOS, where abrupt terminations could be mislabeled as watchdog kills. `RUM.Configuration.trackWatchdogTerminations` is no longer available on macOS. See [#3320][]
 - [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]

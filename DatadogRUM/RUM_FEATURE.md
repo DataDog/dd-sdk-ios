@@ -116,7 +116,7 @@ RUM.enable(
         // Requires Crash Reporting for stack traces
         appHangThreshold: 2.0,
         
-        // Track watchdog terminations as RUM errors (ignored on macOS)
+        // Track watchdog terminations as RUM errors (unavailable on macOS)
         // Default: false
         trackWatchdogTerminations: false,
         
@@ -311,7 +311,7 @@ Event mappers allow modifying or dropping events before upload:
 
 When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `RUM.enable(with:)` runs, it is merged onto the in-code `RUM.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
 
-- **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackBackgroundEvents`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `trackSlowFrames`, `trackWatchdogTerminations`, `vitalsUpdateFrequency`, and (except on watchOS) `trackMemoryWarnings`/`trackUserInteractions`. `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
+- **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackBackgroundEvents`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `trackSlowFrames`, `trackWatchdogTerminations` (except on macOS), `vitalsUpdateFrequency`, and (except on watchOS) `trackMemoryWarnings`/`trackUserInteractions`. `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
 - **`trace` namespace** configures distributed tracing on RUM's own URLSession instrumentation (traced hosts, sample rate, header/propagator types, injection strategy), merged field by field onto any in-code `urlSessionTracking.firstPartyHostsTracing`. An explicit `rum.trackResources == false` disables that instrumentation and suppresses `trace` entirely, regardless of the hosts it declares.
 - A parameter the remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration fetched) leaves the configuration unchanged.
 - See `RUMConfiguration+RemoteConfiguration.swift` for the full merge rules, and `DatadogTrace/TRACE_FEATURE.md#remote-configuration` for how Trace's own remote `trace.sampleRate` differs from this one (RUM owns propagation enablement; Trace only owns its default tracer's span sample rate).

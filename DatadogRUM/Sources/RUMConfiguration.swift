@@ -206,14 +206,14 @@ extension RUM {
         /// Default: `false`.
         public var trackBackgroundEvents: Bool
 
+        #if !os(macOS)
         /// Determines whether the SDK should track application termination by the watchdog.
         ///
         /// Read more about watchdog terminations at https://developer.apple.com/documentation/xcode/addressing-watchdog-terminations
         ///
-        /// Ignored on macOS, where watchdog terminations are not reported.
-        ///
         /// Default: `false`.
         public var trackWatchdogTerminations: Bool
+        #endif
 
         /// Enables RUM long tasks tracking with the given threshold (in seconds).
         ///
@@ -655,7 +655,7 @@ extension RUM.Configuration {
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
-    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
+    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`. **Unavailable on macOS.**
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
     ///   - networkSettledResourcePredicate: Predicate used to classify resources for the Time-to-Network-Settled (TNS) metric calculation.
     ///     Default: `TimeBasedTNSResourcePredicate()`.
@@ -742,7 +742,6 @@ extension RUM.Configuration {
         trackBackgroundEvents: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
         nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
@@ -781,7 +780,6 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
-        self.trackWatchdogTerminations = trackWatchdogTerminations
         self.trackMemoryWarnings = trackMemoryWarnings
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate

@@ -136,7 +136,8 @@ class RUMTests: XCTestCase {
         #endif
     }
 
-    func testWhenWatchdogTerminationsTrackingIsEnabled_itRegistersTheMonitorExceptOnMacOS() throws {
+    #if !os(macOS)
+    func testWhenWatchdogTerminationsTrackingIsEnabled_itRegistersTheMonitor() throws {
         // Given
         config.trackWatchdogTerminations = true
 
@@ -146,13 +147,9 @@ class RUMTests: XCTestCase {
         // Then
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let receivers = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers
-        let monitor = receivers.firstElement(of: WatchdogTerminationMonitor.self)
-        #if os(macOS)
-        XCTAssertNil(monitor, "Watchdog terminations must not be reported on macOS")
-        #else
-        XCTAssertNotNil(monitor)
-        #endif
+        XCTAssertNotNil(receivers.firstElement(of: WatchdogTerminationMonitor.self))
     }
+    #endif
 
     func testWhenEnabledWithDefaultConfiguration() throws {
         // Given
@@ -533,7 +530,9 @@ class RUMTests: XCTestCase {
 
     func testWhenRemoteConfigurationEnablesWatchdogTerminations_itRegistersTheMonitorExceptOnMacOS() throws {
         // Given
+        #if !os(macOS)
         config.trackWatchdogTerminations = false
+        #endif
         core.remoteConfiguration = RemoteConfiguration(
             rum: .init(applicationId: .mockRandom(), trackWatchdogTerminations: true)
         )

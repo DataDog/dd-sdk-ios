@@ -162,7 +162,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         trackBackgroundEvents: Bool = .mockAny(),
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = .mockAny(),
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
         nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
@@ -189,7 +188,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             trackBackgroundEvents: trackBackgroundEvents,
             longTaskThreshold: longTaskThreshold,
             appHangThreshold: appHangThreshold,
-            trackWatchdogTerminations: trackWatchdogTerminations,
             vitalsUpdateFrequency: vitalsUpdateFrequency,
             networkSettledResourcePredicate: networkSettledResourcePredicate,
             nextViewActionPredicate: nextViewActionPredicate,
@@ -210,14 +208,13 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
 
     #if !os(watchOS)
     public static func mockRandom() -> RUM.Configuration {
-        .mockWith(
+        var configuration: RUM.Configuration = .mockWith(
             applicationID: .mockRandom(),
             sessionSampleRate: .mockRandom(min: 0, max: 100),
             trackFrustrations: .mockRandom(),
             trackBackgroundEvents: .mockRandom(),
             longTaskThreshold: .mockRandom(),
             appHangThreshold: .mockRandom(),
-            trackWatchdogTerminations: .mockRandom(),
             vitalsUpdateFrequency: [VitalsFrequency.frequent, .average, .rare].randomElement(),
             customEndpoint: .mockRandom(),
             trackAnonymousUser: .mockRandom(),
@@ -225,6 +222,10 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             trackSlowFrames: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
+        #if !os(macOS)
+        configuration.trackWatchdogTerminations = .mockRandom()
+        #endif
+        return configuration
     }
     #endif
 }
