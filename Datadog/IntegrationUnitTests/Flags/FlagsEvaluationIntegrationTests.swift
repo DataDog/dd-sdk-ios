@@ -898,7 +898,6 @@ private final class FlagsLocalIntake {
     }
 }
 
-
 private final class OptOutAssignmentServer {
     private let listener: NWListener
     private let queue = DispatchQueue(label: "flags.optout.loopback")
