@@ -61,7 +61,7 @@ internal struct File: WritableFile, ReadableFile, FileProtocol, Equatable {
     }
 
     func modifiedAt() throws -> Date? {
-        try FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date
+        try FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date // swiftlint:disable:this required_reason_api_name
     }
 
     /// Appends given data at the end of this file.

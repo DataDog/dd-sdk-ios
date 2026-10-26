@@ -222,6 +222,9 @@ internal struct LayerWireframeBuilder {
                 switch try imageSnapshot.redacted(parentTextInput: textInput) {
                 case .image(let image):
                     let resource = ImageSnapshotResource(image: image)
+                    guard !resource.calculateIdentifier().isEmpty else {
+                        return nil
+                    }
                     return Output(
                         wireframe: SRWireframe(
                             replayID: layerSnapshot.replayID,

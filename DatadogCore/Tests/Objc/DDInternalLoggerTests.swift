@@ -66,6 +66,24 @@ class DDInternalLoggerTests: XCTestCase {
         XCTAssertEqual(error.stack, stack)
     }
 
+    func testSetConsolePrintReplacesTheGlobalPrintFunction() {
+        // Given
+        let originalConsolePrint = DatadogInternal.consolePrint
+        defer { DatadogInternal.consolePrint = originalConsolePrint }
+
+        let captured = ReadWriteLock<(message: String, level: objc_CoreLoggerLevel)?>(wrappedValue: nil)
+
+        // When
+        objc_InternalLogger.setConsolePrint { message, level in
+            captured.wrappedValue = (message, level)
+        }
+        DatadogInternal.consolePrint("test message", .warn)
+
+        // Then
+        XCTAssertEqual(captured.wrappedValue?.message, "test message")
+        XCTAssertEqual(captured.wrappedValue?.level, .warn)
+    }
+
     func testWhenTelemetryIsSentThroughObjc_thenItForwardsToDDTelemetry() throws {
         CoreRegistry.register(default: core)
         defer { CoreRegistry.unregisterDefault() }

@@ -1,6 +1,14 @@
 # Unreleased
 
 - [FEATURE] Flags: Add `Flags.Configuration.flagSelection` to load only the flags that match the given tags or key patterns. See [#3344][]
+- [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
+- [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
+- [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
+- [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
+- [FIX] NSPrivacyAccessedAPICategoryFileTimestamp added to DatadogCore's privacy manifest as required. See [#3339][]
+- [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
+- [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
+- [IMPROVEMENT] Reduce image resource sizes with WebP encoding and speed up image hashing in Session Replay's experimental composition tree recorder. See [#3336][]
 
 # 3.20.0 / 19-10-2026
 
@@ -1265,6 +1273,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
 [#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
 [#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
+[#3078]: https://github.com/DataDog/dd-sdk-ios/pull/3078
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 [#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
 [#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
@@ -1305,6 +1314,11 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
 [#3344]: https://github.com/DataDog/dd-sdk-ios/pull/3344
+[#3330]: https://github.com/DataDog/dd-sdk-ios/pull/3330
+[#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
+[#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
+[#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
+[#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

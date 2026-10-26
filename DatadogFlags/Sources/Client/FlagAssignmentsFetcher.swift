@@ -20,6 +20,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let flagSelection: CanonicalFlagSelection?
 
     private let featureScope: any FeatureScope
+    private let assignmentFetchQueue: DispatchQueue
     private let fetch: (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
 
     private static let decoder = JSONDecoder()
@@ -50,12 +51,18 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customHeaders: [String: String]?,
         flagSelection: CanonicalFlagSelection?,
         featureScope: any FeatureScope,
+        assignmentFetchQueue: DispatchQueue = DispatchQueue(
+            label: "com.datadoghq.ios-sdk-flags-assignment-fetch",
+            qos: .utility,
+            autoreleaseFrequency: .workItem
+        ),
         fetch: @escaping (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
     ) {
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.flagSelection = flagSelection
         self.featureScope = featureScope
+        self.assignmentFetchQueue = assignmentFetchQueue
         self.fetch = fetch
     }
 
@@ -63,69 +70,106 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
+        // Repository callbacks can invoke application code; keep them off shared SDK work queues.
+        let completion: (Result<FlagAssignmentsResponse, FlagsError>) -> Void = { result in
+            DispatchQueue.global(qos: .utility).async {
+                completion(result)
+            }
+        }
         featureScope.context { [weak self] context in
             guard let self else {
                 completion(.failure(.clientNotInitialized))
                 return
             }
-            do {
-                let request = try URLRequest.flagAssignmentsRequest(
-                    url: self.url(with: context),
-                    evaluationContext: evaluationContext,
+
+            self.assignmentFetchQueue.async {
+                self.fetchAssignments(
+                    for: evaluationContext,
                     context: context,
-                    customHeaders: self.customHeaders,
-                    flagSelection: self.flagSelection
+                    completion: completion
                 )
-                self.fetch(request) { [featureScope] result in
-                    switch result {
-                    case let .success((data, httpResponse)):
-                        if let reason = httpResponse.value(forHTTPHeaderField: Self.flagSelectionIgnoredHeader) {
-                            DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration.")
-                            featureScope.telemetry.debug("Flag selection ignored", attributes: ["reason": reason])
-                        }
-                        do {
-                            let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
-                            guard response.obfuscation == nil || FlagKeyObfuscation.isSupported(source: context.source) else {
-                                throw FlagsError.invalidResponse
-                            }
+            }
+        }
+    }
 
-                            // Log any flags that failed to decode to telemetry
-                            if !response.failedFlags.isEmpty {
-                                for (flagKey, errorDescription) in response.failedFlags {
-                                    let error = InternalError(description: errorDescription)
-                                    DD.logger.warn(
-                                        "Failed to decode flag '\(flagKey)' from flag assignments response. Flag will be dropped from configuration.",
-                                        error: error
-                                    )
-                                    featureScope.telemetry.debug(
-                                        "Failed to decode flag '\(flagKey)' from flag assignments response",
-                                        attributes: [
-                                            "flagKey": flagKey,
-                                            "errorDescription": errorDescription
-                                        ]
-                                    )
-                                }
-                            }
+    private func fetchAssignments(
+        for evaluationContext: FlagsEvaluationContext,
+        context: DatadogContext,
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
+    ) {
+        do {
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: url(with: context),
+                evaluationContext: evaluationContext,
+                context: context,
+                customHeaders: customHeaders,
+                flagSelection: flagSelection
+            )
+            fetch(request) { [assignmentFetchQueue, featureScope] result in
+                assignmentFetchQueue.async {
+                    Self.handleFetchResult(
+                        result,
+                        supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
+                        featureScope: featureScope,
+                        completion: completion
+                    )
+                }
+            }
+        } catch let error {
+            DD.logger.error("Failed to encode flag assignments request body.", error: error)
+            featureScope.telemetry.error("Failed to encode flag assignments request body.", error: error)
+            completion(.failure(.invalidConfiguration))
+        }
+    }
 
-                            completion(.success(response))
-                        } catch {
-                            featureScope.telemetry.error(
-                                "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response",
-                                error: error
-                            )
-                            completion(.failure(.invalidResponse))
-                        }
-                    case .failure(let error):
-                        DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
-                        featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
-                        completion(.failure(.networkError(error)))
+    private static func handleFetchResult(
+        _ result: Result<(Data, HTTPURLResponse), Error>,
+        supportsObfuscation: Bool,
+        featureScope: any FeatureScope,
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
+    ) {
+        switch result {
+        case let .success((data, httpResponse)):
+            if let reason = httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader) {
+                DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration.")
+                featureScope.telemetry.debug("Flag selection ignored", attributes: ["reason": reason])
+            }
+            do {
+                let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
+                guard response.obfuscation == nil || supportsObfuscation else {
+                    throw FlagsError.invalidResponse
+                }
+
+                // Log any flags that failed to decode to telemetry
+                if !response.failedFlags.isEmpty {
+                    for (flagKey, errorDescription) in response.failedFlags {
+                        let error = InternalError(description: errorDescription)
+                        DD.logger.warn(
+                            "Failed to decode flag '\(flagKey)' from flag assignments response. Flag will be dropped from configuration.",
+                            error: error
+                        )
+                        featureScope.telemetry.debug(
+                            "Failed to decode flag '\(flagKey)' from flag assignments response",
+                            attributes: [
+                                "flagKey": flagKey,
+                                "errorDescription": errorDescription
+                            ]
+                        )
                     }
                 }
-            } catch let error {
-                DD.logger.error("Failed to encode flag assignments request body.", error: error)
-                featureScope.telemetry.error("Failed to encode flag assignments request body.", error: error)
-                completion(.failure(.invalidConfiguration))
+
+                completion(.success(response))
+            } catch {
+                featureScope.telemetry.error(
+                    "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response",
+                    error: error
+                )
+                completion(.failure(.invalidResponse))
             }
+        case .failure(let error):
+            DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
+            featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
+            completion(.failure(.networkError(error)))
         }
     }
 
