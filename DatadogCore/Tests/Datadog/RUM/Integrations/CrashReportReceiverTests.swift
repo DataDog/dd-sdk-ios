@@ -401,14 +401,15 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
             lastRUMViewEvent: nil, // the stop reset the view
-            lastRUMSessionState: Bool.random() ? .mockWith(isSampled: true, hasTrackedAnyView: .mockRandom()) : nil,
-            lastIsAppInForeground: .mockRandom(),
+            lastRUMSessionState: .mockWith(isSampled: true, hasTrackedAnyView: true), // the stopped session (sampled)
+            lastIsAppInForeground: false, // app in background
             isRUMSessionStopped: true
         )
         let receiver: CrashReportReceiver = .mockWith(
             featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
-            trackBackgroundEvents: .mockRandom()
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: true // BET enabled, so without the stop the crash would be reported in a Background view
         )
 
         // When

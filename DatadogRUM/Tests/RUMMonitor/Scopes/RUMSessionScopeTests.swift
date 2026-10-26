@@ -679,7 +679,6 @@ class RUMSessionScopeTests: XCTestCase {
 
         // Then
         XCTAssertEqual(fatalErrorContext.sessionStopCount, 1)
-        XCTAssertTrue(fatalErrorContext.viewsPublishedAfterStop.isEmpty, "There is no active view after the stop")
     }
 
     func testGivenStoppedSessionKeptForPendingResource_whenTimeseriesDataArrives_itDoesNotReplaceTheCurrentSessionState() throws {

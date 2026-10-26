@@ -65,7 +65,7 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         case .context(let context):
             update(context: context)
         case let .payload(viewEvent as RUMViewEvent):
-            // A new RUM view means tracking resumed after an eventual `stopSession()`.
+            // A new RUM view means tracking resumed, if it was stopped with `stopSession()`.
             queue.async { self.update(viewEvent: viewEvent, isRUMSessionStopped: false) }
         case let .payload(message as String) where message == RUMPayloadMessages.viewReset:
             queue.async { self.update(viewEvent: nil, isRUMSessionStopped: self.isRUMSessionStopped) }

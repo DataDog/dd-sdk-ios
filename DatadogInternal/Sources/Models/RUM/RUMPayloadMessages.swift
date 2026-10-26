@@ -10,8 +10,8 @@ import Foundation
 public enum RUMPayloadMessages {
     /// Message to send when RUM view is reset.
     public static let viewReset = "rum-view-reset"
-    /// Message to send when the RUM session is stopped with `stopSession()`. It resets the RUM view, and a crash with no
-    /// RUM view is not reported until a new view is tracked.
+    /// Message to send when the RUM session is stopped with `stopSession()`. It resets the RUM view, and a crash is not
+    /// reported until a new view is tracked.
     public static let sessionStop = "rum-session-stop"
 }
 
