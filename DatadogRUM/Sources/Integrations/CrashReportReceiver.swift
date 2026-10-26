@@ -92,8 +92,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             timeSinceAppStart: timeSinceAppStart
         )
 
-        // After `stopSession()`, a crash with no RUM view is not reported until a new view resumes tracking.
-        if context.isRUMSessionStopped && context.lastRUMViewEvent == nil {
+        // After `stopSession()`, a crash is not reported until a new view resumes tracking and clears the flag.
+        if context.isRUMSessionStopped {
             DD.logger.debug("There was a crash after the RUM session was stopped, so it is not reported.")
             return true // handled: dropped on purpose
         }
