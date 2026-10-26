@@ -1229,6 +1229,7 @@ public struct SRSegment: SRDataModel
         case reactNative = "react-native"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case maui = "maui"
+        case unreal = "unreal"
     public struct View: Codable
         public let id: String
         public enum CodingKeys: String, CodingKey
