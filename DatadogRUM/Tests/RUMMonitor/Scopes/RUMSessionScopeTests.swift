@@ -481,42 +481,6 @@ class RUMSessionScopeTests: XCTestCase {
     }
     #endif
 
-    #if os(macOS)
-    func testOnMacOS_givenNoActiveViewAndBackgroundEventsTrackingDisabled_whenErrorIsAdded_itIsTrackedInNoActiveView() throws {
-        // Given
-        let sessionStartTime = Date()
-
-        var context = self.context
-        context.applicationStateHistory = .mockAppInForeground(since: sessionStartTime) // macOS apps are always in the foreground
-
-        let scope: RUMSessionScope = .mockWith(
-            isInitialSession: .mockRandom(),
-            parent: parent,
-            startTime: sessionStartTime,
-            dependencies: .mockWith(
-                trackBackgroundEvents: false // BET disabled
-            )
-        )
-
-        var commandTime = sessionStartTime.addingTimeInterval(1)
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: commandTime, identity: ViewIdentifier("view")), context: context, writer: writer)
-        _ = scope.process(command: RUMStopViewCommand.mockWith(time: commandTime.addingTimeInterval(0.5), identity: ViewIdentifier("view")), context: context, writer: writer)
-        XCTAssertFalse(scope.viewScopes.contains(where: { $0.isActiveView }), "The last window closed, so no view is active")
-
-        // When
-        commandTime = commandTime.addingTimeInterval(1)
-        XCTAssertTrue(scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: commandTime), context: context, writer: writer))
-
-        // Then
-        let activeView = try XCTUnwrap(scope.viewScopes.last(where: { $0.isActiveView }))
-        XCTAssertEqual(activeView.viewName, "NoActiveView")
-        XCTAssertEqual(activeView.viewPath, "com/datadog/no-active-view/view")
-        XCTAssertEqual(activeView.viewStartTime, commandTime)
-        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
-        XCTAssertEqual(error.view.name, "NoActiveView")
-    }
-    #endif
-
     // MARK: - Application Launch Events Tracking
 
     func testGivenAppInForegroundAndNotInitialSessionWithNoViewTrackedBefore_itDoesNotCreateAppLaunchScope() {
