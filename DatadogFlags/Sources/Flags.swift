@@ -117,7 +117,8 @@ public enum Flags {
         /// Loads only the flags that match these tags or key patterns.
         ///
         /// The selection is fixed when the feature is enabled. A selection over a limit is not sent:
-        /// the SDK logs an error and loads every flag. See ``Flags/FlagSelection`` for the matching rules and limits.
+        /// the SDK logs an error and loads every flag. If the server ignores the selection, the full configuration
+        /// loads. See ``Flags/FlagSelection`` for the matching rules, limits and fallbacks.
         ///
         /// Default: `nil` (every flag is loaded).
         public var flagSelection: FlagSelection?
@@ -170,9 +171,15 @@ public enum Flags {
     /// only `*` is special, and it matches any run of characters, including none.
     ///
     /// Leading and trailing Unicode whitespace is trimmed from every value, empty values are dropped,
-    /// and duplicates are removed. Each list accepts at most 31 values, and each tag and key pattern is at most
-    /// 200 UTF-8 bytes. Evaluating a flag outside the selection returns the default value with
-    /// ``FlagEvaluationError/flagNotFound``.
+    /// and duplicates are removed. Limits apply after this: each list accepts at most 31 values after dedupe,
+    /// and each tag and key pattern is at most 200 UTF-8 bytes after trimming. A selection over a limit is not sent;
+    /// the SDK logs an error and loads the full configuration.
+    ///
+    /// The server may ignore a very large selection (`too_many_values`). In that case the full configuration loads
+    /// and the SDK logs an error with the reason. Servers without selection support, or with it disabled,
+    /// return the full configuration without a warning.
+    ///
+    /// Evaluating a flag outside the selection returns the default value with ``FlagEvaluationError/flagNotFound``.
     public struct FlagSelection {
         /// Tags to select. A flag is selected if it has any of these tags.
         public var tags: [String]
