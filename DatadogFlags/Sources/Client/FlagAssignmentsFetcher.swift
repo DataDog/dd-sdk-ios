@@ -105,11 +105,12 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 customHeaders: customHeaders,
                 flagSelection: flagSelection
             )
-            fetch(request) { [assignmentFetchQueue, featureScope] result in
+            fetch(request) { [assignmentFetchQueue, featureScope, flagSelection] result in
                 assignmentFetchQueue.async {
                     Self.handleFetchResult(
                         result,
                         supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
+                        requestCarriedFlagSelection: flagSelection != nil,
                         featureScope: featureScope,
                         completion: completion
                     )
@@ -125,12 +126,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private static func handleFetchResult(
         _ result: Result<(Data, HTTPURLResponse), Error>,
         supportsObfuscation: Bool,
+        requestCarriedFlagSelection: Bool,
         featureScope: any FeatureScope,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         switch result {
         case let .success((data, httpResponse)):
-            if let reason = httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader) {
+            if requestCarriedFlagSelection,
+               let reason = httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader) {
                 DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration.")
                 featureScope.telemetry.debug("Flag selection ignored", attributes: ["reason": reason])
             }

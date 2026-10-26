@@ -200,6 +200,88 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertEqual(debug.attributes?["reason"] as? String, "too_many_values")
     }
 
+    func testFlagAssignmentsReportsIgnoredHeaderValueVerbatim() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let response = try XCTUnwrap(
+            HTTPURLResponse(
+                url: .mockAny(),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["DD-Flag-Selection-Ignored": "tag_load_failed"]
+            )
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: featureScope,
+            fetch: { _, completion in
+                completion(.success((.mockAnyFlagAssignmentsResponse(), response)))
+            }
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(try XCTUnwrap(capturedResult?.get()).flags, .mockAny())
+        XCTAssertEqual(
+            dd.logger.errorMessages,
+            ["`Flags.Configuration.flagSelection` was ignored by the server (tag_load_failed). Loaded the full flag configuration."]
+        )
+        let telemetry = featureScope.telemetryMock.messages
+        XCTAssertEqual(telemetry.count, 1)
+        let debug = try XCTUnwrap(telemetry.firstDebug())
+        XCTAssertEqual(debug.message, "Flag selection ignored")
+        XCTAssertEqual(debug.attributes?.count, 1)
+        XCTAssertEqual(debug.attributes?["reason"] as? String, "tag_load_failed")
+    }
+
+    func testFlagAssignmentsWithoutFlagSelectionIgnoresIgnoredHeader() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let response = try XCTUnwrap(
+            HTTPURLResponse(
+                url: .mockAny(),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["DD-Flag-Selection-Ignored": "too_many_values"]
+            )
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: featureScope,
+            fetch: { _, completion in
+                completion(.success((.mockAnyFlagAssignmentsResponse(), response)))
+            }
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(try XCTUnwrap(capturedResult?.get()).flags, .mockAny())
+        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
+    }
+
     func testFlagAssignmentsWithoutIgnoredHeaderLogsNothing() {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
