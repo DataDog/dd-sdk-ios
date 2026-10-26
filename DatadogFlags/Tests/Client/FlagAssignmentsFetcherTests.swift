@@ -155,6 +155,38 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertEqual(flagSelection, ["tags": ["mobile"], "key_patterns": ["checkout.*"]])
     }
 
+    func testFlagAssignmentsSendsFlagSelectionToCustomEndpoint() throws {
+        // Given
+        let customEndpoint = URL(string: "https://custom-proxy.com/flags")!
+        var capturedRequest: URLRequest?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: customEndpoint,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: featureScope,
+            fetch: { request, completion in
+                capturedRequest = request
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+            }
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(capturedRequest?.url, customEndpoint)
+        let body = try XCTUnwrap(capturedRequest?.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let data = try XCTUnwrap(json["data"] as? [String: Any])
+        let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
+        let flagSelection = try XCTUnwrap(attributes["flag_selection"] as? [String: [String]])
+        XCTAssertEqual(flagSelection, ["tags": ["mobile"], "key_patterns": []])
+    }
+
     func testFlagAssignmentsReportsIgnoredFlagSelection() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())

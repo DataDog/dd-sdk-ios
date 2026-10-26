@@ -2591,6 +2591,48 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testFlagSelectionMatchingNothingIsReadyWithoutFlags() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let repository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(.init(flags: [:])))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: CanonicalFlagSelection(tags: ["no-such-tag"], keyPatterns: [])
+        )
+        featureScope.dataStore.flush()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<Void, FlagsError>?
+
+        // When
+        client.setEvaluationContext(.mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        repository.flush()
+        XCTAssertNoThrow(try XCTUnwrap(capturedResult).get())
+        XCTAssertEqual(client.state.currentState, .ready)
+        XCTAssertEqual(repository.flagAssignments(), [:])
+        let details = client.getDetails(key: "checkout.enabled", defaultValue: false)
+        XCTAssertFalse(details.value)
+        XCTAssertEqual(details.error, .flagNotFound)
+        XCTAssertTrue(dd.logger.recordedLogs.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
+    }
+
     func testFetchedFlagsDataIsPersistedWithFlagSelection() throws {
         // Given
         let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
