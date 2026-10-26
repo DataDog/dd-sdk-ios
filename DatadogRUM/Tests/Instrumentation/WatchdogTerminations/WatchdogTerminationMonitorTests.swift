@@ -75,7 +75,95 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent2.view.id)
     }
 
+    func testGivenSessionWasStopped_whenWatchdogTerminationOccurs_itIsNotReported() throws {
+        let didSend = self.expectation(description: "Watchdog termination was reported")
+        didSend.isInverted = true
+
+        // app starts
+        let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
+        givenDefaultApp(didSend: didSend, queue: firstSessionQueue)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        firstSessionQueue.sync {}
+
+        // RUM view is tracked, then the session is stopped
+        let sessionID: UUID = .mockRandom()
+        sut.update(viewEvent: .mockRandomWith(sessionID: sessionID))
+        sut.sessionDidStop(sessionID: sessionID.uuidString.lowercased())
+        sut.update(viewEvent: .mockRandomWith(sessionID: sessionID)) // the last update of the stopped view
+
+        // watchdog termination happens here which causes app launch
+        givenDefaultApp(didSend: didSend)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+
+        waitForExpectations(timeout: 0.5)
+        XCTAssertNil(reporter.sendParams, "A Watchdog Termination after `stopSession()` must not be reported in the stopped session")
+    }
+
+    func testGivenSessionWasStopped_whenViewOfAnotherSessionIsTracked_itReportsWatchdogTerminationInThatView() throws {
+        let didSend = self.expectation(description: "Watchdog termination was reported")
+
+        // app starts
+        let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
+        givenDefaultApp(didSend: didSend, queue: firstSessionQueue)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        firstSessionQueue.sync {}
+
+        // RUM session is stopped, then tracking resumes in a new session
+        let stoppedSessionID: UUID = .mockRandom()
+        sut.update(viewEvent: .mockRandomWith(sessionID: stoppedSessionID))
+        sut.sessionDidStop(sessionID: stoppedSessionID.uuidString.lowercased())
+        let resumedView: RUMViewEvent = .mockRandomWith(sessionID: .mockRandom())
+        sut.update(viewEvent: resumedView)
+        sut.update(viewEvent: .mockRandomWith(sessionID: stoppedSessionID)) // a late update of the stopped view
+
+        // watchdog termination happens here which causes app launch
+        givenDefaultApp(didSend: didSend)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, resumedView.view.id)
+    }
+
+    func testGivenSessionWasStoppedInPreviousProcess_whenViewIsTracked_itReportsWatchdogTerminationInThatView() throws {
+        let didSend = self.expectation(description: "Watchdog termination was reported")
+
+        // the previous process stopped the session
+        featureScope.rumDataStore.setValue(true, forKey: .watchdogRUMSessionStopped)
+
+        // app starts
+        let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
+        givenDefaultApp(didSend: didSend, queue: firstSessionQueue)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        firstSessionQueue.sync {}
+
+        // RUM view is tracked
+        let viewEvent: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: viewEvent)
+
+        // watchdog termination happens here which causes app launch
+        givenDefaultApp(didSend: didSend)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent.view.id)
+    }
+
     // MARK: Helpers
+
+    private func givenDefaultApp(didSend: XCTestExpectation, queue: DispatchQueue = AppStateManager.defaultQueue) {
+        given(
+            isSimulator: false,
+            isDebugging: false,
+            appVersion: "1.0.0",
+            osVersion: "1.0.0",
+            systemBootTime: 1.0,
+            vendorId: "foo",
+            processId: UUID(),
+            didCrash: false,
+            didSend: didSend,
+            queue: queue
+        )
+    }
 
     func given(
         isSimulator: Bool,

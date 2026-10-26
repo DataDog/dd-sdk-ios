@@ -24,6 +24,7 @@ internal final class WatchdogTerminationMonitor {
         static let detectedWatchdogTermination = "Based on heuristics, previous app session was terminated by Watchdog"
         static let failedToReadViewEvent = "Failed to read the view event from the data store"
         static let rumViewEventUpdated = "RUM View event updated"
+        static let sessionWasStopped = "Watchdog Termination is not reported because the RUM session was stopped"
         static let failedToSendWatchdogTermination = "Failed to send Watchdog Termination event"
     }
 
@@ -37,6 +38,11 @@ internal final class WatchdogTerminationMonitor {
     /// When it is active, it listens to the app state changes and updates the app state in the data store.
     @ReadWriteLock
     internal var currentState: State
+
+    /// The ID of the RUM session stopped with `stopSession()`. Updates of its views are not saved.
+    private var stoppedSessionID: String?
+    /// If the stop of the RUM session may be saved in the data store. It can be saved by the previous process.
+    private var mayHaveSavedSessionStop = true
 
     init(
         appStateManager: AppStateManager,
@@ -81,8 +87,36 @@ internal final class WatchdogTerminationMonitor {
             return
         }
 
+        // The views of a stopped session send a last update, which must not be used after the stop.
+        guard viewEvent.session.id != stoppedSessionID else {
+            return
+        }
+
+        // A new view means tracking resumed after the stop.
+        if mayHaveSavedSessionStop {
+            mayHaveSavedSessionStop = false
+            feature.rumDataStore.removeValue(forKey: .watchdogRUMSessionStopped)
+        }
+
         DD.logger.debug(ErrorMessages.rumViewEventUpdated)
         feature.rumDataStore.setValue(viewEvent, forKey: .watchdogRUMViewEvent)
+    }
+
+    /// Notifies that the RUM session was stopped with `stopSession()`. A Watchdog Termination is not reported
+    /// until a view of another session is tracked.
+    ///
+    /// - Parameter sessionID: The ID of the stopped session.
+    func sessionDidStop(sessionID: String) {
+        stoppedSessionID = sessionID
+
+        // The monitor state must be started to save the stop, because the saved stop might be currently used
+        // to report the Watchdog Termination event.
+        guard currentState == .started else {
+            return
+        }
+
+        mayHaveSavedSessionStop = true
+        feature.rumDataStore.setValue(true, forKey: .watchdogRUMSessionStopped)
     }
 
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
@@ -98,11 +132,24 @@ internal final class WatchdogTerminationMonitor {
         }
     }
 
-    /// Sends the Watchdog Termination event to Datadog with the given state.
-    /// Because Watchdog Termination are reported in the next app session, it uses the saved `RUMViewEvent`
-    /// to report the event.
+    /// Sends the Watchdog Termination event to Datadog with the given state, unless the RUM session was stopped
+    /// with `stopSession()` and no view was tracked since.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
     private func sendWatchTermination(state: AppStateInfo, completion: @escaping () -> Void) {
+        feature.rumDataStore.value(forKey: .watchdogRUMSessionStopped) { [weak self] (wasSessionStopped: Bool?) in
+            guard wasSessionStopped != true else {
+                DD.logger.debug(ErrorMessages.sessionWasStopped)
+                completion()
+                return
+            }
+            self?.sendWatchTerminationWithSavedView(state: state, completion: completion)
+        }
+    }
+
+    /// Sends the Watchdog Termination event to Datadog. Because Watchdog Termination are reported in the next app session,
+    /// it uses the saved `RUMViewEvent` to report the event.
+    /// - Parameter state: The app state when the Watchdog Termination occurred.
+    private func sendWatchTerminationWithSavedView(state: AppStateInfo, completion: @escaping () -> Void) {
         feature.context { [weak self] context in
             do {
                 let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)

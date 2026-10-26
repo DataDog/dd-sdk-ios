@@ -318,6 +318,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // Make sure sessions end even if they are not sampled
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
+                dependencies.watchdogTermination?.sessionDidStop(sessionID: sessionUUID.toRUMDataFormat)
                 return false // end this session (no longer keep the session scope)
             }
 
@@ -344,6 +345,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
+                dependencies.watchdogTermination?.sessionDidStop(sessionID: sessionUUID.toRUMDataFormat)
 
             case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)

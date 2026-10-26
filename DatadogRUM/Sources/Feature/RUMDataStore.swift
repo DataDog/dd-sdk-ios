@@ -33,6 +33,8 @@ internal struct RUMDataStore {
         case fatalAppHangKey = "fatal-app-hang"
         case appStateKey = "app-state"
         case watchdogRUMViewEvent = "watchdog-rum-view-event"
+        /// Set when the RUM session was stopped with `stopSession()` and no RUM view was tracked since.
+        case watchdogRUMSessionStopped = "watchdog-rum-session-stopped"
         case anonymousId = "rum-anonymous-id"
     }
 
