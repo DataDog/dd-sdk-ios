@@ -8,7 +8,7 @@ description: Use when committing changes in dd-sdk-ios. Use when writing commit 
 ## Requirements
 
 - **All commits MUST be signed** (GPG or SSH)
-- **Message prefix**: `[PROJECT-XXXX]` matching the JIRA ticket (internal development only)
+- **Message prefix**: `[PROJECT-XXXX]` matching the JIRA ticket for ordinary internal development
 
 ## Message Format
 
@@ -23,16 +23,19 @@ description: Use when committing changes in dd-sdk-ios. Use when writing commit 
 
 Third-party contributions skip the prefix.
 
+For regular releases, use the unprefixed messages in `dd-sdk-ios:prepare-release`.
+
 ## Before Committing
 
 Always show the user what will be committed and get explicit approval before running `git commit`.
+Existing approval of the same changes and message satisfies this requirement.
 
 1. Run `git diff --staged` and show the output
 2. Propose the commit message following the format below
 3. Ask: "Shall I commit with this message?"
 4. Only run `git commit -S -m "..."` after the user confirms
 
-## Commit Command
+## Development Commit Command
 
 ```bash
 git commit -S -m "[RUM-9999] Your message here"
@@ -47,6 +50,6 @@ The `-S` flag applies your configured GPG/SSH signature.
 | Mistake | Fix |
 |---------|-----|
 | Missing signature | Always use `-S`; check `git log --show-signature -1` |
-| Missing `[PROJECT-XXXX]` prefix | Required for internal dev; skipped for third-party |
+| Missing `[PROJECT-XXXX]` prefix | Required for ordinary internal development |
 | New files missing from pbxproj | Use Xcode MCP tools — see `xcode-file-management` skill |
 | Adding `Co-Authored-By: Claude` trailer | Never add AI co-author trailers in this repo |
