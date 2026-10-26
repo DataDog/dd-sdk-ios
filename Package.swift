@@ -78,7 +78,11 @@ let package = Package(
 
         .target(
             name: "DatadogInternal",
-            path: "DatadogInternal/Sources",
+            path: "DatadogInternal",
+            sources: ["Sources"],
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy")
+            ],
             swiftSettings: internalSwiftSettings
         ),
         .testTarget(
