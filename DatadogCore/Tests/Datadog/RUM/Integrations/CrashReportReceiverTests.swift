@@ -435,6 +435,14 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "It must send both RUM error and RUM view")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
+
+        let view = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first?.view)
+        XCTAssertNil(view.slowFramesRate)
+        #if os(macOS) || os(watchOS)
+        XCTAssertNil(view.isSlowRendered, "Rendering is not measured on this platform")
+        #else
+        XCTAssertEqual(view.isSlowRendered, false)
+        #endif
     }
 
     func testGivenCrashDuringApplicationLaunchInAppExtension_whenSending_itSendsIsMainProcessFalse() throws {

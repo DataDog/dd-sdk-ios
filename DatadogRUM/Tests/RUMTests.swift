@@ -117,6 +117,25 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
 
+    func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
+        // Given
+        config.trackSlowFrames = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let dependencies = monitor.applicationScope.dependencies
+        #if os(macOS) || os(watchOS)
+        XCTAssertNil(dependencies.renderLoopObserver)
+        XCTAssertNil(dependencies.viewHitchesReaderFactory(), "Without a render loop, slow frames must not be reported")
+        #else
+        XCTAssertNotNil(dependencies.renderLoopObserver)
+        XCTAssertNotNil(dependencies.viewHitchesReaderFactory())
+        #endif
+    }
+
     func testWhenWatchdogTerminationsTrackingIsEnabled_itRegistersTheMonitorExceptOnMacOS() throws {
         // Given
         config.trackWatchdogTerminations = true
