@@ -124,6 +124,33 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, resumedView.view.id)
     }
 
+    func testGivenTwoSessionsWereStopped_whenLateViewUpdateOfTheFirstOneArrives_itIsNotSaved() throws {
+        let didSend = self.expectation(description: "Watchdog termination was reported")
+        didSend.isInverted = true
+
+        // app starts
+        let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
+        givenDefaultApp(didSend: didSend, queue: firstSessionQueue)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        firstSessionQueue.sync {}
+
+        // A session is stopped while its view waits for a resource, then a second session is tracked and stopped
+        let firstSessionID: UUID = .mockRandom()
+        let secondSessionID: UUID = .mockRandom()
+        sut.update(viewEvent: .mockRandomWith(sessionID: firstSessionID))
+        sut.sessionDidStop(sessionID: firstSessionID.uuidString.lowercased())
+        sut.update(viewEvent: .mockRandomWith(sessionID: secondSessionID))
+        sut.sessionDidStop(sessionID: secondSessionID.uuidString.lowercased())
+        sut.update(viewEvent: .mockRandomWith(sessionID: firstSessionID)) // the resource completes in the first session
+
+        // watchdog termination happens here which causes app launch
+        givenDefaultApp(didSend: didSend)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+
+        waitForExpectations(timeout: 0.5)
+        XCTAssertNil(reporter.sendParams, "A late view update of a stopped session must not resume reporting")
+    }
+
     func testGivenSessionWasStoppedInPreviousProcess_whenViewIsTracked_itReportsWatchdogTerminationInThatView() throws {
         let didSend = self.expectation(description: "Watchdog termination was reported")
 

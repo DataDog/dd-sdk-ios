@@ -39,8 +39,8 @@ internal final class WatchdogTerminationMonitor {
     @ReadWriteLock
     internal var currentState: State
 
-    /// The ID of the RUM session stopped with `stopSession()`. Updates of its views are not saved.
-    private var stoppedSessionID: String?
+    /// The IDs of the RUM sessions stopped with `stopSession()`. Updates of their views are not saved.
+    private var stoppedSessionIDs: Set<String> = []
     /// If the stop of the RUM session may be saved in the data store. It can be saved by the previous process.
     private var mayHaveSavedSessionStop = true
 
@@ -88,18 +88,19 @@ internal final class WatchdogTerminationMonitor {
         }
 
         // The views of a stopped session send a last update, which must not be used after the stop.
-        guard viewEvent.session.id != stoppedSessionID else {
+        guard !stoppedSessionIDs.contains(viewEvent.session.id) else {
             return
-        }
-
-        // A new view means tracking resumed after the stop.
-        if mayHaveSavedSessionStop {
-            mayHaveSavedSessionStop = false
-            feature.rumDataStore.removeValue(forKey: .watchdogRUMSessionStopped)
         }
 
         DD.logger.debug(ErrorMessages.rumViewEventUpdated)
         feature.rumDataStore.setValue(viewEvent, forKey: .watchdogRUMViewEvent)
+
+        // A new view means tracking resumed after the stop. The view is saved first, so the stop is never cleared
+        // while the stopped session's view is still saved.
+        if mayHaveSavedSessionStop {
+            mayHaveSavedSessionStop = false
+            feature.rumDataStore.removeValue(forKey: .watchdogRUMSessionStopped)
+        }
     }
 
     /// Notifies that the RUM session was stopped with `stopSession()`. A Watchdog Termination is not reported
@@ -107,7 +108,7 @@ internal final class WatchdogTerminationMonitor {
     ///
     /// - Parameter sessionID: The ID of the stopped session.
     func sessionDidStop(sessionID: String) {
-        stoppedSessionID = sessionID
+        stoppedSessionIDs.insert(sessionID)
 
         // The monitor state must be started to save the stop, because the saved stop might be currently used
         // to report the Watchdog Termination event.
