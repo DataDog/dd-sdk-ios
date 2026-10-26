@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FIX] Stop reporting watchdog terminations into a RUM session stopped with `stopSession()`. Before, a watchdog termination after the stop was reported in the stopped session's last view.
+- [FIX] Stop reporting watchdog terminations into a RUM session stopped with `stopSession()`. Before, a watchdog termination after the stop was reported in the stopped session's last view. See [#3352][]
 - [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
@@ -1317,6 +1317,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
 [#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
+[#3352]: https://github.com/DataDog/dd-sdk-ios/pull/3352
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 
 [@00fa9a]: https://github.com/00FA9A
