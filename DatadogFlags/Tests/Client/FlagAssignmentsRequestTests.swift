@@ -154,6 +154,38 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         XCTAssertEqual(result, .success(.init(tags: ["Z", "a", "\u{FF5E}", "\u{1F600}"], keyPatterns: [])))
     }
 
+    func testCanonicalizationKeepsValuesVerbatimApartFromTrimming() {
+        // Matching happens on the server, so the SDK must not rewrite case, globs or other punctuation.
+        let cases: [(selection: Flags.FlagSelection, expected: CanonicalFlagSelection)] = [
+            (.init(tags: ["team:search", "mobile"]), .init(tags: ["mobile", "team:search"], keyPatterns: [])),
+            (.init(tags: ["mobile"], keyPatterns: ["checkout.*"]), .init(tags: ["mobile"], keyPatterns: ["checkout.*"])),
+            (.init(keyPatterns: ["checkout"]), .init(tags: [], keyPatterns: ["checkout"])),
+            (.init(keyPatterns: ["checkout.new-flow"]), .init(tags: [], keyPatterns: ["checkout.new-flow"])),
+            (.init(keyPatterns: ["*search*auto*complete*"]), .init(tags: [], keyPatterns: ["*search*auto*complete*"])),
+            (.init(keyPatterns: ["*-v2"]), .init(tags: [], keyPatterns: ["*-v2"])),
+            (.init(keyPatterns: ["*"]), .init(tags: [], keyPatterns: ["*"])),
+            (
+                .init(keyPatterns: ["search.ranking-v?", "[a]*", "{a,b}"]),
+                .init(tags: [], keyPatterns: ["[a]*", "search.ranking-v?", "{a,b}"])
+            ),
+            (.init(keyPatterns: ["{mobile.dark-mode,missing}"]), .init(tags: [], keyPatterns: ["{mobile.dark-mode,missing}"])),
+            (.init(tags: ["team:*"]), .init(tags: ["team:*"], keyPatterns: [])),
+            (.init(tags: ["Team:Payments", "MOBILE"]), .init(tags: ["MOBILE", "Team:Payments"], keyPatterns: [])),
+            (
+                .init(keyPatterns: ["CHECKOUT.*", "Mobile.Dark-Mode"]),
+                .init(tags: [], keyPatterns: ["CHECKOUT.*", "Mobile.Dark-Mode"])
+            ),
+            (
+                .init(tags: ["mobile", "missing"], keyPatterns: ["nothing.*"]),
+                .init(tags: ["missing", "mobile"], keyPatterns: ["nothing.*"])
+            ),
+        ]
+
+        for (selection, expected) in cases {
+            XCTAssertEqual(CanonicalFlagSelection.make(from: selection), .success(expected), "\(selection)")
+        }
+    }
+
     func testCanonicalizationKeepsNFCAndNFDFormsAsDistinctValues() throws {
         // Given
         let nfc = "caf\u{00E9}"
@@ -179,7 +211,9 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: values31, keyPatterns: values31)).map { $0?.keyPatterns.count }, .success(31))
         XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: values31 + values31 + [" v1 "])).map { $0?.tags.count }, .success(31))
         XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: values32)), .failure(.tooManyValues))
+        XCTAssertEqual(CanonicalFlagSelection.make(from: .init(keyPatterns: values32)), .failure(.tooManyValues))
         XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: ["mobile"], keyPatterns: values32)), .failure(.tooManyValues))
+        XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: values31, keyPatterns: values32)), .failure(.tooManyValues))
     }
 
     func testKeyPatternByteLimit() {
@@ -214,6 +248,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
 
         XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: values32, keyPatterns: [tooLong])), .failure(.tooManyValues))
         XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: values32 + [tooLong])), .failure(.tooManyValues))
+        XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: Array(values32.prefix(31)) + [tooLong])), .failure(.tooManyValues))
         XCTAssertEqual(CanonicalFlagSelection.make(from: .init(tags: [tooLong], keyPatterns: [tooLong])), .failure(.invalidKeyPattern))
     }
 
