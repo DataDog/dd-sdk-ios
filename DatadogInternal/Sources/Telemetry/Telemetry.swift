@@ -58,6 +58,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackViewsManually: Bool?
     public let unityVersion: String?
     public let mauiVersion: String?
+    public let unrealVersion: String?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
     public let useExcludedActivityUrls: Bool?
@@ -481,6 +482,7 @@ extension Telemetry {
         trackViewsManually: Bool? = nil,
         unityVersion: String? = nil,
         mauiVersion: String? = nil,
+        unrealVersion: String? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
         useExcludedActivityUrls: Bool? = nil,
@@ -543,6 +545,7 @@ extension Telemetry {
             trackViewsManually: trackViewsManually,
             unityVersion: unityVersion,
             mauiVersion: mauiVersion,
+            unrealVersion: unrealVersion,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
             useExcludedActivityUrls: useExcludedActivityUrls,
@@ -690,6 +693,7 @@ extension ConfigurationTelemetry {
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
             unityVersion: other.unityVersion ?? unityVersion,
             mauiVersion: other.mauiVersion ?? mauiVersion,
+            unrealVersion: other.unrealVersion ?? unrealVersion,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,
             useExcludedActivityUrls: other.useExcludedActivityUrls ?? useExcludedActivityUrls,

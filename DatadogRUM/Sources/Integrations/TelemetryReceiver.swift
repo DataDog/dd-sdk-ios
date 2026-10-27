@@ -477,6 +477,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             trackViewsManually: configuration.trackViewsManually,
             trackingConsent: nil,
             unityVersion: configuration.unityVersion,
+            unrealVersion: configuration.unrealVersion,
             useAllowedTracingOrigins: nil,
             useAllowedTracingUrls: nil,
             useBeforeSend: nil,
