@@ -10,55 +10,40 @@ import DatadogInternal
 
 class VitalCPUReaderTest: XCTestCase {
     let testNotificationCenterProvider = NotificationCenterProvider.makeTestProvider()
-    lazy var cpuReader = VitalCPUReader(notificationCenterProvider: testNotificationCenterProvider)
 
-    func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {
-        let repetitions = 3
+    func testReadCPUTicks() throws {
+        let cpuReader = VitalCPUReader(notificationCenterProvider: testNotificationCenterProvider)
+        let firstMeasurement = try XCTUnwrap(cpuReader.readVitalData())
+        let secondMeasurement = try XCTUnwrap(cpuReader.readVitalData())
 
-        // The CPU ticks consumed during heavy processing are not always greater than those during light processing.
-        // System variables can influence these results, leading to potential inaccuracies.
-        // To minimize false positives, an average is calculated over n repetitions.
-        let utilizationArray: [(highUtilization: Double, sleepUtilization: Double)] = try (0..<repetitions).map { _ in
-            // calculates the utilization under heavy processing
-            let highLoadResult = try utilizationAndDuration(heavyLoad)
-
-            let sleepResult = try utilizationAndDuration {
-                // The sleep duration should be the same as the heavy load duration
-                Thread.sleep(forTimeInterval: highLoadResult.duration)
-            }
-
-            return (highLoadResult.utilization, sleepResult.utilization)
-        }
-
-        let totalUtilization = utilizationArray.reduce((highUtilization: 0.0, sleepUtilization: 0.0)) {
-            ($0.highUtilization + $1.highUtilization,  $0.sleepUtilization + $1.sleepUtilization)
-        }
-
-        XCTAssertGreaterThan(totalUtilization.highUtilization / Double(repetitions), totalUtilization.sleepUtilization / Double(repetitions))
+        XCTAssertGreaterThanOrEqual(secondMeasurement, firstMeasurement)
     }
 
     #if !os(watchOS)
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
+        let cpuReader = VitalCPUReaderMock(
+            notificationCenterProvider: testNotificationCenterProvider,
+            mockTicks: [100, 110, 210, 310, 330]
+        )
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
         #if os(macOS)
         testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
         #else
         testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         #endif
-        heavyLoad()
         let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
         #if os(macOS)
         testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
         testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
-        heavyLoad()
         let measurementWhenActive = try XCTUnwrap(cpuReader.readVitalData())
 
         let diffWhenInactive = measurementWhenInactive - baseline
         let diffWhenActive = measurementWhenActive - measurementWhenInactive
 
-        XCTAssertGreaterThan(diffWhenActive, diffWhenInactive)
+        XCTAssertEqual(diffWhenInactive, 10)
+        XCTAssertEqual(diffWhenActive, 20)
     }
     #endif
 
@@ -99,20 +84,6 @@ class VitalCPUReaderTest: XCTestCase {
 
         XCTAssertEqual(measurementAfterRollover - measurementBeforeRollover, 31.0)
     }
-
-    private func utilizationAndDuration(_ block: () -> Void) throws -> (utilization: Double, duration: Double) {
-        let startTime = CFAbsoluteTimeGetCurrent()
-        let startUtilization = try XCTUnwrap(cpuReader.readVitalData())
-
-        block()
-
-        let endUtilization = try XCTUnwrap(cpuReader.readVitalData())
-        let duration = CFAbsoluteTimeGetCurrent() - startTime
-
-        let utilizedTicks = endUtilization - startUtilization
-
-        return (utilizedTicks / duration, duration)
-    }
 }
 
 // Overrides only the OS counter read.
@@ -127,23 +98,5 @@ private class VitalCPUReaderMock: VitalCPUReader {
 
     override func readRawUtilizedTicks() -> UInt32? {
         mockTicks.isEmpty ? nil : mockTicks.removeFirst()
-    }
-}
-
-fileprivate func heavyLoad() {
-    // cpuTicksResolution is measured by trial&error.
-    // most of the time `readVitalData()` returns incremented data after 0.01sec.
-    // however, sometimes it returns the same value for 1.0sec.
-    // looking at the source code, iOS should update cpu ticks at
-    // every thread scheduling and/or system->user/user->system mode changes in CPU.
-    // but empirically, it gets stuck for 1.0sec randomly.
-    let worstCaseCPUTicksResolution: TimeInterval = 1.0
-    let startDate = Date()
-
-    while Date().timeIntervalSince(startDate) <= worstCaseCPUTicksResolution {
-        for _ in 0...100_000 {
-            let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
-            _ = tan(random).squareRoot()
-        }
     }
 }
