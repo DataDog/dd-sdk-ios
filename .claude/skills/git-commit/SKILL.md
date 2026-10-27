@@ -28,7 +28,7 @@ For regular releases, use the unprefixed messages in `dd-sdk-ios:prepare-release
 ## Before Committing
 
 Always show the user what will be committed and get explicit approval before running `git commit`.
-Existing approval of the same changes and message satisfies this requirement.
+When invoked from `dd-sdk-ios:prepare-release`, approval already given there for the same changes and message satisfies this requirement.
 
 1. Run `git diff --staged` and show the output
 2. Propose the commit message following the format below

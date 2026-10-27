@@ -29,7 +29,7 @@ Review and stage only each step's files, then commit with `git commit -S` and th
 
 | Step | Commit message |
 |---|---|
-| Version bump | `Bump version to <version>` |
+| Version bump | `Bumped version to <version>` |
 | Changelog | `Update CHANGELOG.md with version <version>` |
 | Feature documentation, if changed | `Update feature docs` |
 

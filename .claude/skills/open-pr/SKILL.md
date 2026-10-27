@@ -29,7 +29,9 @@ For regular release PRs, use `dd-sdk-ios:prepare-release` for titles, descriptio
 
 For development PRs, read `.github/PULL_REQUEST_TEMPLATE.md` and complete its applicable sections. Changelog metadata applies to PRs targeting `develop`; a shared feature's integration PR must cover the whole feature.
 
-Use `gh` for all GitHub operations. Existing user approval of the same commits, push, title, and body satisfies the corresponding confirmation below.
+Use `gh` for all GitHub operations.
+
+When invoked from `dd-sdk-ios:prepare-release`, approval already given there for the same commits, push, title, and body satisfies the corresponding confirmations below.
 
 **Before pushing**, show the user the commits that will be pushed and ask for confirmation:
 
