@@ -84,16 +84,17 @@ class VitalInfoSamplerTests: XCTestCase {
         mockCPUReader.vitalData = 123.0
         mockMemoryReader.vitalData = 321.0
 
-        let samplingExpectation = expectation(description: "sampling expectation")
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.6) {
-            samplingExpectation.fulfill()
-        }
+        // Samples are taken on the main thread, so the wait can only return after
+        // the sample that read memory for the 2nd time has been fully recorded.
+        let samplingExpectation = expectation(description: "initial sample and one periodic sample")
+        samplingExpectation.expectedFulfillmentCount = 2
+        mockMemoryReader.onReadVitalData = { samplingExpectation.fulfill() }
 
-        waitForExpectations(timeout: 1.0) { _ in
-            // 2 samples, initial sample and one periodic sample
-            XCTAssertEqual(sampler.cpu.sampleCount, 2)
-            XCTAssertEqual(sampler.memory.sampleCount, 2)
-        }
+        waitForExpectations(timeout: 2.0)
+
+        // 2 samples, initial sample and one periodic sample
+        XCTAssertEqual(sampler.cpu.sampleCount, 2)
+        XCTAssertEqual(sampler.memory.sampleCount, 2)
     }
 
     func testItSamplesDataFromBackgroundThreads() {
