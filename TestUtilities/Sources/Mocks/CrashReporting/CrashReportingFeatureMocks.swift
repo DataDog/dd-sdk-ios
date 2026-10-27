@@ -149,7 +149,8 @@ extension CrashContext {
         remoteConfigurationId: String? = nil,
         lastRUMAttributes: RUMEventAttributes? = nil,
         lastLogAttributes: LogEventAttributes? = nil,
-        applicationBundleType: BundleType = .iOSApp
+        applicationBundleType: BundleType = .iOSApp,
+        isRUMSessionStopped: Bool = false
     ) -> Self {
         .init(
             serverTimeOffset: serverTimeOffset,
@@ -173,7 +174,8 @@ extension CrashContext {
             lastRUMAttributes: lastRUMAttributes,
             lastLogAttributes: lastLogAttributes,
             remoteConfigurationId: remoteConfigurationId,
-            applicationBundleType: applicationBundleType
+            applicationBundleType: applicationBundleType,
+            isRUMSessionStopped: isRUMSessionStopped
         )
     }
 
