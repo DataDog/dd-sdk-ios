@@ -502,6 +502,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             XCTAssertNil(repository.context)
@@ -535,7 +536,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
                     clientName: "client",
                     flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
                     dateProvider: DateProviderMock(),
-                    featureScope: scope
+                    featureScope: scope,
+                    flagSelection: nil
                 )
                 let evaluations = EvaluationLoggerMock()
                 let exposures = ExposureLoggerMock()
@@ -571,6 +573,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: NOPFeatureScope(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let completed = expectation(description: "repository completes without core context")
@@ -685,7 +688,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     private func makeRepository(scope: FeatureScopeMock, fetcher: FlagAssignmentsFetching) -> FlagsRepository {
-        FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope)
+        FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, flagSelection: nil)
     }
 }
 

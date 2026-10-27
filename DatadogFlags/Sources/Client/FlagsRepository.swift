@@ -280,7 +280,7 @@ internal final class FlagsRepository {
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
-        flagSelection: CanonicalFlagSelection? = nil,
+        flagSelection: CanonicalFlagSelection?,
         readTimeout: TimeInterval = 0.1,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
