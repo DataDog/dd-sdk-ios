@@ -10,24 +10,43 @@ import UIKit
 
 @_implementationOnly import DatadogWebP
 
+private let defaultWebPMaxSize = CGSize(width: 1_000, height: 1_000)
+
 extension UIImage {
-    internal func webPData() -> Data? {
-        cgImage?.webPData()
+    internal func webPData(maxSize: CGSize = defaultWebPMaxSize) -> Data? {
+        guard let cgImage, let size = webPPixelSize(maxSize: maxSize) else {
+            return nil
+        }
+
+        return cgImage.webPData(width: size.width, height: size.height)
+    }
+
+    internal func webPPixelSize(maxSize: CGSize = defaultWebPMaxSize) -> (width: Int, height: Int)? {
+        guard
+            let cgImage,
+            maxSize.width.isFinite, maxSize.width > 0,
+            maxSize.height.isFinite, maxSize.height > 0
+        else {
+            return nil
+        }
+
+        let ratio = max(1, size.width / maxSize.width, size.height / maxSize.height)
+        let width = max(1, Int((CGFloat(cgImage.width) / ratio).rounded()))
+        let height = max(1, Int((CGFloat(cgImage.height) / ratio).rounded()))
+
+        return (width, height)
     }
 }
 
 private let webPDimension: ClosedRange<Int> = 1...Int(WEBP_MAX_DIMENSION)
 
 extension CGImage {
-    fileprivate func webPData() -> Data? {
-        guard
-            webPDimension.contains(self.width),
-            webPDimension.contains(self.height)
-        else {
+    fileprivate func webPData(width: Int, height: Int) -> Data? {
+        guard webPDimension.contains(width), webPDimension.contains(height) else {
             return nil
         }
 
-        guard var config = webPConfig(), var picture = webPPicture() else {
+        guard var config = webPConfig(), var picture = webPPicture(width: width, height: height) else {
             return nil
         }
 
@@ -35,7 +54,22 @@ extension CGImage {
             dd_WebPPictureFree(&picture)
         }
 
-        guard webPImport(into: &picture) != 0 else {
+        let hasAlpha = switch self.alphaInfo {
+        case .none, .noneSkipFirst, .noneSkipLast:
+            false
+        case .first, .premultipliedFirst, .last, .premultipliedLast, .alphaOnly:
+            true
+        @unknown default:
+            true
+        }
+
+        let importResult = if width == self.width && height == self.height {
+            webPImport(into: &picture, hasAlpha: hasAlpha)
+        } else {
+            webPImportResized(into: &picture, hasAlpha: hasAlpha)
+        }
+
+        guard importResult != 0 else {
             return nil
         }
 
@@ -90,30 +124,21 @@ extension CGImage {
         return config
     }
 
-    private func webPPicture() -> WebPPicture? {
+    private func webPPicture(width: Int, height: Int) -> WebPPicture? {
         var picture = WebPPicture()
 
         guard WebPPictureInit(&picture) != 0 else {
             return nil
         }
 
-        picture.width = Int32(self.width)
-        picture.height = Int32(self.height)
+        picture.width = Int32(width)
+        picture.height = Int32(height)
         picture.use_argb = 1
 
         return picture
     }
 
-    private func webPImport(into picture: inout WebPPicture) -> Int32 {
-        let hasAlpha = switch self.alphaInfo {
-        case .none, .noneSkipFirst, .noneSkipLast:
-            false
-        case .first, .premultipliedFirst, .last, .premultipliedLast, .alphaOnly:
-            true
-        @unknown default:
-            true
-        }
-
+    private func webPImport(into picture: inout WebPPicture, hasAlpha: Bool) -> Int32 {
         let bytesPerPixel = hasAlpha ? 4 : 3
         let alphaInfo: CGImageAlphaInfo = hasAlpha ? .last : .none
 
@@ -146,6 +171,21 @@ extension CGImage {
                 buffer.data.assumingMemoryBound(to: UInt8.self),
                 Int32(buffer.rowBytes)
             )
+    }
+
+    private func webPImportResized(into picture: inout WebPPicture, hasAlpha: Bool) -> Int32 {
+        let size = CGSize(width: Int(picture.width), height: Int(picture.height))
+        let format = UIGraphicsImageRendererFormat(for: UITraitCollection(displayGamut: .SRGB))
+        // The target dimensions already include the source scale
+        format.scale = 1
+        format.opaque = !hasAlpha
+        format.preferredRange = .standard
+
+        let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            UIImage(cgImage: self).draw(in: CGRect(origin: .zero, size: size))
+        }
+
+        return image.cgImage?.webPImport(into: &picture, hasAlpha: hasAlpha) ?? 0
     }
 }
 #endif

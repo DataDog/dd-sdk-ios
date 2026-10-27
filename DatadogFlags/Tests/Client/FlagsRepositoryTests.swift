@@ -91,6 +91,42 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testInvalidContextCompletesOffTheCallersQueue() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let scope = FeatureScopeMock()
+            let repository = FlagsRepository(
+                clientName: UUID().uuidString,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            scope.dataStore.flush()
+            let callerQueue = DispatchQueue(label: "caller")
+            let callerKey = DispatchSpecificKey<Void>()
+            callerQueue.setSpecific(key: callerKey, value: ())
+            let completed = expectation(description: "invalid-context completion")
+            var ranOnCallerQueue: Bool?
+            let context = FlagsEvaluationContext(
+                targetingKey: "subject",
+                attributes: ["dd_experimentation_opt_out_at": .string("not-a-time")]
+            )
+            callerQueue.sync {
+                repository.setEvaluationContext(context) { result in
+                    guard case .failure(.invalidContext) = result else {
+                        return XCTFail("Expected invalid context")
+                    }
+                    ranOnCallerQueue = DispatchQueue.getSpecific(key: callerKey) != nil
+                    completed.fulfill()
+                }
+            }
+            wait(for: [completed], timeout: 1)
+            XCTAssertEqual(ranOnCallerQueue, false)
+            repository.flush()
+        }
+    }
+
     func testInvalidContextKeepsLastGoodSnapshotForOfflineRestart() throws {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             let scope = FeatureScopeMock()

@@ -32,7 +32,7 @@ public enum FlagsError: Error {
     case invalidConfiguration
 
     /// The evaluation context is invalid.
-    /// For example, an enabled experimentation opt-out timestamp is not a valid RFC3339 string.
+    /// For example, an enabled experimentation opt-out timestamp does not use the supported RFC3339 subset.
     /// The client sends no assignment request, and evaluations return application defaults.
     case invalidContext
 

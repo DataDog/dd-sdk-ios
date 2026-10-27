@@ -48,6 +48,8 @@ struct LogsScenario: Scenario {
 }
 ```
 
+By default, the `baseline` run does not initialize the SDK. When a scenario should only measure the overhead of something built on top of another Feature (e.g. a RUM configuration option), implement `instrumentBaseline(with:)` to enable that Feature in the `baseline` run too, so that comparing both runs isolates the overhead of what is under test.
+
 Once the scenario is created, add its name as an enum case of the [`SyntheticScenario`](Runner/Scenarios/SyntheticScenario.swift#L12) object so it can be selected by setting the `BENCHMARK_SCENARIO` environment variable.
 
 ### Run a scenario

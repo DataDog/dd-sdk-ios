@@ -40,11 +40,12 @@ public final class FlagsClient {
     public enum ExperimentationOptOutMode {
         /// Ignore the `dd_experimentation_opt_out_at` context attribute.
         case disabled
-        /// Exclude subjects with a valid RFC3339 timestamp from experiment allocations immediately.
+        /// Exclude subjects with a valid opt-out timestamp from experiment allocations immediately.
         /// This includes future timestamps. Ordinary feature allocations remain available.
         case immediate
-        /// Exclude allocations activated at or after the subject's opt-out timestamp.
-        /// Allocations with unknown activation times are excluded. Older allocations remain available.
+        /// Exclude experiment allocations activated at or after the subject's opt-out timestamp.
+        /// Experiment allocations with unknown activation times are also excluded.
+        /// Ordinary allocations and older experiments remain available.
         case futureExperimentsOnly
     }
 
@@ -184,22 +185,6 @@ public final class FlagsClient {
         }
     }
 
-    /// Creates a client with an experimentation opt-out mode.
-    /// Use `Configuration` to set this mode together with other client options.
-    ///
-    /// - Parameters:
-    ///   - experimentationOptOutMode: Whether to honor the subject's opt-out timestamp.
-    ///   - name: A unique client name. Defaults to `defaultName`.
-    ///   - core: The Datadog SDK core instance.
-    @discardableResult
-    public static func create(
-        experimentationOptOutMode: ExperimentationOptOutMode,
-        name: String = FlagsClient.defaultName,
-        in core: DatadogCoreProtocol = CoreRegistry.default
-    ) -> FlagsClientProtocol {
-        create(configuration: .init(experimentationOptOutMode: experimentationOptOutMode), name: name, in: core)
-    }
-
     /// Returns an existing `FlagsClient` instance by name.
     ///
     /// Use this method to retrieve a client that was previously created with ``create(name:in:)``.
@@ -305,6 +290,11 @@ public final class FlagsClient {
 }
 
 extension FlagsClient: FlagsClientProtocol {
+    @discardableResult
+    public func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        repository.onFirstFlags(listener)
+    }
+
     public var state: FlagsStateObservable {
         repository.state
     }

@@ -34,7 +34,7 @@ client.setEvaluationContext(context) { result in
 | `.immediate` | Skip all experiment allocations, including experiments already in progress. |
 | `.futureExperimentsOnly` | Skip experiment allocations activated at or after the timestamp, or with an unknown activation time. |
 
-Both enabled modes use the same customer-owned RFC3339 timestamp.
+Both enabled modes use the same customer-owned timestamp, in the supported RFC3339 subset below.
 In `.immediate` mode, any valid timestamp excludes the subject now, including a future timestamp.
 In `.futureExperimentsOnly` mode, a future timestamp keeps allocations activated before that timestamp available.
 Supply the actual opt-out time to exclude allocations activated from that time onward.

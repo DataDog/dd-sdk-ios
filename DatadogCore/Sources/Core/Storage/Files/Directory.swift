@@ -33,7 +33,7 @@ internal struct Directory: DirectoryProtocol {
     }
 
     func modifiedAt() throws -> Date? {
-        try FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date
+        try FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date // swiftlint:disable:this required_reason_api_name
     }
 
     /// Returns list of subdirectories using system APIs.
