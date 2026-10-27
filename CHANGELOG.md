@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Flags: Add per-subject experimentation opt-out through `FlagsClient.Configuration.experimentationOptOutMode` and `FlagsClient.create(configuration:name:in:)`. The `dd_experimentation_opt_out_at` context attribute supports `.immediate` and `.futureExperimentsOnly` modes. Adds `FlagsError.invalidContext` and `FlagEvaluationError.invalidContext`; exhaustive switches need the new case. Timestamps use proleptic Gregorian dates with UTC year bounds. Filtered responses are rejected when no subject opt-out applies. See [#3338][]
+- [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
 - [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
@@ -1316,6 +1317,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3330]: https://github.com/DataDog/dd-sdk-ios/pull/3330
 [#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
 [#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
+[#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 

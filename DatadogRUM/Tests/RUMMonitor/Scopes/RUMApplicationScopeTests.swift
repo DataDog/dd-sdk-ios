@@ -526,6 +526,42 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .maxDuration)
     }
 
+    func testGivenStopWithPendingResource_whenResourceCompletes_itDoesNotPublishAViewToCrashContext() throws {
+        // Given
+        let currentTime = Date()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground(since: currentTime))
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, fatalErrorContext: fatalErrorContext))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("view")), context: context, writer: writer)
+        _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "pending", time: currentTime.addingTimeInterval(1)), context: context, writer: writer)
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)), context: context, writer: writer)
+
+        // When
+        _ = scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "pending", time: currentTime.addingTimeInterval(3)), context: context, writer: writer)
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime.addingTimeInterval(4)), context: context, writer: writer)
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.sessionStopCount, 1)
+        XCTAssertTrue(fatalErrorContext.viewsPublishedAfterStop.isEmpty, "Only a resumed view may clear the stop in the crash context")
+    }
+
+    func testGivenStoppedSession_whenAViewStarts_itPublishesTheViewToCrashContext() throws {
+        // Given
+        let currentTime = Date()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, fatalErrorContext: fatalErrorContext))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("view")), context: .mockAny(), writer: writer)
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(1)), context: .mockAny(), writer: writer)
+        XCTAssertNil(fatalErrorContext.view)
+
+        // When
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime.addingTimeInterval(2), identity: ViewIdentifier("resumed"), name: "Resumed"), context: .mockAny(), writer: writer)
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.viewsPublishedAfterStop.last?.view.name, "Resumed", "The resumed view clears the stop in the crash context")
+        XCTAssertEqual(fatalErrorContext.sessionStopCount, 1)
+    }
+
     func testGivenStoppedSession_whenNewOneIsStarted_itSetsExplicitStopPrecondition() {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
