@@ -278,7 +278,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func testInitSyncNetworkErrorReportsTelemetryAndLeavesNoPersistedConfiguration() {
         let telemetry = TelemetryMock()
-        let rc = makeProvider(httpClient: HTTPClientMock(error: URLError(.networkConnectionLost)), start: false)
+        let rc = makeProvider(httpClient: HTTPClientMock(error: URLError(.badServerResponse)), start: false)
 
         rc.start({ _ in }, telemetry: telemetry)
 
@@ -287,6 +287,27 @@ class RemoteConfigurationTests: XCTestCase {
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
         withExtendedLifetime(rc) {}
+    }
+
+    func testInitSyncTransportErrorDoesNotReportTelemetry() {
+        let errors: [URLError.Code] = [
+            .networkConnectionLost, .timedOut, .cannotParseResponse, .notConnectedToInternet,
+            .cannotFindHost, .secureConnectionFailed, .dataNotAllowed, .cannotConnectToHost
+        ]
+
+        for code in errors {
+            let telemetry = TelemetryMock()
+            let httpClient = HTTPClientMock(error: URLError(code))
+            let rc = makeProvider(httpClient: httpClient, start: false)
+            rc.start({ _ in }, telemetry: telemetry)
+
+            let expectation = expectation(description: "sync completes")
+            wait(until: { !httpClient.requestsSent().isEmpty }, andThenFulfill: expectation)
+            waitForExpectations(timeout: 2)
+
+            XCTAssertNil(telemetry.messages.firstError())
+            withExtendedLifetime(rc) {}
+        }
     }
 
     func testInitSyncNon2xxReportsTelemetryAndPreservesPersistedConfiguration() throws {
