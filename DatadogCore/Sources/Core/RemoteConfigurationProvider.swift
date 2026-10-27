@@ -423,11 +423,10 @@ internal final class RemoteConfigurationProvider {
         try write(JSONEncoder().encode(cache), to: "\(id).json")
     }
 
+    /// Writes `data` to `filename` in a single atomic write, creating the file if needed.
     private func write(_ data: Data, to filename: String) throws {
-        let file = directory.hasFile(named: filename)
-            ? try directory.file(named: filename)
-            : try directory.createFile(named: filename)
-        try file.write(data: data)
+        let url = directory.url.appendingPathComponent(filename, isDirectory: false)
+        try File(url: url).write(data: data)
     }
 }
 
