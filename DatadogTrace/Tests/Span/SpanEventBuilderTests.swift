@@ -934,7 +934,7 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "The user tag must not override the SDK opt-out")
     }
 
-    func testWhenStatsComputationIsDisabled_aUserComputeStatsTagIsRemoved() throws {
+    func testWhenStatsComputationIsDisabled_aUserComputeStatsTagIsKept() throws {
         // Given
         let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: false)
 
@@ -955,19 +955,18 @@ class SpanEventBuilderTests: XCTestCase {
             logFields: []
         )
 
-        // Then the SDK removes the user value so the backend keeps computing stats; otherwise a
-        // user-set "0" while the SDK uploads no client stats would under-count.
+        // Then the user value is uploaded unchanged, as before client-side stats existed.
         let json = try JSONEncoder().encode(span).toJSONObject()
-        XCTAssertNil(json["meta._dd.compute_stats"], "A user value must not be able to set the SDK-owned opt-out tag")
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "With client-side stats disabled, the SDK must not change a user-set tag")
     }
 
-    func testWhenTheEventMapperChangesOrRemovesComputeStats_theSDKValueStillWins() throws {
-        let mappers: [(String, SpanEventMapper)] = [
-            ("removes every tag", { var event = $0; event.tags = [:]; return event }),
-            ("removes the tag", { var event = $0; event.tags.removeValue(forKey: "_dd.compute_stats"); return event }),
-            ("sets the tag to 1", { var event = $0; event.tags["_dd.compute_stats"] = "1"; return event })
+    func testWhenTheEventMapperChangesOrRemovesComputeStats_theSDKValueWinsOnlyWhenStatsAreEnabled() throws {
+        let mappers: [(String, String?, SpanEventMapper)] = [
+            ("removes every tag", nil, { var event = $0; event.tags = [:]; return event }),
+            ("removes the tag", nil, { var event = $0; event.tags.removeValue(forKey: "_dd.compute_stats"); return event }),
+            ("sets the tag to 1", "1", { var event = $0; event.tags["_dd.compute_stats"] = "1"; return event })
         ]
-        for (label, mapper) in mappers {
+        for (label, mappedValue, mapper) in mappers {
             for statsEnabled in [true, false] {
                 // Given
                 let builder: SpanEventBuilder = .mockWith(eventsMapper: mapper, statsComputationEnabled: statsEnabled)
@@ -990,7 +989,7 @@ class SpanEventBuilderTests: XCTestCase {
                 )
 
                 // Then
-                XCTAssertEqual(span.tags["_dd.compute_stats"], statsEnabled ? "0" : nil, "Mapper \(label), stats enabled: \(statsEnabled)")
+                XCTAssertEqual(span.tags["_dd.compute_stats"], statsEnabled ? "0" : mappedValue, "Mapper \(label), stats enabled: \(statsEnabled)")
             }
         }
     }
