@@ -1,7 +1,7 @@
 # Unreleased
 
 - [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
-- [IMPROVEMENT] Add support for `unreal` source for cross-platform RUM events from Unreal Engine applications.
+- [IMPROVEMENT] Add support for `unreal` source for cross-platform RUM events from Unreal Engine applications. See [#3353][]
 - [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
@@ -1320,6 +1320,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
+[#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
