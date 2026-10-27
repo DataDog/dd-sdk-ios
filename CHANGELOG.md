@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
+- [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3351][]
 - [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
 - [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
@@ -1318,6 +1320,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
+[#3351]: https://github.com/DataDog/dd-sdk-ios/pull/3351
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 
 [@00fa9a]: https://github.com/00FA9A
