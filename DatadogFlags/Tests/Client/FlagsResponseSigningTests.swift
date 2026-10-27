@@ -9,7 +9,8 @@ import CryptoKit
 import TestUtilities
 import DatadogInternal
 
-@_spi(Internal) @testable import DatadogFlags
+@_spi(Internal)
+@testable import DatadogFlags
 
 final class FlagsResponseSigningTests: XCTestCase {
     private struct Corpus: Decodable {
@@ -335,7 +336,9 @@ final class FlagsResponseSigningTests: XCTestCase {
         ]
         for (index, proof) in proofs.enumerated() {
             repository.setEvaluationContext(context) { result in
-                guard case .failure = result else { return XCTFail("invalid proof admitted") }
+                guard case .failure = result else {
+                    return XCTFail("invalid proof admitted")
+                }
             }
             var response = FlagAssignmentsResponse(flags: ["flag": .mockAnyBoolean()])
             response.verification = proof
