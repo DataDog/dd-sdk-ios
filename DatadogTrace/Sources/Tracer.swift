@@ -59,10 +59,10 @@ public enum SpanTags {
     /// Tag used to mark a span as manually kept.
     public static let manualKeep = "manual.keep"
 
-    /// Internal tag owned exclusively by the SDK. Set to `"0"` when client-side stats computation
-    /// is enabled to tell the backend to skip its own (double-counting) computation. Encoded as
-    /// `meta._dd.compute_stats`. Any user-provided value for this key is overwritten or removed in
-    /// `SpanEventBuilder`, so it can never flip the SDK opt-out.
+    /// Tag that tells the backend whether to compute stats for the span. Encoded as `meta._dd.compute_stats`.
+    /// When client-side stats computation is enabled, `SpanEventBuilder` sets it to `"0"` so the backend
+    /// skips its own (double-counting) computation, overwriting any user-provided value. When it is
+    /// disabled, a user-provided value is uploaded unchanged.
     internal static let computeStats = "_dd.compute_stats"
 }
 
