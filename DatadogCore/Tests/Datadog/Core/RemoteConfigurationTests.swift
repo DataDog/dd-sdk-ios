@@ -406,8 +406,9 @@ class RemoteConfigurationTests: XCTestCase {
             withIntermediateDirectories: false
         )
         let telemetry = TelemetryMock()
-        let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8))
-        let rc = makeProvider(httpClient: httpClient, start: false)
+        // The etag is read synchronously before the request is sent, so no response is needed. Delivering one would
+        // make the provider attempt to write `test-id.json` in the background, racing with `tearDown` deleting `coreDir`.
+        let rc = makeProvider(httpClient: NeverHTTPClient(), start: false)
         rc.start({ _ in }, telemetry: telemetry)
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached metadata etag")
