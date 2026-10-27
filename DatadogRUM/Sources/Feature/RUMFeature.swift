@@ -402,7 +402,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
+                viewCache: dependencies.viewCache,
+                timeseriesCollector: timeseriesCollector
             ),
             CrashReportReceiver(
                 featureScope: featureScope,
