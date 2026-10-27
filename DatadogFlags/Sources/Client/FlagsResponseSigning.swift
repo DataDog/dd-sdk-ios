@@ -136,8 +136,7 @@ internal final class FlagsResponseVerifier {
     }
 
     func verify(request: URLRequest, response: HTTPURLResponse, body: Data, now: Date) throws
-        -> FlagsResponseVerification
-    {
+        -> FlagsResponseVerification {
         _ = try Self.requestComponents(request)
         guard body.count <= Self.maximumResponseBytes else {
             throw FlagsSigningError.responseTooLarge

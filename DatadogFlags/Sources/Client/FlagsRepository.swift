@@ -406,8 +406,7 @@ internal final class FlagsRepository {
             var publish: (() -> Void)?
             _repositoryState.mutate { state in
                 if fetcher.responseSigningMode != .off,
-                    cachedData?.responseSigningCacheScope != fetcher.responseSigningCacheScope
-                {
+                    cachedData?.responseSigningCacheScope != fetcher.responseSigningCacheScope {
                     cachedData = nil
                 }
                 callbacks = state.applyInitialFlagsData(cachedData)
@@ -553,8 +552,7 @@ internal final class FlagsRepository {
             }
             if let matchingFlagsData = verified ?? state.flagsData(matching: context),
                 canUseSigned(matchingFlagsData, matching: context),
-                matchingFlagsData.obfuscation == nil || state.supportsFlagKeyObfuscation
-            {
+                matchingFlagsData.obfuscation == nil || state.supportsFlagKeyObfuscation {
                 state.flagsData = matchingFlagsData
                 publish = firstFlags.reserve(keys: Array(matchingFlagsData.flags.keys))
                 newState = .stale
@@ -725,8 +723,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 response.responseSigningCacheScope == nil
                     || response.responseSigningCacheScope != self.flagAssignmentsFetcher.responseSigningCacheScope
                     || (self.flagAssignmentsFetcher.responseSigningMode == .required
-                        && !self.flagAssignmentsFetcher.isVerified(response.verification, at: self.dateProvider.now))
-            {
+                        && !self.flagAssignmentsFetcher.isVerified(response.verification, at: self.dateProvider.now)) {
                 admittedResult = .failure(.invalidResponse)
             } else {
                 admittedResult = result

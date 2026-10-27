@@ -1628,6 +1628,15 @@ public enum FlagsClientState: Sendable
     case reconciling
     case stale
     case error
+[?] extension Flags
+    public enum ResponseSigningMode
+        case off
+        case observe
+        case required
+    public struct ResponseSigningConfiguration
+        public var mode: ResponseSigningMode
+        public var trustedRootCertificates: [Data]
+        public init(mode: ResponseSigningMode = .off, trustedRootCertificates: [Data] = [])
 public protocol FlagsStateListener: AnyObject
     func flagsStateDidChange(_ newState: FlagsClientState)
 public protocol FlagsStateObservable: AnyObject
@@ -1639,6 +1648,7 @@ public enum Flags
         public var gracefulModeEnabled: Bool
         public var customFlagsEndpoint: URL?
         public var customFlagsHeaders: [String: String]?
+        public var responseSigning: ResponseSigningConfiguration
         public var initializationTimeout: TimeInterval?
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
@@ -1646,7 +1656,7 @@ public enum Flags
         public var trackEvaluations: Bool
         public var evaluationFlushInterval: TimeInterval
         public var rumIntegrationEnabled: Bool
-        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,initializationTimeout: TimeInterval? = 5,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true)
+        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,initializationTimeout: TimeInterval? = 5,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true,responseSigning: ResponseSigningConfiguration = .init())
     public static func enable(with configuration: Flags.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
 public enum AnyValue: Equatable, Hashable
     case string(String)
