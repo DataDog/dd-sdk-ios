@@ -57,7 +57,11 @@ private final class NSCFLocalSessionTaskResumeSwizzler: MethodSwizzler<
         typealias Signature = @convention(block) (URLSessionTask) -> Void
         swizzle(method) { previousImplementation -> Signature in
             return { task in
-                guard let server = ServerMock.activeInstance else {
+                guard
+                    let server = ServerMock.activeInstance,
+                    let request = task.currentRequest,
+                    server.isMyRequest(request)
+                else {
                     previousImplementation(task, Self.selector)
                     return
                 }
@@ -83,9 +87,7 @@ private final class NSCFLocalSessionTaskResumeSwizzler: MethodSwizzler<
                 task.perform(NSSelectorFromString("_onqueue_didFinishWithError:"), with: server.mockedError)
 
                 // Record the request (mirrors ServerMockProtocol.startLoading).
-                if let request = task.currentRequest {
-                    server.record(newRequest: request)
-                }
+                server.record(newRequest: request)
             }
         }
     }
