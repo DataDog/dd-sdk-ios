@@ -80,6 +80,8 @@ internal enum RUMOffViewEventsHandlingRule: Equatable {
         #if os(macOS)
         // macOS apps are always in the foreground and often run with no view, so once a view was tracked, events with no active view
         // are kept by default, without Background Events Tracking.
+        // As with the "Background" view, only commands with `canStartBackgroundView` start the view. App hangs and long tasks
+        // do not start it, and are tracked once it exists.
         let tracksEventsWithNoActiveView = true
         #else
         let tracksEventsWithNoActiveView = !isAppInForeground && isBETEnabled
