@@ -60,6 +60,10 @@ public enum Flags {
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
 
+        /// Optional assignment response verification. Default: off.
+        /// Required mode uses verified memory only and defaults after expiry or restart.
+        public var responseSigning: ResponseSigningConfiguration
+
         /// The maximum time to wait for the first evaluation context to become ready.
         ///
         /// This timeout covers the complete initialization operation. It includes loading cached data,
@@ -127,6 +131,7 @@ public enum Flags {
         ///   - trackEvaluations: Enables evaluation logging to the evaluations intake endpoint. Default: `true`.
         ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
+        ///   - responseSigning: Optional verification using explicitly configured roots. Default: off.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
@@ -137,7 +142,8 @@ public enum Flags {
             customEvaluationEndpoint: URL? = nil,
             trackEvaluations: Bool = true,
             evaluationFlushInterval: TimeInterval = 10.0,
-            rumIntegrationEnabled: Bool = true
+            rumIntegrationEnabled: Bool = true,
+            responseSigning: ResponseSigningConfiguration = .init()
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
@@ -149,6 +155,7 @@ public enum Flags {
             self.trackEvaluations = trackEvaluations
             self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
+            self.responseSigning = responseSigning
         }
     }
 

@@ -11,6 +11,11 @@ internal struct FlagsData: Equatable, Codable {
     var context: FlagsEvaluationContext
     var date: Date
     let obfuscation: FlagKeyObfuscation?
+    // Proofs are process-local and cannot be restored by decoding an ordinary disk cache.
+    var verification: FlagsResponseVerification? = nil
+    var responseSigningCacheScope: String? = nil
+
+    private enum CodingKeys: String, CodingKey { case flags, context, date, obfuscation, responseSigningCacheScope }
 
     init(flags: [String: FlagAssignment], context: FlagsEvaluationContext, date: Date, obfuscation: FlagKeyObfuscation? = nil) {
         self.flags = flags

@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Flags: Add opt-in response signature observation and required verification with explicit trust anchors and verified memory fallback.
+
 - [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
