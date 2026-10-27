@@ -133,7 +133,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         switch result {
         case let .success((data, httpResponse)):
             if requestCarriedFlagSelection,
-               let reason = httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader) {
+               let reason = httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader),
+               !reason.isEmpty {
                 DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration.")
                 featureScope.telemetry.debug("Flag selection ignored", attributes: ["reason": reason])
             }

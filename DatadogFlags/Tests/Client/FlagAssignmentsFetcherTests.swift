@@ -314,6 +314,43 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
 
+    func testFlagAssignmentsWithEmptyIgnoredHeaderLogsNothing() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let response = try XCTUnwrap(
+            HTTPURLResponse(
+                url: .mockAny(),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["DD-Flag-Selection-Ignored": ""]
+            )
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: featureScope,
+            fetch: { _, completion in
+                completion(.success((.mockAnyFlagAssignmentsResponse(), response)))
+            }
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(try XCTUnwrap(capturedResult?.get()).flags, .mockAny())
+        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
+    }
+
     func testFlagAssignmentsWithoutIgnoredHeaderLogsNothing() {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
