@@ -180,7 +180,7 @@ public enum Flags {
     /// return the full configuration without a warning.
     ///
     /// Evaluating a flag outside the selection returns the default value with ``FlagEvaluationError/flagNotFound``.
-    public struct FlagSelection {
+    public struct FlagSelection: Sendable {
         /// Tags to select. A flag is selected if it has any of these tags.
         public var tags: [String]
 
