@@ -21,7 +21,7 @@ internal struct SpanEventBuilder: Sendable {
     let bundleWithRUM: Bool
     /// Whether client-side stats computation is enabled. When `true`, spans are stamped with
     /// `meta._dd.compute_stats = "0"` so the backend skips its own (double-counting) computation.
-    /// When `false`, the tag is removed so the backend keeps computing stats (backwards-compatible default).
+    /// When `false`, the tag is left as the user or the event mapper set it.
     let statsComputationEnabled: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
@@ -119,14 +119,12 @@ internal struct SpanEventBuilder: Sendable {
         )
 
         var event = eventsMapper.map { $0(span) } ?? span
-        // The SDK owns `_dd.compute_stats`: (over)write it to "0" when client-side stats is enabled,
-        // otherwise remove any user-provided value. This runs after the event mapper, so neither a
-        // user tag nor a mapper that filters or replaces tags can flip the opt-out and silently
-        // reintroduce backend double counting (when enabled) or under-counting (when disabled).
+        // When client-side stats is enabled, the SDK owns `_dd.compute_stats` and (over)writes it to "0".
+        // This runs after the event mapper, so neither a user tag nor a mapper that filters or replaces
+        // tags can reintroduce backend double counting. When it is disabled, the tag is left as the user
+        // or mapper set it, as before client-side stats existed.
         if statsComputationEnabled {
             event.tags[SpanTags.computeStats] = "0"
-        } else {
-            event.tags.removeValue(forKey: SpanTags.computeStats)
         }
         return event
     }
