@@ -31,9 +31,9 @@ internal class CrashContextCoreProvider: CrashContextProvider {
         didSet { _context.map(_callback) }
     }
 
-    private var viewEvent: RUMViewEvent? {
-        didSet { _context?.lastRUMViewEvent = viewEvent }
-    }
+    private var viewEvent: RUMViewEvent?
+
+    private var isRUMSessionStopped = false
 
     private var sessionState: RUMSessionState? {
         didSet { _context?.lastRUMSessionState = sessionState }
@@ -65,9 +65,12 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         case .context(let context):
             update(context: context)
         case let .payload(viewEvent as RUMViewEvent):
-            queue.async { self.viewEvent = viewEvent }
+            // A new RUM view means tracking resumed, if it was stopped with `stopSession()`.
+            queue.async { self.update(viewEvent: viewEvent, isRUMSessionStopped: false) }
         case let .payload(message as String) where message == RUMPayloadMessages.viewReset:
-            queue.async { self.viewEvent = nil }
+            queue.async { self.update(viewEvent: nil, isRUMSessionStopped: self.isRUMSessionStopped) }
+        case let .payload(message as String) where message == RUMPayloadMessages.sessionStop:
+            queue.async { self.update(viewEvent: nil, isRUMSessionStopped: true) }
         case let .payload(sessionState as RUMSessionState):
             queue.async { self.sessionState = sessionState }
         case let .payload(rumAttributes as RUMEventAttributes):
@@ -79,6 +82,20 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         }
 
         return true
+    }
+
+    /// Updates the last RUM view and the session stop together, so the crash context is published once.
+    /// Must be called on `queue`.
+    private func update(viewEvent: RUMViewEvent?, isRUMSessionStopped: Bool) {
+        self.viewEvent = viewEvent
+        self.isRUMSessionStopped = isRUMSessionStopped
+
+        guard var context = _context else {
+            return
+        }
+        context.lastRUMViewEvent = viewEvent
+        context.isRUMSessionStopped = isRUMSessionStopped
+        _context = context
     }
 
     /// Updates crash context.
@@ -95,7 +112,8 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
                 lastRUMViewEvent: self.viewEvent,
                 lastRUMSessionState: self.sessionState,
                 lastRUMAttributes: self.rumAttributes,
-                lastLogAttributes: self.logAttributes
+                lastLogAttributes: self.logAttributes,
+                isRUMSessionStopped: self.isRUMSessionStopped
             )
 
             if crashContext != self._context {
