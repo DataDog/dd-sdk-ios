@@ -70,6 +70,41 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
     }
 
+    func testSigningFeatureStopInvalidatesRetainedClientAndFetcher() throws {
+        for mode in [Flags.ResponseSigningMode.observe, .required] {
+            let core = DatadogCoreProxy()
+            var didStop = false
+            defer { if !didStop { try? core.flushAndTearDown() } }
+            Flags.enable(with: .init(trackEvaluations: false, responseSigning: .init(mode: mode)), in: core)
+            // Keep only the fetcher/client, not a copy of the feature that owns the lifetime marker.
+            let fetcher = try XCTUnwrap(
+                core.get(feature: FlagsFeature.self)?.flagAssignmentsFetcher as? FlagAssignmentsFetcher
+            )
+            let retainedClient = FlagsClient.create(in: core)
+            let scoped = expectation(description: "scope established")
+            fetcher.resolveResponseSigningCacheScope { scope in
+                XCTAssertNotNil(scope)
+                scoped.fulfill()
+            }
+            wait(for: [scoped], timeout: 2)
+            try core.flushAndTearDown()
+            didStop = true
+            XCTAssertNil(fetcher.responseSigningCacheScope)
+            XCTAssertNil(fetcher.updateResponseSigningCacheScope(core.context))
+            XCTAssertFalse(retainedClient.getBooleanValue(key: "flag", defaultValue: false))
+            let rejected = expectation(description: "retained client cannot fetch after stop")
+            retainedClient.setEvaluationContext(.init(targetingKey: "after-stop")) { result in
+                guard case .failure(.clientNotInitialized) = result else {
+                    XCTFail("retained client restarted a stopped signing feature")
+                    rejected.fulfill()
+                    return
+                }
+                rejected.fulfill()
+            }
+            wait(for: [rejected], timeout: 2)
+        }
+    }
+
     func testFlushFlushesRegisteredClients() throws {
         // Given
         let core = FeatureRegistrationCoreMock()

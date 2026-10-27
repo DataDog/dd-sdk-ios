@@ -210,6 +210,8 @@ internal final class FlagsRepository {
             }
         }
         var cachedFlagsData: FlagsData?
+        // Observation data never replaces this process-local verified fallback.
+        var verifiedFlagsData: FlagsData?
         // A missing or delayed context must not expose encoded assignments to legacy bridges.
         var supportsFlagKeyObfuscation = false
 
@@ -369,29 +371,72 @@ internal final class FlagsRepository {
         return initializationCompletion
     }
 
+    private func canUseSigned(_ data: FlagsData?, matching context: FlagsEvaluationContext?) -> Bool {
+        guard flagAssignmentsFetcher.responseSigningMode != .off else {
+            return true
+        }
+        guard let data, let scope = flagAssignmentsFetcher.responseSigningCacheScope,
+            data.responseSigningCacheScope == scope
+        else {
+            return false
+        }
+        guard flagAssignmentsFetcher.responseSigningMode == .required else {
+            return true
+        }
+        guard data.context == context else {
+            return false
+        }
+        return flagAssignmentsFetcher.isVerified(data.verification, at: dateProvider.now)
+    }
+
     private func readState() {
-        // Retain the read lifecycle, not the repository, so the group is balanced even after deallocation.
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [_repositoryState, weak firstFlags] data in
+        let fetcher = flagAssignmentsFetcher
+        let store = featureScope.flagsDataStore
+        let clientName = clientName
+        // Retain the read lifecycle, not the repository, so the group is balanced after deallocation.
+        let finish: (FlagsData?) -> Void = { [_repositoryState, weak firstFlags] data in
             var cachedData = data
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
                 cachedAssignment.reason = "CACHED"
                 return cachedAssignment
             } ?? [:]
-            // Keep the helper alive outside the state lock if repository destruction races this read.
             let firstFlags = firstFlags
             var callbacks: [PendingCacheReadCallback] = []
             var publish: (() -> Void)?
             _repositoryState.mutate { state in
+                if fetcher.responseSigningMode != .off,
+                    cachedData?.responseSigningCacheScope != fetcher.responseSigningCacheScope {
+                    cachedData = nil
+                }
                 callbacks = state.applyInitialFlagsData(cachedData)
                 publish = state.readableFlagsData.flatMap { firstFlags?.reserve(keys: Array($0.flags.keys)) }
             }
-
-            // Pending failures report `.clientNotInitialized` if the repository has been released.
             let pendingCompletions = callbacks.map { $0.prepare() }
             Self.publishFirstFlags(publish)
             Self.executePendingDiskReadCallbacks(pendingCompletions)
             withExtendedLifetime(firstFlags) {}
+        }
+        switch fetcher.responseSigningMode {
+        case .off:
+            store.flagsData(forClientNamed: clientName, callback: finish)
+        case .required:
+            finish(nil)
+        case .observe:
+            fetcher.resolveResponseSigningCacheScope { scope in
+                guard let scope, scope == fetcher.responseSigningCacheScope else {
+                    finish(nil)
+                    return
+                }
+                let key = FlagsResponseVerifier.cacheKey(clientName: clientName, scope: scope)
+                store.flagsData(forClientNamed: key) { data in
+                    guard data?.responseSigningCacheScope == scope, scope == fetcher.responseSigningCacheScope else {
+                        finish(nil)
+                        return
+                    }
+                    finish(data)
+                }
+            }
         }
     }
 
@@ -441,12 +486,29 @@ internal final class FlagsRepository {
         }
     }
 
-    private func writeState(_ flagsData: FlagsData, version: UInt64) {
+    private func writeState(_ flagsData: FlagsData, version: UInt64, contextUpdateID: UInt64) {
+        guard flagAssignmentsFetcher.responseSigningMode != .required else {
+            return
+        }
         let flagsDataStore = featureScope.flagsDataStore
-        let clientName = clientName
+        let clientName: String
+        if flagAssignmentsFetcher.responseSigningMode == .off {
+            clientName = self.clientName
+        } else {
+            guard let scope = flagsData.responseSigningCacheScope,
+                scope == flagAssignmentsFetcher.responseSigningCacheScope
+            else {
+                return
+            }
+            clientName = FlagsResponseVerifier.cacheKey(clientName: self.clientName, scope: scope)
+        }
 
         cachePersistenceQueue.async { [weak self] in
-            guard self?.repositoryState.flagsDataVersion == version else {
+            guard let self, self.canUseSigned(flagsData, matching: flagsData.context),
+                self.repositoryState.flagsDataVersion == version,
+                self.flagAssignmentsFetcher.responseSigningMode == .off
+                    || self.repositoryState.contextUpdateID == contextUpdateID
+            else {
                 return
             }
 
@@ -454,7 +516,11 @@ internal final class FlagsRepository {
                 return
             }
 
-            guard self?.repositoryState.flagsDataVersion == version else {
+            guard self.canUseSigned(flagsData, matching: flagsData.context),
+                self.repositoryState.flagsDataVersion == version,
+                self.flagAssignmentsFetcher.responseSigningMode == .off
+                    || self.repositoryState.contextUpdateID == contextUpdateID
+            else {
                 return
             }
 
@@ -480,8 +546,13 @@ internal final class FlagsRepository {
 
             // Only use cached flags if they match the requested context to avoid
             // serving flags from a different user/context.
-            if let matchingFlagsData = state.flagsData(matching: context),
-               matchingFlagsData.obfuscation == nil || state.supportsFlagKeyObfuscation {
+            let verified = state.verifiedFlagsData.flatMap { data in
+                data.context == context && flagAssignmentsFetcher.isVerified(data.verification, at: dateProvider.now)
+                    ? data : nil
+            }
+            if let matchingFlagsData = verified ?? state.flagsData(matching: context),
+                canUseSigned(matchingFlagsData, matching: context),
+                matchingFlagsData.obfuscation == nil || state.supportsFlagKeyObfuscation {
                 state.flagsData = matchingFlagsData
                 publish = firstFlags.reserve(keys: Array(matchingFlagsData.flags.keys))
                 newState = .stale
@@ -511,7 +582,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return repositoryState.readableFlagsData?.context
+        let state = repositoryState
+        guard canUseSigned(state.readableFlagsData, matching: state.latestRequestedContext) else {
+            return nil
+        }
+        return state.readableFlagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
@@ -525,6 +600,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
         func result(from state: RepositoryState, assignment: FlagAssignment?) -> FlagEvaluationSnapshot {
             let readable = !hasError && (state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation)
+                && canUseSigned(state.flagsData, matching: state.latestRequestedContext)
             let context = readable ? state.flagsData?.context : nil
             // Until a context is requested, a pending cache read may still contain an opt-out.
             let isPolicyLoading = state.shouldWaitForFlagsDataRead && !state.hasStartedEvaluationContextRequest
@@ -559,9 +635,12 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
+        let snapshot = repositoryState
         guard stateManager.currentState != .error,
-              let data = repositoryState.readableFlagsData,
-              data.obfuscation == nil else {
+            let data = snapshot.readableFlagsData,
+            canUseSigned(data, matching: snapshot.latestRequestedContext),
+            data.obfuscation == nil
+        else {
             return nil
         }
         return data.flags
@@ -639,17 +718,30 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 }
             }
 
-            switch result {
+            let admittedResult: Result<FlagAssignmentsResponse, FlagsError>
+            if case .success(let response) = result, self.flagAssignmentsFetcher.responseSigningMode != .off,
+                response.responseSigningCacheScope == nil
+                    || response.responseSigningCacheScope != self.flagAssignmentsFetcher.responseSigningCacheScope
+                    || (self.flagAssignmentsFetcher.responseSigningMode == .required
+                        && !self.flagAssignmentsFetcher.isVerified(response.verification, at: self.dateProvider.now)) {
+                admittedResult = .failure(.invalidResponse)
+            } else {
+                admittedResult = result
+            }
+            switch admittedResult {
             case .success(let response):
                 // Claim success before processing assignments or publishing ready can race the timeout.
                 let operationCompletion = takeCompletion()
-                let flagsData = FlagsData(
+                var flagsData = FlagsData(
                     flags: response.flags,
                     context: context,
                     date: self.dateProvider.now,
                     obfuscation: response.obfuscation
                 )
+                flagsData.verification = response.verification
+                flagsData.responseSigningCacheScope = response.responseSigningCacheScope
                 var versionAfterSuccess: UInt64?
+                var expiredBeforeAdmission = false
                 var callbacks: [PendingCacheReadCallback] = []
                 var notifyListeners: (() -> Void)?
                 var publish: (() -> Void)?
@@ -662,7 +754,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     guard isLatestRequest || isFreshForLatestContext else {
                         return
                     }
+                    guard self.canUseSigned(flagsData, matching: context) else {
+                        expiredBeforeAdmission = true
+                        state.flagsData = nil
+                        notifyListeners = self.stateManager.updateStateWithoutNotifying(.error)
+                        return
+                    }
                     state.flagsData = flagsData
+                    if self.flagAssignmentsFetcher.isVerified(flagsData.verification, at: self.dateProvider.now) {
+                        state.verifiedFlagsData = flagsData
+                    }
                     publish = state.readableFlagsData.flatMap { self.firstFlags.reserve(keys: Array($0.flags.keys)) }
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
@@ -671,12 +772,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
                 guard let versionAfterSuccess else {
-                    complete(.success(()), notifyListeners: nil, completion: operationCompletion)
+                    complete(
+                        expiredBeforeAdmission ? .failure(.invalidResponse) : .success(()),
+                        notifyListeners: notifyListeners,
+                        completion: operationCompletion
+                    )
                     return
                 }
                 let pendingCompletions = callbacks.map { $0.prepare() }
                 Self.publishFirstFlags(publish)
-                self.writeState(flagsData, version: versionAfterSuccess)
+                self.writeState(flagsData, version: versionAfterSuccess, contextUpdateID: contextUpdateID)
                 complete(
                     .success(()),
                     notifyListeners: notifyListeners,
@@ -703,21 +808,32 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     func reset() {
         let flagsDataStore = featureScope.flagsDataStore
-        let clientName = clientName
+        let cacheKey: String?
+        switch flagAssignmentsFetcher.responseSigningMode {
+        case .off: cacheKey = clientName
+        case .required: cacheKey = nil
+        case .observe:
+            cacheKey = flagAssignmentsFetcher.responseSigningCacheScope.map {
+                FlagsResponseVerifier.cacheKey(clientName: clientName, scope: $0)
+            }
+        }
         var callbacks: [PendingCacheReadCallback] = []
         var notifyListeners: (() -> Void)?
 
         _repositoryState.mutate { state in
             state.flagsData = nil
             state.cachedFlagsData = nil
+            state.verifiedFlagsData = nil
             state.flagsDataVersion += 1
             state.contextUpdateID += 1
             state.latestRequestedContext = nil
             callbacks = state.finishWaitingForInitialFlagsData()
             notifyListeners = stateManager.updateStateWithoutNotifying(.notReady)
             // Order removal with reset so newer successes enqueue their writes after it.
-            cachePersistenceQueue.async {
-                flagsDataStore.removeFlagsData(forClientNamed: clientName)
+            if let cacheKey {
+                cachePersistenceQueue.async {
+                    flagsDataStore.removeFlagsData(forClientNamed: cacheKey)
+                }
             }
         }
         let pendingCompletions = callbacks.map { $0.prepare() }

@@ -1553,6 +1553,11 @@
 		F603F1302CAEA7620088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
 		F6658CCBCEA07D3DFEEED4DF /* utils.c in Sources */ = {isa = PBXBuildFile; fileRef = B32B1B28D1FBF82D94B38106 /* utils.c */; };
 		FEC77985DB5E76A0A671F31A /* iterator_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = C592E4EC852917925C30E97F /* iterator_enc.c */; };
+		F3A031202610270000000011 /* FlagsResponseSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000001 /* FlagsResponseSigning.swift */; };
+		F3A031202610270000000012 /* FlagsSigningCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000002 /* FlagsSigningCertificate.swift */; };
+		F3A031202610270000000013 /* FlagsResponseSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000003 /* FlagsResponseSigningTests.swift */; };
+		F3A031202610270000000014 /* ResponseSigningCorpus.json in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000004 /* ResponseSigningCorpus.json */; };
+		F3A031202610270000000015 /* ResponseSigningKeyUsage.json in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000005 /* ResponseSigningKeyUsage.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3628,6 +3633,11 @@
 		FD79ACE51DB3E61FDD829786 /* random_utils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = random_utils.h; sourceTree = "<group>"; };
 		FDDC501DA710A686413A156F /* backward_references_enc.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = backward_references_enc.h; sourceTree = "<group>"; };
 		FF72612C40D11804DA4522FB /* quant_levels_dec_utils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = quant_levels_dec_utils.h; sourceTree = "<group>"; };
+		F3A031202610270000000001 /* FlagsResponseSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsResponseSigning.swift; sourceTree = "<group>"; };
+		F3A031202610270000000002 /* FlagsSigningCertificate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsSigningCertificate.swift; sourceTree = "<group>"; };
+		F3A031202610270000000003 /* FlagsResponseSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsResponseSigningTests.swift; sourceTree = "<group>"; };
+		F3A031202610270000000004 /* ResponseSigningCorpus.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ResponseSigningCorpus.json; sourceTree = "<group>"; };
+		F3A031202610270000000005 /* ResponseSigningKeyUsage.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ResponseSigningKeyUsage.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4606,6 +4616,9 @@
 				5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */,
 				F1A600000000000000000003 /* FirstFlagsCallbackTests.swift */,
 				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
+				F3A031202610270000000003 /* FlagsResponseSigningTests.swift */,
+				F3A031202610270000000004 /* ResponseSigningCorpus.json */,
+				F3A031202610270000000005 /* ResponseSigningKeyUsage.json */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
 				11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */,
 				BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */,
@@ -4694,6 +4707,8 @@
 				5B0E75D92E9690C400F66739 /* ExposureTracker.swift */,
 				5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */,
 				5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */,
+				F3A031202610270000000001 /* FlagsResponseSigning.swift */,
+				F3A031202610270000000002 /* FlagsSigningCertificate.swift */,
 				5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */,
 				5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */,
 				8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */,
@@ -8734,6 +8749,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3A031202610270000000014 /* ResponseSigningCorpus.json in Resources */,
+				F3A031202610270000000015 /* ResponseSigningKeyUsage.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9081,6 +9098,8 @@
 				5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */,
 				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				62FAD0013000000000000001 /* FlagKeyObfuscation.swift in Sources */,
+				F3A031202610270000000011 /* FlagsResponseSigning.swift in Sources */,
+				F3A031202610270000000012 /* FlagsSigningCertificate.swift in Sources */,
 				5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
 				5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
 				5BB294C02E83E02900CAA44B /* ExposureLogger.swift in Sources */,
@@ -9107,6 +9126,7 @@
 				62FAD0013000000000000005 /* FlagKeyObfuscationTests.swift in Sources */,
 				5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */,
 				5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,
+				F3A031202610270000000013 /* FlagsResponseSigningTests.swift in Sources */,
 				5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
 				5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */,
 				5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,

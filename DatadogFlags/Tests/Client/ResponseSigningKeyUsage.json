@@ -1,0 +1,174 @@
+{
+  "anchor": "MIIB9jCCAZygAwIBAgIUXo55ltoHIzARserQVk/np+sLYQMwCgYIKoZIzj0EAwIwRzFFMEMGA1UEAww8U1lOVEhFVElDIFJFU1BPTlNFIFNJR05JTkcgVjMgVEVTVCBST09UIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MDkxMTAwMDAwMFoXDTM2MDkwODAzMTgwOFowRzFFMEMGA1UEAww8U1lOVEhFVElDIFJFU1BPTlNFIFNJR05JTkcgVjMgVEVTVCBST09UIC0gTk9UIEZPUiBQUk9EVUNUSU9OMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEXd6cKcwHOfW4B7A/rBSNBgIXm1O1U21UkozNddwNKD94hHLJJhokbzc2yihhcEGHbfYIlhtIil1py4CfOu2SHKNmMGQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFLuNHAxC4pPU6Iey2aieGq5PrIfIMB8GA1UdIwQYMBaAFLuNHAxC4pPU6Iey2aieGq5PrIfIMAoGCCqGSM49BAMCA0gAMEUCIQDW+qTMhmH+XJKR6IKagg0OgBrYWBc7ksorNpuJYhkUogIgMUQrGANl33RwKUxdQTETdKmOYeHwBusdCarRWzF7Js0=",
+  "cases": [
+    {
+      "id": "canonical-leaf-ku",
+      "request": {
+        "url": "https://flags.example.test:443/precompute/assignments?dd_env=production&marker=a%2Fb",
+        "method": "POST",
+        "headers": [
+          [
+            "content-type",
+            "application/json"
+          ],
+          [
+            "dd-client-token",
+            "synthetic-client-token"
+          ],
+          [
+            "dd-application-id",
+            "synthetic-app"
+          ],
+          [
+            "x-use-cache",
+            "true"
+          ],
+          [
+            "x-dd-feature-flags-capabilities",
+            "response-signing-v3"
+          ],
+          [
+            "x-datadog-feature-flags-signature-version",
+            "3"
+          ],
+          [
+            "x-datadog-feature-flags-request-nonce",
+            "8c1578bea3319bf3dac8243fd5593407"
+          ]
+        ],
+        "body_base64": "eyJzdWJqZWN0Ijp7ImlkIjoic3ludGhldGljLXVzZXIiLCJjb3VudHJ5IjoiVVMifSwiZGRfZW52IjoicHJvZHVjdGlvbiJ9"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "content-type",
+            "application/json"
+          ],
+          [
+            "cache-control",
+            "no-store, no-transform"
+          ],
+          [
+            "x-datadog-feature-flags-signature-version",
+            "3"
+          ],
+          [
+            "x-datadog-feature-flags-signing-certificate",
+            "MIIBwTCCAWegAwIBAgIUUvaUkMqlT3T746kIxYRDP4j2LjEwCgYIKoZIzj0EAwIwJjEkMCIGA1UEAwwbU3ludGhldGljIEludGVybWVkaWF0ZSAyMDI2MB4XDTI2MTAyNzAwMDAwMFoXDTI2MTAzMDAwMDAwMFowJDEiMCAGA1UEAwwZU3ludGhldGljIEFzc2lnbm1lbnQgTGVhZjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOkQnqH0bh8Y0sMEQjLLdbAgAh8yEPhqVmXT1r4cUssdWBbrAtVQqPQkQ34STytxBQ1Jn240Z8z3yJOPu9yiaZGjdTBzMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1UdDgQWBBTHwbt/CbErPPhijnTdvbmh40IJwTAfBgNVHSMEGDAWgBQwwPo1Ak8bfXkjkGvD1UpmabcXETATBgNVHSUEDDAKBggrBgEFBQcDAzAKBggqhkjOPQQDAgNIADBFAiAdraVcTrY600NKl6hdiW+urWrL7rOEEhvb1bTB8XB8SwIhAIuvzB9KBXa2L6H3THjxyTMcAAUpd7obP9FW5z+TjtJL"
+          ],
+          [
+            "x-datadog-feature-flags-signing-intermediate",
+            "MIIB1TCCAXugAwIBAgIUbaU6t2nsPEqNriCT/EgPlSzd1fEwCgYIKoZIzj0EAwIwRzFFMEMGA1UEAww8U1lOVEhFVElDIFJFU1BPTlNFIFNJR05JTkcgVjMgVEVTVCBST09UIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MTAwMTAwMDAwMFoXDTI3MTAwMTAwMDAwMFowJjEkMCIGA1UEAwwbU3ludGhldGljIEludGVybWVkaWF0ZSAyMDI2MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+ZN2E+8+boZSClOvBgsawV38IdYuXFWSGgJNuQMF0u4dN0RjXzZm7RXTAv7+0BinhMUsCVHVVxPWrJvHVSmMQKNmMGQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFDDA+jUCTxt9eSOQa8PVSmZptxcRMB8GA1UdIwQYMBaAFLuNHAxC4pPU6Iey2aieGq5PrIfIMAoGCCqGSM49BAMCA0gAMEUCIQD2PaAO1Q38L4FA5ca3uFTaqR7JN9UdBHowekx+4dw1wAIgTs3Hqb+DBYTHGgLp5dQwtqSlcM+wnW8SgtcS4M6gVkE="
+          ],
+          [
+            "x-datadog-feature-flags-certificate-id",
+            "e69bfa1704ed4fa03d90d75e1198a21d4f325e0b742d8bd59027bf61fbb8045c"
+          ],
+          [
+            "x-datadog-feature-flags-issued-at",
+            "1793062800"
+          ],
+          [
+            "x-datadog-feature-flags-expires-at",
+            "1793063100"
+          ],
+          [
+            "x-datadog-feature-flags-signature",
+            "MEUCIGlURIB1dZ/oEpcz9cea70l//ZZRooRNDRA0IXBHkXlQAiEA5eunZjLBrcER14FlQ0kIM8HVZRkAdCqpPYiT/JUtBEw="
+          ]
+        ],
+        "body_base64": "eyJmbGFncyI6eyJjcml0aWNhbC1kZW1vIjp7InZhcmlhdGlvbiI6Im9mZiIsInZhbHVlIjpmYWxzZX19LCJydWxlc1JldmlzaW9uIjoic3ludGhldGljLXIxIiwibGFiZWwiOiJjYWbDqSJ9"
+      },
+      "now": 1793062800,
+      "expected_accept": true,
+      "rejection_reason": null,
+      "transcript_base64": "ZGF0YWRvZy5mZWF0dXJlLWZsYWdzLnByZWNvbXB1dGVkLWFzc2lnbm1lbnRzLnYzAAAAAARQT1NUAAAABWh0dHBzAAAAEmZsYWdzLmV4YW1wbGUudGVzdAAAABcvcHJlY29tcHV0ZS9hc3NpZ25tZW50cwAAAB8/ZGRfZW52PXByb2R1Y3Rpb24mbWFya2VyPWElMkZiAAAAEIwVeL6jMZvz2sgkP9VZNAe7RTYkNmgw7InPBvfo1awKbp0Kv9q6SfxCHygN4pcnh/6Ng8TcBPzzrxF/TDOL/e9gFxG7FxwZhrfj79251AdPAQAAABBhcHBsaWNhdGlvbi9qc29uAQAAAA1zeW50aGV0aWMtYXBwAAEAAAAEdHJ1ZQEAAAATcmVzcG9uc2Utc2lnbmluZy12MwAAyAAAAABq3/eQAAAAAGrf+LwAAAAAAAAAbBjoo2BVrsFBvsb7/kndkWuEJugJckBE6x8yNdHqNEVJ5pv6FwTtT6A9kNdeEZiiHU8yXgt0LYvVkCe/Yfu4BFzUhMjwcYj5TOdkrhYUYlHXRpA1bsa14S1snTuxEZoJzQ=="
+    },
+    {
+      "id": "nonminimal-leaf-ku",
+      "request": {
+        "url": "https://flags.example.test:443/precompute/assignments?dd_env=production&marker=a%2Fb",
+        "method": "POST",
+        "headers": [
+          [
+            "content-type",
+            "application/json"
+          ],
+          [
+            "dd-client-token",
+            "synthetic-client-token"
+          ],
+          [
+            "dd-application-id",
+            "synthetic-app"
+          ],
+          [
+            "x-use-cache",
+            "true"
+          ],
+          [
+            "x-dd-feature-flags-capabilities",
+            "response-signing-v3"
+          ],
+          [
+            "x-datadog-feature-flags-signature-version",
+            "3"
+          ],
+          [
+            "x-datadog-feature-flags-request-nonce",
+            "077b98a07ecb8097a9cc3010b46aeda6"
+          ]
+        ],
+        "body_base64": "eyJzdWJqZWN0Ijp7ImlkIjoic3ludGhldGljLXVzZXIiLCJjb3VudHJ5IjoiVVMifSwiZGRfZW52IjoicHJvZHVjdGlvbiJ9"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "content-type",
+            "application/json"
+          ],
+          [
+            "cache-control",
+            "no-store, no-transform"
+          ],
+          [
+            "x-datadog-feature-flags-signature-version",
+            "3"
+          ],
+          [
+            "x-datadog-feature-flags-signing-certificate",
+            "MIIBwTCCAWigAwIBAgIUS4AgbMXxAcSoCEqzYuYZukUCM/UwCgYIKoZIzj0EAwIwJjEkMCIGA1UEAwwbU3ludGhldGljIEludGVybWVkaWF0ZSAyMDI2MB4XDTI2MTAyNzAwMDAwMFoXDTI2MTAzMDAwMDAwMFowJDEiMCAGA1UEAwwZU3ludGhldGljIEFzc2lnbm1lbnQgTGVhZjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABDuU52kYmVzcsZ/rpFJYS7JXZ9swcTPKiX5w3uyzXK8beqH9oYMexxEKj5YBCGwzmnnfjT5htGR9KJHUbYlQHnijdjB0MAwGA1UdEwEB/wQCMAAwDwYDVR0PAQH/BAUDAwCAADAdBgNVHQ4EFgQUaIyOchOJ9O0olKnVxwEOYFAP7dswHwYDVR0jBBgwFoAUMMD6NQJPG315I5Brw9VKZmm3FxEwEwYDVR0lBAwwCgYIKwYBBQUHAwMwCgYIKoZIzj0EAwIDRwAwRAIgEkx7UK6WSkcdwykDdY4EvC/grJbPOwxN3dcrrLsOS64CIHNntdPrtOKhJ1ETB3lgkqwPKzLtIAO8r9qE5bqNqdlZ"
+          ],
+          [
+            "x-datadog-feature-flags-signing-intermediate",
+            "MIIB1TCCAXugAwIBAgIUbaU6t2nsPEqNriCT/EgPlSzd1fEwCgYIKoZIzj0EAwIwRzFFMEMGA1UEAww8U1lOVEhFVElDIFJFU1BPTlNFIFNJR05JTkcgVjMgVEVTVCBST09UIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MTAwMTAwMDAwMFoXDTI3MTAwMTAwMDAwMFowJjEkMCIGA1UEAwwbU3ludGhldGljIEludGVybWVkaWF0ZSAyMDI2MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+ZN2E+8+boZSClOvBgsawV38IdYuXFWSGgJNuQMF0u4dN0RjXzZm7RXTAv7+0BinhMUsCVHVVxPWrJvHVSmMQKNmMGQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFDDA+jUCTxt9eSOQa8PVSmZptxcRMB8GA1UdIwQYMBaAFLuNHAxC4pPU6Iey2aieGq5PrIfIMAoGCCqGSM49BAMCA0gAMEUCIQD2PaAO1Q38L4FA5ca3uFTaqR7JN9UdBHowekx+4dw1wAIgTs3Hqb+DBYTHGgLp5dQwtqSlcM+wnW8SgtcS4M6gVkE="
+          ],
+          [
+            "x-datadog-feature-flags-certificate-id",
+            "3ab0b5a3c0da69bd26838946c79796e54dca9848ebae11ce059ebcd7e3a024bf"
+          ],
+          [
+            "x-datadog-feature-flags-issued-at",
+            "1793062800"
+          ],
+          [
+            "x-datadog-feature-flags-expires-at",
+            "1793063100"
+          ],
+          [
+            "x-datadog-feature-flags-signature",
+            "MEQCIApFE85ZvkAe+qFyMdkUi6pr71P6EBeRfroSCHd4eM5oAiBhwVmHINIBLKPQgNtRLk+2+Z+qDxYqef3VkgImh3FxZQ=="
+          ]
+        ],
+        "body_base64": "eyJmbGFncyI6eyJjcml0aWNhbC1kZW1vIjp7InZhcmlhdGlvbiI6Im9mZiIsInZhbHVlIjpmYWxzZX19LCJydWxlc1JldmlzaW9uIjoic3ludGhldGljLXIxIiwibGFiZWwiOiJjYWbDqSJ9"
+      },
+      "now": 1793062800,
+      "expected_accept": false,
+      "rejection_reason": "nonminimal-key-usage-named-bit-list"
+    }
+  ],
+  "profile_sha256": "15649074caeb9a51ce233eb0d29d5725be6b33ee1c2497493f33acf992adff81",
+  "source": "Independent Python cryptography issuance, CA/leaf keys ephemeral; X.690 11.2.2 named-bit-list DER requires trailing zero bits removed."
+}
