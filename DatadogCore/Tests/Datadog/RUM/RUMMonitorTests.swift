@@ -106,14 +106,17 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending RUM events
 
     func testStartingViewIdentifiedByViewController() throws {
-        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        let dateProvider = RelativeDateProvider()
+        config.dateProvider = dateProvider
         RUM.enable(with: config, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
         monitor.startView(key: .mockAny())
+        dateProvider.advance(bySeconds: 1)
         monitor.stopView(key: .mockAny())
+        dateProvider.advance(bySeconds: 1)
         monitor.startView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -777,15 +780,20 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending Custom Timings
 
     func testStartingView_thenAddingTiming() throws {
-        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        // Asynchronous cache and telemetry reads must not advance event timestamps.
+        let dateProvider = RelativeDateProvider()
+        config.dateProvider = dateProvider
         RUM.enable(with: config, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
         monitor.startView(key: .mockAny())
+        dateProvider.advance(bySeconds: 1)
         monitor.addTiming(name: "timing1")
+        dateProvider.advance(bySeconds: 1)
         monitor.addTiming(name: "timing2")
+        dateProvider.advance(bySeconds: 1)
         monitor.addTiming(name: "timing3_.@$-()&+=Д")
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
