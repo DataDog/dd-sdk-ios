@@ -57,14 +57,25 @@ private final class NSCFLocalSessionTaskResumeSwizzler: MethodSwizzler<
         typealias Signature = @convention(block) (URLSessionTask) -> Void
         swizzle(method) { previousImplementation -> Signature in
             return { task in
+                // Only forward foreign traffic: requests not tagged by any `ServerMock`.
                 guard
                     let server = ServerMock.activeInstance,
                     let request = task.currentRequest,
-                    server.isMyRequest(request)
+                    let urlSessionUUID = request.value(forHTTPHeaderField: ddURLSessionUUIDHeaderField)
                 else {
                     previousImplementation(task, Self.selector)
                     return
                 }
+
+                // Mirrors the check in `ServerMockProtocol.init`.
+                precondition(
+                    server.isMyRequest(request),
+                    """
+                    ⚠️ Request to \(request.url?.absoluteString ?? "null") was sent to `ServerMock` with `urlSessionUUID`: \(urlSessionUUID),
+                    but it was received by the `ServerMock` with `urlSessionUUID`: \(server.urlSessionUUID.uuidString).
+                    This indicates lack of test synchronization or cleanup and must be fixed, otherwise the test will become flaky.
+                    """
+                )
 
                 // Suppress the real network request and deliver mock response via
                 // the task's own internal callbacks, matching `URLProtocol` behavior.
