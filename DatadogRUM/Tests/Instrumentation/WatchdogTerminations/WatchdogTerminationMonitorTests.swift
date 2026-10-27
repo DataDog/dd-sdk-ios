@@ -175,6 +175,60 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent.view.id)
     }
 
+    func testGivenSessionWasStoppedWhileMonitorStarts_whenWatchdogTerminationOccurs_itIsNotReported() throws {
+        let didSend = self.expectation(description: "Watchdog termination was reported")
+        didSend.isInverted = true
+
+        // the previous process saved a view
+        featureScope.rumDataStore.setValue(RUMViewEvent.mockRandom(), forKey: .watchdogRUMViewEvent)
+
+        // app starts, and the monitor is still starting when the session is stopped
+        let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
+        givenDefaultApp(didSend: didSend, queue: firstSessionQueue)
+        firstSessionQueue.suspend()
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        XCTAssertEqual(sut.currentState, .starting)
+        let sessionID: UUID = .mockRandom()
+        sut.update(viewEvent: .mockRandomWith(sessionID: sessionID))
+        sut.sessionDidStop(sessionID: sessionID.uuidString.lowercased())
+        firstSessionQueue.resume()
+        firstSessionQueue.sync {}
+        XCTAssertEqual(sut.currentState, .started)
+
+        // watchdog termination happens here which causes app launch
+        givenDefaultApp(didSend: didSend)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+
+        waitForExpectations(timeout: 0.5)
+        XCTAssertNil(reporter.sendParams, "A stop received while the monitor starts must be saved once it has started")
+    }
+
+    func testGivenSessionWasStoppedInPreviousProcess_whenViewIsTrackedWhileMonitorStarts_itReportsWatchdogTerminationInThatView() throws {
+        let didSend = self.expectation(description: "Watchdog termination was reported")
+
+        // the previous process stopped the session
+        featureScope.rumDataStore.setValue(true, forKey: .watchdogRUMSessionStopped)
+
+        // app starts, and the monitor is still starting when a view is tracked
+        let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
+        givenDefaultApp(didSend: didSend, queue: firstSessionQueue)
+        firstSessionQueue.suspend()
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        XCTAssertEqual(sut.currentState, .starting)
+        let viewEvent: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: viewEvent)
+        firstSessionQueue.resume()
+        firstSessionQueue.sync {}
+        XCTAssertEqual(sut.currentState, .started)
+
+        // watchdog termination happens here which causes app launch
+        givenDefaultApp(didSend: didSend)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent.view.id, "A view tracked while the monitor starts must be saved once it has started")
+    }
+
     // MARK: Helpers
 
     private func givenDefaultApp(didSend: XCTestExpectation, queue: DispatchQueue = AppStateManager.defaultQueue) {
