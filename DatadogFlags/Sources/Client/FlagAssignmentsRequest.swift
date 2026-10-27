@@ -139,7 +139,7 @@ internal enum FlagSelectionDropReason: String, Error {
     }
 }
 
-/// A flag selection canonicalized and validated the same way as Compute and ffe-service (FFL-3370).
+/// A flag selection canonicalized and validated the same way the server does.
 internal struct CanonicalFlagSelection: Codable {
     private enum CodingKeys: String, CodingKey {
         case tags
