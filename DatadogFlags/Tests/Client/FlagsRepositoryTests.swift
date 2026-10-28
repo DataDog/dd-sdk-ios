@@ -2773,15 +2773,22 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     func testFlagsDataStoredAtAVersionThatDoesNotMatchItsFlagSelectionIsNotLoaded() throws {
-        let selected = FlagsData(
+        let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        let obfuscation = try JSONDecoder().decode(
+            FlagKeyObfuscation.self,
+            from: Data(#"{"scheme":"flag-key-sha256-v1","salt":"00000000000000000000000000000000"}"#.utf8)
+        )
+        let selected = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: selection)
+        let selectedObfuscated = FlagsData(
             flags: ["flag": .mockAny()],
             context: .mockAny(),
             date: .mockAny(),
-            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+            obfuscation: obfuscation,
+            flagSelection: selection
         )
         let unselected = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny())
 
-        for (flagsData, version) in [(selected, DataStoreKeyVersion(1)), (selected, 2), (unselected, 3)] {
+        for (flagsData, version) in [(selected, DataStoreKeyVersion(1)), (selected, 2), (selectedObfuscated, 2), (unselected, 3)] {
             // Given
             let scope = FeatureScopeMock()
             try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: version)
@@ -2795,6 +2802,31 @@ final class FlagsRepositoryTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
+    }
+
+    func testFlagsDataStoredAtAnUnknownVersionIsNotLoadedAndNotReported() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let scope = FeatureScopeMock()
+        let flagsData = FlagsData(
+            flags: ["flag": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny(),
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        )
+        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 4)
+        let completed = expectation(description: "unknown version skipped")
+
+        // When
+        scope.flagsDataStore.flagsData(forClientNamed: "cached") {
+            // Then
+            XCTAssertNil($0)
+            completed.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
+        XCTAssertTrue(scope.telemetryMock.messages.isEmpty)
     }
 
     private func withBlockedCacheWrite(_ assertions: (FlagsRepository, BlockingWriteDataStore) -> Void) {

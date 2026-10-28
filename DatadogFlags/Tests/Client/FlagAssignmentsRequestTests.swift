@@ -296,234 +296,234 @@ private func numbered(_ prefix: String, _ count: Int) -> [String] {
 /// The input is the case's `query`, in order and before trimming. The `rawQuery` cases cover URL decoding and malformed input,
 /// which the typed Swift API cannot express, so they are not ported.
 private let sharedFlagSelectionVectors: [FlagSelectionVector] = [
-        .init(
-            name: "no parameters selects every flag",
-            tags: [],
-            keyPatterns: [],
-            expected: .success(nil)
-        ),
-        .init(
-            name: "tag selects flags having any of the tags",
-            tags: ["team:search", "mobile"],
-            keyPatterns: [],
-            expected: .success(.init(tags: ["mobile", "team:search"], keyPatterns: []))
-        ),
-        .init(
-            name: "tags and key patterns are combined with OR",
-            tags: ["mobile"],
-            keyPatterns: ["checkout.*"],
-            expected: .success(.init(tags: ["mobile"], keyPatterns: ["checkout.*"]))
-        ),
-        .init(
-            name: "key pattern must match the whole key",
-            tags: [],
-            keyPatterns: ["checkout"],
-            expected: .success(.init(tags: [], keyPatterns: ["checkout"]))
-        ),
-        .init(
-            name: "key pattern without a star selects exactly that key",
-            tags: [],
-            keyPatterns: ["checkout.new-flow"],
-            expected: .success(.init(tags: [], keyPatterns: ["checkout.new-flow"]))
-        ),
-        .init(
-            name: "star matches an empty run and multiple stars are allowed",
-            tags: [],
-            keyPatterns: ["*search*auto*complete*"],
-            expected: .success(.init(tags: [], keyPatterns: ["*search*auto*complete*"]))
-        ),
-        .init(
-            name: "leading star",
-            tags: [],
-            keyPatterns: ["*-v2"],
-            expected: .success(.init(tags: [], keyPatterns: ["*-v2"]))
-        ),
-        .init(
-            name: "lone star matches every key",
-            tags: [],
-            keyPatterns: ["*"],
-            expected: .success(.init(tags: [], keyPatterns: ["*"]))
-        ),
-        .init(
-            name: "question mark and brackets are literal",
-            tags: [],
-            keyPatterns: ["search.ranking-v?", "[a]*", "{a,b}"],
-            expected: .success(.init(tags: [], keyPatterns: ["[a]*", "search.ranking-v?", "{a,b}"]))
-        ),
-        .init(
-            name: "braces are literal even when an alternative names a flag",
-            tags: [],
-            keyPatterns: ["{mobile.dark-mode,missing}"],
-            expected: .success(.init(tags: [], keyPatterns: ["{mobile.dark-mode,missing}"]))
-        ),
-        .init(
-            name: "tags are never globs",
-            tags: ["team:*"],
-            keyPatterns: [],
-            expected: .success(.init(tags: ["team:*"], keyPatterns: []))
-        ),
-        .init(
-            name: "tags match case-sensitively",
-            tags: ["Team:Payments", "MOBILE"],
-            keyPatterns: [],
-            expected: .success(.init(tags: ["MOBILE", "Team:Payments"], keyPatterns: []))
-        ),
-        .init(
-            name: "key patterns match case-sensitively",
-            tags: [],
-            keyPatterns: ["CHECKOUT.*", "Mobile.Dark-Mode"],
-            expected: .success(.init(tags: [], keyPatterns: ["CHECKOUT.*", "Mobile.Dark-Mode"]))
-        ),
-        .init(
-            name: "values are trimmed, empties dropped and duplicates removed",
-            tags: [" mobile ", "mobile", "", "   "],
-            keyPatterns: [],
-            expected: .success(.init(tags: ["mobile"], keyPatterns: []))
-        ),
-        .init(
-            name: "lists that are empty after normalization select every flag",
-            tags: ["", "   "],
-            keyPatterns: [" "],
-            expected: .success(nil)
-        ),
-        .init(
-            name: "values are trimmed of Unicode white space",
-            tags: ["\u{00A0}mobile\u{3000}", "\u{0085}ui\u{2028}", "\u{0009} team:search \u{000A}"],
-            keyPatterns: [],
-            expected: .success(.init(tags: ["mobile", "team:search", "ui"], keyPatterns: []))
-        ),
-        .init(
-            name: "characters outside Unicode White_Space are not trimmed",
-            tags: ["\u{FEFF}mobile", "mobile\u{200B}"],
-            keyPatterns: [],
-            expected: .success(.init(tags: ["mobile\u{200B}", "\u{FEFF}mobile"], keyPatterns: []))
-        ),
-        .init(
-            name: "values sort by UTF-8 bytes",
-            tags: ["\u{1F600}", "\u{FF5E}", "a", "Z"],
-            keyPatterns: [],
-            expected: .success(.init(tags: ["Z", "a", "\u{FF5E}", "\u{1F600}"], keyPatterns: []))
-        ),
-        .init(
-            name: "partial match serves only the matching flags",
-            tags: ["mobile", "missing"],
-            keyPatterns: ["nothing.*"],
-            expected: .success(.init(tags: ["missing", "mobile"], keyPatterns: ["nothing.*"]))
-        ),
-        .init(
-            name: "31 values in one list are allowed",
-            tags: numbered("t", 31),
-            keyPatterns: [],
-            expected: .success(.init(tags: numbered("t", 31), keyPatterns: []))
-        ),
-        .init(
-            name: "32 values in one list are rejected",
-            tags: [],
-            keyPatterns: numbered("k", 32),
-            expected: .failure(.tooManyValues)
-        ),
-        .init(
-            name: "31 values in each list are allowed",
-            tags: numbered("t", 31),
-            keyPatterns: numbered("p", 31),
-            expected: .success(.init(tags: numbered("t", 31), keyPatterns: numbered("p", 31)))
-        ),
-        .init(
-            name: "32 values in one list are rejected even when the other is within the limit",
-            tags: numbered("t", 31),
-            keyPatterns: numbered("p", 32),
-            expected: .failure(.tooManyValues)
-        ),
-        .init(
-            name: "duplicates do not count toward the limit",
-            tags: numbered("t", 31) + ["t01", " t02 "],
-            keyPatterns: [],
-            expected: .success(.init(tags: numbered("t", 31), keyPatterns: []))
-        ),
-        .init(
-            name: "key pattern of 200 bytes is allowed",
-            tags: [],
-            keyPatterns: ["*" + String(repeating: "x", count: 199)],
-            expected: .success(.init(tags: [], keyPatterns: ["*" + String(repeating: "x", count: 199)]))
-        ),
-        .init(
-            name: "key pattern of 201 bytes is invalid",
-            tags: [],
-            keyPatterns: ["*" + String(repeating: "x", count: 200)],
-            expected: .failure(.invalidKeyPattern)
-        ),
-        .init(
-            name: "key pattern length is measured after trimming",
-            tags: [],
-            keyPatterns: ["  *" + String(repeating: "x", count: 199) + "  "],
-            expected: .success(.init(tags: [], keyPatterns: ["*" + String(repeating: "x", count: 199)]))
-        ),
-        .init(
-            name: "key pattern length counts UTF-8 bytes: 100 two-byte characters are allowed",
-            tags: [],
-            keyPatterns: [String(repeating: "\u{00E9}", count: 100)],
-            expected: .success(.init(tags: [], keyPatterns: [String(repeating: "\u{00E9}", count: 100)]))
-        ),
-        .init(
-            name: "key pattern length counts UTF-8 bytes: 201 bytes are invalid",
-            tags: [],
-            keyPatterns: ["x" + String(repeating: "\u{00E9}", count: 100)],
-            expected: .failure(.invalidKeyPattern)
-        ),
-        .init(
-            name: "tag of 200 bytes is allowed",
-            tags: [String(repeating: "a", count: 200)],
-            keyPatterns: [],
-            expected: .success(.init(tags: [String(repeating: "a", count: 200)], keyPatterns: []))
-        ),
-        .init(
-            name: "tag of 201 bytes is invalid",
-            tags: [String(repeating: "a", count: 201)],
-            keyPatterns: [],
-            expected: .failure(.invalidTag)
-        ),
-        .init(
-            name: "tag length is measured after trimming",
-            tags: ["  " + String(repeating: "a", count: 200) + "  "],
-            keyPatterns: [],
-            expected: .success(.init(tags: [String(repeating: "a", count: 200)], keyPatterns: []))
-        ),
-        .init(
-            name: "tag length counts UTF-8 bytes: 100 two-byte characters are allowed",
-            tags: [String(repeating: "\u{00E9}", count: 100)],
-            keyPatterns: [],
-            expected: .success(.init(tags: [String(repeating: "\u{00E9}", count: 100)], keyPatterns: []))
-        ),
-        .init(
-            name: "tag length counts UTF-8 bytes: 201 bytes are invalid",
-            tags: ["x" + String(repeating: "\u{00E9}", count: 100)],
-            keyPatterns: [],
-            expected: .failure(.invalidTag)
-        ),
-        .init(
-            name: "a long tag invalidates the selection even when other tags match",
-            tags: ["mobile", String(repeating: "a", count: 201)],
-            keyPatterns: [],
-            expected: .failure(.invalidTag)
-        ),
-        .init(
-            name: "too_many_values takes precedence over invalid_key_pattern",
-            tags: numbered("t", 32),
-            keyPatterns: ["*" + String(repeating: "x", count: 200)],
-            expected: .failure(.tooManyValues)
-        ),
-        .init(
-            name: "too_many_values takes precedence over invalid_tag",
-            tags: numbered("t", 31) + [String(repeating: "a", count: 201)],
-            keyPatterns: [],
-            expected: .failure(.tooManyValues)
-        ),
-        .init(
-            name: "invalid_key_pattern takes precedence over invalid_tag",
-            tags: [String(repeating: "a", count: 201)],
-            keyPatterns: [String(repeating: "a", count: 201)],
-            expected: .failure(.invalidKeyPattern)
-        ),
+    .init(
+        name: "no parameters selects every flag",
+        tags: [],
+        keyPatterns: [],
+        expected: .success(nil)
+    ),
+    .init(
+        name: "tag selects flags having any of the tags",
+        tags: ["team:search", "mobile"],
+        keyPatterns: [],
+        expected: .success(.init(tags: ["mobile", "team:search"], keyPatterns: []))
+    ),
+    .init(
+        name: "tags and key patterns are combined with OR",
+        tags: ["mobile"],
+        keyPatterns: ["checkout.*"],
+        expected: .success(.init(tags: ["mobile"], keyPatterns: ["checkout.*"]))
+    ),
+    .init(
+        name: "key pattern must match the whole key",
+        tags: [],
+        keyPatterns: ["checkout"],
+        expected: .success(.init(tags: [], keyPatterns: ["checkout"]))
+    ),
+    .init(
+        name: "key pattern without a star selects exactly that key",
+        tags: [],
+        keyPatterns: ["checkout.new-flow"],
+        expected: .success(.init(tags: [], keyPatterns: ["checkout.new-flow"]))
+    ),
+    .init(
+        name: "star matches an empty run and multiple stars are allowed",
+        tags: [],
+        keyPatterns: ["*search*auto*complete*"],
+        expected: .success(.init(tags: [], keyPatterns: ["*search*auto*complete*"]))
+    ),
+    .init(
+        name: "leading star",
+        tags: [],
+        keyPatterns: ["*-v2"],
+        expected: .success(.init(tags: [], keyPatterns: ["*-v2"]))
+    ),
+    .init(
+        name: "lone star matches every key",
+        tags: [],
+        keyPatterns: ["*"],
+        expected: .success(.init(tags: [], keyPatterns: ["*"]))
+    ),
+    .init(
+        name: "question mark and brackets are literal",
+        tags: [],
+        keyPatterns: ["search.ranking-v?", "[a]*", "{a,b}"],
+        expected: .success(.init(tags: [], keyPatterns: ["[a]*", "search.ranking-v?", "{a,b}"]))
+    ),
+    .init(
+        name: "braces are literal even when an alternative names a flag",
+        tags: [],
+        keyPatterns: ["{mobile.dark-mode,missing}"],
+        expected: .success(.init(tags: [], keyPatterns: ["{mobile.dark-mode,missing}"]))
+    ),
+    .init(
+        name: "tags are never globs",
+        tags: ["team:*"],
+        keyPatterns: [],
+        expected: .success(.init(tags: ["team:*"], keyPatterns: []))
+    ),
+    .init(
+        name: "tags match case-sensitively",
+        tags: ["Team:Payments", "MOBILE"],
+        keyPatterns: [],
+        expected: .success(.init(tags: ["MOBILE", "Team:Payments"], keyPatterns: []))
+    ),
+    .init(
+        name: "key patterns match case-sensitively",
+        tags: [],
+        keyPatterns: ["CHECKOUT.*", "Mobile.Dark-Mode"],
+        expected: .success(.init(tags: [], keyPatterns: ["CHECKOUT.*", "Mobile.Dark-Mode"]))
+    ),
+    .init(
+        name: "values are trimmed, empties dropped and duplicates removed",
+        tags: [" mobile ", "mobile", "", "   "],
+        keyPatterns: [],
+        expected: .success(.init(tags: ["mobile"], keyPatterns: []))
+    ),
+    .init(
+        name: "lists that are empty after normalization select every flag",
+        tags: ["", "   "],
+        keyPatterns: [" "],
+        expected: .success(nil)
+    ),
+    .init(
+        name: "values are trimmed of Unicode white space",
+        tags: ["\u{00A0}mobile\u{3000}", "\u{0085}ui\u{2028}", "\u{0009} team:search \u{000A}"],
+        keyPatterns: [],
+        expected: .success(.init(tags: ["mobile", "team:search", "ui"], keyPatterns: []))
+    ),
+    .init(
+        name: "characters outside Unicode White_Space are not trimmed",
+        tags: ["\u{FEFF}mobile", "mobile\u{200B}"],
+        keyPatterns: [],
+        expected: .success(.init(tags: ["mobile\u{200B}", "\u{FEFF}mobile"], keyPatterns: []))
+    ),
+    .init(
+        name: "values sort by UTF-8 bytes",
+        tags: ["\u{1F600}", "\u{FF5E}", "a", "Z"],
+        keyPatterns: [],
+        expected: .success(.init(tags: ["Z", "a", "\u{FF5E}", "\u{1F600}"], keyPatterns: []))
+    ),
+    .init(
+        name: "partial match serves only the matching flags",
+        tags: ["mobile", "missing"],
+        keyPatterns: ["nothing.*"],
+        expected: .success(.init(tags: ["missing", "mobile"], keyPatterns: ["nothing.*"]))
+    ),
+    .init(
+        name: "31 values in one list are allowed",
+        tags: numbered("t", 31),
+        keyPatterns: [],
+        expected: .success(.init(tags: numbered("t", 31), keyPatterns: []))
+    ),
+    .init(
+        name: "32 values in one list are rejected",
+        tags: [],
+        keyPatterns: numbered("k", 32),
+        expected: .failure(.tooManyValues)
+    ),
+    .init(
+        name: "31 values in each list are allowed",
+        tags: numbered("t", 31),
+        keyPatterns: numbered("p", 31),
+        expected: .success(.init(tags: numbered("t", 31), keyPatterns: numbered("p", 31)))
+    ),
+    .init(
+        name: "32 values in one list are rejected even when the other is within the limit",
+        tags: numbered("t", 31),
+        keyPatterns: numbered("p", 32),
+        expected: .failure(.tooManyValues)
+    ),
+    .init(
+        name: "duplicates do not count toward the limit",
+        tags: numbered("t", 31) + ["t01", " t02 "],
+        keyPatterns: [],
+        expected: .success(.init(tags: numbered("t", 31), keyPatterns: []))
+    ),
+    .init(
+        name: "key pattern of 200 bytes is allowed",
+        tags: [],
+        keyPatterns: ["*" + String(repeating: "x", count: 199)],
+        expected: .success(.init(tags: [], keyPatterns: ["*" + String(repeating: "x", count: 199)]))
+    ),
+    .init(
+        name: "key pattern of 201 bytes is invalid",
+        tags: [],
+        keyPatterns: ["*" + String(repeating: "x", count: 200)],
+        expected: .failure(.invalidKeyPattern)
+    ),
+    .init(
+        name: "key pattern length is measured after trimming",
+        tags: [],
+        keyPatterns: ["  *" + String(repeating: "x", count: 199) + "  "],
+        expected: .success(.init(tags: [], keyPatterns: ["*" + String(repeating: "x", count: 199)]))
+    ),
+    .init(
+        name: "key pattern length counts UTF-8 bytes: 100 two-byte characters are allowed",
+        tags: [],
+        keyPatterns: [String(repeating: "\u{00E9}", count: 100)],
+        expected: .success(.init(tags: [], keyPatterns: [String(repeating: "\u{00E9}", count: 100)]))
+    ),
+    .init(
+        name: "key pattern length counts UTF-8 bytes: 201 bytes are invalid",
+        tags: [],
+        keyPatterns: ["x" + String(repeating: "\u{00E9}", count: 100)],
+        expected: .failure(.invalidKeyPattern)
+    ),
+    .init(
+        name: "tag of 200 bytes is allowed",
+        tags: [String(repeating: "a", count: 200)],
+        keyPatterns: [],
+        expected: .success(.init(tags: [String(repeating: "a", count: 200)], keyPatterns: []))
+    ),
+    .init(
+        name: "tag of 201 bytes is invalid",
+        tags: [String(repeating: "a", count: 201)],
+        keyPatterns: [],
+        expected: .failure(.invalidTag)
+    ),
+    .init(
+        name: "tag length is measured after trimming",
+        tags: ["  " + String(repeating: "a", count: 200) + "  "],
+        keyPatterns: [],
+        expected: .success(.init(tags: [String(repeating: "a", count: 200)], keyPatterns: []))
+    ),
+    .init(
+        name: "tag length counts UTF-8 bytes: 100 two-byte characters are allowed",
+        tags: [String(repeating: "\u{00E9}", count: 100)],
+        keyPatterns: [],
+        expected: .success(.init(tags: [String(repeating: "\u{00E9}", count: 100)], keyPatterns: []))
+    ),
+    .init(
+        name: "tag length counts UTF-8 bytes: 201 bytes are invalid",
+        tags: ["x" + String(repeating: "\u{00E9}", count: 100)],
+        keyPatterns: [],
+        expected: .failure(.invalidTag)
+    ),
+    .init(
+        name: "a long tag invalidates the selection even when other tags match",
+        tags: ["mobile", String(repeating: "a", count: 201)],
+        keyPatterns: [],
+        expected: .failure(.invalidTag)
+    ),
+    .init(
+        name: "too_many_values takes precedence over invalid_key_pattern",
+        tags: numbered("t", 32),
+        keyPatterns: ["*" + String(repeating: "x", count: 200)],
+        expected: .failure(.tooManyValues)
+    ),
+    .init(
+        name: "too_many_values takes precedence over invalid_tag",
+        tags: numbered("t", 31) + [String(repeating: "a", count: 201)],
+        keyPatterns: [],
+        expected: .failure(.tooManyValues)
+    ),
+    .init(
+        name: "invalid_key_pattern takes precedence over invalid_tag",
+        tags: [String(repeating: "a", count: 201)],
+        keyPatterns: [String(repeating: "a", count: 201)],
+        expected: .failure(.invalidKeyPattern)
+    ),
 ]
 
 // MARK: - Test Helpers
