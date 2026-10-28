@@ -76,6 +76,7 @@ private extension RUMViewUpdateEvent.Source {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 }
@@ -94,6 +95,7 @@ private extension RUMViewUpdateEvent.Container.Source {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 }

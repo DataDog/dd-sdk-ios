@@ -526,6 +526,68 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .maxDuration)
     }
 
+    func testGivenClosedView_whenSessionExpiresOnLifecycleEvent_itDoesNotRestoreTheClosedView() throws {
+        // Given
+        var currentTime = Date()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground(since: currentTime))
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: false))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("closed"), name: "ClosedView", path: "closed"), context: context, writer: writer)
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime + 1, identity: ViewIdentifier("closed")), context: context, writer: writer)
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime + 2), context: context, writer: writer)
+
+        // When
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration + 10)
+        _ = scope.process(command: RUMHandleAppLifecycleEventCommand(time: currentTime, event: .willEnterForeground), context: context, writer: writer)
+        XCTAssertNil(scope.activeSession, "The session expires on the lifecycle event")
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime + 1), context: context, writer: writer)
+
+        // Then
+        XCTAssertNotEqual(scope.activeSession?.viewScopes.last(where: { $0.isActiveView })?.viewName, "ClosedView", "A closed view must not be restored")
+        XCTAssertNotEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.name, "ClosedView")
+        #if os(macOS)
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.name, "NoActiveView")
+        #endif
+    }
+
+    func testGivenClosedView_whenNextEventRenewsTheSession_itDoesNotRestoreTheClosedView() throws {
+        // Given
+        var currentTime = Date()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground(since: currentTime))
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: false))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("closed"), name: "ClosedView", path: "closed"), context: context, writer: writer)
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime + 1, identity: ViewIdentifier("closed")), context: context, writer: writer)
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime + 2), context: context, writer: writer)
+
+        // When
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration + 10)
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime), context: context, writer: writer)
+
+        // Then
+        XCTAssertNotEqual(scope.activeSession?.viewScopes.last(where: { $0.isActiveView })?.viewName, "ClosedView", "A closed view must not be restored")
+        XCTAssertNotEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.name, "ClosedView")
+        #if os(macOS)
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.name, "NoActiveView")
+        #endif
+    }
+
+    func testGivenOpenView_whenSessionExpiresOnLifecycleEvent_itRestoresTheView() throws {
+        // Given
+        var currentTime = Date()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground(since: currentTime))
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: false))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("open"), name: "OpenView", path: "open"), context: context, writer: writer)
+
+        // When
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration + 10)
+        _ = scope.process(command: RUMHandleAppLifecycleEventCommand(time: currentTime, event: .willEnterForeground), context: context, writer: writer)
+        XCTAssertNil(scope.activeSession, "The session expires on the lifecycle event")
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime + 1), context: context, writer: writer)
+
+        // Then
+        XCTAssertEqual(scope.activeSession?.viewScopes.last(where: { $0.isActiveView })?.viewName, "OpenView", "A view still on screen is restored")
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.name, "OpenView")
+    }
+
     func testGivenStopWithPendingResource_whenResourceCompletes_itDoesNotPublishAViewToCrashContext() throws {
         // Given
         let currentTime = Date()

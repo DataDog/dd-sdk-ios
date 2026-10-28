@@ -1,6 +1,6 @@
 ---
 name: dd-sdk-ios:git-branch
-description: Use when creating a new branch in dd-sdk-ios for a JIRA ticket or feature. Use when choosing a branch name or base branch for development work.
+description: Use when creating a new branch in dd-sdk-ios for a JIRA ticket, feature, or regular release. Use when choosing a branch name or base branch.
 ---
 
 # Branching in dd-sdk-ios
@@ -28,7 +28,7 @@ For a single PR, branch from `develop`:
 git checkout -b <author>/<JIRA-TICKET>/<slug> develop
 ```
 
-For large contributions split across multiple PRs, create a shared feature branch first, then branch each PR from it:
+For larger changes split across multiple PRs, create a shared feature branch first, then branch each PR from it:
 
 ```bash
 git checkout -b feature/<feature-slug> develop          # shared target branch
@@ -36,6 +36,10 @@ git checkout -b <author>/<JIRA-TICKET>/<slug> feature/<feature-slug>  # per-PR b
 ```
 
 Each per-PR branch targets `feature/<feature-slug>`. Only the final feature branch is merged into `develop`.
+
+## Release Branches
+
+Regular releases use `release/<version>`; follow `dd-sdk-ios:prepare-release`.
 
 ## No JIRA Ticket?
 
