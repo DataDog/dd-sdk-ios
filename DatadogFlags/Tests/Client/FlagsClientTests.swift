@@ -712,8 +712,8 @@ final class FlagsClientTests: XCTestCase {
         let core = SingleFeatureCoreMock<FlagsFeature>(
             dataStore: DataStoreMock(
                 storage: [
-                    "other-selection": .value(try encodedCache(selectedTags: ["web"]), dataStoreDefaultKeyVersion),
-                    "same-selection": .value(try encodedCache(selectedTags: ["mobile"]), dataStoreDefaultKeyVersion),
+                    "other-selection": .value(try encodedCache(selectedTags: ["web"]), 3),
+                    "same-selection": .value(try encodedCache(selectedTags: ["mobile"]), 3),
                 ]
             )
         )

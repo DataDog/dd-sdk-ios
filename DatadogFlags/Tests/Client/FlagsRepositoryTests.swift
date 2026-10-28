@@ -2579,7 +2579,7 @@ final class FlagsRepositoryTests: XCTestCase {
         // Given
         let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: ["checkout.*"])
         let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: selection)
-        try featureScope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "cached")
+        featureScope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
 
         // When
         let repository = FlagsRepository(
@@ -2610,7 +2610,7 @@ final class FlagsRepositoryTests: XCTestCase {
             // Given
             let scope = FeatureScopeMock()
             let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: cached)
-            try scope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "cached")
+            scope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
 
             // When
             let repository = FlagsRepository(
@@ -2695,8 +2695,69 @@ final class FlagsRepositoryTests: XCTestCase {
         waitForExpectations(timeout: 1)
         repository.flush()
         featureScope.dataStore.flush()
-        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["persisted"]?.data())
+        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["persisted"]?.data(expectedVersion: 3))
         XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: persisted).flagSelection, selection)
+    }
+
+    func testFlagsDataWithFlagSelectionIsStoredAtAVersionThatOlderSDKsDoNotRead() throws {
+        // Given
+        let selection = CanonicalFlagSelection(tags: ["cafe\u{0301}"], keyPatterns: ["checkout.*"])
+        let obfuscation = try JSONDecoder().decode(
+            FlagKeyObfuscation.self,
+            from: Data(#"{"scheme":"flag-key-sha256-v1","salt":"00000000000000000000000000000000"}"#.utf8)
+        )
+
+        for obfuscation in [nil, obfuscation] {
+            let scope = FeatureScopeMock()
+            let flagsData = FlagsData(
+                flags: ["flag": .mockAny()],
+                context: .mockAny(),
+                date: .mockAny(),
+                obfuscation: obfuscation,
+                flagSelection: selection
+            )
+
+            // When
+            scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "cached")
+
+            // Then
+            // SDKs without flag selection read only versions 1 and 2, and would load the selected flags as the full configuration.
+            let stored = try XCTUnwrap(scope.dataStoreMock.storage["cached"])
+            XCTAssertNil(stored.data(), "obfuscation: \(String(describing: obfuscation))")
+            XCTAssertNil(stored.data(expectedVersion: 2), "obfuscation: \(String(describing: obfuscation))")
+            XCTAssertNotNil(stored.data(expectedVersion: 3), "obfuscation: \(String(describing: obfuscation))")
+            let restored = expectation(description: "restored")
+            scope.flagsDataStore.flagsData(forClientNamed: "cached") {
+                XCTAssertEqual($0, flagsData)
+                restored.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+    }
+
+    func testFlagsDataStoredAtAVersionThatDoesNotMatchItsFlagSelectionIsNotLoaded() throws {
+        let selected = FlagsData(
+            flags: ["flag": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny(),
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        )
+        let unselected = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny())
+
+        for (flagsData, version) in [(selected, DataStoreKeyVersion(1)), (selected, 2), (unselected, 3)] {
+            // Given
+            let scope = FeatureScopeMock()
+            try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: version)
+            let completed = expectation(description: "inconsistent cache rejected")
+
+            // When
+            scope.flagsDataStore.flagsData(forClientNamed: "cached") {
+                // Then
+                XCTAssertNil($0, "version: \(version)")
+                completed.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
     }
 
     private func withBlockedCacheWrite(_ assertions: (FlagsRepository, BlockingWriteDataStore) -> Void) {
