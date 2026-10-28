@@ -155,7 +155,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         let didSend = self.expectation(description: "Watchdog termination was reported")
 
         // the previous process stopped the session
-        featureScope.rumDataStore.setValue(true, forKey: .watchdogRUMSessionStopped)
+        featureScope.rumDataStore.setValue(Optional<RUMViewEvent>.none, forKey: .watchdogRUMViewEvent)
 
         // app starts
         let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
@@ -207,7 +207,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         let didSend = self.expectation(description: "Watchdog termination was reported")
 
         // the previous process stopped the session
-        featureScope.rumDataStore.setValue(true, forKey: .watchdogRUMSessionStopped)
+        featureScope.rumDataStore.setValue(Optional<RUMViewEvent>.none, forKey: .watchdogRUMViewEvent)
 
         // app starts, and the monitor is still starting when a view is tracked
         let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
@@ -227,6 +227,93 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
 
         waitForExpectations(timeout: 1)
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent.view.id, "A view tracked while the monitor starts must be saved once it has started")
+    }
+
+    func testGivenResumedViewDuringStartup_whenStoppedSessionUpdates_itPreservesTheResumedView() throws {
+        // Given
+        let queue = DispatchQueue(label: "com.datadoghq.tests.startup")
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"), queue: queue)
+        queue.suspend()
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        let stoppedSessionID: UUID = .mockRandom()
+        sut.sessionDidStop(sessionID: stoppedSessionID.uuidString.lowercased())
+        let resumedView: RUMViewEvent = .mockRandomWith(sessionID: .mockRandom())
+        sut.update(viewEvent: resumedView)
+
+        // When
+        sut.update(viewEvent: .mockRandomWith(sessionID: stoppedSessionID))
+        queue.resume()
+        queue.sync {}
+
+        // Then
+        var savedView: RUMViewEvent?
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        let view = try XCTUnwrap(savedView)
+        XCTAssertEqual(view.view.id, resumedView.view.id)
+    }
+
+    func testGivenManyStoppedSessions_whenOldestSessionUpdates_itDoesNotResumeTracking() throws {
+        // Given
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"))
+        sut.currentState = .started
+        let sessions: [UUID] = (0..<20).map { _ in .mockRandom() }
+        for sessionID in sessions {
+            sut.update(viewEvent: .mockRandomWith(sessionID: sessionID))
+            sut.sessionDidStop(sessionID: sessionID.uuidString.lowercased())
+        }
+        let oldestSessionID = try XCTUnwrap(sessions.first)
+
+        // When
+        sut.update(viewEvent: .mockRandomWith(sessionID: oldestSessionID))
+
+        // Then
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
+    }
+
+    func testGivenSessionStopsDuringStartup_whenItsScopeCompletes_itDoesNotRestoreThePendingView() throws {
+        // Given
+        let queue = DispatchQueue(label: "com.datadoghq.tests.startup")
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"), queue: queue)
+        queue.suspend()
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        let view: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: view)
+
+        // When
+        sut.sessionDidStop(sessionID: view.session.id)
+        sut.sessionDidComplete(sessionID: view.session.id)
+        queue.resume()
+        queue.sync {}
+
+        // Then
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
+    }
+
+    func testGivenStoppedSession_whenReplacementViewWriteFails_itDoesNotReportTheStaleView() throws {
+        // Given
+        let queue = DispatchQueue(label: "com.datadoghq.tests.persistence")
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"), queue: queue)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        queue.sync {}
+        let view: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: view)
+        sut.sessionDidStop(sessionID: view.session.id)
+        let store = try XCTUnwrap(featureScope.dataStore as? DataStoreMock)
+        store.failingWriteKeys = [RUMDataStore.Key.watchdogRUMViewEvent.rawValue]
+
+        // When
+        sut.update(viewEvent: .mockRandomWith(sessionID: .mockRandom()))
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"), queue: queue)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        queue.sync {}
+
+        // Then
+        XCTAssertEqual(sut.currentState, .started)
+        XCTAssertNil(reporter.sendParams)
     }
 
     // MARK: Helpers

@@ -870,12 +870,9 @@ class RUMSessionScopeTests: XCTestCase {
         _ = scope.process(command: RUMStopSessionCommand.mockWith(time: sessionStartTime + 1), context: context, writer: writer)
 
         // Then
-        var wasSessionStopped: Bool?
-        featureScope.rumDataStore.value(forKey: .watchdogRUMSessionStopped) { wasSessionStopped = $0 }
-        XCTAssertEqual(wasSessionStopped, true)
-        var savedView: RUMViewEvent?
+        var savedView: RUMViewEvent??
         featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
-        XCTAssertEqual(savedView?.view.isActive, true, "The last update of the stopped view must not be saved")
+        XCTAssertNil(try XCTUnwrap(savedView))
     }
 
     func testWhenNotSampledSessionIsStopped_itSavesTheStopForWatchdogTerminations() throws {
@@ -900,9 +897,9 @@ class RUMSessionScopeTests: XCTestCase {
         _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
 
         // Then
-        var wasSessionStopped: Bool?
-        featureScope.rumDataStore.value(forKey: .watchdogRUMSessionStopped) { wasSessionStopped = $0 }
-        XCTAssertEqual(wasSessionStopped, true, "A view saved by an earlier session must not be used after the stop")
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
     }
     #endif
 

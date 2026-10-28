@@ -480,6 +480,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     deinit {
+        dependencies.watchdogTermination?.sessionDidComplete(sessionID: sessionUUID.toRUMDataFormat)
         deactivateActiveView()
     }
 
