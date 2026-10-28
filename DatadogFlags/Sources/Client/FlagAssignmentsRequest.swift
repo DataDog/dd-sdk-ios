@@ -150,7 +150,7 @@ internal struct CanonicalFlagSelection: Codable {
     static let maxTagBytes = 200
     static let maxKeyPatternBytes = 200
 
-    // The Unicode White_Space property, which Compute trims with Rust's `str::trim`.
+    // The Unicode White_Space property, which the server trims with Rust's `str::trim`.
     // Listed explicitly so trimming does not depend on the OS Unicode data.
     private static let whiteSpace: Set<Unicode.Scalar> = [
         "\u{0009}", "\u{000A}", "\u{000B}", "\u{000C}", "\u{000D}", "\u{0020}", "\u{0085}", "\u{00A0}", "\u{1680}",
@@ -199,7 +199,7 @@ internal struct CanonicalFlagSelection: Codable {
     }
 
     private static func canonicalize(_ values: [String]) -> [String] {
-        // Dedupe on bytes: Swift `String` equality treats NFC and NFD forms as equal, and Compute does not.
+        // Dedupe on bytes: Swift `String` equality treats NFC and NFD forms as equal, and the server does not.
         var seen: Set<Data> = []
         var unique: [String] = []
         for value in values {
@@ -222,7 +222,7 @@ internal struct CanonicalFlagSelection: Codable {
 }
 
 extension CanonicalFlagSelection: Equatable {
-    // Compares bytes: Swift `String` equality treats NFC and NFD forms as equal, and Compute does not.
+    // Compares bytes: Swift `String` equality treats NFC and NFD forms as equal, and the server does not.
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.tags.elementsEqual(rhs.tags) { $0.utf8.elementsEqual($1.utf8) }
             && lhs.keyPatterns.elementsEqual(rhs.keyPatterns) { $0.utf8.elementsEqual($1.utf8) }
