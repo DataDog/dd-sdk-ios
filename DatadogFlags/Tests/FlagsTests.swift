@@ -30,6 +30,41 @@ final class FlagsTests: XCTestCase {
         XCTAssertNil(disabled.initializationTimeout)
     }
 
+    func testInitializerWithoutFlagSelectionKeepsEveryValue() throws {
+        // Given
+        let flagsEndpoint = try XCTUnwrap(URL(string: "https://flags.example.com"))
+        let exposureEndpoint = try XCTUnwrap(URL(string: "https://exposures.example.com"))
+        let evaluationEndpoint = try XCTUnwrap(URL(string: "https://evaluations.example.com"))
+
+        // When
+        // The initializer that releases before flag selection exported, called with every argument.
+        let config = Flags.Configuration(
+            gracefulModeEnabled: false,
+            customFlagsEndpoint: flagsEndpoint,
+            customFlagsHeaders: ["key": "value"],
+            initializationTimeout: 2.5,
+            customExposureEndpoint: exposureEndpoint,
+            trackExposures: false,
+            customEvaluationEndpoint: evaluationEndpoint,
+            trackEvaluations: false,
+            evaluationFlushInterval: 30,
+            rumIntegrationEnabled: false
+        )
+
+        // Then
+        XCTAssertFalse(config.gracefulModeEnabled)
+        XCTAssertEqual(config.customFlagsEndpoint, flagsEndpoint)
+        XCTAssertEqual(config.customFlagsHeaders, ["key": "value"])
+        XCTAssertEqual(config.initializationTimeout, 2.5)
+        XCTAssertEqual(config.customExposureEndpoint, exposureEndpoint)
+        XCTAssertFalse(config.trackExposures)
+        XCTAssertEqual(config.customEvaluationEndpoint, evaluationEndpoint)
+        XCTAssertFalse(config.trackEvaluations)
+        XCTAssertEqual(config.evaluationFlushInterval, 30)
+        XCTAssertFalse(config.rumIntegrationEnabled)
+        XCTAssertNil(config.flagSelection)
+    }
+
     func testWhenNotEnabled() {
         // Given
         let core = FeatureRegistrationCoreMock()

@@ -165,6 +165,36 @@ public enum Flags {
             self.rumIntegrationEnabled = rumIntegrationEnabled
             self.flagSelection = flagSelection
         }
+
+        /// Creates a configuration for the Datadog Flags feature.
+        ///
+        /// Keeps the initializer earlier releases exported, so binaries built against them still link.
+        public init(
+            gracefulModeEnabled: Bool,
+            customFlagsEndpoint: URL?,
+            customFlagsHeaders: [String: String]?,
+            initializationTimeout: TimeInterval?,
+            customExposureEndpoint: URL?,
+            trackExposures: Bool,
+            customEvaluationEndpoint: URL?,
+            trackEvaluations: Bool,
+            evaluationFlushInterval: TimeInterval,
+            rumIntegrationEnabled: Bool
+        ) {
+            self.init(
+                gracefulModeEnabled: gracefulModeEnabled,
+                customFlagsEndpoint: customFlagsEndpoint,
+                customFlagsHeaders: customFlagsHeaders,
+                initializationTimeout: initializationTimeout,
+                customExposureEndpoint: customExposureEndpoint,
+                trackExposures: trackExposures,
+                customEvaluationEndpoint: customEvaluationEndpoint,
+                trackEvaluations: trackEvaluations,
+                evaluationFlushInterval: evaluationFlushInterval,
+                rumIntegrationEnabled: rumIntegrationEnabled,
+                flagSelection: nil
+            )
+        }
     }
 
     /// Selects the flags a client loads, by tag or by key pattern.

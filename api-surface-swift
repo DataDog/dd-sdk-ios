@@ -1649,6 +1649,7 @@ public enum Flags
         public var rumIntegrationEnabled: Bool
         public var flagSelection: FlagSelection?
         public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,initializationTimeout: TimeInterval? = 5,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true,flagSelection: FlagSelection? = nil)
+        public init(gracefulModeEnabled: Bool,customFlagsEndpoint: URL?,customFlagsHeaders: [String: String]?,initializationTimeout: TimeInterval?,customExposureEndpoint: URL?,trackExposures: Bool,customEvaluationEndpoint: URL?,trackEvaluations: Bool,evaluationFlushInterval: TimeInterval,rumIntegrationEnabled: Bool)
     public struct FlagSelection: Sendable
         public var tags: [String]
         public var keyPatterns: [String]
