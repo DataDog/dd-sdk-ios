@@ -83,13 +83,15 @@ All source files must include the Apache License header:
 
 ## Commit & PR Conventions
 
+Regular release preparation uses the commit messages and PR format in [`dd-sdk-ios:prepare-release`](../.claude/skills/prepare-release/SKILL.md).
+
 ### Commit Requirements
 - **All commits MUST be signed** (GPG or SSH signature)
-- **Prefix**: `[PROJECT-XXXX]` where PROJECT is the JIRA Project shortname (RUM, FFL, ...) and XXXX is the JIRA ticket number. It applies only for internal development. Third party contributions do not need it.
+- **Prefix**: `[PROJECT-XXXX]` where PROJECT is the JIRA Project shortname (RUM, FFL, ...) and XXXX is the JIRA ticket number. It applies to ordinary internal development. Third party contributions do not need it.
 - Example: `[RUM-1234] Add baggage header merging support`, `[FFL-213] Add Feature Flags support`
 
 ### PR Requirements
-- **Always follow `.github/PULL_REQUEST_TEMPLATE.md`** when creating PRs
-- **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket
+- **Development PRs:** follow `.github/PULL_REQUEST_TEMPLATE.md`
+- **Development PR title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket for internal work
 - Include thorough test coverage
 - Pass all CI checks (lint, tests, API surface verification)

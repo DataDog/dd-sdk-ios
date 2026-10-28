@@ -1,10 +1,14 @@
 # Unreleased
 
 - [FEATURE] Flags: Add per-subject experimentation opt-out through `FlagsClient.Configuration.experimentationOptOutMode` and `FlagsClient.create(configuration:name:in:)`. The `dd_experimentation_opt_out_at` context attribute supports `.immediate` and `.futureExperimentsOnly` modes. Adds `FlagsError.invalidContext` and `FlagEvaluationError.invalidContext`; exhaustive switches need the new case. Timestamps use proleptic Gregorian dates with UTC year bounds. Filtered responses are rejected when no subject opt-out applies. See [#3338][]
+- [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
+- [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3351][]
 - [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
+- [IMPROVEMENT] Add support for `unreal` source for cross-platform RUM events from Unreal Engine applications. See [#3353][]
 - [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
+- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device from eligible finished spans, independently of trace upload sampling. Disabled by default. See [#3301][]
 - [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
 - [FIX] NSPrivacyAccessedAPICategoryFileTimestamp added to DatadogCore's privacy manifest as required. See [#3339][]
 - [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
@@ -1313,13 +1317,16 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
+[#3301]: https://github.com/DataDog/dd-sdk-ios/pull/3301
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
 [#3330]: https://github.com/DataDog/dd-sdk-ios/pull/3330
 [#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
 [#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
+[#3351]: https://github.com/DataDog/dd-sdk-ios/pull/3351
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
+[#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

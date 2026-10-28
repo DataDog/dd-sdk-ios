@@ -77,6 +77,9 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         let bundleType = BundleType(bundle: configuration.bundle)
         var watchdogTermination: WatchdogTerminationMonitor?
+        #if !os(macOS)
+        // The heuristic relies on the iOS app lifecycle. On macOS it can label an abrupt termination,
+        // like a force quit of a hung app, as a watchdog kill, so it never runs there.
         if bundleType == .iOSApp,
             configuration.trackWatchdogTerminations {
             let monitor = WatchdogTerminationMonitor(
@@ -95,6 +98,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             )
             watchdogTermination = monitor
         }
+        #endif
 
         var renderLoopObserver: RenderLoopObserver? = nil
         var accessibilityReader: AccessibilityReading? = nil
@@ -398,7 +402,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
+                viewCache: dependencies.viewCache,
+                timeseriesCollector: timeseriesCollector
             ),
             CrashReportReceiver(
                 featureScope: featureScope,

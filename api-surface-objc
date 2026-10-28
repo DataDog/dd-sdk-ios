@@ -349,6 +349,8 @@ public final class objc_TraceConfiguration: NSObject
     public var bundleWithRumEnabled: Bool
     public var networkInfoEnabled: Bool
     public var customEndpoint: URL?
+    public var customStatsEndpoint: URL?
+    public var featureFlags: [String: Bool]
 public final class objc_TraceFirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)
@@ -550,6 +552,7 @@ public enum objc_RUMActionEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMActionEventContainerView: NSObject
     public var id: String
 public class objc_RUMActionEventRUMEventAttributes: NSObject
@@ -619,6 +622,7 @@ public enum objc_RUMActionEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMActionEventStream: NSObject
     public var id: String
 public class objc_RUMActionEventRUMSyntheticsTest: NSObject
@@ -793,6 +797,7 @@ public enum objc_RUMErrorEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMErrorEventContainerView: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMEventAttributes: NSObject
@@ -979,6 +984,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int
     case linux
     case maui
     case nodejs
+    case unreal
 public class objc_RUMErrorEventErrorThreads: NSObject
     public var crashed: NSNumber
     public var name: String
@@ -1033,6 +1039,7 @@ public enum objc_RUMErrorEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMErrorEventStream: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMSyntheticsTest: NSObject
@@ -1202,6 +1209,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMLongTaskEventContainerView: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMEventAttributes: NSObject
@@ -1306,6 +1314,7 @@ public enum objc_RUMLongTaskEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMLongTaskEventStream: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMSyntheticsTest: NSObject
@@ -1448,6 +1457,7 @@ public enum objc_RUMResourceEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMResourceEventContainerView: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMEventAttributes: NSObject
@@ -1649,6 +1659,7 @@ public enum objc_RUMResourceEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMResourceEventStream: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMSyntheticsTest: NSObject
@@ -1831,6 +1842,7 @@ public enum objc_RUMTimeseriesCpuEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMTimeseriesCpuEventStream: NSObject
     public var id: String
 public class objc_RUMTimeseriesCpuEventRUMSyntheticsTest: NSObject
@@ -2025,6 +2037,7 @@ public enum objc_RUMTimeseriesMemoryEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMTimeseriesMemoryEventStream: NSObject
     public var id: String
 public class objc_RUMTimeseriesMemoryEventRUMSyntheticsTest: NSObject
@@ -2217,6 +2230,7 @@ public enum objc_RUMViewEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMViewEventContainerView: NSObject
     public var id: String
 public class objc_RUMViewEventRUMEventAttributes: NSObject
@@ -2302,6 +2316,7 @@ public enum objc_RUMViewEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMViewEventStream: NSObject
     public var bitrate: NSNumber?
     public var completionPercent: NSNumber?
@@ -2657,6 +2672,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMViewUpdateEventContainerView: NSObject
     public var id: String
 public class objc_RUMViewUpdateEventRUMEventAttributes: NSObject
@@ -2742,6 +2758,7 @@ public enum objc_RUMViewUpdateEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMViewUpdateEventStream: NSObject
     public var bitrate: NSNumber?
     public var completionPercent: NSNumber?
@@ -3075,6 +3092,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMVitalAppLaunchEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMEventAttributes: NSObject
@@ -3144,6 +3162,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMVitalAppLaunchEventStream: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject
@@ -3318,6 +3337,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMVitalDurationEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMEventAttributes: NSObject
@@ -3387,6 +3407,7 @@ public enum objc_RUMVitalDurationEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMVitalDurationEventStream: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject
@@ -3550,6 +3571,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMVitalOperationStepEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMEventAttributes: NSObject
@@ -3619,6 +3641,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_RUMVitalOperationStepEventStream: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject
@@ -3697,6 +3720,7 @@ public enum objc_TelemetryConfigurationEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_TelemetryConfigurationEventTelemetry: NSObject
     public var configuration: objc_TelemetryConfigurationEventTelemetryConfiguration
     public var device: objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice?
@@ -3787,6 +3811,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var trackViewsManually: NSNumber?
     public var trackingConsent: objc_TelemetryConfigurationEventTelemetryConfigurationTrackingConsent
     public var unityVersion: String?
+    public var unrealVersion: String?
     public var useAllowedGraphQlUrls: NSNumber?
     public var useAllowedTracingOrigins: NSNumber?
     public var useAllowedTracingUrls: NSNumber?
@@ -3918,6 +3943,7 @@ public enum objc_TelemetryDebugEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_TelemetryDebugEventTelemetry: NSObject
     public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice?
     public var message: String
@@ -3977,6 +4003,7 @@ public enum objc_TelemetryErrorEventSource: Int
     case electron
     case cpp
     case maui
+    case unreal
 public class objc_TelemetryErrorEventTelemetry: NSObject
     public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice?
     public var error: objc_TelemetryErrorEventTelemetryError?

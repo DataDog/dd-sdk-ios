@@ -33,24 +33,27 @@
 namespace dd::profiler {
 
 /**
- * @brief Calculate uptime to epoch time offset
+ * @brief Calculate monotonic to epoch time offset
  *
- * Calculates the offset needed to convert uptime nanoseconds
+ * Calculates the offset needed to convert CLOCK_MONOTONIC_RAW nanoseconds
  * to epoch time in nanoseconds.
  *
- * @return Offset to convert uptime nanoseconds to epoch time
+ * Uses CLOCK_MONOTONIC_RAW, which counts time spent asleep, so the offset stays
+ * valid for the profile's whole life. The sampler must read the same clock.
+ *
+ * @return Offset to convert monotonic nanoseconds to epoch time
  */
-int64_t uptime_epoch_offset() {
-    // Get current uptime nanoseconds
-    uint64_t uptime_ns = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+int64_t monotonic_epoch_offset() {
+    // Get current monotonic nanoseconds
+    uint64_t monotonic_ns = clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
 
     // Get current epoch time
     struct timespec ts{};
     clock_gettime(CLOCK_REALTIME, &ts);
     int64_t epoch_time_ns = (static_cast<int64_t>(ts.tv_sec) * 1000000000LL) + static_cast<int64_t>(ts.tv_nsec);
 
-    // Calculate and return offset to convert uptime to epoch
-    return epoch_time_ns - static_cast<int64_t>(uptime_ns);
+    // Calculate and return offset to convert monotonic to epoch
+    return epoch_time_ns - static_cast<int64_t>(monotonic_ns);
 }
 
 /**
@@ -84,7 +87,7 @@ std::string uuid_string(const uuid_t uuid) {
 profile::profile(uint64_t sampling_interval_ns, bool record_cpu_time)
     : _sampling_interval_ns(sampling_interval_ns)
     , _record_cpu_time(record_cpu_time)
-    , _epoch_offset(uptime_epoch_offset())
+    , _epoch_offset(monotonic_epoch_offset())
     , _server_time_offset_ns(0)
     , _start_timestamp(0)
     , _end_timestamp(0) {
@@ -104,13 +107,13 @@ profile::profile(uint64_t sampling_interval_ns, bool record_cpu_time)
 }
 
 /**
- * @brief Convert uptime nanoseconds to epoch time in nanoseconds
+ * @brief Convert monotonic nanoseconds to epoch time in nanoseconds
  *
- * @param uptime_ns Uptime nanoseconds value
+ * @param monotonic_ns CLOCK_MONOTONIC_RAW nanoseconds value
  * @return Epoch time in nanoseconds
  */
-int64_t profile::uptime_ns_to_epoch_ns(uint64_t uptime_ns) const {
-    return static_cast<int64_t>(uptime_ns) + _epoch_offset + _server_time_offset_ns;
+int64_t profile::monotonic_ns_to_epoch_ns(uint64_t monotonic_ns) const {
+    return static_cast<int64_t>(monotonic_ns) + _epoch_offset + _server_time_offset_ns;
 }
 
 /**
@@ -175,7 +178,7 @@ void profile::add_samples(const stack_trace_t* traces, size_t count, binary_imag
         // Create sample
         sample_t sample;
         sample.location_ids = std::move(location_ids);
-        sample.timestamp_uptime_ns = trace.timestamp;
+        sample.timestamp_monotonic_ns = trace.timestamp;
         sample.labels = std::move(labels);
         sample.values = {static_cast<int64_t>(trace.sampling_interval_nanos)};
         if (_record_cpu_time) {
