@@ -2633,11 +2633,12 @@ final class FlagsRepositoryTests: XCTestCase {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
+        let fetcher = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(.init(flags: [:])))
+        }
         let repository = FlagsRepository(
             clientName: .mockAny(),
-            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success(.init(flags: [:])))
-            },
+            flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
             flagSelection: CanonicalFlagSelection(tags: ["no-such-tag"], keyPatterns: [])
@@ -2669,6 +2670,42 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(details.error, .flagNotFound)
         XCTAssertTrue(dd.logger.recordedLogs.isEmpty)
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
+
+        // When a later fetch for the same context fails
+        fetcher.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+        }
+        let failed = expectation(description: "failed")
+        client.setEvaluationContext(.mockAny()) { _ in
+            failed.fulfill()
+        }
+
+        // Then the empty configuration is still the loaded configuration for that context
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(client.state.currentState, .stale)
+        XCTAssertEqual(repository.flagAssignments(), [:])
+    }
+
+    func testEqualCanonicalFlagSelectionsShareTheCachedSnapshot() throws {
+        // Given
+        let cached = try XCTUnwrap(CanonicalFlagSelection.make(from: .init(tags: [" checkout", "checkout"])).get())
+        let configured = try XCTUnwrap(CanonicalFlagSelection.make(from: .init(tags: ["checkout"])).get())
+        let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: cached)
+        featureScope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
+
+        // When
+        let repository = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: configured
+        )
+        featureScope.dataStore.flush()
+
+        // Then
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context, .mockAny())
     }
 
     func testFetchedFlagsDataIsPersistedWithFlagSelection() throws {

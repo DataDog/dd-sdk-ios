@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsTests: XCTestCase {
@@ -73,6 +74,27 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(flags.initializationTimeout, config.initializationTimeout)
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
+    }
+
+    func testDroppedFlagSelectionIsReportedOnceWhenTheFeatureIsEnabledAndIsNotSent() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let featureScope = FeatureScopeMock()
+
+        // When
+        let flags = FlagsFeature(
+            configuration: .init(trackEvaluations: false, flagSelection: .init(tags: (1...32).map { "v\($0)" })),
+            featureScope: featureScope,
+            core: FeatureRegistrationCoreMock()
+        )
+
+        // Then
+        // Fetches and clients use this resolved value, so they send no selection and do not report the drop again.
+        XCTAssertNil(flags.flagSelection)
+        XCTAssertNil(try XCTUnwrap(flags.flagAssignmentsFetcher as? FlagAssignmentsFetcher).flagSelection)
+        XCTAssertEqual(dd.logger.errorMessages.count, 1)
+        XCTAssertEqual(featureScope.telemetryMock.messages.count, 1)
     }
 
     func testFlushFlushesRegisteredClients() throws {
