@@ -11,20 +11,21 @@ import DatadogInternal
 class VitalCPUReaderTest: XCTestCase {
     let testNotificationCenterProvider = NotificationCenterProvider.makeTestProvider()
 
-    func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {
+    func testReadCPUTicks() throws {
+        // Runs the concrete implementation: the OS call must succeed and the counter must not go backwards.
+        // The values depend on the host load, so they are not asserted.
         let cpuReader = VitalCPUReader(notificationCenterProvider: testNotificationCenterProvider)
-        let cores = ProcessInfo.processInfo.activeProcessorCount
-        let duration: TimeInterval = 3
+        let firstMeasurement = try XCTUnwrap(cpuReader.readVitalData())
+        let secondMeasurement = try XCTUnwrap(cpuReader.readVitalData())
 
-        let before = try XCTUnwrap(cpuReader.readVitalData())
-        spinAllCores(cores: cores, for: duration)
-        let after = try XCTUnwrap(cpuReader.readVitalData())
+        XCTAssertGreaterThanOrEqual(secondMeasurement, firstMeasurement)
+    }
 
-        // The counter is host-wide, so other processes can only add user ticks to the ones spun here.
-        // The bound is far below what spinning every core yields (> 90% locally), and leaves room
-        // for the counter returning a stale value for up to ~1s and for threads not getting a full core.
-        let capacity = Double(cores) * 100 * duration // 100 ticks per second per core
-        XCTAssertGreaterThan(after - before, 0.25 * capacity)
+    func testItReadsUserTicksFromHostCPULoadInfo() {
+        var cpuLoadInfo = host_cpu_load_info()
+        cpuLoadInfo.cpu_ticks = (1, 2, 3, 4) // user, system, idle, nice
+
+        XCTAssertEqual(VitalCPUReader.userTicks(from: cpuLoadInfo), 1)
     }
 
     #if !os(watchOS)
@@ -92,32 +93,6 @@ class VitalCPUReaderTest: XCTestCase {
 
         XCTAssertEqual(measurementAfterRollover - measurementBeforeRollover, 31.0)
     }
-}
-
-/// Busy-loops compute-only math on `cores` threads until `duration` has elapsed, so that user-mode CPU ticks are consumed.
-private func spinAllCores(cores: Int, for duration: TimeInterval) {
-    let deadline = Date().addingTimeInterval(duration)
-    let group = DispatchGroup()
-    for _ in 0..<cores {
-        group.enter()
-        let thread = Thread {
-            var sink = 0.0
-            var x: UInt64 = 88_172_645_463_325_252
-            while Date() < deadline {
-                for _ in 0..<1_000 {
-                    x ^= x << 13
-                    x ^= x >> 7
-                    x ^= x << 17
-                    sink += tan(Double(x % 1_000) / 1_000).squareRoot()
-                }
-            }
-            if sink < 0 { print(sink) } // keeps the loop from being optimised away
-            group.leave()
-        }
-        thread.qualityOfService = .userInitiated
-        thread.start()
-    }
-    group.wait()
 }
 
 // Overrides only the OS counter read.

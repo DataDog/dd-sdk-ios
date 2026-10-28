@@ -108,6 +108,10 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
             return nil
         }
 
+        return Self.userTicks(from: cpuLoadInfo)
+    }
+
+    internal static func userTicks(from cpuLoadInfo: host_cpu_load_info) -> UInt32 {
         /*
          https://github.com/opensource-apple/xnu/blob/master/osfmk/mach/machine.h#L76
          // machine.h (tested in iOS 14.4)
@@ -120,7 +124,6 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
          Double type has enough precision within the range of UInt32;
          therefore even at the worst-case, precision isn't lost during this conversion below.
          */
-        let userTicks = cpuLoadInfo.cpu_ticks.0
-        return userTicks
+        return cpuLoadInfo.cpu_ticks.0
     }
 }
