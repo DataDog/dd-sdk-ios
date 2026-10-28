@@ -91,11 +91,10 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
         XCTAssertEqual(try decode(withDiagnostics.httpBody)["diagnostics"], .dictionary(try decode(envelope)))
         XCTAssertEqual(withDiagnostics.allHTTPHeaderFields, original.allHTTPHeaderFields)
         XCTAssertEqual(try decode(request(envelope).httpBody), try decode(withDiagnostics.httpBody))
-        for invalid in [Data("invalid".utf8), Data(repeating: 32, count: 4_097)] {
-            let root = try decode(request(invalid).httpBody)
-            XCTAssertNil(root["diagnostics"])
-            XCTAssertEqual(root["data"], try decode(original.httpBody)["data"])
-        }
+        let invalid = Data("invalid".utf8)
+        let root = try decode(request(invalid).httpBody)
+        XCTAssertNil(root["diagnostics"])
+        XCTAssertEqual(root["data"], try decode(original.httpBody)["data"])
     }
 
     func testRepositoryKeepsIdentityAcrossResetAndDoesNotPersistDiagnostics() throws {

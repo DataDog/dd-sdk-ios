@@ -39,11 +39,8 @@ extension URLRequest {
             }
         }
 
-        // Decode only the bounded optional envelope; assignment values are encoded once below.
+        // Decode the optional diagnostics envelope; assignment values are encoded once below.
         let diagnosticFields = diagnostics.flatMap { data -> [String: AnyValue]? in
-            guard data.count <= 4_096 else {
-                return nil
-            }
             return try? JSONDecoder().decode([String: AnyValue].self, from: data)
         }
         let requestBody = FlagAssignmentsRequestBody(
