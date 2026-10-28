@@ -99,6 +99,29 @@ workflow:
   DDOCTOSTS_ID_TOKEN:
     aud: dd-octo-sts
 
+# Gates expressed with `needs:`, so a job starts as soon as the jobs it depends on pass instead of
+# waiting for the whole previous stage. Listed jobs are gates only: their artifacts are not downloaded.
+#
+# Ref.: https://docs.gitlab.com/ee/ci/yaml/#needs
+.lint-gate:
+  needs: &lint-gate-needs
+    - job: "Lint"
+      artifacts: false
+    - job: "API Surface Verify"
+      artifacts: false
+    - job: "SPI Docs Build"
+      artifacts: false
+
+.lint-gate-with-dependencies:
+  needs: &lint-gate-with-dependencies-needs
+    - job: "Build Dependencies" # downloads `Carthage/Build`
+    - job: "Lint"
+      artifacts: false
+    - job: "API Surface Verify"
+      artifacts: false
+    - job: "SPI Docs Build"
+      artifacts: false
+
 ENV check:
   stage: pre
   rules: 
@@ -137,6 +160,8 @@ Lint:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.benchmark-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  dependencies: []
   script:
     - make clean repo-setup ENV=ci
     - make lint license-check
@@ -147,6 +172,7 @@ API Surface Verify:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
     - make clean repo-setup ENV=ci
@@ -164,6 +190,7 @@ Feature Docs Verify:
   # so the cost of a full clone is negligible.
   variables:
     GIT_DEPTH: "0"
+  dependencies: []
   script:
     - make feature-docs-verify
 
@@ -172,8 +199,7 @@ Unit Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  dependencies:
-    - "Build Dependencies"
+  needs: *lint-gate-with-dependencies-needs
   # Job-level timeout below the project's global 1h CI/CD timeout, paired with a shorter
   # RUNNER_SCRIPT_TIMEOUT, so the runner kills a hung `script:` step early and still has
   # time to run `after_script` and upload the xcresult artifacts. Hitting the project's
@@ -198,8 +224,7 @@ Unit Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  dependencies:
-    - "Build Dependencies"
+  needs: *lint-gate-with-dependencies-needs
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -222,8 +247,7 @@ Unit Tests (watchOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  dependencies:
-    - "Build Dependencies"
+  needs: *lint-gate-with-dependencies-needs
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -246,8 +270,7 @@ Unit Tests (visionOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  dependencies:
-    - "Build Dependencies"
+  needs: *lint-gate-with-dependencies-needs
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -270,8 +293,7 @@ Unit Tests (macOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  dependencies:
-    - "Build Dependencies"
+  needs: *lint-gate-with-dependencies-needs
   variables:
     PLATFORM: "macOS"
     DEVICE: "macOS"
@@ -290,8 +312,10 @@ UI Tests:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  dependencies:
-    - "Build Dependencies"
+  needs:
+    - job: "Build Dependencies" # downloads `Carthage/Build`
+    - job: "Unit Tests (iOS)"
+      artifacts: false
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -321,6 +345,7 @@ SR Snapshot Tests:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  needs: *lint-gate-needs
   id_tokens:
     <<: *dd-octo-sts-id-token
   # Job-level timeout below the project's global CI/CD timeout, paired with a shorter
@@ -350,6 +375,7 @@ SR Layer Snapshot Tests:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  needs: *lint-gate-needs
   id_tokens:
     <<: *dd-octo-sts-id-token
   # See the "SR Snapshot Tests" job above for why timeout + RUNNER_SCRIPT_TIMEOUT +
@@ -379,6 +405,7 @@ Tools Tests:
           - "Makefile"
           - ".gitlab-ci.yml"
         compare_to: 'develop'
+  dependencies: []
   script:
     - make clean repo-setup ENV=ci
     - ./tools/runner-setup.sh --python
@@ -388,6 +415,7 @@ Benchmark Build:
   stage: smoke-test
   rules:
     - !reference [.benchmark-pipeline-job, rules]
+  dependencies: []
   script:
     - make benchmark-build
 
@@ -415,15 +443,28 @@ Smoke Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  needs:
+    - job: "Unit Tests (iOS)"
+      artifacts: false
+    - job: "UI Tests"
+      artifacts: false
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 17 Pro"
+  parallel:
+    matrix:
+      - SUITE: &smoke-test-suites
+          - spm
+          - spm-6
+          - carthage
+          - cocoapods
+          - xcframeworks
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
-    - make smoke-test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make smoke-test-ios TEST_DIRECTORY="SmokeTests/$SUITE" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
   after_script:
     - ./tools/upload-smoke-test-reports.sh
   artifacts:
@@ -438,15 +479,21 @@ Smoke Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  needs:
+    - job: "Unit Tests (tvOS)"
+      artifacts: false
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
+  parallel:
+    matrix:
+      - SUITE: *smoke-test-suites
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
-    - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make smoke-test-tvos TEST_DIRECTORY="SmokeTests/$SUITE" OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
   after_script:
     - ./tools/upload-smoke-test-reports.sh
   artifacts:
@@ -461,6 +508,9 @@ Smoke Tests (macOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  needs:
+    - job: "Unit Tests (macOS)"
+      artifacts: false
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
@@ -476,6 +526,7 @@ SPM Build (Swift 6.2):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  needs: *lint-gate-needs
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
     - make clean repo-setup ENV=ci
@@ -490,6 +541,7 @@ SPI Docs Build:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
     - make clean repo-setup ENV=ci
@@ -507,6 +559,7 @@ E2E Test (upload to s8s):
     paths:
       - artifacts
     expire_in: 2 weeks
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
@@ -526,6 +579,7 @@ Benchmark Test (upload to s8s):
     paths:
       - artifacts
     expire_in: 2 weeks
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
@@ -615,5 +669,6 @@ Publish GH Asset:
 # It syncs the GitLab pipeline status with GitHub status checks.
 Sync GH Checks:
   stage: post
+  dependencies: []
   script:
     - echo "All good"
