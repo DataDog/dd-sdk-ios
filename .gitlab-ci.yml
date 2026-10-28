@@ -104,7 +104,7 @@ workflow:
 #
 # Ref.: https://docs.gitlab.com/ee/ci/yaml/#needs
 .lint-gate:
-  needs: &lint-gate-needs
+  needs:
     - job: "Lint"
       artifacts: false
     - job: "API Surface Verify"
@@ -112,15 +112,9 @@ workflow:
     - job: "SPI Docs Build"
       artifacts: false
 
-.lint-gate-with-dependencies:
-  needs: &lint-gate-with-dependencies-needs
+.dependencies:
+  needs:
     - job: "Build Dependencies" # downloads `Carthage/Build`
-    - job: "Lint"
-      artifacts: false
-    - job: "API Surface Verify"
-      artifacts: false
-    - job: "SPI Docs Build"
-      artifacts: false
 
 ENV check:
   stage: pre
@@ -199,7 +193,9 @@ Unit Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-with-dependencies-needs
+  needs:
+    - !reference [.dependencies, needs]
+    - !reference [.lint-gate, needs]
   # Job-level timeout below the project's global 1h CI/CD timeout, paired with a shorter
   # RUNNER_SCRIPT_TIMEOUT, so the runner kills a hung `script:` step early and still has
   # time to run `after_script` and upload the xcresult artifacts. Hitting the project's
@@ -224,7 +220,9 @@ Unit Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-with-dependencies-needs
+  needs:
+    - !reference [.dependencies, needs]
+    - !reference [.lint-gate, needs]
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -247,7 +245,9 @@ Unit Tests (watchOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-with-dependencies-needs
+  needs:
+    - !reference [.dependencies, needs]
+    - !reference [.lint-gate, needs]
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -270,7 +270,9 @@ Unit Tests (visionOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-with-dependencies-needs
+  needs:
+    - !reference [.dependencies, needs]
+    - !reference [.lint-gate, needs]
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -293,7 +295,9 @@ Unit Tests (macOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-with-dependencies-needs
+  needs:
+    - !reference [.dependencies, needs]
+    - !reference [.lint-gate, needs]
   variables:
     PLATFORM: "macOS"
     DEVICE: "macOS"
@@ -313,7 +317,7 @@ UI Tests:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
   needs:
-    - job: "Build Dependencies" # downloads `Carthage/Build`
+    - !reference [.dependencies, needs]
     - job: "Unit Tests (iOS)"
       artifacts: false
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
@@ -345,7 +349,7 @@ SR Snapshot Tests:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-needs
+  needs: !reference [.lint-gate, needs]
   id_tokens:
     <<: *dd-octo-sts-id-token
   # Job-level timeout below the project's global CI/CD timeout, paired with a shorter
@@ -375,7 +379,7 @@ SR Layer Snapshot Tests:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-needs
+  needs: !reference [.lint-gate, needs]
   id_tokens:
     <<: *dd-octo-sts-id-token
   # See the "SR Snapshot Tests" job above for why timeout + RUNNER_SCRIPT_TIMEOUT +
@@ -526,7 +530,7 @@ SPM Build (Swift 6.2):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: *lint-gate-needs
+  needs: !reference [.lint-gate, needs]
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
     - make clean repo-setup ENV=ci
