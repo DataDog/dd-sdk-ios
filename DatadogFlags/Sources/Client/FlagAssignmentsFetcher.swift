@@ -25,6 +25,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private static let decoder = JSONDecoder()
     private static let flagSelectionIgnoredHeader = "DD-Flag-Selection-Ignored"
+    // The reasons the server sends in `DD-Flag-Selection-Ignored`. Any other value, for example one set by a proxy
+    // behind `customFlagsEndpoint`, is reported as `unknown`, so header content never reaches logs or telemetry.
+    private static let flagSelectionIgnoredReasons = [
+        "malformed_selection", "too_many_values", "invalid_key_pattern", "invalid_tag", "tag_load_failed"
+    ]
+    private static let unknownFlagSelectionIgnoredReason = "unknown"
+    // The longest known reason is 19 bytes, so a longer value is reported as `unknown` without a lookup.
+    private static let maxFlagSelectionIgnoredReasonBytes = 32
 
     convenience init(
         customEndpoint: URL?,
@@ -123,6 +131,19 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         }
     }
 
+    /// Returns the reason to report for a `DD-Flag-Selection-Ignored` value, or `nil` when the header is absent or empty.
+    /// Values are compared on bytes, case-sensitively and without trimming.
+    private static func reportedFlagSelectionIgnoredReason(_ value: String?) -> String? {
+        guard let value, !value.isEmpty else {
+            return nil
+        }
+        guard value.utf8.count <= maxFlagSelectionIgnoredReasonBytes,
+              let reason = flagSelectionIgnoredReasons.first(where: { $0.utf8.elementsEqual(value.utf8) }) else {
+            return unknownFlagSelectionIgnoredReason
+        }
+        return reason
+    }
+
     private static func handleFetchResult(
         _ result: Result<(Data, HTTPURLResponse), Error>,
         supportsObfuscation: Bool,
@@ -133,8 +154,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         switch result {
         case let .success((data, httpResponse)):
             if requestCarriedFlagSelection,
-               let reason = httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader),
-               !reason.isEmpty {
+               let reason = reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader)) {
                 DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration.")
                 featureScope.telemetry.debug("Flag selection ignored", attributes: ["reason": reason])
             }

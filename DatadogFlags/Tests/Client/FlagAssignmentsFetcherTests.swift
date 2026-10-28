@@ -232,49 +232,54 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertEqual(debug.attributes?["reason"] as? String, "too_many_values")
     }
 
-    func testFlagAssignmentsReportsIgnoredHeaderValueVerbatim() throws {
-        // Given
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-        let response = try XCTUnwrap(
-            HTTPURLResponse(
-                url: .mockAny(),
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: ["DD-Flag-Selection-Ignored": "tag_load_failed"]
+    func testFlagAssignmentsReportsKnownIgnoredReasons() throws {
+        for reason in ["malformed_selection", "too_many_values", "invalid_key_pattern", "invalid_tag", "tag_load_failed"] {
+            // When
+            let reported = try reportIgnoredFlagSelection(headerValue: reason)
+
+            // Then
+            XCTAssertEqual(
+                reported.errors,
+                ["`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration."]
             )
-        )
-        let fetcher = FlagAssignmentsFetcher(
-            customEndpoint: nil,
-            customHeaders: nil,
-            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
-            featureScope: featureScope,
-            fetch: { _, completion in
-                completion(.success((.mockAnyFlagAssignmentsResponse(), response)))
-            }
-        )
-        let completed = expectation(description: "completed")
-        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
-
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { result in
-            capturedResult = result
-            completed.fulfill()
+            XCTAssertEqual(reported.telemetry.count, 1, reason)
+            let debug = try XCTUnwrap(reported.telemetry.firstDebug())
+            XCTAssertEqual(debug.message, "Flag selection ignored")
+            XCTAssertEqual(debug.attributes?.count, 1)
+            XCTAssertEqual(debug.attributes?["reason"] as? String, reason)
         }
+    }
 
-        // Then
-        waitForExpectations(timeout: 1)
-        XCTAssertEqual(try XCTUnwrap(capturedResult?.get()).flags, .mockAny())
-        XCTAssertEqual(
-            dd.logger.errorMessages,
-            ["`Flags.Configuration.flagSelection` was ignored by the server (tag_load_failed). Loaded the full flag configuration."]
-        )
-        let telemetry = featureScope.telemetryMock.messages
-        XCTAssertEqual(telemetry.count, 1)
-        let debug = try XCTUnwrap(telemetry.firstDebug())
-        XCTAssertEqual(debug.message, "Flag selection ignored")
-        XCTAssertEqual(debug.attributes?.count, 1)
-        XCTAssertEqual(debug.attributes?["reason"] as? String, "tag_load_failed")
+    func testFlagAssignmentsReportsOtherIgnoredValuesAsUnknown() throws {
+        // A proxy behind `customFlagsEndpoint` controls this header, so its content must not reach logs or telemetry.
+        let values = [
+            "Some Future-Reason",
+            "Too_Many_Values",
+            "TOO_MANY_VALUES",
+            " too_many_values",
+            "too_many_values\u{0007}",
+            "tag_load_failed\u{001B}[0m",
+            "too_many_valu\u{00E9}s",
+            "invalid_tag" + String(repeating: "x", count: 22),
+            String(repeating: "a", count: 10_000),
+            "token=secret",
+        ]
+
+        for value in values {
+            // When
+            let reported = try reportIgnoredFlagSelection(headerValue: value)
+
+            // Then
+            XCTAssertEqual(
+                reported.errors,
+                ["`Flags.Configuration.flagSelection` was ignored by the server (unknown). Loaded the full flag configuration."],
+                value
+            )
+            XCTAssertEqual(reported.telemetry.count, 1, value)
+            let debug = try XCTUnwrap(reported.telemetry.firstDebug())
+            XCTAssertEqual(debug.attributes?.count, 1, value)
+            XCTAssertEqual(debug.attributes?["reason"] as? String, "unknown", value)
+        }
     }
 
     func testFlagAssignmentsReportsIgnoredFlagSelectionForEveryResponseWithALowercaseHeaderName() throws {
@@ -491,5 +496,39 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             // Then
             wait(for: [secondCompleted], timeout: 1)
         }
+    }
+
+    /// Fetches once with a selection and the given `DD-Flag-Selection-Ignored` value, and returns what the SDK reported.
+    private func reportIgnoredFlagSelection(headerValue: String) throws -> (errors: [String], telemetry: [TelemetryMessage]) {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let scope = FeatureScopeMock()
+        let response = try XCTUnwrap(
+            HTTPURLResponse(
+                url: .mockAny(),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["DD-Flag-Selection-Ignored": headerValue]
+            )
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: scope,
+            fetch: { _, completion in
+                completion(.success((.mockAnyFlagAssignmentsResponse(), response)))
+            }
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+        // The full configuration is still used.
+        XCTAssertEqual(try XCTUnwrap(capturedResult?.get()).flags, .mockAny())
+        return (dd.logger.errorMessages, scope.telemetryMock.messages)
     }
 }

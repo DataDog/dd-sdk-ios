@@ -50,6 +50,9 @@ public enum Flags {
         ///
         /// If not set, the SDK uses the default Datadog Flags endpoint for the configured site.
         ///
+        /// With ``flagSelection``, a proxy at this URL must forward the `DD-Flag-Selection-Ignored` response header.
+        /// Without it, a selection the server ignores still loads the full configuration, but the SDK logs nothing.
+        ///
         /// Default: `nil`.
         public var customFlagsEndpoint: URL?
 
@@ -176,8 +179,10 @@ public enum Flags {
     /// the SDK logs an error and loads the full configuration.
     ///
     /// The server may ignore a very large selection (`too_many_values`). In that case the full configuration loads
-    /// and the SDK logs an error with the reason. Older servers, or servers with selection disabled,
-    /// may return the full configuration without a warning.
+    /// and the SDK logs an error with the reason. The reason is reported only if it is one the server sends:
+    /// `malformed_selection`, `too_many_values`, `invalid_key_pattern`, `invalid_tag` or `tag_load_failed`.
+    /// Any other value, for example from a proxy behind `customFlagsEndpoint`, is reported as `unknown`.
+    /// Older servers, or servers with selection disabled, may return the full configuration without a warning.
     ///
     /// When the server applies the selection, flags outside it are not loaded, and evaluating one returns the default value
     /// with ``FlagEvaluationError/flagNotFound``.
