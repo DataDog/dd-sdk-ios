@@ -52,7 +52,7 @@ extension URLRequest {
                 datadogEnvironment: context.env
             ),
             source: FlagAssignmentsRequestBody.Source(
-                sdkName: "dd-sdk-ios",
+                sdkName: context.source == "ios" ? "dd-sdk-ios" : context.source,
                 sdkVersion: context.sdkVersion
             ),
             subject: FlagAssignmentsRequestBody.Subject(
