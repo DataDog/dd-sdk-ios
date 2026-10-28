@@ -702,7 +702,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     let isLatestRequest = contextUpdateID == state.contextUpdateID
                     let isFreshForLatestContext = state.latestRequestedContext == context
                         && state.flagsDataVersion == versionAtStart
-                    guard isLatestRequest || (self.experimentationOptOutMode == .disabled && isFreshForLatestContext) else {
+                    guard isLatestRequest || isFreshForLatestContext else {
                         return
                     }
                     state.flagsData = flagsData

@@ -87,6 +87,13 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             (#", "evaluation_options": {"experimentation_opt_out": true}"#, false, true),
             (#", "evaluation_options": {"experimentation_opt_out_mode": true, "experimentation_opt_out": true}"#, false, false),
             (#", "evaluation_options": {"experimentation_opt_out_mode": "future_experiments_only", "experimentation_opt_out": true}"#, false, false),
+            (#", "evaluation_options": {"experimentation_opt_out_mode": "unknown"}"#, false, false),
+            (#", "evaluation_options": {"experimentation_opt_out_mode": ""}"#, false, false),
+            (#", "evaluation_options": {"experimentation_opt_out_mode": null}"#, false, false),
+            (#", "evaluation_options": {"experimentation_opt_out_mode": true}"#, false, false),
+            (#", "evaluation_options": {"experimentation_opt_out_mode": 42}"#, false, false),
+            (#", "evaluation_options": {"experimentation_opt_out_mode": {}}"#, false, false),
+            (#", "evaluation_options": {"experimentation_opt_out_mode": []}"#, false, false),
             (#", "evaluation_options": {"experimentation_opt_out_mode": "immediate"}"#, false, false),
             (#", "evaluation_options": {"experimentation_opt_out_mode": "future_experiments_only"}"#, false, false)
         ]

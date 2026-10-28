@@ -95,8 +95,7 @@ internal enum ExperimentationOptOut: Equatable, Codable {
         guard let policy else {
             // An unfiltered request must not install assignments filtered for another policy.
             return response.experimentationOptOut != true
-                && response.experimentationOptOutMode != "immediate"
-                && response.experimentationOptOutMode != "future_experiments_only"
+                && response.experimentationOptOutMode == nil
         }
         return policy.isAcknowledged(by: response)
     }

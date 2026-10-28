@@ -2755,63 +2755,92 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     func testOverlappingContextUpdates_withSameContext_preservesFreshSuccess() {
-        for latestSucceeds in [false, true] {
-            for responseOrder in [[0, 1], [1, 0]] {
-                let featureScope = FeatureScopeMock()
-                var completions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
-                let repository = makeRepository(
-                    dataStore: featureScope.dataStore,
-                    fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
-                    initializationTimeout: nil
-                )
-                featureScope.dataStore.flush()
-                defer { repository.flush() }
-                let context = FlagsEvaluationContext(targetingKey: "user-A")
-                var callbackCounts = [0, 0]
-                for index in 0..<2 {
-                    repository.setEvaluationContext(context) { result in
-                        XCTAssertEqual((try? result.get()) != nil, index == 0 || latestSucceeds)
-                        callbackCounts[index] += 1
+        for (mode, attributes, policy) in overlappingContextScenarios {
+            for latestSucceeds in [false, true] {
+                for responseOrder in [[0, 1], [1, 0]] {
+                    let featureScope = FeatureScopeMock()
+                    var completions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+                    let repository = makeRepository(
+                        dataStore: featureScope.dataStore,
+                        fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                        initializationTimeout: nil,
+                        experimentationOptOutMode: mode
+                    )
+                    featureScope.dataStore.flush()
+                    defer { repository.flush() }
+                    let context = FlagsEvaluationContext(targetingKey: "user-A", attributes: attributes)
+                    var callbackCounts = [0, 0]
+                    for index in 0..<2 {
+                        repository.setEvaluationContext(context) { result in
+                            let superseded = mode != .disabled && index == 0 && latestSucceeds && responseOrder.first == 1
+                            XCTAssertEqual((try? result.get()) != nil, (index == 0 || latestSucceeds) && !superseded)
+                            callbackCounts[index] += 1
+                        }
                     }
-                }
-                let results: [Result<FlagAssignmentsResponse, FlagsError>] = [
-                    .success(.init(flags: ["older": .mockAny()])),
-                    latestSucceeds ? .success(.init(flags: ["newer": .mockAny()])) : .failure(.invalidResponse)
-                ]
+                    let results: [Result<FlagAssignmentsResponse, FlagsError>] = [
+                        .success(.init(
+                            flags: ["older": .mockAny()],
+                            experimentationOptOut: policy == .immediate ? true : nil,
+                            experimentationOptOutMode: policy?.wireMode,
+                            experimentationOptOutAt: "2026-10-21T12:00:00Z"
+                        )),
+                        latestSucceeds ? .success(.init(
+                            flags: ["newer": .mockAny()],
+                            experimentationOptOut: policy == .immediate ? true : nil,
+                            experimentationOptOutMode: policy?.wireMode,
+                            experimentationOptOutAt: "2026-10-21T12:00:00Z"
+                        )) : .failure(.invalidResponse)
+                    ]
 
-                for index in responseOrder {
-                    completions[index](results[index])
-                }
+                    for index in responseOrder {
+                        completions[index](results[index])
+                    }
 
-                XCTAssertEqual(callbackCounts, [1, 1])
-                XCTAssertEqual(repository.state.currentState, .ready)
-                XCTAssertEqual(repository.context, context)
-                XCTAssertEqual(Set(repository.flagAssignments()?.keys ?? [:].keys), [latestSucceeds ? "newer" : "older"])
+                    XCTAssertEqual(callbackCounts, [1, 1])
+                    XCTAssertEqual(repository.state.currentState, .ready)
+                    XCTAssertEqual(repository.context, context)
+                    XCTAssertEqual(Set(repository.flagAssignments()?.keys ?? [:].keys), [latestSucceeds ? "newer" : "older"])
+                }
             }
         }
     }
 
     func testOverlappingContextUpdates_withSameContext_afterReset_rejectsEarlierSuccess() {
-        var completions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
-        let repository = makeRepository(
-            dataStore: featureScope.dataStore,
-            fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
-            initializationTimeout: nil
-        )
-        defer { repository.flush() }
-        let context = FlagsEvaluationContext(targetingKey: "user-A")
-        repository.setEvaluationContext(context) { _ in }
-        repository.reset()
-        repository.setEvaluationContext(context) { _ in }
+        for (mode, attributes, policy) in overlappingContextScenarios {
+            let featureScope = FeatureScopeMock()
+            var completions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+            let repository = makeRepository(
+                dataStore: featureScope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            featureScope.dataStore.flush()
+            defer { repository.flush() }
+            let context = FlagsEvaluationContext(targetingKey: "user-A", attributes: attributes)
+            repository.setEvaluationContext(context) { _ in }
+            repository.reset()
+            repository.setEvaluationContext(context) { _ in }
 
-        completions[0](.success(.init(flags: ["old": .mockAny()])))
+            completions[0](.success(.init(
+                flags: ["old": .mockAny()],
+                experimentationOptOut: policy == .immediate ? true : nil,
+                experimentationOptOutMode: policy?.wireMode,
+                experimentationOptOutAt: "2026-10-21T12:00:00Z"
+            )))
 
-        XCTAssertEqual(repository.state.currentState, .reconciling)
-        XCTAssertNil(repository.flagAssignments())
-        completions[1](.success(.init(flags: ["new": .mockAny()])))
-        XCTAssertEqual(repository.state.currentState, .ready)
-        XCTAssertNotNil(repository.flagAssignment(for: "new"))
-        XCTAssertNil(repository.flagAssignment(for: "old"))
+            XCTAssertEqual(repository.state.currentState, .reconciling)
+            XCTAssertNil(repository.flagAssignments())
+            completions[1](.success(.init(
+                flags: ["new": .mockAny()],
+                experimentationOptOut: policy == .immediate ? true : nil,
+                experimentationOptOutMode: policy?.wireMode,
+                experimentationOptOutAt: "2026-10-21T12:00:00Z"
+            )))
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertNotNil(repository.flagAssignment(for: "new"))
+            XCTAssertNil(repository.flagAssignment(for: "old"))
+        }
     }
 
     func testOverlappingContextUpdates_whenSupersededSuccessArrives_doesNotEndNewerReconciliation() {
@@ -3104,17 +3133,31 @@ final class FlagsRepositoryTests: XCTestCase {
         assertions(repository, dataStore)
     }
 
+    private var overlappingContextScenarios: [(FlagsClient.ExperimentationOptOutMode, [String: AnyValue], ExperimentationOptOut?)] {
+        let cutoff = "2026-10-21T12:00:00Z"
+        let attributes: [String: AnyValue] = ["dd_experimentation_opt_out_at": .string(cutoff)]
+        return [
+            (.disabled, [:], nil),
+            (.immediate, [:], nil),
+            (.futureExperimentsOnly, [:], nil),
+            (.immediate, attributes, .immediate),
+            (.futureExperimentsOnly, attributes, .futureExperimentsOnly(cutoff: cutoff))
+        ]
+    }
+
     private func makeRepository(
         dataStore: any DataStore,
         fetcher: any FlagAssignmentsFetching = FlagAssignmentsFetcherMock(),
-        initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout
+        initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
+        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
     ) -> FlagsRepository {
         FlagsRepository(
             clientName: "client",
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(dataStore: dataStore),
-            initializationTimeout: initializationTimeout
+            initializationTimeout: initializationTimeout,
+            experimentationOptOutMode: experimentationOptOutMode
         )
     }
 }
