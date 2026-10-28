@@ -2739,10 +2739,7 @@ final class FlagsRepositoryTests: XCTestCase {
     func testFlagsDataWithFlagSelectionIsStoredAtAVersionThatOlderSDKsDoNotRead() throws {
         // Given
         let selection = CanonicalFlagSelection(tags: ["cafe\u{0301}"], keyPatterns: ["checkout.*"])
-        let obfuscation = try JSONDecoder().decode(
-            FlagKeyObfuscation.self,
-            from: Data(#"{"scheme":"flag-key-sha256-v1","salt":"00000000000000000000000000000000"}"#.utf8)
-        )
+        let obfuscation = try mockObfuscation()
 
         for obfuscation in [nil, obfuscation] {
             let scope = FeatureScopeMock()
@@ -2774,10 +2771,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testFlagsDataStoredAtAVersionThatDoesNotMatchItsFlagSelectionIsNotLoaded() throws {
         let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
-        let obfuscation = try JSONDecoder().decode(
-            FlagKeyObfuscation.self,
-            from: Data(#"{"scheme":"flag-key-sha256-v1","salt":"00000000000000000000000000000000"}"#.utf8)
-        )
+        let obfuscation = try mockObfuscation()
         let selected = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: selection)
         let selectedObfuscated = FlagsData(
             flags: ["flag": .mockAny()],
@@ -2797,7 +2791,7 @@ final class FlagsRepositoryTests: XCTestCase {
             // When
             scope.flagsDataStore.flagsData(forClientNamed: "cached") {
                 // Then
-                XCTAssertNil($0, "version: \(version)")
+                XCTAssertNil($0, "version: \(version), obfuscated: \(flagsData.obfuscation != nil)")
                 completed.fulfill()
             }
             waitForExpectations(timeout: 1)
@@ -2825,8 +2819,15 @@ final class FlagsRepositoryTests: XCTestCase {
             completed.fulfill()
         }
         waitForExpectations(timeout: 1)
-        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
-        XCTAssertTrue(scope.telemetryMock.messages.isEmpty)
+        XCTAssertEqual(dd.logger.errorMessages, [])
+        XCTAssertEqual(scope.telemetryMock.messages.count, 0)
+    }
+
+    private func mockObfuscation() throws -> FlagKeyObfuscation {
+        try JSONDecoder().decode(
+            FlagKeyObfuscation.self,
+            from: Data(#"{"scheme":"flag-key-sha256-v1","salt":"00000000000000000000000000000000"}"#.utf8)
+        )
     }
 
     private func withBlockedCacheWrite(_ assertions: (FlagsRepository, BlockingWriteDataStore) -> Void) {
