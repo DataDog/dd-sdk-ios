@@ -545,7 +545,8 @@ SPI Docs Build:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  dependencies: []
+  dependencies:
+    - "Build Dependencies"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
     - make clean repo-setup ENV=ci
