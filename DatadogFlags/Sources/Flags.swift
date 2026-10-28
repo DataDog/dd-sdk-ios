@@ -176,10 +176,11 @@ public enum Flags {
     /// the SDK logs an error and loads the full configuration.
     ///
     /// The server may ignore a very large selection (`too_many_values`). In that case the full configuration loads
-    /// and the SDK logs an error with the reason. Servers without selection support, or with it disabled,
-    /// return the full configuration without a warning.
+    /// and the SDK logs an error with the reason. Older servers, or servers with selection disabled,
+    /// may return the full configuration without a warning.
     ///
-    /// Evaluating a flag outside the selection returns the default value with ``FlagEvaluationError/flagNotFound``.
+    /// When the server applies the selection, flags outside it are not loaded, and evaluating one returns the default value
+    /// with ``FlagEvaluationError/flagNotFound``.
     public struct FlagSelection: Sendable {
         /// Tags to select. A flag is selected if it has any of these tags.
         public var tags: [String]
