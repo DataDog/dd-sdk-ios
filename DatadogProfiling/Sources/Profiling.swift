@@ -8,7 +8,7 @@ import Foundation
 @_spi(Internal)
 @preconcurrency import DatadogInternal
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 // Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
 // transitive module dependency, but it is not distributed as an XCFramework.

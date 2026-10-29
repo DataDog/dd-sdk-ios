@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 internal struct ProfilingQuotaResult: Equatable, Sendable {
     internal enum Decision: Equatable, Sendable {

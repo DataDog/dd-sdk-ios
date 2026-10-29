@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import Foundation
 import XCTest
 
@@ -644,4 +644,4 @@ private func runWalk(
         }
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

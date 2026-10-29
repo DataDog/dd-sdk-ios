@@ -8,7 +8,7 @@
 #include "aggregation_worker.h"
 #include "dd_profiler_testing.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <dlfcn.h>
 #include <algorithm>
@@ -934,4 +934,4 @@ size_t read_stack_region_for_testing(void* sp, void* buf, size_t buf_size) {
 
 } // extern "C"
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

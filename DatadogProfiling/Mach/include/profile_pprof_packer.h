@@ -9,7 +9,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <cstdint>
 #include <cstddef>
@@ -35,7 +35,7 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data);
 
 } // namespace dd::profiler
 
-#endif // !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // __APPLE__
 
 #endif // DD_PROFILER_PROFILE_PACKER_H_

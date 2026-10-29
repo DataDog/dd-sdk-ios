@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import Foundation
 import XCTest
 import DatadogInternal
@@ -157,4 +157,4 @@ final class BinaryImageResolverTests: XCTestCase {
     }
 }
 
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

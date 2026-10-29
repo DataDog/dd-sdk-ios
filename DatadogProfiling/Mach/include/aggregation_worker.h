@@ -9,7 +9,7 @@
 
 #include "dd_profiler.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <atomic>
 #include <condition_variable>
@@ -180,5 +180,5 @@ private:
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // DD_PROFILER_AGGREGATION_WORKER_H_

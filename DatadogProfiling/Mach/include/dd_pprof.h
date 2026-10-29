@@ -9,7 +9,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <stdint.h>
 #include <stddef.h>
@@ -119,7 +119,7 @@ void dd_pprof_set_server_time_offset_ns(dd_pprof_t* profile, int64_t offset_ns);
 }
 #endif
 
-#endif // !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // __APPLE__
 
 #endif // DD_PROFILER_DD_PPROF_H_
