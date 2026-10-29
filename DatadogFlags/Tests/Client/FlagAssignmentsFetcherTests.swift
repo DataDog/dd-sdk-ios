@@ -91,6 +91,54 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
     }
 
+    func testUnfilteredRequestsRejectCutoffMetadata() throws {
+        let cutoffs: [Any] = ["2026-10-21T12:00:00Z", "invalid", "", NSNull(), true, 42, [:], []]
+        let contexts: [(FlagsClient.ExperimentationOptOutMode, FlagsEvaluationContext)] = [
+            (.disabled, .init(targetingKey: "subject", attributes: [
+                "dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")
+            ])),
+            (.immediate, .init(targetingKey: "subject")),
+            (.futureExperimentsOnly, .init(targetingKey: "subject"))
+        ]
+        for (mode, context) in contexts {
+            let policy = try context.experimentationOptOut(mode: mode)
+            XCTAssertNil(policy)
+            for cutoff in cutoffs {
+                let attributes: [String: Any] = [
+                    "flags": [:], "evaluation_options": ["dd_experimentation_opt_out_at": cutoff]
+                ]
+                let bytes = try JSONSerialization.data(withJSONObject: ["data": ["attributes": attributes]])
+                let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: bytes)
+                XCTAssertFalse(ExperimentationOptOut.accepts(response, for: policy), "Cutoff: \(cutoff), mode: \(mode)")
+            }
+        }
+    }
+
+    func testCutoffOnlyResponseFailsAssignmentFetch() {
+        let scope = FeatureScopeMock(context: .mockWith(site: .us3))
+        let fetched = expectation(description: "assignment request")
+        let completed = expectation(description: "invalid response completion")
+        let bytes = Data(#"{"data":{"attributes":{"flags":{},"evaluation_options":{"dd_experimentation_opt_out_at":"2026-10-21T12:00:00Z"}}}}"#.utf8)
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: scope,
+            fetch: { _, complete in
+                fetched.fulfill()
+                complete(.success(bytes))
+            }
+        )
+        fetcher.flagAssignments(for: .init(targetingKey: "subject"), experimentationOptOut: nil) { result in
+            if case .failure(.invalidResponse) = result {
+                completed.fulfill()
+            } else {
+                XCTFail("Expected invalidResponse, got \(result)")
+                completed.fulfill()
+            }
+        }
+        wait(for: [fetched, completed], timeout: 2)
+    }
+
     func testOptedOutRequestRequiresBooleanAcknowledgement() {
         let cases: [(String, Bool, Bool)] = [
             ("", true, false),

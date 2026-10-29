@@ -56,7 +56,12 @@ extension FlagAssignmentsResponse: Codable {
         } else {
             experimentationOptOutMode = nil
         }
-        experimentationOptOutAt = try? options?.decode(String.self, forKey: .experimentationOptOutAt)
+        if let options, options.contains(.experimentationOptOutAt) {
+            // A present malformed cutoff must not look like an unfiltered response.
+            experimentationOptOutAt = (try? options.decode(String.self, forKey: .experimentationOptOutAt)) ?? ""
+        } else {
+            experimentationOptOutAt = nil
+        }
 
         // Decode all flags (including those with unknown variation types)
         let allFlags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)

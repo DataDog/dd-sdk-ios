@@ -413,6 +413,70 @@ final class FlagKeyObfuscationTests: XCTestCase {
         XCTAssertNil(scope.dataStoreMock.storage["client"]?.data(expectedVersion: 2))
     }
 
+    func testFilteredCacheIsRejectedByLegacyReaders() throws {
+        let policies: [ExperimentationOptOut] = [.immediate, .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")]
+        for policy in policies {
+            for obfuscated in [false, true] {
+                let scope = FeatureScopeMock()
+                let data = try cacheData(obfuscated: obfuscated, policy: policy)
+                let encoded = try XCTUnwrap(scope.flagsDataStore.encodeFlagsData(data))
+                // The 3.20.0 schema ignores the policy, so JSON decoding alone cannot protect a downgrade.
+                let legacy = try JSONDecoder().decode(LegacyFlagsData.self, from: encoded.data)
+                XCTAssertEqual(legacy.flags, data.flags)
+                XCTAssertEqual(legacy.context, data.context)
+                scope.flagsDataStore.setFlagsData(data, forClientNamed: "client")
+                let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"])
+                XCTAssertEqual(encoded.version, 3)
+                XCTAssertNil(stored.data(), "Version 1 consumers must not read filtered assignments")
+                XCTAssertNil(stored.data(expectedVersion: 2), "Version 2 consumers do not understand opt-out policy")
+                XCTAssertNil(try legacyFlagsData(from: stored))
+            }
+        }
+    }
+
+    func testCacheRoundTripsAllSupportedVersions() throws {
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")]
+        for policy in policies {
+            for obfuscated in [false, true] {
+                let scope = FeatureScopeMock()
+                let data = try cacheData(obfuscated: obfuscated, policy: policy)
+                scope.flagsDataStore.setFlagsData(data, forClientNamed: "client")
+                let version: DataStoreKeyVersion = policy != nil ? 3 : (obfuscated ? 2 : 1)
+                let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"])
+                XCTAssertNotNil(stored.data(expectedVersion: version))
+                let completed = expectation(description: "cache round trip")
+                scope.flagsDataStore.flagsData(forClientNamed: "client") {
+                    XCTAssertEqual($0, data)
+                    completed.fulfill()
+                }
+                waitForExpectations(timeout: 1)
+                if policy == nil {
+                    XCTAssertEqual(try legacyFlagsData(from: stored)?.flags, data.flags)
+                }
+            }
+        }
+    }
+
+    func testCacheRejectsMismatchedPolicyAndVersion() throws {
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")]
+        for policy in policies {
+            for obfuscated in [false, true] {
+                let scope = FeatureScopeMock()
+                let data = try cacheData(obfuscated: obfuscated, policy: policy)
+                let expectedVersion: DataStoreKeyVersion = policy != nil ? 3 : (obfuscated ? 2 : 1)
+                for version in [DataStoreKeyVersion(1), 2, 3, 4] where version != expectedVersion {
+                    scope.dataStore.setValue(try JSONEncoder().encode(data), forKey: "client", version: version)
+                    let completed = expectation(description: "mismatched cache rejected")
+                    scope.flagsDataStore.flagsData(forClientNamed: "client") {
+                        XCTAssertNil($0, "Accepted policy \(String(describing: policy)), obfuscated \(obfuscated), version \(version)")
+                        completed.fulfill()
+                    }
+                    waitForExpectations(timeout: 1)
+                }
+            }
+        }
+    }
+
     func testRequestAdvertisesCapabilitiesWithoutChangingSourceVersion() throws {
         for source in ["ios", "flutter", "react-native", "future-bridge"] {
             let request = try URLRequest.flagAssignmentsRequest(
@@ -656,6 +720,37 @@ final class FlagKeyObfuscationTests: XCTestCase {
             XCTAssertEqual(clients[0].getDetails(key: key, defaultValue: defaultValue), clients[1].getDetails(key: key, defaultValue: defaultValue))
             XCTAssertEqual(clients[0].getDetails(key: key, defaultValue: false), clients[1].getDetails(key: key, defaultValue: false))
         }
+    }
+
+    // Persisted fields and read guard from dd-sdk-ios 3.20.0, before experimentation opt-out.
+    private struct LegacyFlagsData: Decodable {
+        var flags: [String: FlagAssignment]
+        var context: FlagsEvaluationContext
+        var date: Date
+        let obfuscation: FlagKeyObfuscation?
+    }
+
+    private func legacyFlagsData(from result: DataStoreValueResult) throws -> LegacyFlagsData? {
+        let encodedData = result.data(expectedVersion: 2)
+        guard let data = encodedData ?? result.data() else {
+            return nil
+        }
+        let decoded = try JSONDecoder().decode(LegacyFlagsData.self, from: data)
+        guard (decoded.obfuscation != nil) == (encodedData != nil) else {
+            return nil
+        }
+        return decoded
+    }
+
+    private func cacheData(obfuscated: Bool, policy: ExperimentationOptOut?) throws -> FlagsData {
+        let response = try decode(flags: [obfuscated ? digest : "flag": assignment], metadata: obfuscated ? metadata() : [:])
+        return FlagsData(
+            flags: response.flags,
+            context: .init(targetingKey: "subject"),
+            date: Date(timeIntervalSince1970: 1_700_000_000),
+            obfuscation: response.obfuscation,
+            experimentationOptOutPolicy: policy
+        )
     }
 
     private func metadata(salt: String? = nil) -> [String: Any] {

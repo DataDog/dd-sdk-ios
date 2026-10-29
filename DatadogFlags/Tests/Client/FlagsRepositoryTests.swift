@@ -334,7 +334,7 @@ final class FlagsRepositoryTests: XCTestCase {
                         flags: ["flag": .mockAnyBoolean(doLog: false)],
                         experimentationOptOut: mode != .disabled && expected == true ? true : nil,
                         experimentationOptOutMode: mode == .futureExperimentsOnly && expected == true ? "future_experiments_only" : nil,
-                        experimentationOptOutAt: timestamp
+                        experimentationOptOutAt: mode == .futureExperimentsOnly && expected == true ? timestamp : nil
                     )))
                 }
                 let repository = FlagsRepository(
@@ -2815,13 +2815,13 @@ final class FlagsRepositoryTests: XCTestCase {
                             flags: ["older": .mockAny()],
                             experimentationOptOut: policy == .immediate ? true : nil,
                             experimentationOptOutMode: policy?.wireMode,
-                            experimentationOptOutAt: "2026-10-21T12:00:00Z"
+                            experimentationOptOutAt: policy == nil ? nil : "2026-10-21T12:00:00Z"
                         )),
                         latestSucceeds ? .success(.init(
                             flags: ["newer": .mockAny()],
                             experimentationOptOut: policy == .immediate ? true : nil,
                             experimentationOptOutMode: policy?.wireMode,
-                            experimentationOptOutAt: "2026-10-21T12:00:00Z"
+                            experimentationOptOutAt: policy == nil ? nil : "2026-10-21T12:00:00Z"
                         )) : .failure(.invalidResponse)
                     ]
 
@@ -2859,7 +2859,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flags: ["old": .mockAny()],
                 experimentationOptOut: policy == .immediate ? true : nil,
                 experimentationOptOutMode: policy?.wireMode,
-                experimentationOptOutAt: "2026-10-21T12:00:00Z"
+                experimentationOptOutAt: policy == nil ? nil : "2026-10-21T12:00:00Z"
             )))
 
             XCTAssertEqual(repository.state.currentState, .reconciling)
@@ -2868,7 +2868,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flags: ["new": .mockAny()],
                 experimentationOptOut: policy == .immediate ? true : nil,
                 experimentationOptOutMode: policy?.wireMode,
-                experimentationOptOutAt: "2026-10-21T12:00:00Z"
+                experimentationOptOutAt: policy == nil ? nil : "2026-10-21T12:00:00Z"
             )))
             XCTAssertEqual(repository.state.currentState, .ready)
             XCTAssertNotNil(repository.flagAssignment(for: "new"))

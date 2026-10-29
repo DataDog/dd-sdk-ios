@@ -84,7 +84,7 @@ The SDK does not guess the subject's preference. Disabled mode ignores the attri
 
 The Precompute service must acknowledge experimentation opt-out before the client accepts its assignments.
 Future mode requires the same mode and cutoff instant, compared at nanosecond precision.
-When no opt-out applies, the client rejects responses explicitly marked as filtered for experimentation.
+When no opt-out applies, the client rejects responses containing an opt-out mode or cutoff, or a true opt-out acknowledgement.
 An unsupported service cannot silently return experimental assignments. The SDK uses only cached assignments
 that match the current context and opt-out policy. Otherwise it returns application defaults.
 A missing acknowledgement reports `invalidResponse` through the context completion and sets the client to `error` when no matching cache exists.
@@ -94,6 +94,8 @@ With either enabled mode, context isolation also applies when the timestamp attr
 Before the first context update, and while a different context is pending, evaluations return defaults with `providerNotReady`.
 A malformed timestamp returns `invalidContext`. Disabled mode keeps previous assignments available while a refresh is pending.
 An invalid context does not overwrite or delete the last successful disk snapshot.
+Snapshots with an opt-out policy use cache version 3. Older SDKs that support only versions 1 or 2 cannot restore them.
+The current SDK still reads unfiltered snapshots in versions 1 and 2. Filtered snapshots from earlier development builds using those versions are rejected.
 
 Experimentation opt-out does not disable evaluation telemetry or RUM flag annotations.
 Pending, failed, and invalid contexts retain the requested subject identity in evaluation telemetry.

@@ -96,6 +96,7 @@ internal enum ExperimentationOptOut: Equatable, Codable {
             // An unfiltered request must not install assignments filtered for another policy.
             return response.experimentationOptOut != true
                 && response.experimentationOptOutMode == nil
+                && response.experimentationOptOutAt == nil
         }
         return policy.isAcknowledged(by: response)
     }
