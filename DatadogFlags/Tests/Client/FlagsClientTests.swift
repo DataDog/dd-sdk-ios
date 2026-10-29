@@ -1067,19 +1067,27 @@ final class FlagsClientTests: XCTestCase {
     }
 
     func testIndependentEvaluationTrackingRespectsTelemetryOptOutForDefaultsAndErrors() {
-        let fixture = makeTelemetryFixture(enabled: true)
-        fixture.repository.setEvaluationContextStub = { _, _ in XCTFail("Tracking must not fetch configuration") }
-        let context = telemetryContext(.bool(true), subject: "captured-user")
-        let client: FlagsClientInternal = fixture.client
+        let cases: [(enabled: Bool, value: AnyValue?)] = [(true, .bool(true)), (true, .bool(false)), (false, .bool(true))]
+        for (enabled, value) in cases {
+            let fixture = makeTelemetryFixture(enabled: enabled)
+            fixture.repository.setEvaluationContextStub = { _, _ in XCTFail("Tracking must not fetch configuration") }
+            let context = telemetryContext(value, subject: "captured-user")
+            let client: FlagsClientInternal = fixture.client
 
-        client.sendFlagEvaluationEvent(key: "default", assignment: nil, context: context, errorCode: nil)
-        client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: context, errorCode: "FLAG_NOT_FOUND")
-        client.sendFlagEvaluationEvent(key: "wrong-type", assignment: .mockAny(), context: context, errorCode: "TYPE_MISMATCH")
+            client.sendFlagEvaluationEvent(key: "default", assignment: nil, context: context, errorCode: nil)
+            client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: context, errorCode: "FLAG_NOT_FOUND")
+            client.sendFlagEvaluationEvent(key: "wrong-type", assignment: .mockAny(), context: context, errorCode: "TYPE_MISMATCH")
 
-        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
-        XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
-        XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
-        XCTAssertEqual(fixture.repository.context, telemetryContext(nil))
+            let configuration = "enabled=\(enabled), value=\(String(describing: value))"
+            let optedOut = enabled && value == .bool(true)
+            let calls = fixture.evaluations.logEvaluationCalls
+            XCTAssertEqual(calls.map(\.flagKey), optedOut ? [] : ["default", "missing", "wrong-type"], configuration)
+            XCTAssertEqual(calls.map(\.error), optedOut ? [] : [nil, "FLAG_NOT_FOUND", "TYPE_MISMATCH"], configuration)
+            XCTAssertTrue(calls.allSatisfy { $0.context == context }, configuration)
+            XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty, configuration)
+            XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty, configuration)
+            XCTAssertEqual(fixture.repository.context, telemetryContext(nil), configuration)
+        }
     }
 
     func testIndependentRUMTrackingRespectsIntegrationSetting() throws {
