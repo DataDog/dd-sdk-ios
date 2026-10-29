@@ -31,16 +31,20 @@ static_assert((kHashCapacity & (kHashCapacity - 1)) == 0,
 static_assert(kAggregationCapacity < UINT32_MAX,
               "aggregation indices must fit in the hash index");
 
+using ClassNameStorage = std::array<char, kMaxClassNameBytes>;
+
 struct AllocationRecord {
     dd_memory_live_sample_t sample;
-    std::array<char, kMaxClassNameBytes> class_name;
+    ClassNameStorage class_name;
 };
+
+using AllocationLog = std::array<AllocationRecord, kAllocationCapacity>;
 
 // Fixed buffers are inline with their owner and initialized before publication.
 struct WindowStorage {
-    std::array<std::array<AllocationRecord, kAllocationCapacity>, 2> allocations;
+    std::array<AllocationLog, 2> allocations;
     std::array<dd_memory_aggregate_t, kAggregationCapacity> aggregates;
-    std::array<std::array<char, kMaxClassNameBytes>, kAggregationCapacity> class_names;
+    std::array<ClassNameStorage, kAggregationCapacity> class_names;
     // Zero denotes an unused bucket; other values are aggregate indices + 1.
     std::array<uint32_t, kHashCapacity> hash_index;
 };
@@ -62,7 +66,8 @@ bool valid_sample(const dd_memory_live_sample_t *sample) {
 }
 
 uint64_t hash_word(uint64_t hash, uint64_t value) {
-    // Mix the entire stack address, including high bits used by tagged pointers.
+    // Use the SplitMix64 finalizer to mix the entire stack address, including
+    // high bits used by tagged pointers, before combining it into the hash.
     value ^= value >> 30U;
     value *= 0xbf58476d1ce4e5b9ULL;
     value ^= value >> 27U;
@@ -117,7 +122,8 @@ bool same_key(const dd_memory_aggregation_key_t &left,
 
 } // namespace
 
-struct dd_memory_allocation_window {
+class dd_memory_allocation_window {
+public:
     static dd_memory_allocation_window_t *create();
     void destroy();
     uint64_t start();
