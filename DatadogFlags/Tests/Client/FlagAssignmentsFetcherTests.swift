@@ -220,6 +220,42 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
     }
 
+    func testImmediateOptOutRejectsCutoffWithoutExplicitImmediateMode() throws {
+        let cutoffs: [Any?] = [nil, "2026-10-21T12:00:00Z", "invalid", "", NSNull(), true, 42, [:], []]
+        let modes: [String?] = [nil, "immediate", "future_experiments_only"]
+        for mode in modes {
+            for cutoff in cutoffs {
+                var options: [String: Any] = ["experimentation_opt_out": true]
+                if let mode { options["experimentation_opt_out_mode"] = mode }
+                if let cutoff { options["dd_experimentation_opt_out_at"] = cutoff }
+                let attributes: [String: Any] = ["flags": [:], "evaluation_options": options]
+                let bytes = try JSONSerialization.data(withJSONObject: ["data": ["attributes": attributes]])
+                let fetcher = FlagAssignmentsFetcher(
+                    customEndpoint: nil,
+                    customHeaders: nil,
+                    featureScope: featureScope,
+                    fetch: { _, complete in complete(.success(bytes)) }
+                )
+                let completed = expectation(description: "immediate acknowledgement")
+                var result: Result<FlagAssignmentsResponse, FlagsError>?
+                fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: .immediate) {
+                    result = $0
+                    completed.fulfill()
+                }
+                wait(for: [completed], timeout: 2)
+                let received = try XCTUnwrap(result)
+                if mode == "immediate" || (mode == nil && cutoff == nil) {
+                    XCTAssertNoThrow(try received.get(), "\(options)")
+                } else {
+                    guard case .failure(.invalidResponse) = received else {
+                        XCTFail("Expected invalidResponse for \(options)")
+                        continue
+                    }
+                }
+            }
+        }
+    }
+
     func testFlagAssignments() throws {
         // Given
         featureScope.contextMock = .mockWith(site: .us3)

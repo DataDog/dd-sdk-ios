@@ -106,7 +106,8 @@ internal enum ExperimentationOptOut: Equatable, Codable {
         switch self {
         case .immediate:
             return response.experimentationOptOut == true
-                && (response.experimentationOptOutMode == nil || response.experimentationOptOutMode == wireMode)
+                && (response.experimentationOptOutMode == wireMode
+                    || (response.experimentationOptOutMode == nil && response.experimentationOptOutAt == nil))
         case .futureExperimentsOnly(let cutoff):
             guard response.experimentationOptOutMode == wireMode,
                   let acknowledged = response.experimentationOptOutAt,
