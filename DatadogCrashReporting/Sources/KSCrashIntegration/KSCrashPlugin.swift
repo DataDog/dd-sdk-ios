@@ -95,14 +95,20 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
 }
 
 extension KSCrashConfiguration {
-    static func datadog() throws -> KSCrashConfiguration {
+    static func datadog(bundle: Bundle = .main) throws -> KSCrashConfiguration {
         let version = "v2"
 
         guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw CrashReportException(description: "Cannot obtain `/Library/Caches/` url.")
         }
 
-        let directory = cache.appendingPathComponent("com.datadoghq.crash-reporting/\(version)", isDirectory: true)
+        #if os(macOS)
+        // Apps that are not sandboxed share `~/Library/Caches`, so each app keeps its crash reports in its own subdirectory.
+        let path = "\(bundle.dd.appDirectoryName)/com.datadoghq.crash-reporting/\(version)"
+        #else
+        let path = "com.datadoghq.crash-reporting/\(version)"
+        #endif
+        let directory = cache.appendingPathComponent(path, isDirectory: true)
 
         let config = KSCrashConfiguration()
         config.installPath = directory.path

@@ -488,6 +488,7 @@ public class BundleMock: Bundle, @unchecked Sendable {
     // swiftlint:disable identifier_name
     fileprivate var _bundlePath: String = .mockAny()
     fileprivate var _bundleIdentifier: String? = nil
+    fileprivate var _executableURL: URL? = nil
     fileprivate var _CFBundleVersion: String? = nil
     fileprivate var _CFBundleShortVersionString: String? = nil
     fileprivate var _CFBundleExecutable: String? = nil
@@ -496,6 +497,7 @@ public class BundleMock: Bundle, @unchecked Sendable {
 
     override public var bundlePath: String { _bundlePath }
     override public var bundleIdentifier: String? { _bundleIdentifier }
+    override public var executableURL: URL? { _executableURL }
     override public func object(forInfoDictionaryKey key: String) -> Any? {
         switch key {
         case "CFBundleVersion": return _CFBundleVersion
@@ -515,6 +517,7 @@ extension Bundle {
     public static func mockWith(
         bundlePath: String = .mockAny(),
         bundleIdentifier: String? = .mockAny(),
+        executableURL: URL? = nil,
         CFBundleVersion: String? = .mockAny(),
         CFBundleShortVersionString: String? = .mockAny(),
         CFBundleExecutable: String? = .mockAny(),
@@ -523,6 +526,7 @@ extension Bundle {
         let mock = BundleMock()
         mock._bundlePath = bundlePath
         mock._bundleIdentifier = bundleIdentifier
+        mock._executableURL = executableURL
         mock._CFBundleVersion = CFBundleVersion
         mock._CFBundleShortVersionString = CFBundleShortVersionString
         mock._CFBundleExecutable = CFBundleExecutable

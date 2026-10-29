@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogCrashReporting
 import KSCrashRecording
 
@@ -13,13 +14,28 @@ final class KSCrashPluginTests: XCTestCase {
 
     func testConfiguration() throws {
         // When
-        let config: KSCrashConfiguration = try .datadog()
+        let config: KSCrashConfiguration = try .datadog(bundle: .mockWith(bundleIdentifier: "com.example.app"))
 
         // Then
-        XCTAssertTrue(config.installPath?.contains("/Library/Caches/com.datadoghq.crash-reporting/v2") ?? false)
+        #if os(macOS)
+        XCTAssertTrue(config.installPath?.hasSuffix("/Library/Caches/com.example.app/com.datadoghq.crash-reporting/v2") ?? false)
+        #else
+        XCTAssertTrue(config.installPath?.hasSuffix("/Library/Caches/com.datadoghq.crash-reporting/v2") ?? false)
+        #endif
         XCTAssertEqual(config.reportStoreConfiguration.maxReportCount, 1)
         XCTAssertEqual(config.reportStoreConfiguration.reportCleanupPolicy, .never)
     }
+
+    #if os(macOS)
+    func testOnMacOS_givenTwoApps_whenConfiguring_thenInstallPathsAreDifferent() throws {
+        // When
+        let config1: KSCrashConfiguration = try .datadog(bundle: .mockWith(bundleIdentifier: "com.example.app1"))
+        let config2: KSCrashConfiguration = try .datadog(bundle: .mockWith(bundleIdentifier: "com.example.app2"))
+
+        // Then
+        XCTAssertNotEqual(config1.installPath, config2.installPath)
+    }
+    #endif
 
     func testCStringFromContextAppendsTrailingNullTerminator() {
         // Given

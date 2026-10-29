@@ -55,9 +55,16 @@ internal extension CoreDirectory {
     ///   - osDirectory: the root OS directory (`/Library/Caches`) to create core directory inside.
     ///   - instanceName: The core instance name.
     ///   - site: The cor instance site.
-    init(in osDirectory: Directory, instanceName: String, site: DatadogSite) throws {
+    ///   - bundle: The app bundle. On macOS, the core directory is created in the app's subdirectory of `osDirectory`.
+    init(in osDirectory: Directory, instanceName: String, site: DatadogSite, bundle: Bundle = .main) throws {
         let sdkInstanceUUID = sha256("\(instanceName)\(site)")
+        #if os(macOS)
+        // Apps that are not sandboxed share `osDirectory`. Without the app's subdirectory, apps using the same instance name
+        // and site would read, upload and delete each other's data.
+        let path = "\(bundle.dd.appDirectoryName)/com.datadoghq/v2/\(sdkInstanceUUID)"
+        #else
         let path = "com.datadoghq/v2/\(sdkInstanceUUID)"
+        #endif
 
         self.init(
             osDirectory: osDirectory,

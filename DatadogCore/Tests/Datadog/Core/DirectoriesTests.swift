@@ -84,6 +84,118 @@ class DirectoriesTests: XCTestCase {
         )
     }
 
+    #if os(macOS)
+    func testOnMacOS_whenCreatingCoreDirectory_thenItIsCreatedInTheAppSubdirectory() throws {
+        // When
+        let coreDirectory = try CoreDirectory(
+            in: directory,
+            instanceName: "abcdef",
+            site: .us1,
+            bundle: .mockWith(bundleIdentifier: "com.example.app")
+        )
+        defer { coreDirectory.delete() }
+
+        // Then
+        XCTAssertEqual(
+            coreDirectory.coreDirectory.url.path,
+            directory.url.appendingPathComponent(
+                "com.example.app/com.datadoghq/v2/d5f91716d9c17bc76cb9931e1f9ff37724a27d4c05f1eb7081f59ea34d44c777"
+            ).path
+        )
+    }
+
+    func testOnMacOS_givenTwoAppsWithTheSameSDKConfiguration_whenCreatingCoreDirectories_thenTheyAreDifferent() throws {
+        // Given
+        let instanceName: String = .mockRandom()
+        let site: DatadogSite = .mockRandom()
+
+        // When
+        let coreDirectory1 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundleIdentifier: "com.example.app1")
+        )
+        let coreDirectory2 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundleIdentifier: "com.example.app2")
+        )
+        defer {
+            coreDirectory1.delete()
+            coreDirectory2.delete()
+        }
+
+        // Then
+        XCTAssertNotEqual(coreDirectory1.coreDirectory.url, coreDirectory2.coreDirectory.url)
+    }
+
+    func testOnMacOS_givenExecutableWithoutBundleIdentifier_whenCreatingCoreDirectory_thenItIsCreatedInTheExecutableSubdirectory() throws {
+        // When
+        let coreDirectory = try CoreDirectory(
+            in: directory,
+            instanceName: .mockRandom(),
+            site: .mockRandom(),
+            bundle: .mockWith(bundleIdentifier: nil, executableURL: URL(fileURLWithPath: "/usr/local/bin/helper"))
+        )
+        defer { coreDirectory.delete() }
+
+        // Then
+        let appDirectory = coreDirectory.coreDirectory.url
+            .deletingLastPathComponent() // v2
+            .deletingLastPathComponent() // com.datadoghq
+        XCTAssertTrue(appDirectory.lastPathComponent.hasPrefix("helper-"))
+        XCTAssertEqual(appDirectory.deletingLastPathComponent().path, directory.url.path)
+    }
+
+    func testOnMacOS_givenTwoExecutablesWithTheSameNameAndNoBundleIdentifier_whenCreatingCoreDirectories_thenTheyAreDifferent() throws {
+        // Given
+        let instanceName: String = .mockRandom()
+        let site: DatadogSite = .mockRandom()
+
+        // When
+        let coreDirectory1 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundleIdentifier: nil, executableURL: URL(fileURLWithPath: "/usr/local/bin/helper"))
+        )
+        let coreDirectory2 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundleIdentifier: nil, executableURL: URL(fileURLWithPath: "/opt/tools/helper"))
+        )
+        defer {
+            coreDirectory1.delete()
+            coreDirectory2.delete()
+        }
+
+        // Then
+        XCTAssertNotEqual(coreDirectory1.coreDirectory.url, coreDirectory2.coreDirectory.url)
+    }
+    #else
+    func testWhenCreatingCoreDirectory_thenItIsCreatedInTheSDKDirectory() throws {
+        // When
+        let coreDirectory = try CoreDirectory(
+            in: directory,
+            instanceName: "abcdef",
+            site: .us1,
+            bundle: .mockWith(bundleIdentifier: "com.example.app")
+        )
+        defer { coreDirectory.delete() }
+
+        // Then
+        XCTAssertEqual(
+            coreDirectory.coreDirectory.url.path,
+            directory.url.appendingPathComponent(
+                "com.datadoghq/v2/d5f91716d9c17bc76cb9931e1f9ff37724a27d4c05f1eb7081f59ea34d44c777"
+            ).path
+        )
+    }
+    #endif
+
     func testGivenCoreDirectory_whenCreatingFeatureDirectories_thenTheirPathsAreRelative() throws {
         // Given
         let coreDirectory = temporaryCoreDirectory.create()

@@ -163,4 +163,22 @@ extension DatadogExtension where ExtendedType == Bundle {
         isUIKit
         #endif
     }
+
+    #if os(macOS)
+    /// The name of the subdirectory that keeps the SDK files of this app apart from other apps.
+    ///
+    /// Apps that are not sandboxed share `~/Library/Caches` and `~/Library/Application Support`, so macOS recommends
+    /// keeping files in a subdirectory named after the bundle identifier. Executables without one, like command-line tools,
+    /// use their name and a hash of their path, so two executables with the same name do not share a directory.
+    public var appDirectoryName: String {
+        if let bundleIdentifier = type.bundleIdentifier {
+            return bundleIdentifier
+        }
+        guard let executableURL = type.executableURL?.resolvingSymlinksInPath() else {
+            return ProcessInfo.processInfo.processName
+        }
+        let pathHash = Data(executableURL.path.utf8).sha1().prefix(16)
+        return "\(executableURL.lastPathComponent)-\(pathHash)"
+    }
+    #endif
 }
