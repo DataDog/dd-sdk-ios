@@ -22,6 +22,28 @@ internal struct DDSpanContext: OTSpanContext {
     let sampleRate: Float
     /// The sampling decision for the span.
     let samplingDecision: SamplingDecision
+    /// Set only by propagation readers, not inferred from missing local metadata.
+    var isRemote: Bool = false
+    /// Lightweight service metadata shared with local children when stats are enabled.
+    var serviceForStats: SpanService? = nil
+    var parentForStats: StatsParent = .unknown
+
+    enum StatsParent {
+        case unknown
+        case remote
+        case local(SpanService)
+
+        /// The stats parent of a span created as a child of `parent`.
+        init(forChildOf parent: DDSpanContext?) {
+            if let parent, parent.isRemote {
+                self = .remote
+            } else if let service = parent?.serviceForStats {
+                self = .local(service)
+            } else {
+                self = .unknown
+            }
+        }
+    }
 
     /// Delegate method called by ``DDSpan.setTag(key:value:)`` that filters and runs custom actions for specific tags.
     ///
@@ -53,6 +75,32 @@ internal struct DDSpanContext: OTSpanContext {
                 break
             }
         }
+    }
+}
+
+/// Retains a span's pre-mapper service without retaining the span or its ancestors.
+internal final class SpanService: @unchecked Sendable {
+    /// Captured once from the span's start-time context, before its finish callback executes.
+    @ReadWriteLock
+    var defaultService: String?
+    @ReadWriteLock
+    var serviceOverride: String?
+
+    init(defaultService: String?, serviceOverride: String?) {
+        self.defaultService = defaultService
+        self.serviceOverride = serviceOverride
+    }
+
+    /// Freezes the override at finish while allowing the queued start-time context to resolve.
+    func snapshot() -> Snapshot {
+        Snapshot(serviceOverride: serviceOverride, source: self)
+    }
+
+    struct Snapshot {
+        let serviceOverride: String?
+        let source: SpanService
+
+        var service: String? { serviceOverride ?? source.defaultService }
     }
 }
 

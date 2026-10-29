@@ -60,6 +60,7 @@ internal extension RUMViewEvent.Source {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 }

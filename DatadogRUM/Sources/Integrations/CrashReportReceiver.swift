@@ -34,6 +34,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let eventsMapper: RUMEventsMapper
     private let sanitizer = RUMEventSanitizer()
 
+    /// `is_slow_rendered` for views built from a crash. Platforms without a render loop observer never measure it.
+    #if os(macOS) || os(watchOS)
+    private static let defaultIsSlowRendered: Bool? = nil
+    #else
+    private static let defaultIsSlowRendered: Bool? = false
+    #endif
+
     // MARK: - Initialization
 
     init(
@@ -84,6 +91,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection),
             timeSinceAppStart: timeSinceAppStart
         )
+
+        // After `stopSession()`, a crash is not reported until a new view resumes tracking and clears the flag.
+        if context.isRUMSessionStopped {
+            DD.logger.debug("There was a crash after the RUM session was stopped, so it is not reported.")
+            return true // handled: dropped on purpose
+        }
 
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if var lastRUMViewEvent = context.lastRUMViewEvent {
@@ -172,7 +185,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: RUMUUID(rawValue: lastRUMSessionState.sessionUUID), // link it to previous RUM Session
                 context: crashContext,
-                hasReplay: lastRUMSessionState.didStartWithReplay
+                hasReplay: lastRUMSessionState.didStartWithReplay,
+                hasTimeseries: lastRUMSessionState.hasTimeseries
             )
         case .handleInBackgroundView:
             // It means that the crash occurred as the very first event after sending app to background in previous session.
@@ -183,7 +197,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: RUMUUID(rawValue: lastRUMSessionState.sessionUUID), // link it to previous RUM Session
                 context: crashContext,
-                hasReplay: lastRUMSessionState.didStartWithReplay
+                hasReplay: lastRUMSessionState.didStartWithReplay,
+                hasTimeseries: lastRUMSessionState.hasTimeseries
             )
         case .doNotHandle:
             DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
@@ -237,7 +252,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
-                hasReplay: false
+                hasReplay: false,
+                hasTimeseries: false
             )
         case .handleInBackgroundView:
             newRUMView = createNewRUMViewEvent(
@@ -249,7 +265,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
-                hasReplay: false
+                hasReplay: false,
+                hasTimeseries: false
             )
         case .doNotHandle:
             DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
@@ -313,7 +330,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         startDate: Date,
         sessionUUID: RUMUUID,
         context: CrashContext,
-        hasReplay: Bool?
+        hasReplay: Bool?,
+        hasTimeseries: Bool
     ) -> RUMViewEvent {
         let viewUUID = uuidGenerator.generateUnique()
 
@@ -363,6 +381,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             service: context.service,
             session: .init(
                 hasReplay: hasReplay,
+                hasTimeseries: hasTimeseries,
                 id: sessionUUID.toRUMDataFormat,
                 isActive: true,
                 isMainProcess: context.applicationBundleType != .iOSAppExtension,
@@ -403,7 +422,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 interactionToNextPaintTime: nil,
                 interactionToNextViewTime: nil,
                 isActive: false, // we know it won't receive updates
-                isSlowRendered: false,
+                isSlowRendered: Self.defaultIsSlowRendered,
                 jsRefreshRate: nil,
                 largestContentfulPaint: nil,
                 largestContentfulPaintTargetSelector: nil,

@@ -16,14 +16,27 @@ internal struct FlagsDataStore {
     let featureScope: FeatureScope
 
     func setFlagsData(_ flagsData: FlagsData, forClientNamed clientName: String) {
+        guard let encoded = encodeFlagsData(flagsData) else {
+            return
+        }
+
+        setEncodedFlagsData(encoded.data, forClientNamed: clientName, version: encoded.version)
+    }
+
+    func encodeFlagsData(_ flagsData: FlagsData) -> (data: Data, version: DataStoreKeyVersion)? {
         do {
             let data = try Self.encoder.encode(flagsData)
             let version = flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : Self.encodedAssignmentsVersion
-            featureScope.dataStore.setValue(data, forKey: clientName, version: version)
+            return (data, version)
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
+            return nil
         }
+    }
+
+    func setEncodedFlagsData(_ data: Data, forClientNamed clientName: String, version: DataStoreKeyVersion) {
+        featureScope.dataStore.setValue(data, forKey: clientName, version: version)
     }
 
     func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {

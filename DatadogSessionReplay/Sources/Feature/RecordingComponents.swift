@@ -67,7 +67,8 @@ internal struct RecordingComponents {
 
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
-            resourcesWriter: resourcesWriter
+            resourcesWriter: resourcesWriter,
+            telemetry: telemetry
         )
 
         let snapshotProcessor = SnapshotProcessor(
@@ -126,7 +127,8 @@ internal struct RecordingComponents {
         )
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
-            resourcesWriter: resourcesWriter
+            resourcesWriter: resourcesWriter,
+            telemetry: telemetry
         )
         let snapshotProcessor = LayerSnapshotProcessor(
             queue: processorsQueue,

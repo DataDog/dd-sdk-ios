@@ -162,7 +162,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         trackBackgroundEvents: Bool = .mockAny(),
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = .mockAny(),
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
         nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
@@ -189,7 +188,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             trackBackgroundEvents: trackBackgroundEvents,
             longTaskThreshold: longTaskThreshold,
             appHangThreshold: appHangThreshold,
-            trackWatchdogTerminations: trackWatchdogTerminations,
             vitalsUpdateFrequency: vitalsUpdateFrequency,
             networkSettledResourcePredicate: networkSettledResourcePredicate,
             nextViewActionPredicate: nextViewActionPredicate,
@@ -210,14 +208,13 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
 
     #if !os(watchOS)
     public static func mockRandom() -> RUM.Configuration {
-        .mockWith(
+        var configuration: RUM.Configuration = .mockWith(
             applicationID: .mockRandom(),
             sessionSampleRate: .mockRandom(min: 0, max: 100),
             trackFrustrations: .mockRandom(),
             trackBackgroundEvents: .mockRandom(),
             longTaskThreshold: .mockRandom(),
             appHangThreshold: .mockRandom(),
-            trackWatchdogTerminations: .mockRandom(),
             vitalsUpdateFrequency: [VitalsFrequency.frequent, .average, .rare].randomElement(),
             customEndpoint: .mockRandom(),
             trackAnonymousUser: .mockRandom(),
@@ -225,6 +222,10 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             trackSlowFrames: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
+        #if !os(macOS)
+        configuration.trackWatchdogTerminations = .mockRandom()
+        #endif
+        return configuration
     }
     #endif
 }
@@ -1178,10 +1179,24 @@ public func mockNoOpSessionUpdater() -> RUM.SessionUpdater {
 
 public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public var sessionState: RUMSessionState?
-    public var view: RUMViewEvent?
+    public var view: RUMViewEvent? {
+        didSet {
+            if sessionStopCount > 0, let view = view {
+                viewsPublishedAfterStop.append(view)
+            }
+        }
+    }
     public var globalAttributes: [String: Encodable] = [:]
+    /// How many times `sessionDidStop()` was called.
+    public var sessionStopCount = 0
+    /// The views published after `sessionDidStop()` was called.
+    public private(set) var viewsPublishedAfterStop: [RUMViewEvent] = []
 
     public init() {}
+
+    public func sessionDidStop() {
+        sessionStopCount += 1
+    }
 }
 
 /// A `MonotonicClock` that reads elapsed time from a `DateProvider`, so a test that already simulates
@@ -1205,6 +1220,24 @@ internal final class MonotonicClockMock: MonotonicClock {
     func advance(by interval: TimeInterval) {
         _elapsedTime.mutate { $0 += interval }
     }
+}
+
+public class TimeseriesCollectorMock: TimeseriesCollecting {
+    public weak var activeContextReader: RUMActiveContextReader?
+    /// The value returned by `hasCollectedData(sessionID:)` for any session.
+    public var hasData: Bool
+
+    public init(hasData: Bool = false) {
+        self.hasData = hasData
+    }
+
+    public func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
+    public func pause(sessionID: String) {}
+    public func resume(sessionID: String) {}
+    public func stop(sessionID: String) {}
+    public func noteActivity(sessionID: String) {}
+    public func flush() {}
+    public func hasCollectedData(sessionID: String) -> Bool { hasData }
 }
 
 extension RUMScopeDependencies {
@@ -1316,7 +1349,8 @@ extension RUMScopeDependencies {
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
         sessionType: RUMSessionType? = nil,
-        monotonicClock: MonotonicClock? = nil
+        monotonicClock: MonotonicClock? = nil,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -1348,7 +1382,8 @@ extension RUMScopeDependencies {
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
             sessionType: sessionType,
-            monotonicClock: monotonicClock ?? self.monotonicClock
+            monotonicClock: monotonicClock ?? self.monotonicClock,
+            timeseriesCollector: timeseriesCollector ?? self.timeseriesCollector
         )
     }
 }

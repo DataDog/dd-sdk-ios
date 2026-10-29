@@ -104,12 +104,12 @@ custom_rules:
     # The list of Required Reason APIs:
     # https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api
     regex: >
+      (?x)
       (\.creationDate)|
       (\.creationDateKey)|
       (\.modificationDate)|
       (\.fileModificationDate)|
       (\.contentModificationDateKey)|
-      (\.creationDateKey)|
       (getattrlist\()|
       (getattrlistbulk\()|
       (fgetattrlist\()|
@@ -130,9 +130,6 @@ custom_rules:
       (statvfs\()|
       (fstatfs\()|
       (fstatvfs\()|
-      (getattrlist\()|
-      (fgetattrlist\()|
-      (getattrlistat\()|
       (activeInputModes)|
       (UserDefaults)|
       (NSUserDefaults)|

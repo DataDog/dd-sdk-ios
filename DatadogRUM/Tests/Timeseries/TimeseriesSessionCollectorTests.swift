@@ -58,6 +58,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.application.id, "app-123")
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertEqual(event.timeseries.name, "memory")
         XCTAssertEqual(event.timeseries.schema, "object-v2")
         XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
@@ -98,6 +99,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.application.id, "app-123")
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertEqual(event.timeseries.name, "cpu")
         XCTAssertEqual(event.timeseries.schema, "object-v2")
         XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
@@ -355,67 +357,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].source, .reactNative)
     }
 
-    func testWhenActiveViewExists_itStillWritesEventWithoutView() {
-        // Given
-        memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: scope,
-            batchSize: 2,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
-        )
-        let contextReader = RUMActiveContextReaderMock(activeView: (id: "view-abc", path: "/view/abc", name: "ViewController"))
-        collector.activeContextReader = contextReader
-
-        // When
-        let expectation = self.expectation(description: "batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop(sessionID: "session-view")
-
-        // Then — `view` is never populated on timeseries events, even when a view is active
-        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertFalse(events.isEmpty)
-        XCTAssertNil(events[0].view)
-    }
-
-    func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
-        // Given
-        memoryReader.vitalData = 1_000_000
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: featureScope,
-            batchSize: 2,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
-        )
-        let contextReader = RUMActiveContextReaderMock(hasReplay: true)
-        collector.activeContextReader = contextReader
-
-        // When
-        let expectation = self.expectation(description: "batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-has-replay", applicationID: "app-has-replay", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop(sessionID: "session-has-replay")
-
-        // Then
-        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].session.hasReplay, true)
-    }
-
     func testWhenSessionReplayContextNeverObserved_hasReplayStaysNilOnEvent() {
-        // Given — no `hasReplay` value is ever reported by the active context reader (Session Replay not enabled)
+        // Given — no replay state is ever reported (Session Replay not enabled)
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -423,9 +366,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            totalRAM: 4_000_000_000,
+            replayState: HasReplayMessageReceiver()
         )
-        let contextReader = RUMActiveContextReaderMock(hasReplay: nil)
+        let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
 
         // When
@@ -446,23 +390,25 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenReplayStopsBeforeFlush_hasReplayStaysTrueForTheBatch() {
         // Given
         memoryReader.vitalData = 1_000_000
+        let replayState = HasReplayMessageReceiver()
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 100, // won't auto-flush — only `stop()` triggers the flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            totalRAM: 4_000_000_000,
+            replayState: replayState
         )
-        let contextReader = RUMActiveContextReaderMock(hasReplay: true)
-        collector.activeContextReader = contextReader
+        collector.activeContextReader = RUMActiveContextReaderMock()
+        replayState.update(sessionID: "session-replay-stops", hasReplay: true)
         collector.start(sessionID: "session-replay-stops", applicationID: "app-1", sessionType: .user)
 
         // When — replay was active for some of the batch window, then stops before the flush
         let replayActiveExpectation = self.expectation(description: "samples collected while replay is active")
         replayActiveExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            contextReader.hasReplay = false
+            replayState.update(sessionID: "session-replay-stops", hasReplay: false)
             replayActiveExpectation.fulfill()
         }
         waitForExpectations(timeout: 2)
@@ -481,6 +427,51 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
         XCTAssertEqual(events[0].session.hasReplay, true)
+    }
+
+    func testWhenReplayStartsAfterLastTick_pauseStopAndFlushReportHasReplay() {
+        let triggers: [(name: String, run: (TimeseriesSessionCollector, String) -> Void)] = [
+            ("pause", { collector, sessionID in
+                collector.pause(sessionID: sessionID)
+                collector.flush() // barrier: waits for `pause()` to finish on the collector's queue
+            }),
+            ("stop", { collector, sessionID in
+                collector.stop(sessionID: sessionID)
+                collector.flush() // barrier: waits for `stop()` to finish on the collector's queue
+            }),
+            ("flush", { collector, _ in
+                collector.flush()
+            })
+        ]
+
+        for trigger in triggers {
+            // Given — replay is off for the first tick (0.3 s) and turns on before the next one (0.6 s)
+            memoryReader.vitalData = 1_000_000
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
+            let replayState = HasReplayMessageReceiver()
+            let collector = TimeseriesSessionCollector(
+                memoryReader: memoryReader,
+                featureScope: scope,
+                batchSize: 100, // won't auto-flush — only the trigger flushes
+                samplingInterval: 0.3,
+                cpuUsageProvider: { nil },
+                totalRAM: 4_000_000_000,
+                replayState: replayState
+            )
+            collector.activeContextReader = RUMActiveContextReaderMock()
+            collector.start(sessionID: "session-replay-starts", applicationID: "app-1", sessionType: .user)
+            settle(0.45)
+
+            // When — replay turns on, then a new session is reported before the trigger runs
+            replayState.update(sessionID: "session-replay-starts", hasReplay: true)
+            replayState.update(sessionID: "next-session", hasReplay: false)
+            trigger.run(collector, "session-replay-starts")
+
+            // Then
+            let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+            XCTAssertEqual(events.count, 1, trigger.name)
+            XCTAssertEqual(events.last?.session.hasReplay, true, trigger.name)
+        }
     }
 
     func testItPopulatesSessionSampleRateFromConstructorInjectedValue() {
@@ -670,6 +661,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
         XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty)
+        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-abc"))
     }
 
     // MARK: - Session restart
@@ -693,6 +685,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { firstExpectation.fulfill() }
         collector.start(sessionID: "session-1", applicationID: "app-1", sessionType: .user)
         waitForExpectations(timeout: 2)
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-1"))
 
         // Second session — start() resets buffers and updates metadata
         let secondExpectation = self.expectation(description: "second session samples")
@@ -711,6 +704,21 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         let lastEvent = try XCTUnwrap(events.last)
         XCTAssertEqual(lastEvent.session.id, "session-2")
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-2"))
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-1"), "Late events from the previous session keep reporting its data")
+        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-3"))
+
+        // Third session: only the 2 most recently sampled sessions are retained
+        let thirdExpectation = self.expectation(description: "third session samples")
+        thirdExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { thirdExpectation.fulfill() }
+        collector.start(sessionID: "session-3", applicationID: "app-1", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-3")
+
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-3"))
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-2"))
+        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-1"), "Older sessions are evicted")
     }
 
     // MARK: - Pause / resume
@@ -990,10 +998,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
-        let contextReader = RUMActiveContextReaderMock(
-            globalAttributes: ["custom-key": "custom-value"],
-            activeView: (id: "view-abc", path: "/view/abc", name: "ViewController")
-        )
+        let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
 
         // When
@@ -1398,25 +1403,16 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 }
 
 private class RUMActiveContextReaderMock: RUMActiveContextReader {
-    var globalAttributes: [AttributeKey: AttributeValue]
-    var activeView: (id: String?, path: String?, name: String?)
     @ReadWriteLock
     var sessionActivity: (sessionID: String?, sessionStart: TimeInterval, lastInteraction: TimeInterval)
-    var hasReplay: Bool?
     private let monotonicClock: MonotonicClock
 
     init(
-        globalAttributes: [AttributeKey: AttributeValue] = [:],
-        activeView: (id: String?, path: String?, name: String?) = (.mockAny(), .mockAny(), nil),
         sessionID: String? = nil,
-        hasReplay: Bool? = nil,
         monotonicClock: MonotonicClock = SystemMonotonicClock()
     ) {
-        self.globalAttributes = globalAttributes
-        self.activeView = activeView
         let now = monotonicClock.elapsedTime
         self.sessionActivity = (sessionID, now, now)
-        self.hasReplay = hasReplay
         self.monotonicClock = monotonicClock
     }
 

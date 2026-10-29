@@ -10,6 +10,16 @@ import DatadogInternal
 @_spi(Internal)
 @testable import DatadogCore
 
+private final class DataClearableFeatureMock: DatadogFeature, DataClearable {
+    static let name = "data-clearable-mock"
+    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    private(set) var clearCount = 0
+
+    func clearAllData() {
+        clearCount += 1
+    }
+}
+
 private struct FeatureMock: DatadogRemoteFeature {
     static let name: String = "mock"
 
@@ -213,6 +223,81 @@ class DatadogCoreTests: XCTestCase {
             "It should upload all events"
         )
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 2, "It should send 2 requests")
+    }
+
+    func testWhenEventsAreWrittenUnderTheConsentBeforeARevocation_theyAreDeletedWithTheOtherPendingEvents() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .pending,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.stop() }
+
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let storage = try XCTUnwrap(core.stores[FeatureMock.name]?.storage)
+
+        // A write context read just before the revocation reaches the context still has pending consent.
+        // Its events are written when the context first shows the revocation, which is the latest point
+        // they can be queued.
+        var hasWrittenUnderPreviousConsent = false
+        core.contextProvider.publish { context in
+            guard context.trackingConsent == .notGranted, !hasWrittenUnderPreviousConsent else {
+                return
+            }
+            hasWrittenUnderPreviousConsent = true
+            storage.writer(for: .pending).write(value: FeatureMock.Event(event: "before revocation"))
+        }
+
+        // When
+        core.set(trackingConsent: .notGranted)
+        core.set(trackingConsent: .granted)
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "granted"))
+        }
+        core.flushAndUpload()
+
+        // Then
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+        XCTAssertTrue(hasWrittenUnderPreviousConsent)
+        XCTAssertEqual(uploadedEvents, [#"{"event":"granted"}"#])
+    }
+
+    func testWhenConsentReturnsToAnEarlierValue_theContextConsentRevisionStillAdvances() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .pending,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        let initialRevision = core.contextProvider.read().trackingConsentRevision
+
+        // When
+        core.set(trackingConsent: .notGranted)
+        core.set(trackingConsent: .pending)
+
+        // Then: consumers can tell the context changed even though its consent value is the same.
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.trackingConsent, .pending)
+        XCTAssertEqual(context.trackingConsentRevision, initialRevision + 2)
     }
 
     func testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents() throws {
@@ -605,6 +690,27 @@ class DatadogCoreTests: XCTestCase {
         core.clearAccountInfo()
         let accountAfterUpdate = core.accountInfoPublisher.current
         XCTAssertNil(accountAfterUpdate)
+    }
+
+    func testWhenClearingAllData_itAsksFeaturesToDropTheirInMemoryData() throws {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let feature = DataClearableFeatureMock()
+        try core.register(feature: feature)
+
+        core.clearAllData()
+
+        XCTAssertEqual(feature.clearCount, 1)
     }
 
     func testItClearUserInfo() {

@@ -61,7 +61,9 @@ extension RUM.Configuration {
         override(\.longTaskThreshold, with: rum.longTask)
         override(\.appHangThreshold, with: rum.appHang)
         override(\.trackSlowFrames, with: rum.trackSlowFrames)
+        #if !os(macOS)
         override(\.trackWatchdogTerminations, with: rum.trackWatchdogTerminations)
+        #endif
         override(\.vitalsUpdateFrequency, with: rum.vitalsUpdateFrequency.map { VitalsFrequency($0) })
         override(\.urlSessionTracking, with: rum.trackResources)
         #if !os(watchOS)

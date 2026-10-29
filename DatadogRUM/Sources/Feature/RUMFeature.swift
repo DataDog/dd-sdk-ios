@@ -77,6 +77,9 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         let bundleType = BundleType(bundle: configuration.bundle)
         var watchdogTermination: WatchdogTerminationMonitor?
+        #if !os(macOS)
+        // The heuristic relies on the iOS app lifecycle. On macOS it can label an abrupt termination,
+        // like a force quit of a hung app, as a watchdog kill, so it never runs there.
         if bundleType == .iOSApp,
             configuration.trackWatchdogTerminations {
             let monitor = WatchdogTerminationMonitor(
@@ -95,6 +98,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             )
             watchdogTermination = monitor
         }
+        #endif
 
         var renderLoopObserver: RenderLoopObserver? = nil
         var accessibilityReader: AccessibilityReading? = nil
@@ -111,6 +115,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             frameInfoProviderFactory: configuration.frameInfoProviderFactory
         )
         #endif
+
+        // Slow frames are measured on the render loop. Without an observer (macOS and watchOS for now),
+        // tracking them would report an empty, perfectly smooth view instead of no data.
+        let tracksSlowFrames = configuration.trackSlowFrames && renderLoopObserver != nil
 
         let distributedTracing: (FirstPartyHosts, SampleRate)? = {
             switch configuration.urlSessionTracking?.firstPartyHostsTracing {
@@ -167,6 +175,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             sampler: DeterministicSampler(uuid: initialSessionUUID.rawValue, samplingRate: sessionSampleRate)
         )
 
+        var replayState: HasReplayMessageReceiver?
         let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
             let effectiveCollectTypes = timeseries.effectiveCollectTypes
             // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
@@ -175,6 +184,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             guard !effectiveCollectTypes.isEmpty else {
                 return nil
             }
+            let collectorReplayState = HasReplayMessageReceiver()
+            replayState = collectorReplayState
             return TimeseriesSessionCollector(
                 memoryReader: VitalMemoryReader(),
                 featureScope: featureScope,
@@ -183,7 +194,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 syntheticsTest: syntheticsTest,
                 sessionSampleRate: Double(sessionSampleRate),
                 now: { configuration.dateProvider.now },
-                mediaTimeProvider: configuration.mediaTimeProvider
+                mediaTimeProvider: configuration.mediaTimeProvider,
+                replayState: collectorReplayState
             )
         }
 
@@ -206,7 +218,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
-                configuration.trackSlowFrames
+                tracksSlowFrames
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
@@ -223,7 +235,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 )
                 viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
 
-                if configuration.trackSlowFrames {
+                if tracksSlowFrames {
                     viewEndedController.add(
                         metric: ViewHitchesMetric(
                             maxCount: ViewHitchesReader.Constants.maxCollectedHitches,
@@ -262,7 +274,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider
+            dateProvider: configuration.dateProvider,
+            replayState: replayState
         )
 
         timeseriesCollector?.activeContextReader = monitor
@@ -389,7 +402,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
+                viewCache: dependencies.viewCache,
+                timeseriesCollector: timeseriesCollector
             ),
             CrashReportReceiver(
                 featureScope: featureScope,
@@ -414,8 +428,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             messageReceivers.append(watchdogTermination)
         }
 
-        if timeseriesCollector != nil {
-            messageReceivers.append(HasReplayMessageReceiver(monitor: monitor))
+        if let replayState = replayState {
+            messageReceivers.append(replayState)
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)

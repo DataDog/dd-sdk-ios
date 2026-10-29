@@ -56,7 +56,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     isSampled: state.isSampled,
                     isInitialSession: state.isInitialSession,
                     hasTrackedAnyView: true,
-                    didStartWithReplay: state.didStartWithReplay
+                    didStartWithReplay: state.didStartWithReplay,
+                    hasTimeseries: state.hasTimeseries
                 )
             }
         }
@@ -74,6 +75,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private lazy var featureOperationManager: RUMFeatureOperationManager = {
         RUMFeatureOperationManager(parent: self, dependencies: dependencies, sessionSampler: sampler)
     }()
+
+    #if !os(macOS) && !os(watchOS)
     /// App launch manager to process TTID and TTFD commands.
     private lazy var appLaunchManager: RUMAppLaunchManager = {
         RUMAppLaunchManager(
@@ -82,6 +85,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             telemetryController: AppLaunchMetricController(telemetry: dependencies.telemetry)
         )
     }()
+    #endif
 
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
@@ -317,10 +321,27 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // Make sure sessions end even if they are not sampled
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
+                dependencies.fatalErrorContext.sessionDidStop()
                 return false // end this session (no longer keep the session scope)
             }
 
             return true // keep this session until it gets ended by any `endReason`
+        }
+
+        // Persist that this session has timeseries data, so a crash reported in the next process can tell.
+        // Only the active session publishes it: an ended session kept for pending resources must not replace
+        // the state of the session that follows it.
+        if isActive,
+           !state.hasTimeseries,
+           dependencies.timeseriesCollector?.hasCollectedData(sessionID: sessionUUID.toRUMDataFormat) == true {
+            state = RUMSessionState(
+                sessionUUID: state.sessionUUID,
+                isSampled: state.isSampled,
+                isInitialSession: state.isInitialSession,
+                hasTrackedAnyView: state.hasTrackedAnyView,
+                didStartWithReplay: state.didStartWithReplay,
+                hasTimeseries: true
+            )
         }
 
         var deactivating = false
@@ -330,6 +351,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
+                dependencies.fatalErrorContext.sessionDidStop()
 
             case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
@@ -337,10 +359,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
-                appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
-                appLaunchManager.process(command, context: context, writer: writer)
                 dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
@@ -358,12 +378,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     activeView: activeView
                 )
             case let command as RUMTimeToInitialDisplayCommand:
+                #if !os(macOS) && !os(watchOS)
                 appLaunchManager.process(command, context: context, writer: writer, activeView: activeView)
+                #endif
                 dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
                 // command doesn't need to be propagated to other scopes
                 return true
             case let command as RUMTimeToFullDisplayCommand:
+                #if !os(macOS) && !os(watchOS)
                 appLaunchManager.process(command, context: context, writer: writer, activeView: activeView)
+                #endif
                 // command doesn't need to be propagated to other scopes
                 return true
             default:
