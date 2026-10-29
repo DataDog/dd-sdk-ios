@@ -37,19 +37,10 @@ final class FlagsTests: XCTestCase {
         let evaluationEndpoint = try XCTUnwrap(URL(string: "https://evaluations.example.com"))
 
         // When
-        // The initializer that releases before flag selection exported, called with every argument.
-        let config = Flags.Configuration(
-            gracefulModeEnabled: false,
-            customFlagsEndpoint: flagsEndpoint,
-            customFlagsHeaders: ["key": "value"],
-            initializationTimeout: 2.5,
-            customExposureEndpoint: exposureEndpoint,
-            trackExposures: false,
-            customEvaluationEndpoint: evaluationEndpoint,
-            trackEvaluations: false,
-            evaluationFlushInterval: 30,
-            rumIntegrationEnabled: false
-        )
+        // A reference by full name never fills in default arguments, so it binds only to the 10-parameter initializer.
+        let makeConfiguration: (Bool, URL?, [String: String]?, TimeInterval?, URL?, Bool, URL?, Bool, TimeInterval, Bool) -> Flags.Configuration =
+            Flags.Configuration.init(gracefulModeEnabled:customFlagsEndpoint:customFlagsHeaders:initializationTimeout:customExposureEndpoint:trackExposures:customEvaluationEndpoint:trackEvaluations:evaluationFlushInterval:rumIntegrationEnabled:)
+        let config = makeConfiguration(false, flagsEndpoint, ["key": "value"], 2.5, exposureEndpoint, false, evaluationEndpoint, false, 30, false)
 
         // Then
         XCTAssertFalse(config.gracefulModeEnabled)
