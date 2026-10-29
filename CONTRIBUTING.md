@@ -32,6 +32,18 @@ Your Pull Request will be run through our CI pipeline, and a project member will
 
 Make sure that your code is clean and readable, that your commits are small and atomic, with a proper commit message.
 
+### Review process
+
+Every Pull Request goes through two review stages: AI review first, then human review.
+
+1. **Open your PR as a draft** while you are still working on it.
+2. **Mark the PR as "Ready for review"** once it is complete and CI is green. This triggers automated reviews from Codex and GitHub Copilot.
+3. **Address the AI review comments.** Fix the valid findings, and reply to (and resolve) the ones you disagree with, so the human reviewer can see what was considered.
+4. **Add the `ready-for-human-review` label** once the AI reviews are addressed. Every morning, a bot assigns a project member as reviewer to PRs carrying this label.
+5. **Iterate with the human reviewer** until the PR is approved and merged.
+
+Do not add the `ready-for-human-review` label before the AI review comments are addressed. Human reviewers expect the PR to be in its final shape.
+
 ## Shall we start?
 
 🏗 The easiest way to start is to run `make` command:
