@@ -15,11 +15,15 @@
 extern "C" {
 #endif
 
-#define DD_MEMORY_ALLOCATION_WINDOW_CAPACITY 4096
+static const size_t DD_MEMORY_ALLOCATION_WINDOW_CAPACITY = 4096;
 static const size_t DD_MEMORY_AGGREGATION_CAPACITY =
     DD_MEMORY_ALLOCATION_WINDOW_CAPACITY + DD_MEMORY_LIVE_SET_CAPACITY;
 
+#ifdef __cplusplus
+typedef class dd_memory_allocation_window dd_memory_allocation_window_t;
+#else
 typedef struct dd_memory_allocation_window dd_memory_allocation_window_t;
+#endif
 
 /// Aggregation key: allocation stack, class identity and allocation source.
 /// Obj-C class names are owned by the closed window. Swift class names resolve
