@@ -79,7 +79,7 @@ struct dd_memory_live_snapshot {
     dd_memory_live_set_diagnostics_t diagnostics() const { return captured_diagnostics; }
 
 private:
-    friend struct dd_memory_live_set;
+    friend class dd_memory_live_set;
 
     std::array<dd_memory_live_sample_t, kCapacity> samples;
     std::array<char, kMaxSnapshotNameBytes> class_names;
@@ -89,7 +89,8 @@ private:
 static_assert(std::is_trivial<dd_memory_live_snapshot_t>::value,
               "snapshot creation must not initialize unused buffers");
 
-struct dd_memory_live_set {
+class dd_memory_live_set {
+public:
     static dd_memory_live_set_t *create();
     dd_memory_live_set() = default;
     ~dd_memory_live_set() {
