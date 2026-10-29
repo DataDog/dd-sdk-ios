@@ -25,7 +25,11 @@ extern "C" {
 #define DD_MEMORY_LIVE_SET_MAX_FRAMES 64
 #define DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES 128
 
+#ifdef __cplusplus
+typedef class dd_memory_live_set dd_memory_live_set_t;
+#else
 typedef struct dd_memory_live_set dd_memory_live_set_t;
+#endif
 typedef struct dd_memory_live_snapshot dd_memory_live_snapshot_t;
 
 typedef enum {
