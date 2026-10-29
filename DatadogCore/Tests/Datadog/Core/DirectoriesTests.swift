@@ -142,9 +142,10 @@ class DirectoriesTests: XCTestCase {
         defer { coreDirectory.delete() }
 
         // Then
-        let appDirectory = coreDirectory.coreDirectory.url
-            .deletingLastPathComponent() // v2
-            .deletingLastPathComponent() // com.datadoghq
+        let appDirectory = coreDirectory.coreDirectory.url // <app>/com.datadoghq/v2/<instance>
+            .deletingLastPathComponent() // <app>/com.datadoghq/v2
+            .deletingLastPathComponent() // <app>/com.datadoghq
+            .deletingLastPathComponent() // <app>
         XCTAssertTrue(appDirectory.lastPathComponent.hasPrefix("helper-"))
         XCTAssertEqual(appDirectory.deletingLastPathComponent().path, directory.url.path)
     }
