@@ -35,16 +35,14 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
             queue: firstSessionQueue
         )
 
-        // RUM view update before start, this must be ignored
+        // RUM view update before start, this must wait for the previous-launch check
         let viewEvent1: RUMViewEvent = .mockRandom()
         sut.update(viewEvent: viewEvent1)
 
         // monitor reveives the launch report
         _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
-        // Flush the queue to ensure the monitor has transitioned to `.started`
-        // before updating the view event. Without this, the update would be
-        // dropped because the monitor is still in `.starting` state.
+        // Finish checking the previous launch before updating the current view.
         firstSessionQueue.sync {}
 
         // RUM view update after start
@@ -64,7 +62,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
             didSend: didSend
         )
 
-        // RUM view update before start, this must be ignored
+        // RUM view update before start, this must wait for the previous-launch check
         let viewEvent3: RUMViewEvent = .mockRandom()
         sut.update(viewEvent: viewEvent3)
 
@@ -314,6 +312,106 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         // Then
         XCTAssertEqual(sut.currentState, .started)
         XCTAssertNil(reporter.sendParams)
+    }
+
+    func testGivenStopBeforeFirstContext_whenMonitorStarts_itReportsPreviousLaunchThenSavesStop() throws {
+        // Given
+        let queue = DispatchQueue(label: "com.datadoghq.tests.startup")
+        givenDefaultApp(didSend: XCTestExpectation(description: "Previous launch"), queue: queue)
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        queue.sync {}
+        let previousView: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: previousView)
+        givenDefaultApp(didSend: XCTestExpectation(description: "Previous launch reported"), queue: queue)
+        let stoppedView: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: stoppedView)
+        sut.sessionDidStop(sessionID: stoppedView.session.id)
+        sut.update(viewEvent: stoppedView)
+        sut.sessionDidComplete(sessionID: stoppedView.session.id)
+
+        // When
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        queue.sync {}
+
+        // Then
+        let report = try XCTUnwrap(reporter.sendParams)
+        XCTAssertEqual(report.viewEvent.view.id, previousView.view.id)
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
+    }
+
+    func testGivenResumedViewBeforeFirstContext_whenStoppedSessionUpdates_itSavesResumedView() throws {
+        // Given
+        let queue = DispatchQueue(label: "com.datadoghq.tests.startup")
+        featureScope.rumDataStore.setValue(Optional<RUMViewEvent>.none, forKey: .watchdogRUMViewEvent)
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"), queue: queue)
+        let stoppedView: RUMViewEvent = .mockRandom()
+        sut.sessionDidStop(sessionID: stoppedView.session.id)
+        let resumedView: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: resumedView)
+        sut.update(viewEvent: stoppedView)
+        var beforeStart: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { beforeStart = $0 }
+        XCTAssertNil(try XCTUnwrap(beforeStart))
+
+        // When
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        queue.sync {}
+
+        // Then
+        var savedView: RUMViewEvent?
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        let view = try XCTUnwrap(savedView)
+        XCTAssertEqual(view.view.id, resumedView.view.id)
+    }
+
+    func testGivenMonitorStoppedBeforeFirstContext_whenContextArrives_itIgnoresPendingUpdates() throws {
+        // Given
+        let queue = DispatchQueue(label: "com.datadoghq.tests.startup")
+        let previousView: RUMViewEvent = .mockRandom()
+        featureScope.rumDataStore.setValue(previousView, forKey: .watchdogRUMViewEvent)
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"), queue: queue)
+        sut.sessionDidStop(sessionID: previousView.session.id)
+        sut.update(viewEvent: .mockRandom())
+        sut.stop()
+
+        // When
+        sut.sessionDidStop(sessionID: UUID.mockRandom().uuidString.lowercased())
+        sut.update(viewEvent: .mockRandom())
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        queue.sync {}
+
+        // Then
+        XCTAssertEqual(sut.currentState, .stopped)
+        var savedView: RUMViewEvent?
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        let view = try XCTUnwrap(savedView)
+        XCTAssertEqual(view.view.id, previousView.view.id)
+    }
+
+    func testGivenMonitorStarting_whenStopped_itDoesNotSavePendingUpdates() throws {
+        // Given
+        let queue = DispatchQueue(label: "com.datadoghq.tests.startup")
+        let previousView: RUMViewEvent = .mockRandom()
+        featureScope.rumDataStore.setValue(previousView, forKey: .watchdogRUMViewEvent)
+        givenDefaultApp(didSend: XCTestExpectation(description: "No watchdog report expected"), queue: queue)
+        queue.suspend()
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        sut.sessionDidStop(sessionID: previousView.session.id)
+        sut.update(viewEvent: .mockRandom())
+
+        // When
+        sut.stop()
+        queue.resume()
+        queue.sync {}
+
+        // Then
+        XCTAssertEqual(sut.currentState, .stopped)
+        var savedView: RUMViewEvent?
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        let view = try XCTUnwrap(savedView)
+        XCTAssertEqual(view.view.id, previousView.view.id)
     }
 
     // MARK: Helpers

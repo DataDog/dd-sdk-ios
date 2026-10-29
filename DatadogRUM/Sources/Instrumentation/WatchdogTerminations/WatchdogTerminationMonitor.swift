@@ -11,9 +11,11 @@ import DatadogInternal
 internal final class WatchdogTerminationMonitor {
     /// The state of the Watchdog Termination Monitor.
     enum State {
+        /// The monitor is waiting for the first launch report. RUM updates are buffered.
+        case initialized
         /// The monitor has started and is listening to the changes.
         case started
-        /// The monitor is starting. It is still not listening to the changes.
+        /// The monitor is checking the previous launch. RUM updates are buffered.
         case starting
         /// The monitor has stopped and is not listening to the changes.
         case stopped
@@ -43,9 +45,9 @@ internal final class WatchdogTerminationMonitor {
     private struct Tracking {
         /// Stopped sessions whose scopes can still emit view updates.
         var stoppedSessionIDs: Set<String> = []
-        /// The last view update received while the monitor is starting. It is saved once the monitor has started.
+        /// The last view update received before startup completes. It is saved once the monitor has started.
         var pendingViewEvent: RUMViewEvent?
-        /// If the RUM session was stopped while the monitor is starting. The stop is saved once the monitor has started.
+        /// If the RUM session was stopped before startup completes. The stop is saved once the monitor has started.
         var hasPendingSessionStop = false
     }
 
@@ -64,17 +66,23 @@ internal final class WatchdogTerminationMonitor {
         self.feature = feature
         self.reporter = reporter
         self.storage = storage
-        self.currentState = .stopped
+        self.currentState = .initialized
     }
 
     /// Starts the Watchdog Termination Monitor.
     /// - Parameter launchReport: The launch report containing information about the app launch (if available).
     func start(launchReport: LaunchReport) {
-        guard currentState == .stopped else {
+        var shouldStart = false
+        _tracking.mutate { _ in
+            guard currentState == .initialized else {
+                return
+            }
+            currentState = .starting
+            shouldStart = true
+        }
+        guard shouldStart else {
             return
         }
-
-        currentState = .starting
         sendWatchTerminationIfFound(launch: launchReport) { [weak self] in
             self?.didStart()
         }
@@ -83,6 +91,9 @@ internal final class WatchdogTerminationMonitor {
     /// Marks the monitor as started and saves the stop and the view update received while it was starting.
     private func didStart() {
         _tracking.mutate { tracking in
+            guard currentState == .starting else {
+                return
+            }
             currentState = .started
             if tracking.hasPendingSessionStop {
                 tracking.hasPendingSessionStop = false
@@ -112,7 +123,7 @@ internal final class WatchdogTerminationMonitor {
             switch currentState {
             case .started:
                 save(viewEvent: viewEvent)
-            case .starting:
+            case .initialized, .starting:
                 // The saved view event might be currently used to report the Watchdog Termination event,
                 // so the update is saved once the monitor has started.
                 tracking.pendingViewEvent = viewEvent
@@ -134,7 +145,7 @@ internal final class WatchdogTerminationMonitor {
             switch currentState {
             case .started:
                 saveSessionStop()
-            case .starting:
+            case .initialized, .starting:
                 // The saved stop might be currently used to report the Watchdog Termination event,
                 // so it is saved once the monitor has started.
                 tracking.hasPendingSessionStop = true
@@ -205,7 +216,11 @@ internal final class WatchdogTerminationMonitor {
 
     /// Stops the Watchdog Termination Monitor.
     func stop() {
-        currentState = .stopped
+        _tracking.mutate { tracking in
+            currentState = .stopped
+            tracking.pendingViewEvent = nil
+            tracking.hasPendingSessionStop = false
+        }
     }
 }
 
@@ -231,7 +246,7 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
             return false
         }
 
-        if currentState == .stopped {
+        if currentState == .initialized {
             guard let launchReport = context.additionalContext(ofType: LaunchReport.self) else {
                 return false
             }
