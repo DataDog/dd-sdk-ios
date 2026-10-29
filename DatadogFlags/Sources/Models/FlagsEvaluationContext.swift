@@ -123,11 +123,9 @@ internal enum ExperimentationOptOut: Equatable, Codable {
             throw FlagsError.invalidContext
         }
         let normalized = timestamp.uppercased()
-        let fields = normalized.prefix(19).split { !$0.isNumber }.compactMap { Int($0) }
-        guard fields.count == 6 else { throw FlagsError.invalidContext }
-        guard (1...12).contains(fields[1]),
-              (1...daysInMonth(fields[1], year: fields[0])).contains(fields[2]),
-              fields[3] < 24, fields[4] < 60, fields[5] < 60 else { throw FlagsError.invalidContext }
+        let wholeSecond = String(normalized.prefix(19))
+        guard let date = wholeSecondFormatter.date(from: wholeSecond),
+              wholeSecondFormatter.string(from: date) == wholeSecond else { throw FlagsError.invalidContext }
         var offsetMinutes = 0
         if normalized.last != "Z" {
             let offset = normalized.suffix(5).split(separator: ":").compactMap { Int($0) }
@@ -135,7 +133,8 @@ internal enum ExperimentationOptOut: Equatable, Codable {
             offsetMinutes = (offset[0] * 60 + offset[1]) * (normalized.suffix(6).first == "-" ? -1 : 1)
         }
         let offset = normalized.last == "Z" ? "Z" : String(normalized.suffix(6))
-        let wholeSecond = try normalizedWholeSecond(fields, offsetMinutes: offsetMinutes)
+        let utcDate = date.addingTimeInterval(TimeInterval(-offsetMinutes * 60))
+        guard timestampRange.contains(utcDate.timeIntervalSince1970) else { throw FlagsError.invalidContext }
         var fraction = String(normalized.dropFirst(19).dropLast(offset.count))
         // Match the edge's nanosecond resolution by truncating finer fractional digits.
         if fraction.count > 10 {
@@ -143,48 +142,22 @@ internal enum ExperimentationOptOut: Equatable, Codable {
         }
         while fraction.last == "0" { fraction.removeLast() }
         if fraction == "." { fraction = "" }
-        return wholeSecond + fraction + "Z"
+        return wholeSecondFormatter.string(from: utcDate) + fraction + "Z"
     }
 
-    private static func daysInMonth(_ month: Int, year: Int) -> Int {
-        switch month {
-        case 2: return year.isMultiple(of: 4) && (!year.isMultiple(of: 100) || year.isMultiple(of: 400)) ? 29 : 28
-        case 4, 6, 9, 11: return 30
-        default: return 31
-        }
-    }
+    // UTC seconds from 0000-01-01 inclusive to 10000-01-01 exclusive.
+    private static let timestampRange: Range<TimeInterval> = -62_167_219_200..<253_402_300_800
 
-    private static func normalizedWholeSecond(_ fields: [Int], offsetMinutes: Int) throws -> String {
-        // Foundation calendars have a historical cutover and no year zero. The shared
-        // timestamp contract uses proleptic Gregorian dates, including leap year 0000.
-        var year = fields[0]
-        var month = fields[1]
-        var day = fields[2]
-        var minutes = fields[3] * 60 + fields[4] - offsetMinutes
-        if minutes < 0 {
-            minutes += 24 * 60
-            day -= 1
-            if day == 0 {
-                month -= 1
-                if month == 0 {
-                    year -= 1
-                    month = 12
-                }
-                day = daysInMonth(month, year: year)
-            }
-        } else if minutes >= 24 * 60 {
-            minutes -= 24 * 60
-            day += 1
-            if day > daysInMonth(month, year: year) {
-                day = 1
-                month += 1
-                if month == 13 {
-                    year += 1
-                    month = 1
-                }
-            }
-        }
-        guard (0...9_999).contains(year) else { throw FlagsError.invalidContext }
-        return String(format: "%04d-%02d-%02dT%02d:%02d:%02d", year, month, day, minutes / 60, minutes % 60, fields[5])
-    }
+    private static let wholeSecondFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        // Apply Gregorian rules across the supported range, including dates before 1582.
+        formatter.gregorianStartDate = Date(timeIntervalSince1970: timestampRange.lowerBound)
+        // The extended year field includes year zero. Keep fractional seconds out of Date.
+        formatter.dateFormat = "uuuu-MM-dd'T'HH:mm:ss"
+        formatter.isLenient = false
+        return formatter
+    }()
 }
