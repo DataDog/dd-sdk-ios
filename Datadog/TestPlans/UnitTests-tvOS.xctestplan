@@ -1,0 +1,209 @@
+{
+  "configurations" : [
+    {
+      "id" : "1B8A9751-8AF7-583F-97D9-FD989BB7AFE9",
+      "name" : "Configuration",
+      "options" : {}
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "D23039A4298D513C001A1FA3",
+          "name" : "DatadogInternal"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "D29A9F3329DD84AA005C54A4",
+          "name" : "DatadogRUM"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "D207317B29A5226A00ECBF94",
+          "name" : "DatadogLogs"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "D25EE93329C4C3C300CE3839",
+          "name" : "DatadogTrace"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "5BA8C2EC2E784B3C00B1DA80",
+          "name" : "DatadogFlags"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "D229FF8B2E3BC6D4009CCD62",
+          "name" : "DatadogProfiling"
+        }
+      ]
+    },
+    "environmentVariableEntries" : [
+      {
+        "key" : "DD_TEST_RUNNER",
+        "value" : "$(DD_TEST_RUNNER)"
+      },
+      {
+        "key" : "DD_API_KEY",
+        "value" : "$(DD_API_KEY)"
+      },
+      {
+        "key" : "DD_ENV",
+        "value" : "$(DD_ENV)"
+      },
+      {
+        "key" : "DD_SERVICE",
+        "value" : "$(DD_SERVICE)"
+      },
+      {
+        "key" : "SRCROOT",
+        "value" : "$(SRCROOT)"
+      },
+      {
+        "key" : "DD_ENABLE_STDOUT_INSTRUMENTATION",
+        "value" : "$(DD_ENABLE_STDOUT_INSTRUMENTATION)"
+      },
+      {
+        "key" : "DD_ENABLE_STDERR_INSTRUMENTATION",
+        "value" : "$(DD_ENABLE_STDERR_INSTRUMENTATION)"
+      },
+      {
+        "key" : "DD_DISABLE_NETWORK_INSTRUMENTATION",
+        "value" : "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
+      },
+      {
+        "key" : "DD_DISABLE_RUM_INTEGRATION",
+        "value" : "$(DD_DISABLE_RUM_INTEGRATION)"
+      },
+      {
+        "key" : "DD_DISABLE_SOURCE_LOCATION",
+        "value" : "$(DD_DISABLE_SOURCE_LOCATION)"
+      },
+      {
+        "key" : "DD_DISABLE_CRASH_HANDLER",
+        "value" : "$(DD_DISABLE_CRASH_HANDLER)"
+      },
+      {
+        "key" : "DD_GIT_REPOSITORY_URL",
+        "value" : "$(DD_GIT_REPOSITORY_URL)"
+      },
+      {
+        "key" : "DD_TRACE_DEBUG",
+        "value" : "$(DD_TRACE_DEBUG)"
+      },
+      {
+        "key" : "GITLAB_CI",
+        "value" : "$(GITLAB_CI)"
+      },
+      {
+        "key" : "CI_PROJECT_DIR",
+        "value" : "$(CI_PROJECT_DIR)"
+      },
+      {
+        "key" : "CI_JOB_STAGE",
+        "value" : "$(CI_JOB_STAGE)"
+      },
+      {
+        "key" : "CI_JOB_NAME",
+        "value" : "$(CI_JOB_NAME)"
+      },
+      {
+        "key" : "CI_JOB_URL",
+        "value" : "$(CI_JOB_URL)"
+      },
+      {
+        "key" : "CI_PIPELINE_ID",
+        "value" : "$(CI_PIPELINE_ID)"
+      },
+      {
+        "key" : "CI_PIPELINE_IID",
+        "value" : "$(CI_PIPELINE_IID)"
+      },
+      {
+        "key" : "CI_PIPELINE_URL",
+        "value" : "$(CI_PIPELINE_URL)"
+      },
+      {
+        "key" : "CI_PROJECT_PATH",
+        "value" : "$(CI_PROJECT_PATH)"
+      },
+      {
+        "key" : "CI_COMMIT_SHA",
+        "value" : "$(CI_COMMIT_SHA)"
+      },
+      {
+        "key" : "CI_COMMIT_BRANCH",
+        "value" : "$(CI_COMMIT_BRANCH)"
+      },
+      {
+        "key" : "CI_COMMIT_TAG",
+        "value" : "$(CI_COMMIT_TAG)"
+      },
+      {
+        "key" : "CI_COMMIT_MESSAGE",
+        "value" : "$(CI_COMMIT_MESSAGE)"
+      },
+      {
+        "key" : "CI_COMMIT_AUTHOR",
+        "value" : "$(CI_COMMIT_AUTHOR)"
+      },
+      {
+        "key" : "CI_COMMIT_TIMESTAMP",
+        "value" : "$(CI_COMMIT_TIMESTAMP)"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Datadog.xcodeproj",
+      "identifier" : "D23039A4298D513C001A1FA3",
+      "name" : "DatadogInternal"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "D2DA2389298D588800C6C7E6",
+        "name" : "DatadogInternalTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "D29A9F3A29DD84AB005C54A4",
+        "name" : "DatadogRUMTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "D207318229A5226A00ECBF94",
+        "name" : "DatadogLogsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "D25EE93A29C4C3C300CE3839",
+        "name" : "DatadogTraceTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "5BF228272E795D6500D79E8A",
+        "name" : "DatadogFlagsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "D2C9F0382E3B89D7008397FD",
+        "name" : "DatadogProfilingTests"
+      }
+    }
+  ],
+  "version" : 1
+}

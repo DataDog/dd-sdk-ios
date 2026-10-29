@@ -113,19 +113,9 @@ test-ios:
 	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all iOS schemes
+# Run unit tests for all iOS modules, using the test plans of the 'UnitTests-iOS' scheme
 test-ios-all:
-	@$(MAKE) test-ios SCHEME="DatadogCore"
-	@$(MAKE) test-ios SCHEME="DatadogInternal"
-	@$(MAKE) test-ios SCHEME="DatadogRUM"
-	@$(MAKE) test-ios SCHEME="DatadogSessionReplay"
-	@$(MAKE) test-ios SCHEME="DatadogLogs"
-	@$(MAKE) test-ios SCHEME="DatadogTrace"
-	@$(MAKE) test-ios SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-ios SCHEME="DatadogFlags"
-	@$(MAKE) test-ios SCHEME="DatadogProfiling"
-	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-ios SCHEME="UnitTests-iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
 test-tvos:
@@ -135,17 +125,9 @@ test-tvos:
 	@:$(eval DEVICE ?= $(DEFAULT_TVOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all tvOS schemes
+# Run unit tests for all tvOS modules, using the test plans of the 'UnitTests-tvOS' scheme
 test-tvos-all:
-	@$(MAKE) test-tvos SCHEME="DatadogCore"
-	@$(MAKE) test-tvos SCHEME="DatadogInternal"
-	@$(MAKE) test-tvos SCHEME="DatadogRUM"
-	@$(MAKE) test-tvos SCHEME="DatadogLogs"
-	@$(MAKE) test-tvos SCHEME="DatadogTrace"
-	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-tvos SCHEME="DatadogFlags"
-	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
-	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-tvos SCHEME="UnitTests-tvOS"
 
 # Run unit tests for specified SCHEME using watchOS Simulator
 test-watchos:
@@ -155,16 +137,9 @@ test-watchos:
 	@:$(eval DEVICE ?= $(DEFAULT_WATCHOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all watchOS schemes
+# Run unit tests for all watchOS modules, using the test plans of the 'UnitTests-watchOS' scheme
 test-watchos-all:
-	@$(MAKE) test-watchos SCHEME="DatadogCore"
-	@$(MAKE) test-watchos SCHEME="DatadogInternal"
-	@$(MAKE) test-watchos SCHEME="DatadogRUM"
-	@$(MAKE) test-watchos SCHEME="DatadogLogs"
-	@$(MAKE) test-watchos SCHEME="DatadogTrace"
-	@$(MAKE) test-watchos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-watchos SCHEME="DatadogFlags"
-	@$(MAKE) test-watchos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-watchos SCHEME="UnitTests-watchOS"
 
 # Run unit tests for specified SCHEME using visionOS Simulator
 test-visionos:
@@ -174,18 +149,9 @@ test-visionos:
 	@:$(eval DEVICE ?= $(DEFAULT_VISIONOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all visionOS schemes
+# Run unit tests for all visionOS modules, using the test plans of the 'UnitTests-visionOS' scheme
 test-visionos-all:
-	@$(MAKE) test-visionos SCHEME="DatadogCore"
-	@$(MAKE) test-visionos SCHEME="DatadogInternal"
-	@$(MAKE) test-visionos SCHEME="DatadogRUM"
-	@$(MAKE) test-visionos SCHEME="DatadogLogs"
-	@$(MAKE) test-visionos SCHEME="DatadogTrace"
-	@$(MAKE) test-visionos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-visionos SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-visionos SCHEME="DatadogFlags"
-	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
-	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-visionos SCHEME="UnitTests-visionOS"
 
 # Run unit tests for specified SCHEME using macOS
 test-macos:
@@ -195,16 +161,9 @@ test-macos:
 	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all schemes ready for macOS so far
+# Run unit tests for all macOS modules, using the test plans of the 'UnitTests-macOS' scheme
 test-macos-all:
-	@$(MAKE) test-macos SCHEME="DatadogInternal"
-	@$(MAKE) test-macos SCHEME="DatadogCore"
-	@$(MAKE) test-macos SCHEME="DatadogRUM"
-	@$(MAKE) test-macos SCHEME="DatadogLogs"
-	@$(MAKE) test-macos SCHEME="DatadogTrace"
-	@$(MAKE) test-macos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-macos SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-macos SCHEME="DatadogFlags"
+	@$(MAKE) test-macos SCHEME="UnitTests-macOS"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
