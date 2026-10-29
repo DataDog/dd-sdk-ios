@@ -19,6 +19,10 @@ internal struct SpanEventBuilder: Sendable {
     let eventsMapper: SpanEventMapper?
     /// If spans should be enriched with the current RUM context.
     let bundleWithRUM: Bool
+    /// Whether client-side stats computation is enabled. When `true`, spans are stamped with
+    /// `meta._dd.compute_stats = "0"` so the backend skips its own (double-counting) computation.
+    /// When `false`, the tag is left as the user or the event mapper set it.
+    let statsComputationEnabled: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
     /// Span attributes encoder
@@ -114,11 +118,15 @@ internal struct SpanEventBuilder: Sendable {
             tags: tags
         )
 
-        if let eventMapper = eventsMapper {
-            return eventMapper(span)
-        } else {
-            return span
+        var event = eventsMapper.map { $0(span) } ?? span
+        // When client-side stats is enabled, the SDK owns `_dd.compute_stats` and (over)writes it to "0".
+        // This runs after the event mapper, so neither a user tag nor a mapper that filters or replaces
+        // tags can reintroduce backend double counting. When it is disabled, the tag is left as the user
+        // or mapper set it, as before client-side stats existed.
+        if statsComputationEnabled {
+            event.tags[SpanTags.computeStats] = "0"
         }
+        return event
     }
 
     // MARK: - Attributes Conversion

@@ -116,7 +116,7 @@ extension CGImage {
             return nil
         }
 
-        config.method = 3
+        config.method = 1
         config.alpha_quality = 100
         config.thread_level = 0
         config.exact = 1

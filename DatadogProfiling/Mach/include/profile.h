@@ -90,7 +90,7 @@ struct label_t {
  * 
  * Represents a single profiling sample containing:
  * - Stack trace as a sequence of location IDs (leaf-to-root order)
- * - Sample timestamp as uptime nanoseconds
+ * - Sample timestamp as monotonic nanoseconds
  * - Associated labels (e.g., thread info)
  * - Sample values (e.g., CPU time, wall time, memory allocation)
  * 
@@ -99,16 +99,16 @@ struct label_t {
  */
 struct sample_t {
     std::vector<uint32_t> location_ids;
-    uint64_t timestamp_uptime_ns;
+    uint64_t timestamp_monotonic_ns;
     std::vector<label_t> labels;
     std::vector<int64_t> values;
 };
 
 /**
- * @brief Calculate uptime to epoch time offset
- * @return Offset to convert uptime nanoseconds to epoch time
+ * @brief Calculate monotonic to epoch time offset
+ * @return Offset to convert monotonic nanoseconds to epoch time
  */
-int64_t uptime_epoch_offset();
+int64_t monotonic_epoch_offset();
 
 /**
  * @brief Convert binary UUID to formatted string representation
@@ -208,7 +208,7 @@ public:
         label_t timestamp_label{};
         timestamp_label.key_id = _end_timestamp_ns_str_id;
         timestamp_label.str_id = 0;
-        timestamp_label.num = uptime_ns_to_epoch_ns(sample.timestamp_uptime_ns);
+        timestamp_label.num = monotonic_ns_to_epoch_ns(sample.timestamp_monotonic_ns);
         timestamp_label.num_unit_id = _nanoseconds_str_id;
         visitor(timestamp_label);
 
@@ -217,11 +217,11 @@ public:
         }
     }
 
-    /** @brief Get profile start timestamp (uptime nanoseconds converted to epoch) */
-    int64_t start_timestamp() const { return uptime_ns_to_epoch_ns(_start_timestamp); };
+    /** @brief Get profile start timestamp (monotonic nanoseconds converted to epoch) */
+    int64_t start_timestamp() const { return monotonic_ns_to_epoch_ns(_start_timestamp); };
 
-    /** @brief Get profile end timestamp (uptime nanoseconds converted to epoch) */
-    int64_t end_timestamp() const { return uptime_ns_to_epoch_ns(_end_timestamp); };
+    /** @brief Get profile end timestamp (monotonic nanoseconds converted to epoch) */
+    int64_t end_timestamp() const { return monotonic_ns_to_epoch_ns(_end_timestamp); };
 
     /**
      * @brief Set the server time correction used for exported timestamps.
@@ -269,23 +269,23 @@ private:
     /** @brief Cached string ID for "thread name" */
     uint32_t _thread_name_str_id;
 
-    /** @brief Offset to convert uptime nanoseconds to epoch time */
+    /** @brief Offset to convert monotonic nanoseconds to epoch time */
     int64_t _epoch_offset;
 
     /** @brief Offset to convert device epoch timestamps to server epoch timestamps */
     int64_t _server_time_offset_ns;
 
-    /** @brief Profile start timestamp (uptime nanoseconds, 0 if no samples) */
+    /** @brief Profile start timestamp (monotonic nanoseconds, 0 if no samples) */
     uint64_t _start_timestamp;
 
-    /** @brief Profile end timestamp (uptime nanoseconds, 0 if no samples) */
+    /** @brief Profile end timestamp (monotonic nanoseconds, 0 if no samples) */
     uint64_t _end_timestamp;
 
     /** @brief Hash table for string deduplication: string -> string_id */
     std::unordered_map<std::string, uint32_t> _string_lookup;
 
-    /** @brief Convert uptime nanoseconds to epoch time in nanoseconds */
-    int64_t uptime_ns_to_epoch_ns(uint64_t uptime_ns) const;
+    /** @brief Convert monotonic nanoseconds to epoch time in nanoseconds */
+    int64_t monotonic_ns_to_epoch_ns(uint64_t monotonic_ns) const;
     
     /** @brief Hash table for mapping deduplication: memory_start -> mapping_id */
     std::unordered_map<uint64_t, uint32_t> _mapping_lookup;

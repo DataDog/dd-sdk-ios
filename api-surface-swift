@@ -325,6 +325,8 @@ public enum Trace
         public var networkInfoEnabled: Bool
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
+        public var customStatsEndpoint: URL?
+        public var featureFlags: FeatureFlags
         public struct URLSessionTracking: Sendable
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public var spanCustomization: SpanCustomization?
@@ -334,7 +336,14 @@ public enum Trace
             public static let defaultRedactedStatusCodes: Set<Int> = [404]
             public var redactedStatusCodes: Set<Int>
             public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes,spanCustomization: SpanCustomization? = nil)
-        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: OTTagValue]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
+        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: OTTagValue]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil,customStatsEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
+[?] extension Trace.Configuration
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+    public enum FeatureFlag: String, Sendable
+        case clientSideStats = "client_side_stats"
+[?] extension Trace.Configuration.FeatureFlags
+    public static var defaults: Self
+    public subscript(flag: Key) -> Bool
 public enum SpanTags
     public static let resource = "resource.name"
     public static let operation = "operation.name"
@@ -1592,12 +1601,21 @@ public final class FlagsClient
 [?] extension FlagsClient: FlagsClientInternal
     public func getFlagAssignments() -> [String: FlagAssignment]?
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+    public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+    public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 public protocol FlagsClientInternal: AnyObject
     func getFlagAssignments() -> [String: FlagAssignment]?
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+    func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+    func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 [?] extension FlagsClientInternal
     public func getFlagAssignments() -> [String: FlagAssignment]?
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+    public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+    public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 public protocol FlagsClientProtocol: AnyObject
     var state: FlagsStateObservable
     func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription

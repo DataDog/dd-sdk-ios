@@ -70,8 +70,13 @@ public final class FlagsClient {
 
     private enum EvaluationError {
         static let providerNotReady = "PROVIDER_NOT_READY"
+        static let providerFatal = "PROVIDER_FATAL"
         static let flagNotFound = "FLAG_NOT_FOUND"
+        static let parseError = "PARSE_ERROR"
         static let typeMismatch = "TYPE_MISMATCH"
+        static let targetingKeyMissing = "TARGETING_KEY_MISSING"
+        static let invalidContext = "INVALID_CONTEXT"
+        static let general = "GENERAL"
     }
 
     private let repository: any FlagsRepositoryProtocol
@@ -81,6 +86,13 @@ public final class FlagsClient {
     private let configuration: Configuration
 
     private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
+    private static let defaultAssignment = FlagAssignment(
+        allocationKey: "",
+        variationKey: "",
+        variation: .unknown(""),
+        reason: "DEFAULT",
+        doLog: false
+    )
 
     internal init(
         repository: any FlagsRepositoryProtocol,
@@ -273,19 +285,12 @@ extension FlagsClient: FlagsClientProtocol {
         let snapshot = repository.evaluationSnapshot(for: key)
         let context = snapshot.context
         let trackEvaluationTelemetry = !configuration.enableEvaluationTelemetryOptOutParameter || !snapshot.telemetryOptedOut
-        let defaultAssignment = FlagAssignment(
-            allocationKey: "",
-            variationKey: "",
-            variation: .unknown(""),
-            reason: "DEFAULT",
-            doLog: false
-        )
 
         guard let context else {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
-                assignment: defaultAssignment,
+                assignment: Self.defaultAssignment,
                 evaluationContext: .empty,
                 flagError: EvaluationError.providerNotReady
             )
@@ -296,7 +301,7 @@ extension FlagsClient: FlagsClientProtocol {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
-                assignment: defaultAssignment,
+                assignment: Self.defaultAssignment,
                 evaluationContext: context,
                 flagError: EvaluationError.flagNotFound
             )
@@ -328,16 +333,14 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
-        exposureLogger.logExposure(
-            for: key,
-            assignment: assignment,
-            evaluationContext: context
-        )
+        sendFlagExposure(key: key, assignment: assignment, context: context)
 
         guard trackEvaluationTelemetry else {
             return
         }
 
+        // Log directly instead of calling sendFlagEvaluationEvent, which would check context again.
+        // During a refresh, that context can be stale; use the snapshot's opt-out policy above.
         evaluationLogger.logEvaluation(
             for: key,
             assignment: assignment,
@@ -385,6 +388,46 @@ extension FlagsClient: FlagsClientInternal {
             context: context,
             trackEvaluationTelemetry: !isEvaluationTelemetryOptedOut(in: context)
         )
+    }
+
+    @_spi(Internal)
+    public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        guard !isEvaluationTelemetryOptedOut(in: context) else {
+            return
+        }
+
+        // Hook errors can contain arbitrary customer data. Only forward standard OpenFeature codes.
+        let sanitizedErrorCode: String?
+        switch errorCode {
+        case nil:
+            sanitizedErrorCode = nil
+        case EvaluationError.providerNotReady, EvaluationError.providerFatal, EvaluationError.flagNotFound,
+             EvaluationError.parseError, EvaluationError.typeMismatch, EvaluationError.targetingKeyMissing,
+             EvaluationError.invalidContext, EvaluationError.general:
+            sanitizedErrorCode = errorCode
+        default:
+            sanitizedErrorCode = EvaluationError.general
+        }
+
+        evaluationLogger.logEvaluation(
+            for: key,
+            assignment: assignment ?? Self.defaultAssignment,
+            evaluationContext: context,
+            flagError: sanitizedErrorCode
+        )
+    }
+
+    @_spi(Internal)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
+        guard !isEvaluationTelemetryOptedOut(in: context) else {
+            return
+        }
+        rumFlagEvaluationReporter.sendFlagEvaluation(flagKey: key, value: variant)
     }
 }
 

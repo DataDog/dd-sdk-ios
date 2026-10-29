@@ -843,6 +843,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     useAllowedTracingOrigins: .mockRandom(),
                     useAllowedTracingUrls: nil,
                     useBeforeSend: nil,
+                    useClientSideStats: .mockRandom(),
                     useCrossSiteSessionCookie: nil,
                     useExcludedActivityUrls: nil,
                     useFirstPartyHosts: .mockRandom(),

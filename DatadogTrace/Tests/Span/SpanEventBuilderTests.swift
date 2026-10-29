@@ -852,4 +852,145 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertNil(span.tags[SpanTags.rumActionID])
         XCTAssertNil(span.tags[SpanTags.rumViewName])
     }
+
+    // MARK: - Client-Side Stats opt-out tag (`_dd.compute_stats`)
+
+    func testWhenStatsComputationIsEnabled_itStampsComputeStatsZero() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: true)
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "Backend should be told to skip its own stats computation")
+    }
+
+    func testWhenStatsComputationIsDisabled_itOmitsComputeStatsTag() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: false)
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertNil(json["meta._dd.compute_stats"], "The tag must be omitted so the backend keeps computing stats (backwards-compatible default)")
+    }
+
+    func testWhenStatsComputationIsEnabled_aUserComputeStatsTagCannotOverrideTheOptOut() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: true)
+
+        // When the user tries to set the reserved `_dd.compute_stats` tag to a non-"0" value
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: ["_dd.compute_stats": "1"],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then the SDK-owned opt-out wins; the user value is dropped so the backend cannot
+        // be told to recompute stats (which would reintroduce double counting).
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "The user tag must not override the SDK opt-out")
+    }
+
+    func testWhenStatsComputationIsDisabled_aUserComputeStatsTagIsKept() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: false)
+
+        // When the user tries to set the reserved `_dd.compute_stats` tag while CSS is disabled
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: ["_dd.compute_stats": "0"],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then the user value is uploaded unchanged, as before client-side stats existed.
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "With client-side stats disabled, the SDK must not change a user-set tag")
+    }
+
+    func testWhenTheEventMapperChangesOrRemovesComputeStats_theSDKValueWinsOnlyWhenStatsAreEnabled() throws {
+        let mappers: [(String, String?, SpanEventMapper)] = [
+            ("removes every tag", nil, { var event = $0; event.tags = [:]; return event }),
+            ("removes the tag", nil, { var event = $0; event.tags.removeValue(forKey: "_dd.compute_stats"); return event }),
+            ("sets the tag to 1", "1", { var event = $0; event.tags["_dd.compute_stats"] = "1"; return event })
+        ]
+        for (label, mappedValue, mapper) in mappers {
+            for statsEnabled in [true, false] {
+                // Given
+                let builder: SpanEventBuilder = .mockWith(eventsMapper: mapper, statsComputationEnabled: statsEnabled)
+
+                // When
+                let span = builder.createSpanEvent(
+                    context: .mockAny(),
+                    traceID: .mockAny(),
+                    spanID: .mockAny(),
+                    parentSpanID: .mockAny(),
+                    operationName: .mockAny(),
+                    startTime: .mockAny(),
+                    finishTime: .mockAny(),
+                    samplingRate: .mockAny(),
+                    samplingPriority: .mockAny(),
+                    samplingDecisionMaker: .mockAny(),
+                    tags: [:],
+                    baggageItems: [:],
+                    logFields: []
+                )
+
+                // Then
+                XCTAssertEqual(span.tags["_dd.compute_stats"], statsEnabled ? "0" : mappedValue, "Mapper \(label), stats enabled: \(statsEnabled)")
+            }
+        }
+    }
 }
