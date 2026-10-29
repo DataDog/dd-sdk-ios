@@ -1,6 +1,5 @@
 # Unreleased
 
-- [FIX] Keep each macOS app's SDK data in its own folder. Before, apps that are not sandboxed and use the same instance name and site shared the SDK storage and crash reports, so one app could upload or delete another app's data. See [#3374][]
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
 - [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3351][]
 - [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
@@ -1329,7 +1328,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 [#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
 [#3317]: https://github.com/DataDog/dd-sdk-ios/pull/3317
-[#3374]: https://github.com/DataDog/dd-sdk-ios/pull/3374
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
