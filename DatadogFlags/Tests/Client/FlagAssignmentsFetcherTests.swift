@@ -78,6 +78,19 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
     }
 
+    func testFutureOptOutRejectsMissingOrWrongDayCutoff() throws {
+        for suffix in ["", #", "dd_experimentation_opt_out_at": "2026-10-22T12:00:00Z""#] {
+            let bytes = Data((#"{"data":{"attributes":{"flags":{},"evaluation_options":{"experimentation_opt_out_mode":"future_experiments_only""# + suffix + "}}}}").utf8)
+            let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: bytes)
+            XCTAssertEqual(response.experimentationOptOutMode, "future_experiments_only")
+            XCTAssertEqual(response.experimentationOptOutAt, suffix.isEmpty ? nil : "2026-10-22T12:00:00Z")
+            XCTAssertFalse(ExperimentationOptOut.accepts(
+                response,
+                for: .futureExperimentsOnly(cutoff: "2026-10-20T12:00:00Z")
+            ), "Accepted missing or wrong-day cutoff: \(suffix)")
+        }
+    }
+
     func testOptedOutRequestRequiresBooleanAcknowledgement() {
         let cases: [(String, Bool, Bool)] = [
             ("", true, false),

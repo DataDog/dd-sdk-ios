@@ -596,8 +596,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     ) {
         let parsedPolicy = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
         let policy = try? parsedPolicy.get()
-        let invalidContext: Bool
-        if case .failure = parsedPolicy { invalidContext = true } else { invalidContext = false }
+        let invalidContext = if case .failure = parsedPolicy { true } else { false }
         var contextUpdateID: UInt64 = 0
         var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false
@@ -631,6 +630,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         Self.publishFirstFlags(publish)
         notifyReconciling?()
         guard !invalidContext else {
+            // Keep validation completions off the caller's stack, consistent with fetch completions.
             DispatchQueue.global(qos: .utility).async { completion(.failure(.invalidContext)) }
             return
         }

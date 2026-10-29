@@ -91,6 +91,39 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testInvalidContextCompletionCanAcquireCallerLock() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let scope = FeatureScopeMock()
+            let repository = FlagsRepository(
+                clientName: UUID().uuidString,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            scope.dataStore.flush()
+            let callerLock = NSLock()
+            let completed = expectation(description: "caller lock remains usable")
+            callerLock.lock()
+            repository.setEvaluationContext(.init(targetingKey: "subject", attributes: [
+                "dd_experimentation_opt_out_at": .string("not-a-time")
+            ])) { result in
+                let acquired = callerLock.lock(before: Date().addingTimeInterval(1))
+                if acquired { callerLock.unlock() }
+                XCTAssertTrue(acquired, "Inline completion cannot acquire the caller-held lock")
+                guard case .failure(.invalidContext) = result else {
+                    completed.fulfill()
+                    return XCTFail("Expected invalid context")
+                }
+                completed.fulfill()
+            }
+            callerLock.unlock()
+            wait(for: [completed], timeout: 2)
+            repository.flush()
+        }
+    }
+
     func testInvalidContextCompletesOffTheCallersQueue() {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             let scope = FeatureScopeMock()
