@@ -232,6 +232,55 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertEqual(debug.attributes?["reason"] as? String, "too_many_values")
     }
 
+    func testFlagAssignmentsWithIgnoredHeaderAndAnUndecodableBodyDoesNotReportIgnoredFlagSelection() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let response = try XCTUnwrap(
+            HTTPURLResponse(
+                url: .mockAny(),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["DD-Flag-Selection-Ignored": "too_many_values"]
+            )
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: featureScope,
+            fetch: { _, completion in
+                completion(.success((Data("not json".utf8), response)))
+            }
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        guard case .failure(.invalidResponse) = capturedResult else {
+            return XCTFail("Expected .invalidResponse, got \(String(describing: capturedResult))")
+        }
+        XCTAssertEqual(dd.logger.errorMessages, [])
+        XCTAssertNil(featureScope.telemetryMock.messages.firstDebug())
+    }
+
+    func testFlagAssignmentsReportsEachIgnoredReasonWithItsOwnTelemetryID() throws {
+        // When
+        let tooManyValues = try XCTUnwrap(reportIgnoredFlagSelection(headerValue: "too_many_values").telemetry.firstDebug())
+        let tagLoadFailed = try XCTUnwrap(reportIgnoredFlagSelection(headerValue: "tag_load_failed").telemetry.firstDebug())
+
+        // Then
+        // Telemetry keeps one event per id in a session, so equal ids would drop the second reason.
+        XCTAssertNotEqual(tooManyValues.id, tagLoadFailed.id)
+    }
+
     func testFlagAssignmentsReportsKnownIgnoredReasons() throws {
         for reason in ["malformed_selection", "too_many_values", "invalid_key_pattern", "invalid_tag", "tag_load_failed"] {
             // When

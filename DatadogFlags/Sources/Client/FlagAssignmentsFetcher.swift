@@ -153,15 +153,24 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     ) {
         switch result {
         case let .success((data, httpResponse)):
-            if requestCarriedFlagSelection,
-               let reason = reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader)) {
-                DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(reason)). Loaded the full flag configuration.")
-                featureScope.telemetry.debug("Flag selection ignored", attributes: ["reason": reason])
-            }
+            let ignoredReason = requestCarriedFlagSelection
+                ? reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader))
+                : nil
             do {
                 let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
                 guard response.obfuscation == nil || supportsObfuscation else {
                     throw FlagsError.invalidResponse
+                }
+
+                // Report an ignored selection only once the full configuration is accepted.
+                if let ignoredReason {
+                    DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(ignoredReason)). Loaded the full flag configuration.")
+                    // One id per reason: telemetry drops a repeated id within a session, so a shared id would hide later reasons.
+                    featureScope.telemetry.debug(
+                        id: "flags:selection-ignored:\(ignoredReason)",
+                        message: "Flag selection ignored",
+                        attributes: ["reason": ignoredReason]
+                    )
                 }
 
                 // Log any flags that failed to decode to telemetry
