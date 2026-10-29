@@ -119,9 +119,11 @@ public enum Flags {
 
         /// Loads only the flags that match these tags or key patterns.
         ///
-        /// The selection is fixed when the feature is enabled. A selection over a limit is not sent:
-        /// the SDK logs an error and loads every flag. If the server ignores the selection, the full configuration
-        /// loads. See ``Flags/FlagSelection`` for the matching rules, limits and fallbacks.
+        /// The selection is fixed when the feature is enabled and applies to every ``FlagsClient``. Flags cached under
+        /// a different selection are not loaded at startup; until the next successful fetch, a client starts without
+        /// cached flags. A selection over a limit is not sent: the SDK logs an error and loads every flag. If the
+        /// server ignores the selection, the full configuration loads. See ``Flags/FlagSelection`` for the matching
+        /// rules, limits and fallbacks.
         ///
         /// Default: `nil` (every flag is loaded).
         public var flagSelection: FlagSelection?
@@ -166,9 +168,8 @@ public enum Flags {
             self.flagSelection = flagSelection
         }
 
-        /// Creates a configuration for the Datadog Flags feature.
-        ///
-        /// Keeps the initializer earlier releases exported, so binaries built against them still link.
+        // Kept so binaries built against earlier releases still link.
+        /// Creates a configuration for the Datadog Flags feature without a flag selection.
         public init(
             gracefulModeEnabled: Bool,
             customFlagsEndpoint: URL?,
