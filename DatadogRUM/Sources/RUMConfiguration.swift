@@ -197,6 +197,7 @@ extension RUM {
         /// Default: `true`.
         public var trackFrustrations: Bool
 
+        #if !os(macOS)
         /// Determines whether RUM events should be tracked when no view is active (including when the app is in the background).
         ///
         /// If enabled, RUM will attach events to an automatically created "background" view.
@@ -205,6 +206,7 @@ extension RUM {
         ///
         /// Default: `false`.
         public var trackBackgroundEvents: Bool
+        #endif
 
         #if !os(macOS)
         /// Determines whether the SDK should track application termination by the watchdog.
@@ -342,7 +344,7 @@ extension RUM {
         /// Default: `true`.
         public var trackAnonymousUser: Bool
 
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         /// Enables the collection of memory warnings.
         ///
         /// When enabled, all the memory warnings are reported as RUM Errors.
@@ -351,12 +353,14 @@ extension RUM {
         public var trackMemoryWarnings: Bool
         #endif
 
+        #if !os(macOS)
         /// Enables the collection of slow frames (view hitches).
         ///
         /// When enabled, captured view hitches are attached to the corresponding RUM view.
         ///
         /// Default: `true`.
         public var trackSlowFrames: Bool
+        #endif
 
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
@@ -652,7 +656,7 @@ extension RUM.Configuration {
     ///   - swiftUIActionsPredicate: The SwiftUI predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`. **Unavailable on watchOS.**
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
-    ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
+    ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`. **Unavailable on macOS.**
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
     ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`. **Unavailable on macOS.**
@@ -669,8 +673,8 @@ extension RUM.Configuration {
     ///   - onSessionStart: RUM session start callback receiving a session ID matching emitted RUM event `session.id`. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
-    ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
-    ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
+    ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`. **Unavailable on watchOS and macOS.**
+    ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`. **Unavailable on macOS.**
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - featureFlags: Experimental feature flags.
@@ -739,7 +743,6 @@ extension RUM.Configuration {
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
-        trackBackgroundEvents: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
@@ -753,8 +756,6 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
-        trackMemoryWarnings: Bool = true,
-        trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         featureFlags: FeatureFlags = .defaults
@@ -766,7 +767,6 @@ extension RUM.Configuration {
         self.swiftUIViewsPredicate = swiftUIViewsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
-        self.trackBackgroundEvents = trackBackgroundEvents
         self.longTaskThreshold = longTaskThreshold
         self.appHangThreshold = appHangThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency
@@ -780,8 +780,6 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
-        self.trackMemoryWarnings = trackMemoryWarnings
-        self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
         self.timeseries = nil

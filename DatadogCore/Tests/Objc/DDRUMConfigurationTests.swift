@@ -180,12 +180,14 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertEqual(swift.trackFrustrations, random)
     }
 
+    #if !os(macOS)
     func testBackgroundEventsTracking() {
         let random: Bool = .mockRandom()
         objc.trackBackgroundEvents = random
         XCTAssertEqual(objc.trackBackgroundEvents, random)
         XCTAssertEqual(swift.trackBackgroundEvents, random)
     }
+    #endif
 
     func testLongTaskThreshold() {
         let random: TimeInterval = .mockRandom()

@@ -56,21 +56,21 @@ extension RUM.Configuration {
 
         override(\.telemetrySampleRate, with: rum.telemetrySampleRate.map { SampleRate($0) })
         override(\.trackAnonymousUser, with: rum.trackAnonymousUser)
-        override(\.trackBackgroundEvents, with: rum.trackBackgroundEvents)
         override(\.trackFrustrations, with: rum.trackFrustrations)
         override(\.longTaskThreshold, with: rum.longTask)
         override(\.appHangThreshold, with: rum.appHang)
-        override(\.trackSlowFrames, with: rum.trackSlowFrames)
         #if !os(macOS)
+        override(\.trackBackgroundEvents, with: rum.trackBackgroundEvents)
+        override(\.trackSlowFrames, with: rum.trackSlowFrames)
         override(\.trackWatchdogTerminations, with: rum.trackWatchdogTerminations)
         #endif
         override(\.vitalsUpdateFrequency, with: rum.vitalsUpdateFrequency.map { VitalsFrequency($0) })
         override(\.urlSessionTracking, with: rum.trackResources)
         #if !os(watchOS)
-        override(\.trackMemoryWarnings, with: rum.trackMemoryWarnings)
         #if os(macOS)
         override(\.macOSActionsPredicate, with: rum.trackUserInteractions)
         #else
+        override(\.trackMemoryWarnings, with: rum.trackMemoryWarnings)
         override(\.uiKitActionsPredicate, with: rum.trackUserInteractions)
         override(\.swiftUIActionsPredicate, with: rum.trackUserInteractions)
         #endif
