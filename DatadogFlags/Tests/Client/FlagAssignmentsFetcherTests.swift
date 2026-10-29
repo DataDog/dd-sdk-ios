@@ -14,6 +14,23 @@ import DatadogInternal
 final class FlagAssignmentsFetcherTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testUnfilteredRequestsRejectMalformedOptOutMetadata() throws {
+        let cases: [(String, Bool)] = [
+            (#""evaluation_options": null"#, true),
+            (#""evaluation_options": {"experimentation_opt_out": null}"#, true),
+            (#""evaluation_options": "immediate""#, false),
+            (#""evaluation_options": 42"#, false),
+            (#""evaluation_options": []"#, false),
+            (#""evaluation_options": {"experimentation_opt_out": "true"}"#, false),
+            (#""evaluation_options": {"experimentation_opt_out": 1}"#, false)
+        ]
+        for (options, accepted) in cases {
+            let bytes = Data(#"{"data":{"attributes":{"flags":{},"#.utf8) + Data(options.utf8) + Data("}}}".utf8)
+            let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: bytes)
+            XCTAssertEqual(ExperimentationOptOut.accepts(response, for: nil), accepted, options)
+        }
+    }
+
     func testOptOutTimestampNormalizesProlepticGregorianDates() throws {
         let cases = [
             ("0000-01-01T00:00:00Z", "0000-01-01T00:00:00Z"),
@@ -143,7 +160,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         let cases: [(String, Bool, Bool)] = [
             ("", true, false),
             (#", "evaluation_options": {"experimentation_opt_out": false}"#, true, false),
-            (#", "evaluation_options": {"experimentation_opt_out": "true"}"#, true, false),
+            (#", "evaluation_options": {"experimentation_opt_out": "true"}"#, false, false),
             (#", "evaluation_options": {"experimentation_opt_out": null}"#, true, false),
             (#", "evaluation_options": {"experimentation_opt_out": true}"#, false, true),
             (#", "evaluation_options": {"experimentation_opt_out_mode": true, "experimentation_opt_out": true}"#, false, false),

@@ -14,6 +14,117 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testInvalidFirstContextPreservesDelayedCacheForLaterValidContext() throws {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            for readBeforeValidContext in [false, true] {
+                let context = FlagsEvaluationContext(targetingKey: "subject")
+                let cached = FlagsData(flags: ["flag": .mockAnyBoolean()], context: context, date: .mockAny())
+                let store = DelayedReadDataStore(storage: [
+                    "client": .value(try JSONEncoder().encode(cached), dataStoreDefaultKeyVersion)
+                ])
+                var scheduledTimeouts = 0
+                let repository = FlagsRepository(
+                    clientName: "client",
+                    flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                        complete(.failure(.networkError(URLError(.notConnectedToInternet))))
+                    },
+                    dateProvider: DateProviderMock(),
+                    featureScope: FeatureScopeMock(dataStore: store),
+                    scheduleInitializationTimeout: { _, _ in
+                        scheduledTimeouts += 1
+                        return {}
+                    },
+                    experimentationOptOutMode: mode
+                )
+                defer { store.resumeRead(); store.flush(); repository.flush() }
+                wait(for: [store.readStarted], timeout: 1)
+                let invalidCompleted = expectation(description: "invalid context")
+                repository.setEvaluationContext(.init(targetingKey: "subject", attributes: [
+                    "dd_experimentation_opt_out_at": .bool(true)
+                ])) { result in
+                    if case .failure(.invalidContext) = result {} else { XCTFail("Expected invalid context") }
+                    invalidCompleted.fulfill()
+                }
+                wait(for: [invalidCompleted], timeout: 1)
+                XCTAssertEqual(repository.state.currentState, .error)
+                if readBeforeValidContext { store.resumeRead(); store.flush() }
+                let validCompleted = expectation(description: "valid context with offline cache")
+                repository.setEvaluationContext(context) { result in
+                    if case .failure(.networkError) = result {} else { XCTFail("Expected network error") }
+                    validCompleted.fulfill()
+                }
+                if !readBeforeValidContext { store.resumeRead(); store.flush() }
+                wait(for: [validCompleted], timeout: 1)
+                XCTAssertEqual(scheduledTimeouts, 0)
+                XCTAssertEqual(repository.state.currentState, .stale)
+                XCTAssertEqual(repository.flagAssignment(for: "flag")?.reason, "CACHED")
+                XCTAssertNil(repository.evaluationSnapshot(for: "flag").error)
+            }
+        }
+    }
+
+    func testValidContextAfterInvalidContextRecovers() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let repository = makeRepository(
+                dataStore: featureScope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, complete in
+                    complete(.success(.init(flags: ["flag": .mockAnyBoolean()])))
+                },
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            featureScope.dataStore.flush()
+            let invalidCompleted = expectation(description: "invalid context")
+            repository.setEvaluationContext(.init(
+                targetingKey: "subject",
+                attributes: ["dd_experimentation_opt_out_at": .bool(true)]
+            )) { result in
+                if case .failure(.invalidContext) = result {} else { XCTFail("Expected invalid context") }
+                invalidCompleted.fulfill()
+            }
+            wait(for: [invalidCompleted], timeout: 1)
+            XCTAssertEqual(repository.state.currentState, .error, "Mode: \(mode)")
+            var result: Result<Void, FlagsError>?
+            repository.setEvaluationContext(.init(targetingKey: "subject")) { result = $0 }
+            guard case .success? = result else {
+                return XCTFail("Expected success, got \(String(describing: result)). Mode: \(mode)")
+            }
+            XCTAssertNil(repository.evaluationSnapshot(for: "flag").error, "Mode: \(mode)")
+            XCTAssertEqual(repository.state.currentState, .ready, "Mode: \(mode)")
+            XCTAssertNotNil(repository.flagAssignment(for: "flag"), "Mode: \(mode)")
+            repository.flush()
+        }
+    }
+
+    func testInvalidFirstContextConsumesInitializationTimeout() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            var scheduledTimeouts = 0
+            let repository = FlagsRepository(
+                clientName: "invalid-first-\(mode)",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                scheduleInitializationTimeout: { _, _ in
+                    scheduledTimeouts += 1
+                    return {}
+                },
+                experimentationOptOutMode: mode
+            )
+            featureScope.dataStore.flush()
+            let invalidCompleted = expectation(description: "invalid context")
+            repository.setEvaluationContext(.init(
+                targetingKey: "subject",
+                attributes: ["dd_experimentation_opt_out_at": .bool(true)]
+            )) { result in
+                if case .failure(.invalidContext) = result {} else { XCTFail("Expected invalid context") }
+                invalidCompleted.fulfill()
+            }
+            wait(for: [invalidCompleted], timeout: 1)
+            repository.setEvaluationContext(.init(targetingKey: "subject")) { _ in }
+            XCTAssertEqual(scheduledTimeouts, 0, "Later calls have no timer. Mode: \(mode)")
+        }
+    }
+
     func testEnabledOptOutWithholdsPreviousSubjectWithoutAttributeWhileRefreshIsPending() {
         for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate, .futureExperimentsOnly] {
             let scope = FeatureScopeMock()
@@ -177,11 +288,14 @@ final class FlagsRepositoryTests: XCTestCase {
             repository.flush()
             scope.dataStore.flush()
             let persisted = try XCTUnwrap(scope.dataStoreMock.value(forKey: "retained")?.data())
+            let invalidCompleted = expectation(description: "invalid context")
             repository.setEvaluationContext(.init(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .null])) { result in
+                defer { invalidCompleted.fulfill() }
                 guard case .failure(.invalidContext) = result else {
                     return XCTFail("Expected invalid context")
                 }
             }
+            wait(for: [invalidCompleted], timeout: 1)
             XCTAssertNil(repository.evaluationSnapshot(for: "flag").assignment)
             repository.flush()
             scope.dataStore.flush()
@@ -354,7 +468,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 }
                 waitForExpectations(timeout: 1)
                 XCTAssertEqual(invalid, mode != .disabled && expected == nil, label)
-                XCTAssertEqual(repository.hasInvalidContext, invalid, label)
+                XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error == .invalidContext, invalid, label)
                 XCTAssertEqual(fetcher.experimentationOptOutRequests, invalid ? [] : [mode != .disabled && expected == true], label)
                 XCTAssertEqual(repository.flagAssignment(for: "flag") == nil, invalid, label)
             }
@@ -513,7 +627,7 @@ final class FlagsRepositoryTests: XCTestCase {
         var invalid = optedOut.attributes
         invalid["dd_experimentation_opt_out_at"] = .bool(true)
         repository.setEvaluationContext(.init(targetingKey: "subject", attributes: invalid)) { _ in }
-        XCTAssertTrue(repository.hasInvalidContext)
+        XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .invalidContext)
         XCTAssertNil(repository.flagAssignment(for: "flag"))
         XCTAssertNil(repository.flagAssignments())
         responses[1](.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], experimentationOptOut: true)))
@@ -2805,8 +2919,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     var callbackCounts = [0, 0]
                     for index in 0..<2 {
                         repository.setEvaluationContext(context) { result in
-                            let superseded = mode != .disabled && index == 0 && latestSucceeds && responseOrder.first == 1
-                            XCTAssertEqual((try? result.get()) != nil, (index == 0 || latestSucceeds) && !superseded)
+                            XCTAssertEqual((try? result.get()) != nil, index == 0 || latestSucceeds)
                             callbackCounts[index] += 1
                         }
                     }

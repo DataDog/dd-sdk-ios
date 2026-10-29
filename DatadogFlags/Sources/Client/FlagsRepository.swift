@@ -519,7 +519,6 @@ internal final class FlagsRepository {
 
 extension FlagsRepository: FlagsRepositoryProtocol {
     var state: FlagsStateObservable { stateManager }
-    var hasInvalidContext: Bool { experimentationOptOutMode != .disabled && repositoryState.hasInvalidContext }
 
     func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
         firstFlags.register(listener)
@@ -610,6 +609,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             contextUpdateID = state.contextUpdateID
             versionAtStart = state.flagsDataVersion
             isFirstContextUpdate = !state.hasStartedEvaluationContextRequest
+            // The first call consumes the initialization timeout even when it sends no request.
+            state.hasStartedEvaluationContextRequest = true
             state.latestRequestedContext = context
             state.requestedOptOut = policy
             state.hasInvalidContext = invalidContext
@@ -619,7 +620,6 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 notifyReconciling = stateManager.updateStateWithoutNotifying(.error)
                 return
             }
-            state.hasStartedEvaluationContextRequest = true
             // Apply the same context check whether the initial disk read wins or loses the race.
             if state.flagsDataVersion == 0 {
                 state.flagsData = state.flagsData(matching: context)
@@ -693,6 +693,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     experimentationOptOutPolicy: policy
                 )
                 var versionAfterSuccess: UInt64?
+                var isServingRequestedContext = false
                 var callbacks: [PendingCacheReadCallback] = []
                 var notifyListeners: (() -> Void)?
                 var publish: (() -> Void)?
@@ -703,6 +704,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     let isFreshForLatestContext = state.latestRequestedContext == context
                         && state.flagsDataVersion == versionAtStart
                     guard isLatestRequest || isFreshForLatestContext else {
+                        // A newer success for the same context and policy still satisfies this request.
+                        isServingRequestedContext = state.readableFlagsData?.context == context
                         return
                     }
                     state.flagsData = flagsData
@@ -714,7 +717,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
                 guard let versionAfterSuccess else {
-                    let result: Result<Void, FlagsError> = self.experimentationOptOutMode == .disabled
+                    let result: Result<Void, FlagsError> = self.experimentationOptOutMode == .disabled || isServingRequestedContext
                         ? .success(()) : .failure(.invalidResponse)
                     complete(result, notifyListeners: nil, completion: operationCompletion)
                     return

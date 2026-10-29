@@ -18,6 +18,8 @@ public enum FlagsError: Error {
     /// The flags service returned an invalid or unexpected response.
     ///
     /// This may indicate a service error or an incompatible API version.
+    /// With experimentation opt-out enabled, this also reports a superseded context request
+    /// when no readable assignments serve that request's context and policy.
     case invalidResponse
 
     /// The flags client was not properly initialized.

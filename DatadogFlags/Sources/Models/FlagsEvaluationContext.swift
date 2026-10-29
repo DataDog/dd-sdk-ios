@@ -94,7 +94,8 @@ internal enum ExperimentationOptOut: Equatable, Codable {
     static func accepts(_ response: FlagAssignmentsResponse, for policy: ExperimentationOptOut?) -> Bool {
         guard let policy else {
             // An unfiltered request must not install assignments filtered for another policy.
-            return response.experimentationOptOut != true
+            return !response.hasMalformedOptOutMetadata
+                && response.experimentationOptOut != true
                 && response.experimentationOptOutMode == nil
                 && response.experimentationOptOutAt == nil
         }

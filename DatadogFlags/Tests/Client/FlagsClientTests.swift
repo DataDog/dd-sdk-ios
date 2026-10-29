@@ -359,11 +359,14 @@ final class FlagsClientTests: XCTestCase {
         let invalid = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .bool(true)])
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             let client = FlagsClient.create(configuration: .init(experimentationOptOutMode: mode), name: "\(mode)", in: core)
+            let completed = expectation(description: "invalid context \(mode)")
             client.setEvaluationContext(invalid) { result in
+                defer { completed.fulfill() }
                 guard case .failure(.invalidContext) = result else {
                     return XCTFail("Configuration must forward the mode")
                 }
             }
+            wait(for: [completed], timeout: 1)
             XCTAssertEqual(client.getDetails(key: "flag", defaultValue: false).error, .invalidContext)
         }
         let original = FlagsClient.create(name: "existing", in: core)

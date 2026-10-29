@@ -11,6 +11,7 @@ internal struct FlagAssignmentsResponse: Equatable {
     let failedFlags: [String: String] // key -> error description
     let obfuscation: FlagKeyObfuscation?
     let experimentationOptOut: Bool?
+    let hasMalformedOptOutMetadata: Bool
     let experimentationOptOutMode: String?
     let experimentationOptOutAt: String?
 
@@ -20,7 +21,8 @@ internal struct FlagAssignmentsResponse: Equatable {
         obfuscation: FlagKeyObfuscation? = nil,
         experimentationOptOut: Bool? = nil,
         experimentationOptOutMode: String? = nil,
-        experimentationOptOutAt: String? = nil
+        experimentationOptOutAt: String? = nil,
+        hasMalformedOptOutMetadata: Bool = false
     ) {
         self.flags = flags
         self.failedFlags = failedFlags
@@ -28,6 +30,7 @@ internal struct FlagAssignmentsResponse: Equatable {
         self.experimentationOptOut = experimentationOptOut
         self.experimentationOptOutMode = experimentationOptOutMode
         self.experimentationOptOutAt = experimentationOptOutAt
+        self.hasMalformedOptOutMetadata = hasMalformedOptOutMetadata
     }
 }
 
@@ -48,8 +51,15 @@ extension FlagAssignmentsResponse: Codable {
         let rootContainer = try decoder.container(keyedBy: CodingKeys.self)
         let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
+        let hasOptions = attributesContainer.contains(.evaluationOptions)
+            && (try? attributesContainer.decodeNil(forKey: .evaluationOptions)) != true
         let options = try? attributesContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .evaluationOptions)
+        let hasOptOutValue = options.map {
+            $0.contains(.experimentationOptOut) && (try? $0.decodeNil(forKey: .experimentationOptOut)) != true
+        } ?? false
         experimentationOptOut = try? options?.decode(Bool.self, forKey: .experimentationOptOut)
+        // A present options value or Boolean of the wrong type must not look like an unfiltered response.
+        hasMalformedOptOutMetadata = (hasOptions && options == nil) || (hasOptOutValue && experimentationOptOut == nil)
         if let options, options.contains(.experimentationOptOutMode) {
             // Preserve a malformed mode as invalid instead of treating it as an absent legacy acknowledgement.
             experimentationOptOutMode = (try? options.decode(String.self, forKey: .experimentationOptOutMode)) ?? ""
