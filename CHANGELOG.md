@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.21.0 / 29-10-2026
+
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
 - [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3351][]
 - [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
