@@ -169,9 +169,17 @@ extension DatadogExtension where ExtendedType == Bundle {
     ///
     /// Apps that are not sandboxed share `~/Library/Caches` and `~/Library/Application Support`, so macOS recommends
     /// keeping files in a subdirectory named after the bundle identifier. Executables without one, like command-line tools,
-    /// use their name and a hash of their path, so two executables with the same name do not share a directory.
+    /// use their name and the first 16 hexadecimal characters of the SHA-1 of their path, so two executables with the same
+    /// name do not share a directory.
+    ///
+    /// Examples:
+    /// - An app with the bundle identifier `com.example.app`: `com.example.app`
+    /// - The executable `/usr/local/bin/my-tool`: `my-tool-1580418da936ba67`
     public var appDirectoryName: String {
-        if let bundleIdentifier = type.bundleIdentifier {
+        // Foundation returns the bundle identifier from the Info.plist without validating it. An empty one would share
+        // the parent directory with other apps, and one with `/`, `.` or `..` would point to another directory.
+        if let bundleIdentifier = type.bundleIdentifier,
+           !bundleIdentifier.isEmpty, bundleIdentifier != ".", bundleIdentifier != "..", !bundleIdentifier.contains("/") {
             return bundleIdentifier
         }
         // Without an executable URL, the executable is assumed to be in the bundle directory, so its path still tells it apart.

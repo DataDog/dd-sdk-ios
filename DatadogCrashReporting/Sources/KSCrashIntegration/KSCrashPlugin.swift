@@ -95,6 +95,14 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
 }
 
 extension KSCrashConfiguration {
+    /// Creates the KSCrash configuration used by Datadog.
+    ///
+    /// Examples of crash report directories:
+    /// - iOS, tvOS and visionOS: `~/Library/Caches/com.datadoghq.crash-reporting/v2`
+    /// - A macOS app with the bundle identifier `com.example.app`: `~/Library/Caches/com.example.app/com.datadoghq.crash-reporting/v2`
+    /// - The macOS executable `/usr/local/bin/my-tool`: `~/Library/Caches/my-tool-1580418da936ba67/com.datadoghq.crash-reporting/v2`
+    ///
+    /// - Parameter bundle: The app bundle. On macOS, crash reports are stored in the app's subdirectory of `~/Library/Caches`.
     static func datadog(bundle: Bundle = .main) throws -> KSCrashConfiguration {
         let version = "v2"
 

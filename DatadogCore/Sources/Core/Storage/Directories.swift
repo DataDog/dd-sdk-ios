@@ -56,6 +56,13 @@ internal extension CoreDirectory {
     ///   - instanceName: The core instance name.
     ///   - site: The cor instance site.
     ///   - bundle: The app bundle. On macOS, the core directory is created in the app's subdirectory of `osDirectory`.
+    ///
+    /// Examples of core directories in `~/Library/Caches`:
+    /// - iOS, tvOS and visionOS: `~/Library/Caches/com.datadoghq/v2/<instance hash>`
+    /// - A macOS app with the bundle identifier `com.example.app`: `~/Library/Caches/com.example.app/com.datadoghq/v2/<instance hash>`
+    /// - The macOS executable `/usr/local/bin/my-tool`: `~/Library/Caches/my-tool-1580418da936ba67/com.datadoghq/v2/<instance hash>`
+    ///
+    /// The instance hash is the SHA-256 of the instance name and the site.
     init(in osDirectory: Directory, instanceName: String, site: DatadogSite, bundle: Bundle = .main) throws {
         let sdkInstanceUUID = sha256("\(instanceName)\(site)")
         #if os(macOS)
