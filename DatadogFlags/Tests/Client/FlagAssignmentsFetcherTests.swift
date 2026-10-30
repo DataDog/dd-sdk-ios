@@ -71,6 +71,59 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
+    func testNetworkFailuresDoNotReportSDKDefects() {
+        let errors: [NSError] = [
+            NSError(
+                domain: NSPOSIXErrorDomain,
+                code: Int(ENOMEM),
+                userInfo: [NSLocalizedDescriptionKey: "Cannot allocate memory"]
+            ),
+            URLError(.notConnectedToInternet) as NSError,
+            URLError(.timedOut) as NSError,
+            URLError(.cancelled) as NSError,
+            URLError(.badServerResponse) as NSError,
+        ]
+        let logger = CoreLoggerMock()
+        let dd = DD.mockWith(logger: logger)
+        defer { dd.reset() }
+
+        for expectedError in errors {
+            // Given
+            logger.reset()
+            let scope = FeatureScopeMock()
+            var fetchCount = 0
+            var results: [Result<FlagAssignmentsResponse, FlagsError>] = []
+            let completed = expectation(description: "completed for \(expectedError)")
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                featureScope: scope,
+                fetch: { _, completion in
+                    fetchCount += 1
+                    completion(.failure(expectedError))
+                }
+            )
+
+            // When
+            fetcher.flagAssignments(for: .mockAny()) { result in
+                results.append(result)
+                completed.fulfill()
+            }
+
+            // Then
+            wait(for: [completed], timeout: 1)
+            XCTAssertEqual(fetchCount, 1)
+            XCTAssertEqual(results.count, 1)
+            guard case .failure(.networkError(let error)) = results.first else {
+                return XCTFail("Expected the original network failure")
+            }
+            XCTAssertEqual(error as NSError, expectedError)
+            XCTAssertNil(scope.telemetryMock.messages.firstError())
+            XCTAssertTrue(logger.errorLogs.isEmpty)
+            XCTAssertEqual(logger.warnMessages, ["Failed to fetch flag assignments from the server."])
+        }
+    }
+
     func testFlagAssignmentsInvalidResponse() {
         // Given
         let fetcher = FlagAssignmentsFetcher(
@@ -92,6 +145,8 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 1)
+        let defect = featureScope.telemetryMock.messages.firstError()?.message ?? ""
+        XCTAssertTrue(defect.hasPrefix("Failed to decode FlagAssignmentsResponse from flag assignments response"), defect)
     }
 
     func testFlagAssignmentsCustomEndpoint() {
