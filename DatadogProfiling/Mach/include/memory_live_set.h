@@ -25,7 +25,11 @@ extern "C" {
 #define DD_MEMORY_LIVE_SET_MAX_FRAMES 64
 #define DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES 128
 
+#ifdef __cplusplus
+typedef class dd_memory_live_set dd_memory_live_set_t;
+#else
 typedef struct dd_memory_live_set dd_memory_live_set_t;
+#endif
 typedef struct dd_memory_live_snapshot dd_memory_live_snapshot_t;
 
 typedef enum {
@@ -122,6 +126,15 @@ typedef struct {
     bool reached_admission_limit;
     bool is_active;
 } dd_memory_live_set_diagnostics_t;
+
+/// Diagnostics captured under the table lock with the snapshot. Empty after
+/// creation or a failed capture. Readers follow the snapshot's serialization contract.
+dd_memory_live_set_diagnostics_t dd_memory_live_snapshot_diagnostics(
+    const dd_memory_live_snapshot_t *snapshot);
+
+/// Requested snapshot object bytes, including before its first capture.
+/// Excludes allocator overhead and does not measure resident memory.
+uint64_t dd_memory_live_snapshot_storage_bytes(const dd_memory_live_snapshot_t *snapshot);
 
 /// Allocates the table and its inline slots once. Returns NULL if allocation fails.
 /// Operations on an existing table and snapshot do not allocate memory.

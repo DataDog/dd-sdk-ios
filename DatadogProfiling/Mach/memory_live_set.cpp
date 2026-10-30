@@ -73,19 +73,24 @@ struct dd_memory_live_snapshot {
     }
     void clear() {
         count = 0;
+        captured_diagnostics = {};
     }
 
+    dd_memory_live_set_diagnostics_t diagnostics() const { return captured_diagnostics; }
+
 private:
-    friend struct dd_memory_live_set;
+    friend class dd_memory_live_set;
 
     std::array<dd_memory_live_sample_t, kCapacity> samples;
     std::array<char, kMaxSnapshotNameBytes> class_names;
     size_t count;
+    dd_memory_live_set_diagnostics_t captured_diagnostics;
 };
 static_assert(std::is_trivial<dd_memory_live_snapshot_t>::value,
               "snapshot creation must not initialize unused buffers");
 
-struct dd_memory_live_set {
+class dd_memory_live_set {
+public:
     static dd_memory_live_set_t *create();
     dd_memory_live_set() = default;
     ~dd_memory_live_set() {
@@ -388,6 +393,7 @@ bool dd_memory_live_set::snapshot(
     }
     snapshot->count = written;
     update_peak(snapshot_bytes_high_water, sizeof(dd_memory_live_snapshot_t));
+    snapshot->captured_diagnostics = diagnostics();
     return true;
 }
 
@@ -440,6 +446,17 @@ extern "C" dd_memory_live_snapshot_view_t dd_memory_live_snapshot_view(
     const dd_memory_live_snapshot_t *snapshot) {
     return snapshot != nullptr ? snapshot->view()
                                : dd_memory_live_snapshot_view_t{};
+}
+
+extern "C" dd_memory_live_set_diagnostics_t dd_memory_live_snapshot_diagnostics(
+    const dd_memory_live_snapshot_t *snapshot) {
+    return snapshot != nullptr ? snapshot->diagnostics()
+                               : dd_memory_live_set_diagnostics_t{};
+}
+
+extern "C" uint64_t dd_memory_live_snapshot_storage_bytes(
+    const dd_memory_live_snapshot_t *snapshot) {
+    return snapshot != nullptr ? sizeof(*snapshot) : 0;
 }
 
 extern "C" dd_memory_live_set_t *dd_memory_live_set_create(void) {
