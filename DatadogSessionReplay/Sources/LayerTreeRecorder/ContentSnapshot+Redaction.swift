@@ -23,6 +23,10 @@ internal enum ImageRedactionResult {
 }
 
 extension ContentSnapshot {
+    var resourceFormat: ImageSnapshotResource.Format {
+        isImageView || isImageLayer ? .webP : .png
+    }
+
     func redacted(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) throws -> ImageRedactionResult {
@@ -92,6 +96,10 @@ extension ContentSnapshot {
         delegateClass?.isSubclass(of: UILabel.self) == true ||
         delegateClassName?.hasSuffix("CGDrawingView") == true ||
         delegateClassName?.hasSuffix("RBDrawingView") == true
+    }
+
+    private var isImageView: Bool {
+        delegateClass?.isSubclass(of: UIImageView.self) == true
     }
 
     private var isImageLayer: Bool {

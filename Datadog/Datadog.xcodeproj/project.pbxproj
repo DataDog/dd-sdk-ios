@@ -434,7 +434,6 @@
 		5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02902E8ED10500AB2391 /* ExposureEventTests.swift */; };
 		5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
 		5B23A8AB2FF7A8A800024C6F /* MaskSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B23A8AA2FF7A8A800024C6F /* MaskSnapshot.swift */; };
-		5B25BA6F3087A25100FA058F /* UIImage+WebP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA6E3087A24500FA058F /* UIImage+WebP.swift */; };
 		5B25BA723088C20200FA058F /* UIImage+ContentHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA713088C20200FA058F /* UIImage+ContentHash.swift */; };
 		5B25BA743088C25500FA058F /* UIImage+ContentHashTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA733088C25500FA058F /* UIImage+ContentHashTests.swift */; };
 		5B25BA763088D05100FA058F /* UIImage+Pixels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B25BA753088D05100FA058F /* UIImage+Pixels.swift */; };
@@ -462,6 +461,7 @@
 		5B69166F2F3B89060074A909 /* TestTimerScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */; };
 		5B71CE653093239B005EF439 /* ClipPathFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B71CE643093239B005EF439 /* ClipPathFormatter.swift */; };
 		5B71CE6730932453005EF439 /* CALayerSnapshotSVGClipPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B71CE6630932453005EF439 /* CALayerSnapshotSVGClipPathTests.swift */; };
+		5B71CE6930939ED0005EF439 /* UIImage+Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B71CE6830939ED0005EF439 /* UIImage+Encoding.swift */; };
 		5B74482F2EFAB819003E622C /* CALayerSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448282EFAB819003E622C /* CALayerSwizzler.swift */; };
 		5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448292EFAB819003E622C /* CALayerChange.swift */; };
 		5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */; };
@@ -2483,7 +2483,6 @@
 		5B1D02902E8ED10500AB2391 /* ExposureEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureEventTests.swift; sourceTree = "<group>"; };
 		5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiverTests.swift; sourceTree = "<group>"; };
 		5B23A8AA2FF7A8A800024C6F /* MaskSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskSnapshot.swift; sourceTree = "<group>"; };
-		5B25BA6E3087A24500FA058F /* UIImage+WebP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+WebP.swift"; sourceTree = "<group>"; };
 		5B25BA713088C20200FA058F /* UIImage+ContentHash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+ContentHash.swift"; sourceTree = "<group>"; };
 		5B25BA733088C25500FA058F /* UIImage+ContentHashTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+ContentHashTests.swift"; sourceTree = "<group>"; };
 		5B25BA753088D05100FA058F /* UIImage+Pixels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Pixels.swift"; sourceTree = "<group>"; };
@@ -2511,6 +2510,7 @@
 		5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTimerScheduler.swift; sourceTree = "<group>"; };
 		5B71CE643093239B005EF439 /* ClipPathFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipPathFormatter.swift; sourceTree = "<group>"; };
 		5B71CE6630932453005EF439 /* CALayerSnapshotSVGClipPathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSnapshotSVGClipPathTests.swift; sourceTree = "<group>"; };
+		5B71CE6830939ED0005EF439 /* UIImage+Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Encoding.swift"; sourceTree = "<group>"; };
 		5B7448282EFAB819003E622C /* CALayerSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSwizzler.swift; sourceTree = "<group>"; };
 		5B7448292EFAB819003E622C /* CALayerChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChange.swift; sourceTree = "<group>"; };
 		5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeAggregator.swift; sourceTree = "<group>"; };
@@ -4897,7 +4897,6 @@
 				5B1877C82FDC3EE6005AC2CE /* UIImage+FeatureDetection.swift */,
 				5B1877CA2FDC4732005AC2CE /* UIImage+Redaction.swift */,
 				5B1877CC2FDC573B005AC2CE /* UIImage+DominantColor.swift */,
-				5B25BA6E3087A24500FA058F /* UIImage+WebP.swift */,
 				5B25BA713088C20200FA058F /* UIImage+ContentHash.swift */,
 				962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */,
 				D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */,
@@ -4909,6 +4908,7 @@
 				D274FD1B2CBFEF6D005270B5 /* CGSize+SessionReplay.swift */,
 				D29A470E2D2ED6410092BC79 /* Int64+SessionReplay.swift */,
 				D29A470C2D2ED49F0092BC79 /* Xoshiro.swift */,
+				5B71CE6830939ED0005EF439 /* UIImage+Encoding.swift */,
 			);
 			name = Utilities;
 			path = Recorder/Utilities;
@@ -9662,8 +9662,8 @@
 				BFD537F36CC0ED9EF5EFCF5B /* lossless_enc_avx2.c in Sources */,
 				C10ADD35631D96430B6CCECD /* lossless_enc_neon.c in Sources */,
 				3F0AEFF278A88FAD9CEBA10D /* lossless_enc_sse2.c in Sources */,
+				5B71CE6930939ED0005EF439 /* UIImage+Encoding.swift in Sources */,
 				7EA8012301396CDB8D52904C /* lossless_enc_sse41.c in Sources */,
-				5B25BA6F3087A25100FA058F /* UIImage+WebP.swift in Sources */,
 				231E9705D513B6A2818D1B48 /* lossless_neon.c in Sources */,
 				2F5A818FC930185210F64009 /* lossless_sse2.c in Sources */,
 				91659D0C676F4BF4C39E2A6F /* lossless_sse41.c in Sources */,
