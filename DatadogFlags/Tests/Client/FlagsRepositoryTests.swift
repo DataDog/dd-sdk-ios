@@ -3291,6 +3291,91 @@ final class FlagsRepositoryTests: XCTestCase {
         ]
     }
 
+    func testSameContextSnapshotWithDifferentPolicyIsNeverServed() throws {
+        let cutoff = "2026-10-21T12:00:00Z"
+        let context = FlagsEvaluationContext(targetingKey: "subject", attributes: [
+            "dd_experimentation_opt_out_at": .string(cutoff)
+        ])
+        // Each persisted policy is followed by a launch in a mode that requests a different policy.
+        let cases: [(ExperimentationOptOut?, FlagsClient.ExperimentationOptOutMode)] = [
+            (nil, .immediate),
+            (nil, .futureExperimentsOnly),
+            (.immediate, .futureExperimentsOnly),
+            (.futureExperimentsOnly(cutoff: cutoff), .immediate)
+        ]
+        for (cachedPolicy, mode) in cases {
+            for readAfterContext in [false, true] {
+                let label = "cached \(String(describing: cachedPolicy)), mode \(mode), read after context \(readAfterContext)"
+                let cached = FlagsData(
+                    flags: ["flag": .mockAnyBoolean()],
+                    context: context,
+                    date: .mockAny(),
+                    experimentationOptOutPolicy: cachedPolicy
+                )
+                let version: DataStoreKeyVersion = cachedPolicy == nil ? dataStoreDefaultKeyVersion : 3
+                let store = DelayedReadDataStore(storage: [
+                    "client": .value(try JSONEncoder().encode(cached), version)
+                ])
+                var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+                let repository = FlagsRepository(
+                    clientName: "client",
+                    flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in responses.append(complete) },
+                    dateProvider: DateProviderMock(),
+                    featureScope: FeatureScopeMock(dataStore: store),
+                    initializationTimeout: nil,
+                    experimentationOptOutMode: mode
+                )
+                defer { store.resumeRead(); store.flush(); repository.flush() }
+                wait(for: [store.readStarted], timeout: 1)
+                if !readAfterContext { store.resumeRead(); store.flush() }
+
+                let failed = expectation(description: label)
+                repository.setEvaluationContext(context) { result in
+                    if case .failure(.networkError) = result {} else { XCTFail("Expected network error, got \(result). \(label)") }
+                    failed.fulfill()
+                }
+                if readAfterContext { store.resumeRead(); store.flush() }
+
+                XCTAssertNil(repository.flagAssignment(for: "flag"), "Pending: \(label)")
+                XCTAssertEqual(responses.count, 1, label)
+                responses[0](.failure(.networkError(URLError(.notConnectedToInternet))))
+                wait(for: [failed], timeout: 1)
+                XCTAssertEqual(repository.state.currentState, .error, label)
+                XCTAssertNil(repository.flagAssignment(for: "flag"), "Failed: \(label)")
+            }
+        }
+    }
+
+    func testSupersededSuccessForAnotherContextFailsOnlyInEnabledModes() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate, .futureExperimentsOnly] {
+            let featureScope = FeatureScopeMock()
+            var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+            let repository = makeRepository(
+                dataStore: featureScope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, complete in responses.append(complete) },
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            featureScope.dataStore.flush()
+            let completed = expectation(description: "superseded context")
+            var supersededResult: Result<Void, FlagsError>?
+            repository.setEvaluationContext(.init(targetingKey: "subject-a")) { supersededResult = $0; completed.fulfill() }
+            repository.setEvaluationContext(.init(targetingKey: "subject-b")) { _ in }
+
+            responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+
+            wait(for: [completed], timeout: 1)
+            switch (mode, supersededResult) {
+            case (.disabled, .success?), (.immediate, .failure(.invalidResponse)?), (.futureExperimentsOnly, .failure(.invalidResponse)?):
+                break
+            default:
+                XCTFail("Unexpected superseded result \(String(describing: supersededResult)). Mode: \(mode)")
+            }
+            XCTAssertEqual(repository.state.currentState, .reconciling, "Mode: \(mode)")
+            repository.flush()
+        }
+    }
+
     private func makeRepository(
         dataStore: any DataStore,
         fetcher: any FlagAssignmentsFetching = FlagAssignmentsFetcherMock(),

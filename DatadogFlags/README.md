@@ -98,9 +98,9 @@ Snapshots with an opt-out policy use cache version 3. Older SDKs that support on
 The current SDK still reads unfiltered snapshots in versions 1 and 2. Filtered snapshots from earlier development builds using those versions are rejected.
 
 Experimentation opt-out does not disable evaluation telemetry or RUM flag annotations.
-Pending, failed, and invalid contexts retain the requested subject identity in evaluation telemetry.
+With either enabled mode, pending, failed, and invalid contexts retain the requested subject identity in evaluation telemetry.
 The independent [`enableEvaluationTelemetryOptOutParameter`](#evaluation-telemetry-control) option can suppress that telemetry without changing assignments or exposures. Excluded experiment allocations do not produce exposures.
 Older allocations retained by future mode still produce their normal exposures. No withdrawal event is added.
 Immediate withdrawal can change an enrolled subject's experience. Account for that change in experiment analysis.
 
-Client configuration is fixed for each client name. Creating an existing named client returns its original configuration.
+Client configuration is fixed for each client name. Creating a client with an existing name returns the existing client, which keeps its original configuration.

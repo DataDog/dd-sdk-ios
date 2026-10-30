@@ -36,7 +36,7 @@ import DatadogInternal
 /// let themeColor = client.getStringValue(key: "theme-color", defaultValue: "blue")
 /// ```
 public final class FlagsClient {
-    /// Controls whether the client honors each subject's experimentation opt-out timestamp.
+    /// Controls how the client applies each subject's `dd_experimentation_opt_out_at` timestamp.
     public enum ExperimentationOptOutMode {
         /// Ignore the `dd_experimentation_opt_out_at` context attribute.
         case disabled
@@ -51,7 +51,7 @@ public final class FlagsClient {
 
     /// Configuration for an individual Flags client.
     public struct Configuration {
-        /// Controls whether the client honors the subject's experimentation opt-out timestamp.
+        /// Controls how the client applies the subject's `dd_experimentation_opt_out_at` timestamp.
         /// The default is `.disabled`. This does not change evaluation telemetry settings.
         public var experimentationOptOutMode: ExperimentationOptOutMode
 
@@ -76,7 +76,7 @@ public final class FlagsClient {
         ///   not SDK internal telemetry. Suppresses while the initial cached policy is unknown, then requires
         ///   `dd_evaluation_telemetry_opt_out` to be boolean `true`.
         ///   Default: `false`.
-        ///   - experimentationOptOutMode: Whether to honor the subject's opt-out timestamp. Default: `.disabled`.
+        ///   - experimentationOptOutMode: How to apply the subject's `dd_experimentation_opt_out_at` timestamp. Default: `.disabled`.
         public init(
             enableEvaluationTelemetryOptOutParameter: Bool = false,
             experimentationOptOutMode: ExperimentationOptOutMode = .disabled
