@@ -440,6 +440,20 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(message.attributes[RUMCoreContext.IDs.sessionID])
     }
 
+    func testTTFDCommand_whenNoTTIDIsReceived_isNotWritten() throws {
+        // Given
+        let command: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        // Then
+        // A macOS app that never shows a window, or an iOS app that never renders a frame, has no TTID, so its TTFD is dropped.
+        XCTAssertTrue(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).isEmpty)
+    }
+
     func testTTFDCommand_whenReceivedBeforeTTID_sendsOperationMessageBeforeTTIDMessage() throws {
         // Given
         let featureScope = FeatureScopeMock()

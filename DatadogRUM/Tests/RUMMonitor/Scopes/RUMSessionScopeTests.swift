@@ -1010,6 +1010,24 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertTrue(result)
     }
 
+    func testWhenSessionScopeReceivesTTIDCommand_itWritesAppLaunchVital() throws {
+        // Given
+        let processLaunchDate = Date()
+        let context: DatadogContext = .mockWith(
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: processLaunchDate)
+        )
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(time: processLaunchDate.addingTimeInterval(1))
+        let scope: RUMSessionScope = .mockWith(parent: parent, context: context)
+
+        // When
+        _ = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        let vital = try XCTUnwrap(writer.events(ofType: RUMVitalAppLaunchEvent.self).first?.vital)
+        XCTAssertEqual(vital.appLaunchMetric, .ttid)
+        XCTAssertEqual(vital.duration, Double(1.0.dd.toInt64Nanoseconds))
+    }
+
     func testWhenSessionScopeReceivesTTFDCommand_itIsProcessedAccordingly() {
         // Given
         let command: RUMTimeToFullDisplayCommand = .mockAny()
