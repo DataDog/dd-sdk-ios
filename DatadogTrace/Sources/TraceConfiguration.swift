@@ -104,19 +104,13 @@ extension Trace {
         /// so a separate override is required. Used mainly for integration tests against mock servers
         /// and for advanced setups with self-hosted collectors.
         ///
-        /// Has no effect unless `statsComputationEnabled` is also `true`.
+        /// Has no effect unless the `clientSideStats` feature flag is enabled.
         ///
         /// Default: `nil`.
         public var customStatsEndpoint: URL?
 
-        /// Enables client-side stats computation for APM.
-        ///
-        /// When enabled, the SDK computes trace statistics (hit counts, error rates, latency distributions)
-        /// locally on all finished spans, including sampled-out ones, and uploads them to the Datadog
-        /// stats intake. This provides accurate RED metrics regardless of the trace sampling rate.
-        ///
-        /// Default: `false`.
-        public var statsComputationEnabled: Bool
+        /// Feature flags to preview experimental features in Trace.
+        public var featureFlags: FeatureFlags
 
         // MARK: - Nested Types
 
@@ -214,7 +208,7 @@ extension Trace {
         ///   - eventMapper: Custom mapper for span events.
         ///   - customEndpoint: Custom server url for sending traces.
         ///   - customStatsEndpoint: Custom server url for sending client-side stats.
-        ///   - statsComputationEnabled: Enables client-side stats computation for APM.
+        ///   - featureFlags: Feature flags to preview experimental features in Trace.
         public init(
             sampleRate: SampleRate = .maxSampleRate,
             service: String? = nil,
@@ -225,7 +219,7 @@ extension Trace {
             eventMapper: EventMapper? = nil,
             customEndpoint: URL? = nil,
             customStatsEndpoint: URL? = nil,
-            statsComputationEnabled: Bool = false
+            featureFlags: FeatureFlags = .defaults
         ) {
             self.sampleRate = sampleRate
             self.service = service
@@ -236,7 +230,40 @@ extension Trace {
             self.eventMapper = eventMapper
             self.customEndpoint = customEndpoint
             self.customStatsEndpoint = customStatsEndpoint
-            self.statsComputationEnabled = statsComputationEnabled
+            self.featureFlags = featureFlags
         }
+    }
+}
+
+extension Trace.Configuration {
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+
+    /// Feature flags available in Trace.
+    public enum FeatureFlag: String, Sendable {
+        /// Client-side APM stats.
+        ///
+        /// When enabled, the SDK computes trace statistics (hit counts, error rates, latency
+        /// distributions) locally over eligible finished spans, including sampled-out ones, and
+        /// uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans,
+        /// and spans of kind client, server, producer or consumer. This yields accurate RED metrics
+        /// regardless of the trace `sampleRate`. To avoid double counting, uploaded spans are stamped
+        /// with `_dd.compute_stats=0` so the backend does not recompute stats for the same traffic.
+        case clientSideStats = "client_side_stats"
+    }
+}
+
+extension Trace.Configuration.FeatureFlags {
+    /// The default feature flags applied to the Trace configuration.
+    public static var defaults: Self {
+        [
+            .clientSideStats: false,
+        ]
+    }
+
+    /// Accesses the feature flag value.
+    ///
+    /// Falls back to the flag's entry in `.defaults` when not explicitly set, or `false` if it has no default.
+    public subscript(flag: Key) -> Bool {
+        self[flag] ?? Self.defaults[flag, default: false]
     }
 }

@@ -773,6 +773,11 @@ internal class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     var sessionState: RUMSessionState?
     var view: RUMViewEvent?
     var globalAttributes: [String: Encodable] = [:]
+    var sessionStopCount = 0
+
+    func sessionDidStop() {
+        sessionStopCount += 1
+    }
 }
 
 extension RUMScopeDependencies {

@@ -22,7 +22,17 @@ class TraceConfigurationTests: XCTestCase {
         XCTAssertNil(config.eventMapper)
         XCTAssertNil(config.customEndpoint)
         XCTAssertNil(config.customStatsEndpoint)
-        XCTAssertFalse(config.statsComputationEnabled)
+        XCTAssertFalse(config.featureFlags[.clientSideStats])
+    }
+
+    func testFeatureFlagsSubscriptFallsBackToDefaults() {
+        // When
+        let emptyFlags: Trace.Configuration.FeatureFlags = [:]
+        let overriddenFlags: Trace.Configuration.FeatureFlags = [.clientSideStats: true]
+
+        // Then
+        XCTAssertFalse(emptyFlags[.clientSideStats], "should fall back to `.defaults` when not set")
+        XCTAssertTrue(overriddenFlags[.clientSideStats], "should use the explicitly set value")
     }
 
     func testCustomStatsEndpointInitParameter() {

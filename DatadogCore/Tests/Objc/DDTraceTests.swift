@@ -33,4 +33,16 @@ class DDTraceTests: XCTestCase {
         objc_Trace.enable(with: objc_TraceConfiguration())
         XCTAssertTrue(objc_Tracer.shared().dd?.swiftTracer is DatadogTracer)
     }
+
+    func testWhenEnabledWithClientSideStatsFlag_itRegistersClientSideStats() {
+        let configuration = objc_TraceConfiguration()
+        configuration.featureFlags = ["client_side_stats": true]
+        objc_Trace.enable(with: configuration)
+        XCTAssertNotNil(core.get(feature: ClientStatsFeature.self))
+    }
+
+    func testWhenEnabledWithoutClientSideStatsFlag_itDoesNotRegisterClientSideStats() {
+        objc_Trace.enable(with: objc_TraceConfiguration())
+        XCTAssertNil(core.get(feature: ClientStatsFeature.self))
+    }
 }

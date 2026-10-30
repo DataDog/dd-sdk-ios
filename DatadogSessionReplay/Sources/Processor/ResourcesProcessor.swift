@@ -19,38 +19,51 @@ internal class ResourceProcessor: ResourceProcessing {
 
     private let queue: Queue
     private let resourcesWriter: ResourcesWriting
+    private let telemetry: Telemetry
 
     private var processedIdentifiers = Set<String>()
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
         interceptResources?(resources)
         queue.run { [weak self] in
+            guard let self = self else {
+                return
+            }
+
             let resources = resources
-                .compactMap {
-                    let identifier = $0.calculateIdentifier()
-                    let isProcessed = self?.processedIdentifiers.contains(identifier) == true
-                    if !isProcessed {
-                        self?.processedIdentifiers.insert(identifier)
+                .compactMap { resource -> EnrichedResource? in
+                    let identifier = resource.calculateIdentifier()
+                    guard !identifier.isEmpty, !self.processedIdentifiers.contains(identifier) else {
+                        return nil
                     }
-                    return !isProcessed ? EnrichedResource(
+
+                    let data = resource.calculateData()
+                    // Avoid uploading empty resources
+                    guard !data.isEmpty else {
+                        self.telemetry.error("[SR] Failed to encode image resource: encoded data is empty")
+                        return nil
+                    }
+
+                    self.processedIdentifiers.insert(identifier)
+
+                    return EnrichedResource(
                         identifier: identifier,
-                        data: $0.calculateData(),
-                        mimeType: $0.mimeType,
+                        data: data,
+                        mimeType: resource.mimeType,
                         context: context
-                    ) : nil
+                    )
                 }
             guard !resources.isEmpty else {
                 return
             }
-            self?.resourcesWriter.write(
-                resources: resources
-            )
+            self.resourcesWriter.write(resources: resources)
         }
     }
 
-    init(queue: Queue, resourcesWriter: ResourcesWriting) {
+    init(queue: Queue, resourcesWriter: ResourcesWriting, telemetry: Telemetry) {
         self.queue = queue
         self.resourcesWriter = resourcesWriter
+        self.telemetry = telemetry
     }
 }
 #endif

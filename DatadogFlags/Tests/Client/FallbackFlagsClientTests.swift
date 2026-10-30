@@ -8,9 +8,37 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
+@_spi(Internal)
 @testable import DatadogFlags
 
 final class FallbackFlagsClientTests: XCTestCase {
+    func testFirstFlagsCompletionDoesNotChangeFallbackStateOrEvaluation() {
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        let client = ReadWriteLock(wrappedValue: FallbackFlagsClient(name: "test", core: core))
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+        let delivered = ReadWriteLock(wrappedValue: false)
+        _ = client.wrappedValue.onFirstFlags { _ in
+            XCTAssertEqual(client.wrappedValue.state.currentState, .error)
+            let details = client.wrappedValue.getBooleanDetails(key: "flag", defaultValue: true)
+            XCTAssertTrue(details.value)
+            XCTAssertEqual(details.error, .providerNotReady)
+            XCTAssertNil(details.reason)
+            delivered.wrappedValue = true
+        }
+        XCTAssertTrue(delivered.wrappedValue)
+        var failed = false
+        client.wrappedValue.setEvaluationContext(.init(targetingKey: "user")) { result in
+            if case .failure(.clientNotInitialized) = result { failed = true }
+        }
+        XCTAssertTrue(failed)
+        XCTAssertEqual(client.wrappedValue.state.currentState, .error)
+        XCTAssertEqual(client.wrappedValue.getBooleanDetails(key: "flag", defaultValue: false).error, .providerNotReady)
+    }
+
     func testStateIsError() {
         // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()
@@ -117,5 +145,73 @@ final class FallbackFlagsClientTests: XCTestCase {
             Ensure that a client named 'default' is created before using it.
             """
         )
+    }
+
+    func testSendFlagExposure() {
+        // Given
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // When
+        client.sendFlagExposure(key: .mockAny(), assignment: .mockAny(), context: .mockAny())
+
+        // Then
+        XCTAssertEqual(dd.logger.errorMessages, [
+            """
+            Using fallback client to track '\(String.mockAny())'. \
+            Ensure that a client named 'default' is created before using it.
+            """
+        ])
+        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+        XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+    }
+
+    func testSendFlagRUMEvaluation() {
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        client.sendFlagRUMEvaluation(key: .mockAny(), variant: .mockAny(), context: .mockAny())
+
+        XCTAssertEqual(dd.logger.errorMessages, [
+            """
+            Using fallback client to track '\(String.mockAny())'. \
+            Ensure that a client named 'default' is created before using it.
+            """
+        ])
+        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+        XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+    }
+
+    func testSendFlagEvaluationEvent() {
+        let assignments: [FlagAssignment?] = [.mockAny(), nil]
+        for assignment in assignments {
+            // Given
+            let core = SingleFeatureCoreMock<FlagsFeature>()
+            let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+            let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
+
+            // When
+            client.sendFlagEvaluationEvent(
+                key: .mockAny(),
+                assignment: assignment,
+                context: .mockAny(),
+                errorCode: assignment == nil ? "FLAG_NOT_FOUND" : nil
+            )
+
+            // Then
+            XCTAssertEqual(dd.logger.errorMessages, [
+                """
+                Using fallback client to track '\(String.mockAny())'. \
+                Ensure that a client named 'default' is created before using it.
+                """
+            ])
+            XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+            XCTAssertTrue(core.events(ofType: FlagEvaluationEvent.self).isEmpty)
+        }
     }
 }
