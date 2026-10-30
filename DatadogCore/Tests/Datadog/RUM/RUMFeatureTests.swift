@@ -127,12 +127,7 @@ class RUMFeatureTests: XCTestCase {
                     maxObjectsInFile: .max,
                     maxObjectSize: .max
                 ),
-                uploadPerformance: UploadPerformanceMock(
-                    initialUploadDelay: 0.5, // wait enough until events are written,
-                    minUploadDelay: 1,
-                    maxUploadDelay: 1,
-                    uploadDelayChangeRate: 0
-                )
+                uploadPerformance: .noOp // Upload only after all events are written by `flushAndTearDown()`.
             ),
             httpClient: httpClient,
             encryption: nil,
@@ -177,12 +172,7 @@ class RUMFeatureTests: XCTestCase {
                     maxObjectsInFile: .max,
                     maxObjectSize: .max
                 ),
-                uploadPerformance: UploadPerformanceMock(
-                    initialUploadDelay: 0.5, // wait enough until events are written,
-                    minUploadDelay: 1,
-                    maxUploadDelay: 1,
-                    uploadDelayChangeRate: 0
-                )
+                uploadPerformance: .noOp // Upload only after all events are written by `flushAndTearDown()`.
             ),
             httpClient: httpClient,
             encryption: nil,
