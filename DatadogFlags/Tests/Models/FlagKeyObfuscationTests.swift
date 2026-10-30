@@ -414,7 +414,12 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testRequestAdvertisesCapabilitiesWithoutChangingSourceVersion() throws {
-        for source in ["ios", "flutter", "react-native", "future-bridge"] {
+        for (source, sdkName) in [
+            ("ios", "dd-sdk-ios"),
+            ("flutter", "flutter"),
+            ("react-native", "react-native"),
+            ("future-bridge", "future-bridge")
+        ] {
             let request = try URLRequest.flagAssignmentsRequest(
                 url: URL(string: "https://example.com/precompute-assignments")!,
                 evaluationContext: .mockAny(),
@@ -425,7 +430,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             let data = try XCTUnwrap(body["data"] as? [String: Any])
             let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
             let identity = try XCTUnwrap(attributes["source"] as? [String: String])
-            XCTAssertEqual(identity, ["sdk_name": "dd-sdk-ios", "sdk_version": "99.1.2-telemetry"])
+            XCTAssertEqual(identity, ["sdk_name": sdkName, "sdk_version": "99.1.2-telemetry"])
             XCTAssertNil(attributes["supported_capabilities"])
             if source != "ios" {
                 XCTAssertNil(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"))
