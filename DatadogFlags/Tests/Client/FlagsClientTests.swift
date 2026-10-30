@@ -145,6 +145,15 @@ final class FlagsClientTests: XCTestCase {
         })
     }
 
+    func testPreviousConfigurationInitializerKeepsDisabledMode() {
+        let initializer: (Bool) -> FlagsClient.Configuration = FlagsClient.Configuration.init(enableEvaluationTelemetryOptOutParameter:)
+        for enabled in [false, true] {
+            let configuration = initializer(enabled)
+            XCTAssertEqual(configuration.enableEvaluationTelemetryOptOutParameter, enabled)
+            XCTAssertEqual(configuration.experimentationOptOutMode, .disabled)
+        }
+    }
+
     func testEvaluationTelemetryConfigurationDefaultsToDisabled() {
         XCTAssertFalse(FlagsClient.Configuration().enableEvaluationTelemetryOptOutParameter)
     }

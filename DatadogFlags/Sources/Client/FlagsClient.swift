@@ -84,6 +84,16 @@ public final class FlagsClient {
             self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
             self.experimentationOptOutMode = experimentationOptOutMode
         }
+
+        /// Creates configuration for an individual Flags client.
+        ///
+        /// Preserves the initializer exported by earlier releases for binary compatibility.
+        public init(enableEvaluationTelemetryOptOutParameter: Bool) {
+            self.init(
+                enableEvaluationTelemetryOptOutParameter: enableEvaluationTelemetryOptOutParameter,
+                experimentationOptOutMode: .disabled
+            )
+        }
     }
 
     /// The default client name used when no name is specified.

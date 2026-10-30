@@ -14,6 +14,35 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testResetClearsInvalidContext() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let repository = FlagsRepository(
+                clientName: UUID().uuidString,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(),
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            defer { repository.flush() }
+            let invalid = expectation(description: "invalid \(mode)")
+            repository.setEvaluationContext(.init(
+                targetingKey: "subject",
+                attributes: ["dd_experimentation_opt_out_at": .bool(true)]
+            )) { result in
+                guard case .failure(.invalidContext) = result else {
+                    return XCTFail("Expected invalid context")
+                }
+                invalid.fulfill()
+            }
+            wait(for: [invalid], timeout: 1)
+            XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .invalidContext)
+            repository.reset()
+            XCTAssertEqual(repository.state.currentState, .notReady, "Mode: \(mode)")
+            XCTAssertNil(repository.evaluationSnapshot(for: "flag").error, "Mode: \(mode)")
+        }
+    }
+
     func testInvalidFirstContextPreservesDelayedCacheForLaterValidContext() throws {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             for readBeforeValidContext in [false, true] {
