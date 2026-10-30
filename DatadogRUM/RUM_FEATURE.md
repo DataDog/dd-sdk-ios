@@ -243,7 +243,7 @@ monitor.stopView(key: "ProductList")
   - Resources: `startResource()` accepts a request, URL, or HTTP method and URL string; `addResourceMetrics()` adds URLSession timing; `stopResource()` accepts a response or status code and `RUMResourceType`; `stopResourceWithError()` accepts an `Error` or message
   - Actions: `addAction()`, `startAction()`, `stopAction()`; `RUMActionType` cases are `.tap`, `.click`, `.scroll`, `.swipe`, and `.custom`
   - Sessions: `currentSessionID(completion:)`; `stopSession()` ends the session, with the next `startView()` or `addAction()` starting a new one
-  - App launch: `reportAppFullyDisplayed()` records time to full display (TTFD)
+  - App launch: `reportAppFullyDisplayed()` records time to full display (TTFD). RUM also reports time to initial display (TTID) automatically: the first rendered frame on iOS, tvOS and visionOS, and the first window shown on macOS, of any kind, including a menu bar item. TTFD is written after TTID and is dropped when there is no TTID, for example when a macOS app never shows a window. Neither is reported on watchOS.
   - Feature flag evaluations: `addFeatureFlagEvaluation(name:value:)` records the result on the current view
   - Operations (preview): `startOperation(name:operationKey:attributes:options:)`, `succeedOperation(name:operationKey:attributes:)`, `failOperation(name:operationKey:reason:attributes:)`. `RUMFeatureOperationFailureReason` cases are `.error`, `.abandoned`, and `.other`; `options` can supply profiling options (see `DatadogProfiling/PROFILING_FEATURE.md`).
   - **Deprecated** operation aliases: `startFeatureOperation()`, `succeedFeatureOperation()`, and `failFeatureOperation()` remain available; use the corresponding operation methods above

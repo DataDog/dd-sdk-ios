@@ -59,6 +59,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     let memoryWarningMonitor: MemoryWarningMonitor?
 
+    #if os(macOS)
+    /// Reads the first window shown by the app, for the time to initial display.
+    let firstWindowReader: FirstWindowReader
+    #endif
+
     // MARK: - Initialization
 
     #if !os(watchOS)
@@ -220,6 +225,12 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         )
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
+        #if os(macOS)
+        self.firstWindowReader = FirstWindowReader(
+            dateProvider: dateProvider,
+            notificationCenter: notificationCenterProvider.applicationCenter
+        )
+        #endif
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
@@ -292,6 +303,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         appHangs?.stop()
         watchdogTermination?.stop()
         memoryWarningMonitor?.stop()
+        #if os(macOS)
+        firstWindowReader.stop()
+        #endif
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
@@ -303,6 +317,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
         memoryWarningMonitor?.reporter.publish(to: subscriber)
+        #if os(macOS)
+        firstWindowReader.publish(to: subscriber)
+        #endif
     }
 }
 
