@@ -289,13 +289,34 @@ Unit Tests (macOS):
       - "ResultBundles/*.log"
     when: always
 
+# Builds the UI tests once for all test plans, in the "test" stage alongside the unit tests.
+# "UI Tests" jobs run the products of this build after the whole "test" stage has passed.
+UI Tests (build):
+  stage: test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
+  variables:
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 17 Pro"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make ui-test-build OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  artifacts:
+    paths:
+      - build/ui-tests/Build/Products
+    expire_in: 1 day
+
 UI Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
   dependencies:
-    - "Build Dependencies"
+    - "UI Tests (build)"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -313,7 +334,7 @@ UI Tests:
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make ui-test-run TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"

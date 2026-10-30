@@ -2,7 +2,7 @@ all: env-check repo-setup dependencies templates
 .PHONY: env-check repo-setup dependencies clean templates \
 		lint lint-cpp license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
-		ui-test ui-test-all ui-test-podinstall \
+		ui-test ui-test-all ui-test-build ui-test-run ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all smoke-test-macos smoke-test-macos-all \
@@ -89,6 +89,9 @@ DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
 
 # Default location for deploying artifacts
 DEFAULT_ARTIFACTS_PATH := artifacts
+
+# Default location of UI test build products shared by `make ui-test-build` and `make ui-test-run`
+DEFAULT_UI_TEST_PRODUCTS_PATH := build/ui-tests
 
 # Whether Test Visibility product is enabled by default
 DEFAULT_USE_TEST_VISIBILITY := 0
@@ -214,6 +217,25 @@ ui-test:
 	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
 	@$(ECHO_TITLE) "make ui-test TEST_PLAN='$(TEST_PLAN)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
 	./tools/ui-test.sh --test-plan "$(TEST_PLAN)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+
+# Build UI tests for all test plans into UI_TEST_PRODUCTS_PATH, to run them with `make ui-test-run`
+ui-test-build:
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@:$(eval UI_TEST_PRODUCTS_PATH ?= $(DEFAULT_UI_TEST_PRODUCTS_PATH))
+	@$(ECHO_TITLE) "make ui-test-build OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' UI_TEST_PRODUCTS_PATH='$(UI_TEST_PRODUCTS_PATH)'"
+	./tools/ui-test.sh --mode build-for-testing --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)" --products-path "$(UI_TEST_PRODUCTS_PATH)"
+
+# Run UI tests for specified TEST_PLAN from the products built by `make ui-test-build`
+ui-test-run:
+	@$(call require_param,TEST_PLAN)
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@:$(eval UI_TEST_PRODUCTS_PATH ?= $(DEFAULT_UI_TEST_PRODUCTS_PATH))
+	@$(ECHO_TITLE) "make ui-test-run TEST_PLAN='$(TEST_PLAN)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' UI_TEST_PRODUCTS_PATH='$(UI_TEST_PRODUCTS_PATH)'"
+	./tools/ui-test.sh --mode test-without-building --test-plan "$(TEST_PLAN)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)" --products-path "$(UI_TEST_PRODUCTS_PATH)"
 
 # Run UI tests for all test plans
 ui-test-all:
