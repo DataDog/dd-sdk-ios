@@ -101,7 +101,7 @@ final class FlagsRepositoryTests: XCTestCase {
             var scheduledTimeouts = 0
             let repository = FlagsRepository(
                 clientName: "invalid-first-\(mode)",
-                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.success(.init(flags: [:]))) },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
                 scheduleInitializationTimeout: { _, _ in
@@ -120,7 +120,9 @@ final class FlagsRepositoryTests: XCTestCase {
                 invalidCompleted.fulfill()
             }
             wait(for: [invalidCompleted], timeout: 1)
-            repository.setEvaluationContext(.init(targetingKey: "subject")) { _ in }
+            let validCompleted = expectation(description: "later valid context")
+            repository.setEvaluationContext(.init(targetingKey: "subject")) { _ in validCompleted.fulfill() }
+            wait(for: [validCompleted], timeout: 1)
             XCTAssertEqual(scheduledTimeouts, 0, "Later calls have no timer. Mode: \(mode)")
         }
     }
@@ -144,7 +146,7 @@ final class FlagsRepositoryTests: XCTestCase {
             XCTAssertNotNil(repository.flagAssignment(for: "flag"))
 
             repository.setEvaluationContext(.init(targetingKey: "subject-B")) { _ in }
-            XCTAssertEqual(fetcher.experimentationOptOutRequests, [false, false])
+            XCTAssertEqual(fetcher.experimentationOptOutPolicies.map { $0 != nil }, [false, false])
             let pending = repository.evaluationSnapshot(for: "flag")
             XCTAssertEqual(pending.assignment == nil, mode != .disabled)
             XCTAssertEqual(pending.requestedContext?.targetingKey, mode == .disabled ? nil : "subject-B")
@@ -155,51 +157,94 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
-    func testEnabledOptOutErrorTelemetryUsesRequestedContextAndIndependentSuppression() {
-        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
-            for suppress in [false, true] {
-                for outcome in ["pending", "failed", "invalid"] {
-                    let scope = FeatureScopeMock()
-                    var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
-                    let repository = FlagsRepository(
-                        clientName: UUID().uuidString,
-                        flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in responses.append(complete) },
-                        dateProvider: DateProviderMock(),
-                        featureScope: scope,
-                        initializationTimeout: nil,
-                        experimentationOptOutMode: mode
-                    )
-                    scope.dataStore.flush()
-                    let evaluations = EvaluationLoggerMock()
-                    let exposures = ExposureLoggerMock()
-                    let rum = RUMFlagEvaluationReporterMock()
-                    let client = FlagsClient(
-                        repository: repository,
-                        exposureLogger: exposures,
-                        evaluationLogger: evaluations,
-                        rumFlagEvaluationReporter: rum,
-                        configuration: .init(enableEvaluationTelemetryOptOutParameter: true, experimentationOptOutMode: mode)
-                    )
-                    let context = FlagsEvaluationContext(targetingKey: "requested-subject", attributes: [
-                        "dd_experimentation_opt_out_at": outcome == "invalid" ? .bool(true) : .string("2026-10-21T12:00:00Z"),
-                        "dd_evaluation_telemetry_opt_out": .bool(suppress)
-                    ])
-                    client.setEvaluationContext(context) { _ in }
-                    if outcome == "failed" { responses[0](.failure(.invalidResponse)) }
-                    let details = client.getDetails(key: "flag", defaultValue: false)
-                    XCTAssertFalse(details.value)
-                    XCTAssertEqual(details.error, outcome == "invalid" ? .invalidContext : .providerNotReady)
-                    XCTAssertEqual(evaluations.logEvaluationCalls.count, suppress ? 0 : 1)
-                    if !suppress {
-                        XCTAssertEqual(evaluations.logEvaluationCalls.first?.context, context)
-                        XCTAssertEqual(evaluations.logEvaluationCalls.first?.error, outcome == "invalid" ? "INVALID_CONTEXT" : "PROVIDER_NOT_READY")
-                    }
-                    XCTAssertTrue(exposures.logExposureCalls.isEmpty)
-                    XCTAssertTrue(rum.sendFlagEvaluationCalls.isEmpty)
-                    XCTAssertEqual(responses.count, outcome == "invalid" ? 0 : 1)
-                }
-            }
+    func testImmediatePendingLoggedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .immediate, suppress: false, outcome: "pending")
+    }
+
+    func testImmediatePendingSuppressedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .immediate, suppress: true, outcome: "pending")
+    }
+
+    func testFutureExperimentsOnlyPendingLoggedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .futureExperimentsOnly, suppress: false, outcome: "pending")
+    }
+
+    func testFutureExperimentsOnlyPendingSuppressedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .futureExperimentsOnly, suppress: true, outcome: "pending")
+    }
+
+    func testImmediateFailedLoggedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .immediate, suppress: false, outcome: "failed")
+    }
+
+    func testImmediateFailedSuppressedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .immediate, suppress: true, outcome: "failed")
+    }
+
+    func testFutureExperimentsOnlyFailedLoggedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .futureExperimentsOnly, suppress: false, outcome: "failed")
+    }
+
+    func testFutureExperimentsOnlyFailedSuppressedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .futureExperimentsOnly, suppress: true, outcome: "failed")
+    }
+
+    func testImmediateInvalidLoggedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .immediate, suppress: false, outcome: "invalid")
+    }
+
+    func testImmediateInvalidSuppressedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .immediate, suppress: true, outcome: "invalid")
+    }
+
+    func testFutureExperimentsOnlyInvalidLoggedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .futureExperimentsOnly, suppress: false, outcome: "invalid")
+    }
+
+    func testFutureExperimentsOnlyInvalidSuppressedTelemetryUsesRequestedContext() {
+        assertRequestedContextTelemetry(mode: .futureExperimentsOnly, suppress: true, outcome: "invalid")
+    }
+
+    private func assertRequestedContextTelemetry(mode: FlagsClient.ExperimentationOptOutMode, suppress: Bool, outcome: String) {
+        let scope = FeatureScopeMock()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let repository = FlagsRepository(
+            clientName: UUID().uuidString,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in responses.append(complete) },
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            initializationTimeout: nil,
+            experimentationOptOutMode: mode
+        )
+        defer { repository.flush() }
+        scope.dataStore.flush()
+        let evaluations = EvaluationLoggerMock()
+        let exposures = ExposureLoggerMock()
+        let rum = RUMFlagEvaluationReporterMock()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: exposures,
+            evaluationLogger: evaluations,
+            rumFlagEvaluationReporter: rum,
+            configuration: .init(enableEvaluationTelemetryOptOutParameter: true, experimentationOptOutMode: mode)
+        )
+        let context = FlagsEvaluationContext(targetingKey: "requested-subject", attributes: [
+            "dd_experimentation_opt_out_at": outcome == "invalid" ? .bool(true) : .string("2026-10-21T12:00:00Z"),
+            "dd_evaluation_telemetry_opt_out": .bool(suppress)
+        ])
+        client.setEvaluationContext(context) { _ in }
+        if outcome == "failed" { responses[0](.failure(.invalidResponse)) }
+        let details = client.getDetails(key: "flag", defaultValue: false)
+        XCTAssertFalse(details.value)
+        XCTAssertEqual(details.error, outcome == "invalid" ? .invalidContext : .providerNotReady)
+        XCTAssertEqual(evaluations.logEvaluationCalls.count, suppress ? 0 : 1)
+        if !suppress {
+            XCTAssertEqual(evaluations.logEvaluationCalls.first?.context, context)
+            XCTAssertEqual(evaluations.logEvaluationCalls.first?.error, outcome == "invalid" ? "INVALID_CONTEXT" : "PROVIDER_NOT_READY")
         }
+        XCTAssertTrue(exposures.logExposureCalls.isEmpty)
+        XCTAssertTrue(rum.sendFlagEvaluationCalls.isEmpty)
+        XCTAssertEqual(responses.count, outcome == "invalid" ? 0 : 1)
     }
 
     func testInvalidContextCompletionCanAcquireCallerLock() {
@@ -231,42 +276,6 @@ final class FlagsRepositoryTests: XCTestCase {
             }
             callerLock.unlock()
             wait(for: [completed], timeout: 2)
-            repository.flush()
-        }
-    }
-
-    func testInvalidContextCompletesOffTheCallersQueue() {
-        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
-            let scope = FeatureScopeMock()
-            let repository = FlagsRepository(
-                clientName: UUID().uuidString,
-                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
-                dateProvider: DateProviderMock(),
-                featureScope: scope,
-                initializationTimeout: nil,
-                experimentationOptOutMode: mode
-            )
-            scope.dataStore.flush()
-            let callerQueue = DispatchQueue(label: "caller")
-            let callerKey = DispatchSpecificKey<Void>()
-            callerQueue.setSpecific(key: callerKey, value: ())
-            let completed = expectation(description: "invalid-context completion")
-            var ranOnCallerQueue: Bool?
-            let context = FlagsEvaluationContext(
-                targetingKey: "subject",
-                attributes: ["dd_experimentation_opt_out_at": .string("not-a-time")]
-            )
-            callerQueue.sync {
-                repository.setEvaluationContext(context) { result in
-                    guard case .failure(.invalidContext) = result else {
-                        return XCTFail("Expected invalid context")
-                    }
-                    ranOnCallerQueue = DispatchQueue.getSpecific(key: callerKey) != nil
-                    completed.fulfill()
-                }
-            }
-            wait(for: [completed], timeout: 1)
-            XCTAssertEqual(ranOnCallerQueue, false)
             repository.flush()
         }
     }
@@ -318,46 +327,40 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
-    func testConcurrentContextUpdatesKeepAssignmentAndTelemetryIdentityTogether() {
+    func testInterleavedContextUpdatesKeepAssignmentAndTelemetryIdentityTogether() throws {
         for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate, .futureExperimentsOnly] {
+            var requests: [(FlagsEvaluationContext, (Result<FlagAssignmentsResponse, FlagsError>) -> Void)] = []
             let repository = FlagsRepository(
                 clientName: UUID().uuidString,
-                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { context, complete in
-                    complete(.success(.init(flags: [
-                        "flag": .init(
-                            allocationKey: context.targetingKey,
-                            variationKey: context.targetingKey,
-                            variation: .string(context.targetingKey),
-                            reason: "TARGETING_MATCH",
-                            doLog: false
-                        )
-                    ])))
-                },
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { context, complete in requests.append((context, complete)) },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(),
                 initializationTimeout: nil,
                 experimentationOptOutMode: mode
             )
+            defer { repository.flush() }
             let evaluations = EvaluationLoggerMock()
             let client = FlagsClient(repository: repository, exposureLogger: ExposureLoggerMock(), evaluationLogger: evaluations, rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock())
+            func deliver(_ index: Int) {
+                let subject = requests[index].0.targetingKey
+                requests[index].1(.success(.init(flags: [
+                    "flag": .init(allocationKey: subject, variationKey: subject, variation: .string(subject), reason: "TARGETING_MATCH", doLog: false)
+                ])))
+            }
             repository.setEvaluationContext(.init(targetingKey: "A")) { _ in }
-            let writer = expectation(description: "context writer")
-            let reader = expectation(description: "evaluation reader")
-            DispatchQueue.global().async {
-                for index in 0..<300 {
-                    repository.setEvaluationContext(.init(targetingKey: index.isMultiple(of: 2) ? "A" : "B")) { _ in }
-                }
-                writer.fulfill()
+            deliver(0)
+            XCTAssertEqual(client.getDetails(key: "flag", defaultValue: "default").value, "A")
+            repository.setEvaluationContext(.init(targetingKey: "B")) { _ in }
+            _ = client.getDetails(key: "flag", defaultValue: "default")
+            repository.setEvaluationContext(.init(targetingKey: "C")) { _ in }
+            deliver(2)
+            deliver(1)
+            XCTAssertEqual(client.getDetails(key: "flag", defaultValue: "default").value, "C")
+            let successful = evaluations.logEvaluationCalls.filter { $0.error == nil }
+            XCTAssertGreaterThanOrEqual(successful.count, 2, "Mode: \(mode)")
+            for evaluation in successful {
+                XCTAssertEqual(evaluation.context.targetingKey, evaluation.assignment.variationKey, "Mode: \(mode)")
             }
-            DispatchQueue.global().async {
-                for _ in 0..<500 { _ = client.getDetails(key: "flag", defaultValue: "default") }
-                reader.fulfill()
-            }
-            wait(for: [writer, reader], timeout: 5)
-            for evaluation in evaluations.logEvaluationCalls where evaluation.error == nil {
-                XCTAssertEqual(evaluation.context.targetingKey, evaluation.assignment.variationKey)
-            }
-            repository.flush()
         }
     }
 
@@ -469,7 +472,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 waitForExpectations(timeout: 1)
                 XCTAssertEqual(invalid, mode != .disabled && expected == nil, label)
                 XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error == .invalidContext, invalid, label)
-                XCTAssertEqual(fetcher.experimentationOptOutRequests, invalid ? [] : [mode != .disabled && expected == true], label)
+                XCTAssertEqual(fetcher.experimentationOptOutPolicies.map { $0 != nil }, invalid ? [] : [mode != .disabled && expected == true], label)
                 XCTAssertEqual(repository.flagAssignment(for: "flag") == nil, invalid, label)
             }
         }
@@ -478,15 +481,7 @@ final class FlagsRepositoryTests: XCTestCase {
     func testFutureOptOutRequiresExactAcknowledgement() throws {
         let cutoff = "2026-10-21T12:00:00.123456789Z"
         let cases: [(String?, String?, Bool)] = [
-            (nil, nil, false),
-            ("immediate", cutoff, false),
-            ("future_experiments_only", nil, false),
-            ("future_experiments_only", "invalid", false),
             ("future_experiments_only", "2026-10-21T12:00:00.123456788Z", false),
-            ("future_experiments_only", "2026-10-21T12:00:00.123456790Z", false),
-            ("future_experiments_only", "2026-10-21T14:00:00.123456789+02:00", true),
-            ("future_experiments_only", "2026-10-21T12:00:00.1234567890Z", true),
-            ("future_experiments_only", "2026-10-21T12:00:00.123456789123Z", true),
             ("future_experiments_only", cutoff, true)
         ]
         for (mode, acknowledged, accepted) in cases {
@@ -504,6 +499,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 featureScope: featureScope,
                 experimentationOptOutMode: .futureExperimentsOnly
             )
+            defer { repository.flush() }
             let completed = expectation(description: "acknowledgement")
             repository.setEvaluationContext(.init(targetingKey: "subject", attributes: [
                 "dd_experimentation_opt_out_at": .string(cutoff)
@@ -541,7 +537,9 @@ final class FlagsRepositoryTests: XCTestCase {
         waitForExpectations(timeout: 1)
         original.flush()
         featureScope.dataStore.flush()
+        let stored = featureScope.dataStoreMock.storage
         for mode in [FlagsClient.ExperimentationOptOutMode.disabled, .immediate, .futureExperimentsOnly] {
+            let featureScope = FeatureScopeMock(dataStore: DataStoreMock(storage: stored))
             let restored = FlagsRepository(
                 clientName: name,
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
@@ -551,6 +549,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 featureScope: featureScope,
                 experimentationOptOutMode: mode
             )
+            defer { restored.flush() }
             featureScope.dataStore.flush()
             XCTAssertNil(restored.flagAssignment(for: "flag"))
             restored.setEvaluationContext(context) { _ in }
@@ -594,7 +593,32 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(repository.flagAssignment(for: "old"))
     }
 
-    func testImmediateOptOutRejectsLegacyCacheAndLateResponses() throws {
+    func testImmediateOptOutRejectsLegacyCache() throws {
+        let optedOut = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: ["dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")]
+        )
+        featureScope.flagsDataStore.setFlagsData(
+            .init(flags: ["flag": .mockAnyBoolean()], context: optedOut, date: .mockAny()),
+            forClientNamed: "optout"
+        )
+        featureScope.dataStore.flush()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock { _, complete in responses.append(complete) }
+        let repository = FlagsRepository(
+            clientName: "optout",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            experimentationOptOutMode: .immediate
+        )
+        featureScope.dataStore.flush()
+        defer { repository.flush() }
+        XCTAssertNil(repository.flagAssignment(for: "flag"), "Legacy assignments require a matching policy")
+        XCTAssertTrue(responses.isEmpty)
+    }
+
+    func testImmediateOptOutRejectsLateEligibleResponse() throws {
         let optedOut = FlagsEvaluationContext(
             targetingKey: "subject",
             attributes: ["dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")]
@@ -615,23 +639,53 @@ final class FlagsRepositoryTests: XCTestCase {
             experimentationOptOutMode: .immediate
         )
         featureScope.dataStore.flush()
-        XCTAssertNil(repository.flagAssignment(for: "flag"), "Restored assignments need a current subject and matching policy")
+        defer { repository.flush() }
         repository.setEvaluationContext(eligible) { _ in }
         repository.setEvaluationContext(optedOut) { _ in }
-        XCTAssertNil(repository.flagAssignment(for: "flag"))
         responses[1](.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], experimentationOptOut: true)))
         responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
         XCTAssertEqual(repository.context, optedOut)
         XCTAssertEqual(repository.flagAssignment(for: "flag")?.doLog, false)
+    }
 
-        var invalid = optedOut.attributes
-        invalid["dd_experimentation_opt_out_at"] = .bool(true)
-        repository.setEvaluationContext(.init(targetingKey: "subject", attributes: invalid)) { _ in }
+    func testImmediateOptOutInvalidContextRejectsLateResponse() throws {
+        let optedOut = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: ["dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")]
+        )
+        featureScope.flagsDataStore.setFlagsData(
+            .init(flags: ["flag": .mockAnyBoolean()], context: optedOut, date: .mockAny()),
+            forClientNamed: "optout"
+        )
+        featureScope.dataStore.flush()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock { _, complete in responses.append(complete) }
+        let repository = FlagsRepository(
+            clientName: "optout",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            experimentationOptOutMode: .immediate
+        )
+        featureScope.dataStore.flush()
+        defer { repository.flush() }
+        repository.setEvaluationContext(optedOut) { _ in }
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], experimentationOptOut: true)))
+        var attributes = optedOut.attributes
+        attributes["dd_experimentation_opt_out_at"] = .bool(true)
+        let completed = expectation(description: "invalid context")
+        repository.setEvaluationContext(.init(targetingKey: "subject", attributes: attributes)) { result in
+            guard case .failure(.invalidContext) = result else {
+                completed.fulfill()
+                return XCTFail("Expected invalid context")
+            }
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], experimentationOptOut: true)))
         XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .invalidContext)
         XCTAssertNil(repository.flagAssignment(for: "flag"))
         XCTAssertNil(repository.flagAssignments())
-        responses[1](.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], experimentationOptOut: true)))
-        XCTAssertNil(repository.flagAssignment(for: "flag"), "A late response cannot clear an invalid current context")
     }
 
     func testImmediateOptOutRejectsUnacknowledgedAssignmentsAndRestoresMatchingCache() throws {

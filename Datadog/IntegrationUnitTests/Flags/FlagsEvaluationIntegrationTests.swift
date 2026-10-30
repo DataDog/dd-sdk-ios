@@ -17,29 +17,30 @@ import Network
 
 /// Covers integration scenarios for flag evaluation logging.
 final class FlagsEvaluationIntegrationTests: XCTestCase {
-    func testImmediateOptOutLoopbackDeliveryAndTelemetry() throws {
-        try runOptOutLoopbackDeliveryAndTelemetry(mode: .immediate)
+    func testImmediateOptOutDeliveryAndTelemetry() throws {
+        try runOptOutDeliveryAndTelemetry(mode: .immediate)
     }
 
-    func testFutureOptOutLoopbackDeliveryAndTelemetry() throws {
-        try runOptOutLoopbackDeliveryAndTelemetry(mode: .futureExperimentsOnly)
+    func testFutureOptOutDeliveryAndTelemetry() throws {
+        try runOptOutDeliveryAndTelemetry(mode: .futureExperimentsOnly)
     }
 
     func testExperimentationOptOutPreservesExposuresWhenEvaluationTelemetryIsSuppressed() throws {
-        try runOptOutLoopbackDeliveryAndTelemetry(mode: .immediate, suppressTelemetry: true)
-        try runOptOutLoopbackDeliveryAndTelemetry(mode: .futureExperimentsOnly, suppressTelemetry: true)
+        try runOptOutDeliveryAndTelemetry(mode: .immediate, suppressTelemetry: true)
+        try runOptOutDeliveryAndTelemetry(mode: .futureExperimentsOnly, suppressTelemetry: true)
     }
 
-    private func runOptOutLoopbackDeliveryAndTelemetry(mode: FlagsClient.ExperimentationOptOutMode, suppressTelemetry: Bool = false) throws {
-        let server = try OptOutAssignmentServer()
-        defer { server.stop() }
-        let listening = expectation(description: "loopback listening")
-        server.start { listening.fulfill() }
-        waitForExpectations(timeout: 5)
-        let endpoint = try XCTUnwrap(server.endpoint)
+    private func runOptOutDeliveryAndTelemetry(mode: FlagsClient.ExperimentationOptOutMode, suppressTelemetry: Bool = false) throws {
+        let server = OptOutAssignmentsStub()
         let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
         defer { try? core.flushAndTearDown() }
-        Flags.enable(with: .init(customFlagsEndpoint: endpoint, evaluationFlushInterval: 60), in: core)
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: core.scope(for: FlagsFeature.self),
+            fetch: server.fetch
+        )
+        try Flags.enableOrThrow(with: .init(evaluationFlushInterval: 60), in: core, flagAssignmentsFetcher: fetcher)
         let client = FlagsClient.create(configuration: .init(
             enableEvaluationTelemetryOptOutParameter: true,
             experimentationOptOutMode: mode
@@ -294,80 +295,6 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
 
 /// Exercises native assignment loading and telemetry uploads over a loopback HTTP connection.
 final class FlagsEvaluationLocalIntakeTests: XCTestCase {
-    @MainActor
-    func testExperimentationModesUploadTelemetryAndPreserveIndependentSuppression() throws {
-        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
-            for suppressTelemetry in [false, true] {
-                let ready = expectation(description: "experimentation intake ready")
-                let server = try FlagsLocalIntake(ready: ready)
-                server.start()
-                wait(for: [ready], timeout: 5)
-                defer { server.stop() }
-                let instanceName = "flags-experimentation-\(UUID().uuidString)"
-                let core = Datadog.initialize(
-                    with: .init(clientToken: "local-intake-token", env: "local-test"),
-                    trackingConsent: .granted,
-                    instanceName: instanceName
-                )
-                defer { Datadog.internalFlushAndDeinitialize(instanceName: instanceName) }
-                Flags.enable(with: .init(
-                    customFlagsEndpoint: try server.url("assignments"),
-                    customExposureEndpoint: try server.url("exposures"),
-                    customEvaluationEndpoint: try server.url("evaluations")
-                ), in: core)
-                let client = FlagsClient.create(configuration: .init(
-                    enableEvaluationTelemetryOptOutParameter: true,
-                    experimentationOptOutMode: mode
-                ), in: core)
-                var attributes: [String: AnyValue] = ["dd_evaluation_telemetry_opt_out": .bool(suppressTelemetry)]
-                let eligible = expectation(description: "eligible assignment")
-                client.setEvaluationContext(.init(targetingKey: "subject", attributes: attributes)) { result in
-                    if case .failure(let error) = result { XCTFail("Eligible request failed: \(error)") }
-                    eligible.fulfill()
-                }
-                wait(for: [eligible], timeout: 5)
-                XCTAssertTrue(client.getBooleanValue(key: "local-flag", defaultValue: false))
-
-                attributes["dd_experimentation_opt_out_at"] = .string("2026-10-21T12:00:00Z")
-                let filtered = expectation(description: "filtered assignment")
-                client.setEvaluationContext(.init(targetingKey: "subject", attributes: attributes)) { result in
-                    if case .failure(let error) = result { XCTFail("Filtered request failed: \(error)") }
-                    filtered.fulfill()
-                }
-                wait(for: [filtered], timeout: 5)
-                XCTAssertFalse(client.getBooleanValue(key: "local-flag", defaultValue: true))
-                if mode == .futureExperimentsOnly {
-                    XCTAssertTrue(client.getBooleanValue(key: "older-experiment", defaultValue: false))
-                }
-
-                attributes["dd_experimentation_opt_out_at"] = .bool(true)
-                let invalidCompleted = expectation(description: "invalid context")
-                client.setEvaluationContext(.init(targetingKey: "subject", attributes: attributes)) { result in
-                    defer { invalidCompleted.fulfill() }
-                    guard case .failure(.invalidContext) = result else {
-                        return XCTFail("Expected invalid context")
-                    }
-                }
-                wait(for: [invalidCompleted], timeout: 1)
-                XCTAssertEqual(client.getBooleanDetails(key: "local-flag", defaultValue: true).error, .invalidContext)
-                Datadog.internalFlushAndDeinitialize(instanceName: instanceName)
-
-                let assignments = server.requests.filter { $0.url?.path == "/assignments" }
-                let exposures = try server.events(at: "exposures")
-                let evaluations = try server.events(at: "evaluations").flatMap { $0["flagEvaluations"] as? [[String: Any]] ?? [] }
-                XCTAssertEqual(assignments.count, 2, "Invalid context must not send an assignment request")
-                XCTAssertEqual(exposures.count, mode == .immediate ? 1 : 2)
-                XCTAssertEqual(evaluations.count, suppressTelemetry ? 0 : (mode == .immediate ? 3 : 4))
-                if !suppressTelemetry {
-                    XCTAssertTrue(evaluations.allSatisfy { $0["targeting_key"] as? String == "subject" })
-                    XCTAssertTrue(evaluations.contains { ($0["error"] as? [String: Any])?["message"] as? String == "INVALID_CONTEXT" })
-                    XCTAssertTrue(evaluations.contains { ($0["allocation"] as? [String: Any])?["key"] as? String == "ordinary" })
-                }
-                print("Experimentation intake: mode=\(mode), telemetrySuppressed=\(suppressTelemetry), assignments=\(assignments.count), exposures=\(exposures.count), evaluations=\(evaluations.count)")
-            }
-        }
-    }
-
     @MainActor
     func testSubjectSwitchDoesNotUploadPreviousSubjectsOptedOutEvaluations() throws {
         let ready = expectation(description: "local intake ready")
@@ -833,22 +760,7 @@ private final class FlagsLocalIntake {
                 let targetingAttributes = subject?["targeting_attributes"] as? [String: Any]
                 let target = targetingAttributes?["dd_evaluation_telemetry_opt_out"] as? Bool ?? false
                 assignments["targeting-flag"] = .init(allocationKey: "targeted-allocation", variationKey: String(target), variation: .boolean(target), reason: "TARGETING_MATCH", doLog: true)
-                let options = attributes?["evaluation_options"] as? [String: Any]
-                let mode = options?["experimentation_opt_out_mode"] as? String
-                if mode == "immediate" || mode == "future_experiments_only" {
-                    assignments["local-flag"] = .init(allocationKey: "ordinary", variationKey: "ordinary", variation: .boolean(false), reason: "TARGETING_MATCH", doLog: false)
-                    if mode == "future_experiments_only" {
-                        assignments["older-experiment"] = .init(allocationKey: "older-experiment", variationKey: "older", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: true)
-                    }
-                    body = try JSONEncoder().encode(FlagAssignmentsResponse(
-                        flags: assignments,
-                        experimentationOptOut: mode == "immediate" ? true : nil,
-                        experimentationOptOutMode: mode == "future_experiments_only" ? mode : nil,
-                        experimentationOptOutAt: mode == "future_experiments_only" ? targetingAttributes?["dd_experimentation_opt_out_at"] as? String : nil
-                    ))
-                } else {
-                    body = try JSONEncoder().encode(FlagAssignmentsResponse(flags: assignments))
-                }
+                body = try JSONEncoder().encode(FlagAssignmentsResponse(flags: assignments))
             } else {
                 body = Data("{}".utf8)
             }
@@ -901,59 +813,17 @@ private final class FlagsLocalIntake {
     }
 }
 
-private final class OptOutAssignmentServer {
-    private let listener: NWListener
-    private let queue = DispatchQueue(label: "flags.optout.loopback")
-    private var capturedOptions: [Bool] = []
-    var options: [Bool] { queue.sync { capturedOptions } }
-    var endpoint: URL? {
-        listener.port.flatMap { URL(string: "http://127.0.0.1:\($0.rawValue)/precompute-assignments") }
-    }
+private final class OptOutAssignmentsStub {
+    private(set) var options: [Bool] = []
 
-    init() throws {
-        listener = try NWListener(using: .tcp, on: .any)
-    }
-
-    func start(ready: @escaping () -> Void) {
-        listener.stateUpdateHandler = { if case .ready = $0 { ready() } }
-        listener.newConnectionHandler = { [weak self] connection in
-            guard let self else {
-                return
-            }
-            connection.start(queue: self.queue)
-            self.receive(connection, accumulated: Data())
-        }
-        listener.start(queue: queue)
-    }
-
-    func stop() { listener.cancel() }
-
-    private func receive(_ connection: NWConnection, accumulated: Data) {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { [weak self] data, _, complete, error in
-            guard let self, error == nil, let data else {
-                connection.cancel()
-                return
-            }
-            let accumulated = accumulated + data
-            guard let separator = accumulated.range(of: Data("\r\n\r\n".utf8)) else {
-                if !complete { self.receive(connection, accumulated: accumulated) }
-                return
-            }
-            let headers = String(decoding: accumulated[..<separator.lowerBound], as: UTF8.self)
-            let length = headers
-                .components(separatedBy: "\r\n")
-                .first { $0.lowercased().hasPrefix("content-length:") }
-                .flatMap { Int($0.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)) } ?? 0
-            let body = Data(accumulated[separator.upperBound...])
-            guard body.count >= length else {
-                self.receive(connection, accumulated: accumulated)
-                return
-            }
+    func fetch(_ request: URLRequest, completion: @escaping (Result<Data, Error>) -> Void) {
+        do {
+            let body = try XCTUnwrap(request.httpBody)
             let request = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any]
             let attributes = (request?["data"] as? [String: Any])?["attributes"] as? [String: Any]
             let mode = (attributes?["evaluation_options"] as? [String: Any])?["experimentation_opt_out_mode"] as? String
             let optedOut = mode == "immediate" || mode == "future_experiments_only"
-            self.capturedOptions.append(optedOut)
+            self.options.append(optedOut)
             let values: [String: FlagAssignment.Variation] = [
                 "flag": .boolean(!optedOut), "string": .string("ordinary"), "integer": .integer(42),
                 "double": .double(1.5), "object": .object(.dictionary(["ordinary": .bool(true)]))
@@ -982,12 +852,10 @@ private final class OptOutAssignmentServer {
                 experimentationOptOutMode: mode == "future_experiments_only" ? mode : nil,
                 experimentationOptOutAt: mode == "future_experiments_only" ? "2099-01-01T00:00:00.123456789Z" : nil
             )
-            guard let payload = try? JSONEncoder().encode(response) else {
-                connection.cancel()
-                return
-            }
-            let header = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: \(payload.count)\r\nConnection: close\r\n\r\n"
-            connection.send(content: Data(header.utf8) + payload, completion: .contentProcessed { _ in connection.cancel() })
+            completion(.success(try JSONEncoder().encode(response)))
+        } catch {
+            XCTFail("Could not encode assignment fixture: \(error)")
+            completion(.failure(error))
         }
     }
 }

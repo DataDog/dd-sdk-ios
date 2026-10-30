@@ -349,10 +349,7 @@ final class FlagsClientTests: XCTestCase {
         )
     }
 
-    func testConfigurationForwardsExperimentationModeAndPreservesNamedClient() {
-        let printFunction = PrintFunctionSpy()
-        consolePrint = printFunction.print
-        defer { consolePrint = { message, _ in print(message) } }
+    func testConfigurationForwardsExperimentationMode() {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
         XCTAssertEqual(FlagsClient.Configuration().experimentationOptOutMode, .disabled)
@@ -369,6 +366,14 @@ final class FlagsClientTests: XCTestCase {
             wait(for: [completed], timeout: 1)
             XCTAssertEqual(client.getDetails(key: "flag", defaultValue: false).error, .invalidContext)
         }
+    }
+
+    func testExistingNamedClientPreservesConfiguration() {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
         let original = FlagsClient.create(name: "existing", in: core)
         let duplicate = FlagsClient.create(configuration: .init(experimentationOptOutMode: .immediate), name: "existing", in: core)
         XCTAssertIdentical(original, duplicate)

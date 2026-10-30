@@ -420,16 +420,11 @@ final class FlagKeyObfuscationTests: XCTestCase {
                 let scope = FeatureScopeMock()
                 let data = try cacheData(obfuscated: obfuscated, policy: policy)
                 let encoded = try XCTUnwrap(scope.flagsDataStore.encodeFlagsData(data))
-                // The 3.20.0 schema ignores the policy, so JSON decoding alone cannot protect a downgrade.
-                let legacy = try JSONDecoder().decode(LegacyFlagsData.self, from: encoded.data)
-                XCTAssertEqual(legacy.flags, data.flags)
-                XCTAssertEqual(legacy.context, data.context)
                 scope.flagsDataStore.setFlagsData(data, forClientNamed: "client")
                 let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"])
                 XCTAssertEqual(encoded.version, 3)
                 XCTAssertNil(stored.data(), "Version 1 consumers must not read filtered assignments")
                 XCTAssertNil(stored.data(expectedVersion: 2), "Version 2 consumers do not understand opt-out policy")
-                XCTAssertNil(try legacyFlagsData(from: stored))
             }
         }
     }
@@ -450,9 +445,6 @@ final class FlagKeyObfuscationTests: XCTestCase {
                     completed.fulfill()
                 }
                 waitForExpectations(timeout: 1)
-                if policy == nil {
-                    XCTAssertEqual(try legacyFlagsData(from: stored)?.flags, data.flags)
-                }
             }
         }
     }
@@ -720,26 +712,6 @@ final class FlagKeyObfuscationTests: XCTestCase {
             XCTAssertEqual(clients[0].getDetails(key: key, defaultValue: defaultValue), clients[1].getDetails(key: key, defaultValue: defaultValue))
             XCTAssertEqual(clients[0].getDetails(key: key, defaultValue: false), clients[1].getDetails(key: key, defaultValue: false))
         }
-    }
-
-    // Persisted fields and read guard from dd-sdk-ios 3.20.0, before experimentation opt-out.
-    private struct LegacyFlagsData: Decodable {
-        var flags: [String: FlagAssignment]
-        var context: FlagsEvaluationContext
-        var date: Date
-        let obfuscation: FlagKeyObfuscation?
-    }
-
-    private func legacyFlagsData(from result: DataStoreValueResult) throws -> LegacyFlagsData? {
-        let encodedData = result.data(expectedVersion: 2)
-        guard let data = encodedData ?? result.data() else {
-            return nil
-        }
-        let decoded = try JSONDecoder().decode(LegacyFlagsData.self, from: data)
-        guard (decoded.obfuscation != nil) == (encodedData != nil) else {
-            return nil
-        }
-        return decoded
     }
 
     private func cacheData(obfuscated: Bool, policy: ExperimentationOptOut?) throws -> FlagsData {

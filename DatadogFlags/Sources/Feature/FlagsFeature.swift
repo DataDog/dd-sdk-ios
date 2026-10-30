@@ -30,9 +30,10 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     init(
         configuration: Flags.Configuration,
         featureScope: FeatureScope,
-        core: DatadogCoreProtocol
+        core: DatadogCoreProtocol,
+        flagAssignmentsFetcher: (any FlagAssignmentsFetching)? = nil
     ) {
-        flagAssignmentsFetcher = FlagAssignmentsFetcher(
+        self.flagAssignmentsFetcher = flagAssignmentsFetcher ?? FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
             featureScope: featureScope
