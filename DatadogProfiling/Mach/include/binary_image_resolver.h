@@ -12,6 +12,7 @@
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <mutex>
+#include <memory>
 #include <unordered_map>
 #include <mach-o/dyld.h>
 
@@ -66,7 +67,7 @@ struct cached_image_t {
     uintptr_t load_address;
     /** UUID of the binary image */
     uuid_t uuid;
-    /** Filename of the binary image (owned, null-terminated, or nullptr) */
+    /** Null-terminated filename borrowed from cache-owned storage, or nullptr */
     char* filename;
 };
 
@@ -82,10 +83,14 @@ public:
     // Non-copyable, non-movable
     binary_image_cache(const binary_image_cache&) = delete;
     binary_image_cache& operator=(const binary_image_cache&) = delete;
+    binary_image_cache(binary_image_cache&&) = delete;
+    binary_image_cache& operator=(binary_image_cache&&) = delete;
 
     /**
      * Populate cache with all currently loaded images and start watching
-     * for new image loads via dyld notifications.
+     * for new image loads via dyld notifications. Only one cache may watch
+     * dyld; another instance returns false. Use shared_binary_image_cache()
+     * for production consumers.
      *
      * @return true if images were loaded successfully, false otherwise
      */
@@ -95,10 +100,23 @@ public:
      * Look up binary image information for a given instruction pointer.
      *
      * @param instruction_ptr The instruction pointer address to resolve
-     * @param out_image Output: populated with image info
+     * @param out_image Output: populated with image info. The filename is
+     * borrowed from this cache and must not be passed to binary_image_destroy().
      * @return true if the image was found, false otherwise
      */
     bool lookup(uint64_t instruction_ptr, binary_image_t* out_image);
+
+    /**
+     * Add or refresh an image at its load address. Replaced filenames remain
+     * valid for borrowers until this cache is destroyed. NULL headers are ignored.
+     */
+    void add_image(const struct mach_header* header, const char* name);
+
+    /**
+     * Look up an already cached image by load address. Clears out_image on a
+     * miss; returned filenames borrow cache storage until its destruction.
+     */
+    bool lookup_image(uintptr_t load_address, binary_image_t* out_image);
 
     /**
      * Resolve binary image info for all frames in a batch of stack traces.
@@ -113,12 +131,24 @@ public:
      */
     size_t size() const;
 
+    /// Simulates failure of the next filename ownership allocation on this cache.
+    void fail_next_filename_allocation_for_testing();
+
 private:
     mutable std::mutex mutex;
     bool started = false;
 
     /** Map from image load address → cached image metadata */
     std::unordered_map<uintptr_t, cached_image_t> cache;
+
+    struct filename_storage;
+
+    /** Every published filename remains owned until this cache is destroyed. */
+    std::unique_ptr<filename_storage> filenames;
+    bool fail_next_filename_allocation = false;
+
+    /** Takes ownership of a malloc buffer, freeing it on admission failure. */
+    char* retain_filename_locked(char* filename);
 
     /**
      * Add a single image to the cache from its Mach-O header.
@@ -134,6 +164,19 @@ private:
      */
     static void dyld_add_image_callback(const struct mach_header* mh, intptr_t slide);
 };
+
+/**
+ * Returns the process-wide image cache shared by CPU and heap profiling, or
+ * nullptr if initialization fails. Acquire outside allocation/deallocation
+ * observers and Mach thread suspension. Initialization and dyld registration
+ * happen once, independently of either profiler's start/stop lifecycle.
+ *
+ * The cache intentionally lives until process exit: dyld has no unregister
+ * operation, and cached filenames must survive CPU profiler teardown while
+ * a heap encoder still uses them. Consumers borrow the pointer and must not
+ * delete it. Per-profile mapping/location IDs remain owned by each encoder.
+ */
+binary_image_cache* shared_binary_image_cache();
 
 /**
  * Resolve binary image info for all frames in a batch of stack traces.
