@@ -9,16 +9,20 @@
 #   --platform: Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'
 #   --os: Sets the operating system version for the tests, e.g. '17.5'
 #   --test-plan: Identifies the test plan to run
+#   --mode: 'build-and-test' (default), 'build-for-testing' or 'test-without-building'
+#   --products-path: Build products location shared by 'build-for-testing' and 'test-without-building'
 
 set -eo pipefail
 source ./tools/utils/echo-color.sh
 source ./tools/utils/argparse.sh
 
 set_description "Executes UI tests for a specified --test-plan using the provided --os, --platform, and --device."
-define_arg "test-plan" "" "Identifies the test plan to run" "string" "true"
+define_arg "test-plan" "" "Identifies the test plan to run (not used with '--mode build-for-testing')" "string" "false"
 define_arg "os" "" "Sets the operating system version for the tests, e.g. '17.5'" "string" "true"
 define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'" "string" "true"
 define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "true"
+define_arg "mode" "build-and-test" "'build-and-test' builds and runs --test-plan. 'build-for-testing' builds all test plans into --products-path. 'test-without-building' runs --test-plan from --products-path." "string" "false"
+define_arg "products-path" "build/ui-tests" "Build products location shared by 'build-for-testing' and 'test-without-building'" "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -35,33 +39,81 @@ enable_apple_crash_reporter() {
     echo_succ "Apple Crash Reporter has been re-enabled after the UI tests."
 }
 
-set -x
+# Runs `xcodebuild <arguments> <action>`. On CI, it also writes a result bundle and the raw log to `ResultBundles/`.
+run_tests() {
+    local action="$1"
+    shift
+    if [ "$CI" = "true" ]; then
+        mkdir -p ResultBundles
+        RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}-${TEST_PLAN}.xcresult"
+        rm -rf "$RESULT_BUNDLE_PATH"
+        # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
+        # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
+        # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
+        # uploader already archives whatever paths match, zip or not.
+        xcodebuild "$@" -resultBundlePath "$RESULT_BUNDLE_PATH" "$action" 2>&1 | tee "ResultBundles/${SCHEME}-${TEST_PLAN}.log" | xcbeautify
+    else
+        xcodebuild "$@" "$action" | xcbeautify
+    fi
+}
 
-DIR=$(pwd)
-cd IntegrationTests/ && bundle exec pod install
-cd "$DIR"
+if [[ "$mode" != "build-for-testing" && -z "$test_plan" ]]; then
+    echo_err "Missing required argument --test-plan for --mode '$mode'"
+    exit 1
+fi
+
+set -x
 
 WORKSPACE="IntegrationTests/IntegrationTests.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME="IntegrationScenarios"
 TEST_PLAN="$test_plan"
 
-./tools/config/generate-http-server-mock-config.sh
-
-disable_apple_crash_reporter
-trap enable_apple_crash_reporter EXIT INT
-
 xcodebuild -version
 
-if [ "$CI" = "true" ]; then
-    mkdir -p ResultBundles
-    RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}-${TEST_PLAN}.xcresult"
-    rm -rf "$RESULT_BUNDLE_PATH"
-    # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
-    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
-    # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
-    # uploader already archives whatever paths match, zip or not.
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}-${TEST_PLAN}.log" | xcbeautify
-else
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" test | xcbeautify
-fi
+case "$mode" in
+    build-and-test)
+        DIR=$(pwd)
+        cd IntegrationTests/ && bundle exec pod install
+        cd "$DIR"
+
+        ./tools/config/generate-http-server-mock-config.sh
+
+        disable_apple_crash_reporter
+        trap enable_apple_crash_reporter EXIT INT
+
+        run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN"
+        ;;
+
+    build-for-testing)
+        DIR=$(pwd)
+        cd IntegrationTests/ && bundle exec pod install
+        cd "$DIR"
+
+        # The products run on another machine, where 'test-without-building' starts the mock server on localhost.
+        # Passed as a build setting, it overrides the private IP written to the xcconfig by the scheme's pre-action.
+        MOCK_SERVER_ADDRESS=$(./tools/http-server-mock/python/server_address.py --prefer-localhost)
+
+        rm -rf "$products_path"
+        xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -derivedDataPath "$products_path" MOCK_SERVER_ADDRESS="$MOCK_SERVER_ADDRESS" build-for-testing | xcbeautify
+        ;;
+
+    test-without-building)
+        XCTESTRUN_PATH=$(ls "$products_path"/Build/Products/${SCHEME}_${TEST_PLAN}_*.xctestrun)
+
+        # `-xctestrun` runs no scheme pre-action, so the mock server is started here, on the localhost
+        # address built into the products by 'build-for-testing'.
+        ./tools/http-server-mock/python/start_mock_server.py --prefer-localhost &
+        MOCK_SERVER_PID=$!
+
+        disable_apple_crash_reporter
+        trap "kill $MOCK_SERVER_PID; enable_apple_crash_reporter" EXIT INT
+
+        run_tests test-without-building -xctestrun "$XCTESTRUN_PATH" -destination "$DESTINATION"
+        ;;
+
+    *)
+        echo_err "Unknown --mode '$mode'"
+        exit 1
+        ;;
+esac

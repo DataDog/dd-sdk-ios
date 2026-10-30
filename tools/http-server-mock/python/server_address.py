@@ -7,6 +7,7 @@
 # -----------------------------------------------------------
 
 import socket
+import sys
 
 class ServerAddress():
 	def __init__(self, ip, port):
@@ -43,5 +44,6 @@ def get_best_server_address():
 	return private_ip if private_ip is not None else get_localhost()
 
 if __name__ == "__main__":
-	address = get_best_server_address()
+	# If `--prefer-localhost` argument is set, prints localhost address instead of discovering private IP.
+	address = get_localhost() if "--prefer-localhost" in sys.argv else get_best_server_address()
 	print("{ip}:{port}".format( ip = address.ip, port = address.port))
