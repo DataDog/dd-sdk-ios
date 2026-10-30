@@ -17,16 +17,27 @@ internal protocol FlagAssignmentsFetching {
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
+    let flagSelection: CanonicalFlagSelection?
 
     private let featureScope: any FeatureScope
     private let assignmentFetchQueue: DispatchQueue
-    private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+    private let fetch: (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
 
     private static let decoder = JSONDecoder()
+    private static let flagSelectionIgnoredHeader = "DD-Flag-Selection-Ignored"
+    // The reasons the server sends in `DD-Flag-Selection-Ignored`. Any other value, for example one set by a proxy
+    // behind `customFlagsEndpoint`, is reported as `unknown`, so header content never reaches logs or telemetry.
+    private static let flagSelectionIgnoredReasons = [
+        "malformed_selection", "too_many_values", "invalid_key_pattern", "invalid_tag", "tag_load_failed"
+    ]
+    private static let unknownFlagSelectionIgnoredReason = "unknown"
+    // The longest known reason is 19 bytes, so a longer value is reported as `unknown` without a lookup.
+    private static let maxFlagSelectionIgnoredReasonBytes = 32
 
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
+        flagSelection: CanonicalFlagSelection?,
         featureScope: any FeatureScope
     ) {
         let configuration = URLSessionConfiguration.ephemeral
@@ -37,6 +48,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         self.init(
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
+            flagSelection: flagSelection,
             featureScope: featureScope,
             fetch: urlSession.fetch
         )
@@ -45,16 +57,18 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
+        flagSelection: CanonicalFlagSelection?,
         featureScope: any FeatureScope,
         assignmentFetchQueue: DispatchQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-flags-assignment-fetch",
             qos: .utility,
             autoreleaseFrequency: .workItem
         ),
-        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+        fetch: @escaping (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
     ) {
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
+        self.flagSelection = flagSelection
         self.featureScope = featureScope
         self.assignmentFetchQueue = assignmentFetchQueue
         self.fetch = fetch
@@ -96,13 +110,15 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 url: url(with: context),
                 evaluationContext: evaluationContext,
                 context: context,
-                customHeaders: customHeaders
+                customHeaders: customHeaders,
+                flagSelection: flagSelection
             )
-            fetch(request) { [assignmentFetchQueue, featureScope] result in
+            fetch(request) { [assignmentFetchQueue, featureScope, flagSelection] result in
                 assignmentFetchQueue.async {
                     Self.handleFetchResult(
                         result,
                         supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
+                        requestCarriedFlagSelection: flagSelection != nil,
                         featureScope: featureScope,
                         completion: completion
                     )
@@ -115,18 +131,46 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         }
     }
 
+    /// Returns the reason to report for a `DD-Flag-Selection-Ignored` value, or `nil` when the header is absent or empty.
+    /// Values are compared on bytes, case-sensitively and without trimming.
+    private static func reportedFlagSelectionIgnoredReason(_ value: String?) -> String? {
+        guard let value, !value.isEmpty else {
+            return nil
+        }
+        guard value.utf8.count <= maxFlagSelectionIgnoredReasonBytes,
+              let reason = flagSelectionIgnoredReasons.first(where: { $0.utf8.elementsEqual(value.utf8) }) else {
+            return unknownFlagSelectionIgnoredReason
+        }
+        return reason
+    }
+
     private static func handleFetchResult(
-        _ result: Result<Data, Error>,
+        _ result: Result<(Data, HTTPURLResponse), Error>,
         supportsObfuscation: Bool,
+        requestCarriedFlagSelection: Bool,
         featureScope: any FeatureScope,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         switch result {
-        case .success(let data):
+        case let .success((data, httpResponse)):
+            let ignoredReason = requestCarriedFlagSelection
+                ? reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader))
+                : nil
             do {
                 let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
                 guard response.obfuscation == nil || supportsObfuscation else {
                     throw FlagsError.invalidResponse
+                }
+
+                // Report an ignored selection only once the full configuration is accepted.
+                if let ignoredReason {
+                    DD.logger.error("`Flags.Configuration.flagSelection` was ignored by the server (\(ignoredReason)). Loaded the full flag configuration.")
+                    // One id per reason: telemetry drops a repeated id within a session, so a shared id would hide later reasons.
+                    featureScope.telemetry.debug(
+                        id: "flags:selection-ignored:\(ignoredReason)",
+                        message: "Flag selection ignored",
+                        attributes: ["reason": ignoredReason]
+                    )
                 }
 
                 // Log any flags that failed to decode to telemetry
@@ -194,7 +238,7 @@ extension DatadogSite {
 extension URLSession {
     fileprivate func fetch(
         _ request: URLRequest,
-        completion: @escaping (Result<Data, Error>) -> Void
+        completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void
     ) {
         let task = self.dataTask(with: request) { data, response, error in
             if let error {
@@ -211,7 +255,7 @@ extension URLSession {
                 return
             }
 
-            completion(.success(data))
+            completion(.success((data, httpResponse)))
         }
         task.resume()
     }

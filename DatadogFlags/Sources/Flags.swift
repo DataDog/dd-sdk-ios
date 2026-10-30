@@ -50,6 +50,9 @@ public enum Flags {
         ///
         /// If not set, the SDK uses the default Datadog Flags endpoint for the configured site.
         ///
+        /// With ``flagSelection``, a proxy at this URL must forward the `DD-Flag-Selection-Ignored` response header.
+        /// Without it, a selection the server ignores still loads the full configuration, but the SDK logs nothing.
+        ///
         /// Default: `nil`.
         public var customFlagsEndpoint: URL?
 
@@ -114,6 +117,17 @@ public enum Flags {
         /// Default: `true`.
         public var rumIntegrationEnabled: Bool
 
+        /// Loads only the flags that match these tags or key patterns.
+        ///
+        /// The selection is fixed when the feature is enabled and applies to every ``FlagsClient``. Flags cached under
+        /// a different selection are not loaded at startup; until the next successful fetch, a client starts without
+        /// cached flags. A selection over a limit is not sent: the SDK logs an error and loads every flag. If the
+        /// server ignores the selection, the full configuration loads. See ``Flags/FlagSelection`` for the matching
+        /// rules, limits and fallbacks.
+        ///
+        /// Default: `nil` (every flag is loaded).
+        public var flagSelection: FlagSelection?
+
         /// Creates a configuration for the Datadog Flags feature.
         ///
         /// - Parameters:
@@ -127,6 +141,7 @@ public enum Flags {
         ///   - trackEvaluations: Enables evaluation logging to the evaluations intake endpoint. Default: `true`.
         ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
+        ///   - flagSelection: Loads only the flags that match these tags or key patterns. Default: `nil`.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
@@ -137,7 +152,8 @@ public enum Flags {
             customEvaluationEndpoint: URL? = nil,
             trackEvaluations: Bool = true,
             evaluationFlushInterval: TimeInterval = 10.0,
-            rumIntegrationEnabled: Bool = true
+            rumIntegrationEnabled: Bool = true,
+            flagSelection: FlagSelection? = nil
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
@@ -149,6 +165,75 @@ public enum Flags {
             self.trackEvaluations = trackEvaluations
             self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
+            self.flagSelection = flagSelection
+        }
+
+        /// Creates a configuration for the Datadog Flags feature without a flag selection.
+        public init(
+            gracefulModeEnabled: Bool,
+            customFlagsEndpoint: URL?,
+            customFlagsHeaders: [String: String]?,
+            initializationTimeout: TimeInterval?,
+            customExposureEndpoint: URL?,
+            trackExposures: Bool,
+            customEvaluationEndpoint: URL?,
+            trackEvaluations: Bool,
+            evaluationFlushInterval: TimeInterval,
+            rumIntegrationEnabled: Bool
+        ) {
+            self.init(
+                gracefulModeEnabled: gracefulModeEnabled,
+                customFlagsEndpoint: customFlagsEndpoint,
+                customFlagsHeaders: customFlagsHeaders,
+                initializationTimeout: initializationTimeout,
+                customExposureEndpoint: customExposureEndpoint,
+                trackExposures: trackExposures,
+                customEvaluationEndpoint: customEvaluationEndpoint,
+                trackEvaluations: trackEvaluations,
+                evaluationFlushInterval: evaluationFlushInterval,
+                rumIntegrationEnabled: rumIntegrationEnabled,
+                flagSelection: nil
+            )
+        }
+    }
+
+    /// Selects the flags a client loads, by tag or by key pattern.
+    ///
+    /// A flag is loaded if it has any of the `tags` or its key matches any of the `keyPatterns`.
+    /// Tags match exactly and are case-sensitive. Key patterns are case-sensitive and must match the whole key;
+    /// only `*` is special, and it matches any run of characters, including none.
+    ///
+    /// Leading and trailing Unicode whitespace is trimmed from every value, empty values are dropped,
+    /// and duplicates are removed. Limits apply after this: each list accepts at most 31 values after dedupe,
+    /// and each tag and key pattern is at most 200 UTF-8 bytes after trimming. A selection over a limit is not sent;
+    /// the SDK logs an error and loads the full configuration.
+    ///
+    /// The server may ignore a very large selection (`too_many_values`). In that case the full configuration loads
+    /// and the SDK logs an error with the reason. The reason is reported only if it is one the server sends:
+    /// `malformed_selection`, `too_many_values`, `invalid_key_pattern`, `invalid_tag` or `tag_load_failed`.
+    /// Any other value, for example from a proxy behind `customFlagsEndpoint`, is reported as `unknown`.
+    /// Older servers, or servers with selection disabled, may return the full configuration without a warning.
+    ///
+    /// When the server applies the selection, flags outside it are not loaded, and evaluating one returns the default value
+    /// with ``FlagEvaluationError/flagNotFound``.
+    public struct FlagSelection: Sendable {
+        /// Tags to select. A flag is selected if it has any of these tags.
+        public var tags: [String]
+
+        /// Whole-key patterns to select, where `*` matches any run of characters.
+        public var keyPatterns: [String]
+
+        /// Creates a flag selection.
+        ///
+        /// - Parameters:
+        ///   - tags: Tags to select. Default: `[]`.
+        ///   - keyPatterns: Whole-key patterns to select, where `*` matches any run of characters. Default: `[]`.
+        public init(
+            tags: [String] = [],
+            keyPatterns: [String] = []
+        ) {
+            self.tags = tags
+            self.keyPatterns = keyPatterns
         }
     }
 

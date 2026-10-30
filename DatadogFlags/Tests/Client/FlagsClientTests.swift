@@ -124,6 +124,7 @@ final class FlagsClientTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: scope,
+            flagSelection: nil,
             initializationTimeout: nil
         )
         scope.dataStore.flush()
@@ -694,6 +695,38 @@ final class FlagsClientTests: XCTestCase {
         // Then
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
         XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
+    }
+
+    func testClientsCreatedAfterEnableUseTheConfiguredFlagSelectionForTheirCache() throws {
+        // Given
+        func encodedCache(selectedTags tags: [String]) throws -> Data {
+            try JSONEncoder().encode(
+                FlagsData(
+                    flags: ["test": .mockAnyString()],
+                    context: .mockAny(),
+                    date: .mockAny(),
+                    flagSelection: CanonicalFlagSelection(tags: tags, keyPatterns: [])
+                )
+            )
+        }
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(
+                storage: [
+                    "other-selection": .value(try encodedCache(selectedTags: ["web"]), 3),
+                    "same-selection": .value(try encodedCache(selectedTags: ["mobile"]), 3),
+                ]
+            )
+        )
+
+        // When
+        Flags.enable(with: .init(flagSelection: .init(tags: ["mobile"])), in: core)
+        let otherSelectionClient = FlagsClient.create(name: "other-selection", in: core)
+        let sameSelectionClient = FlagsClient.create(name: "same-selection", in: core)
+
+        // Then
+        // A cache written under another selection is not loaded, so that client has no flags data yet.
+        XCTAssertEqual(otherSelectionClient.getDetails(key: "test", defaultValue: "default").error, .providerNotReady)
+        XCTAssertNil(sameSelectionClient.getDetails(key: "test", defaultValue: "default").error)
     }
 
     func testSnapshot() {

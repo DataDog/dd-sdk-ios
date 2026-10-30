@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Flags: Add `Flags.Configuration.flagSelection` to load only the flags that match the given tags or key patterns. See [#3344][]
+
 # 3.21.0 / 29-10-2026
 
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
@@ -1326,6 +1328,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
+[#3344]: https://github.com/DataDog/dd-sdk-ios/pull/3344
 [#3351]: https://github.com/DataDog/dd-sdk-ios/pull/3351
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 [#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
