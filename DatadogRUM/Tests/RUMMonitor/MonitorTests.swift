@@ -446,55 +446,84 @@ class MonitorTests: XCTestCase {
 
     // MARK: - Usage Telemetry
 
-    func testStartViewByKey_itSendsStartViewUsage() {
+    func testStartViewByKey_itSendsStartViewUsage() throws {
         // Given
-        let (monitor, telemetry) = createMonitorForUsageTelemetry()
+        let featureScope = FeatureScopeMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
 
         // When
         monitor.startView(key: "foo")
 
         // Then
-        assertSentOneUsage(of: "start-view", in: telemetry)
+        let usages = featureScope.telemetryMock.messages.compactMap { $0.asUsage }
+        XCTAssertEqual(usages.count, 1)
+        let usage = try XCTUnwrap(usages.first)
+        XCTAssertEqual(usage.sampleRate, UsageTelemetry.defaultSampleRate)
+        guard case .startView = usage.event else {
+            return XCTFail("Expected `.startView` usage, got \(usage.event)")
+        }
     }
 
     #if !os(watchOS)
-    func testStartViewByViewController_itSendsStartViewUsage() {
+    func testStartViewByViewController_itSendsStartViewUsage() throws {
         // Given
-        let (monitor, telemetry) = createMonitorForUsageTelemetry()
+        let featureScope = FeatureScopeMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
 
         // When
         monitor.startView(viewController: createMockView(viewControllerClassName: "SomeViewController"))
 
         // Then
-        assertSentOneUsage(of: "start-view", in: telemetry)
+        let usages = featureScope.telemetryMock.messages.compactMap { $0.asUsage }
+        XCTAssertEqual(usages.count, 1)
+        let usage = try XCTUnwrap(usages.first)
+        XCTAssertEqual(usage.sampleRate, UsageTelemetry.defaultSampleRate)
+        guard case .startView = usage.event else {
+            return XCTFail("Expected `.startView` usage, got \(usage.event)")
+        }
     }
     #endif
 
-    func testStopSession_itSendsStopSessionUsage() {
+    func testStopSession_itSendsStopSessionUsage() throws {
         // Given
-        let (monitor, telemetry) = createMonitorForUsageTelemetry()
+        let featureScope = FeatureScopeMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
 
         // When
         monitor.stopSession()
 
         // Then
-        assertSentOneUsage(of: "stop-session", in: telemetry)
+        let usages = featureScope.telemetryMock.messages.compactMap { $0.asUsage }
+        XCTAssertEqual(usages.count, 1)
+        let usage = try XCTUnwrap(usages.first)
+        XCTAssertEqual(usage.sampleRate, UsageTelemetry.defaultSampleRate)
+        guard case .stopSession = usage.event else {
+            return XCTFail("Expected `.stopSession` usage, got \(usage.event)")
+        }
     }
 
-    func testAddAction_itSendsAddActionUsage() {
+    func testAddAction_itSendsAddActionUsage() throws {
         // Given
-        let (monitor, telemetry) = createMonitorForUsageTelemetry()
+        let featureScope = FeatureScopeMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
 
         // When
         monitor.addAction(type: .custom, name: "foo")
 
         // Then
-        assertSentOneUsage(of: "add-action", in: telemetry)
+        let usages = featureScope.telemetryMock.messages.compactMap { $0.asUsage }
+        XCTAssertEqual(usages.count, 1)
+        let usage = try XCTUnwrap(usages.first)
+        XCTAssertEqual(usage.sampleRate, UsageTelemetry.defaultSampleRate)
+        guard case .addAction = usage.event else {
+            return XCTFail("Expected `.addAction` usage, got \(usage.event)")
+        }
     }
 
     func testCommandsFromAutomaticInstrumentation_itSendNoUsage() {
         // Given
-        let (monitor, telemetry) = createMonitorForUsageTelemetry()
+        let featureScope = FeatureScopeMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
 
         // When
         monitor.process(command: RUMStartViewCommand.mockWith(instrumentationType: predicateInstrumentation))
@@ -506,45 +535,32 @@ class MonitorTests: XCTestCase {
         monitor.process(command: RUMStopSessionCommand(time: Date()))
 
         // Then
-        XCTAssertTrue(telemetry.messages.compactMap { $0.asUsage }.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.compactMap { $0.asUsage }.isEmpty)
     }
 
     func testInternalAddAction_itSendsNoUsage() {
         // Given
-        let (monitor, telemetry) = createMonitorForUsageTelemetry()
+        let featureScope = FeatureScopeMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
 
         // When
         monitor._internal?.addAction(at: Date(), type: .tap, name: "tap", heatmapAttributes: nil)
 
         // Then
-        XCTAssertTrue(telemetry.messages.compactMap { $0.asUsage }.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.compactMap { $0.asUsage }.isEmpty)
     }
 
     func testStartAndStopAction_itSendNoUsage() {
         // Given
-        let (monitor, telemetry) = createMonitorForUsageTelemetry()
+        let featureScope = FeatureScopeMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
 
         // When
         monitor.startAction(type: .scroll, name: "scroll")
         monitor.stopAction(type: .scroll, name: "scroll")
 
         // Then
-        XCTAssertTrue(telemetry.messages.compactMap { $0.asUsage }.isEmpty)
-    }
-
-    // MARK: - Usage Telemetry Helpers
-
-    private func createMonitorForUsageTelemetry() -> (Monitor, TelemetryMock) {
-        let featureScope = FeatureScopeMock()
-        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
-        return (monitor, featureScope.telemetryMock)
-    }
-
-    private func assertSentOneUsage(of feature: String, in telemetry: TelemetryMock, file: StaticString = #filePath, line: UInt = #line) {
-        let usages = telemetry.messages.compactMap { $0.asUsage }
-        XCTAssertEqual(usages.count, 1, "Expected exactly one usage, got \(usages)", file: file, line: line)
-        XCTAssertEqual(usages.first?.event.coreAPIFeature, feature, file: file, line: line)
-        XCTAssertEqual(usages.first?.sampleRate, UsageTelemetry.defaultSampleRate, file: file, line: line)
+        XCTAssertTrue(featureScope.telemetryMock.messages.compactMap { $0.asUsage }.isEmpty)
     }
 }
 
@@ -553,18 +569,6 @@ private let predicateInstrumentation: InstrumentationType = .uikit
 #elseif canImport(AppKit)
 private let predicateInstrumentation: InstrumentationType = .appkit
 #endif
-
-private extension UsageTelemetry.Event {
-    /// The usage telemetry feature name of the core APIs reported by `Monitor`.
-    var coreAPIFeature: String? {
-        switch self {
-        case .startView: return "start-view"
-        case .stopSession: return "stop-session"
-        case .addAction: return "add-action"
-        default: return nil
-        }
-    }
-}
 
 private class TimeseriesCollectorStub: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
