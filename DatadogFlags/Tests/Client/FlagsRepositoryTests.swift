@@ -670,7 +670,6 @@ final class FlagsRepositoryTests: XCTestCase {
         featureScope.dataStore.flush()
         defer { repository.flush() }
         repository.setEvaluationContext(optedOut) { _ in }
-        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], experimentationOptOut: true)))
         var attributes = optedOut.attributes
         attributes["dd_experimentation_opt_out_at"] = .bool(true)
         let completed = expectation(description: "invalid context")
