@@ -168,7 +168,6 @@ public enum Flags {
             self.flagSelection = flagSelection
         }
 
-        // Kept so binaries built against earlier releases still link.
         /// Creates a configuration for the Datadog Flags feature without a flag selection.
         public init(
             gracefulModeEnabled: Bool,
