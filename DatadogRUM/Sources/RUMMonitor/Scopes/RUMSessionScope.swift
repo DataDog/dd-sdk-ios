@@ -322,6 +322,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
                 dependencies.fatalErrorContext.sessionDidStop()
+                dependencies.watchdogTermination?.sessionDidStop(sessionID: sessionUUID.toRUMDataFormat)
                 return false // end this session (no longer keep the session scope)
             }
 
@@ -352,6 +353,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 endReason = .stopAPI
                 deactivating = true
                 dependencies.fatalErrorContext.sessionDidStop()
+                dependencies.watchdogTermination?.sessionDidStop(sessionID: sessionUUID.toRUMDataFormat)
 
             case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
@@ -483,6 +485,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     deinit {
+        dependencies.watchdogTermination?.sessionDidComplete(sessionID: sessionUUID.toRUMDataFormat)
         deactivateActiveView()
     }
 

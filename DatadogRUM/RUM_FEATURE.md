@@ -361,4 +361,5 @@ WebView RUM events are linked to the most recent native view with Session Replay
 - If an automatically tracked URLSession transfer fails after receiving HTTP headers, RUM reports one network Error with the received status and no completed Resource. Complete responses, including empty HEAD/204 and HTTP error-status responses without a transport error, keep the Resource path. Use `errorEventMapper` to modify or drop the failed-transfer Error.
 - A tracked Resource completion updates action counters only in its owning view. Within that view, it still updates the current eligible action; it does not bind the completion to the action that was active when the request started.
 - A manual Resource still pending when its session expires (timeout or max duration) is dropped: its later stop sends no event and doesn't update actions in the new session. After `stopSession()`, pending Resources still complete.
+- After `stopSession()`, a watchdog termination is not reported until a view of a new session is tracked.
 - For completed Resources, URLSession metrics populate `delivery_type` and `transfer_size` when available.
