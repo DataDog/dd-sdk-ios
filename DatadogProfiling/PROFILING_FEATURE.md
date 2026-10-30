@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-19
+last_updated: 2026-10-29
 sdk_version: 3.20.0
-verified_against_commit: 56ffa64c5
+verified_against_commit: 721c0617a
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -19,7 +19,7 @@ Profiling captures pprof wall-time and CPU-time samples from Apple application p
 
 Profiling requires `Datadog.initialize()` before `Profiling.enable()`. RUM is not a compile-time module dependency, but the feature depends on RUM context and RUM payload messages for session-linked sampling, quota checks, and profile correlation.
 
-**Platform**: iOS, tvOS, visionOS. The Swift sources and Mach profiler are compiled out on watchOS with `#if !os(watchOS)`.
+**Platform**: iOS, tvOS, visionOS. The Swift sources and Mach profiler are compiled out on watchOS and macOS with `#if !os(watchOS) && !os(macOS)`, so the module builds there but has no API.
 
 **API status**: `Profiling.enable(with:in:)` is experimental.
 

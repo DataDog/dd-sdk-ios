@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import XCTest
 import TestUtilities
 
@@ -541,4 +541,4 @@ func dd_free(_ trace: UnsafeMutablePointer<stack_trace_t>) {
     }
     trace.deallocate()
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

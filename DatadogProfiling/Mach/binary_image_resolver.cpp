@@ -6,7 +6,7 @@
 
 #include "binary_image_resolver.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <dlfcn.h>
 #include <string.h>
@@ -328,4 +328,4 @@ void resolve_stack_trace_frames(stack_trace_t* traces, size_t count, binary_imag
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

@@ -12,7 +12,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include "dd_profiler.h"  // stack_trace_t
 
@@ -79,7 +79,7 @@ void walk_frames_with_safe_read_fallback_for_testing(
 }
 #endif
 
-#endif // !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // __APPLE__
 
 #endif // DD_PROFILER_SAFE_READ_TESTING_H_

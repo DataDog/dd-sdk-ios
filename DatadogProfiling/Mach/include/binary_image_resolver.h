@@ -9,7 +9,7 @@
 
 #include "dd_profiler.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <mutex>
 #include <unordered_map>
@@ -148,5 +148,5 @@ void resolve_stack_trace_frames(stack_trace_t* traces, size_t count, binary_imag
 
 #endif // __cplusplus
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // DD_PROFILER_BINARY_IMAGE_RESOLVER_H_

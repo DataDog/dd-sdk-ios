@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import XCTest
 import DatadogInternal
@@ -140,4 +140,4 @@ final class ProfilingConditionsTests: XCTestCase {
     }
 }
 
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

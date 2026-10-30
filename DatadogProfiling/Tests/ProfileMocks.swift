@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import Foundation
 import TestUtilities
 import DatadogMachProfiler.Cxx
@@ -63,4 +63,4 @@ extension stack_trace_t {
         )
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

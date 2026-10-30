@@ -6,7 +6,7 @@
 
 #include "dd_pprof.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <cstdlib>
 
@@ -92,4 +92,4 @@ size_t dd_pprof_sample_count(dd_pprof_t* profile) {
 
 } // extern "C"
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

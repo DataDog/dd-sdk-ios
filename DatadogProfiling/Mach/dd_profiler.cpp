@@ -6,7 +6,7 @@
 
 #include "dd_profiler.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include "profile.h"
 #include "mach_sampling_profiler.h"
@@ -560,4 +560,4 @@ void dd_profiler_start_testing(
 }
 #endif
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX
