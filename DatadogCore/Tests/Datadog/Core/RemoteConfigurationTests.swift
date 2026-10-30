@@ -10,11 +10,16 @@ import DatadogInternal
 @testable import DatadogCore
 
 private final class NeverHTTPClient: HTTPClient {
+    @ReadWriteLock
+    private(set) var requestCount = 0
+
     func send(
         request: URLRequest,
         delegate: URLSessionTaskDelegate?,
         completion: @escaping (Result<(HTTPURLResponse, Data?), Error>) -> Void
-    ) {}
+    ) {
+        _requestCount.mutate { $0 += 1 }
+    }
 }
 
 // MARK: - Tests
@@ -521,7 +526,7 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
 #if os(macOS) || canImport(UIKit)
-    func testWillEnterForegroundSyncsRemoteConfiguration() {
+    func testDidBecomeActiveSyncsRemoteConfiguration() {
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
@@ -540,13 +545,13 @@ class RemoteConfigurationTests: XCTestCase {
 
         // Advance past TTL so the foreground sync is not suppressed
         dateProvider.advance(bySeconds: 360)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
         withExtendedLifetime(rc) {}
     }
 
-    func testWillEnterForegroundCallsCompletionAgain() {
+    func testDidBecomeActiveCallsCompletionAgain() {
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
@@ -571,15 +576,15 @@ class RemoteConfigurationTests: XCTestCase {
 
         // Advance past TTL so the foreground sync is not suppressed
         dateProvider.advance(bySeconds: 360)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
 
         wait(for: [completionExpectation], timeout: 2)
         withExtendedLifetime(rc) {}
     }
 
-    func testForegroundSyncsWhenLastSyncDateIsNil() {
-        // Given — init sync fails, lastSyncDate stays nil
+    func testForegroundSyncsAfterFailedSync() {
+        // Given — init sync fails, which resets lastSyncDate
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
         var didFailInitialSync = false
@@ -593,12 +598,29 @@ class RemoteConfigurationTests: XCTestCase {
             return .success((.mockResponseWith(statusCode: 200), foregroundPayload))
         }
         let rc = makeProvider(httpClient: httpClient, notificationCenterProvider: notificationCenterProvider)
+        let initExpectation = expectation(description: "init sync completes")
+        wait(until: { httpClient.requestsSent().count == 1 }, andThenFulfill: initExpectation)
+        waitForExpectations(timeout: 2)
 
-        // When — foreground fires immediately after a failed init sync
-        notificationCenterProvider.postEnterForeground()
+        // When — foreground fires right after the failed init sync
+        notificationCenterProvider.postDidBecomeActive()
 
-        // Then — sync fires because lastSyncDate is nil
+        // Then — sync fires without waiting for the TTL
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundDoesNotSyncWhileSyncIsInFlight() {
+        // Given — init sync never completes
+        let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
+        let httpClient = NeverHTTPClient()
+        let rc = makeProvider(httpClient: httpClient, notificationCenterProvider: notificationCenterProvider)
+
+        // When
+        notificationCenterProvider.postDidBecomeActive()
+
+        // Then
+        XCTAssertEqual(httpClient.requestCount, 1)
         withExtendedLifetime(rc) {}
     }
 
@@ -622,7 +644,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // When — TTL elapses and foreground fires
         dateProvider.advance(bySeconds: 360)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         // Then — sync fires
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
@@ -644,7 +666,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // When — only 1 minute passes and foreground fires
         dateProvider.advance(bySeconds: 60)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         // Then — no additional sync fires within TTL
         let noSyncExpectation = expectation(description: "no foreground sync within TTL")
@@ -700,7 +722,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // When — foreground fires within TTL
         dateProvider.advance(bySeconds: 60)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         // Then — no additional request fires
         let noSyncExpectation = expectation(description: "no foreground sync after 304 within TTL")
@@ -841,11 +863,11 @@ class RemoteConfigurationTests: XCTestCase {
 }
 
 fileprivate extension NotificationCenterProvider {
-    func postEnterForeground() {
+    func postDidBecomeActive() {
         #if os(macOS)
         workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
-        applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
     }
 }
