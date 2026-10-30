@@ -115,6 +115,7 @@ extension Datadog {
         /// `.medium` by default.
         public var batchProcessingLevel: BatchProcessingLevel
 
+        #if !os(macOS)
         /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
         /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
         ///
@@ -122,6 +123,7 @@ extension Datadog {
         ///
         /// `false` by default.
         public var backgroundTasksEnabled: Bool
+        #endif
 
         /// Identifies and optionally overrides where the SDK fetches its remote configuration from.
         public struct RemoteConfiguration {
@@ -204,11 +206,43 @@ extension Datadog {
         ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
         ///                                 any upload blocker such us no internet connection or low battery.
         ///                                 By default it's set to `false`.
+        ///                                 **Unavailable on macOS.**
         ///
         ///   - remoteConfiguration:        The remote configuration used to fetch SDK settings from the Datadog CDN.
         ///                                 When non-nil, the SDK fetches the remote configuration document
         ///                                 asynchronously at startup and caches the raw JSON for subsequent launches.
         ///                                 Default is `nil` — no fetch is performed.
+        #if os(macOS)
+        public init(
+            clientToken: String,
+            env: String,
+            site: DatadogSite = .us1,
+            service: String? = nil,
+            version: String? = nil,
+            bundle: Bundle = .main,
+            batchSize: BatchSize = .medium,
+            uploadFrequency: UploadFrequency = .average,
+            proxyConfiguration: [AnyHashable: Any]? = nil,
+            encryption: DataEncryption? = nil,
+            serverDateProvider: ServerDateProvider? = nil,
+            batchProcessingLevel: BatchProcessingLevel = .medium,
+            remoteConfiguration: RemoteConfiguration? = nil
+        ) {
+            self.clientToken = clientToken
+            self.env = env
+            self.site = site
+            self.service = service
+            self.version = version
+            self.bundle = bundle
+            self.batchSize = batchSize
+            self.uploadFrequency = uploadFrequency
+            self.proxyConfiguration = proxyConfiguration
+            self.encryption = encryption
+            self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.batchProcessingLevel = batchProcessingLevel
+            self.remoteConfiguration = remoteConfiguration
+        }
+        #else
         public init(
             clientToken: String,
             env: String,
@@ -240,6 +274,7 @@ extension Datadog {
             self.backgroundTasksEnabled = backgroundTasksEnabled
             self.remoteConfiguration = remoteConfiguration
         }
+        #endif
 
         // MARK: - Internal
 

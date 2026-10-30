@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-26
-sdk_version: 3.20.0
-verified_against_commit: 109a21eef
+last_updated: 2026-10-29
+sdk_version: 3.21.0
+verified_against_commit: b5bb38b54
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -100,7 +100,7 @@ RUM.enable(
         // Default: true
         trackFrustrations: true,
         
-        // Track events when no view is active (creates background view)
+        // Track events when no view is active (creates background view, unavailable on macOS)
         // Default: false
         // Warning: May increase session count and billing
         trackBackgroundEvents: false,
@@ -170,11 +170,11 @@ RUM.enable(
         // Default: true
         trackAnonymousUser: true,
         
-        // Track memory warnings as RUM errors
+        // Track memory warnings as RUM errors (unavailable on watchOS and macOS)
         // Default: true
         trackMemoryWarnings: true,
         
-        // Track slow frames / view hitches
+        // Track slow frames / view hitches (unavailable on macOS)
         // Default: true
         trackSlowFrames: true,
         
@@ -268,7 +268,7 @@ Requires configuration to be set, otherwise disabled by default:
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
 - **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
-- **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
+- **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view. Unavailable on macOS, where rendering is not measured yet
 
 ### Sampling
 - **Sessions**: `sessionSampleRate` (default: 100%)
@@ -311,7 +311,7 @@ Event mappers allow modifying or dropping events before upload:
 
 When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `RUM.enable(with:)` runs, it is merged onto the in-code `RUM.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
 
-- **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackBackgroundEvents`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `trackSlowFrames`, `trackWatchdogTerminations` (except on macOS), `vitalsUpdateFrequency`, and (except on watchOS) `trackMemoryWarnings`/`trackUserInteractions`. `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
+- **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `vitalsUpdateFrequency`, `trackBackgroundEvents`/`trackSlowFrames`/`trackWatchdogTerminations` (except on macOS), `trackUserInteractions` (except on watchOS), and `trackMemoryWarnings` (except on watchOS and macOS). `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
 - **`trace` namespace** configures distributed tracing on RUM's own URLSession instrumentation (traced hosts, sample rate, header/propagator types, injection strategy), merged field by field onto any in-code `urlSessionTracking.firstPartyHostsTracing`. An explicit `rum.trackResources == false` disables that instrumentation and suppresses `trace` entirely, regardless of the hosts it declares.
 - A parameter the remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration fetched) leaves the configuration unchanged.
 - See `RUMConfiguration+RemoteConfiguration.swift` for the full merge rules, and `DatadogTrace/TRACE_FEATURE.md#remote-configuration` for how Trace's own remote `trace.sampleRate` differs from this one (RUM owns propagation enablement; Trace only owns its default tracer's span sample rate).
@@ -355,7 +355,7 @@ WebView RUM events are linked to the most recent native view with Session Replay
 ## Additional Context
 
 - RUM uses sampling decisions at session start - once a session is sampled out, no events from that session are sent
-- Background event tracking (`trackBackgroundEvents`) creates "fake" background views and may increase session count
+- Background event tracking (`trackBackgroundEvents`) creates "fake" background views and may increase session count. The option does not exist on macOS, where apps have no background state: once a view was tracked, events with no active view go to a "NoActiveView" view
 - View tracking involves method swizzling of UIViewController lifecycle methods
 - All automatic tracking can be disabled by not setting predicates; manual tracking always available via `RUMMonitor.shared()`
 - If an automatically tracked URLSession transfer fails after receiving HTTP headers, RUM reports one network Error with the received status and no completed Resource. Complete responses, including empty HEAD/204 and HTTP error-status responses without a transport error, keep the Resource path. Use `errorEventMapper` to modify or drop the failed-transfer Error.

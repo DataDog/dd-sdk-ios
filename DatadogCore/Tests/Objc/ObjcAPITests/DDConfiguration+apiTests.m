@@ -68,7 +68,9 @@
     configuration.uploadFrequency = DDUploadFrequencyAverage;
     configuration.additionalConfiguration = @{@"additional": @"config"};
     [configuration setEncryption:[CustomDDDataEncryption new]];
+#if !TARGET_OS_OSX
     configuration.backgroundTasksEnabled = true;
+#endif
     [configuration setRemoteConfiguration:[[DDRemoteConfiguration alloc] initWithId:@"abc-123"]];
     [configuration setRemoteConfiguration:nil];
 }
