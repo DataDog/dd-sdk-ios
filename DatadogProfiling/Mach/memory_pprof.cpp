@@ -27,10 +27,20 @@
 
 namespace {
 
-constexpr size_t kLocationIndexCapacity = size_t{DD_MEMORY_PPROF_MAX_UNIQUE_LOCATIONS} * 2;
-constexpr size_t kMappingIndexCapacity = size_t{DD_MEMORY_PPROF_MAX_MAPPINGS} * 2;
+constexpr size_t kLocationIndexCapacity = DD_MEMORY_PPROF_MAX_UNIQUE_LOCATIONS * 2;
+constexpr size_t kMappingIndexCapacity = DD_MEMORY_PPROF_MAX_MAPPINGS * 2;
 constexpr size_t kClassNameIndexCapacity = DD_MEMORY_AGGREGATION_CAPACITY * 2;
 constexpr size_t kMaxIndexProbe = 64;
+
+static_assert(kLocationIndexCapacity != 0 &&
+                  (kLocationIndexCapacity & (kLocationIndexCapacity - 1)) == 0,
+              "location index capacity must be a nonzero power of two");
+static_assert(kMappingIndexCapacity != 0 &&
+                  (kMappingIndexCapacity & (kMappingIndexCapacity - 1)) == 0,
+              "mapping index capacity must be a nonzero power of two");
+static_assert(kClassNameIndexCapacity != 0 &&
+                  (kClassNameIndexCapacity & (kClassNameIndexCapacity - 1)) == 0,
+              "class-name index capacity must be a nonzero power of two");
 
 enum class StringID : uint8_t {
     kEmpty,
@@ -53,7 +63,7 @@ constexpr size_t kInitialStringCount = static_cast<size_t>(StringID::kInitialStr
 
 // Each aggregate adds at most one class name; each mapping adds two strings.
 static_assert(kInitialStringCount + DD_MEMORY_AGGREGATION_CAPACITY +
-                  (size_t{DD_MEMORY_PPROF_MAX_MAPPINGS} * 2) <=
+                  (DD_MEMORY_PPROF_MAX_MAPPINGS * 2) <=
               std::numeric_limits<uint32_t>::max());
 static_assert(DD_MEMORY_PPROF_MAX_CLASS_NAME_BYTES <= std::numeric_limits<uint32_t>::max());
 
@@ -73,6 +83,7 @@ struct ClassNameEntry {
 };
 
 size_t bucket_for(uint64_t key, size_t capacity) {
+    // SplitMix64 finalizer spreads address/hash bits before power-of-two masking.
     key ^= key >> 30U;
     key *= 0xbf58476d1ce4e5b9ULL;
     key ^= key >> 27U;
@@ -341,6 +352,7 @@ bool HeapPprofEncoder::class_name_id(
 }
 
 bool HeapPprofEncoder::intern_class_name(const char *name, size_t length, int64_t &id) {
+    // FNV-1a hashes the name bytes; equality still compares their full contents.
     uint64_t hash = 0xcbf29ce484222325ULL;
     for (size_t index = 0; index < length; ++index) {
         hash = (hash ^ static_cast<unsigned char>(name[index])) * 0x100000001b3ULL;

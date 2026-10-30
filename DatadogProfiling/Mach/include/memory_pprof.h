@@ -16,10 +16,10 @@ namespace dd::profiler { class HeapPprofEncoder; }
 extern "C" {
 #endif
 
-#define DD_MEMORY_PPROF_MAX_PAYLOAD_BYTES 8388608
-#define DD_MEMORY_PPROF_MAX_UNIQUE_LOCATIONS 65536
-#define DD_MEMORY_PPROF_MAX_MAPPINGS 1024
-#define DD_MEMORY_PPROF_MAX_CLASS_NAME_BYTES 1024
+static const size_t DD_MEMORY_PPROF_MAX_PAYLOAD_BYTES = 8388608;
+static const size_t DD_MEMORY_PPROF_MAX_UNIQUE_LOCATIONS = 65536;
+static const size_t DD_MEMORY_PPROF_MAX_MAPPINGS = 1024;
+static const size_t DD_MEMORY_PPROF_MAX_CLASS_NAME_BYTES = 1024;
 
 #ifdef __cplusplus
 typedef dd::profiler::HeapPprofEncoder dd_memory_pprof_encoder_t;

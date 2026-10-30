@@ -67,7 +67,7 @@ struct cached_image_t {
     uintptr_t load_address;
     /** UUID of the binary image */
     uuid_t uuid;
-    /** Filename of the binary image (owned, null-terminated, or nullptr) */
+    /** Null-terminated filename borrowed from cache-owned storage, or nullptr */
     char* filename;
 };
 
