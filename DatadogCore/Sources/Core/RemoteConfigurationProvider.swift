@@ -274,10 +274,12 @@ internal final class RemoteConfigurationProvider {
             }
         }
 
-        lastSyncDate = dateProvider.now
+        let syncDate = dateProvider.now
+        lastSyncDate = syncDate
 
         httpClient.send(request: request, delegate: nil) { [weak self] result in
-            guard let self else {
+            // A newer sync started after this one, so its result supersedes this one.
+            guard let self, self.lastSyncDate == syncDate else {
                 return
             }
 
