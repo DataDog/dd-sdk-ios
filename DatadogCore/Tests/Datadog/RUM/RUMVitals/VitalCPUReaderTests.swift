@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
 
@@ -21,18 +22,27 @@ class VitalCPUReaderTest: XCTestCase {
         XCTAssertGreaterThanOrEqual(secondMeasurement, firstMeasurement)
     }
 
-    func testItReadsUserTicksFromHostCPULoadInfo() {
-        var cpuLoadInfo = host_cpu_load_info()
-        cpuLoadInfo.cpu_ticks = (1, 2, 3, 4) // user, system, idle, nice
+    func testSystemProviderReadsHostCPULoadInfo() {
+        XCTAssertNoThrow(try SystemHostCPULoadInfoProvider().readHostCPULoadInfo().get())
+    }
 
-        XCTAssertEqual(VitalCPUReader.userTicks(from: cpuLoadInfo), 1)
+    func testWhenHostCPULoadInfoCannotBeReadItReturnsNilAndReportsTelemetryError() {
+        let telemetry = TelemetryMock()
+        let cpuReader = VitalCPUReader(
+            notificationCenterProvider: testNotificationCenterProvider,
+            telemetry: telemetry,
+            hostCPULoadInfoProvider: HostCPULoadInfoProviderMock(mockTicks: [])
+        )
+
+        XCTAssertNil(cpuReader.readVitalData())
+        XCTAssertEqual(telemetry.messages.firstError()?.message, "CPU Vital cannot be read! Error code: \(KERN_FAILURE)")
     }
 
     #if !os(watchOS)
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
-        let cpuReader = VitalCPUReaderMock(
+        let cpuReader = VitalCPUReader(
             notificationCenterProvider: testNotificationCenterProvider,
-            mockTicks: [100, 110, 210, 310, 330]
+            hostCPULoadInfoProvider: HostCPULoadInfoProviderMock(mockTicks: [100, 110, 210, 310, 330])
         )
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
         #if os(macOS)
@@ -59,12 +69,14 @@ class VitalCPUReaderTest: XCTestCase {
     func testWhenCPUCounterRollsOverWhileAppIsInactiveItDoesNotCrash() throws {
         let tickWhenResigningActive = UInt32.max - 10
         let tickAfterRollover: UInt32 = 20
-        let cpuReader = VitalCPUReaderMock(
+        let cpuReader = VitalCPUReader(
             notificationCenterProvider: testNotificationCenterProvider,
-            mockTicks: [
-                tickWhenResigningActive,
-                tickAfterRollover
-            ]
+            hostCPULoadInfoProvider: HostCPULoadInfoProviderMock(
+                mockTicks: [
+                    tickWhenResigningActive,
+                    tickAfterRollover
+                ]
+            )
         )
 
         #if os(macOS)
@@ -80,12 +92,14 @@ class VitalCPUReaderTest: XCTestCase {
     func testWhenCPUCounterRollsOverWhileAppIsActiveItAccumulatesElapsedTicks() throws {
         let tickBeforeRollover = UInt32.max - 10
         let tickAfterRollover: UInt32 = 20
-        let cpuReader = VitalCPUReaderMock(
+        let cpuReader = VitalCPUReader(
             notificationCenterProvider: testNotificationCenterProvider,
-            mockTicks: [
-                tickBeforeRollover,
-                tickAfterRollover
-            ]
+            hostCPULoadInfoProvider: HostCPULoadInfoProviderMock(
+                mockTicks: [
+                    tickBeforeRollover,
+                    tickAfterRollover
+                ]
+            )
         )
 
         let measurementBeforeRollover = try XCTUnwrap(cpuReader.readVitalData())
@@ -95,17 +109,23 @@ class VitalCPUReaderTest: XCTestCase {
     }
 }
 
-// Overrides only the OS counter read.
+// Replaces only the OS call reading the host CPU load.
 // Rollover normalization and lifecycle accounting stay in VitalCPUReader.
-private class VitalCPUReaderMock: VitalCPUReader {
+// The user ticks are scripted; the other counters hold values that must never be read.
+// Fails once the scripted ticks are exhausted.
+private class HostCPULoadInfoProviderMock: HostCPULoadInfoProvider {
     private var mockTicks: [UInt32]
 
-    init(notificationCenterProvider: NotificationCenterProvider, mockTicks: [UInt32]) {
+    init(mockTicks: [UInt32]) {
         self.mockTicks = mockTicks
-        super.init(notificationCenterProvider: notificationCenterProvider)
     }
 
-    override func readRawUtilizedTicks() -> UInt32? {
-        mockTicks.isEmpty ? nil : mockTicks.removeFirst()
+    func readHostCPULoadInfo() -> Result<host_cpu_load_info, HostCPULoadInfoError> {
+        guard !mockTicks.isEmpty else {
+            return .failure(HostCPULoadInfoError(code: KERN_FAILURE))
+        }
+        var cpuLoadInfo = host_cpu_load_info()
+        cpuLoadInfo.cpu_ticks = (mockTicks.removeFirst(), 1_000, 2_000, 3_000) // user, system, idle, nice
+        return .success(cpuLoadInfo)
     }
 }
