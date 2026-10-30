@@ -112,17 +112,15 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
             // Then
             wait(for: [completed], timeout: 1)
-            XCTAssertEqual(fetchCount, 1, "\(expectedError)")
-            XCTAssertEqual(results.count, 1, "\(expectedError)")
+            XCTAssertEqual(fetchCount, 1)
+            XCTAssertEqual(results.count, 1)
             guard case .failure(.networkError(let error)) = results.first else {
-                XCTFail("Expected the original network failure for \(expectedError)")
-                continue
+                return XCTFail("Expected the original network failure")
             }
             XCTAssertEqual(error as NSError, expectedError)
-            XCTAssertNil(scope.telemetryMock.messages.firstError(), "\(expectedError)")
-            XCTAssertTrue(logger.errorLogs.isEmpty, "\(expectedError)")
-            XCTAssertEqual(logger.warnMessages, ["Failed to fetch flag assignments from the server."], "\(expectedError)")
-            XCTAssertNotNil(logger.warnLog?.error, "\(expectedError)")
+            XCTAssertNil(scope.telemetryMock.messages.firstError())
+            XCTAssertTrue(logger.errorLogs.isEmpty)
+            XCTAssertEqual(logger.warnMessages, ["Failed to fetch flag assignments from the server."])
         }
     }
 

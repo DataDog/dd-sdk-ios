@@ -1,7 +1,5 @@
 # Unreleased
 
-- [FIX] Flags: Stop reporting assignment fetch failures as SDK defects and log them as warnings. See [#3307][]
-
 # 3.21.0 / 29-10-2026
 
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
@@ -1374,5 +1372,3 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@thedavidharris]: https://github.com/thedavidharris
 [@noremac]: https://github.com/noremac
 [@saladdays831]: https://github.com/saladdays831
-
-[#3307]: https://github.com/DataDog/dd-sdk-ios/pull/3307

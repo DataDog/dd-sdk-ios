@@ -64,8 +64,7 @@ final class FlagsRepositoryTests: XCTestCase {
             XCTAssertEqual(fetchCount, 1)
             XCTAssertEqual(results.count, 1)
             guard case .failure(.networkError(let error)) = results.first else {
-                XCTFail("Expected the allocation failure for cached context \(String(describing: cachedContext))")
-                continue
+                return XCTFail("Expected the allocation failure")
             }
             XCTAssertEqual(error as NSError, allocationError)
             // The OpenFeature provider reads this state inside the failure callback.
