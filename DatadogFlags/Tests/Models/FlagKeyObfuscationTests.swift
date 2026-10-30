@@ -414,7 +414,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testFilteredCacheIsRejectedByLegacyReaders() throws {
-        let policies: [ExperimentationOptOut] = [.immediate, .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")]
+        let policies: [ExperimentationOptOut] = [.immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
         for policy in policies {
             for obfuscated in [false, true] {
                 let scope = FeatureScopeMock()
@@ -430,7 +430,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testCacheRoundTripsAllSupportedVersions() throws {
-        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")]
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
         for policy in policies {
             for obfuscated in [false, true] {
                 let scope = FeatureScopeMock()
@@ -450,7 +450,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testCacheRejectsMismatchedPolicyAndVersion() throws {
-        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")]
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
         for policy in policies {
             for obfuscated in [false, true] {
                 let scope = FeatureScopeMock()

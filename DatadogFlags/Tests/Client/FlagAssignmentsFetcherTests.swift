@@ -14,7 +14,7 @@ import DatadogInternal
 final class FlagAssignmentsFetcherTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
-    func testFetcherAppliesOptOutAdmission() {
+    func testFetcherAppliesOptOutAdmission() throws {
         for accepted in [false, true] {
             let cutoff = accepted ? "2026-10-21T12:00:00Z" : "2026-10-22T12:00:00Z"
             let bytes = Data("""
@@ -30,7 +30,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                 fetch: { _, complete in complete(.success(bytes)) }
             )
             let completed = expectation(description: "admission \(accepted)")
-            fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")) { result in
+            fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))) { result in
                 switch result {
                 case .success: XCTAssertTrue(accepted)
                 case .failure(.invalidResponse): XCTAssertFalse(accepted)

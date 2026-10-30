@@ -13,26 +13,30 @@ import DatadogInternal
 
 final class FlagsEvaluationContextTests: XCTestCase {
     func testOptOutTimestampNormalizesProlepticGregorianDates() throws {
-        let cases = [
-            ("0000-01-01T00:00:00Z", "0000-01-01T00:00:00Z"),
-            ("0000-02-29T00:00:00Z", "0000-02-29T00:00:00Z"),
-            ("0000-03-01T00:00:00+00:01", "0000-02-29T23:59:00Z"),
-            ("0000-01-01T00:00:00.123456789-00:00", "0000-01-01T00:00:00.123456789Z"),
-            ("1582-10-10T00:00:00Z", "1582-10-10T00:00:00Z"),
-            ("1582-10-04T23:59:59-00:01", "1582-10-05T00:00:59Z"),
-            ("1582-10-15T00:00:00+00:01", "1582-10-14T23:59:00Z"),
-            ("2000-03-01T00:15:00+01:00", "2000-02-29T23:15:00Z"),
-            ("1900-03-01T00:15:00+01:00", "1900-02-28T23:15:00Z"),
-            ("2026-01-01T00:00:00+23:59", "2025-12-31T00:01:00Z"),
-            ("2025-12-31T23:59:00-23:59", "2026-01-01T23:58:00Z"),
-            ("2026-10-19t08:00:00.1234567899-04:00", "2026-10-19T12:00:00.123456789Z"),
-            ("2026-10-19T12:00:00.1200000000z", "2026-10-19T12:00:00.12Z"),
-            ("2026-10-19T12:00:00.0000000009Z", "2026-10-19T12:00:00Z"),
-            ("9999-12-31T23:58:59.9999999999-00:01", "9999-12-31T23:59:59.999999999Z"),
-            ("9999-12-31T23:59:59.999999999Z", "9999-12-31T23:59:59.999999999Z")
+        let cases: [(String, Int64, Int32)] = [
+            ("0000-01-01T00:00:00Z", -62_167_219_200, 0),
+            ("0000-02-29T00:00:00Z", -62_162_121_600, 0),
+            ("0000-03-01T00:00:00+00:01", -62_162_035_260, 0),
+            ("0000-01-01T00:00:00.123456789-00:00", -62_167_219_200, 123_456_789),
+            ("1582-10-10T00:00:00Z", -12_219_724_800, 0),
+            ("1582-10-04T23:59:59-00:01", -12_220_156_741, 0),
+            ("1582-10-15T00:00:00+00:01", -12_219_292_860, 0),
+            ("2000-03-01T00:15:00+01:00", 951_866_100, 0),
+            ("1900-03-01T00:15:00+01:00", -2_203_893_900, 0),
+            ("2026-01-01T00:00:00+23:59", 1_767_139_260, 0),
+            ("2025-12-31T23:59:00-23:59", 1_767_311_880, 0),
+            ("2026-10-19t08:00:00.1234567899-04:00", 1_792_411_200, 123_456_789),
+            ("2026-10-19T12:00:00.1200000000z", 1_792_411_200, 120_000_000),
+            ("2026-10-19T12:00:00.0000000009Z", 1_792_411_200, 0),
+            ("9999-12-31T23:58:59.9999999999-00:01", 253_402_300_799, 999_999_999),
+            ("9999-12-31T23:59:59.999999999Z", 253_402_300_799, 999_999_999),
+            ("1970-01-01T00:00:00Z", 0, 0),
+            ("1969-12-31T23:59:59.1234567899Z", -1, 123_456_789)
         ]
-        for (input, expected) in cases {
-            XCTAssertEqual(try ExperimentationOptOut.normalizedTimestamp(input), expected, input)
+        for (input, seconds, nanoseconds) in cases {
+            let instant = try OptOutInstant(rfc3339: input)
+            XCTAssertEqual(instant.seconds, seconds, input)
+            XCTAssertEqual(instant.nanoseconds, nanoseconds, input)
         }
     }
 
@@ -52,7 +56,7 @@ final class FlagsEvaluationContextTests: XCTestCase {
             "2026-01-01T00:00:00+24:00",
             "2026-01-01T00:00:00+00:60"
         ] {
-            XCTAssertThrowsError(try ExperimentationOptOut.normalizedTimestamp(input), input)
+            XCTAssertThrowsError(try OptOutInstant(rfc3339: input), input)
         }
     }
 
@@ -64,7 +68,7 @@ final class FlagsEvaluationContextTests: XCTestCase {
             "2026-01-01T00:00:00Z\n", " 2026-01-01T00:00:00Z",
             "２０２６-01-01T00:00:00Z"
         ] {
-            XCTAssertThrowsError(try ExperimentationOptOut.normalizedTimestamp(input), input)
+            XCTAssertThrowsError(try OptOutInstant(rfc3339: input), input)
         }
     }
     func testImmediateOptOutRejectsCutoffWithoutExplicitImmediateMode() throws {
@@ -139,7 +143,7 @@ final class FlagsEvaluationContextTests: XCTestCase {
             if let mode { options["experimentation_opt_out_mode"] = mode }
             if let acknowledged { options["dd_experimentation_opt_out_at"] = acknowledged }
             let bytes = try JSONSerialization.data(withJSONObject: options)
-            XCTAssertEqual(ExperimentationOptOut.accepts(try response(options: String(decoding: bytes, as: UTF8.self)), for: .futureExperimentsOnly(cutoff: cutoff)), accepted, "\(options)")
+            XCTAssertEqual(ExperimentationOptOut.accepts(try response(options: String(decoding: bytes, as: UTF8.self)), for: .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: cutoff))), accepted, "\(options)")
         }
     }
 

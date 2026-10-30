@@ -14,7 +14,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
     private let testURL = URL(string: "https://test.example.com/precompute-assignments")!
 
     func testExperimentationOptOutUsesEvaluationOptions() throws {
-        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: "2026-10-21T12:00:00Z")]
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
         for policy in policies {
             let request = try URLRequest.flagAssignmentsRequest(
                 url: testURL,

@@ -75,14 +75,14 @@ extension FlagsEvaluationContext {
             return nil
         }
         guard case .string(let timestamp) = value else { throw FlagsError.invalidContext }
-        let normalized = try ExperimentationOptOut.normalizedTimestamp(timestamp)
-        return mode == .immediate ? .immediate : .futureExperimentsOnly(cutoff: normalized)
+        let cutoff = try OptOutInstant(rfc3339: timestamp)
+        return mode == .immediate ? .immediate : .futureExperimentsOnly(cutoff: cutoff)
     }
 }
 
 internal enum ExperimentationOptOut: Equatable, Codable {
     case immediate
-    case futureExperimentsOnly(cutoff: String)
+    case futureExperimentsOnly(cutoff: OptOutInstant)
 
     var wireMode: String {
         switch self {
@@ -111,52 +111,69 @@ internal enum ExperimentationOptOut: Equatable, Codable {
         case .futureExperimentsOnly(let cutoff):
             guard response.experimentationOptOutMode == wireMode,
                   let acknowledged = response.experimentationOptOutAt,
-                  let normalized = try? Self.normalizedTimestamp(acknowledged) else { return false }
-            return normalized == cutoff
+                  let instant = try? OptOutInstant(rfc3339: acknowledged) else { return false }
+            return instant == cutoff
         }
     }
+}
 
-    // Normalize Gregorian fields separately from the fraction to retain nanosecond precision.
-    static func normalizedTimestamp(_ timestamp: String) throws -> String {
-        // Require a full date, time and offset. Foundation also accepts incomplete ISO8601 dates.
-        let pattern = #"^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?(?:[Zz]|[+-][0-9]{2}:[0-9]{2})\z"#
-        guard timestamp.range(of: pattern, options: .regularExpression) != nil else {
+/// An RFC3339 instant with nanosecond precision.
+internal struct OptOutInstant: Hashable, Codable {
+    /// Whole seconds since 1970-01-01T00:00:00Z.
+    let seconds: Int64
+    /// Nanoseconds within the second, truncated to 9 digits.
+    let nanoseconds: Int32
+
+    init(rfc3339 timestamp: String) throws {
+        let input = timestamp.uppercased()
+        guard let match = Self.pattern?.firstMatch(in: input, range: NSRange(input.startIndex..., in: input)) else {
             throw FlagsError.invalidContext
         }
-        let normalized = timestamp.uppercased()
-        let wholeSecond = String(normalized.prefix(19))
-        guard let date = wholeSecondFormatter.date(from: wholeSecond),
-              wholeSecondFormatter.string(from: date) == wholeSecond else { throw FlagsError.invalidContext }
-        var offsetMinutes = 0
-        if normalized.last != "Z" {
-            let offset = normalized.suffix(5).split(separator: ":").compactMap { Int($0) }
-            guard offset.count == 2, offset[0] < 24, offset[1] < 60 else { throw FlagsError.invalidContext }
-            offsetMinutes = (offset[0] * 60 + offset[1]) * (normalized.suffix(6).first == "-" ? -1 : 1)
+        func group(_ index: Int) -> String? {
+            Range(match.range(at: index), in: input).map { String(input[$0]) }
         }
-        let offset = normalized.last == "Z" ? "Z" : String(normalized.suffix(6))
-        let utcDate = date.addingTimeInterval(TimeInterval(-offsetMinutes * 60))
-        guard timestampRange.contains(utcDate.timeIntervalSince1970) else { throw FlagsError.invalidContext }
-        var fraction = String(normalized.dropFirst(19).dropLast(offset.count))
-        // Match the edge's nanosecond resolution by truncating finer fractional digits.
-        if fraction.count > 10 {
-            fraction = String(fraction.prefix(10))
+        let dateTime = group(1)
+        let fraction = group(2)
+        let offsetSign = group(3)
+        let offsetHours = group(4).flatMap { Int64($0) }
+        let offsetMinutes = group(5).flatMap { Int64($0) }
+
+        // `DateFormatter` validates the calendar fields; the round trip rejects rolled-over dates such as April 31.
+        guard let dateTime, let date = Self.formatter.date(from: dateTime), Self.formatter.string(from: date) == dateTime else {
+            throw FlagsError.invalidContext
         }
-        while fraction.last == "0" { fraction.removeLast() }
-        if fraction == "." { fraction = "" }
-        return wholeSecondFormatter.string(from: utcDate) + fraction + "Z"
+
+        var offset: Int64 = 0
+        if let offsetSign, let offsetHours, let offsetMinutes {
+            guard offsetHours < 24, offsetMinutes < 60 else { throw FlagsError.invalidContext }
+            offset = (offsetHours * 3_600 + offsetMinutes * 60) * (offsetSign == "-" ? -1 : 1)
+        }
+
+        let seconds = Int64(date.timeIntervalSince1970) - offset
+        let nanosecondDigits = (fraction ?? "").prefix(9).padding(toLength: 9, withPad: "0", startingAt: 0)
+        guard Self.supportedRange.contains(seconds), let nanoseconds = Int32(nanosecondDigits) else {
+            throw FlagsError.invalidContext
+        }
+        self.seconds = seconds
+        self.nanoseconds = nanoseconds
     }
 
-    // UTC seconds from 0000-01-01 inclusive to 10000-01-01 exclusive.
-    private static let timestampRange: Range<TimeInterval> = -62_167_219_200..<253_402_300_800
+    // Groups: 1 date and time, 2 fraction digits, 3 offset sign, 4 offset hours, 5 offset minutes.
+    private static let pattern = try? NSRegularExpression(
+        pattern: #"^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})(?:\.([0-9]+))?(?:Z|([+-])([0-9]{2}):([0-9]{2}))\z"#
+    )
 
-    private static let wholeSecondFormatter: DateFormatter = {
+    /// Years 0000 to 9999 in UTC.
+    private static let supportedRange: Range<Int64> = -62_167_219_200..<253_402_300_800
+
+    private static let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         // Apply Gregorian rules across the supported range, including dates before 1582.
-        formatter.gregorianStartDate = Date(timeIntervalSince1970: timestampRange.lowerBound)
-        // The extended year field includes year zero. Keep fractional seconds out of Date.
+        formatter.gregorianStartDate = Date(timeIntervalSince1970: TimeInterval(supportedRange.lowerBound))
+        // The extended year field includes year zero.
         formatter.dateFormat = "uuuu-MM-dd'T'HH:mm:ss"
         formatter.isLenient = false
         return formatter

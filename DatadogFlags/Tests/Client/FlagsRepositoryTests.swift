@@ -578,7 +578,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 "dd_experimentation_opt_out_at": .string(cutoff)
             ])) { _ in }
         }
-        XCTAssertEqual(fetcher.experimentationOptOutPolicies, cutoffs.map { .futureExperimentsOnly(cutoff: $0) })
+        XCTAssertEqual(fetcher.experimentationOptOutPolicies, try cutoffs.map { .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: $0)) })
         completions[1](.success(.init(
             flags: ["new": .mockAnyBoolean()],
             experimentationOptOutMode: "future_experiments_only",
@@ -2954,8 +2954,8 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
-    func testOverlappingContextUpdates_withSameContext_preservesFreshSuccess() {
-        for (mode, attributes, policy) in overlappingContextScenarios {
+    func testOverlappingContextUpdates_withSameContext_preservesFreshSuccess() throws {
+        for (mode, attributes, policy) in try overlappingContextScenarios() {
             for latestSucceeds in [false, true] {
                 for responseOrder in [[0, 1], [1, 0]] {
                     let featureScope = FeatureScopeMock()
@@ -3004,8 +3004,8 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
-    func testOverlappingContextUpdates_withSameContext_afterReset_rejectsEarlierSuccess() {
-        for (mode, attributes, policy) in overlappingContextScenarios {
+    func testOverlappingContextUpdates_withSameContext_afterReset_rejectsEarlierSuccess() throws {
+        for (mode, attributes, policy) in try overlappingContextScenarios() {
             let featureScope = FeatureScopeMock()
             var completions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
             let repository = makeRepository(
@@ -3332,7 +3332,7 @@ final class FlagsRepositoryTests: XCTestCase {
         assertions(repository, dataStore)
     }
 
-    private var overlappingContextScenarios: [(FlagsClient.ExperimentationOptOutMode, [String: AnyValue], ExperimentationOptOut?)] {
+    private func overlappingContextScenarios() throws -> [(FlagsClient.ExperimentationOptOutMode, [String: AnyValue], ExperimentationOptOut?)] {
         let cutoff = "2026-10-21T12:00:00Z"
         let attributes: [String: AnyValue] = ["dd_experimentation_opt_out_at": .string(cutoff)]
         return [
@@ -3340,7 +3340,7 @@ final class FlagsRepositoryTests: XCTestCase {
             (.immediate, [:], nil),
             (.futureExperimentsOnly, [:], nil),
             (.immediate, attributes, .immediate),
-            (.futureExperimentsOnly, attributes, .futureExperimentsOnly(cutoff: cutoff))
+            (.futureExperimentsOnly, attributes, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: cutoff)))
         ]
     }
 
@@ -3354,7 +3354,7 @@ final class FlagsRepositoryTests: XCTestCase {
             (nil, .immediate),
             (nil, .futureExperimentsOnly),
             (.immediate, .futureExperimentsOnly),
-            (.futureExperimentsOnly(cutoff: cutoff), .immediate)
+            (.futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: cutoff)), .immediate)
         ]
         for (cachedPolicy, mode) in cases {
             for readAfterContext in [false, true] {
