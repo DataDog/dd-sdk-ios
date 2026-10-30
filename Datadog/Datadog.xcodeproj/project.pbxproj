@@ -431,6 +431,7 @@
 		5B1D02822E8E6D2700AB2391 /* FlagsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02812E8E6D2300AB2391 /* FlagsError.swift */; };
 		5B1D02862E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
 		5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */; };
+		A33380013000000000000001 /* FlagsEvaluationContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A33380013000000000000002 /* FlagsEvaluationContextTests.swift */; };
 		5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02902E8ED10500AB2391 /* ExposureEventTests.swift */; };
 		5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
 		5B23A8AB2FF7A8A800024C6F /* MaskSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B23A8AA2FF7A8A800024C6F /* MaskSnapshot.swift */; };
@@ -2480,6 +2481,7 @@
 		5B1D02812E8E6D2300AB2391 /* FlagsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsError.swift; sourceTree = "<group>"; };
 		5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiver.swift; sourceTree = "<group>"; };
 		5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponseTests.swift; sourceTree = "<group>"; };
+		A33380013000000000000002 /* FlagsEvaluationContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationContextTests.swift; sourceTree = "<group>"; };
 		5B1D02902E8ED10500AB2391 /* ExposureEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureEventTests.swift; sourceTree = "<group>"; };
 		5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiverTests.swift; sourceTree = "<group>"; };
 		5B23A8AA2FF7A8A800024C6F /* MaskSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskSnapshot.swift; sourceTree = "<group>"; };
@@ -4619,6 +4621,7 @@
 			isa = PBXGroup;
 			children = (
 				5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */,
+				A33380013000000000000002 /* FlagsEvaluationContextTests.swift */,
 				62FAD0013000000000000006 /* FlagKeyObfuscationTests.swift */,
 				5B1D02902E8ED10500AB2391 /* ExposureEventTests.swift */,
 				5B16A3692E83E46F0046A863 /* AnyValueTests.swift */,
@@ -9214,6 +9217,7 @@
 				5B4F552F2E853D7700A241C3 /* FlagsClientMocks.swift in Sources */,
 				8DADC3C92E7CCF190060F558 /* FlagsClientTests.swift in Sources */,
 				5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */,
+				A33380013000000000000001 /* FlagsEvaluationContextTests.swift in Sources */,
 				62FAD0013000000000000005 /* FlagKeyObfuscationTests.swift in Sources */,
 				5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */,
 				5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,

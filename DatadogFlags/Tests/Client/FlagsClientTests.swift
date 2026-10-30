@@ -145,6 +145,15 @@ final class FlagsClientTests: XCTestCase {
         })
     }
 
+    func testPreviousConfigurationInitializerKeepsDisabledMode() {
+        let initializer: (Bool) -> FlagsClient.Configuration = FlagsClient.Configuration.init(enableEvaluationTelemetryOptOutParameter:)
+        for enabled in [false, true] {
+            let configuration = initializer(enabled)
+            XCTAssertEqual(configuration.enableEvaluationTelemetryOptOutParameter, enabled)
+            XCTAssertEqual(configuration.experimentationOptOutMode, .disabled)
+        }
+    }
+
     func testEvaluationTelemetryConfigurationDefaultsToDisabled() {
         XCTAssertFalse(FlagsClient.Configuration().enableEvaluationTelemetryOptOutParameter)
     }
@@ -347,6 +356,37 @@ final class FlagsClientTests: XCTestCase {
             ),
             repository, exposures, evaluations, rum
         )
+    }
+
+    func testConfigurationForwardsExperimentationMode() {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+        XCTAssertEqual(FlagsClient.Configuration().experimentationOptOutMode, .disabled)
+        let invalid = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .bool(true)])
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let client = FlagsClient.create(configuration: .init(experimentationOptOutMode: mode), name: "\(mode)", in: core)
+            let completed = expectation(description: "invalid context \(mode)")
+            client.setEvaluationContext(invalid) { result in
+                defer { completed.fulfill() }
+                guard case .failure(.invalidContext) = result else {
+                    return XCTFail("Configuration must forward the mode")
+                }
+            }
+            wait(for: [completed], timeout: 1)
+            XCTAssertEqual(client.getDetails(key: "flag", defaultValue: false).error, .invalidContext)
+        }
+    }
+
+    func testExistingNamedClientPreservesConfiguration() {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+        let original = FlagsClient.create(name: "existing", in: core)
+        let duplicate = FlagsClient.create(configuration: .init(experimentationOptOutMode: .immediate), name: "existing", in: core)
+        XCTAssertIdentical(original, duplicate)
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("mode `.immediate`") && $0.contains("mode `.disabled`") })
     }
 
     func testCreate() {

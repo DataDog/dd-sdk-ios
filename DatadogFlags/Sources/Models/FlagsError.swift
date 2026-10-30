@@ -18,6 +18,9 @@ public enum FlagsError: Error {
     /// The flags service returned an invalid or unexpected response.
     ///
     /// This may indicate a service error or an incompatible API version.
+    /// With experimentation opt-out enabled, this also reports a response that does not
+    /// acknowledge the requested opt-out policy, or a superseded context request whose
+    /// context and policy have no readable assignments.
     case invalidResponse
 
     /// The flags client was not properly initialized.
@@ -30,6 +33,12 @@ public enum FlagsError: Error {
     ///
     /// This may occur if required configuration parameters are missing or malformed.
     case invalidConfiguration
+
+    /// The evaluation context is invalid.
+    /// For example, experimentation opt-out is enabled and `dd_experimentation_opt_out_at`
+    /// is not a string in the supported RFC3339 subset.
+    /// The client sends no assignment request, and evaluations return application defaults.
+    case invalidContext
 
     /// The first evaluation context did not become ready before the configured initialization timeout.
     case initializationTimedOut
