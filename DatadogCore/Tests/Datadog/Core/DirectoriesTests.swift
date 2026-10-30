@@ -176,6 +176,56 @@ class DirectoriesTests: XCTestCase {
         // Then
         XCTAssertNotEqual(coreDirectory1.coreDirectory.url, coreDirectory2.coreDirectory.url)
     }
+
+    func testOnMacOS_givenTwoExecutablesWithoutBundleIdentifierOrExecutableURL_whenCreatingCoreDirectories_thenTheyAreDifferent() throws {
+        // Given
+        let instanceName: String = .mockRandom()
+        let site: DatadogSite = .mockRandom()
+
+        // When
+        let coreDirectory1 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundlePath: "/usr/local/bin", bundleIdentifier: nil, executableURL: nil)
+        )
+        let coreDirectory2 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundlePath: "/opt/tools", bundleIdentifier: nil, executableURL: nil)
+        )
+        defer {
+            coreDirectory1.delete()
+            coreDirectory2.delete()
+        }
+
+        // Then
+        XCTAssertNotEqual(coreDirectory1.coreDirectory.url, coreDirectory2.coreDirectory.url)
+    }
+
+    func testOnMacOS_givenExecutableWithLongNameAndNoBundleIdentifier_whenCreatingCoreDirectory_thenItsAppSubdirectoryNameFitsTheFileSystem() throws {
+        // Given
+        let longName = String(repeating: "é", count: 127) // 254 bytes, within the 255-byte limit for a file name
+
+        // When
+        let coreDirectory = try CoreDirectory(
+            in: directory,
+            instanceName: .mockRandom(),
+            site: .mockRandom(),
+            bundle: .mockWith(bundleIdentifier: nil, executableURL: URL(fileURLWithPath: "/usr/local/bin/\(longName)"))
+        )
+        defer { coreDirectory.delete() }
+
+        // Then
+        let appDirectory = coreDirectory.coreDirectory.url // <app>/com.datadoghq/v2/<instance>
+            .deletingLastPathComponent() // <app>/com.datadoghq/v2
+            .deletingLastPathComponent() // <app>/com.datadoghq
+            .deletingLastPathComponent() // <app>
+        XCTAssertLessThanOrEqual(appDirectory.lastPathComponent.utf8.count, 255)
+        XCTAssertTrue(appDirectory.lastPathComponent.hasPrefix(String(repeating: "é", count: 10)))
+        XCTAssertEqual(appDirectory.deletingLastPathComponent().path, directory.url.path)
+    }
     #else
     func testWhenCreatingCoreDirectory_thenItIsCreatedInTheSDKDirectory() throws {
         // When

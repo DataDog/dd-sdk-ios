@@ -174,11 +174,16 @@ extension DatadogExtension where ExtendedType == Bundle {
         if let bundleIdentifier = type.bundleIdentifier {
             return bundleIdentifier
         }
-        guard let executableURL = type.executableURL?.resolvingSymlinksInPath() else {
-            return ProcessInfo.processInfo.processName
-        }
+        // Without an executable URL, the executable is assumed to be in the bundle directory, so its path still tells it apart.
+        let executableURL = (type.executableURL ?? URL(fileURLWithPath: type.bundlePath).appendingPathComponent(ProcessInfo.processInfo.processName))
+            .resolvingSymlinksInPath()
         let pathHash = Data(executableURL.path.utf8).sha1().prefix(16)
-        return "\(executableURL.lastPathComponent)-\(pathHash)"
+        // A directory name can have up to 255 bytes, so a long executable name is shortened to leave room for the hash.
+        var name = executableURL.lastPathComponent
+        while name.utf8.count > 255 - 1 - pathHash.count {
+            name.removeLast()
+        }
+        return "\(name)-\(pathHash)"
     }
     #endif
 }
