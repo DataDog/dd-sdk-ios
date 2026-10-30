@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogInternal"
-  s.version      = "3.19.0"
+  s.version      = "3.21.0"
   s.summary      = "Datadog Internal Package. This module is not for public use."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -23,5 +23,9 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
 
   s.source_files = ["DatadogInternal/Sources/**/*.swift"]
+
+  s.resource_bundle = {
+    "DatadogInternal" => "DatadogInternal/Resources/PrivacyInfo.xcprivacy"
+  }
 
 end

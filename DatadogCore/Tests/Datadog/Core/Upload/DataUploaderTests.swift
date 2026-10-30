@@ -68,6 +68,31 @@ class DataUploaderTests: XCTestCase {
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
     }
 
+    func testWhenFeatureDoesNotReconcile_itPreservesEventsAndContext() throws {
+        // Given
+        let events = [
+            Event(data: "first".utf8Data, metadata: "first metadata".utf8Data),
+            Event(data: "second".utf8Data, metadata: "second metadata".utf8Data)
+        ]
+        let context: DatadogContext = .mockRandom()
+        let request: URLRequest = .mockAny()
+        var uploadedEvents: [[Event]] = []
+        let builder = FeatureRequestBuilderMock { events, receivedContext in
+            uploadedEvents.append(events)
+            DDAssertReflectionEqual(receivedContext, context)
+            return request
+        }
+        let client = HTTPClientMock()
+        let uploader = DataUploader(httpClient: client, requestBuilder: builder, featureName: .mockAny())
+
+        // When
+        _ = try uploader.upload(events: events, context: context, previous: nil)
+
+        // Then
+        XCTAssertEqual(uploadedEvents, [events])
+        XCTAssertEqual(client.requestsSent(), [request])
+    }
+
     func testWhenRequestCannotBeCreated_itThrows() throws {
         // Given
         let error = ErrorMock()

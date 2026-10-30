@@ -208,4 +208,48 @@ class CrashContextTests: XCTestCase {
         // Then
         XCTAssertEqual(deserializedContext.applicationBundleType, .iOSApp)
     }
+
+    func testGivenContextWithRUMSessionStopped_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        // Given
+        let context: CrashContext = .mockWith(isRUMSessionStopped: true)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertTrue(deserializedContext.isRUMSessionStopped)
+    }
+
+    func testGivenContextEncodedWithoutRUMSessionStopped_whenItGetsDecoded_thenItDefaultsToFalse() throws {
+        // Given
+        // Simulate a `CrashContext` persisted by a prior SDK version, before `isRUMSessionStopped` existed.
+        let context: CrashContext = .mockWith(isRUMSessionStopped: true)
+        var serializedContext = try JSONSerialization.jsonObject(with: encoder.encode(context)) as? [String: Any]
+        XCTAssertNotNil(serializedContext?.removeValue(forKey: "isRUMSessionStopped"))
+        let legacyData = try JSONSerialization.data(withJSONObject: serializedContext as Any)
+
+        // When
+        let deserializedContext = try decoder.decode(CrashContext.self, from: legacyData)
+
+        // Then
+        XCTAssertFalse(deserializedContext.isRUMSessionStopped)
+    }
+
+    func testGivenSessionStateEncodedWithoutHasTimeseries_whenItGetsDecoded_thenItDefaultsToFalse() throws {
+        // Given
+        // Simulate a `RUMSessionState` persisted by a prior SDK version, before `hasTimeseries` existed.
+        let context: CrashContext = .mockWith(lastRUMSessionState: .mockWith(hasTimeseries: true))
+        var serializedContext = try JSONSerialization.jsonObject(with: encoder.encode(context)) as? [String: Any]
+        var serializedSessionState = serializedContext?["lastRUMSessionState"] as? [String: Any]
+        serializedSessionState?.removeValue(forKey: "hasTimeseries")
+        serializedContext?["lastRUMSessionState"] = serializedSessionState
+        let legacyData = try JSONSerialization.data(withJSONObject: serializedContext as Any)
+
+        // When
+        let deserializedContext = try decoder.decode(CrashContext.self, from: legacyData)
+
+        // Then
+        XCTAssertEqual(deserializedContext.lastRUMSessionState?.hasTimeseries, false)
+    }
 }

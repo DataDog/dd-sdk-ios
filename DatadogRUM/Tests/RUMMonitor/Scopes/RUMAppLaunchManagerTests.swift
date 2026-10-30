@@ -10,6 +10,10 @@ import DatadogInternal
 @testable import TestUtilities
 
 final class RUMAppLaunchManagerTests: XCTestCase {
+    private final class DeallocationProbe: AdditionalContext {
+        static let key = "rum-app-launch-manager-tests-deallocation-probe"
+    }
+
     private var manager: RUMAppLaunchManager! // swiftlint:disable:this implicitly_unwrapped_optional
     private var appStateManager: AppStateManaging! // swiftlint:disable:this implicitly_unwrapped_optional
     private var mockParent: RUMContextProviderMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -21,7 +25,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         super.setUp()
         appStateManager = AppStateManagerMock()
         mockParent = RUMContextProviderMock()
-        mockDependencies = .mockWith(appStateManager: appStateManager)
+        mockDependencies = .mockWith(appStateManager: appStateManager, timeseriesCollector: TimeseriesCollectorMock(hasData: true))
         mockWriter = FileWriterMock()
         mockContext = .mockWith(
             launchInfo: .mockWith(
@@ -79,6 +83,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.startupType, .coldStart)
 
         // Common properties
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertNil(event.account)
         XCTAssertNil(event.buildId)
         XCTAssertNotNil(event.buildVersion)
@@ -256,18 +261,31 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 1)
     }
 
-    func testTTIDCommand_isIgnoredWhenTheDurationIsTooBig() throws {
+    func testTTIDCommand_whenDurationIsTooBig_rejectsSubsequentTTFD() throws {
         // Given
-        let command: RUMTimeToInitialDisplayCommand = .mockWith(
-            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(RUMAppLaunchManager.Constants.maxTTIDDuration + 1)
+        let ttidDuration = RUMAppLaunchManager.Constants.maxTTIDDuration + 1
+        let ttfdDuration = ttidDuration + 1
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttidDuration)
         )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttfdDuration)
+        )
+        var probe: DeallocationProbe? = DeallocationProbe()
+        weak var weakProbe = probe
+        var ttfdContext = mockContext!
+        ttfdContext.set(additionalContext: probe)
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter)
+        manager.process(ttidCommand, context: mockContext, writer: mockWriter)
+        manager.process(ttfdCommand, context: ttfdContext, writer: mockWriter)
+        ttfdContext.removeContext(ofType: DeallocationProbe.self)
+        probe = nil
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 0)
+        XCTAssertNil(weakProbe)
     }
 
     func testTTIDCommand_isIgnoredWhenTheDurationBetweenProcessLaunchAndMainIsTooBig() throws {
@@ -440,6 +458,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttid)
         )
+        mockParent.context.activeViewID = .mockRandom()
+        mockParent.context.activeViewName = "TTID View"
 
         // When
         manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
@@ -463,6 +483,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(ttfdMessage.operation.duration, ttfd.dd.toInt64Nanoseconds)
         XCTAssertNotNil(ttfdMessage.attributes[RUMCoreContext.IDs.applicationID])
         XCTAssertNotNil(ttfdMessage.attributes[RUMCoreContext.IDs.sessionID])
+        XCTAssertNil(ttfdMessage.attributes[RUMCoreContext.IDs.viewID])
+        XCTAssertNil(ttfdMessage.attributes[RUMCoreContext.IDs.viewName])
         XCTAssertEqual(ttidMessage.ttid.name, "time_to_initial_display")
         XCTAssertNotNil(ttidMessage.attributes[RUMCoreContext.IDs.applicationID])
         XCTAssertNotNil(ttidMessage.attributes[RUMCoreContext.IDs.sessionID])
@@ -530,6 +552,67 @@ final class RUMAppLaunchManagerTests: XCTestCase {
             "overridden": "local",
             "ttfd": "attribute"
         ])
+    }
+
+    func testTTFDCommand_whenReceivedAfterTTIDBeforeStartupType_usesTTFDViewAndContext() throws {
+        // Given
+        let featureScope = FeatureScopeMock()
+        let appStateManager = AppStateManagerMock()
+        appStateManager.shouldDeferPreviousAppStateInfoCallback = true
+        mockDependencies = .mockWith(featureScope: featureScope, appStateManager: appStateManager)
+        manager = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: mockDependencies,
+            telemetryController: .init()
+        )
+
+        let ttidView: RUMViewScope = .mockWith(path: "ApplicationLaunch", name: "ApplicationLaunch")
+        let ttfdView: RUMViewScope = .mockWith(path: "HomeViewPath", name: "HomeView")
+        let ttidContext: DatadogContext = .mockWith(
+            launchInfo: mockContext.launchInfo,
+            networkConnectionInfo: .mockWith(reachability: .no)
+        )
+        let ttfdContext: DatadogContext = .mockWith(
+            launchInfo: mockContext.launchInfo,
+            networkConnectionInfo: .mockWith(reachability: .yes)
+        )
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(ttidCommand, context: ttidContext, writer: mockWriter, activeView: ttidView)
+        mockParent.context.activeViewID = ttidView.viewUUID
+        mockParent.context.activeViewName = ttidView.viewName
+        manager.process(ttfdCommand, context: ttfdContext, writer: mockWriter, activeView: ttfdView)
+        appStateManager.completePreviousAppStateInfo()
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(vitalEvents.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
+
+        let ttidEvent = try XCTUnwrap(vitalEvents.first)
+        XCTAssertEqual(ttidEvent.view.id, ttidView.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(ttidEvent.view.name, "ApplicationLaunch")
+        XCTAssertEqual(ttidEvent.connectivity?.status, .notConnected)
+
+        let ttfdEvent = try XCTUnwrap(vitalEvents.last)
+        XCTAssertEqual(ttfdEvent.view.id, ttfdView.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(ttfdEvent.view.name, "HomeView")
+        XCTAssertEqual(ttfdEvent.view.url, "HomeViewPath")
+        XCTAssertEqual(ttfdEvent.connectivity?.status, .connected)
+
+        let ttfdMessage = try XCTUnwrap(
+            featureScope.messagesSent().compactMap { $0.asPayload as? OperationMessage }.first
+        )
+        XCTAssertEqual(
+            ttfdMessage.attributes[RUMCoreContext.IDs.viewID] as? [String],
+            [ttfdView.viewUUID.toRUMDataFormat]
+        )
+        XCTAssertEqual(ttfdMessage.attributes[RUMCoreContext.IDs.viewName] as? [String], ["HomeView"])
     }
 
     func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() throws {

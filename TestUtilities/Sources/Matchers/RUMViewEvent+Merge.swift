@@ -155,6 +155,7 @@ extension RUMViewEvent.Container.Source {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 }
@@ -206,6 +207,7 @@ extension RUMViewEvent.Session {
     public init(_ s: RUMViewUpdateEvent.Session) {
         self.init(
             hasReplay: s.hasReplay,
+            hasTimeseries: s.hasTimeseries,
             id: s.id,
             isActive: s.isActive,
             isMainProcess: s.isMainProcess,
@@ -229,6 +231,7 @@ extension RUMViewEvent.Source {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 }

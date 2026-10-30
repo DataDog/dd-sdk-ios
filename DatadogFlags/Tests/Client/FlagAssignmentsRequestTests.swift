@@ -25,6 +25,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         let context = DatadogContext.mockWith(
             clientToken: "test-token",
             env: "production",
+            source: "ios",
             sdkVersion: "3.5.1",
             additionalContext: [RUMCoreContext.mockWith(applicationID: "test-app-id")]
         )
@@ -66,6 +67,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         XCTAssertEqual(request.url, testURL)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/vnd.api+json")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"), "assignment-encoding-flag-key-256-v1")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Accept-Encoding"), "gzip, deflate, br")
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-client-token"), "test-token")
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-application-id"), "test-app-id")

@@ -100,6 +100,11 @@ public struct DatadogContext {
     /// The user's consent to data collection
     public var trackingConsent: TrackingConsent = .pending
 
+    /// The number of tracking consent changes, set by the core with `trackingConsent`.
+    ///
+    /// Comparing revisions tells whether consent changed, even when it returned to an earlier value.
+    public var trackingConsentRevision: UInt64 = 0
+
     /// Application launch info.
     public var launchInfo: LaunchInfo
 

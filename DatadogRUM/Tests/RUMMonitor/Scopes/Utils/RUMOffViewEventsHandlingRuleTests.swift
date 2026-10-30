@@ -45,6 +45,13 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             didStartWithReplay: nil
         )
 
+        #if os(macOS)
+        // macOS keeps events with no active view once a view was tracked, without Background Events Tracking.
+        let expectedForegroundWithViews: RUMOffViewEventsHandlingRule = .handleInBackgroundView
+        #else
+        let expectedForegroundWithViews: RUMOffViewEventsHandlingRule = .doNotHandle
+        #endif
+
         let cases: [Case] = [
             .init(
                 description: "session not sampled (nullUUID)",
@@ -98,7 +105,7 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
                 isAppInForeground: true,
                 isBETEnabled: true,
                 canStartBackgroundViewAfterSessionStop: true,
-                expected: .doNotHandle
+                expected: expectedForegroundWithViews
             ),
             .init(
                 description: "existing views present in background when BET enabled",
@@ -176,4 +183,64 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             XCTAssertEqual(result, testCase.expected, "Failed: \(testCase.description) -> got \(result)")
         }
     }
+
+    #if os(macOS)
+    func testOnMacOS_whenViewWasTracked_itHandlesEventsWithNoActiveViewWithoutBET() {
+        let hasViews: RUMSessionState = .mockWith(isSampled: true, isInitialSession: .mockRandom(), hasTrackedAnyView: true)
+
+        // Live events
+        XCTAssertEqual(
+            RUMOffViewEventsHandlingRule(
+                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 1),
+                sessionState: hasViews,
+                isAppInForeground: true,
+                isBETEnabled: false,
+                command: RUMCommandMock(canStartBackgroundViewAfterSessionStop: false)
+            ),
+            .handleInBackgroundView
+        )
+
+        // Crash reported in the next process
+        XCTAssertEqual(
+            RUMOffViewEventsHandlingRule(
+                applicationState: nil,
+                sessionState: hasViews,
+                isAppInForeground: true,
+                isBETEnabled: false,
+                command: nil
+            ),
+            .handleInBackgroundView
+        )
+    }
+
+    func testOnMacOS_afterPreviousSessionWasStopped_itDoesNotHandleEventsThatCannotStartAView() {
+        let hasViews: RUMSessionState = .mockWith(isSampled: true, isInitialSession: false, hasTrackedAnyView: true)
+
+        XCTAssertEqual(
+            RUMOffViewEventsHandlingRule(
+                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 1, wasPreviousSessionStopped: true),
+                sessionState: hasViews,
+                isAppInForeground: true,
+                isBETEnabled: false,
+                command: RUMCommandMock(canStartBackgroundViewAfterSessionStop: false)
+            ),
+            .doNotHandle
+        )
+    }
+
+    func testOnMacOS_beforeAnyView_itStillUsesTheApplicationLaunchView() {
+        let initialNoViews: RUMSessionState = .mockWith(isSampled: true, isInitialSession: true, hasTrackedAnyView: false)
+
+        XCTAssertEqual(
+            RUMOffViewEventsHandlingRule(
+                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 0),
+                sessionState: initialNoViews,
+                isAppInForeground: true,
+                isBETEnabled: false,
+                command: RUMCommandMock()
+            ),
+            .handleInApplicationLaunchView
+        )
+    }
+    #endif
 }

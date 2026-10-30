@@ -97,6 +97,7 @@ class MonitorTests: XCTestCase {
 
     // MARK: - App launch
 
+    #if !os(macOS) && !os(watchOS)
     func testReportTTIDAndTTFD_thenTheyAreWrittenAsVitalEvents() throws {
         // Given
         let monitor = Monitor(
@@ -151,6 +152,7 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(vitalEvents?.count, 1)
         XCTAssertEqual(vitalEvents?.first?.vital.appLaunchMetric, .ttid)
     }
+    #endif
 
     // MARK: - View Loading Time
 
@@ -414,56 +416,48 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(collector.isPreviousSessionExpiredOnActivity, false)
     }
 
-    // MARK: - hasReplay snapshot
+    // MARK: - hasReplay state
 
-    func testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession() throws {
+    func testWhenCommandEndsSession_itRecordsTheReplayStateItSeesBeforeStoppingTheCollector() throws {
         let dateProvider = DateProviderMock()
-        featureScope = FeatureScopeMock(
-            context: .mockWith(additionalContext: [SessionReplayCoreContext.HasReplay(value: true)])
-        )
-
-        // Given — no timeseries collector configured
-        let monitorWithoutCollector = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
-            dateProvider: dateProvider
-        )
-
-        // When
-        monitorWithoutCollector.startView(key: "foo")
-
-        // Then — the snapshot is never updated
-        XCTAssertNil((monitorWithoutCollector as RUMActiveContextReader).hasReplay)
-
-        // Given — a timeseries collector configured
+        let featureScope = FeatureScopeMock()
+        let replayState = HasReplayMessageReceiver()
+        let collector = TimeseriesCollectorStub()
+        collector.replayState = replayState
         let monitor = Monitor(
             dependencies: .mockWith(
                 featureScope: featureScope,
                 monotonicClock: DateProviderMonotonicClock(dateProvider: dateProvider),
-                timeseriesCollector: TimeseriesCollectorStub()
+                timeseriesCollector: collector
             ),
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            replayState: replayState
         )
-        let activeContextReader: RUMActiveContextReader = monitor
-
         monitor.startView(key: "foo")
-        XCTAssertEqual(activeContextReader.hasReplay, true)
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
 
-        // When — the session expires (starting a new one within a single `process(command:)` call) while
-        // the context still carries the previous session's (now stale) `hasReplay` value
+        // When — Session Replay starts for the session, and the command that ends it sees that before the
+        // context message bus delivers it
+        featureScope.contextMock = .mockWith(additionalContext: [SessionReplayCoreContext.HasReplay(value: true, sessionID: sessionID)])
         dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1) // exceeds session max duration
         monitor.startView(key: "bar")
 
-        // Then — the stale value is not carried over into the new session
-        XCTAssertNil(activeContextReader.hasReplay)
+        // Then
+        XCTAssertEqual(collector.hasReplayWhenStopped, true)
     }
 }
 
 private class TimeseriesCollectorStub: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
+    var replayState: HasReplayMessageReceiver?
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
     func pause(sessionID: String) {}
     func resume(sessionID: String) {}
-    func stop(sessionID: String) {}
+    var hasReplayWhenStopped: Bool?
+
+    func stop(sessionID: String) {
+        hasReplayWhenStopped = replayState?.hasReplay(sessionID: sessionID)
+    }
     var activitySessionIDs: [String] = []
     var isPreviousSessionExpiredOnActivity: Bool?
 
@@ -474,6 +468,7 @@ private class TimeseriesCollectorStub: TimeseriesCollecting {
         activitySessionIDs.append(sessionID)
     }
     func flush() {}
+    func hasCollectedData(sessionID: String) -> Bool { false }
 }
 
 // MARK: - Convenience

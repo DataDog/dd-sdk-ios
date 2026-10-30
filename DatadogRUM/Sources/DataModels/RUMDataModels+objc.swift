@@ -827,6 +827,7 @@ public enum objc_RUMActionEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -843,6 +844,7 @@ public enum objc_RUMActionEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -857,6 +859,7 @@ public enum objc_RUMActionEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMActionEventContainerView)
@@ -1119,6 +1122,10 @@ public class objc_RUMActionEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -1173,6 +1180,7 @@ public enum objc_RUMActionEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -1190,6 +1198,7 @@ public enum objc_RUMActionEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -1205,6 +1214,7 @@ public enum objc_RUMActionEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMActionEventStream)
@@ -2051,6 +2061,7 @@ public enum objc_RUMErrorEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -2067,6 +2078,7 @@ public enum objc_RUMErrorEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -2081,6 +2093,7 @@ public enum objc_RUMErrorEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMErrorEventContainerView)
@@ -2948,6 +2961,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .linux?: self = .linux
         case .maui?: self = .maui
         case .nodejs?: self = .nodejs
+        case .unreal?: self = .unreal
         }
     }
 
@@ -2969,6 +2983,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .linux: return .linux
         case .maui: return .maui
         case .nodejs: return .nodejs
+        case .unreal: return .unreal
         }
     }
 
@@ -2988,6 +3003,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
     case linux
     case maui
     case nodejs
+    case unreal
 }
 
 @objc(DDRUMErrorEventErrorThreads)
@@ -3189,6 +3205,10 @@ public class objc_RUMErrorEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -3243,6 +3263,7 @@ public enum objc_RUMErrorEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -3260,6 +3281,7 @@ public enum objc_RUMErrorEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -3275,6 +3297,7 @@ public enum objc_RUMErrorEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMErrorEventStream)
@@ -4101,6 +4124,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -4117,6 +4141,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -4131,6 +4156,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMLongTaskEventContainerView)
@@ -4560,6 +4586,10 @@ public class objc_RUMLongTaskEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -4614,6 +4644,7 @@ public enum objc_RUMLongTaskEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -4631,6 +4662,7 @@ public enum objc_RUMLongTaskEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -4646,6 +4678,7 @@ public enum objc_RUMLongTaskEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMLongTaskEventStream)
@@ -5334,6 +5367,7 @@ public enum objc_RUMResourceEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -5350,6 +5384,7 @@ public enum objc_RUMResourceEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -5364,6 +5399,7 @@ public enum objc_RUMResourceEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMResourceEventContainerView)
@@ -6306,6 +6342,10 @@ public class objc_RUMResourceEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -6360,6 +6400,7 @@ public enum objc_RUMResourceEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -6377,6 +6418,7 @@ public enum objc_RUMResourceEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -6392,6 +6434,7 @@ public enum objc_RUMResourceEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMResourceEventStream)
@@ -7222,6 +7265,10 @@ public class objc_RUMTimeseriesCpuEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -7276,6 +7323,7 @@ public enum objc_RUMTimeseriesCpuEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -7293,6 +7341,7 @@ public enum objc_RUMTimeseriesCpuEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -7308,6 +7357,7 @@ public enum objc_RUMTimeseriesCpuEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMTimeseriesCpuEventStream)
@@ -8207,6 +8257,10 @@ public class objc_RUMTimeseriesMemoryEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -8261,6 +8315,7 @@ public enum objc_RUMTimeseriesMemoryEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -8278,6 +8333,7 @@ public enum objc_RUMTimeseriesMemoryEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -8293,6 +8349,7 @@ public enum objc_RUMTimeseriesMemoryEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMTimeseriesMemoryEventStream)
@@ -9232,6 +9289,7 @@ public enum objc_RUMViewEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -9248,6 +9306,7 @@ public enum objc_RUMViewEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -9262,6 +9321,7 @@ public enum objc_RUMViewEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMViewEventContainerView)
@@ -9610,6 +9670,10 @@ public class objc_RUMViewEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -9672,6 +9736,7 @@ public enum objc_RUMViewEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -9689,6 +9754,7 @@ public enum objc_RUMViewEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -9704,6 +9770,7 @@ public enum objc_RUMViewEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMViewEventStream)
@@ -11453,6 +11520,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -11469,6 +11537,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -11483,6 +11552,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMViewUpdateEventContainerView)
@@ -11831,6 +11901,10 @@ public class objc_RUMViewUpdateEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -11893,6 +11967,7 @@ public enum objc_RUMViewUpdateEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -11910,6 +11985,7 @@ public enum objc_RUMViewUpdateEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -11925,6 +12001,7 @@ public enum objc_RUMViewUpdateEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMViewUpdateEventStream)
@@ -13558,6 +13635,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -13574,6 +13652,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -13588,6 +13667,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMVitalAppLaunchEventContainerView)
@@ -13850,6 +13930,10 @@ public class objc_RUMVitalAppLaunchEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -13904,6 +13988,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -13921,6 +14006,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -13936,6 +14022,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMVitalAppLaunchEventStream)
@@ -14778,6 +14865,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -14794,6 +14882,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -14808,6 +14897,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMVitalDurationEventContainerView)
@@ -15070,6 +15160,10 @@ public class objc_RUMVitalDurationEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -15124,6 +15218,7 @@ public enum objc_RUMVitalDurationEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -15141,6 +15236,7 @@ public enum objc_RUMVitalDurationEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -15156,6 +15252,7 @@ public enum objc_RUMVitalDurationEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMVitalDurationEventStream)
@@ -15937,6 +16034,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -15953,6 +16051,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -15967,6 +16066,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMVitalOperationStepEventContainerView)
@@ -16229,6 +16329,10 @@ public class objc_RUMVitalOperationStepEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -16283,6 +16387,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
         case .electron?: self = .electron
         case .cpp?: self = .cpp
         case .maui?: self = .maui
+        case .unreal?: self = .unreal
         }
     }
 
@@ -16300,6 +16405,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -16315,6 +16421,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDRUMVitalOperationStepEventStream)
@@ -16707,6 +16814,7 @@ public enum objc_TelemetryConfigurationEventSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -16722,6 +16830,7 @@ public enum objc_TelemetryConfigurationEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -16735,6 +16844,7 @@ public enum objc_TelemetryConfigurationEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDTelemetryConfigurationEventTelemetry)
@@ -16959,6 +17069,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         .init(swift: root.swiftModel.telemetry.configuration.sessionPersistence)
     }
 
+    public var sessionReplayCanvasRecording: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecording = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecording as NSNumber? }
+    }
+
+    public var sessionReplayCanvasRecordingQuality: objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality {
+        set { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecordingQuality = newValue.toSwift }
+        get { .init(swift: root.swiftModel.telemetry.configuration.sessionReplayCanvasRecordingQuality) }
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         set { root.swiftModel.telemetry.configuration.sessionReplaySampleRate = newValue?.int64Value }
         get { root.swiftModel.telemetry.configuration.sessionReplaySampleRate as NSNumber? }
@@ -17151,6 +17271,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
     public var unityVersion: String? {
         set { root.swiftModel.telemetry.configuration.unityVersion = newValue }
         get { root.swiftModel.telemetry.configuration.unityVersion }
+    }
+
+    public var unrealVersion: String? {
+        set { root.swiftModel.telemetry.configuration.unrealVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.unrealVersion }
     }
 
     public var useAllowedGraphQlUrls: NSNumber? {
@@ -17415,6 +17540,33 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersist
     case localStorage
     case cookie
     case memory
+}
+
+@objc(DDTelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality)
+@_spi(objc)
+public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.SessionReplayCanvasRecordingQuality?) {
+        switch swift {
+        case nil: self = .none
+        case .low?: self = .low
+        case .medium?: self = .medium
+        case .high?: self = .high
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.SessionReplayCanvasRecordingQuality? {
+        switch self {
+        case .none: return nil
+        case .low: return .low
+        case .medium: return .medium
+        case .high: return .high
+        }
+    }
+
+    case none
+    case low
+    case medium
+    case high
 }
 
 @objc(DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection)
@@ -17798,6 +17950,7 @@ public enum objc_TelemetryDebugEventSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -17813,6 +17966,7 @@ public enum objc_TelemetryDebugEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -17826,6 +17980,7 @@ public enum objc_TelemetryDebugEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDTelemetryDebugEventTelemetry)
@@ -18110,6 +18265,7 @@ public enum objc_TelemetryErrorEventSource: Int {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 
@@ -18125,6 +18281,7 @@ public enum objc_TelemetryErrorEventSource: Int {
         case .electron: return .electron
         case .cpp: return .cpp
         case .maui: return .maui
+        case .unreal: return .unreal
         }
     }
 
@@ -18138,6 +18295,7 @@ public enum objc_TelemetryErrorEventSource: Int {
     case electron
     case cpp
     case maui
+    case unreal
 }
 
 @objc(DDTelemetryErrorEventTelemetry)
@@ -18274,4 +18432,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/35fe66d7d178f38cc1f229946695a8b537ab4530
+// Generated from https://github.com/DataDog/rum-events-format/tree/e56d61f0016c507091c8093befa9e73c42037c70

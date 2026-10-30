@@ -1,6 +1,27 @@
 # Unreleased
 
-- [FIX] Flags: Stop reporting assignment fetch failures as SDK defects and log them as warnings.
+- [FIX] Flags: Stop reporting assignment fetch failures as SDK defects and log them as warnings. See [#3307][]
+
+# 3.21.0 / 29-10-2026
+
+- [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
+- [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
+- [IMPROVEMENT] Add support for `unreal` source for cross-platform RUM events from Unreal Engine applications. See [#3353][]
+- [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation. See [#3269][]
+- [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
+- [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
+- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device from eligible finished spans, independently of trace upload sampling. Disabled by default. See [#3301][]
+- [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
+- [FIX] NSPrivacyAccessedAPICategoryFileTimestamp added to DatadogCore's privacy manifest as required. See [#3339][]
+- [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
+- [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
+- [IMPROVEMENT] Reduce image resource sizes with WebP encoding and speed up image hashing in Session Replay's experimental composition tree recorder. See [#3336][]
+- [FIX] Attribute a TTFD vital reported before the TTID is written to the view and connectivity active when `reportAppFullyDisplayed()` was called, instead of the TTID's view. See [#3317][]. (Thanks [@thedavidharris][])
+- [FIX] Fix profile sample timestamps after device sleep and stop attaching app hangs and long tasks that the profile did not sample. See [#3342][]
+
+# 3.20.0 / 19-10-2026
+
+- [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
 - [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
 - [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
 - [FEATURE] Add `spanCustomization` to `Trace.Configuration.URLSessionTracking` to customize spans created for intercepted network requests, for example to add request-based tags. See [#2741][]
@@ -1261,6 +1282,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
 [#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
 [#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
+[#3078]: https://github.com/DataDog/dd-sdk-ios/pull/3078
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 [#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
 [#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
@@ -1299,7 +1321,19 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
+[#3301]: https://github.com/DataDog/dd-sdk-ios/pull/3301
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
+[#3330]: https://github.com/DataDog/dd-sdk-ios/pull/3330
+[#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
+[#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
+[#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
+[#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
+[#3351]: https://github.com/DataDog/dd-sdk-ios/pull/3351
+[#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
+[#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
+[#3317]: https://github.com/DataDog/dd-sdk-ios/pull/3317
+[#3269]: https://github.com/DataDog/dd-sdk-ios/pull/3269
+[#3342]: https://github.com/DataDog/dd-sdk-ios/pull/3342
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1340,3 +1374,5 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@thedavidharris]: https://github.com/thedavidharris
 [@noremac]: https://github.com/noremac
 [@saladdays831]: https://github.com/saladdays831
+
+[#3307]: https://github.com/DataDog/dd-sdk-ios/pull/3307

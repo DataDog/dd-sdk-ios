@@ -28,7 +28,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             }
         )
         let completed = expectation(description: "completed")
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
 
         // When
         fetcher.flagAssignments(for: .mockAny()) { result in
@@ -37,13 +37,13 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
         XCTAssertEqual(
             capturedRequest?.url?.absoluteString,
             "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments"
         )
         let flagAssignments = try XCTUnwrap(capturedResult?.get())
-        XCTAssertEqual(flagAssignments, .mockAny())
+        XCTAssertEqual(flagAssignments.flags, .mockAny())
     }
 
     func testFlagAssignmentsNetworkError() {
@@ -68,7 +68,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
     }
 
     func testNetworkFailuresDoNotReportSDKDefects() {
@@ -92,7 +92,8 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             logger.reset()
             let scope = FeatureScopeMock()
             var fetchCount = 0
-            var results: [Result<[String: FlagAssignment], FlagsError>] = []
+            var results: [Result<FlagAssignmentsResponse, FlagsError>] = []
+            let completed = expectation(description: "completed for \(expectedError)")
             let fetcher = FlagAssignmentsFetcher(
                 customEndpoint: nil,
                 customHeaders: nil,
@@ -104,18 +105,24 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             )
 
             // When
-            fetcher.flagAssignments(for: .mockAny()) { results.append($0) }
+            fetcher.flagAssignments(for: .mockAny()) { result in
+                results.append(result)
+                completed.fulfill()
+            }
 
             // Then
-            XCTAssertEqual(fetchCount, 1)
-            XCTAssertEqual(results.count, 1)
+            wait(for: [completed], timeout: 1)
+            XCTAssertEqual(fetchCount, 1, "\(expectedError)")
+            XCTAssertEqual(results.count, 1, "\(expectedError)")
             guard case .failure(.networkError(let error)) = results.first else {
-                return XCTFail("Expected the original network failure")
+                XCTFail("Expected the original network failure for \(expectedError)")
+                continue
             }
             XCTAssertEqual(error as NSError, expectedError)
-            XCTAssertNil(scope.telemetryMock.messages.firstError())
-            XCTAssertTrue(logger.errorLogs.isEmpty)
-            XCTAssertEqual(logger.warnMessages, ["Failed to fetch flag assignments from the server."])
+            XCTAssertNil(scope.telemetryMock.messages.firstError(), "\(expectedError)")
+            XCTAssertTrue(logger.errorLogs.isEmpty, "\(expectedError)")
+            XCTAssertEqual(logger.warnMessages, ["Failed to fetch flag assignments from the server."], "\(expectedError)")
+            XCTAssertNotNil(logger.warnLog?.error, "\(expectedError)")
         }
     }
 
@@ -139,8 +146,9 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
-        XCTAssertNotNil(featureScope.telemetryMock.messages.firstError())
+        waitForExpectations(timeout: 1)
+        let defect = featureScope.telemetryMock.messages.firstError()?.message ?? ""
+        XCTAssertTrue(defect.hasPrefix("Failed to decode FlagAssignmentsResponse from flag assignments response"), defect)
     }
 
     func testFlagAssignmentsCustomEndpoint() {
@@ -165,7 +173,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
         XCTAssertEqual(capturedRequest?.url, customEndpoint)
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
     }
@@ -183,6 +191,68 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
         for (site, expectedEndpoint) in flagsEndpoints {
             XCTAssertEqual(site.flagsEndpoint().absoluteString, expectedEndpoint)
+        }
+    }
+
+    func testFlagAssignments_whenCompletionIsBlocked_doesNotBlockAnotherRequest() {
+        let results: [Result<Data, Error>] = [
+            .success(.mockAnyFlagAssignmentsResponse()),
+            .success(Data()),
+            .failure(URLError(.notConnectedToInternet))
+        ]
+
+        for result in results {
+            // Given
+            let contextQueue = DispatchQueue(label: "com.datadoghq.flags-tests-context")
+            let contextQueueKey = DispatchSpecificKey<Void>()
+            contextQueue.setSpecific(key: contextQueueKey, value: ())
+            let featureScope = FeatureScopeMock()
+            let queue = DispatchQueue(label: "com.datadoghq.flags-tests-assignment-fetch")
+            let queueKey = DispatchSpecificKey<Void>()
+            queue.setSpecific(key: queueKey, value: ())
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                featureScope: featureScope,
+                assignmentFetchQueue: queue,
+                fetch: { _, completion in
+                    XCTAssertNil(DispatchQueue.getSpecific(key: contextQueueKey))
+                    XCTAssertNotNil(DispatchQueue.getSpecific(key: queueKey))
+                    completion(result)
+                }
+            )
+            let firstCompletionStarted = expectation(description: "first completion started")
+            let firstCompletionFinished = expectation(description: "first completion finished")
+            let secondCompleted = expectation(description: "second request completed")
+            let releaseCompletion = DispatchSemaphore(value: 0)
+            defer {
+                releaseCompletion.signal()
+                wait(for: [firstCompletionFinished], timeout: 1)
+            }
+
+            // FeatureScopeMock supplies its context synchronously on the calling queue.
+            contextQueue.async {
+                fetcher.flagAssignments(for: .mockAny()) { _ in
+                    XCTAssertNil(DispatchQueue.getSpecific(key: contextQueueKey))
+                    XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
+                    firstCompletionStarted.fulfill()
+                    releaseCompletion.wait()
+                    firstCompletionFinished.fulfill()
+                }
+            }
+            wait(for: [firstCompletionStarted], timeout: 1)
+
+            // When
+            contextQueue.async {
+                fetcher.flagAssignments(for: .mockAny()) { _ in
+                    XCTAssertNil(DispatchQueue.getSpecific(key: contextQueueKey))
+                    XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
+                    secondCompleted.fulfill()
+                }
+            }
+
+            // Then
+            wait(for: [secondCompleted], timeout: 1)
         }
     }
 }

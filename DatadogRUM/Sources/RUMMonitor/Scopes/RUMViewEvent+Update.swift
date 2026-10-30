@@ -76,6 +76,7 @@ private extension RUMViewUpdateEvent.Source {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 }
@@ -94,6 +95,7 @@ private extension RUMViewUpdateEvent.Container.Source {
         case .electron: self = .electron
         case .cpp: self = .cpp
         case .maui: self = .maui
+        case .unreal: self = .unreal
         }
     }
 }
@@ -260,6 +262,7 @@ private extension RUMViewUpdateEvent.Session {
     init(_ s: RUMViewEvent.Session) {
         self.init(
             hasReplay: s.hasReplay,
+            hasTimeseries: s.hasTimeseries,
             id: s.id,
             isActive: s.isActive,
             isMainProcess: s.isMainProcess,

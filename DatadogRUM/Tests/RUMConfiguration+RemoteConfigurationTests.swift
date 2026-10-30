@@ -45,7 +45,9 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.longTaskThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.longTask?.threshold))))
             XCTAssertEqual(configuration.appHangThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.appHang?.threshold))))
             XCTAssertEqual(configuration.trackSlowFrames, rum.trackSlowFrames)
+            #if !os(macOS)
             XCTAssertEqual(configuration.trackWatchdogTerminations, rum.trackWatchdogTerminations)
+            #endif
             XCTAssertEqual(configuration.vitalsUpdateFrequency, expectedVitalsFrequency(try XCTUnwrap(rum.vitalsUpdateFrequency)))
 
             // `trackResources` / `trackUserInteractions` are modeled as the presence of a tracking
