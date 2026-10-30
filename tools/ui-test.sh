@@ -90,8 +90,11 @@ case "$mode" in
         cd IntegrationTests/ && bundle exec pod install
         cd "$DIR"
 
+        # The IntegrationScenarios xcconfigs include the generated xcconfig.
+        ./tools/config/generate-http-server-mock-config.sh
+
         # The products run on another machine, where 'test-without-building' starts the mock server on localhost.
-        # Passed as a build setting, it overrides the private IP written to the xcconfig by the scheme's pre-action.
+        # Passed as a build setting, it overrides the private IP written to the xcconfig.
         MOCK_SERVER_ADDRESS=$(./tools/http-server-mock/python/server_address.py --prefer-localhost)
 
         rm -rf "$products_path"
