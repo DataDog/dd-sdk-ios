@@ -97,6 +97,7 @@ class MonitorTests: XCTestCase {
 
     // MARK: - App launch
 
+    #if !os(macOS) && !os(watchOS)
     func testReportTTIDAndTTFD_thenTheyAreWrittenAsVitalEvents() throws {
         // Given
         let monitor = Monitor(
@@ -151,6 +152,7 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(vitalEvents?.count, 1)
         XCTAssertEqual(vitalEvents?.first?.vital.appLaunchMetric, .ttid)
     }
+    #endif
 
     // MARK: - View Loading Time
 

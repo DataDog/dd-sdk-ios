@@ -84,19 +84,21 @@ extension CALayerSnapshot {
         return result
     }
 
-    private var clipModifier: SRCompositionLayerModifier? {
+    func svgClipPath(using formatter: ClipPathFormatter = .shared) -> String? {
         let cornerRadii = requiresGlassApproximation ? glassCornerRadii : (masksToBounds ? self.cornerRadii : nil)
 
         return cornerRadii.map {
-            .compositionLayerClipModifier(
-                value: .init(
-                    path: SwiftUI.Path(
-                        roundedRect: .init(origin: .zero, size: absoluteFrame.size),
-                        cornerRadii: $0,
-                        cornerCurve: cornerCurve
-                    ).dd.svgString
-                )
+            formatter.svgString(
+                for: absoluteFrame.size,
+                cornerRadii: $0,
+                cornerCurve: cornerCurve
             )
+        }
+    }
+
+    private var clipModifier: SRCompositionLayerModifier? {
+        svgClipPath().map {
+            .compositionLayerClipModifier(value: .init(path: $0))
         }
     }
 
