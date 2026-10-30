@@ -42,24 +42,42 @@ extension UIImage {
 
         var pixels = [UInt8](repeating: 0, count: 4)
 
-        context.render(
-            outputImage.settingAlphaOne(in: outputImage.extent),
-            toBitmap: &pixels,
-            rowBytes: 4,
-            bounds: CGRect(x: 0, y: 0, width: 1, height: 1),
-            format: .RGBA8,
-            colorSpace: CGColorSpace(name: CGColorSpace.sRGB)
-        )
+        return try? pixels.withUnsafeMutableBytes { buffer -> UIColor? in
+            guard let baseAddress = buffer.baseAddress else {
+                return nil
+            }
 
-        if pixels[0] == pixels[1], pixels[1] == pixels[2] {
-            return UIColor(white: CGFloat(pixels[0]) / 255, alpha: 1)
-        } else {
-            return UIColor(
-                red: CGFloat(pixels[0]) / 255,
-                green: CGFloat(pixels[1]) / 255,
-                blue: CGFloat(pixels[2]) / 255,
-                alpha: 1
+            let destination = CIRenderDestination(
+                bitmapData: baseAddress,
+                width: 1,
+                height: 1,
+                bytesPerRow: 4,
+                format: .RGBA8
             )
+            destination.colorSpace = CGColorSpace(name: CGColorSpace.sRGB)
+            destination.alphaMode = .premultiplied
+
+            // CIContext.render(_:toBitmap:rowBytes:bounds:format:colorSpace:) can abort on allocation failures
+            // Use the throwing task API so we can return nil instead
+            let task = try context.startTask(
+                toRender: outputImage.settingAlphaOne(in: outputImage.extent),
+                from: CGRect(x: 0, y: 0, width: 1, height: 1),
+                to: destination,
+                at: .zero
+            )
+            // Keep the buffer alive until rendering finishes
+            _ = try task.waitUntilCompleted()
+
+            if buffer[0] == buffer[1], buffer[1] == buffer[2] {
+                return UIColor(white: CGFloat(buffer[0]) / 255, alpha: 1)
+            } else {
+                return UIColor(
+                    red: CGFloat(buffer[0]) / 255,
+                    green: CGFloat(buffer[1]) / 255,
+                    blue: CGFloat(buffer[2]) / 255,
+                    alpha: 1
+                )
+            }
         }
     }
 }
