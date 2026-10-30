@@ -106,6 +106,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending RUM events
 
     func testStartingViewIdentifiedByViewController() throws {
+        // Asynchronous cache and telemetry reads must not advance event timestamps.
         let dateProvider = RelativeDateProvider()
         config.dateProvider = dateProvider
         RUM.enable(with: config, in: core)

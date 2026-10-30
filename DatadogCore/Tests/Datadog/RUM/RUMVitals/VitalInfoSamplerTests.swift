@@ -84,8 +84,10 @@ class VitalInfoSamplerTests: XCTestCase {
         mockCPUReader.vitalData = 123.0
         mockMemoryReader.vitalData = 321.0
 
-        // Samples are taken on the main thread, so the wait can only return after
-        // the sample that read memory for the 2nd time has been fully recorded.
+        // Expect exactly 2 memory reads: the initial sample (scheduled on the main run loop by `init`)
+        // and the first timer tick at 0.5 s. The wait returns right after the 2nd read; the timeout is only
+        // an upper bound. Samples are taken on the main thread, so the 2nd one is fully recorded by then,
+        // and `sampler` is released (its timer invalidated) when the test returns, so no 3rd read happens.
         let samplingExpectation = expectation(description: "initial sample and one periodic sample")
         samplingExpectation.expectedFulfillmentCount = 2
         mockMemoryReader.onReadVitalData = { samplingExpectation.fulfill() }
