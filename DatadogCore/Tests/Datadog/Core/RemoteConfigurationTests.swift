@@ -191,21 +191,61 @@ class RemoteConfigurationTests: XCTestCase {
         rc.start({ _ in }, telemetry: telemetry)
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached remote configuration")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: coreDir.coreDirectory.url.appendingPathComponent("test-id.json").path))
         withExtendedLifetime(rc) {}
     }
 
     func testStartReportsTelemetryErrorWhenCachedFileCannotBeDecoded() throws {
-        try Data("this is not json".utf8).write(
-            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
-            options: .atomic
-        )
+        try assertStartDeletesUndecodableCachedFile(Data("this is not json".utf8))
+    }
+
+    func testStartDeletesCachedFileWhenItIsEmpty() throws {
+        try assertStartDeletesUndecodableCachedFile(Data())
+    }
+
+    func testStartDeletesCachedFileWhenConfigurationDataIsNotBase64() throws {
+        try assertStartDeletesUndecodableCachedFile(Data(#"{"etag":"abc123","configurationData":"not base64!"}"#.utf8))
+    }
+
+    private func assertStartDeletesUndecodableCachedFile(_ data: Data, file: StaticString = #filePath, line: UInt = #line) throws {
+        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
+        try data.write(to: fileURL, options: .atomic)
         let rc = makeProvider(httpClient: NeverHTTPClient(), start: false)
         let telemetry = TelemetryMock()
+        let completion = expectation(description: "no cached configuration is delivered")
+        completion.isInverted = true
 
-        rc.start({ _ in }, telemetry: telemetry)
+        rc.start({ _ in completion.fulfill() }, telemetry: telemetry)
+        waitForExpectations(timeout: 0.1)
 
-        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached remote configuration")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path), file: file, line: line)
+        let errors = telemetry.messages.compactMap { $0.asError }
+        XCTAssertEqual(errors.count, 1, file: file, line: line)
+        XCTAssertTrue(errors.first?.message.hasPrefix("[RemoteConfig] Failed to read cached remote configuration") == true, file: file, line: line)
         withExtendedLifetime(rc) {}
+    }
+
+    func testUndecodableCachedFileIsNotSentAsIfNoneMatchAndIsReplacedByNextSync() throws {
+        try Data(#"{"etag":"abc123","configurationData":"not base64!"}"#.utf8)
+            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
+        let payload = remoteConfigurationData(applicationID: "fetched-application-id")
+        let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload)
+
+        let rc = makeProvider(httpClient: httpClient)
+        waitForPersistedConfiguration(applicationID: "fetched-application-id")
+
+        XCTAssertNil(httpClient.requestsSent().first?.value(forHTTPHeaderField: "If-None-Match"))
+
+        let cachedProvider = makeProvider(httpClient: NeverHTTPClient(), start: false)
+        let expectation = expectation(description: "replaced cache is read back")
+        cachedProvider.start { remoteConfiguration in
+            if remoteConfiguration.rum?.applicationId == "fetched-application-id" {
+                expectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 2)
+        withExtendedLifetime(rc) {}
+        withExtendedLifetime(cachedProvider) {}
     }
 
     // MARK: Initial sync
@@ -238,7 +278,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func testInitSyncNetworkErrorReportsTelemetryAndLeavesNoPersistedConfiguration() {
         let telemetry = TelemetryMock()
-        let rc = makeProvider(httpClient: HTTPClientMock(error: URLError(.networkConnectionLost)), start: false)
+        let rc = makeProvider(httpClient: HTTPClientMock(error: URLError(.badServerResponse)), start: false)
 
         rc.start({ _ in }, telemetry: telemetry)
 
@@ -247,6 +287,27 @@ class RemoteConfigurationTests: XCTestCase {
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
         withExtendedLifetime(rc) {}
+    }
+
+    func testInitSyncTransportErrorDoesNotReportTelemetry() {
+        let errors: [URLError.Code] = [
+            .networkConnectionLost, .timedOut, .cannotParseResponse, .notConnectedToInternet,
+            .cannotFindHost, .secureConnectionFailed, .dataNotAllowed, .cannotConnectToHost
+        ]
+
+        for code in errors {
+            let telemetry = TelemetryMock()
+            let httpClient = HTTPClientMock(error: URLError(code))
+            let rc = makeProvider(httpClient: httpClient, start: false)
+            rc.start({ _ in }, telemetry: telemetry)
+
+            let expectation = expectation(description: "sync completes")
+            wait(until: { !httpClient.requestsSent().isEmpty }, andThenFulfill: expectation)
+            waitForExpectations(timeout: 2)
+
+            XCTAssertNil(telemetry.messages.firstError())
+            withExtendedLifetime(rc) {}
+        }
     }
 
     func testInitSyncNon2xxReportsTelemetryAndPreservesPersistedConfiguration() throws {
@@ -592,6 +653,32 @@ class RemoteConfigurationTests: XCTestCase {
             noSyncExpectation.fulfill()
         }
         waitForExpectations(timeout: 2)
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundSyncDeletesCachedFileThatCannotBeDecoded() throws {
+        let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
+        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
+        try cacheData(etag: "abc123", applicationID: "cached-application-id").write(to: fileURL, options: .atomic)
+        let httpClient = HTTPClientMock { _ in .success((.mockResponseWith(statusCode: 304), nil)) }
+        let telemetry = TelemetryMock()
+        let rc = makeProvider(httpClient: httpClient, notificationCenterProvider: notificationCenterProvider, dateProvider: dateProvider, start: false)
+        rc.start({ _ in }, telemetry: telemetry)
+
+        let initExpectation = expectation(description: "init sync completes")
+        wait(until: { httpClient.requestsSent().count == 1 }, andThenFulfill: initExpectation)
+        waitForExpectations(timeout: 2)
+
+        // When — the cached file is corrupted before the next foreground sync
+        try Data().write(to: fileURL, options: .atomic)
+        dateProvider.advance(bySeconds: 360)
+        notificationCenterProvider.postEnterForeground()
+
+        // Then
+        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached metadata etag")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertNil(httpClient.requestsSent().last?.value(forHTTPHeaderField: "If-None-Match"))
         withExtendedLifetime(rc) {}
     }
 
