@@ -99,23 +99,6 @@ workflow:
   DDOCTOSTS_ID_TOKEN:
     aud: dd-octo-sts
 
-# Gates expressed with `needs:`, so a job starts as soon as the jobs it depends on pass instead of
-# waiting for the whole previous stage. Listed jobs are gates only: their artifacts are not downloaded.
-#
-# Ref.: https://docs.gitlab.com/ee/ci/yaml/#needs
-.lint-gate:
-  needs:
-    - job: "Lint"
-      artifacts: false
-    - job: "API Surface Verify"
-      artifacts: false
-    - job: "SPI Docs Build"
-      artifacts: false
-
-.dependencies:
-  needs:
-    - job: "Build Dependencies" # downloads `Carthage/Build`
-
 ENV check:
   stage: pre
   rules: 
@@ -193,9 +176,8 @@ Unit Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - !reference [.dependencies, needs]
-    - !reference [.lint-gate, needs]
+  dependencies:
+    - "Build Dependencies"
   # Job-level timeout below the project's global 1h CI/CD timeout, paired with a shorter
   # RUNNER_SCRIPT_TIMEOUT, so the runner kills a hung `script:` step early and still has
   # time to run `after_script` and upload the xcresult artifacts. Hitting the project's
@@ -220,9 +202,8 @@ Unit Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - !reference [.dependencies, needs]
-    - !reference [.lint-gate, needs]
+  dependencies:
+    - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -245,9 +226,8 @@ Unit Tests (watchOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - !reference [.dependencies, needs]
-    - !reference [.lint-gate, needs]
+  dependencies:
+    - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -270,9 +250,8 @@ Unit Tests (visionOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - !reference [.dependencies, needs]
-    - !reference [.lint-gate, needs]
+  dependencies:
+    - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -295,9 +274,8 @@ Unit Tests (macOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - !reference [.dependencies, needs]
-    - !reference [.lint-gate, needs]
+  dependencies:
+    - "Build Dependencies"
   variables:
     PLATFORM: "macOS"
     DEVICE: "macOS"
@@ -316,10 +294,8 @@ UI Tests:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - !reference [.dependencies, needs]
-    - job: "Unit Tests (iOS)"
-      artifacts: false
+  dependencies:
+    - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
@@ -349,7 +325,7 @@ SR Snapshot Tests:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: !reference [.lint-gate, needs]
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   # Job-level timeout below the project's global CI/CD timeout, paired with a shorter
@@ -379,7 +355,7 @@ SR Layer Snapshot Tests:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: !reference [.lint-gate, needs]
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   # See the "SR Snapshot Tests" job above for why timeout + RUNNER_SCRIPT_TIMEOUT +
@@ -447,11 +423,7 @@ Smoke Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - job: "Unit Tests (iOS)"
-      artifacts: false
-    - job: "UI Tests"
-      artifacts: false
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
@@ -483,9 +455,7 @@ Smoke Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - job: "Unit Tests (tvOS)"
-      artifacts: false
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
@@ -512,9 +482,7 @@ Smoke Tests (macOS):
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs:
-    - job: "Unit Tests (macOS)"
-      artifacts: false
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
@@ -530,7 +498,7 @@ SPM Build (Swift 6.2):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
-  needs: !reference [.lint-gate, needs]
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
     - make clean repo-setup ENV=ci
