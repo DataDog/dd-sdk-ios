@@ -54,13 +54,15 @@ internal struct SpanSnapshot: Encodable, Sendable {
     let peerTags: [String: String]
     /// The source of the service name override, from `_dd.svc_src` span meta tag.
     let serviceSource: String
+    /// The deployment the span was recorded under, from the same context its uploaded event uses.
+    let deployment: DeploymentIdentity
 }
 
 extension SpanSnapshot {
     /// Creates a snapshot from a post-mapper `SpanEvent`.
     ///
-    /// All field values that the `SpanEventMapper` may mutate (resource, service,
-    /// operation name, tags, isError) are read from the event so that any mutation
+    /// All field values that the `SpanEventMapper` may mutate (resource,
+    /// operation name and tags) are read from the event so that any mutation
     /// applied by the user-configured mapper is reflected in stats aggregation.
     ///
     /// - Parameter event: the post-mapper `SpanEvent`.
@@ -70,24 +72,26 @@ extension SpanSnapshot {
     ///   for trace uploads, but `StatsConcentrator.flush(now:)` runs against the device-local
     ///   clock. Using the server-adjusted time here would bucket snapshots in the future
     ///   relative to the flush clock on devices whose clock is behind the server, delaying
-    ///   or dropping stats. Stats stay on the device-local clock.
-    init(from event: SpanEvent, startTime: Date) {
+    ///   or dropping stats. Stats are bucketed on the device-local clock, and `ClientStatsFeature`
+    ///   moves each bucket's start to the server clock when it stores it.
+    init(from event: SpanEvent, startTime: Date, deployment: DeploymentIdentity, isServiceEntry: Bool = false) {
         let spanKind = event.tags[SpanTags.kind]
         let httpStatusCode: UInt32 = {
-            guard let raw = event.tags[OTTags.httpStatusCode],
+            // OpenTelemetry's stable HTTP conventions use `http.response.status_code`; the OpenTracing
+            // `http.status_code` is the fallback.
+            guard let raw = event.tags["http.response.status_code"] ?? event.tags[OTTags.httpStatusCode],
                   let intValue = Int(raw),
                   let uint32 = UInt32(exactly: intValue) else {
                 return 0
             }
             return uint32
         }()
-        // A span is "top level" when it is a service entry point. Root spans (no
-        // parent) always qualify. Spans with a `parentID` set still qualify when the
-        // parent lives in a different service (distributed-tracing continuation) or
-        // when the user explicitly marks the span with `_dd.top_level`. Mirrors the
-        // dd-trace-go convention (`_top_level` tag).
-        let isTopLevel = event.parentID == nil || event.tags["_dd.top_level"] == "1"
-        let isMeasured = event.tags["_dd.measured"] == "1"
+        // Service-entry classification is internal to stats. Keep a remote parent's ID:
+        // a local service entry is not necessarily the root of the distributed trace.
+        // The zero span ID is reserved for a root span.
+        let parentSpanID = event.parentID == .invalid ? nil : event.parentID
+        let isTopLevel = parentSpanID == nil || isServiceEntry || event.tags[SpanTags.topLevel] == "1"
+        let isMeasured = event.tags[SpanTags.measured] == "1"
         let serviceSource = event.tags["_dd.svc_src"] ?? ""
 
         var peerTags: [String: String] = [:]
@@ -100,7 +104,7 @@ extension SpanSnapshot {
         self.init(
             traceID: event.traceID,
             spanID: event.spanID,
-            parentSpanID: event.parentID,
+            parentSpanID: parentSpanID,
             service: event.serviceName,
             operationName: event.operationName,
             resource: event.resource,
@@ -118,7 +122,8 @@ extension SpanSnapshot {
             isTopLevel: isTopLevel,
             isMeasured: isMeasured,
             peerTags: peerTags,
-            serviceSource: serviceSource
+            serviceSource: serviceSource,
+            deployment: deployment
         )
     }
 }

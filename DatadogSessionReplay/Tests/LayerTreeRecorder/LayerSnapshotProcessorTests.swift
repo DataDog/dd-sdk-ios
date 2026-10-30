@@ -149,11 +149,116 @@ struct LayerSnapshotProcessorTests {
             .incrementalSnapshot
         ])
 
+        #expect(enrichedRecord.records.map(\.timestamp) == [2_000, 2_000, 2_000, 2_000])
         #expect(enrichedRecord.records[0].incrementalSnapshot?.mutationData != nil)
         #expect(enrichedRecord.records[1].incrementalSnapshot?.compositionTreeMutationData != nil)
         #expect(enrichedRecord.records[2].incrementalSnapshot?.viewportResizeData != nil)
         #expect(enrichedRecord.records[3].incrementalSnapshot?.pointerInteractionData != nil)
         #expect(fixture.core.recordsCountByViewID == ["view-id": 7])
+    }
+
+    @Test("Changes emit adjacent mutation pairs in one batch", arguments: [false, true], [false, true])
+    func changesEmitMutationPairs(wireframesChange: Bool, compositionTreeChanges: Bool) throws {
+        // Given
+        let fixture = Fixture()
+        let firstSnapshot = mutationSnapshot(date: 1)
+        let secondSnapshot = mutationSnapshot(
+            date: 2,
+            wireframesChange: wireframesChange,
+            compositionTreeChanges: compositionTreeChanges
+        )
+        fixture.processor.process(layerTreeSnapshot: firstSnapshot, imageSnapshots: .init(), touchSnapshot: nil)
+
+        // When
+        fixture.processor.process(layerTreeSnapshot: secondSnapshot, imageSnapshots: .init(), touchSnapshot: nil)
+
+        // Then
+        guard wireframesChange || compositionTreeChanges else {
+            #expect(fixture.recordWriter.records.count == 1)
+            #expect(fixture.core.recordsCountByViewID == ["view-id": 3])
+            return
+        }
+
+        try #require(fixture.recordWriter.records.count == 2)
+        let batch = fixture.recordWriter.records[1]
+        try #require(batch.records.count == 2)
+        #expect(batch.records.map(\.timestamp) == [2_000, 2_000])
+        let wireframeMutation = try #require(batch.records[0].incrementalSnapshot?.mutationData)
+        let compositionTreeMutation = try #require(batch.records[1].incrementalSnapshot?.compositionTreeMutationData)
+        #expect(wireframeMutation.updates.count == (wireframesChange ? 1 : 0))
+        #expect((compositionTreeMutation.root != nil) == compositionTreeChanges)
+        #expect(fixture.core.recordsCountByViewID == ["view-id": 5])
+    }
+
+    @Test("Unchanged content still emits viewport and touch records")
+    func unchangedContentEmitsViewportAndTouchRecords() throws {
+        // Given
+        let fixture = Fixture()
+        let firstSnapshot = LayerTreeSnapshot.mockWith(
+            date: Date(timeIntervalSince1970: 1),
+            viewportSize: CGSize(width: 100, height: 200)
+        )
+        let secondSnapshot = LayerTreeSnapshot.mockWith(
+            date: Date(timeIntervalSince1970: 2),
+            viewportSize: CGSize(width: 200, height: 100),
+            root: firstSnapshot.root
+        )
+        let touchSnapshot = TouchSnapshot(
+            date: secondSnapshot.date,
+            touches: [.init(id: 42, phase: .down, date: secondSnapshot.date, position: .zero, touchOverride: nil)]
+        )
+        fixture.processor.process(layerTreeSnapshot: firstSnapshot, imageSnapshots: .init(), touchSnapshot: nil)
+
+        // When
+        fixture.processor.process(
+            layerTreeSnapshot: secondSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: touchSnapshot
+        )
+
+        // Then
+        try #require(fixture.recordWriter.records.count == 2)
+        let records = fixture.recordWriter.records[1].records
+        try #require(records.count == 2)
+        #expect(records[0].incrementalSnapshot?.viewportResizeData != nil)
+        #expect(records[1].incrementalSnapshot?.pointerInteractionData != nil)
+        #expect(fixture.core.recordsCountByViewID == ["view-id": 5])
+    }
+
+    @Test("An embedded-content slot change falls back to a full snapshot and updates state")
+    func embeddedContentSlotChangeFallsBackToFullSnapshotAndUpdatesState() throws {
+        // Given
+        let fixture = Fixture()
+        let firstSnapshot = LayerTreeSnapshot.mockWith(
+            date: Date(timeIntervalSince1970: 1),
+            embeddedContentSlots: [2: "slot-a"]
+        )
+        let secondSnapshot = LayerTreeSnapshot.mockWith(
+            date: Date(timeIntervalSince1970: 2),
+            root: .mockRoot(absoluteFrame: CGRect(x: 0, y: 0, width: 200, height: 200)),
+            embeddedContentSlots: [2: "slot-b"]
+        )
+        fixture.processor.process(layerTreeSnapshot: firstSnapshot, imageSnapshots: .init(), touchSnapshot: nil)
+
+        // When
+        fixture.processor.process(layerTreeSnapshot: secondSnapshot, imageSnapshots: .init(), touchSnapshot: nil)
+        fixture.processor.process(layerTreeSnapshot: secondSnapshot, imageSnapshots: .init(), touchSnapshot: nil)
+
+        // Then
+        try #require(fixture.recordWriter.records.count == 2)
+        let records = fixture.recordWriter.records[1].records
+        #expect(records.map(\.type) == [.fullSnapshot])
+        let fullSnapshot = try #require(records.first?.fullSnapshot)
+        #expect(fullSnapshot.timestamp == 2_000)
+        #expect(fullSnapshot.data.compositionTree?.root.width == 200)
+        #expect(fullSnapshot.data.wireframes.count == 1)
+        guard case .embeddedContentWireframe(let wireframe) = try #require(fullSnapshot.data.wireframes.first) else {
+            Issue.record("Expected an embedded-content wireframe.")
+            return
+        }
+        #expect(wireframe.slotId == "slot-b")
+        #expect(fixture.telemetry.messages.firstError() != nil)
+        #expect(fixture.core.recordsCountByViewID == ["view-id": 4])
     }
 
     @Test("RUM context change starts a new segment")
@@ -247,6 +352,26 @@ struct LayerSnapshotProcessorTests {
 }
 
 private extension LayerSnapshotProcessorTests {
+    func mutationSnapshot(
+        date: TimeInterval,
+        wireframesChange: Bool = false,
+        compositionTreeChanges: Bool = false
+    ) -> LayerTreeSnapshot {
+        LayerTreeSnapshot.mockWith(
+            date: Date(timeIntervalSince1970: date),
+            root: .mockRoot(
+                absoluteFrame: CGRect(x: 0, y: 0, width: compositionTreeChanges ? 200 : 100, height: 200),
+                sublayers: [
+                    .mockWith(
+                        replayID: 2,
+                        absoluteFrame: CGRect(x: 0, y: 0, width: 10, height: 10),
+                        backgroundColor: wireframesChange ? UIColor.blue.cgColor : UIColor.red.cgColor
+                    )
+                ]
+            )
+        )
+    }
+
     final class Fixture {
         let core = PassthroughCoreMock()
         let recordWriter = RecordWriterMock()

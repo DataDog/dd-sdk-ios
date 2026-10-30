@@ -36,6 +36,33 @@ import DatadogInternal
 /// let themeColor = client.getStringValue(key: "theme-color", defaultValue: "blue")
 /// ```
 public final class FlagsClient {
+    /// Configuration for an individual Flags client.
+    public struct Configuration {
+        /// Enables per-subject opt-out from customer-facing feature flag evaluation reporting.
+        ///
+        /// This controls flag evaluation reporting, not Datadog SDK internal telemetry.
+        /// Do not use it to disable SDK diagnostics.
+        ///
+        /// When enabled, setting `dd_evaluation_telemetry_opt_out` to boolean `true` suppresses new evaluation events,
+        /// evaluation counts, and automatic RUM flag annotations.
+        /// Before the first context update, evaluation telemetry is also suppressed until the cached policy is loaded.
+        /// Flag evaluation and experiment exposure logging remain unchanged.
+        /// Previously recorded telemetry is not removed.
+        /// The attribute remains available for targeting and exposure reporting.
+        ///
+        /// Default: `false`.
+        public var enableEvaluationTelemetryOptOutParameter: Bool
+
+        /// Creates configuration for an individual Flags client.
+        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
+        ///   not SDK internal telemetry. Suppresses while the initial cached policy is unknown, then requires
+        ///   `dd_evaluation_telemetry_opt_out` to be boolean `true`.
+        ///   Default: `false`.
+        public init(enableEvaluationTelemetryOptOutParameter: Bool = false) {
+            self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
+        }
+    }
+
     /// The default client name used when no name is specified.
     ///
     /// Use this constant when you need to reference the default client by name.
@@ -43,25 +70,42 @@ public final class FlagsClient {
 
     private enum EvaluationError {
         static let providerNotReady = "PROVIDER_NOT_READY"
+        static let providerFatal = "PROVIDER_FATAL"
         static let flagNotFound = "FLAG_NOT_FOUND"
+        static let parseError = "PARSE_ERROR"
         static let typeMismatch = "TYPE_MISMATCH"
+        static let targetingKeyMissing = "TARGETING_KEY_MISSING"
+        static let invalidContext = "INVALID_CONTEXT"
+        static let general = "GENERAL"
     }
 
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
     private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
+    private let configuration: Configuration
+
+    private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
+    private static let defaultAssignment = FlagAssignment(
+        allocationKey: "",
+        variationKey: "",
+        variation: .unknown(""),
+        reason: "DEFAULT",
+        doLog: false
+    )
 
     internal init(
         repository: any FlagsRepositoryProtocol,
         exposureLogger: any ExposureLogging,
         evaluationLogger: any EvaluationLogging,
-        rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
+        rumFlagEvaluationReporter: any RUMFlagEvaluationReporting,
+        configuration: Configuration = .init()
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
         self.evaluationLogger = evaluationLogger
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
+        self.configuration = configuration
     }
 
     /// Creates a new `FlagsClient` instance.
@@ -103,10 +147,29 @@ public final class FlagsClient {
         name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
+        create(configuration: .init(), name: name, in: core)
+    }
+
+    /// Creates a client with its own configuration.
+    ///
+    /// Clients are retained by name. If the name already exists, its original configuration remains in effect.
+    /// Enable the Flags feature before creating clients.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration for this client.
+    ///   - name: A unique client name. Defaults to ``defaultName``.
+    ///   - core: The Datadog SDK core instance. Defaults to the global shared instance.
+    /// - Returns: A client for evaluating flags.
+    @discardableResult
+    public static func create(
+        configuration: Configuration,
+        name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClientProtocol {
         // To ensure the correct registration order between Core and Features,
         // the entire initialization flow is synchronized on the main thread.
         runOnMainThreadSync {
-            doCreate(name: name, in: core)
+            doCreate(name: name, configuration: configuration, in: core)
         }
     }
 
@@ -154,6 +217,7 @@ public final class FlagsClient {
 
     internal static func doCreate(
         name: String,
+        configuration: Configuration,
         in core: DatadogCoreProtocol
     ) -> FlagsClientProtocol {
         guard let feature = core.get(feature: FlagsFeature.self) else {
@@ -190,7 +254,8 @@ public final class FlagsClient {
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
-            rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope)
+            rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope),
+            configuration: configuration
         )
 
         feature.clientRegistry.register(client, named: name)
@@ -199,6 +264,11 @@ public final class FlagsClient {
 }
 
 extension FlagsClient: FlagsClientProtocol {
+    @discardableResult
+    public func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        repository.onFirstFlags(listener)
+    }
+
     public var state: FlagsStateObservable {
         repository.state
     }
@@ -211,28 +281,26 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        let defaultAssignment = FlagAssignment(
-            allocationKey: "",
-            variationKey: "",
-            variation: .unknown(""),
-            reason: "DEFAULT",
-            doLog: false
-        )
+        let snapshot = repository.evaluationSnapshot(for: key)
+        let context = snapshot.context
+        let trackEvaluationTelemetry = !configuration.enableEvaluationTelemetryOptOutParameter || !snapshot.telemetryOptedOut
 
-        guard let context = repository.context else {
-            evaluationLogger.logEvaluation(
+        guard let context else {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
                 for: key,
-                assignment: defaultAssignment,
+                assignment: Self.defaultAssignment,
                 evaluationContext: .empty,
                 flagError: EvaluationError.providerNotReady
             )
             return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
         }
 
-        guard let flagAssignment = repository.flagAssignment(for: key) else {
-            evaluationLogger.logEvaluation(
+        guard let flagAssignment = snapshot.assignment else {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
                 for: key,
-                assignment: defaultAssignment,
+                assignment: Self.defaultAssignment,
                 evaluationContext: context,
                 flagError: EvaluationError.flagNotFound
             )
@@ -240,7 +308,8 @@ extension FlagsClient: FlagsClientProtocol {
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
-            evaluationLogger.logEvaluation(
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: flagAssignment,
                 evaluationContext: context,
@@ -257,18 +326,20 @@ extension FlagsClient: FlagsClientProtocol {
             allocationKey: flagAssignment.allocationKey.isEmpty ? nil : flagAssignment.allocationKey
         )
 
-        trackEvaluation(key: key, assignment: flagAssignment, context: context)
+        trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
 
         return details
     }
 
-    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
-        exposureLogger.logExposure(
-            for: key,
-            assignment: assignment,
-            evaluationContext: context
-        )
+    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
+        sendFlagExposure(key: key, assignment: assignment, context: context)
 
+        guard trackEvaluationTelemetry else {
+            return
+        }
+
+        // Log directly instead of calling sendFlagEvaluationEvent, which would check context again.
+        // During a refresh, that context can be stale; use the snapshot's opt-out policy above.
         evaluationLogger.logEvaluation(
             for: key,
             assignment: assignment,
@@ -280,6 +351,23 @@ extension FlagsClient: FlagsClientProtocol {
             flagKey: key,
             value: assignment.variationKey
         )
+    }
+
+    private func logEvaluation(
+        enabled: Bool,
+        for key: String,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext,
+        flagError: String
+    ) {
+        guard enabled else {
+            return
+        }
+        evaluationLogger.logEvaluation(for: key, assignment: assignment, evaluationContext: evaluationContext, flagError: flagError)
+    }
+
+    private func isEvaluationTelemetryOptedOut(in context: FlagsEvaluationContext?) -> Bool {
+        configuration.enableEvaluationTelemetryOptOutParameter && context?.attributes[Self.telemetryOptOutAttribute] == .bool(true)
     }
 }
 
@@ -293,6 +381,57 @@ extension FlagsClient: FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
-        trackEvaluation(key: key, assignment: assignment, context: context)
+        trackEvaluation(
+            key: key,
+            assignment: assignment,
+            context: context,
+            trackEvaluationTelemetry: !isEvaluationTelemetryOptedOut(in: context)
+        )
+    }
+
+    @_spi(Internal)
+    public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        guard !isEvaluationTelemetryOptedOut(in: context) else {
+            return
+        }
+
+        // Hook errors can contain arbitrary customer data. Only forward standard OpenFeature codes.
+        let sanitizedErrorCode: String?
+        switch errorCode {
+        case nil:
+            sanitizedErrorCode = nil
+        case EvaluationError.providerNotReady, EvaluationError.providerFatal, EvaluationError.flagNotFound,
+             EvaluationError.parseError, EvaluationError.typeMismatch, EvaluationError.targetingKeyMissing,
+             EvaluationError.invalidContext, EvaluationError.general:
+            sanitizedErrorCode = errorCode
+        default:
+            sanitizedErrorCode = EvaluationError.general
+        }
+
+        evaluationLogger.logEvaluation(
+            for: key,
+            assignment: assignment ?? Self.defaultAssignment,
+            evaluationContext: context,
+            flagError: sanitizedErrorCode
+        )
+    }
+
+    @_spi(Internal)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
+        guard !isEvaluationTelemetryOptedOut(in: context) else {
+            return
+        }
+        rumFlagEvaluationReporter.sendFlagEvaluation(flagKey: key, value: variant)
+    }
+}
+
+extension FlagsClient: FlagsClientFlushable {
+    func flush() {
+        repository.flush()
     }
 }

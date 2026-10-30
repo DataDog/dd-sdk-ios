@@ -21,7 +21,7 @@ internal struct SpanEventBuilder: Sendable {
     let bundleWithRUM: Bool
     /// Whether client-side stats computation is enabled. When `true`, spans are stamped with
     /// `meta._dd.compute_stats = "0"` so the backend skips its own (double-counting) computation.
-    /// When `false`, the tag is removed so the backend keeps computing stats (backwards-compatible default).
+    /// When `false`, the tag is left as the user or the event mapper set it.
     let statsComputationEnabled: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
@@ -71,16 +71,6 @@ internal struct SpanEventBuilder: Sendable {
             }
         }
 
-        // The SDK owns `_dd.compute_stats`: (over)write it to "0" when client-side stats is enabled,
-        // otherwise remove any user-provided value. This guarantees a user tag can never flip the
-        // opt-out and silently reintroduce backend double counting (when enabled) or under-counting
-        // (when disabled).
-        if statsComputationEnabled {
-            tags[SpanTags.computeStats] = "0"
-        } else {
-            tags.removeValue(forKey: SpanTags.computeStats)
-        }
-
         // Transform user info to `SpanEvent.UserInfo` representation
         let spanUserInfo = SpanEvent.UserInfo(
             id: context.userInfo?.id,
@@ -128,24 +118,15 @@ internal struct SpanEventBuilder: Sendable {
             tags: tags
         )
 
-        guard let eventMapper = eventsMapper else {
-            return span
-        }
-
-        var mappedSpan = eventMapper(span)
-
-        // Re-assert the SDK-owned `_dd.compute_stats` after the user mapper runs. The mapper receives
-        // the tag already stamped above, but a mapper that rewrites or drops `tags` could otherwise
-        // strip it, letting the sampled-in span upload without the opt-out while client-side stats are
-        // also uploaded, causing the backend to recompute and double-count. `SpanSanitizer` only
-        // guards against attribute-count limiting dropping the tag, not against the mapper removing it.
+        var event = eventsMapper.map { $0(span) } ?? span
+        // When client-side stats is enabled, the SDK owns `_dd.compute_stats` and (over)writes it to "0".
+        // This runs after the event mapper, so neither a user tag nor a mapper that filters or replaces
+        // tags can reintroduce backend double counting. When it is disabled, the tag is left as the user
+        // or mapper set it, as before client-side stats existed.
         if statsComputationEnabled {
-            mappedSpan.tags[SpanTags.computeStats] = "0"
-        } else {
-            mappedSpan.tags.removeValue(forKey: SpanTags.computeStats)
+            event.tags[SpanTags.computeStats] = "0"
         }
-
-        return mappedSpan
+        return event
     }
 
     // MARK: - Attributes Conversion

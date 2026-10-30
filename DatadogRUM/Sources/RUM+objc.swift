@@ -794,10 +794,12 @@ public class objc_RUMConfiguration: NSObject {
         get { swiftConfig.trackBackgroundEvents }
     }
 
+    #if !os(macOS)
     public var trackWatchdogTerminations: Bool {
         set { swiftConfig.trackWatchdogTerminations = newValue }
         get { swiftConfig.trackWatchdogTerminations }
     }
+    #endif
 
     public var longTaskThreshold: TimeInterval {
         set { swiftConfig.longTaskThreshold = newValue }

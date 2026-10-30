@@ -393,6 +393,8 @@ private extension DatadogProfiler {
             return
         }
 
+        prepareProfileForWriting(profile)
+
         if canWriteProfile {
             write(
                 profile: profile,
@@ -505,6 +507,8 @@ private extension DatadogProfiler {
             return
         }
 
+        prepareProfileForWriting(profile)
+
         write(
             profile: profile,
             operation: .appLaunch,
@@ -547,6 +551,17 @@ private extension DatadogProfiler {
 // MARK: - Helpers
 
 private extension DatadogProfiler {
+    /// Applies server-time correction and retains events that could have been sampled by the profile.
+    func prepareProfileForWriting(_ profile: OpaquePointer) {
+        dd_pprof_set_server_time_offset_ns(profile, currentServerTimeOffset.dd.toInt64Nanoseconds)
+        let firstSample = dd_pprof_get_start_timestamp_s(profile).dd.toInt64Nanoseconds
+        let lastSample = dd_pprof_get_end_timestamp_s(profile).dd.toInt64Nanoseconds
+
+        // Events buffered while sampling was stopped may fall outside this profile's sampled range.
+        hangs.removeAll { !$0.couldBeSampled(byProfileStartingAt: firstSample, endingAt: lastSample) }
+        longTasks.removeAll { !$0.couldBeSampled(byProfileStartingAt: firstSample, endingAt: lastSample) }
+    }
+
     func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) {
         let context = ProfilingContext(status: .current, quotaReason: quotaReason)
         guard lastProfilingContext?.status != context.status || lastProfilingContext?.quotaReason != context.quotaReason else {
@@ -667,6 +682,19 @@ extension ProfilingContext.Status {
         default:
             self = .unknown
         }
+    }
+}
+
+// MARK: - DurationEvent
+
+private extension DurationEvent {
+    /// Whether this event overlaps the profile's sampled range, expressed in epoch nanoseconds.
+    ///
+    /// An event may start before the first sample as long as it ends at or after that sample.
+    func couldBeSampled(byProfileStartingAt profileStart: Int64, endingAt profileEnd: Int64) -> Bool {
+        let (end, overflow) = start.addingReportingOverflow(duration)
+        let endsAtOrAfterProfileStart = overflow ? duration > 0 : end >= profileStart
+        return start <= profileEnd && endsAtOrAfterProfileStart
     }
 }
 

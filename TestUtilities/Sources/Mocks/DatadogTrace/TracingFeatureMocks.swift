@@ -107,7 +107,8 @@ extension DatadogTracer {
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         spanEventBuilder: SpanEventBuilder = .mockAny(),
-        loggingIntegration: TracingWithLoggingIntegration = .mockAny()
+        loggingIntegration: TracingWithLoggingIntegration = .mockAny(),
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) -> DatadogTracer {
         return DatadogTracer(
             core: core,
@@ -117,7 +118,8 @@ extension DatadogTracer {
             spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
-            spanEventBuilder: spanEventBuilder
+            spanEventBuilder: spanEventBuilder,
+            onSpanFinished: onSpanFinished
         )
     }
 
@@ -129,7 +131,8 @@ extension DatadogTracer {
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         spanEventBuilder: SpanEventBuilder = .mockAny(),
-        loggingIntegration: TracingWithLoggingIntegration = .mockAny()
+        loggingIntegration: TracingWithLoggingIntegration = .mockAny(),
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) -> DatadogTracer {
         return DatadogTracer(
             featureScope: featureScope,
@@ -139,7 +142,8 @@ extension DatadogTracer {
             spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
-            spanEventBuilder: spanEventBuilder
+            spanEventBuilder: spanEventBuilder,
+            onSpanFinished: onSpanFinished
         )
     }
 }
@@ -447,7 +451,8 @@ extension SpanSnapshot {
         isTopLevel: Bool = true,
         isMeasured: Bool = false,
         peerTags: [String: String] = [:],
-        serviceSource: String = ""
+        serviceSource: String = "",
+        deployment: DeploymentIdentity = .mockAny()
     ) -> SpanSnapshot {
         return SpanSnapshot(
             traceID: traceID,
@@ -465,7 +470,22 @@ extension SpanSnapshot {
             isTopLevel: isTopLevel,
             isMeasured: isMeasured,
             peerTags: peerTags,
-            serviceSource: serviceSource
+            serviceSource: serviceSource,
+            deployment: deployment
         )
+    }
+}
+
+extension DeploymentIdentity {
+    public static func mockAny() -> DeploymentIdentity {
+        return mockWith()
+    }
+
+    public static func mockWith(
+        env: String = "test-env",
+        version: String = "1.0.0",
+        service: String = "test-app"
+    ) -> DeploymentIdentity {
+        return DeploymentIdentity(env: env, version: version, service: service)
     }
 }

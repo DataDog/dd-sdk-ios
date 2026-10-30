@@ -50,15 +50,19 @@ public enum SpanTags {
     /// Internal tag used to encode the span kind. This can be either "client" or "server" for RPC spans,
     /// and "producer" or "consumer" for messaging spans.
     internal static let kind = "span.kind"
+    /// Internal tag used to mark a child span as top-level for stats computation.
+    internal static let topLevel = "_dd.top_level"
+    /// Internal tag used to mark a span as measured for stats computation.
+    internal static let measured = "_dd.measured"
     /// Tag used to mark a span as manually dropped.
     public static let manualDrop = "manual.drop"
     /// Tag used to mark a span as manually kept.
     public static let manualKeep = "manual.keep"
 
-    /// Internal tag owned exclusively by the SDK. Set to `"0"` when client-side stats computation
-    /// is enabled to tell the backend to skip its own (double-counting) computation. Encoded as
-    /// `meta._dd.compute_stats`. Any user-provided value for this key is overwritten or removed in
-    /// `SpanEventBuilder`, so it can never flip the SDK opt-out.
+    /// Tag that tells the backend whether to compute stats for the span. Encoded as `meta._dd.compute_stats`.
+    /// When client-side stats computation is enabled, `SpanEventBuilder` sets it to `"0"` so the backend
+    /// skips its own (double-counting) computation, overwriting any user-provided value. When it is
+    /// disabled, a user-provided value is uploaded unchanged.
     internal static let computeStats = "_dd.compute_stats"
 }
 

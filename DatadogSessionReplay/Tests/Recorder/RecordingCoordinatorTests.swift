@@ -68,6 +68,7 @@ class RecordingCoordinatorTests: XCTestCase {
         let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertTrue(hasReplay.value)
+        XCTAssertEqual(hasReplay.sessionID, rumContext.sessionID)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.applicationID, rumContext.applicationID)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.sessionID, rumContext.sessionID)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.viewID, rumContext.viewID)
@@ -97,6 +98,7 @@ class RecordingCoordinatorTests: XCTestCase {
         let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
         XCTAssertFalse(scheduler.isRunning)
         XCTAssertFalse(hasReplay.value)
+        XCTAssertNil(hasReplay.sessionID)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 

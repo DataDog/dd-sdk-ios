@@ -21,7 +21,8 @@ internal final class TraceFeature: DatadogRemoteFeature {
 
     init(
         in core: DatadogCoreProtocol,
-        configuration: Trace.Configuration
+        configuration: Trace.Configuration,
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) {
         self.requestBuilder = TracingRequestBuilder(
             customIntakeURL: configuration.customEndpoint,
@@ -49,13 +50,14 @@ internal final class TraceFeature: DatadogRemoteFeature {
                 networkInfoEnabled: configuration.networkInfoEnabled,
                 eventsMapper: configuration.eventMapper,
                 bundleWithRUM: configuration.bundleWithRumEnabled,
-                statsComputationEnabled: configuration.statsComputationEnabled,
+                statsComputationEnabled: configuration.featureFlags[.clientSideStats],
                 telemetry: core.telemetry
-            )
+            ),
+            onSpanFinished: onSpanFinished
         )
         self.performanceOverride = nil
 
         // Send configuration telemetry:
-        core.telemetry.configuration(useTracing: true)
+        core.telemetry.configuration(useClientSideStats: configuration.featureFlags[.clientSideStats], useTracing: true)
     }
 }

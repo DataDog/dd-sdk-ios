@@ -46,6 +46,20 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         eventWriter: SpanWriteContext
     ) {
         self.ddTracer = tracer
+        var context = context
+        if tracer.onSpanFinished != nil {
+            let service = SpanService(
+                defaultService: eventBuilder.service,
+                serviceOverride: tags[SpanTags.service]?.dd.decode()
+            )
+            context.serviceForStats = service
+            if eventBuilder.service == nil {
+                // Use this span's captured context, not the child's service or the upload-time context.
+                eventWriter.spanWriteContext { context, _ in
+                    service.defaultService = context.service
+                }
+            }
+        }
         self.ddContext = context
         self.startTime = startTime
         self.loggingIntegration = tracer.loggingIntegration
@@ -80,7 +94,12 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         }
 
         if ddContext.span(self, willSetTagWithKey: key, value: value) {
-            _tags.mutate { $0[key] = value }
+            _tags.mutate {
+                $0[key] = value
+                if key == SpanTags.service {
+                    ddContext.serviceForStats?.serviceOverride = value.dd.decode()
+                }
+            }
         }
     }
 
@@ -137,51 +156,36 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             activity.leave()
         }
 
-        if let onSpanFinished = ddTracer.onSpanFinished {
-            // Client-side stats path: build the `SpanEvent` first (which runs the user-configured
-            // `SpanEventMapper`) and derive the `SpanSnapshot` from it, so stats and trace uploads
-            // agree on resource/service/tags. The same event is reused for upload when sampled in,
-            // ensuring the mapper runs exactly once per finished span.
-            buildEventAndDispatch(finishTime: time, onSpanFinished: onSpanFinished)
-        } else {
-            // Stats disabled: original flow, mapper runs only on the sampled-in upload path.
-            if self.ddContext.samplingDecision.samplingPriority.isKept {
-                sendSpan(finishTime: time)
-            }
-        }
+        buildEventAndDispatch(finishTime: time, onSpanFinished: ddTracer.onSpanFinished)
     }
 
     // MARK: - Writing SpanEvent
 
-    /// Sends span event for given `DDSpan`.
-    private func sendSpan(finishTime: Date) {
-        eventWriter.spanWriteContext { context, writer in
-            let event = self.eventBuilder.createSpanEvent(
-                context: context,
-                traceID: self.ddContext.traceID,
-                spanID: self.ddContext.spanID,
-                parentSpanID: self.ddContext.parentSpanID,
-                operationName: self.operationName,
-                startTime: self.startTime,
-                finishTime: finishTime,
-                samplingRate: self.ddContext.sampleRate / 100.0,
-                samplingPriority: self.ddContext.samplingDecision.samplingPriority,
-                samplingDecisionMaker: self.ddContext.samplingDecision.decisionMaker,
-                tags: self.tags,
-                baggageItems: self.ddContext.baggageItems.all,
-                logFields: self.logFields
-            )
-
-            let envelope = SpanEventsEnvelope(span: event, environment: context.env)
-            writer.write(value: envelope)
+    /// Builds the `SpanEvent` once (running the mapper), optionally delivers the stats snapshot,
+    /// and writes the upload envelope when the span is sampled in.
+    private func buildEventAndDispatch(finishTime: Date, onSpanFinished: ((SpanSnapshot) -> Void)?) {
+        let shouldWriteSpan = ddContext.samplingDecision.samplingPriority.isKept
+        guard shouldWriteSpan || onSpanFinished != nil else {
+            return
         }
-    }
 
-    /// Builds the `SpanEvent` once (running the mapper), delivers the derived `SpanSnapshot`
-    /// to the stats hook, and writes the upload envelope when the span is sampled in.
-    private func buildEventAndDispatch(finishTime: Date, onSpanFinished: @escaping (SpanSnapshot) -> Void) {
+        let service = ddContext.serviceForStats?.snapshot()
+        let parentService: SpanService.Snapshot?
+        let hasRemoteParent: Bool
+        switch ddContext.parentForStats {
+        case .local(let parent):
+            parentService = parent.snapshot()
+            hasRemoteParent = false
+        case .remote:
+            parentService = nil
+            hasRemoteParent = true
+        case .unknown:
+            parentService = nil
+            hasRemoteParent = false
+        }
+
         eventWriter.spanWriteContext { context, writer in
-            let event = self.eventBuilder.createSpanEvent(
+            var event = self.eventBuilder.createSpanEvent(
                 context: context,
                 traceID: self.ddContext.traceID,
                 spanID: self.ddContext.spanID,
@@ -198,15 +202,30 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             )
 
             // Derive the snapshot from the sanitized event so client-side stats aggregate the same
-            // tags the uploaded span carries. `SpanEventEncoder` sanitizes the event again at encode
-            // time (attribute-key normalization and count-limiting), so reading the raw event here
-            // would let stats emit peer/dimension tags the upload dropped or renamed — a divergence
+            // tags the uploaded span carries. Reading the raw event here would let stats emit
+            // peer/dimension tags the upload dropped or renamed, a divergence
             // the backend cannot correct because `_dd.compute_stats=0` suppresses its recomputation.
-            // Sanitizing is idempotent, so the uploaded envelope below stays byte-identical.
-            let sanitizedEvent = SpanSanitizer().sanitize(span: event)
-            onSpanFinished(SpanSnapshot(from: sanitizedEvent, startTime: self.startTime))
+            if let onSpanFinished {
+                event = SpanSanitizer().sanitize(span: event)
+                // Compare pre-mapper services at finish. Do not wait for the parent's mapper or
+                // reclassify this child if the parent's service changes later.
+                let crossesServiceBoundary = parentService?.service.map { parent in
+                    service?.service.map { $0 != parent } ?? false
+                } ?? false
+                onSpanFinished(SpanSnapshot(
+                    from: event,
+                    startTime: self.startTime,
+                    // The default service of spans, which `Trace.Configuration.service` can override.
+                    deployment: DeploymentIdentity(
+                        env: context.env,
+                        version: context.version,
+                        service: self.eventBuilder.service ?? context.service
+                    ),
+                    isServiceEntry: hasRemoteParent || crossesServiceBoundary
+                ))
+            }
 
-            if self.ddContext.samplingDecision.samplingPriority.isKept {
+            if shouldWriteSpan {
                 let envelope = SpanEventsEnvelope(span: event, environment: context.env)
                 writer.write(value: envelope)
             }

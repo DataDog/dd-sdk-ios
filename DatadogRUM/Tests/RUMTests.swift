@@ -117,6 +117,40 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
 
+    func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
+        // Given
+        config.trackSlowFrames = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let dependencies = monitor.applicationScope.dependencies
+        #if os(macOS) || os(watchOS)
+        XCTAssertNil(dependencies.renderLoopObserver)
+        XCTAssertNil(dependencies.viewHitchesReaderFactory(), "Without a render loop, slow frames must not be reported")
+        #else
+        XCTAssertNotNil(dependencies.renderLoopObserver)
+        XCTAssertNotNil(dependencies.viewHitchesReaderFactory())
+        #endif
+    }
+
+    #if !os(macOS)
+    func testWhenWatchdogTerminationsTrackingIsEnabled_itRegistersTheMonitor() throws {
+        // Given
+        config.trackWatchdogTerminations = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let receivers = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers
+        XCTAssertNotNil(receivers.firstElement(of: WatchdogTerminationMonitor.self))
+    }
+    #endif
+
     func testWhenEnabledWithDefaultConfiguration() throws {
         // Given
         let applicationID: String = .mockRandom()
@@ -492,6 +526,29 @@ class RUMTests: XCTestCase {
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+    }
+
+    func testWhenRemoteConfigurationEnablesWatchdogTerminations_itRegistersTheMonitorExceptOnMacOS() throws {
+        // Given
+        #if !os(macOS)
+        config.trackWatchdogTerminations = false
+        #endif
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackWatchdogTerminations: true)
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let receivers = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers
+        let monitor = receivers.firstElement(of: WatchdogTerminationMonitor.self)
+        #if os(macOS)
+        XCTAssertNil(monitor, "Remote configuration must not turn watchdog terminations on for macOS")
+        #else
+        XCTAssertNotNil(monitor)
+        #endif
     }
 
     func testWhenEnabledWithRemoteTrackResources_itEnablesNetworkInstrumentation() throws {

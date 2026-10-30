@@ -11,7 +11,8 @@ import DatadogInternal
 ///
 /// Implement this protocol to observe state transitions. Listeners are called
 /// synchronously after the state is updated, so implementations should be
-/// fast and non-blocking.
+/// fast and non-blocking. A notification can be skipped if a newer state
+/// supersedes it before delivery to a listener.
 public protocol FlagsStateListener: AnyObject {
     /// Called when the client state changes.
     ///
@@ -46,6 +47,7 @@ internal final class FlagsStateManager: FlagsStateObservable {
     /// Groups state and listeners for atomic access.
     private struct ManagerState {
         var clientState: FlagsClientState = .notReady
+        var version: UInt64 = 0
         var listeners: [WeakListener] = []
     }
 
@@ -56,25 +58,31 @@ internal final class FlagsStateManager: FlagsStateObservable {
         managerState.clientState
     }
 
-    func updateState(
-        _ newState: FlagsClientState,
-        beforeNotifying: (() -> Void)? = nil
-    ) {
-        updateState(
-            newState,
-            unlessCurrentStateIs: [],
-            beforeNotifying: beforeNotifying
-        )
+    func updateState(_ newState: FlagsClientState) {
+        updateState(newState, unlessCurrentStateIs: [])
     }
 
     @discardableResult
     func updateState(
         _ newState: FlagsClientState,
-        unlessCurrentStateIs excludedStates: [FlagsClientState],
-        beforeNotifying: (() -> Void)? = nil
+        unlessCurrentStateIs excludedStates: [FlagsClientState]
     ) -> Bool {
+        guard let notifyListeners = updateStateWithoutNotifying(newState, unlessCurrentStateIs: excludedStates) else {
+            return false
+        }
+        notifyListeners()
+        return true
+    }
+
+    /// Updates state immediately and returns listener delivery to run outside the caller's locks.
+    /// Returns `nil` when the transition is excluded; skips delivery if a later transition supersedes it.
+    func updateStateWithoutNotifying(
+        _ newState: FlagsClientState,
+        unlessCurrentStateIs excludedStates: [FlagsClientState] = []
+    ) -> (() -> Void)? {
         // Capture listeners under lock, then notify outside lock to prevent deadlock.
         var listenersToNotify: [WeakListener] = []
+        var version: UInt64 = 0
         var accepted = false
 
         _managerState.mutate { state in
@@ -86,18 +94,22 @@ internal final class FlagsStateManager: FlagsStateObservable {
                 return
             }
             state.clientState = newState
+            state.version += 1
+            version = state.version
             listenersToNotify = state.listeners
         }
 
         guard accepted else {
-            return false
+            return nil
         }
-        beforeNotifying?()
-
-        for weakListener in listenersToNotify {
-            weakListener.value?.flagsStateDidChange(newState)
+        return {
+            for weakListener in listenersToNotify {
+                guard self.managerState.version == version else {
+                    return
+                }
+                weakListener.value?.flagsStateDidChange(newState)
+            }
         }
-        return true
     }
 
     func addListener(_ listener: FlagsStateListener) {
