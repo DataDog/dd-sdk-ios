@@ -106,15 +106,38 @@ set -x
 
 xcodebuild -version
 
-if [ "$CI" = "true" ]; then
-    mkdir -p ResultBundles
-    RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}.xcresult"
-    rm -rf "$RESULT_BUNDLE_PATH"
-    # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
-    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
-    # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
-    # uploader already archives whatever paths match, zip or not.
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}.log" | xcbeautify
+# Runs `xcodebuild test` for the scheme, restricted to the given test plan when one is passed.
+run_tests() {
+    local test_plan="$1"
+    local test_plan_args=()
+    local result_name="$SCHEME"
+    if [ -n "$test_plan" ]; then
+        test_plan_args=(-testPlan "$test_plan")
+        result_name="${SCHEME}-${test_plan}"
+    fi
+
+    if [ "$CI" = "true" ]; then
+        mkdir -p ResultBundles
+        RESULT_BUNDLE_PATH="ResultBundles/${result_name}.xcresult"
+        rm -rf "$RESULT_BUNDLE_PATH"
+        # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
+        # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
+        # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
+        # uploader already archives whatever paths match, zip or not.
+        xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" "${test_plan_args[@]}" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${result_name}.log" | xcbeautify
+    else
+        xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" "${test_plan_args[@]}" test 2>&1 | xcbeautify
+    fi
+}
+
+# Schemes with test plans (e.g. `UnitTests-iOS`) run each plan in turn, so every test target
+# runs with its plan's options. Schemes without test plans run their own test action.
+TEST_PLANS=($(xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -showTestPlans -json | sed -n 's/.*"name" : "\(.*\)".*/\1/p'))
+
+if (( ${#TEST_PLANS} == 0 )); then
+    run_tests ""
 else
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+    for test_plan in "${TEST_PLANS[@]}"; do
+        run_tests "$test_plan"
+    done
 fi
