@@ -15,7 +15,7 @@ all: env-check repo-setup dependencies templates
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
 		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
-		set-ci-secret
+		set-ci-secret factorykit-setup docs-gate
 
 REPO_ROOT := $(PWD)
 include tools/utils/common.mk
@@ -486,6 +486,18 @@ api-surface-verify:
 feature-docs-verify:
 	@$(ECHO_TITLE) "make feature-docs-verify"
 	@./tools/feature-docs-verify.sh
+
+# Install the pinned FactoryKit runtime used by docs-gate
+factorykit-setup:
+	@$(ECHO_TITLE) "make factorykit-setup"
+	@./tools/factorykit/setup.sh
+
+# Run the FactoryKit documentation gate
+# SNAPSHOT: worktree (default), index, or a revision. AGAINST: comparison revision (default: merge-base with origin/develop).
+# OPTIONAL=1 skips with a notice when the runtime is not installed.
+docs-gate:
+	@$(ECHO_TITLE) "make docs-gate SNAPSHOT='$(SNAPSHOT)' AGAINST='$(AGAINST)'"
+	@./tools/factorykit/gate.sh --snapshot "$(or $(SNAPSHOT),worktree)" $(if $(AGAINST),--against "$(AGAINST)") $(if $(OPTIONAL),--optional)
 
 # Builds API documentation using the same process as Swift Package Index.
 spi-docs-build:

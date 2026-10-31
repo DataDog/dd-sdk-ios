@@ -1025,6 +1025,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1419]: https://github.com/DataDog/dd-sdk-ios/pull/1419
 [#1428]: https://github.com/DataDog/dd-sdk-ios/pull/1428
 [#1444]: https://github.com/DataDog/dd-sdk-ios/pull/1444
+[#1447]: https://github.com/DataDog/dd-sdk-ios/pull/1447
+[#1456]: https://github.com/DataDog/dd-sdk-ios/pull/1456
 [#1464]: https://github.com/DataDog/dd-sdk-ios/pull/1464
 [#1465]: https://github.com/DataDog/dd-sdk-ios/pull/1465
 [#1488]: https://github.com/DataDog/dd-sdk-ios/pull/1488
@@ -1070,6 +1072,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1776]: https://github.com/DataDog/dd-sdk-ios/pull/1776
 [#1794]: https://github.com/DataDog/dd-sdk-ios/pull/1794
 [#1798]: https://github.com/DataDog/dd-sdk-ios/pull/1798
+[#1799]: https://github.com/DataDog/dd-sdk-ios/pull/1799
+[#1800]: https://github.com/DataDog/dd-sdk-ios/pull/1800
 [#1803]: https://github.com/DataDog/dd-sdk-ios/pull/1803
 [#1807]: https://github.com/DataDog/dd-sdk-ios/pull/1807
 [#1828]: https://github.com/DataDog/dd-sdk-ios/pull/1828
@@ -1148,6 +1152,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2240]: https://github.com/DataDog/dd-sdk-ios/pull/2240
 [#2244]: https://github.com/DataDog/dd-sdk-ios/pull/2244
 [#2251]: https://github.com/DataDog/dd-sdk-ios/pull/2251
+[#2253]: https://github.com/DataDog/dd-sdk-ios/pull/2253
 [#2260]: https://github.com/DataDog/dd-sdk-ios/pull/2260
 [#2268]: https://github.com/DataDog/dd-sdk-ios/pull/2268
 [#2286]: https://github.com/DataDog/dd-sdk-ios/pull/2286
@@ -1178,13 +1183,15 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2364]: https://github.com/DataDog/dd-sdk-ios/pull/2364
 [#2369]: https://github.com/DataDog/dd-sdk-ios/pull/2369
 [#2370]: https://github.com/DataDog/dd-sdk-ios/pull/2370
+[#2391]: https://github.com/DataDog/dd-sdk-ios/pull/2391
 [#2395]: https://github.com/DataDog/dd-sdk-ios/pull/2395
 [#2405]: https://github.com/DataDog/dd-sdk-ios/pull/2405
 [#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
+[#2428]: https://github.com/DataDog/dd-sdk-ios/pull/2428
+[#2432]: https://github.com/DataDog/dd-sdk-ios/pull/2432
 [#2442]: https://github.com/DataDog/dd-sdk-ios/pull/2442
 [#2455]: https://github.com/DataDog/dd-sdk-ios/pull/2455
 [#2463]: https://github.com/DataDog/dd-sdk-ios/pull/2463
-[#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
 [#2436]: https://github.com/DataDog/dd-sdk-ios/pull/2436
 [#2464]: https://github.com/DataDog/dd-sdk-ios/pull/2464
 [#2469]: https://github.com/DataDog/dd-sdk-ios/pull/2469
@@ -1218,7 +1225,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2654]: https://github.com/DataDog/dd-sdk-ios/pull/2654
 [#2661]: https://github.com/DataDog/dd-sdk-ios/pull/2661
 [#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
-[#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2666
+[#2666]: https://github.com/DataDog/dd-sdk-ios/pull/2666
 [#2674]: https://github.com/DataDog/dd-sdk-ios/pull/2674
 [#2676]: https://github.com/DataDog/dd-sdk-ios/pull/2676
 [#2688]: https://github.com/DataDog/dd-sdk-ios/pull/2688
@@ -1273,6 +1280,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
 [#2981]: https://github.com/DataDog/dd-sdk-ios/pull/2981
 [#2987]: https://github.com/DataDog/dd-sdk-ios/pull/2987
+[#2989]: https://github.com/DataDog/dd-sdk-ios/pull/2989
 [#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
 [#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
 [#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051
