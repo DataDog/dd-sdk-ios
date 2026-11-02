@@ -27,7 +27,8 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             { $0.variation = .boolean(false) },
             { $0.reason = "other" },
             { $0.doLog = false },
-            { $0.serialID = 43 }
+            { $0.serialID = 43 },
+            { $0.isNumberType = true }
         ]
         for change in changes {
             var changed = cached
@@ -187,13 +188,13 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                         reason: "TARGETING_MATCH",
                         doLog: true
                     ),
-                    "legacy-number-flag": .init(
+                    "legacy-number-flag": FlagAssignment(
                         allocationKey: "allocation-128",
                         variationKey: "variation-128",
                         variation: .integer(99),
                         reason: "TARGETING_MATCH",
                         doLog: true
-                    ),
+                    ).servedAsNumber(),
                     "json-flag": .init(
                         allocationKey: "allocation-127",
                         variationKey: "variation-127",
@@ -466,7 +467,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             return try JSONDecoder().decode(FlagAssignment.self, from: json)
         }
 
-        // Given - the legacy "number" type, with a whole and a fractional value
+        // Given - "number" assignments with a whole and a fractional value
         let wholeNumber = try assignment(type: "number", value: "5")
         let fractionalNumber = try assignment(type: "number", value: "5.5")
         let integer = try assignment(type: "integer", value: "7")
@@ -476,15 +477,33 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertEqual(wholeNumber.variation(as: Double.self), 5.0)
         XCTAssertEqual(fractionalNumber.variation(as: Double.self), 5.5)
         XCTAssertNil(fractionalNumber.variation(as: Int.self))
-        XCTAssertEqual(integer.variation(as: Double.self), 7.0)
         XCTAssertEqual(try assignment(type: "number", value: "0").variation(as: Double.self), 0.0)
         XCTAssertEqual(try assignment(type: "number", value: "0").variation(as: Int.self), 0)
         XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Double.self), -5.0)
         XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Int.self), -5)
 
-        // A cached assignment is re-encoded as "integer", so it must still read as Double
-        let cached = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeNumber))
-        XCTAssertEqual(cached.variation(as: Double.self), 5.0)
+        // An "integer" flag reads as Int but not as Double
+        XCTAssertEqual(integer.variation(as: Int.self), 7)
+        XCTAssertNil(integer.variation(as: Double.self))
+
+        // A whole number served as "float" reads as Double but not as Int, as on Android
+        let wholeFloat = try assignment(type: "float", value: "5")
+        XCTAssertEqual(wholeFloat.variation(as: Double.self), 5.0)
+        XCTAssertNil(wholeFloat.variation(as: Int.self))
+
+        // A cached assignment keeps its type, so these reads do not change after a restart
+        let cachedNumber = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeNumber))
+        XCTAssertEqual(cachedNumber, wholeNumber)
+        XCTAssertEqual(cachedNumber.variation(as: Double.self), 5.0)
+        XCTAssertEqual(cachedNumber.variation(as: Int.self), 5)
+        let cachedInteger = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(integer))
+        XCTAssertEqual(cachedInteger, integer)
+        XCTAssertNil(cachedInteger.variation(as: Double.self))
+        XCTAssertEqual(try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(fractionalNumber)), fractionalNumber)
+        let cachedFloat = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeFloat))
+        XCTAssertEqual(cachedFloat, wholeFloat)
+        XCTAssertEqual(cachedFloat.variation(as: Double.self), 5.0)
+        XCTAssertNil(cachedFloat.variation(as: Int.self))
 
         // Other types still do not convert
         XCTAssertNil(wholeNumber.variation(as: String.self))
