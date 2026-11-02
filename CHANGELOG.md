@@ -1,10 +1,11 @@
 # Unreleased
 
+# 3.21.0 / 29-10-2026
+
 - [IMPROVEMENT] Track RUM events and crashes on macOS when no view is active, for example after the last window closes or in a menu bar app. See [#3351][]
-- [FIX] Stop restoring a RUM view that was already stopped when a new session starts after the previous one expired. See [#3351][]
 - [FIX] Stop attributing crashes to a RUM session stopped with `stopSession()`. Before, with background events tracking enabled, a crash in the background after the stop was reported into the stopped session. See [#3321][]
 - [IMPROVEMENT] Add support for `unreal` source for cross-platform RUM events from Unreal Engine applications. See [#3353][]
-- [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
+- [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation. See [#3269][]
 - [FIX] Stop reporting slow frames and slow rendering for RUM views on macOS and watchOS, where rendering is not measured yet. See [#3319][]
 - [FIX] Prevent crashes when recording certain SwiftUI views with Session Replay's `compositionTreeRecording` feature on iOS 17 and earlier. See [#3330][]
 - [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device from eligible finished spans, independently of trace upload sampling. Disabled by default. See [#3301][]
@@ -14,6 +15,7 @@
 - [IMPROVEMENT] Keep capturing HTTP headers that fit after one exceeds the 2 KB limit. See [#3332][]
 - [IMPROVEMENT] Reduce image resource sizes with WebP encoding and speed up image hashing in Session Replay's experimental composition tree recorder. See [#3336][]
 - [FIX] Attribute a TTFD vital reported before the TTID is written to the view and connectivity active when `reportAppFullyDisplayed()` was called, instead of the TTID's view. See [#3317][]. (Thanks [@thedavidharris][])
+- [FIX] Fix profile sample timestamps after device sleep and stop attaching app hangs and long tasks that the profile did not sample. See [#3342][]
 
 # 3.20.0 / 19-10-2026
 
@@ -1328,6 +1330,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 [#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
 [#3317]: https://github.com/DataDog/dd-sdk-ios/pull/3317
+[#3269]: https://github.com/DataDog/dd-sdk-ios/pull/3269
+[#3342]: https://github.com/DataDog/dd-sdk-ios/pull/3342
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

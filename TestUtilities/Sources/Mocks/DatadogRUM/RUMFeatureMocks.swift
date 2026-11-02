@@ -1774,9 +1774,11 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
 
 public class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     public var vitalData: Double?
+    public var onReadVitalData: (() -> Void)?
 
     public init() {}
     public func readVitalData() -> Double? {
+        onReadVitalData?()
         return vitalData
     }
 }

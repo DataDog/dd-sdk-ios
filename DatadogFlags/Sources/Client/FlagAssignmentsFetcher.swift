@@ -156,8 +156,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 completion(.failure(.invalidResponse))
             }
         case .failure(let error):
-            DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
-            featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
+            // The repository handles fetch failures through its error or stale state.
+            DD.logger.warn("Failed to fetch flag assignments from the server.", error: error)
             completion(.failure(.networkError(error)))
         }
     }

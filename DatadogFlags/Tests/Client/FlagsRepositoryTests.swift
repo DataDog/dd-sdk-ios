@@ -16,6 +16,66 @@ final class FlagsRepositoryTests: XCTestCase {
 
     // MARK: - Initialization Latency
 
+    func testMemoryAllocationFailureUpdatesStateWithoutReportingSDKDefect() throws {
+        let context = FlagsEvaluationContext(targetingKey: "user-A")
+        let cachedContexts: [FlagsEvaluationContext?] = [nil, context, .init(targetingKey: "user-B")]
+
+        for cachedContext in cachedContexts {
+            // Given
+            let scope = FeatureScopeMock()
+            if let cachedContext {
+                let cachedData = FlagsData(flags: ["cached": .mockAny()], context: cachedContext, date: .mockAny())
+                try scope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "client")
+            }
+            let allocationError = NSError(domain: NSPOSIXErrorDomain, code: Int(ENOMEM))
+            var fetchCount = 0
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                featureScope: scope,
+                fetch: { _, completion in
+                    fetchCount += 1
+                    completion(.failure(allocationError))
+                }
+            )
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: DateProviderMock(),
+                featureScope: scope
+            )
+            scope.dataStore.flush()
+            var results: [Result<Void, FlagsError>] = []
+            var stateAtCompletion: FlagsClientState?
+
+            let completed = expectation(description: "completed for \(String(describing: cachedContext))")
+
+            // When
+            repository.setEvaluationContext(context) { result in
+                stateAtCompletion = repository.state.currentState
+                results.append(result)
+                completed.fulfill()
+            }
+
+            // Then
+            wait(for: [completed], timeout: 1)
+            let hasMatchingCache = cachedContext == context
+            let expectedState: FlagsClientState = hasMatchingCache ? .stale : .error
+            XCTAssertEqual(fetchCount, 1)
+            XCTAssertEqual(results.count, 1)
+            guard case .failure(.networkError(let error)) = results.first else {
+                return XCTFail("Expected the allocation failure")
+            }
+            XCTAssertEqual(error as NSError, allocationError)
+            // The OpenFeature provider reads this state inside the failure callback.
+            XCTAssertEqual(stateAtCompletion, expectedState)
+            XCTAssertEqual(repository.state.currentState, expectedState)
+            XCTAssertEqual(repository.context, hasMatchingCache ? context : nil)
+            XCTAssertEqual(repository.flagAssignment(for: "cached") != nil, hasMatchingCache)
+            XCTAssertNil(scope.telemetryMock.messages.firstError())
+        }
+    }
+
     func testTelemetryPolicy_whenInitialCacheReadIsDelayed_suppressesUntilPolicyIsKnown() throws {
         for enabled in [false, true] {
             for cachedOptOut: Bool? in [nil, false, true] {
