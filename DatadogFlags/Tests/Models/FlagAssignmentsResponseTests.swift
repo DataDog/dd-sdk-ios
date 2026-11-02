@@ -450,4 +450,44 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertNil(assignment.variation(as: Int.self))
         XCTAssertNil(assignment.variation(as: Double.self))
     }
+
+    func testWholeNumberVariationsCanBeReadAsDouble() throws {
+        func assignment(type: String, value: String) throws -> FlagAssignment {
+            let json = """
+            {
+              "allocationKey": "allocation",
+              "variationKey": "variation",
+              "variationType": "\(type)",
+              "variationValue": \(value),
+              "doLog": false,
+              "reason": "TARGETING_MATCH"
+            }
+            """.data(using: .utf8)!
+            return try JSONDecoder().decode(FlagAssignment.self, from: json)
+        }
+
+        // Given - the legacy "number" type, with a whole and a fractional value
+        let wholeNumber = try assignment(type: "number", value: "5")
+        let fractionalNumber = try assignment(type: "number", value: "5.5")
+        let integer = try assignment(type: "integer", value: "7")
+
+        // Then - a whole number reads as both Int and Double
+        XCTAssertEqual(wholeNumber.variation(as: Int.self), 5)
+        XCTAssertEqual(wholeNumber.variation(as: Double.self), 5.0)
+        XCTAssertEqual(fractionalNumber.variation(as: Double.self), 5.5)
+        XCTAssertNil(fractionalNumber.variation(as: Int.self))
+        XCTAssertEqual(integer.variation(as: Double.self), 7.0)
+        XCTAssertEqual(try assignment(type: "number", value: "0").variation(as: Double.self), 0.0)
+        XCTAssertEqual(try assignment(type: "number", value: "0").variation(as: Int.self), 0)
+        XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Double.self), -5.0)
+        XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Int.self), -5)
+
+        // A cached assignment is re-encoded as "integer", so it must still read as Double
+        let cached = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeNumber))
+        XCTAssertEqual(cached.variation(as: Double.self), 5.0)
+
+        // Other types still do not convert
+        XCTAssertNil(wholeNumber.variation(as: String.self))
+        XCTAssertNil(wholeNumber.variation(as: Bool.self))
+    }
 }

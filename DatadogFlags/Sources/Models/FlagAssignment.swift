@@ -30,6 +30,11 @@ public struct FlagAssignment: Equatable {
         case .string(let value):
             return value as? T
         case .integer(let value):
+            // A whole number served as "number" decodes as `.integer`, so a Double
+            // read must accept it. This also covers "integer" flags, as on Android.
+            if T.self == Double.self {
+                return Double(value) as? T
+            }
             return value as? T
         case .double(let value):
             return value as? T
