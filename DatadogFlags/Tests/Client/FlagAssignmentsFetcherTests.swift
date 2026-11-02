@@ -14,6 +14,34 @@ import DatadogInternal
 final class FlagAssignmentsFetcherTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testFetcherAppliesOptOutAdmission() throws {
+        for accepted in [false, true] {
+            let cutoff = accepted ? "2026-10-21T12:00:00Z" : "2026-10-22T12:00:00Z"
+            let bytes = Data("""
+                {"data":{"attributes":{"flags":{},"evaluation_options":{
+                    "experimentation_opt_out_mode":"future_experiments_only",
+                    "dd_experimentation_opt_out_at":"\(cutoff)"
+                }}}}
+                """.utf8)
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                featureScope: featureScope,
+                fetch: { _, complete in complete(.success(bytes)) }
+            )
+            let completed = expectation(description: "admission \(accepted)")
+            fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))) { result in
+                switch result {
+                case .success: XCTAssertTrue(accepted)
+                case .failure(.invalidResponse): XCTAssertFalse(accepted)
+                default: XCTFail("Unexpected result \(result)")
+                }
+                completed.fulfill()
+            }
+            wait(for: [completed], timeout: 1)
+        }
+    }
+
     func testFlagAssignments() throws {
         // Given
         featureScope.contextMock = .mockWith(site: .us3)

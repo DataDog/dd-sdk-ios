@@ -194,7 +194,8 @@ public enum Flags {
 
     internal static func enableOrThrow(
         with configuration: Flags.Configuration,
-        in core: DatadogCoreProtocol
+        in core: DatadogCoreProtocol,
+        flagAssignmentsFetcher: (any FlagAssignmentsFetching)? = nil
     ) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
@@ -214,7 +215,8 @@ public enum Flags {
         let feature = FlagsFeature(
             configuration: configuration,
             featureScope: featureScope,
-            core: core
+            core: core,
+            flagAssignmentsFetcher: flagAssignmentsFetcher
         )
         try core.register(feature: feature)
     }
