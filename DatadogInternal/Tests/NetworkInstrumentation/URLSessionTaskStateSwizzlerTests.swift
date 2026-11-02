@@ -18,7 +18,7 @@ import XCTest
 ///
 /// **Note on thread safety:**
 /// `setState:` can run on multiple threads, so the tests that collect intercepted states
-/// protect their arrays with `ReadWriteLock`.
+/// protect their shared state with `ReadWriteLock`.
 
 class URLSessionTaskStateSwizzlerTests: XCTestCase {
     func testSwizzling_setState_interceptsCompletion() throws {
@@ -99,16 +99,16 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         let task1CompletedExpectation = self.expectation(description: "task1 reached completed state")
         task1CompletedExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
 
-        var interceptionCount = 0
+        let interceptionCount = ReadWriteLock<Int>(wrappedValue: 0)
 
         // Given
         let swizzler = URLSessionTaskStateSwizzler()
 
         try swizzler.swizzle(
             interceptSetState: { _, state in
-                interceptionCount += 1
-                // Only fulfill once task1 has reached completed state, ensuring no more
-                // setState: calls are pending before we snapshot the count and unswizzle.
+                interceptionCount.mutate { $0 += 1 }
+                // Fulfill once task1 reaches completed. URLSession may call Completed again,
+                // so a call can still be in flight when the test unswizzles.
                 if state == URLSessionTask.State.completed.rawValue {
                     task1CompletedExpectation.fulfill()
                 }
@@ -126,7 +126,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         // Unswizzle
         swizzler.unswizzle()
 
-        let countAfterTask1 = interceptionCount
+        let countAfterTask1 = interceptionCount.wrappedValue
         XCTAssertGreaterThanOrEqual(countAfterTask1, 2, "Task1 should have at least 2 state changes")
 
         // When - Second task should NOT be intercepted
@@ -137,7 +137,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         Thread.sleep(forTimeInterval: 1)
 
         // Then - interception count should not have increased after unswizzle
-        XCTAssertEqual(interceptionCount, countAfterTask1, "Task2 should not be intercepted after unswizzle")
+        XCTAssertEqual(interceptionCount.wrappedValue, countAfterTask1, "Task2 should not be intercepted after unswizzle")
     }
 
     func testSwizzling_setState_interceptsAsyncAwaitTasks() async throws {
