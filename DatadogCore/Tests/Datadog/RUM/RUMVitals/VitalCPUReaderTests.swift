@@ -39,26 +39,36 @@ class VitalCPUReaderTest: XCTestCase {
 
     #if !os(watchOS)
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
+        let cpuReader = VitalCPUReaderMock(
+            notificationCenterProvider: testNotificationCenterProvider,
+            mockTicks: [
+                100, // baseline
+                100, // resigning active
+                400, // measurement when inactive
+                500, // becoming active
+                800  // measurement when active
+            ]
+        )
+
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
         #if os(macOS)
         testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
         #else
         testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         #endif
-        heavyLoad()
         let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
         #if os(macOS)
         testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
         testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
-        heavyLoad()
         let measurementWhenActive = try XCTUnwrap(cpuReader.readVitalData())
 
         let diffWhenInactive = measurementWhenInactive - baseline
         let diffWhenActive = measurementWhenActive - measurementWhenInactive
 
-        XCTAssertGreaterThan(diffWhenActive, diffWhenInactive)
+        XCTAssertEqual(diffWhenInactive, 0)
+        XCTAssertEqual(diffWhenActive, 300)
     }
     #endif
 
