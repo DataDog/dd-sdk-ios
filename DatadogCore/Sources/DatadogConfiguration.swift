@@ -160,6 +160,7 @@ extension Datadog {
         /// exists, `Datadog.initialize` should return without starting the SDK. Not yet implemented.
         public var remoteConfiguration: RemoteConfiguration? = nil
 
+        #if os(macOS)
         /// Creates a Datadog SDK Configuration object.
         ///
         /// - Parameters:
@@ -199,20 +200,11 @@ extension Datadog {
         ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
         ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
         ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
-        ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
-        ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
-        ///                                 are used to perform background uploads.
-        ///                                 It may extend the amount of time the app is operating in background by 30 seconds.
-        ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
-        ///                                 any upload blocker such us no internet connection or low battery.
-        ///                                 By default it's set to `false`.
-        ///                                 **Unavailable on macOS.**
         ///
         ///   - remoteConfiguration:        The remote configuration used to fetch SDK settings from the Datadog CDN.
         ///                                 When non-nil, the SDK fetches the remote configuration document
         ///                                 asynchronously at startup and caches the raw JSON for subsequent launches.
         ///                                 Default is `nil` — no fetch is performed.
-        #if os(macOS)
         public init(
             clientToken: String,
             env: String,
@@ -243,6 +235,58 @@ extension Datadog {
             self.remoteConfiguration = remoteConfiguration
         }
         #else
+        /// Creates a Datadog SDK Configuration object.
+        ///
+        /// - Parameters:
+        ///   - clientToken:                Either the RUM client token (which supports RUM, Logging and APM) or regular client token,
+        ///                                 only for Logging and APM.
+        ///
+        ///   - env:                        The environment name which will be sent to Datadog. This can be used
+        ///                                 To filter events on different environments (e.g. "staging" or "production").
+        ///
+        ///   - site:                       Datadog site endpoint, default value is `.us1`.
+        ///
+        ///   - service:                    The service name associated with data send to Datadog.
+        ///                                 Default value is set to application bundle identifier.
+        ///
+        ///   - version:                    The application version used for Unified Service Tagging.
+        ///                                 If not provided, the SDK will use the version from the application's Info.plist
+        ///                                 (`CFBundleShortVersionString` or `CFBundleVersion`).
+        ///
+        ///   - bundle:                     The bundle object that contains the current executable.
+        ///
+        ///   - batchSize:                  The preferred size of batched data uploaded to Datadog servers.
+        ///                                 This value impacts the size and number of requests performed by the SDK.
+        ///                                 `.medium` by default.
+        ///
+        ///   - uploadFrequency:            The preferred frequency of uploading data to Datadog servers.
+        ///                                 This value impacts the frequency of performing network requests by the SDK.
+        ///                                 `.average` by default.
+        ///
+        ///   - proxyConfiguration:         A proxy configuration attributes.
+        ///                                 This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///
+        ///   - encryption:                 Data encryption to use for on-disk data persistency by providing an object
+        ///                                 complying with `DataEncryption` protocol.
+        ///
+        ///   - serverDateProvider:         A custom NTP synchronization interface.
+        ///                                 By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+        ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+        ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
+        ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        ///
+        ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
+        ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
+        ///                                 are used to perform background uploads.
+        ///                                 It may extend the amount of time the app is operating in background by 30 seconds.
+        ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
+        ///                                 any upload blocker such us no internet connection or low battery.
+        ///                                 By default it's set to `false`.
+        ///
+        ///   - remoteConfiguration:        The remote configuration used to fetch SDK settings from the Datadog CDN.
+        ///                                 When non-nil, the SDK fetches the remote configuration document
+        ///                                 asynchronously at startup and caches the raw JSON for subsequent launches.
+        ///                                 Default is `nil` — no fetch is performed.
         public init(
             clientToken: String,
             env: String,
