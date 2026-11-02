@@ -1010,6 +1010,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertTrue(result)
     }
 
+    #if !os(watchOS)
     func testWhenSessionScopeReceivesTTIDCommand_itWritesAppLaunchVital() throws {
         // Given
         let processLaunchDate = Date()
@@ -1027,6 +1028,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(vital.appLaunchMetric, .ttid)
         XCTAssertEqual(vital.duration, Double(1.0.dd.toInt64Nanoseconds))
     }
+    #endif
 
     func testWhenSessionScopeReceivesTTFDCommand_itIsProcessedAccordingly() {
         // Given
