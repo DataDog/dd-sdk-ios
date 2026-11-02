@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-26
-sdk_version: 3.20.0
-verified_against_commit: 109a21eef
+last_updated: 2026-11-02
+sdk_version: 3.21.0
+verified_against_commit: f77c89489
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -187,7 +187,8 @@ RUM.enable(
         collectAccessibility: false,
         
         // RUM feature flags
-        // Default: .defaults ([.trackScrollAndSwipeActions: true, .viewUpdates: true])
+        // Default: .defaults ([.trackScrollAndSwipeActions: true, .viewUpdates: true,
+        //                      .multiSceneTracking: false])
         // Set [.trackScrollAndSwipeActions: false] to disable automatic
         // scroll/swipe action tracking and INV attribution for those gestures.
         // Set [.viewUpdates: false] to always resend the full view event
@@ -285,10 +286,11 @@ Event mappers allow modifying or dropping events before upload:
 **Note**: To filter views, use view predicates instead of the mapper.
 
 ### Feature Flags
-- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true, .viewUpdates: true]`.
+- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true, .viewUpdates: true, .multiSceneTracking: false]`.
 - Flags omitted from a custom dictionary fall back to their entry in `.defaults`, or `false` if no default is declared. An empty dictionary therefore still enables scroll/swipe tracking and view updates; set a flag explicitly to `false` to disable it.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
 - `.viewUpdates`: defaults to `true`. When `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit. Set to `false` to opt out and always send full view events.
+- `.multiSceneTracking`: defaults to `false`. RUM resolves the mode once at enablement. It resolves to `true` only when requested on iOS 27 or later and `UIApplicationSceneManifest.UIApplicationSupportsMultipleScenes` is a Boolean `true`; numeric and string values are rejected. Other platforms and missing or invalid manifests resolve to `false`. The feature and scope dependencies keep that frozen mode while the requested configuration stays unchanged. This configuration layer resolves and stores the mode; it does not install scene tracking.
 - `.none`: no-op feature flag case kept in the public enum.
 
 ### Timeseries Collection (Experimental)
