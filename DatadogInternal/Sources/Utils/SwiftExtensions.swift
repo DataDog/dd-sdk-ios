@@ -175,16 +175,20 @@ extension DatadogExtension where ExtendedType == Bundle {
     /// Examples:
     /// - An app with the bundle identifier `com.example.app`: `com.example.app`
     /// - The executable `/usr/local/bin/my-tool`: `my-tool-1580418da936ba67`
+    @_spi(Internal)
     public var appDirectoryName: String {
         // Foundation returns the bundle identifier from the Info.plist without validating it. An empty one would share
-        // the parent directory with other apps, and one with `/`, `.` or `..` would point to another directory.
+        // the parent directory with other apps, one with `/`, `.` or `..` would point to another directory, and one
+        // longer than 255 bytes cannot be a directory name.
         if let bundleIdentifier = type.bundleIdentifier,
-           !bundleIdentifier.isEmpty, bundleIdentifier != ".", bundleIdentifier != "..", !bundleIdentifier.contains("/") {
+           !bundleIdentifier.isEmpty, bundleIdentifier != ".", bundleIdentifier != "..", !bundleIdentifier.contains("/"),
+           bundleIdentifier.utf8.count <= 255 {
             return bundleIdentifier
         }
         // Without an executable URL, the executable is assumed to be in the bundle directory, so its path still tells it apart.
-        let executableURL = (type.executableURL ?? URL(fileURLWithPath: type.bundlePath).appendingPathComponent(ProcessInfo.processInfo.processName))
-            .resolvingSymlinksInPath()
+        // Symlinks are not resolved: a tool launched through a stable link, like a Homebrew link, keeps its directory
+        // when an upgrade changes the link target.
+        let executableURL = type.executableURL ?? URL(fileURLWithPath: type.bundlePath).appendingPathComponent(ProcessInfo.processInfo.processName)
         let pathHash = Data(executableURL.path.utf8).sha1().prefix(16)
         // A directory name can have up to 255 bytes, so a long executable name is shortened to leave room for the hash.
         var name = executableURL.lastPathComponent

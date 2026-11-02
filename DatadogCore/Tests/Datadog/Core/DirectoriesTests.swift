@@ -151,7 +151,7 @@ class DirectoriesTests: XCTestCase {
     }
 
     func testOnMacOS_givenInvalidBundleIdentifier_whenCreatingCoreDirectory_thenItIsCreatedInTheExecutableSubdirectory() throws {
-        for bundleIdentifier in ["", ".", "..", "com.example/app", "../com.example.app"] {
+        for bundleIdentifier in ["", ".", "..", "com.example/app", "../com.example.app", String(repeating: "a", count: 256)] {
             // When
             let coreDirectory = try CoreDirectory(
                 in: directory,
@@ -197,6 +197,45 @@ class DirectoriesTests: XCTestCase {
 
         // Then
         XCTAssertNotEqual(coreDirectory1.coreDirectory.url, coreDirectory2.coreDirectory.url)
+    }
+
+    func testOnMacOS_givenExecutableLaunchedThroughSymlink_whenSymlinkTargetChanges_thenCoreDirectoryIsTheSame() throws {
+        // Given
+        let fileManager = FileManager.default
+        let version1 = directory.url.appendingPathComponent("Cellar/helper/1.0/helper")
+        let version2 = directory.url.appendingPathComponent("Cellar/helper/2.0/helper")
+        let link = directory.url.appendingPathComponent("bin/helper")
+        for url in [version1, version2, link] {
+            try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        }
+        XCTAssertTrue(fileManager.createFile(atPath: version1.path, contents: nil))
+        XCTAssertTrue(fileManager.createFile(atPath: version2.path, contents: nil))
+        let instanceName: String = .mockRandom()
+        let site: DatadogSite = .mockRandom()
+
+        // When
+        try fileManager.createSymbolicLink(at: link, withDestinationURL: version1)
+        let coreDirectory1 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundleIdentifier: nil, executableURL: link)
+        )
+        try fileManager.removeItem(at: link)
+        try fileManager.createSymbolicLink(at: link, withDestinationURL: version2)
+        let coreDirectory2 = try CoreDirectory(
+            in: directory,
+            instanceName: instanceName,
+            site: site,
+            bundle: .mockWith(bundleIdentifier: nil, executableURL: link)
+        )
+        defer {
+            coreDirectory1.delete()
+            coreDirectory2.delete()
+        }
+
+        // Then
+        XCTAssertEqual(coreDirectory1.coreDirectory.url, coreDirectory2.coreDirectory.url)
     }
 
     func testOnMacOS_givenTwoExecutablesWithoutBundleIdentifierOrExecutableURL_whenCreatingCoreDirectories_thenTheyAreDifferent() throws {
