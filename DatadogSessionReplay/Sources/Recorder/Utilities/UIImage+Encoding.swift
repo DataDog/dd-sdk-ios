@@ -26,7 +26,7 @@ extension UIImage {
             return nil
         }
 
-        return cgImage.resizedImage(width: size.width, height: size.height).pngData()
+        return cgImage.pngData(width: size.width, height: size.height)
     }
 
     internal func encodingPixelSize(maxSize: CGSize = UIImage.encodingMaxSize) -> (width: Int, height: Int)? {
@@ -75,6 +75,37 @@ extension CGImage {
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
             UIImage(cgImage: self).draw(in: CGRect(origin: .zero, size: size))
         }
+    }
+
+    fileprivate func pngData(width: Int, height: Int) -> Data? {
+        guard bitmapInfo.contains(.floatComponents) else {
+            return resizedImage(width: width, height: height).pngData()
+        }
+
+        // Floating-point images can darken translucent colors when encoded directly as PNG.
+        // Convert to 8-bit Display P3 to preserve wide colors and resize in the same pass.
+        guard
+            let colorSpace = CGColorSpace(name: CGColorSpace.displayP3),
+            let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: UInt8.bitWidth,
+                bytesPerRow: 0,
+                space: colorSpace,
+                bitmapInfo: CGBitmapInfo.byteOrder32Big.rawValue | CGImageAlphaInfo.premultipliedLast.rawValue
+            )
+        else {
+            return nil
+        }
+
+        context.draw(self, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        guard let image = context.makeImage() else {
+            return nil
+        }
+
+        return UIImage(cgImage: image).pngData()
     }
 
     fileprivate func webPData(width: Int, height: Int) -> Data? {

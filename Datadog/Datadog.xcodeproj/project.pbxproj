@@ -1579,6 +1579,7 @@
 		BBFB0D5A71C212ECA613AC7B /* LogarithmicMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA76045D2C506FBC17AE5D67 /* LogarithmicMappingTests.swift */; };
 		6804F0BC4D67E9416B418186 /* CollapsingLowestDenseStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CEC7C5D50941F6E11D2D3 /* CollapsingLowestDenseStoreTests.swift */; };
 		EDC13F3F220F554EE9C5CA36 /* DDSketchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */; };
+		5B4BDFFC3098FAEB00927766 /* UIImage+PNGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4BDFFB3098FAEB00927766 /* UIImage+PNGTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3680,6 +3681,7 @@
 		FA76045D2C506FBC17AE5D67 /* LogarithmicMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogarithmicMappingTests.swift; sourceTree = "<group>"; };
 		4B7CEC7C5D50941F6E11D2D3 /* CollapsingLowestDenseStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsingLowestDenseStoreTests.swift; sourceTree = "<group>"; };
 		490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSketchTests.swift; sourceTree = "<group>"; };
+		5B4BDFFB3098FAEB00927766 /* UIImage+PNGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+PNGTests.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5097,6 +5099,7 @@
 				61054F452A6EE1B900AAA894 /* SwiftExtensionsTests.swift */,
 				D2A1FAAF2D2ECDF3007E9B40 /* XoshiroTests.swift */,
 				61054F462A6EE1B900AAA894 /* Schedulers */,
+				5B4BDFFB3098FAEB00927766 /* UIImage+PNGTests.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -9725,6 +9728,7 @@
 				969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */,
 				960B26C32D075BD200D7196F /* DisplayListReflectionTests.swift in Sources */,
 				61054FD42A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift in Sources */,
+				5B4BDFFC3098FAEB00927766 /* UIImage+PNGTests.swift in Sources */,
 				61054FB52A6EE1BA00AAA894 /* UISliderRecorderTests.swift in Sources */,
 				5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */,
 				61054FB22A6EE1BA00AAA894 /* UILabelRecorderTests.swift in Sources */,
