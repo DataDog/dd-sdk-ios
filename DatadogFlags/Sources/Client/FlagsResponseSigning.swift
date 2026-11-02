@@ -46,7 +46,7 @@ internal struct FlagsResponseVerification: Equatable {
 }
 
 internal final class FlagsResponseVerifier {
-    static let capability = "response-signing-v3"
+    static let capability = "response-signing-v1"
     static let prefix = "x-datadog-feature-flags-"
     static let maximumResponseBytes = 2 * 1_024 * 1_024
     let scope = UUID()
@@ -56,7 +56,7 @@ internal final class FlagsResponseVerifier {
 
     /// Hash only configuration/identity, excluding nonce and subject. Subject matching is a separate repository gate.
     func cacheScope(request: URLRequest, environment: String, customHeaderNames: [String]) -> String {
-        var data = Data("datadog.flags.response-signing.cache.v3\0".utf8)
+        var data = Data("datadog.flags.response-signing.cache.v1\0".utf8)
         func append(_ value: Data) {
             Self.appendInteger(UInt64(value.count), to: &data)
             data.append(value)
@@ -89,7 +89,7 @@ internal final class FlagsResponseVerifier {
         var data = Data(clientName.utf8)
         data.append(0)
         data.append(Data(scope.utf8))
-        return "response-signing-v3-" + hex(digest(data))
+        return "response-signing-v1-" + hex(digest(data))
     }
 
     func prepare(_ original: URLRequest) throws -> URLRequest {
@@ -123,7 +123,7 @@ internal final class FlagsResponseVerifier {
         guard status == errSecSuccess else {
             throw FlagsSigningError.unsupportedRequest
         }
-        request.setValue("3", forHTTPHeaderField: Self.prefix + "signature-version")
+        request.setValue("1", forHTTPHeaderField: Self.prefix + "signature-version")
         request.setValue(Self.hex(Data(nonce)), forHTTPHeaderField: Self.prefix + "request-nonce")
         let existing = (request.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities") ?? "")
             .split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
@@ -144,7 +144,7 @@ internal final class FlagsResponseVerifier {
         guard !configuration.trustedRootCertificates.isEmpty else {
             throw FlagsSigningError.missingAnchor
         }
-        guard response.statusCode == 200, try Self.header(response, "signature-version") == "3" else {
+        guard response.statusCode == 200, try Self.header(response, "signature-version") == "1" else {
             throw FlagsSigningError.invalidProof
         }
         let leafDER = try Self.base64(Self.header(response, "signing-certificate"), limit: 4_096)
@@ -211,7 +211,7 @@ internal final class FlagsResponseVerifier {
         guard let status = UInt16(exactly: status), body.count <= maximumResponseBytes else {
             throw FlagsSigningError.invalidProof
         }
-        var result = Data("datadog.feature-flags.precomputed-assignments.v3\0".utf8)
+        var result = Data("datadog.feature-flags.precomputed-assignments.v1\0".utf8)
         for value in components { try appendLength(Data(value.utf8), to: &result) }
         guard let nonce = request.value(forHTTPHeaderField: prefix + "request-nonce") else {
             throw FlagsSigningError.unsupportedRequest
@@ -259,7 +259,7 @@ internal final class FlagsResponseVerifier {
             parts.scheme?.lowercased() == "https", parts.user == nil, parts.password == nil, parts.fragment == nil,
             var host = parts.host?.lowercased(), !host.isEmpty,
             (request.httpBody?.count ?? 0) <= 1_024 * 1_024,
-            request.value(forHTTPHeaderField: prefix + "signature-version") == "3",
+            request.value(forHTTPHeaderField: prefix + "signature-version") == "1",
             let nonce = request.value(forHTTPHeaderField: prefix + "request-nonce"), nonce.utf8.count == 32,
             nonce.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }),
             let token = request.value(forHTTPHeaderField: "dd-client-token"), !token.isEmpty, !token.contains(",")

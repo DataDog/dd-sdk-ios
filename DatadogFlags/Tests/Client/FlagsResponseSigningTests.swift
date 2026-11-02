@@ -53,7 +53,7 @@ final class FlagsResponseSigningTests: XCTestCase {
 
     private func corpus(
         name: String = "ResponseSigningCorpus",
-        hash: String = "cc444ec8a2890430fa8dd8aee6cbde5a92d388ee55938596aac67891cfc099b6"
+        hash: String = "f749069c3344eb72eac11a614bdb92215208e472feeb98467367d78ef42782c5"
     ) throws -> Corpus {
         #if SWIFT_PACKAGE
         let bundle = Bundle.module
@@ -78,7 +78,7 @@ final class FlagsResponseSigningTests: XCTestCase {
 
     func testFrozenIndependentCorpusAndExactTranscripts() throws {
         let corpus = try corpus()
-        XCTAssertEqual(corpus.cases.count, 43)
+        XCTAssertEqual(corpus.cases.count, 46)
         XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, 6)
         try assertCorpus(corpus)
     }
@@ -86,7 +86,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     func testCanonicalKeyUsageSupplement() throws {
         let corpus = try corpus(
             name: "ResponseSigningKeyUsage",
-            hash: "e6e2bc29ab28b490a1e17bb7c46a9342cf9496d9962c04aa5ca0e3ce6b08d347"
+            hash: "f7b55015240951b90596692c5edec4209660a842b6f5e82e9d39da2be7c83cd1"
         )
         XCTAssertEqual(corpus.cases.count, 2)
         XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, 1)
@@ -162,7 +162,7 @@ final class FlagsResponseSigningTests: XCTestCase {
         XCTAssertThrowsError(try FlagsResponseVerifier(configuration: .init(mode: .required)).prepare(request))
         let observing = FlagsResponseVerifier(configuration: .init(mode: .observe))
         let prepared = try observing.prepare(request)
-        XCTAssertEqual(prepared.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "signature-version"), "3")
+        XCTAssertEqual(prepared.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "signature-version"), "1")
         XCTAssertNotEqual(
             try observing.prepare(request).value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "request-nonce"),
             prepared.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "request-nonce")
