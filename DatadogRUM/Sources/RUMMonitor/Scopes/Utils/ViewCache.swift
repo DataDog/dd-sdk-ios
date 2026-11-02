@@ -12,6 +12,14 @@ import DatadogInternal
 /// This class can be used to store and retrieve previous RUM views based
 /// on timestamp.
 internal final class ViewCache {
+    /// Ownership retained for an exact historical view ID.
+    /// Scene-less legacy views retain representative fallback; unknown IDs do not.
+    enum ViewOwnership: Equatable {
+        case scene(RUMSceneIdentifier)
+        case legacy
+        case unknown
+    }
+
     let dateProvider: DateProvider
     let ttl: Int64
     let capacity: Int
@@ -21,6 +29,12 @@ internal final class ViewCache {
         let id: String
         let hasReplay: Bool?
         var inactiveSince: Int64?
+        let sceneIdentifier: RUMSceneIdentifier?
+    }
+
+    private enum SceneBucket: Hashable {
+        case scene(RUMSceneIdentifier)
+        case legacy
     }
 
     @ReadWriteLock
@@ -50,11 +64,13 @@ internal final class ViewCache {
     ///   - timestamp: The view epoch timestamp in milliseconds.
     ///   - hasReplay: `true` if the view has replay.
     ///   - isActive: `true` if the view is currently active.
+    ///   - sceneIdentifier: The optional scene owner; `nil` preserves legacy ownership.
     func insert(
         id: String,
         timestamp: Int64,
         hasReplay: Bool? = nil,
-        isActive: Bool = false
+        isActive: Bool = false,
+        sceneIdentifier: RUMSceneIdentifier? = nil
     ) {
         let now = currentTimestamp
 
@@ -63,7 +79,8 @@ internal final class ViewCache {
                 timestamp: timestamp,
                 id: id,
                 hasReplay: hasReplay,
-                inactiveSince: isActive ? nil : timestamp
+                inactiveSince: isActive ? nil : timestamp,
+                sceneIdentifier: sceneIdentifier
             )
             // Order views by descending epoch time.
             if let index = views.firstIndex(where: { $0.timestamp < timestamp }) {
