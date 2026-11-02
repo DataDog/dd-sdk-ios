@@ -482,7 +482,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Double.self), -5.0)
         XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Int.self), -5)
 
-        // An "integer" flag reads as Int but not as Double
+        // An assignment served as "integer" reads as Int but not as Double
         XCTAssertEqual(integer.variation(as: Int.self), 7)
         XCTAssertNil(integer.variation(as: Double.self))
 

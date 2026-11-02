@@ -33,7 +33,8 @@ public struct FlagAssignment: Equatable {
             return value as? T
         case .integer(let value):
             // A whole number served as "number" decodes as `.integer`, so a Double
-            // read must accept it. A Double read of an "integer" flag is a type mismatch.
+            // read must accept it. A Double read of an assignment served as
+            // "integer" is a type mismatch.
             if T.self == Double.self {
                 return isNumberType ? Double(value) as? T : nil
             }
