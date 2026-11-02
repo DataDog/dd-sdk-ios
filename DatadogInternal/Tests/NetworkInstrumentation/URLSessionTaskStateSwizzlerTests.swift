@@ -15,19 +15,23 @@ import XCTest
 /// For example, `Completed(3)` may be called twice in rapid succession from the same thread.
 /// This is URLSession's internal behavior, not a bug in our swizzling.
 /// Tests use `expectation.assertForOverFulfill = false` to handle this legitimate behavior.
+///
+/// **Note on thread safety:**
+/// `setState:` can run on multiple threads, so the tests that collect intercepted states
+/// protect their arrays with `ReadWriteLock`.
 
 class URLSessionTaskStateSwizzlerTests: XCTestCase {
     func testSwizzling_setState_interceptsCompletion() throws {
         let completionExpectation = self.expectation(description: "setState completion")
         completionExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
-        var interceptedStates: [Int] = []
+        let interceptedStates = ReadWriteLock<[Int]>(wrappedValue: [])
 
         // Given
         let swizzler = URLSessionTaskStateSwizzler()
 
         try swizzler.swizzle(
             interceptSetState: { _, state in
-                interceptedStates.append(state)
+                interceptedStates.mutate { $0.append(state) }
                 // Only fulfill when we see completed state
                 if state == URLSessionTask.State.completed.rawValue {
                     completionExpectation.fulfill()
@@ -45,8 +49,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 3)
 
         // Verify we intercepted state changes
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.running.rawValue }), "Should intercept running state")
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
+        XCTAssertTrue(interceptedStates.wrappedValue.contains(where: { $0 == URLSessionTask.State.running.rawValue }), "Should intercept running state")
+        XCTAssertTrue(interceptedStates.wrappedValue.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
 
         swizzler.unswizzle()
     }
@@ -54,14 +58,14 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
     func testSwizzling_setState_interceptsCancelledTasks() throws {
         let completionExpectation = self.expectation(description: "setState completion for cancelled task")
         completionExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
-        var interceptedStates: [Int] = []
+        let interceptedStates = ReadWriteLock<[Int]>(wrappedValue: [])
 
         // Given
         let swizzler = URLSessionTaskStateSwizzler()
 
         try swizzler.swizzle(
             interceptSetState: { _, state in
-                interceptedStates.append(state)
+                interceptedStates.mutate { $0.append(state) }
                 // Only fulfill when we see canceling or completed state
                 if state >= URLSessionTask.State.canceling.rawValue {
                     completionExpectation.fulfill()
@@ -84,7 +88,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         // Verify we intercepted cancellation state
         // Note: Canceling state is very brief and may be missed due to timing - we may only see completed
         XCTAssertTrue(
-            interceptedStates.contains(where: { $0 >= URLSessionTask.State.canceling.rawValue }),
+            interceptedStates.wrappedValue.contains(where: { $0 >= URLSessionTask.State.canceling.rawValue }),
             "Should intercept canceling or completed state"
         )
 
@@ -139,14 +143,14 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
     func testSwizzling_setState_interceptsAsyncAwaitTasks() async throws {
         let completionExpectation = self.expectation(description: "setState for async/await")
         completionExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
-        var interceptedStates: [Int] = []
+        let interceptedStates = ReadWriteLock<[Int]>(wrappedValue: [])
 
         // Given
         let swizzler = URLSessionTaskStateSwizzler()
 
         try swizzler.swizzle(
             interceptSetState: { _, state in
-                interceptedStates.append(state)
+                interceptedStates.mutate { $0.append(state) }
                 // Only fulfill when we see completed state
                 if state == URLSessionTask.State.completed.rawValue {
                     completionExpectation.fulfill()
@@ -168,7 +172,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         await fulfillment(of: [completionExpectation], timeout: 5)
 
         // Verify we intercepted completed state
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
+        XCTAssertTrue(interceptedStates.wrappedValue.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
 
         swizzler.unswizzle()
     }
@@ -176,14 +180,14 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
     func testSwizzling_setState_interceptsDelegatelessTasks() throws {
         let completionExpectation = self.expectation(description: "setState for delegate-less task")
         completionExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
-        var interceptedStates: [Int] = []
+        let interceptedStates = ReadWriteLock<[Int]>(wrappedValue: [])
 
         // Given
         let swizzler = URLSessionTaskStateSwizzler()
 
         try swizzler.swizzle(
             interceptSetState: { _, state in
-                interceptedStates.append(state)
+                interceptedStates.mutate { $0.append(state) }
                 // Only fulfill when we see completed state
                 if state == URLSessionTask.State.completed.rawValue {
                     completionExpectation.fulfill()
@@ -201,7 +205,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 5)
 
         // Verify we intercepted completed state
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
+        XCTAssertTrue(interceptedStates.wrappedValue.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
 
         swizzler.unswizzle()
     }
