@@ -81,6 +81,6 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
 
         swizzler.unswizzle()
 
-        waitForExpectations(timeout: 5)
+        waitForExpectations(timeout: 0.5)
     }
 }
