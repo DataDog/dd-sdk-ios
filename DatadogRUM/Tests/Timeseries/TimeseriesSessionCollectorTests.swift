@@ -26,6 +26,39 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     // MARK: - Memory events
 
+    func testDiagnostic_FlushReturnsBeforeTimeseriesBatchReachesStorage() {
+        let deferredScope = FeatureScopeMock(
+            context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]),
+            deferEventWriteContext: true
+        )
+        memoryReader.vitalData = 1_024_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: deferredScope,
+            batchSize: 120,
+            collectTypes: [.memory],
+            samplingInterval: 0.01,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+        collector.activeContextReader = RUMActiveContextReaderMock()
+        collector.start(sessionID: "session-flush", applicationID: "app-flush", sessionType: .user)
+        settle()
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-flush"))
+
+        collector.flush()
+
+        XCTAssertTrue(
+            deferredScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty,
+            "the synchronous collector flush returns before its deferred write context runs"
+        )
+        deferredScope.flushDeferredEventWriteContexts()
+        XCTAssertFalse(deferredScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
+
+        collector.stop(sessionID: "session-flush")
+        collector.flush()
+    }
+
     func testWhenBatchSizeIsReached_itWritesMemoryEvent() {
         // Given
         memoryReader.vitalData = 1_024_000

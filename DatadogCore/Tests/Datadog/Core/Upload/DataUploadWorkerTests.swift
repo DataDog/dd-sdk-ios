@@ -965,6 +965,76 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
+    func testDiagnostic_SynchronousFlushDiscardsRetryableBatchWithoutRetrying() throws {
+        let dataUploader = DataUploaderMock(
+            uploadStatuses: [
+                .mockWith(needsRetry: true, attempt: 0),
+                .mockWith(needsRetry: false, attempt: 1)
+            ]
+        )
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .neverUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 1
+        )
+        writer.write(value: ["key": "value"])
+
+        worker.flushSynchronously()
+
+        XCTAssertEqual(dataUploader.uploadedEvents.count, 1, "a retryable status is returned, but no second attempt is made")
+        XCTAssertTrue(try orchestrator.directory.files().isEmpty, "the retryable batch is removed by the flush defer block")
+        worker.cancelSynchronously()
+    }
+
+    func testDiagnostic_RetryStatusMigratesToReplacementBatch() throws {
+        let firstAttempt = expectation(description: "first batch returns retryable status")
+        var previousStatuses: [DataUploadStatus?] = []
+        let dataUploader = DataUploaderMock(
+            uploadStatuses: [
+                .mockWith(needsRetry: true, responseCode: 500, attempt: 0),
+                .mockWith(needsRetry: false, responseCode: 202, attempt: 1)
+            ],
+            onUpload: { previous in
+                previousStatuses.append(previous)
+                if previous == nil {
+                    firstAttempt.fulfill()
+                }
+            }
+        )
+        writer.write(value: ["batch": "original"])
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 1
+        )
+        wait(for: [firstAttempt], timeout: 0.5)
+
+        for file in reader.readFiles(limit: .max) {
+            reader.markFileAsRead(file, reason: .flushed)
+        }
+        writer.write(value: ["batch": "replacement"])
+
+        worker.flushSynchronously()
+
+        XCTAssertEqual(previousStatuses.count, 2)
+        XCTAssertEqual(previousStatuses[1]?.responseCode, 500)
+        XCTAssertEqual(previousStatuses[1]?.attempt, 0, "the replacement batch inherits the removed batch's retry identity")
+        XCTAssertEqual(dataUploader.uploadedEvents.last?.data.utf8String, #"{"batch":"replacement"}"#)
+        worker.cancelSynchronously()
+    }
+
     func testItTriggersBackgroundTaskBeginEndForSuccessfulUpload() {
         let expectTaskRegistered = expectation(description: "task should be registered")
         let expectTaskEnded = expectation(description: "task should be ended")

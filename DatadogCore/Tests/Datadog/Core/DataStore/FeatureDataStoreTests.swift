@@ -180,6 +180,29 @@ class FeatureDataStoreTests: XCTestCase {
         DDAssertReflectionEqual(results[1].data(), "value B".utf8Data)
     }
 
+    func testDiagnostic_ReadCallbackIsStrandedWhenStoreDeallocatesBeforeQueuedWorkRuns() {
+        let releaseQueue = DispatchSemaphore(value: 0)
+        queue.async { releaseQueue.wait() }
+
+        let callback = expectation(description: "read callback is completed")
+        callback.isInverted = true
+        var localStore: FeatureDataStore? = FeatureDataStore(
+            feature: "short-lived-feature",
+            directory: temporaryCoreDirectory,
+            queue: queue,
+            telemetry: TelemetryMock()
+        )
+        weak var weakStore = localStore
+        localStore?.value(forKey: "key") { _ in callback.fulfill() }
+
+        localStore = nil
+        XCTAssertNil(weakStore)
+        releaseQueue.signal()
+        queue.sync { }
+
+        wait(for: [callback], timeout: 0.05)
+    }
+
     func testDataIsPersistedBetweenDataStoreInstances() {
         // Given
         store.setValue("value".utf8Data, forKey: "key")
