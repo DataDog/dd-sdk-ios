@@ -25,6 +25,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Used to restore the view when a new session starts after `sessionStop()`.
     private var lastActiveView: RUMViewScope?
 
+    private final class SceneRestoration {
+        var views: [RUMViewScope] = []
+    }
+    private let sceneRestoration: SceneRestoration?
+
     /// The end reason from the last active session. Used as "start reason" for the new session.
     private var lastSessionEndReason: RUMSessionScope.EndReason?
 
@@ -50,6 +55,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
+        self.sceneRestoration = dependencies.isMultiSceneTrackingEnabled ? SceneRestoration() : nil
 
         self.context = RUMContext(
             rumApplicationID: dependencies.rumApplicationID,
@@ -158,7 +164,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         // Store the last foreground view that was active before the session expired or was stopped.
         // This allows the next session to lazily restart the same view if needed.
         let lastActiveForegroundView = activeSession?.viewScopes.first(where: { $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL })
-        lastActiveView = lastActiveForegroundView ?? lastActiveView
+        if let sceneRestoration, let activeSession {
+            sceneRestoration.views = activeSession.foregroundViewsForRestoration
+        } else {
+            lastActiveView = lastActiveForegroundView ?? lastActiveView
+        }
 
         // A view closed with `stopView()` must not be restored by a later session. Views ended by a lifecycle
         // transition, like ApplicationLaunch on entering background, are still restored.
@@ -320,10 +330,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startPrecondition: startPrecondition,
             context: context,
             transferActiveView: transferActiveView,
-            applicationState: applicationState
+            applicationState: applicationState,
+            triggeringCommand: dependencies.isMultiSceneTrackingEnabled ? command : nil
         )
         sessionScopeDidUpdate(refreshedSession)
         lastActiveView = nil
+        sceneRestoration?.views.removeAll()
         lastSessionEndReason = nil
         _ = refreshedSession.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
         return refreshedSession
@@ -360,6 +372,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             resumeViewScope = command.shouldRestartLastViewAfterSessionExpiration && startingInForeground
         }
 
+        let navigationDestination = sceneRestoration.map {
+            RUMSessionScope.resolveNavigationDestination(
+                on: command,
+                representative: $0.views.last?.sceneIdentifier,
+                cache: dependencies.viewCache
+            )
+        } ?? nil
         let newSession = RUMSessionScope(
             isInitialSession: false,
             parent: self,
@@ -369,12 +388,38 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             context: context,
             dependencies: dependencies,
             applicationState: applicationState,
-            resumingViewScope: resumeViewScope ? lastActiveView : nil
+            resumingViewScope: resumeViewScope ? lastActiveView : nil,
+            resumingViewScopes: restoredViews(
+                on: command,
+                startingInForeground: startingInForeground,
+                restoreAll: resumeViewScope,
+                navigationDestination: navigationDestination
+            ),
+            navigationDestination: navigationDestination
         )
         lastActiveView = nil
+        sceneRestoration?.views.removeAll()
         lastSessionEndReason = nil
         sessionScopes.append(newSession)
         sessionScopeDidUpdate(newSession)
+    }
+
+    private func restoredViews(
+        on command: RUMCommand,
+        startingInForeground: Bool,
+        restoreAll: Bool,
+        navigationDestination: RUMSessionScope.NavigationDestination?
+    ) -> [RUMViewScope]? {
+        guard let sceneRestoration, startingInForeground else {
+            return nil
+        }
+        if command is RUMStartViewCommand || command is RUMStopViewCommand {
+            guard case .ownedScene(let scene) = navigationDestination else {
+                return sceneRestoration.views
+            }
+            return sceneRestoration.views.filter { $0.sceneIdentifier != scene }
+        }
+        return restoreAll ? sceneRestoration.views : []
     }
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope?) {
