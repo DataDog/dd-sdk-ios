@@ -2857,3 +2857,27 @@ extension RUMSessionScopeTests {
         }
     }
 }
+
+extension RUMSessionScopeTests {
+    func testMultiSceneInvalidOptionalOverride_preservesInferredOwner() throws {
+        let scope = sceneSession()
+        let oldA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "old-a"))
+        let nextA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "next-a", after: 1))
+        let viewB = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 2))
+        for id in [DefaultRUMUUIDGenerator().generateUnique(), oldA.viewUUID] {
+            var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(3))
+            error.target = sceneBTarget
+            error.explicitTarget = .view(id)
+            route(error, through: scope)
+            XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.id, viewB.viewUUID.toRUMDataFormat)
+        }
+        XCTAssertFalse(
+            writer.events(ofType: RUMErrorEvent.self).contains { $0.view.id == nextA.viewUUID.toRUMDataFormat }
+        )
+        var valid = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(4))
+        valid.target = sceneBTarget
+        valid.explicitTarget = .view(nextA.viewUUID)
+        route(valid, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.id, nextA.viewUUID.toRUMDataFormat)
+    }
+}
