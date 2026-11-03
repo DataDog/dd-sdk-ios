@@ -225,6 +225,15 @@ extension RUMViewScope {
         let wasActiveView = isActiveView
         let command = command.resolvingResourceOwners(in: [self])
 
+        if let longTaskCommand = command as? RUMAddLongTaskCommand,
+           mayIncludeAppSuspension(longTaskCommand, in: context.applicationStateHistory) {
+            DD.logger.debug(
+                "Ignoring long task of \(longTaskCommand.duration)s overlapping a period in which the app may have been suspended"
+            )
+            // A long task never ends the view, so the scope stays alive as it would after processing it.
+            return true
+        }
+
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
 
@@ -891,6 +900,23 @@ extension RUMViewScope {
             // view update is written.
             command.completionHandler()
         }
+    }
+
+    /// Tells if the long task interval overlaps a period in which the OS may have suspended the process.
+    ///
+    /// Long tasks are measured on the main thread's run loop with the wall clock. When the OS suspends the process in the
+    /// middle of a run loop iteration (e.g. shortly after the app entered background), the clock keeps running while no code
+    /// executes, and the iteration completes only once the app is resumed. The whole suspension is then reported as a single
+    /// long task, typically flagged as frozen frame, although it reflects no main thread work. Such long tasks are dropped.
+    ///
+    /// The check uses the app state history from the SDK context. The history is updated on the main thread when the app
+    /// state notification is received, so it always includes the transition to background that precedes a suspension.
+    private func mayIncludeAppSuspension(_ command: RUMAddLongTaskCommand, in appStateHistory: AppStateHistory) -> Bool {
+        guard command.duration > 0 else {
+            return false
+        }
+        let longTaskInterval = (command.time - command.duration)...command.time
+        return appStateHistory.containsState(during: longTaskInterval, where: { $0.applicationMayBeSuspended })
     }
 
     private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {

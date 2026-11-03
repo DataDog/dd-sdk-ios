@@ -3820,6 +3820,191 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
+    // MARK: - Long Tasks overlapping app suspension
+
+    /// An app state in which the OS may suspend the process.
+    private var suspendableAppState: AppState {
+        #if os(macOS)
+        return .sleeping
+        #else
+        return .background
+        #endif
+    }
+
+    private func createStartedViewScope(startedAt startViewDate: Date, context: DatadogContext) -> RUMViewScope {
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(featureFlags: [.viewUpdates: false]),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: startViewDate,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: startViewDate, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        return scope
+    }
+
+    func testWhenLongTaskSpansPeriodWhereAppMayBeSuspended_itDropsLongTask() throws {
+        // Given: the app leaves the foreground 1s after the view starts and comes back 60s later
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: startViewDate,
+            transitions: [
+                (state: suspendableAppState, date: startViewDate + 1),
+                (state: .active, date: startViewDate + 61)
+            ]
+        )
+        let scope = createStartedViewScope(startedAt: startViewDate, context: context)
+
+        // When: the run loop iteration interrupted by the suspension completes after the app resumes,
+        // measuring the whole suspension as one long task
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: startViewDate + 61.5, attributes: [:], duration: 60),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        XCTAssertTrue(writer.events(ofType: RUMLongTaskEvent.self).isEmpty)
+        let viewUpdates = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewUpdates.count, 1, "The dropped long task should not update the view")
+        XCTAssertEqual(viewUpdates.last?.view.longTask?.count, 0)
+        XCTAssertEqual(viewUpdates.last?.view.frozenFrame?.count, 0)
+    }
+
+    func testWhenLongTaskStartsBeforeAppMayBeSuspended_itDropsLongTask() throws {
+        // Given: the app leaves the foreground 1s after the view starts
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: startViewDate,
+            transitions: [(state: suspendableAppState, date: startViewDate + 1)]
+        )
+        let scope = createStartedViewScope(startedAt: startViewDate, context: context)
+
+        // When: a long task starts in the foreground and ends after the app left it
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: startViewDate + 1.5, attributes: [:], duration: 1),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        XCTAssertTrue(writer.events(ofType: RUMLongTaskEvent.self).isEmpty)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.longTask?.count, 0)
+    }
+
+    func testWhenLongTaskIsAddedWhileAppMayBeSuspended_itDoesNotCountItInActiveUserAction() throws {
+        // Given: a discrete user action is active when the app leaves the foreground
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: startViewDate,
+            transitions: [(state: suspendableAppState, date: startViewDate + 1)]
+        )
+        let scope = createStartedViewScope(startedAt: startViewDate, context: context)
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: startViewDate + 0.95, actionType: .tap),
+            context: context,
+            writer: writer
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMAddLongTaskCommand(time: startViewDate + 1.05, attributes: [:], duration: 0.5),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMCommandMock(time: startViewDate + 0.95 + RUMUserActionScope.Constants.discreteActionTimeoutDuration),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertTrue(writer.events(ofType: RUMLongTaskEvent.self).isEmpty)
+        let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(actionEvent.action.longTask?.count, 0)
+    }
+
+    func testWhenLongTaskEndsWhenAppMayBeSuspendedOrStartsWhenItResumes_itSendsLongTask() throws {
+        // Given: the app leaves the foreground 2s after the view starts and comes back 3s later
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: startViewDate,
+            transitions: [
+                (state: suspendableAppState, date: startViewDate + 2),
+                (state: .active, date: startViewDate + 5)
+            ]
+        )
+        let scope = createStartedViewScope(startedAt: startViewDate, context: context)
+
+        // When: one long task ends exactly when the app leaves the foreground, another starts exactly when it resumes
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: startViewDate + 2, attributes: [:], duration: 1),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: startViewDate + 6, attributes: [:], duration: 1),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let longTaskEvents = writer.events(ofType: RUMLongTaskEvent.self)
+        XCTAssertEqual(longTaskEvents.count, 2)
+        XCTAssertEqual(longTaskEvents.first?.date, (startViewDate + 1).timeIntervalSince1970.dd.toInt64Milliseconds)
+        XCTAssertEqual(longTaskEvents.last?.date, (startViewDate + 5).timeIntervalSince1970.dd.toInt64Milliseconds)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.longTask?.count, 2)
+    }
+
+    func testWhenLongTaskIsAddedWithNoAppStateChange_itSendsLongTask() throws {
+        // Given
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.applicationStateHistory = .mockWith(initialState: .active, date: startViewDate)
+        let scope = createStartedViewScope(startedAt: startViewDate, context: context)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: startViewDate + 61.5, attributes: [:], duration: 60),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        XCTAssertEqual(writer.events(ofType: RUMLongTaskEvent.self).count, 1)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.longTask?.count, 1)
+    }
+
     func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context

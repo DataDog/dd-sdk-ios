@@ -7,6 +7,10 @@
 import Foundation
 import DatadogInternal
 
+/// Measures long tasks on the main thread by timing the main run loop activities with the wall clock.
+///
+/// Because of the wall clock, a run loop iteration during which the OS suspends the process is measured as a long task
+/// lasting the whole suspension. `RUMViewScope` drops long tasks overlapping a period in which the app may have been suspended.
 internal class LongTaskObserver: RUMCommandPublisher {
     private let longTaskDurationThreshold: TimeInterval
     private let dateProvider: DateProvider

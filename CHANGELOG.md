@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Drop RUM long tasks that overlap a period in which the app may have been suspended, such as after entering background. Before, a run loop iteration interrupted by the suspension was reported, once the app resumed, as a single long task and frozen frame lasting the whole suspension.
 - [FEATURE] Flags: Add per-subject experimentation opt-out through `FlagsClient.Configuration.experimentationOptOutMode`. The `dd_experimentation_opt_out_at` context attribute supports `.immediate` and `.futureExperimentsOnly` modes. Adds `FlagsError.invalidContext` and `FlagEvaluationError.invalidContext`; exhaustive switches need the new case. Timestamps use proleptic Gregorian dates with UTC year bounds. Filtered responses are rejected when no subject opt-out applies. See [#3338][]
 
 # 3.21.0 / 29-10-2026
