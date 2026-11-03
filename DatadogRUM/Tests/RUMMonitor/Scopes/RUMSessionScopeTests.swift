@@ -3211,3 +3211,111 @@ extension RUMSessionScopeTests {
         XCTAssertEqual(watchdogView(in: feature)?.view.isActive, false)
     }
 }
+
+extension RUMSessionScopeTests {
+    func testContinuousActionTerminalUsesCapturedSessionLifetimeWithoutAdoptingPeer() throws {
+        for expired in [false, true] {
+            for eventDateShift in [-86_400.0, 86_400.0] {
+                let fixture = RUMResourceCompletionFixture(applicationScope: true, multiSceneTracking: true)
+                let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+                let targetA = RUMCommandTarget.scene(sceneA)
+                let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-b"))
+                fixture.startView("original-a", target: targetA)
+                let ownership = RUMContinuousActionOwnership(
+                    sceneIdentifier: sceneA,
+                    owner: RUMContextHandoff.Owner()
+                )
+                var start = RUMStartUserActionCommand.mockWith(actionType: .scroll, name: "original-continuous")
+                start.target = .continuousAction(ownership)
+                fixture.send(start)
+                let session = try XCTUnwrap(fixture.application.activeSession)
+                let viewA = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("original-a") })
+                let originalAction = try XCTUnwrap(viewA.userActionScope)
+                let claim = try XCTUnwrap(ownership.claim)
+                fixture.startView("peer-b", target: targetB)
+                fixture.startAction("peer-b", target: targetB)
+                let peer = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("peer-b") })
+                let peerAction = try XCTUnwrap(peer.userActionScope)
+                let sessionsBefore = fixture.application.sessionScopes.map(\.sessionUUID)
+                let receipt = session.lastInteraction
+                    + (expired ? RUMSessionScope.Constants.sessionTimeoutDuration + 1 : 1)
+                fixture.time.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+                var stop = RUMStopUserActionCommand.mockWith(
+                    time: fixture.time.addingTimeInterval(eventDateShift),
+                    actionType: .scroll,
+                    name: "original-continuous"
+                )
+                stop.target = .continuousAction(ownership)
+                stop.attributes["terminal-owner"] = "original-a"
+
+                _ = fixture.application.process(
+                    command: stop,
+                    monotonicTime: receipt,
+                    context: fixture.context,
+                    writer: fixture.writer
+                )
+
+                XCTAssertTrue(fixture.application.activeSession === session)
+                XCTAssertEqual(fixture.application.sessionScopes.map(\.sessionUUID), sessionsBefore)
+                XCTAssertTrue(ownership.isClosed)
+                XCTAssertEqual(ownership.claim?.viewID, claim.viewID)
+                XCTAssertEqual(ownership.claim?.actionID, claim.actionID)
+                XCTAssertNil(peerAction.attributes["terminal-owner"])
+                let events = fixture.writer.events(ofType: RUMActionEvent.self)
+                    .filter { $0.action.target?.name == "original-continuous" }
+                if expired {
+                    XCTAssertTrue(viewA.userActionScope === originalAction)
+                    XCTAssertTrue(peer.userActionScope === peerAction)
+                    XCTAssertTrue(events.isEmpty)
+                } else {
+                    XCTAssertNil(viewA.userActionScope)
+                    XCTAssertEqual(events.count, 1)
+                    XCTAssertEqual(events.first?.session.id, claim.sessionID.toRUMDataFormat)
+                    XCTAssertEqual(events.first?.view.id, claim.viewID.toRUMDataFormat)
+                }
+            }
+        }
+    }
+
+    func testSceneErrorCompletionUsesCapturedLifetimeAfterDelayedProcessing() throws {
+        for eventDateShift in [-86_400.0, 86_400.0] {
+            let fixture = RUMResourceCompletionFixture(applicationScope: true, multiSceneTracking: true)
+            let targetA = RUMCommandTarget.scene(.init(rawValue: "scene-a"))
+            let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-b"))
+            fixture.startView("original-a", target: targetA)
+            fixture.startView("peer-b", target: targetB)
+            let session = try XCTUnwrap(fixture.application.activeSession)
+            let viewA = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("original-a") })
+            let peer = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("peer-b") })
+            let receipt = session.lastInteraction + 1
+            fixture.time.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+            let completion = expectation(description: "original error completion")
+            completion.assertForOverFulfill = true
+            var command = RUMAddCurrentViewErrorCommand(
+                time: fixture.time.addingTimeInterval(eventDateShift),
+                message: "delayed scene error",
+                type: nil,
+                stack: nil,
+                source: .custom,
+                globalAttributes: [:],
+                attributes: ["error-owner": "original-a"],
+                completionHandler: { completion.fulfill() }
+            )
+            command.target = targetA
+
+            _ = fixture.application.process(
+                command: command,
+                monotonicTime: receipt,
+                context: fixture.context,
+                writer: fixture.writer
+            )
+
+            wait(for: [completion], timeout: 1)
+            XCTAssertTrue(fixture.application.activeSession === session)
+            XCTAssertEqual(fixture.errors.count, 1)
+            XCTAssertEqual(fixture.errors.first?.session.id, session.sessionUUID.toRUMDataFormat)
+            XCTAssertEqual(fixture.errors.first?.view.id, viewA.viewUUID.toRUMDataFormat)
+            XCTAssertNil(peer.attributes["error-owner"])
+        }
+    }
+}
