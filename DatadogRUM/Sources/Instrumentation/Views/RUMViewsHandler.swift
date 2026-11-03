@@ -167,7 +167,7 @@ internal final class RUMViewsHandler {
     #endif
 
     deinit {
-    #if os(macOS)
+        #if os(macOS)
         notificationCenterProvider?.workspaceCenter.removeObserver(
             self,
             name: WorkspaceNotifications.willSleep,
@@ -178,7 +178,7 @@ internal final class RUMViewsHandler {
             name: WorkspaceNotifications.didWake,
             object: nil
         )
-    #else
+        #else
         notificationCenterProvider?.applicationCenter.removeObserver(
             self,
             name: ApplicationNotifications.didEnterBackground,
@@ -189,7 +189,7 @@ internal final class RUMViewsHandler {
             name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
-    #endif
+        #endif
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
@@ -482,6 +482,7 @@ internal final class RUMSceneViewsHandler {
 
         /// Scene that owns this view. `nil` preserves the legacy process-wide stack.
         let sceneIdentifier: RUMSceneIdentifier?
+        let swiftUILifetime: RUMSwiftUIViewLifetime?
 
         init(
             identity: ViewIdentifier,
@@ -490,7 +491,8 @@ internal final class RUMSceneViewsHandler {
             isUntrackedModal: Bool,
             attributes: [AttributeKey: AttributeValue],
             instrumentationType: InstrumentationType,
-            sceneIdentifier: RUMSceneIdentifier?
+            sceneIdentifier: RUMSceneIdentifier?,
+            swiftUILifetime: RUMSwiftUIViewLifetime? = nil
         ) {
             self.identity = identity
             self.name = name
@@ -499,6 +501,7 @@ internal final class RUMSceneViewsHandler {
             self.attributes = attributes
             self.instrumentationType = instrumentationType
             self.sceneIdentifier = sceneIdentifier
+            self.swiftUILifetime = swiftUILifetime
         }
     }
 
@@ -605,10 +608,10 @@ internal final class RUMSceneViewsHandler {
         isMultiSceneApplication: Bool = false,
         sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { viewController in
             guard let identifier = viewController.viewIfLoaded?
-                .window?
-                .windowScene?
-                .session
-                .persistentIdentifier else {
+                    .window?
+                    .windowScene?
+                    .session
+                    .persistentIdentifier else {
                 return nil
             }
             return RUMSceneIdentifier(rawValue: identifier)
@@ -622,7 +625,7 @@ internal final class RUMSceneViewsHandler {
         initialSceneActivityProvider: @escaping () -> [RUMSceneIdentifier: Bool] = {
             var activity: [RUMSceneIdentifier: Bool] = [:]
             for scene in UIApplication.dd.managedShared?.connectedScenes ?? []
-                where scene.activationState != .unattached {
+            where scene.activationState != .unattached {
                 activity[RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)] =
                     scene.activationState == .foregroundActive || scene.activationState == .foregroundInactive
             }
@@ -929,18 +932,21 @@ internal final class RUMSceneViewsHandler {
             return
         }
 
-        subscriber.process(
-            command: RUMStartViewCommand(
-                time: time ?? dateProvider.now,
-                identity: view.identity,
-                name: view.name,
-                path: view.path,
-                globalAttributes: [:],
-                attributes: view.attributes,
-                instrumentationType: view.instrumentationType,
-                target: target(for: view)
-            )
+        let command = RUMStartViewCommand(
+            time: time ?? dateProvider.now,
+            identity: view.identity,
+            name: view.name,
+            path: view.path,
+            globalAttributes: [:],
+            attributes: view.attributes,
+            instrumentationType: view.instrumentationType,
+            target: target(for: view)
         )
+        if let lifetime = view.swiftUILifetime {
+            (subscriber as? RUMOwnedSwiftUIViewCommandSubscriber)?.process(command: command, lifetime: lifetime)
+        } else {
+            subscriber.process(command: command)
+        }
     }
 
     private func stop(
@@ -953,12 +959,16 @@ internal final class RUMSceneViewsHandler {
         }
 
         var command = RUMStopViewCommand(
-                time: time ?? dateProvider.now,
-                attributes: attributes ?? view.attributes,
-                identity: view.identity
+            time: time ?? dateProvider.now,
+            attributes: attributes ?? view.attributes,
+            identity: view.identity
         )
         command.target = target(for: view)
-        subscriber?.process(command: command)
+        if let lifetime = view.swiftUILifetime {
+            (subscriber as? RUMOwnedSwiftUIViewCommandSubscriber)?.process(command: command, lifetime: lifetime)
+        } else {
+            subscriber?.process(command: command)
+        }
     }
 
     private func target(for view: View) -> RUMCommandTarget {
@@ -1114,7 +1124,7 @@ internal final class RUMSceneViewsHandler {
         guard view.instrumentationType == .uikit,
               let sceneIdentifier = view.sceneIdentifier,
               let pendingIndex = pendingUIKitSplitViewRemovals.firstIndex(where: {
-                  $0.sceneIdentifier == sceneIdentifier
+                $0.sceneIdentifier == sceneIdentifier
               }) else {
             return false
         }
@@ -1410,8 +1420,8 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
             return
         }
         if isMultiSceneApplication,
-            #available(iOS 27.0, *),
-            uiKitSplitViewContextProvider(viewController)?.isStructural == true {
+           #available(iOS 27.0, *),
+           uiKitSplitViewContextProvider(viewController)?.isStructural == true {
             // In a regular-width split hierarchy, primary and supplementary
             // columns are structural navigation context. The scene's semantic
             // RUM destination is the independently visible detail column.
@@ -1553,6 +1563,97 @@ extension RUMSceneViewsHandler: RUMSceneTargetedManualViewHandling {
             sceneIdentifier: sceneIdentifier,
             stopAttributes: attributes
         )
+    }
+}
+
+extension RUMSceneViewsHandler: RUMSceneSwiftUIViewHandling {
+    @MainActor
+    @discardableResult
+    func notify_onAppear(
+        identity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool {
+        guard lifetime.isValid(for: self), canTrackViews(in: sceneIdentifier) else {
+            return false
+        }
+        let viewIdentity = ViewIdentifier(identity)
+        if let tracked = stacks.first(where: { $0.sceneIdentifier == sceneIdentifier })?
+            .views.first(where: { $0.identity == viewIdentity }) {
+            guard tracked.swiftUILifetime === lifetime else {
+                return false
+            }
+        }
+        return add(view: .init(
+            identity: viewIdentity,
+            name: name,
+            path: path,
+            isUntrackedModal: false,
+            attributes: attributes,
+            instrumentationType: .swiftui,
+            sceneIdentifier: sceneIdentifier,
+            swiftUILifetime: lifetime
+        ))
+    }
+
+    /// Nil preserves the descriptor captured by the tracked occurrence.
+    @MainActor
+    @discardableResult
+    func notify_onDisappear(
+        identity: String,
+        // Keep the callback argument order before its ownership proof.
+        // swiftlint:disable:next function_default_parameter_at_end
+        attributes: [AttributeKey: AttributeValue]? = nil,
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool {
+        guard lifetime.isValid(for: self),
+              canTrackViews(in: sceneIdentifier),
+              let tracked = stacks.first(where: { $0.sceneIdentifier == sceneIdentifier })?
+                .views.first(where: { $0.identity == ViewIdentifier(identity) }),
+              tracked.swiftUILifetime === lifetime else {
+            return false
+        }
+        remove(identity: tracked.identity, sceneIdentifier: sceneIdentifier, stopAttributes: attributes)
+        return true
+    }
+
+    @MainActor
+    @discardableResult
+    func notify_onReplace(
+        identity: String,
+        newIdentity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool {
+        let viewIdentity = ViewIdentifier(identity)
+        let replacementIdentity = ViewIdentifier(newIdentity)
+        guard lifetime.isValid(for: self),
+              canTrackViews(in: sceneIdentifier),
+              let stack = stacks.first(where: { $0.sceneIdentifier == sceneIdentifier }),
+              let tracked = stack.views.first(where: { $0.identity == viewIdentity }),
+              tracked.swiftUILifetime === lifetime,
+              !stack.views.contains(where: {
+                $0.identity == replacementIdentity && $0.identity != viewIdentity
+              }) else {
+            return false
+        }
+        return replace(identity: tracked.identity, with: .init(
+            identity: replacementIdentity,
+            name: name,
+            path: path,
+            isUntrackedModal: false,
+            attributes: attributes,
+            instrumentationType: .swiftui,
+            sceneIdentifier: sceneIdentifier,
+            swiftUILifetime: lifetime
+        ))
     }
 }
 
