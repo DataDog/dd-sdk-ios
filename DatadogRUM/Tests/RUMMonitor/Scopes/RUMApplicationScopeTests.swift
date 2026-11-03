@@ -1663,10 +1663,147 @@ extension RUMApplicationScopeTests {
         )
     }
 
+    func testCapturedWebViewKeepAlive_rejectsSessionTransitionBeforeApplication() throws {
+        for restart in [false, true] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            let native = try XCTUnwrap(capture.value.resolvedRUMContext(for: scope.owner))
+            let receiverScope = FeatureScopeMock(context: .mockWith(additionalContext: [native]), deferEventWriteContext: true)
+            let subscriber = RUMCommandSubscriberMock()
+            let core = WebViewKeepAliveOwnerCore()
+            core.owner = scope.owner
+            core.sessionEligibility = { sessionID, owner in
+                guard owner === scope.owner, owner.isValid,
+                      let session = app.activeSession, session.sessionUUID.toRUMDataFormat == sessionID else {
+                    return false
+                }
+                let now = self.routingDate.addingTimeInterval(5)
+                return !RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: now.timeIntervalSince(self.routingDate))
+                    && !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: now.timeIntervalSince(self.routingDate))
+            }
+            let receiver = WebViewEventReceiver(
+                featureScope: receiverScope,
+                dateProvider: DateProviderMock(now: routingDate.addingTimeInterval(5)),
+                commandSubscriber: subscriber,
+                viewCache: ViewCache(dateProvider: DateProviderMock())
+            )
+            XCTAssertTrue(receiver.receive(
+                message: .payload(WebViewMessageWithRUMContext(message: .rum(["date": 1_600_000_003_000, "view": ["id": "browser"]]), capture: capture)),
+                from: core
+            ))
+            receiverScope.flushDeferredEventWriteContexts()
+            XCTAssertEqual(receiverScope.eventsWritten.count, 1)
+            let queued = try XCTUnwrap(subscriber.receivedCommands.firstElement(of: RUMKeepSessionAliveCommand.self))
+            XCTAssertTrue(queued.capture?.owner === scope.owner)
+            _ = routeApplicationCommand(app: app, command: RUMStopSessionCommand(time: routingDate.addingTimeInterval(4)), context: context, writer: writer)
+            if restart { navigate(app, context: context, scene: routingSceneB, name: "replacement", after: 4.5) }
+            let before = app.sessionScopes.map { $0.sessionUUID }
+            let active = app.activeSession
+            let interaction = active?.lastInteraction
+            let count = writer.events.count
+            _ = routeApplicationCommand(app: app, command: queued, context: context, writer: writer)
+            XCTAssertEqual(app.sessionScopes.map { $0.sessionUUID }, before)
+            XCTAssertTrue(app.activeSession === active)
+            XCTAssertEqual(app.activeSession?.lastInteraction, interaction)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
 
+    func testCapturedWebViewKeepAlive_rejectsInvalidOrReplacedOwnerAtApplication() throws {
+        for replacement in [false, true] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            if replacement { scope.owner = RUMContextHandoff.Owner() } else { scope.owner.invalidate() }
+            let count = writer.events.count
+            let session = app.activeSession
+            _ = routeApplicationCommand(
+                app: app,
+                command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(5), attributes: [:], capture: capture),
+                context: context,
+                writer: writer
+            )
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
 
+    func testCapturedWebViewKeepAlive_doesNotRestartExpiredSession() throws {
+        for elapsed in [RUMSessionScope.Constants.sessionTimeoutDuration + 3, RUMSessionScope.Constants.sessionMaxDuration + 3] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            let session = try XCTUnwrap(app.activeSession)
+            let interaction = session.lastInteraction
+            let count = writer.events.count
+            _ = routeApplicationCommand(
+                app: app,
+                command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(elapsed), attributes: [:], capture: capture),
+                context: context,
+                writer: writer
+            )
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertNil(session.endReason)
+            XCTAssertEqual(session.lastInteraction, interaction)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
 
+    func testCapturedWebViewKeepAlive_rejectsMaximumDurationWhileRecentlyActive() throws {
+        let scope = WebViewKeepAliveOwnerScope()
+        let (app, context) = routingApplication(featureScope: scope)
+        startRoutingPeers(app, context: context)
+        let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+        let session = try XCTUnwrap(app.activeSession)
 
+        for elapsed in stride(from: 600.0, to: RUMSessionScope.Constants.sessionMaxDuration, by: 600.0) {
+            let time = routingDate.addingTimeInterval(elapsed)
+            var interaction = RUMAddUserActionCommand.mockWith(time: time, actionType: .custom)
+            interaction.target = .scene(routingSceneA)
+            _ = routeApplicationCommand(app: app, command: interaction, context: context, writer: writer)
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertEqual(session.lastInteraction, time.timeIntervalSince(routingDate))
+        }
+
+        let expiredDate = routingDate.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration + 3)
+        XCTAssertFalse(RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: expiredDate.timeIntervalSince(routingDate)))
+        XCTAssertTrue(RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: expiredDate.timeIntervalSince(routingDate)))
+        let interaction = session.lastInteraction
+        let count = writer.events.count
+
+        _ = routeApplicationCommand(
+            app: app,
+            command: RUMKeepSessionAliveCommand(time: expiredDate, attributes: [:], capture: capture),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertTrue(app.activeSession === session)
+        XCTAssertNil(session.endReason)
+        XCTAssertEqual(session.lastInteraction, interaction)
+        XCTAssertEqual(writer.events.count, count)
+    }
+
+    func testCapturedWebViewKeepAlive_preservesLegacyAndOriginatingSceneTargets() throws {
+        let scope = WebViewKeepAliveOwnerScope()
+        let (app, context) = routingApplication(featureScope: scope)
+        startRoutingPeers(app, context: context)
+        let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+        let command = RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(5), attributes: [:], capture: capture)
+        if case .scene(let scene) = command.target { XCTAssertEqual(scene, routingSceneA) } else { XCTFail("Missing originating scene") }
+        let session = try XCTUnwrap(app.activeSession)
+        let interaction = session.lastInteraction
+        _ = routeApplicationCommand(app: app, command: command, context: context, writer: writer)
+        XCTAssertTrue(app.activeSession === session)
+        XCTAssertEqual(session.lastInteraction, interaction)
+        let legacy = RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(6), attributes: [:])
+        XCTAssertNil(legacy.capture)
+        if case .processRepresentative = legacy.target {} else { XCTFail("Legacy target changed") }
+    }
 }
 
 private final class WebViewKeepAliveOwnerScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {

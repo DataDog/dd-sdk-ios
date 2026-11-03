@@ -6,6 +6,7 @@
 
 #if canImport(WebKit)
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 import WebKit
 
@@ -55,7 +56,7 @@ internal struct WebViewTrackingFeature: DatadogFeature {
 }
 
 /// Message receiver for the ``WebViewTrackingFeature``.
-internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
+internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver, RUMContextHandoffReceiving {
     /// The feature's ``WebViewSessionRolloverHandler``,
     private weak var sessionRolloverHandler: WebViewSessionRolloverHandler?
 
@@ -74,6 +75,19 @@ internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
     ///    ``WebViewSessionRolloverHandler``.
     init(sessionRolloverHandler: WebViewSessionRolloverHandler?) {
         self.sessionRolloverHandler = sessionRolloverHandler
+    }
+
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+        if Thread.isMainThread {
+            MainActor.assumeIsolated {
+                sessionRolloverHandler?.receiveRUMContextHandoff(owner: owner, active: active)
+            }
+        } else {
+            // Core invalidates the owner before stop publication. Never wait synchronously for main.
+            DispatchQueue.main.async { [sessionRolloverHandler] in
+                sessionRolloverHandler?.receiveRUMContextHandoff(owner: owner, active: active)
+            }
+        }
     }
 
     func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
