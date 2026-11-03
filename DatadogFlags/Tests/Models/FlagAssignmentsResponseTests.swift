@@ -27,8 +27,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             { $0.variation = .boolean(false) },
             { $0.reason = "other" },
             { $0.doLog = false },
-            { $0.serialID = 43 },
-            { $0.isNumberType = true }
+            { $0.serialID = 43 }
         ]
         for change in changes {
             var changed = cached
@@ -194,7 +193,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                         variation: .integer(99),
                         reason: "TARGETING_MATCH",
                         doLog: true
-                    ).servedAsNumber(),
+                    ),
                     "json-flag": .init(
                         allocationKey: "allocation-127",
                         variationKey: "variation-127",
@@ -452,8 +451,8 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertNil(assignment.variation(as: Double.self))
     }
 
-    func testWholeNumberVariationsCanBeReadAsDouble() throws {
-        func assignment(type: String, value: String) throws -> FlagAssignment {
+    func testNumericVariationsConvertWithoutLoss() throws {
+        func decoded(type: String, value: String) throws -> FlagAssignment {
             let json = """
             {
               "allocationKey": "allocation",
@@ -466,58 +465,82 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             """.data(using: .utf8)!
             return try JSONDecoder().decode(FlagAssignment.self, from: json)
         }
+        func built(_ variation: FlagAssignment.Variation) -> FlagAssignment {
+            FlagAssignment(
+                allocationKey: "allocation",
+                variationKey: "variation",
+                variation: variation,
+                reason: "TARGETING_MATCH",
+                doLog: false
+            )
+        }
+        func cached(_ assignment: FlagAssignment) throws -> FlagAssignment {
+            try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(assignment))
+        }
 
-        // Given - "number" assignments with a whole and a fractional value
-        let wholeNumber = try assignment(type: "number", value: "5")
-        let fractionalNumber = try assignment(type: "number", value: "5.5")
-        let integer = try assignment(type: "integer", value: "7")
+        // A whole value reads as Int and Double, whatever its served numeric type, also after a cache restore
+        for type in ["number", "integer", "float"] {
+            let whole = try decoded(type: type, value: "5")
+            XCTAssertEqual(whole.variation(as: Int.self), 5, type)
+            XCTAssertEqual(whole.variation(as: Double.self), 5.0, type)
+            XCTAssertEqual(try cached(whole), whole, type)
+            XCTAssertEqual(try cached(whole).variation(as: Int.self), 5, type)
+            XCTAssertEqual(try cached(whole).variation(as: Double.self), 5.0, type)
+        }
+        XCTAssertEqual(try decoded(type: "number", value: "0").variation(as: Double.self), 0.0)
+        XCTAssertEqual(try decoded(type: "number", value: "-5").variation(as: Double.self), -5.0)
+        XCTAssertEqual(try decoded(type: "number", value: "-5").variation(as: Int.self), -5)
 
-        // Then - a whole number reads as both Int and Double
-        XCTAssertEqual(wholeNumber.variation(as: Int.self), 5)
-        XCTAssertEqual(wholeNumber.variation(as: Double.self), 5.0)
-        XCTAssertEqual(fractionalNumber.variation(as: Double.self), 5.5)
-        XCTAssertNil(fractionalNumber.variation(as: Int.self))
-        XCTAssertEqual(try assignment(type: "number", value: "0").variation(as: Double.self), 0.0)
-        XCTAssertEqual(try assignment(type: "number", value: "0").variation(as: Int.self), 0)
-        XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Double.self), -5.0)
-        XCTAssertEqual(try assignment(type: "number", value: "-5").variation(as: Int.self), -5)
+        // Whole decimal and exponent spellings read as Int
+        for type in ["number", "float"] {
+            for (literal, expected) in [("5.0", 5), ("1e3", 1_000), ("-0.0", 0)] {
+                let whole = try decoded(type: type, value: literal)
+                XCTAssertEqual(whole.variation(as: Int.self), expected, "\(type) \(literal)")
+                XCTAssertEqual(whole.variation(as: Double.self), Double(expected), "\(type) \(literal)")
+                XCTAssertEqual(try cached(whole).variation(as: Int.self), expected, "\(type) \(literal)")
+            }
+        }
 
-        // An assignment served as "integer" reads as Int but not as Double
-        XCTAssertEqual(integer.variation(as: Int.self), 7)
-        XCTAssertNil(integer.variation(as: Double.self))
+        // SDK 3.21.0 and earlier write `.integer` variations to the cache as "integer"
+        XCTAssertEqual(try decoded(type: "integer", value: "7").variation(as: Double.self), 7.0)
+        let number = try decoded(type: "number", value: "5")
+        XCTAssertEqual(number, try decoded(type: "integer", value: "5"))
+        let encoded = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(number)) as? [String: Any])
+        XCTAssertEqual(encoded["variationType"] as? String, "integer")
 
-        // A whole number served as "float" reads as Double but not as Int, as on Android
-        let wholeFloat = try assignment(type: "float", value: "5")
-        XCTAssertEqual(wholeFloat.variation(as: Double.self), 5.0)
-        XCTAssertNil(wholeFloat.variation(as: Int.self))
+        // A fractional value reads only as Double
+        for type in ["number", "float"] {
+            let fractional = try decoded(type: type, value: "5.5")
+            XCTAssertEqual(fractional.variation(as: Double.self), 5.5, type)
+            XCTAssertNil(fractional.variation(as: Int.self), type)
+            XCTAssertEqual(try cached(fractional), fractional, type)
+            XCTAssertNil(try cached(fractional).variation(as: Int.self), type)
+        }
 
-        // A cached assignment keeps its type, so these reads do not change after a restart
-        let cachedNumber = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeNumber))
-        XCTAssertEqual(cachedNumber, wholeNumber)
-        XCTAssertEqual(cachedNumber.variation(as: Double.self), 5.0)
-        XCTAssertEqual(cachedNumber.variation(as: Int.self), 5)
-        let cachedInteger = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(integer))
-        XCTAssertEqual(cachedInteger, integer)
-        XCTAssertNil(cachedInteger.variation(as: Double.self))
-        XCTAssertEqual(try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(fractionalNumber)), fractionalNumber)
-        let cachedFloat = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeFloat))
-        XCTAssertEqual(cachedFloat, wholeFloat)
-        XCTAssertEqual(cachedFloat.variation(as: Double.self), 5.0)
-        XCTAssertNil(cachedFloat.variation(as: Int.self))
+        // A Double converts to Int only within ±(2^53 − 1), where it represents every integer exactly
+        XCTAssertEqual(built(.double(9_007_199_254_740_991)).variation(as: Int.self), 9_007_199_254_740_991)
+        XCTAssertEqual(built(.double(-9_007_199_254_740_991)).variation(as: Int.self), -9_007_199_254_740_991)
+        XCTAssertNil(built(.double(9_007_199_254_740_992)).variation(as: Int.self))
+        XCTAssertNil(built(.double(-9_007_199_254_740_992)).variation(as: Int.self))
+        XCTAssertNil(built(.double(1e20)).variation(as: Int.self))
+        XCTAssertNil(built(.double(.infinity)).variation(as: Int.self))
+        XCTAssertNil(built(.double(.nan)).variation(as: Int.self))
 
-        // A "number" that decodes as `.double` is not marked, so the cache writes it as "float".
-        // A whole Double must stay `.double`: some JSON decoders produce one for values such as 999999999999999.99.
-        XCTAssertFalse(fractionalNumber.isNumberType)
-        var wholeDouble = fractionalNumber
-        wholeDouble.variation = .double(1e15)
-        let cachedWholeDouble = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeDouble))
-        XCTAssertEqual(cachedWholeDouble, wholeDouble)
-        XCTAssertNil(cachedWholeDouble.variation(as: Int.self))
-        let rounded = try assignment(type: "number", value: "999999999999999.99")
-        XCTAssertEqual(try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(rounded)), rounded)
+        // An Int converts to Double only when the Double represents it exactly
+        XCTAssertEqual(built(.integer(1 << 60)).variation(as: Double.self), 1_152_921_504_606_846_976.0)
+        XCTAssertNil(built(.integer((1 << 53) + 1)).variation(as: Double.self))
+        XCTAssertNil(built(.integer(Int.max)).variation(as: Double.self))
+
+        // A stored `.double` keeps its representation through the cache
+        let wholeDouble = built(.double(1e15))
+        XCTAssertEqual(try cached(wholeDouble), wholeDouble)
+        XCTAssertEqual(wholeDouble.variation(as: Int.self), 1_000_000_000_000_000)
+        let rounded = try decoded(type: "number", value: "999999999999999.99")
+        XCTAssertEqual(try cached(rounded), rounded)
 
         // Other types still do not convert
-        XCTAssertNil(wholeNumber.variation(as: String.self))
-        XCTAssertNil(wholeNumber.variation(as: Bool.self))
+        let whole = try decoded(type: "number", value: "5")
+        XCTAssertNil(whole.variation(as: String.self))
+        XCTAssertNil(whole.variation(as: Bool.self))
     }
 }

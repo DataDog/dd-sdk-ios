@@ -428,6 +428,46 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testIntegerVariationCachedByEarlierVersionsReadsAsIntAndDouble() throws {
+        // Given - SDK 3.21.0 and earlier write whole "number" values to the cache as "integer"
+        let data = FlagsData(flags: ["flag": .mockAnyBoolean()], context: .init(targetingKey: "subject"), date: .mockAny())
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(data)) as? [String: Any])
+        var flags = try XCTUnwrap(object["flags"] as? [String: Any])
+        var flag = try XCTUnwrap(flags["flag"] as? [String: Any])
+        flag["variationType"] = "integer"
+        flag["variationValue"] = 5
+        flags["flag"] = flag
+        object["flags"] = flags
+        let scope = FeatureScopeMock()
+        scope.dataStoreMock.setValue(try JSONSerialization.data(withJSONObject: object), forKey: "legacy")
+        let repository = FlagsRepository(
+            clientName: "legacy",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.failure(.invalidResponse)) },
+            dateProvider: DateProviderMock(),
+            featureScope: scope
+        )
+        let completed = expectation(description: "cache restored")
+        repository.setEvaluationContext(data.context) { _ in completed.fulfill() }
+        wait(for: [completed], timeout: 2)
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        let doubleDetails = client.getDoubleDetails(key: "flag", defaultValue: -1)
+        let integerDetails = client.getIntegerDetails(key: "flag", defaultValue: -1)
+
+        // Then
+        XCTAssertEqual(doubleDetails.value, 5.0)
+        XCTAssertNil(doubleDetails.error)
+        XCTAssertEqual(doubleDetails.reason, "CACHED")
+        XCTAssertEqual(integerDetails.value, 5)
+        XCTAssertNil(integerDetails.error)
+    }
+
     func testEnabledPendingSubjectDoesNotInheritPreviousSubjectsTelemetryOptOut() {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []

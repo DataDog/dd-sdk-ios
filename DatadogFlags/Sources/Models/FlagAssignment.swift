@@ -22,9 +22,12 @@ public struct FlagAssignment: Equatable {
     public var reason: String
     public var doLog: Bool
     public var serialID: Int?
-    /// `true` when a `"variationType": "number"` value decodes as Int. The cache keeps this type.
-    internal var isNumberType = false
 
+    /// 2^53 − 1. Above this magnitude, a whole `Double` can be the rounded form of a different integer.
+    private static let maxSafeInteger: Double = 9_007_199_254_740_991
+
+    /// Returns the variation as `T`. Numeric variations convert between `Int` and `Double` only
+    /// when the conversion is exact, whatever their served numeric type.
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {
         case .boolean(let value):
@@ -32,20 +35,30 @@ public struct FlagAssignment: Equatable {
         case .string(let value):
             return value as? T
         case .integer(let value):
-            // A whole number served as "number" decodes as `.integer`, so a Double
-            // read must accept it. A Double read of an assignment served as
-            // "integer" is a type mismatch.
             if T.self == Double.self {
-                return isNumberType ? Double(value) as? T : nil
+                return Double(exactly: value) as? T
             }
             return value as? T
         case .double(let value):
+            if T.self == Int.self {
+                return Self.wholeInt(value) as? T
+            }
             return value as? T
         case .object(let value):
             return value as? T
         case .unknown:
             return nil
         }
+    }
+
+    /// Returns `value` as an `Int` when it is a whole number within `Int` range and within ±(2^53 − 1).
+    /// Above that magnitude, decoding may have rounded a different served integer to `value`, for example
+    /// `9007199254740993` to `9007199254740992`.
+    private static func wholeInt(_ value: Double) -> Int? {
+        guard abs(value) <= maxSafeInteger else {
+            return nil
+        }
+        return Int(exactly: value)
     }
 
     public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool, serialID: Int? = nil) {
@@ -87,11 +100,9 @@ extension FlagAssignment: Codable {
         case "string":
             self.variation = try .string(container.decode(String.self, forKey: .variationValue))
         case "number":
-            // "number" can carry an integer or a decimal flag. Check integer first, then
-            // double; `variation(as:)` lets a Double read accept the resulting `.integer`.
+            // "number" can carry an integer or a decimal flag. Check integer first, then double.
             if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 self.variation = .integer(number)
-                self.isNumberType = true
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
@@ -126,7 +137,7 @@ extension FlagAssignment: Codable {
             try container.encode("float", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .integer(let value):
-            try container.encode(isNumberType ? "number" : "integer", forKey: .variationType)
+            try container.encode("integer", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .object(let value):
             try container.encode("object", forKey: .variationType)
