@@ -1,12 +1,13 @@
 {
   "repository": "https://github.com/DataDog/ffe-system-test-data.git",
-  "commit": "e4f93740f783ddc0823be5f15daaf78c01869d48",
+  "commit": "23d948da7cd639be738c1a040264b0986574f973",
   "files": {
     "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
     "NOTICE": "a5245f10dbda39cc65bad11ab3a6022b9e5c05b259da3f7aa0302d932f31083e",
     "README.md": "0c29b94146aa81088dc0e70435019f6d8bded371a068d566768ecdb2e7cb86e1",
     "cases/emissions/all-doLog-false.json": "1902637564cde9a7105a80730bfbeb9ce57178a59910c905fad03d7a1118b4de",
     "cases/emissions/duplicate-evaluation.json": "88c1dbdcf3c1bb1ee8dd9a0842123447921b9d9fe806f26d24cc41a7d73bb0cc",
+    "cases/emissions/serial-id-on-exposure.json": "83a7504e6658b875ececdd1972c04386130feb31c607ccf7b61cd45ce46c1fc0",
     "cases/evaluator/all-types-success.json": "ff22e47d5bda8a1fef19892c853e4396ccdb8509a3741888eb69169847fc4fde",
     "cases/evaluator/defaults-and-emission-gates.json": "fd9c306086b7ce87cacd7f69d2f2c7af03921fffa9b43455dcc89dc17f3c3bfd",
     "cases/evaluator/empty-flags-response.json": "f9ddb39e6a425b2c3f7884c7bdf92516e5ebac5b0ed4d5b7be6aa5e38950ea99",
@@ -42,7 +43,7 @@
     "cases/obfuscation/obfuscation-reject-uppercase-salt.json": "65f4a35f6042863cbec5f19634fa9526da1e6c66ddecf3aad488f4455e26ec7e",
     "cases/obfuscation/obfuscation-rotated-salt.json": "a97bf1f0d57ad66d122a4286433ba216469d8de2824e03b2d79fd860b87e277d",
     "cases/obfuscation/obfuscation-unsupported-consumer.json": "d632485351b4b6cb7b550769cde55c46960ebee7ac811059a5147f143524554f",
-    "index.json": "07d8036a97955a47a5ea5e840c7f612f69b2f13bce67ddbd636d2a6dfdde6a43",
+    "index.json": "84c8751d9be27e2e86662a69de20b01ea273a472a13c6675d6c531af81f1cd8f",
     "schema.json": "0353d393b1b4193346b2fa907f500b5c60be51318759c3afe52e549f1662195d"
   }
 }

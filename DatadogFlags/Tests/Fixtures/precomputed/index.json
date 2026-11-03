@@ -1,6 +1,7 @@
 [
   "cases/emissions/all-doLog-false.json",
   "cases/emissions/duplicate-evaluation.json",
+  "cases/emissions/serial-id-on-exposure.json",
   "cases/evaluator/all-types-success.json",
   "cases/evaluator/defaults-and-emission-gates.json",
   "cases/evaluator/empty-flags-response.json",
