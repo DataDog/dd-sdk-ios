@@ -247,7 +247,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
-            viewCache: ViewCache(dateProvider: configuration.dateProvider),
+            viewCache: ViewCache(
+                dateProvider: configuration.dateProvider,
+                isMultiSceneTrackingEnabled: isMultiSceneTrackingEnabled
+            ),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
@@ -397,9 +400,18 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
+            isMultiSceneTrackingEnabled: dependencies.isMultiSceneTrackingEnabled,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif
+
+        #if os(iOS)
+        if isMultiSceneTrackingEnabled,
+           let sceneHandler = instrumentation.viewsHandler as? RUMSceneTargetedManualViewHandling {
+            monitor.bind(sceneTargetedManualViewHandler: sceneHandler)
+        }
+        #endif
+
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
             eventsFilter: RUMViewEventsFilter(telemetry: core.telemetry),

@@ -220,6 +220,98 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(monitor.applicationScope.dependencies.featureFlags[.trackScrollAndSwipeActions])
     }
 
+    #if os(iOS)
+    @MainActor
+    func testFeatureWiresManualViewsToTheConcreteSceneHandler() throws {
+        let bundle = MutableSceneManifestBundle()
+        bundle.sceneManifest = ["UIApplicationSupportsMultipleScenes": true]
+        config.bundle = bundle
+        config.featureFlags = [.multiSceneTracking: true, .viewUpdates: false]
+        config.longTaskThreshold = nil
+        config.appHangThreshold = nil
+        let scope = FeatureScopeMock(
+            context: .mockWith(
+                trackingConsent: .granted,
+                launchInfo: .mockWith(launchReason: .userLaunch),
+                applicationStateHistory: .mockAppInForeground()
+            )
+        )
+        let sceneCore = SingleFeatureCoreMock<RUMFeature>()
+        sceneCore.featureScopeOverride = scope
+
+        RUM.enable(with: config, in: sceneCore)
+
+        let feature = try XCTUnwrap(sceneCore.get(feature: RUMFeature.self))
+        let monitor = feature.monitor
+        let unregisteredScene = RUMSceneIdentifier(rawValue: "unregistered-manual-scene")
+        if #available(iOS 27.0, *) {
+            XCTAssertTrue(feature.isMultiSceneTrackingEnabled)
+            let handler = try XCTUnwrap(feature.instrumentation.viewsHandler as? RUMSceneViewsHandler)
+            XCTAssertFalse(handler.canTrackViews(in: unregisteredScene))
+            let viewsBefore = monitor.applicationScope.activeSession?.viewScopes.count ?? 0
+
+            monitor.startView(
+                key: "unregistered",
+                name: "Unregistered",
+                attributes: [:],
+                sceneIdentifier: unregisteredScene
+            )
+
+            XCTAssertEqual(monitor.applicationScope.activeSession?.viewScopes.count ?? 0, viewsBefore)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(unregisteredScene)))
+        } else {
+            XCTAssertFalse(feature.isMultiSceneTrackingEnabled)
+            XCTAssertTrue(feature.instrumentation.viewsHandler is RUMViewsHandler)
+            monitor.startView(
+                key: "unregistered",
+                name: "Unregistered",
+                attributes: [:],
+                sceneIdentifier: unregisteredScene
+            )
+            XCTAssertEqual(monitor.applicationScope.activeSession?.context.activeViewName, "Unregistered")
+        }
+
+        monitor.startView(key: "process", name: "Process", attributes: [:])
+        XCTAssertEqual(monitor.applicationScope.activeSession?.context.activeViewName, "Process")
+    }
+
+    @MainActor
+    func testFeatureCacheKeepsAnActiveSceneWhenPeerHistoryReachesCapacity() throws {
+        let bundle = MutableSceneManifestBundle()
+        bundle.sceneManifest = ["UIApplicationSupportsMultipleScenes": true]
+        config.bundle = bundle
+        config.featureFlags = [.multiSceneTracking: true]
+        config.dateProvider = DateProviderMock(now: Date(timeIntervalSince1970: 0))
+        config.longTaskThreshold = nil
+        config.appHangThreshold = nil
+
+        RUM.enable(with: config, in: core)
+
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let cache = feature.monitor.applicationScope.dependencies.viewCache
+        let activeScene = RUMSceneIdentifier(rawValue: "active-scene")
+        let peerScene = RUMSceneIdentifier(rawValue: "peer-scene")
+        cache.insert(id: "active-view", timestamp: 0, isActive: true, sceneIdentifier: activeScene)
+        for index in 0..<cache.capacity {
+            cache.insert(
+                id: "peer-\(index)",
+                timestamp: Int64(index + 1),
+                isActive: true,
+                sceneIdentifier: peerScene
+            )
+        }
+
+        XCTAssertEqual(cache.ownership(forViewID: "peer-\(cache.capacity - 1)"), .scene(peerScene))
+        if #available(iOS 27.0, *) {
+            XCTAssertTrue(feature.isMultiSceneTrackingEnabled)
+            XCTAssertEqual(cache.ownership(forViewID: "active-view"), .scene(activeScene))
+        } else {
+            XCTAssertFalse(feature.isMultiSceneTrackingEnabled)
+            XCTAssertEqual(cache.ownership(forViewID: "active-view"), .unknown)
+        }
+    }
+    #endif
+
     func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
         // Given
         config.trackSlowFrames = true
