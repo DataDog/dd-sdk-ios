@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import UIKit
 import DatadogTrace
 import DatadogRUM
 import DatadogLogs
