@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import Foundation
 
 /// A Thread subclass designed for profiling tests with controlled execution and synchronization
@@ -93,4 +93,4 @@ final class MockThreadGroup {
         cancelAll()
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)
