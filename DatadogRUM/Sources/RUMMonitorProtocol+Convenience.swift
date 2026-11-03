@@ -518,9 +518,44 @@ public extension RUMMonitorProtocol {
 }
 
 // swiftlint:enable function_default_parameter_at_end
+
+// swiftlint:disable function_default_parameter_at_end
+
 #if os(iOS)
+/// Selects the RUM view used to attribute explicitly targeted telemetry.
+/// Unsupported scene targeting preserves the receiving monitor’s legacy behavior.
+///
+/// This API is experimental and may change before becoming generally available.
+/// It does not expose or retain an internal RUM view identifier.
+@_spi(Experimental)
+@available(iOS 15.0, *)
+public struct RUMViewTarget {
+    fileprivate let sceneIdentifier: RUMSceneIdentifier
+
+    private init(sceneIdentifier: RUMSceneIdentifier) {
+        self.sceneIdentifier = sceneIdentifier
+    }
+
+    /// Targets the current tracked RUM view in `scene` when telemetry is
+    /// processed.
+    @MainActor
+    public static func current(in scene: UIWindowScene) -> Self {
+        Self(
+            sceneIdentifier: RUMSceneIdentifier(
+                rawValue: scene.session.persistentIdentifier
+            )
+        )
+    }
+}
+
+/// Compatibility spelling retained while the experimental API is under review.
+@_spi(Experimental)
+@available(iOS 15.0, *)
+public typealias RUMOperationViewTarget = RUMViewTarget
 #endif
+
 #if os(iOS)
+
 internal protocol RUMOperationViewTargetHandling: AnyObject {
     func startOperation(
         name: String,
@@ -543,4 +578,375 @@ internal protocol RUMOperationViewTargetHandling: AnyObject {
         explicitTarget: RUMCommandTarget?
     )
 }
+
+public extension RUMMonitorProtocol {
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMFeatureFlagTargetHandling else {
+            addFeatureFlagEvaluation(name: name, value: value)
+            return
+        }
+        monitor.addFeatureFlagEvaluation(name: name, value: value, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startView(
+        key: String,
+        name: String? = nil,
+        in scene: UIWindowScene,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMManualViewTargetHandling else {
+            startView(key: key, name: name, attributes: attributes)
+            return
+        }
+        monitor.startView(
+            key: key,
+            name: name,
+            attributes: attributes,
+            sceneIdentifier: RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func stopView(
+        key: String,
+        in scene: UIWindowScene,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMManualViewTargetHandling else {
+            stopView(key: key, attributes: attributes)
+            return
+        }
+        monitor.stopView(
+            key: key,
+            attributes: attributes,
+            sceneIdentifier: RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addError(
+        message: String,
+        type: String? = nil,
+        stack: String? = nil,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        file: StaticString? = #fileID,
+        line: UInt? = #line
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMErrorViewTargetHandling else {
+            addError(message: message, type: type, stack: stack, source: source, attributes: attributes, file: file, line: line)
+            return
+        }
+        monitor.addError(
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes,
+            file: file,
+            line: line,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addError(
+        error: Error,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMErrorViewTargetHandling else {
+            addError(error: error, source: source, attributes: attributes)
+            return
+        }
+        monitor.addError(error: error, source: source, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addError(
+        error: Error,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMErrorViewTargetHandling else {
+            addError(error: error, source: source, attributes: attributes, completionHandler: completionHandler)
+            return
+        }
+        monitor.addError(
+            error: error,
+            source: source,
+            attributes: attributes,
+            completionHandler: completionHandler,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMResourceViewTargetHandling else {
+            startResource(resourceKey: resourceKey, request: request, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            request: request,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMResourceViewTargetHandling else {
+            startResource(resourceKey: resourceKey, url: url, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            url: url,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMResourceViewTargetHandling else {
+            startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            httpMethod: httpMethod,
+            urlString: urlString,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMActionViewTargetHandling else {
+            addAction(type: type, name: name, attributes: attributes)
+            return
+        }
+        monitor.addAction(type: type, name: name, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMActionViewTargetHandling else {
+            startAction(type: type, name: name, attributes: attributes)
+            return
+        }
+        monitor.startAction(type: type, name: name, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func stopAction(
+        type: RUMActionType,
+        name: String? = nil,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMActionViewTargetHandling else {
+            stopAction(type: type, name: name, attributes: attributes)
+            return
+        }
+        monitor.stopAction(type: type, name: name, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startOperation(
+        name: String,
+        operationKey: String? = nil,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        options: OperationOptions? = nil
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMOperationViewTargetHandling else {
+            startOperation(name: name, operationKey: operationKey, attributes: attributes, options: options)
+            return
+        }
+        monitor.startOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            options: options,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func succeedOperation(
+        name: String,
+        operationKey: String? = nil,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMOperationViewTargetHandling else {
+            succeedOperation(name: name, operationKey: operationKey, attributes: attributes)
+            return
+        }
+        monitor.succeedOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func failOperation(
+        name: String,
+        operationKey: String? = nil,
+        reason: RUMFeatureOperationFailureReason,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMOperationViewTargetHandling else {
+            failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
+            return
+        }
+        monitor.failOperation(
+            name: name,
+            operationKey: operationKey,
+            reason: reason,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+}
+
+public extension RUMMonitorViewProtocol {
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addTiming(name: String, view: RUMViewTarget) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMViewTimingTargetHandling else {
+            addTiming(name: name)
+            return
+        }
+        monitor.addTiming(name: name, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addViewLoadingTime(overwrite: Bool, view: RUMViewTarget) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMViewTimingTargetHandling else {
+            addViewLoadingTime(overwrite: overwrite)
+            return
+        }
+        monitor.addViewLoadingTime(overwrite: overwrite, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, view: RUMViewTarget) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMViewAttributeTargetHandling else {
+            addViewAttribute(forKey: key, value: value)
+            return
+        }
+        monitor.addViewAttribute(forKey: key, value: value, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], view: RUMViewTarget) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMViewAttributeTargetHandling else {
+            addViewAttributes(attributes)
+            return
+        }
+        monitor.addViewAttributes(attributes, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func removeViewAttribute(forKey key: AttributeKey, view: RUMViewTarget) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMViewAttributeTargetHandling else {
+            removeViewAttribute(forKey: key)
+            return
+        }
+        monitor.removeViewAttribute(forKey: key, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget) {
+        guard #available(iOS 27.0, *), let monitor = self as? any RUMViewAttributeTargetHandling else {
+            removeViewAttributes(forKeys: keys)
+            return
+        }
+        monitor.removeViewAttributes(forKeys: keys, explicitTarget: .scene(view.sceneIdentifier))
+    }
+}
 #endif
+
+// swiftlint:enable function_default_parameter_at_end
