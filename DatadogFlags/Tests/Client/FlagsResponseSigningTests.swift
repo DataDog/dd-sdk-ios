@@ -93,6 +93,16 @@ final class FlagsResponseSigningTests: XCTestCase {
         try assertCorpus(corpus)
     }
 
+    func testIsolatedCertificateRulesSupplement() throws {
+        let corpus = try corpus(
+            name: "ResponseSigningIsolatedCertificateRules",
+            hash: "7304bb12f011688a39b53ebd5fb5d842febd0f5ae81e67126a7e24d1e79a225a"
+        )
+        XCTAssertEqual(corpus.cases.count, 4)
+        XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, 1)
+        try assertCorpus(corpus)
+    }
+
     private func assertCorpus(_ corpus: Corpus) throws {
         let anchor = try XCTUnwrap(Data(base64Encoded: corpus.anchor))
         let verifier = FlagsResponseVerifier(configuration: .init(mode: .required, trustedRootCertificates: [anchor]))

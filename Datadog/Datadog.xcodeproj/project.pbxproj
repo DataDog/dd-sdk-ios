@@ -1558,6 +1558,7 @@
 		F3A031202610270000000013 /* FlagsResponseSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000003 /* FlagsResponseSigningTests.swift */; };
 		F3A031202610270000000014 /* ResponseSigningCorpus.json in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000004 /* ResponseSigningCorpus.json */; };
 		F3A031202610270000000015 /* ResponseSigningKeyUsage.json in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000005 /* ResponseSigningKeyUsage.json */; };
+		F3A031202610270000000016 /* ResponseSigningIsolatedCertificateRules.json in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000006 /* ResponseSigningIsolatedCertificateRules.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3638,6 +3639,7 @@
 		F3A031202610270000000003 /* FlagsResponseSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsResponseSigningTests.swift; sourceTree = "<group>"; };
 		F3A031202610270000000004 /* ResponseSigningCorpus.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ResponseSigningCorpus.json; sourceTree = "<group>"; };
 		F3A031202610270000000005 /* ResponseSigningKeyUsage.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ResponseSigningKeyUsage.json; sourceTree = "<group>"; };
+		F3A031202610270000000006 /* ResponseSigningIsolatedCertificateRules.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ResponseSigningIsolatedCertificateRules.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4619,6 +4621,7 @@
 				F3A031202610270000000003 /* FlagsResponseSigningTests.swift */,
 				F3A031202610270000000004 /* ResponseSigningCorpus.json */,
 				F3A031202610270000000005 /* ResponseSigningKeyUsage.json */,
+				F3A031202610270000000006 /* ResponseSigningIsolatedCertificateRules.json */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
 				11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */,
 				BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */,
@@ -8751,6 +8754,7 @@
 			files = (
 				F3A031202610270000000014 /* ResponseSigningCorpus.json in Resources */,
 				F3A031202610270000000015 /* ResponseSigningKeyUsage.json in Resources */,
+				F3A031202610270000000016 /* ResponseSigningIsolatedCertificateRules.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

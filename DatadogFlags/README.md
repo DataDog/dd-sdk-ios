@@ -55,8 +55,15 @@ For rollback during the initial pilot, keep clients in `observe` while operators
 
 ## Validation and shared fixtures
 
-`Tests/Client/ResponseSigningCorpus.json` is copied byte-for-byte from the [shared public v1 corpus](https://github.com/DataDog/ffe-system-test-data/blob/7caa9706dcab035854a34ea41311f5eeb6ce6743/response-signing/v1/corpus.json) at `7caa9706dcab035854a34ea41311f5eeb6ce6743` (SHA-256 `393490bfefe382b9b75cf2964c131a910faa679888689457f99c2da2dc57fbbd`). Its synthetic leaf private key exists only to exercise actual signer/verifier integration; no root or intermediate private keys are present. The public-only canonical KeyUsage supplement is pinned separately (`f7b55015240951b90596692c5edec4209660a842b6f5e82e9d39da2be7c83cd1`). Expectations are external to this adapter. The two private-key availability cases are server-only and are not counted as SDK verification tests.
+`Tests/Client/ResponseSigningCorpus.json` is copied byte-for-byte from the [shared public v1 corpus](https://github.com/DataDog/ffe-system-test-data/blob/b57eac6711204a906f0b24e127124a03314e35a9/response-signing/v1/corpus.json) at `b57eac6711204a906f0b24e127124a03314e35a9` (SHA-256 `393490bfefe382b9b75cf2964c131a910faa679888689457f99c2da2dc57fbbd`). Its synthetic leaf private key exists only to exercise actual signer/verifier integration; no root or intermediate private keys are present. The public-only canonical KeyUsage supplement is pinned separately (`f7b55015240951b90596692c5edec4209660a842b6f5e82e9d39da2be7c83cd1`). Expectations are external to this adapter. The two private-key availability cases are server-only and are not counted as SDK verification tests.
 
 The implementation profile is SHA-256 `a32c6919d1f730b076994f89317ef441fa4c4b4556c093edf0216632a882f783`, with applicability profile `response-signing-public-v1`. The FFE LEAN spreadsheet remains decision authority; this implementation has no Lean proof claim.
 
 Before merge, run `make test-ios SCHEME=DatadogFlags USE_TEST_VISIBILITY=0`, `make lint`, and `make api-surface` on the supported Xcode/macOS toolchain. Review and commit the generated API surface. Native tests cover all 46 wire cases, two KeyUsage regressions, exact transcripts, effective custom token/query binding, unsigned observation, required rejection, redirects, expiry, context/reset races, disk isolation and verified fallback retention. Linux syntax checks and explicit OpenSSL/environment-backed Swift verifier/lifecycle harnesses do not establish Apple runtime or device conformance.
+
+The isolated certificate-rule supplement is copied byte-for-byte from
+[ffe-system-test-data](https://github.com/DataDog/ffe-system-test-data/blob/b57eac6711204a906f0b24e127124a03314e35a9/response-signing/v1/isolated-certificate-rules.json)
+at revision `b57eac6711204a906f0b24e127124a03314e35a9`.
+Its SHA-256 is `7304bb12f011688a39b53ebd5fb5d842febd0f5ae81e67126a7e24d1e79a225a`.
+The adapter checks one accepted control and three correctly signed rejections:
+an oversized certificate, a leaf marked as CA, and an intermediate without CA authority.
