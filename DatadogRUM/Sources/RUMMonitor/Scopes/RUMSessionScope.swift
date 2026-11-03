@@ -829,6 +829,35 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
                   return
               }
 
+        #if os(iOS)
+        let original: RUMCoreContext?
+        if let capture = command.capture {
+            guard let captured = capture.resolvedRUMContext(for: command.origin.owner),
+                  captured.sessionID == sessionUUID.toRUMDataFormat else { return }
+            original = captured
+        } else {
+            original = nil
+        }
+
+        let explicitView: RUMViewScope?
+        if case .scene(let sceneIdentifier) = command.step.explicitTarget {
+            explicitView = viewScopes.last { $0.isActiveView && $0.sceneIdentifier == sceneIdentifier }
+        } else {
+            explicitView = nil
+        }
+        let selectedView: RUMViewScope?
+        let actionID: String?
+        if let explicitView {
+            selectedView = explicitView
+            actionID = explicitView.userActionScope?.actionUUID.toRUMDataFormat
+        } else if let original {
+            selectedView = viewScopes.first { $0.viewUUID.toRUMDataFormat == original.viewID }
+            actionID = selectedView == nil ? nil : original.userActionID
+        } else {
+            selectedView = activeView
+            actionID = selectedView?.userActionScope?.actionUUID.toRUMDataFormat
+        }
+        #else
         let selectedView: RUMViewScope?
         let actionID: String?
         if let capture = command.capture {
@@ -842,6 +871,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
             selectedView = activeView
             actionID = selectedView?.userActionScope?.actionUUID.toRUMDataFormat
         }
+        #endif
         command.origin.updateSession(sessionUUID.toRUMDataFormat, start: sessionStart, lastInteraction: lastInteraction)
         guard let ownership = command.origin.ownership(for: sessionUUID.toRUMDataFormat),
               ownership.isValid else {

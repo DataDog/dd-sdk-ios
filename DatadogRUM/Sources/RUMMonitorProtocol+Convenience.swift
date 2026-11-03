@@ -518,3 +518,29 @@ public extension RUMMonitorProtocol {
 }
 
 // swiftlint:enable function_default_parameter_at_end
+#if os(iOS)
+#endif
+#if os(iOS)
+internal protocol RUMOperationViewTargetHandling: AnyObject {
+    func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?,
+        explicitTarget: RUMCommandTarget?
+    )
+    func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+    func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+#endif

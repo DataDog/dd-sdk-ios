@@ -1007,5 +1007,115 @@ final class OwnedOperationMonitorTests: XCTestCase {
         XCTAssertFalse(held.ownership.isValid)
         withExtendedLifetime(held) {}
     }
+
+    func testTargetedOperationOverloadsForwardOnceWhenTrackingOff() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture(multiSceneTrackingEnabled: false)
+        defer { fixture.tearDown() }
+        let feature = fixture.feature
+        let session = try XCTUnwrap(feature.monitor.applicationScope.activeSession)
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let before = try fixture.storedVitals(in: storage).count
+        let legacyBefore = fixture.receiver.legacyMessages.count
+        let target = RUMCommandTarget.scene(.init(rawValue: "unused-scene"))
+
+        feature.monitor.startOperation(
+            name: "targeted-success", operationKey: "flow", attributes: [:], options: nil, explicitTarget: target
+        )
+        feature.monitor.succeedOperation(
+            name: "targeted-success", operationKey: "flow", attributes: [:], explicitTarget: target
+        )
+        feature.monitor.startOperation(
+            name: "targeted-failure", operationKey: "flow", attributes: [:], options: nil, explicitTarget: target
+        )
+        feature.monitor.failOperation(
+            name: "targeted-failure", operationKey: "flow", reason: .error, attributes: [:], explicitTarget: target
+        )
+        fixture.drain()
+
+        let events = Array(try fixture.storedVitals(in: storage).dropFirst(before))
+        XCTAssertEqual(events.count, 4)
+        XCTAssertEqual(Set(events.map { $0.vital.id }).count, 4)
+        XCTAssertEqual(Set(events.map { $0.session.id }), [session.sessionUUID.toRUMDataFormat])
+        // Nil profiling options do not emit start messages; both end messages remain required.
+        let legacyMessages = Array(fixture.receiver.legacyMessages.dropFirst(legacyBefore))
+        XCTAssertEqual(legacyMessages.count, 2)
+        XCTAssertTrue(legacyMessages.allSatisfy { $0.operation.stepType == .end })
+        XCTAssertEqual(Set(legacyMessages.map { $0.operation.name }), ["targeted-success", "targeted-failure"])
+        XCTAssertTrue(fixture.receiver.messages.isEmpty)
+        XCTAssertNil(feature.operationOrigin)
+        XCTAssertNil(feature.rumContextHandoffOwner)
+    }
+
+    func testExplicitOperationStepsKeepTheirIndividualTargets() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        fixture.startView("scene-A")
+        fixture.startView("scene-B")
+        fixture.drain()
+        let captureA = try fixture.capture("scene-A")
+        let captureB = try fixture.capture("scene-B")
+        let contextA = try XCTUnwrap(captureA.value.rumContext)
+        let contextB = try XCTUnwrap(captureB.value.rumContext)
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        let monitor = fixture.feature.monitor
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let before = try fixture.storedVitals(in: storage).count
+        let messagesBefore = fixture.receiver.messages.count
+        let targetA = RUMCommandTarget.scene(.init(rawValue: "scene-A"))
+        let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-B"))
+
+        RUMContextHandoff.withValue(captureB.value, for: captureB.owner) {
+            monitor.startOperation(
+                name: "targeted-success", operationKey: "flow", attributes: [:], options: nil, explicitTarget: targetA
+            )
+        }
+        RUMContextHandoff.withValue(captureA.value, for: captureA.owner) {
+            monitor.succeedOperation(
+                name: "targeted-success", operationKey: "flow", attributes: [:], explicitTarget: targetB
+            )
+            monitor.startOperation(
+                name: "targeted-failure", operationKey: "flow", attributes: [:], options: nil, explicitTarget: targetB
+            )
+        }
+        RUMContextHandoff.withValue(captureB.value, for: captureB.owner) {
+            monitor.failOperation(
+                name: "targeted-failure", operationKey: "flow", reason: .error, attributes: [:], explicitTarget: targetA
+            )
+        }
+        fixture.drain()
+
+        let events = Array(try fixture.storedVitals(in: storage).dropFirst(before))
+        let messages = Array(fixture.receiver.messages.dropFirst(messagesBefore))
+        XCTAssertEqual(events.count, 4)
+        // Nil profiling options do not emit start messages; both end messages remain required.
+        XCTAssertEqual(messages.count, 2)
+        XCTAssertEqual(Set(events.map { $0.vital.id }).count, 4)
+        XCTAssertEqual(Set(events.map { $0.vital.name }), ["targeted-success", "targeted-failure"])
+        for name in ["targeted-success", "targeted-failure"] {
+            XCTAssertEqual(events.filter { $0.vital.name == name && $0.vital.stepType == .start }.count, 1)
+            XCTAssertEqual(events.filter { $0.vital.name == name && $0.vital.stepType == .end }.count, 1)
+        }
+        for event in events {
+            let starts = event.vital.stepType == .start
+            let targetsA = event.vital.name == "targeted-success" ? starts : !starts
+            let selected = targetsA ? contextA : contextB
+            XCTAssertEqual(event.session.id, selected.sessionID)
+            XCTAssertEqual(event.view.id, selected.viewID)
+            XCTAssertEqual(event.vital.operationKey, "flow")
+        }
+        XCTAssertEqual(Set(messages.map { $0.operation.name }), ["targeted-success", "targeted-failure"])
+        for message in messages {
+            XCTAssertEqual(message.operation.stepType, .end)
+            let selected = message.operation.name == "targeted-success" ? contextB : contextA
+            let event = try XCTUnwrap(events.first { $0.vital.id == message.operation.id })
+            let viewID = try XCTUnwrap(selected.viewID)
+            XCTAssertEqual(event.session.id, selected.sessionID)
+            XCTAssertEqual(event.view.id, viewID)
+            XCTAssertEqual(event.vital.operationKey, "flow")
+            XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [viewID])
+        }
+    }
 }
 #endif
