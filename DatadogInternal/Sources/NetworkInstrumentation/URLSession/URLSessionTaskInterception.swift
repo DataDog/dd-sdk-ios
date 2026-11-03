@@ -98,8 +98,8 @@ public class URLSessionTaskInterception {
         return metricsSize > 0 ? metricsSize : responseSize
     }
 
-    init(request: ImmutableRequest, isFirstParty: Bool, trackingMode: TrackingMode) {
-        self.identifier = UUID()
+    init(request: ImmutableRequest, isFirstParty: Bool, trackingMode: TrackingMode, identifier: UUID? = nil) {
+        self.identifier = identifier ?? UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty
         self.trackingMode = trackingMode
@@ -444,5 +444,36 @@ extension ResourceMetrics {
             deliveryType: deliveryType,
             transferSize: transferSize
         )
+    }
+}
+
+/// Matches state to a class-bound preparation capability, never a subscriber address.
+internal struct RUMURLSessionHandlerPreparation {
+    let handler: ObjectIdentifier
+    let state: any URLSessionHandlerCapturedState
+}
+
+/// Carries authoritative captured ownership through start, metrics and completion.
+@_spi(Internal)
+public final class RUMURLSessionTaskInterception: URLSessionTaskInterception {
+    public let rumContext: RUMURLSessionContext
+    private let preparations: [RUMURLSessionHandlerPreparation]
+
+    internal init(
+        request: ImmutableRequest,
+        isFirstParty: Bool,
+        trackingMode: TrackingMode,
+        identifier: UUID?,
+        rumContext: RUMURLSessionContext,
+        preparations: [RUMURLSessionHandlerPreparation]
+    ) {
+        self.rumContext = rumContext
+        self.preparations = preparations
+        super.init(request: request, isFirstParty: isFirstParty, trackingMode: trackingMode, identifier: identifier)
+    }
+
+    public func preparedState(for handler: AnyObject) -> (any URLSessionHandlerCapturedState)? {
+        let identifier = ObjectIdentifier(handler)
+        return preparations.first { $0.handler == identifier }?.state
     }
 }
