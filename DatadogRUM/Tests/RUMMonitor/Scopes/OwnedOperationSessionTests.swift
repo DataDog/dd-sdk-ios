@@ -378,4 +378,77 @@ final class OwnedOperationSessionTests: XCTestCase {
             XCTAssertTrue(fixture.ownedMessages.isEmpty)
         }
     }
+
+    #if os(iOS)
+    private func startSceneView(_ name: String, in fixture: Fixture) throws -> RUMViewScope {
+        let command = RUMStartViewCommand(
+            time: fixture.date,
+            identity: ViewIdentifier(name),
+            name: name,
+            path: name,
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentationType: .manual,
+            target: .scene(.init(rawValue: name))
+        )
+        _ = fixture.session.process(command: command, context: fixture.context, writer: fixture.writer)
+        return try XCTUnwrap(fixture.session.viewScopes.first { $0.viewName == name })
+    }
+
+    func testExplicitOperationUsesSelectedSceneDespiteCapturedPeer() throws {
+        let fixture = Fixture()
+        let viewA = try startSceneView("scene-A", in: fixture)
+        let viewB = try startSceneView("scene-B", in: fixture)
+        XCTAssertNotEqual(viewA.viewUUID, viewB.viewUUID)
+        let sessionID = try XCTUnwrap(UUID(uuidString: fixture.session.sessionUUID.toRUMDataFormat))
+        let capture = RUMContextHandoff.CurrentValue(
+            rumContext: .mockWith(sessionID: sessionID, viewID: viewA.viewUUID.toRUMDataFormat, userActionID: "captured-action"),
+            sceneIdentifier: "scene-A",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        var command = fixture.command(capture: capture)
+        command.step.explicitTarget = .scene(.init(rawValue: "scene-B"))
+        fixture.session.processOwnedOperation(command, context: fixture.context, writer: fixture.writer)
+
+        let event = try XCTUnwrap(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).first)
+        let message = try XCTUnwrap(fixture.ownedMessages.first)
+        XCTAssertEqual(event.session.id, fixture.session.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, viewB.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [viewB.viewUUID.toRUMDataFormat])
+        XCTAssertEqual(
+            message.attributes[RUMCoreContext.IDs.userActionID] as? String,
+            viewB.userActionScope?.actionUUID.toRUMDataFormat
+        )
+    }
+
+    func testExplicitOperationCannotBypassCapturedSessionValidation() throws {
+        let fixture = Fixture()
+        let view = try startSceneView("scene-B", in: fixture)
+        let capture = RUMContextHandoff.CurrentValue(
+            rumContext: .mockWith(sessionID: UUID(), viewID: view.viewUUID.toRUMDataFormat),
+            sceneIdentifier: "scene-B",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        var command = fixture.command(capture: capture)
+        command.step.explicitTarget = .scene(.init(rawValue: "scene-B"))
+        fixture.session.processOwnedOperation(command, context: fixture.context, writer: fixture.writer)
+        XCTAssertTrue(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).isEmpty)
+        XCTAssertTrue(fixture.ownedMessages.isEmpty)
+        XCTAssertEqual(fixture.session.viewScopes.count, 1)
+    }
+
+    func testExplicitOperationCannotBypassRetiredOrigin() throws {
+        let fixture = Fixture()
+        _ = try startSceneView("scene-B", in: fixture)
+        var command = fixture.command(capture: nil)
+        command.step.explicitTarget = .scene(.init(rawValue: "scene-B"))
+        fixture.feature.operationOrigin = nil
+        fixture.session.processOwnedOperation(command, context: fixture.context, writer: fixture.writer)
+        XCTAssertTrue(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).isEmpty)
+        XCTAssertTrue(fixture.ownedMessages.isEmpty)
+        XCTAssertEqual(fixture.session.viewScopes.count, 1)
+    }
+    #endif
 }
