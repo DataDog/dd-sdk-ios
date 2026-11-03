@@ -889,6 +889,14 @@ extension Monitor: RUMMonitorProtocol {
         process(command: command)
     }
 
+    func addCapturedFeatureFlagEvaluation(
+        name: String, value: Encodable, ownership: RUMCapturedFlagEvaluationOwnership
+    ) {
+        var command = RUMAddFeatureFlagEvaluationCommand(time: dateProvider.now, name: name, value: value)
+        command.capturedOwnership = ownership
+        process(command: command)
+    }
+
     // MARK: - Feature Operations
 
     func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], options: OperationOptions?) {

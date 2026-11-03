@@ -778,6 +778,23 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return command.target
     }
 
+    /// Applies a captured evaluation only to its original active view.
+    func processCapturedFlagEvaluation(
+        _ flag: RUMAddFeatureFlagEvaluationCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer
+    ) {
+        guard sceneState != nil, isActive, sampler.isSampled,
+              let ownership = flag.capturedOwnership,
+              ownership.owner.isValid,
+              RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+              ownership.sessionID == sessionUUID,
+              !hasTimedOut(now: monotonicTime), !hasExpired(now: monotonicTime),
+              let view = viewScopes.first(where: { $0.isActiveView && $0.viewUUID == ownership.viewID }) else { return }
+        if !view.process(command: flag, context: context, writer: writer) {
+            viewScopes.removeAll { $0 === view }
+        }
+    }
+
+    /// Consumes a captured mirror only in its original, still-active view and lifetime.
     func processCapturedError(_ error: RUMAddCurrentViewErrorCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
         guard sceneState != nil, isActive, sampler.isSampled,
               let ownership = error.capturedOwnership,

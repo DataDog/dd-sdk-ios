@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal protocol RUMFlagEvaluationReporting {
@@ -19,14 +20,7 @@ internal final class RUMFlagEvaluationReporter: RUMFlagEvaluationReporting {
     }
 
     func sendFlagEvaluation<T>(flagKey: String, value: T) where T: FlagValue {
-        featureScope.send(
-            message: .payload(
-                RUMFlagEvaluationMessage(
-                    flagKey: flagKey,
-                    value: value
-                )
-            )
-        )
+        featureScope.sendFlagEvaluation(RUMFlagEvaluationMessage(flagKey: flagKey, value: value))
     }
 }
 
