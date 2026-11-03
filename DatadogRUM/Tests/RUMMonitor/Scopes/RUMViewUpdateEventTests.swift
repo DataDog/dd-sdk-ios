@@ -18,7 +18,9 @@ import TestUtilities
 /// `mockRandom()` to be updated (it uses `RUMViewEvent.init`). The `apply(update:)` extension in
 /// `TestUtilities/Sources/Matchers/RUMViewEvent+Merge.swift` mirrors this: it explicitly calls
 /// `RUMViewEvent.init(...)` and `RUMViewEvent.View.init(...)`, so any new field that isn't handled
-/// there also fails to compile.
+/// there also fails to compile. This doesn't cover optional parameters with a default `nil` value
+/// (e.g. `executionContext`), which compile even when omitted, so those must be set explicitly
+/// in all three places.
 class RUMViewUpdateEventTests: XCTestCase {
     func testRoundtrip_allDiffableFieldsAreReconstructed() throws {
         for _ in 0..<100 {
@@ -45,31 +47,37 @@ class RUMViewUpdateEventTests: XCTestCase {
         XCTAssertEqual(update.session.type, target.session.type)
     }
 
-    /// `usr` and `account` are identity fields: unlike diffed fields, `nil` on the wire must
-    /// unambiguously mean "the target event has no usr/account", never "unchanged" — otherwise
-    /// `clearUserInfo()`/`clearAccountInfo()` mid-view would be silently dropped from the delta.
+    /// `usr`, `account`, and `executionContext` are identity fields: unlike diffed fields, `nil` on
+    /// the wire must unambiguously mean "the target event has no usr/account/execution context", never
+    /// "unchanged" — otherwise `clearUserInfo()`/`clearAccountInfo()` (or a mapper clearing the
+    /// execution context) mid-view would be silently dropped from the delta.
     /// They must therefore be forwarded wholesale from `event`, like `dd`, and never diffed.
-    func testUpdate_usrAndAccountAreForwardedWholesaleNotDiffed() throws {
+    func testUpdate_usrAccountAndExecutionContextAreForwardedWholesaleNotDiffed() throws {
         var base = RUMViewEvent.mockRandom()
         base.usr = .mockRandom()
         base.account = .mockRandom()
+        base.executionContext = .init(id: .mockRandom(), name: .mockRandom(), type: .mainProcess)
 
         // Same non-nil value on both sides: if diffed, this would collapse to `nil` — the exact
         // wire representation of "unchanged" — because old == new.
         var unchanged = base
         unchanged.usr = base.usr
         unchanged.account = base.account
+        unchanged.executionContext = base.executionContext
         let unchangedUpdate = base.update(from: unchanged)
         DDAssertJSONEqual(unchangedUpdate.usr, base.usr)
         DDAssertJSONEqual(unchangedUpdate.account, base.account)
+        DDAssertJSONEqual(unchangedUpdate.executionContext, base.executionContext)
 
         // Non-nil → nil transition (e.g. clearUserInfo()/clearAccountInfo()) must produce `nil`
         // in the update, reflecting the target's actual (empty) value.
         var cleared = base
         cleared.usr = nil
         cleared.account = nil
+        cleared.executionContext = nil
         let clearedUpdate = base.update(from: cleared)
         XCTAssertNil(clearedUpdate.usr)
         XCTAssertNil(clearedUpdate.account)
+        XCTAssertNil(clearedUpdate.executionContext)
     }
 }

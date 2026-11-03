@@ -394,6 +394,11 @@ extension RUMViewEvent: RandomMockable {
                 ),
                 viewport: .init(height: .mockRandom(), width: .mockRandom())
             ),
+            executionContext: .init(
+                id: .mockRandom(),
+                name: .mockRandom(),
+                type: [.mainProcess, .rendererProcess, .utilityProcess].randomElement()!
+            ),
             featureFlags: featureFlags,
             os: .mockRandom(),
             privacy: .init(replayLevel: .allow),

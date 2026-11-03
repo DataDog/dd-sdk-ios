@@ -35,6 +35,7 @@ extension RUMViewEvent {
             ddtags: update.ddtags ?? ddtags,
             device: update.device ?? device,
             display: update.display.map { .init($0) } ?? display,
+            executionContext: update.executionContext.map { .init($0) },
             featureFlags: update.featureFlags.map { .init($0) } ?? featureFlags,
             os: update.os ?? os,
             privacy: update.privacy.map { .init($0) } ?? privacy,
@@ -183,6 +184,22 @@ extension RUMViewEvent.Display.Scroll {
 
 extension RUMViewEvent.Display.Viewport {
     public init(_ s: RUMViewUpdateEvent.Display.Viewport) { self.init(height: s.height, width: s.width) }
+}
+
+extension RUMViewEvent.ExecutionContext {
+    public init(_ s: RUMViewUpdateEvent.ExecutionContext) {
+        self.init(id: s.id, name: s.name, type: .init(s.type))
+    }
+}
+
+extension RUMViewEvent.ExecutionContext.ExecutionContextType {
+    public init(_ s: RUMViewUpdateEvent.ExecutionContext.ExecutionContextType) {
+        switch s {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
 }
 
 extension RUMViewEvent.FeatureFlags {
