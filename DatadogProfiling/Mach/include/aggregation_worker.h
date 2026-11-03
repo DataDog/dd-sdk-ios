@@ -105,6 +105,17 @@ public:
     void finish_producer(std::vector<stack_trace_t>& active_buffer);
 
     /**
+     * @brief Marks the producer, and optionally the worker, as finished after an
+     * unexpected exception, without allocating.
+     *
+     * Wakes blocked flush requesters so they do not wait forever. Work left in
+     * the queue is released by `stop()`.
+     *
+     * @param worker_failed `true` when the worker thread itself failed.
+     */
+    void finish_after_failure(bool worker_failed);
+
+    /**
      * @brief Returns true when called from the worker thread itself.
      */
     bool is_worker_thread();
@@ -173,6 +184,7 @@ private:
     static void* worker_thread_entry(void* arg);
     void worker_main();
     void complete_batch(uint64_t footprint_bytes);
+    void complete_flush(uint64_t flush_id);
     static void free_batch_payloads(std::vector<stack_trace_t>& batch);
     void clear_pending_work_locked();
     uint64_t batch_footprint_bytes(const std::vector<stack_trace_t>& batch) const;

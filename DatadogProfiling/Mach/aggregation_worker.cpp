@@ -36,8 +36,30 @@ aggregation_worker::~aggregation_worker() {
 
 void* aggregation_worker::worker_thread_entry(void* arg) {
     pthread_setname_np("com.datadoghq.profiler.aggregate");
-    static_cast<aggregation_worker*>(arg)->worker_main();
+    auto* worker = static_cast<aggregation_worker*>(arg);
+    try {
+        worker->worker_main();
+    } catch (...) {
+        // Last-resort barrier: an exception escaping a thread entry calls
+        // `std::terminate`. Mark the worker finished so flush requesters are
+        // released; `stop()` frees any work left in the queue.
+        worker->finish_after_failure(true);
+    }
     return nullptr;
+}
+
+void aggregation_worker::finish_after_failure(bool worker_failed) {
+    {
+        // `work_mutex` is a member of a live worker: `stop()` joins the
+        // profiler threads before the worker is destroyed.
+        std::lock_guard<std::mutex> lock(work_mutex);
+        producer_finished = true;
+        if (worker_failed) {
+            worker_finished = true;
+        }
+    }
+    work_cv.notify_all();
+    flush_cv.notify_all();
 }
 
 bool aggregation_worker::start() {
@@ -267,7 +289,15 @@ void aggregation_worker::worker_main() {
 
         if (auto* batch = std::get_if<batch_item>(&item)) {
             if (config.callback && !batch->traces.empty()) {
-                config.callback(batch->traces.data(), batch->traces.size(), config.ctx);
+                try {
+                    config.callback(batch->traces.data(), batch->traces.size(), config.ctx);
+                } catch (...) {
+                    // Never let aggregation terminate the host app. Drop the
+                    // batch; its payloads are still released below.
+                    std::lock_guard<std::mutex> lock(work_mutex);
+                    diagnostics.dropped_batch_count += 1;
+                    diagnostics.dropped_sample_count += batch->traces.size();
+                }
             }
 
             free_batch_payloads(batch->traces);
@@ -276,17 +306,29 @@ void aggregation_worker::worker_main() {
         }
 
         auto& barrier = std::get<flush_barrier>(item);
-        if (barrier.action) {
-            barrier.action();
+        try {
+            if (barrier.action) {
+                barrier.action();
+            }
+        } catch (...) {
+            // The flush action failed, so no profile is harvested for this
+            // flush. Still complete the barrier, so the requester is released
+            // instead of waiting forever.
+            complete_flush(barrier.flush_id);
+            continue;
         }
 
-        {
-            std::lock_guard<std::mutex> lock(work_mutex);
-            completed_flush_id = std::max(completed_flush_id, barrier.flush_id);
-        }
-
-        flush_cv.notify_all();
+        complete_flush(barrier.flush_id);
     }
+}
+
+void aggregation_worker::complete_flush(uint64_t flush_id) {
+    {
+        std::lock_guard<std::mutex> lock(work_mutex);
+        completed_flush_id = std::max(completed_flush_id, flush_id);
+    }
+
+    flush_cv.notify_all();
 }
 
 void aggregation_worker::complete_batch(uint64_t footprint_bytes) {

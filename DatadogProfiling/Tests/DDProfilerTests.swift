@@ -90,6 +90,35 @@ final class DDProfilerTests: XCTestCase {
         }
     }
 
+    func testDDProfiler_whenAggregationAllocationFails_stopsWithAllocationFailedInsteadOfTerminating() {
+        // Given
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When
+        dd_profiler_fail_next_aggregation_for_testing()
+
+        for i in 0..<2_000 {
+            _ = sqrt(Double(i))
+            if i % 100 == 0 {
+                Thread.sleep(forTimeInterval: 0.002)
+            }
+        }
+
+        // The flush drives the pending batch through aggregation on the worker thread.
+        let profile = dd_profiler_flush_and_get_profile()
+        if let profile {
+            dd_pprof_destroy(profile)
+        }
+
+        // Then
+        XCTAssertEqual(
+            dd_profiler_get_status(),
+            DD_PROFILER_STATUS_ALLOCATION_FAILED,
+            "An allocation failure during aggregation should stop the profiler, not terminate the process"
+        )
+    }
+
     func testDDProfiler_consumeDiagnostics_reportsDroppedBatchesAtHardLimit() {
         dd_profiler_start_testing(100, false, 1.seconds.dd.toInt64Nanoseconds, 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)

@@ -139,7 +139,14 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
 void profile::add_samples(const stack_trace_t* traces, size_t count, binary_image_cache* image_cache) {
     if (!traces) return;
 
-    _samples.reserve(_samples.size() + count);
+    // Grow geometrically. Reserving the exact size on every batch reallocates
+    // and moves every sample collected so far, and asks for an ever larger
+    // contiguous block, which is the allocation most likely to fail under
+    // memory pressure.
+    const size_t required_capacity = _samples.size() + count;
+    if (required_capacity > _samples.capacity()) {
+        _samples.reserve(std::max(required_capacity, _samples.capacity() * 2));
+    }
 
     for (size_t i = 0; i < count; ++i) {
         const auto& trace = traces[i];

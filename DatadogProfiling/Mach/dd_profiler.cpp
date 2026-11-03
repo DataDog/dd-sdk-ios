@@ -15,6 +15,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <cstdlib>
 #include <cstring>
+#include <atomic>
 #include <mutex>
 #include <new>
 #include <random>
@@ -53,7 +54,13 @@ static dd_profiler_diagnostics_t empty_diagnostics() {
 namespace dd::profiler { class dd_profiler; }
 
 static dd::profiler::dd_profiler* g_dd_profiler = nullptr;
-static std::mutex g_dd_profiler_mutex;
+// Never destroyed: SDK threads can still call the C API (for example on a
+// context update) while `exit()` runs static destructors. Locking a destroyed
+// `std::mutex` throws `std::system_error`, which would abort the host app.
+[[clang::no_destroy]] static std::mutex g_dd_profiler_mutex;
+
+// Test-only fault injection; see `dd_profiler_fail_next_aggregation_for_testing()`.
+static std::atomic<bool> g_fail_next_aggregation{false};
 
 /**
  * Checks if ThreadSanitizer is enabled
@@ -428,7 +435,21 @@ private:
 
         if (!profile) return;
 
-        profile->add_samples(traces, count, profiler->image_cache);
+        try {
+            if (g_fail_next_aggregation.load(std::memory_order_relaxed)
+                && g_fail_next_aggregation.exchange(false, std::memory_order_relaxed)) {
+                throw std::bad_alloc();
+            }
+            profile->add_samples(traces, count, profiler->image_cache);
+        } catch (...) {
+            // Aggregation allocates (`std::bad_alloc` under memory pressure).
+            // Stop profiling instead of letting the exception terminate the
+            // host app. `profile::add_samples` keeps the profile consistent:
+            // tables are appended before lookups reference them.
+            profiler->profiler->request_stop();
+            profiler->status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
+            return;
+        }
 
         // Check for timeout after adding samples
         int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
@@ -537,6 +558,10 @@ void dd_profiler_destroy(void) {
 extern "C" {
 #endif
 
+void dd_profiler_fail_next_aggregation_for_testing(void) {
+    g_fail_next_aggregation.store(true, std::memory_order_relaxed);
+}
+
 void dd_profiler_start_testing(
     double sample_rate,
     bool is_prewarming,
@@ -544,6 +569,7 @@ void dd_profiler_start_testing(
     uint64_t hard_limit_bytes
 ) {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    g_fail_next_aggregation.store(false, std::memory_order_relaxed);
     delete g_dd_profiler;
     g_dd_profiler = new (std::nothrow) dd::profiler::dd_profiler(
         sample_rate,

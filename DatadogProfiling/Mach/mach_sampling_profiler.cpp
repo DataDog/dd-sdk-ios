@@ -637,7 +637,18 @@ void* mach_sampling_profiler::sampling_thread_entry(void* arg) {
         pthread_mach_thread_np(pthread_self()),
         std::memory_order_relaxed
     );
-    profiler->main();
+    try {
+        profiler->main();
+    } catch (...) {
+        // Last-resort barrier: an exception escaping a thread entry calls
+        // `std::terminate`. Stop sampling and hand off what was captured.
+        profiler->request_stop();
+        try {
+            profiler->worker->finish_producer(profiler->sample_buffer);
+        } catch (...) {
+            profiler->worker->finish_after_failure(false);
+        }
+    }
     return nullptr;
 }
 
@@ -790,7 +801,13 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
     }
 
     if (trace.frame_count > 0) {
-        sample_buffer.push_back(trace);
+        try {
+            sample_buffer.push_back(trace);
+        } catch (...) {
+            // The buffer could not grow (for example, its re-reserve failed
+            // under memory pressure). Drop this sample instead of terminating.
+            stack_trace_destroy(&trace);
+        }
     } else {
         stack_trace_destroy(&trace);
     }
