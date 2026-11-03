@@ -67,9 +67,10 @@ class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
     }
 
     func testUnSwizzling() throws {
-        let delegate = SessionDataDelegateMock()
-        let expectation = self.expectation(description: "not expected")
-        expectation.isInverted = true
+        let delegate: URLSessionTaskDelegate = SessionDataDelegateMock()
+        let session = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL.mockAny())
+        var interceptionCount = 0
 
         // Given
         let swizzler = URLSessionTaskDelegateSwizzler()
@@ -77,22 +78,23 @@ class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
         try swizzler.swizzle(
             delegateClass: SessionDataDelegateMock.self,
             interceptDidFinishCollecting: { _, _, _ in
-                expectation.fulfill()
+                interceptionCount += 1
             },
             interceptDidCompleteWithError: { _, _, _ in
-                expectation.fulfill()
+                interceptionCount += 1
             }
         )
 
-        // When
-        let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-        let url = URL(string: "https://www.datadoghq.com/")!
-        session
-            .dataTask(with: url)
-            .resume() // not intercepted
+        delegate.urlSession?(session, task: task, didFinishCollecting: .mockAny()) // intercepted
+        delegate.urlSession?(session, task: task, didCompleteWithError: nil) // intercepted
+        XCTAssertEqual(interceptionCount, 2)
 
+        // When
         swizzler.unswizzle()
 
-        waitForExpectations(timeout: 5)
+        // Then
+        delegate.urlSession?(session, task: task, didFinishCollecting: .mockAny()) // not intercepted
+        delegate.urlSession?(session, task: task, didCompleteWithError: nil) // not intercepted
+        XCTAssertEqual(interceptionCount, 2)
     }
 }

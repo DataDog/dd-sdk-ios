@@ -451,7 +451,7 @@ class RemoteConfigurationTests: XCTestCase {
         rc.start { _ in
             unexpectedCompletion.fulfill()
         }
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0.1)
 
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
@@ -586,7 +586,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // Then — no additional sync fires within TTL
         let noSyncExpectation = expectation(description: "no foreground sync within TTL")
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
             XCTAssertEqual(httpClient.requestsSent().count, countAfterInit, "No sync should fire within TTL")
             noSyncExpectation.fulfill()
         }
@@ -616,7 +616,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // Then — no additional request fires
         let noSyncExpectation = expectation(description: "no foreground sync after 304 within TTL")
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
             XCTAssertEqual(httpClient.requestsSent().count, 1, "No sync should fire within TTL after 304")
             noSyncExpectation.fulfill()
         }
