@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Provides the correct sampler that should be used by the Tracer.
@@ -46,4 +47,20 @@ internal protocol TracerSamplerProvider: Sendable {
     /// - returns: The appropriate sampler to be used for tracing operations with custom
     /// sampling rates.
     func makeSamplerFor(samplingRate: SampleRate) -> Sampling
+
+    /// Reads the original sampler once for a span, with optional On ownership.
+    func samplerWithRUMContext(samplingRate: SampleRate?) -> TraceSamplingContext
+}
+
+internal struct TraceSamplingContext {
+    let sampler: Sampling
+    let capture: RUMContextHandoff.Capture?
+    let sessionID: String?
+}
+
+internal extension TracerSamplerProvider {
+    func samplerWithRUMContext(samplingRate: SampleRate?) -> TraceSamplingContext {
+        let sampler = samplingRate.map { makeSamplerFor(samplingRate: $0) } ?? self.sampler
+        return TraceSamplingContext(sampler: sampler, capture: nil, sessionID: nil)
+    }
 }
