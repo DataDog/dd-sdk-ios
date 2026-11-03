@@ -53,21 +53,51 @@ public extension SwiftUI.View {
     ///   - attributes: custom attributes to attach to the View.
     ///   - core: The SDK core instance.
     /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
+    #if os(iOS)
+    @ViewBuilder
+    #endif
     func trackRUMView(
         name: String,
         attributes: [AttributeKey: AttributeValue] = [:],
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> some View {
         let path = "\(name)/\(typeDescription.hashValue)"
-        let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+        let feature = core.get(feature: RUMFeature.self)
+        #if os(iOS)
+        if #available(iOS 27.0, *), feature?.isMultiSceneTrackingEnabled == true {
+            if let binding = feature?.instrumentation.swiftUIViewFoundation?.makeBinding() {
+                rumMultiSceneTrackedContent(
+                    self,
+                    binding: binding,
+                    name: name,
+                    path: path,
+                    attributes: attributes,
+                    configuration: nil,
+                    navigationOccurrenceSource: nil
+                )
+            } else {
+                self
+            }
+        } else {
+            modifier(
+                RUMViewModifier(
+                    instrumentation: feature?.instrumentation,
+                    name: name,
+                    path: path,
+                    attributes: attributes
+                )
+            )
+        }
+        #else
         return modifier(
             RUMViewModifier(
-                instrumentation: instrumentation,
+                instrumentation: feature?.instrumentation,
                 name: name,
                 path: path,
                 attributes: attributes
             )
         )
+        #endif
     }
 }
 

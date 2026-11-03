@@ -337,6 +337,7 @@
 		26A0647E30946E3600C6318A /* OwnedOperationSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */; };
 		26A06480309498D100C6318A /* RUMSwiftUIViewFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647F309498D100C6318A /* RUMSwiftUIViewFoundation.swift */; };
 		26A06482309498D200C6318A /* RUMSwiftUIViewLifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A06481309498D200C6318A /* RUMSwiftUIViewLifetime.swift */; };
+		26A06484309498D300C6318A /* SwiftUIMultiSceneViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A06483309498D300C6318A /* SwiftUIMultiSceneViewModifier.swift */; };
 		26A06486309498D400C6318A /* SwiftUINavigationOccurrenceSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A06485309498D400C6318A /* SwiftUINavigationOccurrenceSource.swift */; };
 		26A06488309498D600C6318A /* SwiftUISceneReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A06487309498D600C6318A /* SwiftUISceneReader.swift */; };
 		26A0648A309498D700C6318A /* SwiftUITransitionCoordination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A06489309498D700C6318A /* SwiftUITransitionCoordination.swift */; };
@@ -2398,6 +2399,7 @@
 		26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationSessionTests.swift; sourceTree = "<group>"; };
 		26A0647F309498D100C6318A /* RUMSwiftUIViewFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIViewFoundation.swift; sourceTree = "<group>"; };
 		26A06481309498D200C6318A /* RUMSwiftUIViewLifetime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIViewLifetime.swift; sourceTree = "<group>"; };
+		26A06483309498D300C6318A /* SwiftUIMultiSceneViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIMultiSceneViewModifier.swift; sourceTree = "<group>"; };
 		26A06485309498D400C6318A /* SwiftUINavigationOccurrenceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUINavigationOccurrenceSource.swift; sourceTree = "<group>"; };
 		26A06487309498D600C6318A /* SwiftUISceneReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUISceneReader.swift; sourceTree = "<group>"; };
 		26A06489309498D700C6318A /* SwiftUITransitionCoordination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUITransitionCoordination.swift; sourceTree = "<group>"; };
@@ -7454,6 +7456,7 @@
 				962900232D8351A7008DFE39 /* TopLevelReflector.swift */,
 				26A0647F309498D100C6318A /* RUMSwiftUIViewFoundation.swift */,
 				26A06481309498D200C6318A /* RUMSwiftUIViewLifetime.swift */,
+				26A06483309498D300C6318A /* SwiftUIMultiSceneViewModifier.swift */,
 				26A06485309498D400C6318A /* SwiftUINavigationOccurrenceSource.swift */,
 				26A06487309498D600C6318A /* SwiftUISceneReader.swift */,
 				26A06489309498D700C6318A /* SwiftUITransitionCoordination.swift */,
@@ -10515,6 +10518,7 @@
 				118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */,
 				118ACA3D2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */,
 				D29A9F8829DD85BB005C54A4 /* ErrorMessageReceiver.swift in Sources */,
+				26A06484309498D300C6318A /* SwiftUIMultiSceneViewModifier.swift in Sources */,
 				3FFF03CB7F99425AA2C13764 /* HasReplayMessageReceiver.swift in Sources */,
 				96F70D452DD793C400D3736B /* RUMAction.swift in Sources */,
 				D29A9F8729DD85BB005C54A4 /* SwiftUIActionModifier.swift in Sources */,
