@@ -330,6 +330,9 @@
 		269035A62E41FAAC00F1A830 /* AccountConfigurationContextMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269035A42E41FAA500F1A830 /* AccountConfigurationContextMocks.swift */; };
 		26A0647230946E2500C6318A /* OperationFeatureRetirementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647130946E2500C6318A /* OperationFeatureRetirementTests.swift */; };
 		26A0647430946E2600C6318A /* RUMOperationOwnership.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647330946E2600C6318A /* RUMOperationOwnership.swift */; };
+		26A0647A30946E3400C6318A /* RUMOwnedOperationStepCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647930946E3400C6318A /* RUMOwnedOperationStepCommand.swift */; };
+		26A0647C30946E3500C6318A /* OwnedOperationMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647B30946E3500C6318A /* OwnedOperationMonitorTests.swift */; };
+		26A0647E30946E3600C6318A /* OwnedOperationSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */; };
 		26D89095303F398E00B5C5D0 /* CrashReportingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D89094303F398E00B5C5D0 /* CrashReportingConfiguration.swift */; };
 		27A047D86EB162480FF0C5AC /* EvaluationLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = C63A979F48771C3277A41396 /* EvaluationLogger.swift */; };
 		286A8E9E558A341A9505F874 /* predictor_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = 19777FBEB2C8C3720FCE88EB /* predictor_enc.c */; };
@@ -2377,6 +2380,9 @@
 		269035A42E41FAA500F1A830 /* AccountConfigurationContextMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountConfigurationContextMocks.swift; sourceTree = "<group>"; };
 		26A0647130946E2500C6318A /* OperationFeatureRetirementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationFeatureRetirementTests.swift; sourceTree = "<group>"; };
 		26A0647330946E2600C6318A /* RUMOperationOwnership.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOperationOwnership.swift; sourceTree = "<group>"; };
+		26A0647930946E3400C6318A /* RUMOwnedOperationStepCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOwnedOperationStepCommand.swift; sourceTree = "<group>"; };
+		26A0647B30946E3500C6318A /* OwnedOperationMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationMonitorTests.swift; sourceTree = "<group>"; };
+		26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationSessionTests.swift; sourceTree = "<group>"; };
 		26D89094303F398E00B5C5D0 /* CrashReportingConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingConfiguration.swift; sourceTree = "<group>"; };
 		2B6A3B154836FEB32C07EB50 /* EvaluationAggregator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationAggregator.swift; sourceTree = "<group>"; };
 		2BA6C5B2E4B4F2AFD7D644B2 /* quant_levels_utils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = quant_levels_utils.h; sourceTree = "<group>"; };
@@ -6205,6 +6211,7 @@
 				9678E2752E55CD200094B106 /* RUMFeatureOperationManagerTests.swift */,
 				618DCFDE24C75FD300589570 /* RUMScopeTests.swift */,
 				617B953E24BF4D9D00E6F443 /* Scopes */,
+				26A0647B30946E3500C6318A /* OwnedOperationMonitorTests.swift */,
 			);
 			path = RUMMonitor;
 			sourceTree = "<group>";
@@ -6222,6 +6229,7 @@
 				6141CE652806B3F200EBB879 /* Utils */,
 				D21DDF302FDC3CDA002C620E /* RUMViewScope_Tests.swift */,
 				D2023A192FEBBBAD00A80981 /* RUMViewUpdateEventTests.swift */,
+				26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */,
 			);
 			path = Scopes;
 			sourceTree = "<group>";
@@ -6366,6 +6374,7 @@
 				61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */,
 				61C3E63624BF191F008053F2 /* RUMScope.swift */,
 				61C3E63C24BF1B7F008053F2 /* Scopes */,
+				26A0647930946E3400C6318A /* RUMOwnedOperationStepCommand.swift */,
 			);
 			path = RUMMonitor;
 			sourceTree = "<group>";
@@ -10505,6 +10514,7 @@
 				09ACCD2F303607FA00DEBDF3 /* ModernSwiftUIComponentDetector.swift in Sources */,
 				09FF0AE82FD31D0F000D63F8 /* AppKitRUMActionsHandler.swift in Sources */,
 				D29A9F5329DD85BB005C54A4 /* RUMOffViewEventsHandlingRule.swift in Sources */,
+				26A0647A30946E3400C6318A /* RUMOwnedOperationStepCommand.swift in Sources */,
 				D29A9F5429DD85BB005C54A4 /* RUMScope.swift in Sources */,
 				D29A9F6129DD85BB005C54A4 /* CrashReportReceiver.swift in Sources */,
 				D29A9F7E29DD85BB005C54A4 /* UIViewControllerSwizzler.swift in Sources */,
@@ -10551,6 +10561,7 @@
 				61DCC8472C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */,
 				D29A9FA629DDB483005C54A4 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */,
 				61C4534A2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */,
+				26A0647C30946E3500C6318A /* OwnedOperationMonitorTests.swift in Sources */,
 				D29A9FBD29DDB483005C54A4 /* RUMSessionScopeTests.swift in Sources */,
 				0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */,
 				3C4CF9982C47CC91006DE1C0 /* MemoryWarningMonitorTests.swift in Sources */,
@@ -10572,6 +10583,7 @@
 				479539F3F9AC61238ACF3D6C /* DisallowListTests.swift in Sources */,
 				A7E6EA852D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
 				D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */,
+				26A0647E30946E3600C6318A /* OwnedOperationSessionTests.swift in Sources */,
 				61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
 				D2023A1A2FEBBBAD00A80981 /* RUMViewUpdateEventTests.swift in Sources */,
 				965A1B282F8E6402006A4B4E /* Monitor+AttributeEncodingTests.swift in Sources */,
