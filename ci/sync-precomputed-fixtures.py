@@ -7,11 +7,11 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
 import tempfile
 import uuid
+from pathlib import Path
 
 REPOSITORY = 'https://github.com/DataDog/ffe-system-test-data.git'
 PREFIX = 'precomputed-assignments/'
@@ -56,7 +56,7 @@ def snapshot(source, ref):
         if not isinstance(data, dict) or data.get('name') != Path(path).stem:
             raise ValueError('Invalid fixture identity: ' + path)
         if not isinstance(data.get('evaluations'), list):
-            raise ValueError('Missing evaluations: ' + path)
+            raise TypeError('Missing evaluations: ' + path)
     result['index.json'] = (json.dumps(cases, indent=2) + '\n').encode()
     result['SOURCE.json'] = (json.dumps({
         'repository': REPOSITORY,
