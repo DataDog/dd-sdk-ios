@@ -112,6 +112,14 @@ extension CALayerSnapshot.SemanticObservationMapping {
         )
     }
 
+    static let scrollPocketGroup = Self { layer, _, _ in
+        guard layer.isScrollPocketGroup else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.scrollPocketGroup))
+    }
+
     static let captureOnlyBackdrop = Self { layer, _, _ in
         guard layer.isCaptureOnlyBackdrop else {
             return nil
