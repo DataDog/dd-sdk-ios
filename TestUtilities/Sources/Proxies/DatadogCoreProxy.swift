@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogCore
 
@@ -136,6 +137,23 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
     }
 }
 
+@_spi(Internal)
+extension DatadogCoreProxy: RUMContextHandoffActivating {
+    public var rumContextHandoffOwner: RUMContextHandoff.Owner? { core.rumContextHandoffOwner }
+
+    public func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner {
+        try core.activateRUMContextHandoff()
+    }
+
+    public func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner) {
+        core.deactivateRUMContextHandoff(owner: owner)
+    }
+
+    public func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature {
+        try core.registerRUMContextHandoff(feature: feature, owner: owner)
+    }
+}
+
 extension DatadogCoreProxy {
     public func flush() {
         core.flush()
@@ -160,9 +178,17 @@ extension DatadogCoreProxy {
     }
 }
 
-private struct FeatureScopeProxy: FeatureScope {
+private struct FeatureScopeProxy: FeatureScope, RUMContextHandoffOwnerProviding, RUMFlagEvaluationSending {
     let proxy: FeatureScope
     let interceptor: FeatureScopeInterceptor
+
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        RUMContextHandoff.owner(in: proxy)
+    }
+
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        proxy.sendFlagEvaluation(evaluation)
+    }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         interceptor.enter()
