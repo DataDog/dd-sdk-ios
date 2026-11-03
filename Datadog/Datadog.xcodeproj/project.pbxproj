@@ -3542,6 +3542,14 @@
 		D2A1FAAF2D2ECDF3007E9B40 /* XoshiroTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XoshiroTests.swift; sourceTree = "<group>"; };
 		D2A38DDA29C37E1B007C6900 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
 		D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSessionReplayTests.swift; sourceTree = "<group>"; };
+		D2A4387C3092560900181E22 /* UnitTests-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "UnitTests-iOS.xctestplan"; sourceTree = "<group>"; };
+		D2A4387D3092560A00181E22 /* UnitTests-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "UnitTests-tvOS.xctestplan"; sourceTree = "<group>"; };
+		D2A4387E3092560B00181E22 /* UnitTests-watchOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "UnitTests-watchOS.xctestplan"; sourceTree = "<group>"; };
+		D2A4387F3092560C00181E22 /* UnitTests-visionOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "UnitTests-visionOS.xctestplan"; sourceTree = "<group>"; };
+		D2A438803092560D00181E22 /* UnitTests-macOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "UnitTests-macOS.xctestplan"; sourceTree = "<group>"; };
+		D2A438813092560E00181E22 /* UnitTestsNoHostSDK.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = UnitTestsNoHostSDK.xctestplan; sourceTree = "<group>"; };
+		D2A438823092560F00181E22 /* UnitTestsThreadSanitizer.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = UnitTestsThreadSanitizer.xctestplan; sourceTree = "<group>"; };
+		D2A438833092560F00181E22 /* IntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = IntegrationTests.xctestplan; sourceTree = "<group>"; };
 		D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D2AB895D2F71780900040F58 /* DeterministicSamplingIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSamplingIntegrationTests.swift; sourceTree = "<group>"; };
@@ -5381,6 +5389,7 @@
 				61441C0324616DE9003D8BB8 /* Example */,
 				61133B83242393DE00786299 /* Products */,
 				61133C6F2423993200786299 /* Frameworks */,
+				D2A4387B309255E300181E22 /* TestPlans */,
 			);
 			sourceTree = "<group>";
 		};
@@ -7648,6 +7657,21 @@
 				D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */,
 			);
 			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		D2A4387B309255E300181E22 /* TestPlans */ = {
+			isa = PBXGroup;
+			children = (
+				D2A4387C3092560900181E22 /* UnitTests-iOS.xctestplan */,
+				D2A4387D3092560A00181E22 /* UnitTests-tvOS.xctestplan */,
+				D2A4387E3092560B00181E22 /* UnitTests-watchOS.xctestplan */,
+				D2A4387F3092560C00181E22 /* UnitTests-visionOS.xctestplan */,
+				D2A438803092560D00181E22 /* UnitTests-macOS.xctestplan */,
+				D2A438813092560E00181E22 /* UnitTestsNoHostSDK.xctestplan */,
+				D2A438823092560F00181E22 /* UnitTestsThreadSanitizer.xctestplan */,
+				D2A438833092560F00181E22 /* IntegrationTests.xctestplan */,
+			);
+			path = TestPlans;
 			sourceTree = "<group>";
 		};
 		D2A783D329A53049003B03BB /* Utils */ = {

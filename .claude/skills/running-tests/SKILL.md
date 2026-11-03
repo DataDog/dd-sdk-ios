@@ -32,9 +32,11 @@ grep "DEFAULT_" Makefile
 
 Always pass `DEVICE=` explicitly if the default simulator is not installed locally. Check `xcrun simctl list devices available` first.
 
-**Module scheme names:** schemes are multiplatform and named after the module (`DatadogCore`, `DatadogRUM`, …) — no platform suffix. Read the `Makefile` for the authoritative list:
+**Module scheme names:** schemes are multiplatform and named after the module (`DatadogCore`, `DatadogRUM`, …) — no platform suffix.
+
+**All-module runs:** `make test-<platform>-all` runs one scheme per platform, `UnitTests-<platform>` (`UnitTests-iOS`, `UnitTests-tvOS`, …). Its test plans in `Datadog/TestPlans/` list the test targets each platform runs in CI:
 ```bash
-grep "test-ios-all" Makefile -A 20  # shows all iOS schemes used in CI
+ls Datadog/TestPlans/   # `UnitTests-<platform>` plans plus the shared Thread Sanitizer and IntegrationTests plans
 ```
 
 ### 2. Xcode MCP — selective, fast, single test or class
@@ -97,7 +99,7 @@ GetBuildLog(workspaceIdentifier: <id>, severity: "error")
 ```
 For the full build-and-fix loop, see the `dd-sdk-ios:build-and-diagnose` skill.
 
-**Test plans:** module schemes don't use test plans (`XcodeListTestPlans` → `usesTestPlans: false`). If a scheme does, switch with `XcodeSwitchTestPlan` before running.
+**Test plans:** module schemes don't use test plans (`XcodeListTestPlans` → `usesTestPlans: false`). `UnitTests-<platform>` schemes do: switch with `XcodeSwitchTestPlan` to the plan that contains the test target before running.
 
 **6. Restore the user's state.** Switches persist in Xcode. Switch back to the recorded scheme, **then** the recorded destination — the scheme switch carries the current destination over.
 
