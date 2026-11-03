@@ -559,6 +559,40 @@ internal final class RUMSceneViewsHandler {
     /// this publisher's commands.
     internal weak var subscriber: RUMCommandSubscriber?
 
+    #if canImport(SwiftUI)
+    /// Installed only by the successfully registered On foundation.
+    internal var swiftUIViewEligibility: ((UIViewController) -> Bool)?
+    private var installedSwiftUIViewFoundation: RUMSwiftUIViewFoundation?
+
+    internal var swiftUIViewFoundation: RUMSwiftUIViewFoundation? {
+        guard Thread.isMainThread else {
+            return nil
+        }
+        return installedSwiftUIViewFoundation
+    }
+
+    @MainActor
+    @discardableResult
+    internal func installSwiftUIViewFoundation(
+        _ foundation: RUMSwiftUIViewFoundation,
+        notificationCenter: NotificationCenter
+    ) -> Bool {
+        guard Thread.isMainThread, installedSwiftUIViewFoundation == nil,
+              foundation.canInstall(in: self) else {
+                  return false
+              }
+        // Occupy once before any observer work. Failure never restores legacy eligibility.
+        installedSwiftUIViewFoundation = foundation
+        swiftUIViewEligibility = { _ in false }
+        guard foundation.activate(notificationCenter: notificationCenter) else {
+            foundation.retire()
+            return false
+        }
+        swiftUIViewEligibility = foundation.makeEligibilityCheck() ?? { _ in false }
+        return true
+    }
+    #endif
+
     /// The appearing views stacks, independently keyed by scene.
     ///
     /// This stack allows to track appearing and disappearing views to consistently
@@ -1414,6 +1448,11 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
         guard Thread.isMainThread else {
             return
         }
+        #if canImport(SwiftUI)
+        if let swiftUIViewEligibility, !swiftUIViewEligibility(viewController) {
+            return
+        }
+        #endif
         let identity = ViewIdentifier(viewController)
         let attachedSceneIdentifier = sceneIdentifierProvider(viewController)
         if let attachedSceneIdentifier, !canTrackViews(in: attachedSceneIdentifier) {
