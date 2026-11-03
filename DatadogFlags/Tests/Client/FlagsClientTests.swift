@@ -643,6 +643,61 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNotNil(evaluationLogger.logEvaluationCalls[7].error, "typeMismatch should have error")
     }
 
+    func testDoubleEvaluationOfWholeNumberVariation() {
+        // Given - a whole number served as "number" decodes as `.integer`
+        let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                flagsData: .init(
+                    flags: [
+                        "whole-number-flag": FlagAssignment(
+                            allocationKey: "allocation-128",
+                            variationKey: "5.0",
+                            variation: .integer(5),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ).servedAsNumber(),
+                        "integer-flag": .init(
+                            allocationKey: "allocation-129",
+                            variationKey: "variation-129",
+                            variation: .integer(7),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        let doubleDetails = client.getDoubleDetails(key: "whole-number-flag", defaultValue: 3.14)
+        let integerDetails = client.getIntegerDetails(key: "whole-number-flag", defaultValue: 0)
+        let integerFlagAsDouble = client.getDoubleDetails(key: "integer-flag", defaultValue: 3.14)
+
+        // Then
+        XCTAssertEqual(
+            doubleDetails,
+            FlagDetails(
+                key: "whole-number-flag",
+                value: 5.0,
+                variant: "5.0",
+                reason: "TARGETING_MATCH",
+                allocationKey: "allocation-128"
+            )
+        )
+        XCTAssertEqual(integerDetails.value, 5)
+        XCTAssertNil(integerDetails.error)
+        XCTAssertEqual(integerFlagAsDouble, FlagDetails(key: "integer-flag", value: 3.14, error: .typeMismatch))
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 2)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, "TYPE_MISMATCH"])
+    }
+
     func testFlagEvaluationTracking() {
         // Given
         let exposureLogger = ExposureLoggerMock()
