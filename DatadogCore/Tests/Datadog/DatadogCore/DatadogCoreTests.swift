@@ -57,6 +57,42 @@ private final class PendingHTTPClientMock: HTTPClient {
     }
 }
 
+private final class FifthRoundMessageFeature: DatadogFeature, FeatureMessageReceiver, Flushable {
+    static let name = "fifth-round-message"
+
+    var messageReceiver: FeatureMessageReceiver { self }
+    private let onFifthFlush: () -> Void
+    private let messageEntered: DispatchSemaphore
+    private let releaseMessage: DispatchSemaphore
+    private var flushCount = 0
+
+    init(
+        messageEntered: DispatchSemaphore,
+        releaseMessage: DispatchSemaphore,
+        onFifthFlush: @escaping () -> Void
+    ) {
+        self.messageEntered = messageEntered
+        self.releaseMessage = releaseMessage
+        self.onFifthFlush = onFifthFlush
+    }
+
+    func flush() {
+        flushCount += 1
+        if flushCount == 5 {
+            onFifthFlush()
+        }
+    }
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        guard case let .payload(value as String) = message, value == "fifth-round" else {
+            return false
+        }
+        messageEntered.signal()
+        releaseMessage.wait()
+        return true
+    }
+}
+
 class DatadogCoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -118,6 +154,42 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         XCTAssertNil(core.remoteConfiguration)
+    }
+
+    func testDiagnostic_FifthFlushRoundCanEnqueueUnawaitedMessageWork() throws {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .pending,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        let messageEntered = DispatchSemaphore(value: 0)
+        let releaseMessage = DispatchSemaphore(value: 0)
+        weak var weakCore = core
+        let feature = FifthRoundMessageFeature(
+            messageEntered: messageEntered,
+            releaseMessage: releaseMessage,
+            onFifthFlush: { weakCore?.send(message: .payload("fifth-round")) }
+        )
+        try core.register(feature: feature)
+
+        let flushReturned = expectation(description: "core flush returns")
+        DispatchQueue.global(qos: .utility).async {
+            core.flush()
+            flushReturned.fulfill()
+        }
+
+        XCTAssertEqual(messageEntered.wait(timeout: .now() + 1), .success)
+        wait(for: [flushReturned], timeout: 0.5)
+
+        releaseMessage.signal()
+        core.stop()
     }
 
     func testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents() throws {

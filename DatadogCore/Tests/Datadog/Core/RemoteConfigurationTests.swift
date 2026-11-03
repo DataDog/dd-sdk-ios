@@ -17,6 +17,30 @@ private final class NeverHTTPClient: HTTPClient {
     ) {}
 }
 
+private final class ControlledHTTPClient: HTTPClient {
+    typealias Completion = (Result<(HTTPURLResponse, Data?), any Error>) -> Void
+    private let queue = DispatchQueue(label: "com.datadoghq.ControlledHTTPClient")
+    private var completions: [Completion] = []
+
+    var requestCount: Int {
+        queue.sync { completions.count }
+    }
+
+    func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping Completion
+    ) {
+        queue.sync { completions.append(completion) }
+    }
+
+    func complete(at index: Int, applicationID: String) {
+        let payload = Data("{\"rum\":{\"applicationId\":\"\(applicationID)\"}}".utf8)
+        let completion = queue.sync { completions[index] }
+        completion(.success((.mockResponseWith(statusCode: 200), payload)))
+    }
+}
+
 // MARK: - Tests
 
 class RemoteConfigurationTests: XCTestCase {
@@ -247,6 +271,52 @@ class RemoteConfigurationTests: XCTestCase {
         withExtendedLifetime(rc) {}
         withExtendedLifetime(cachedProvider) {}
     }
+
+    // MARK: Diagnostic lifecycle schedules
+
+    func testDiagnostic_StopDoesNotSuppressInFlightConfigurationDelivery() {
+        let httpClient = ControlledHTTPClient()
+        let provider = makeProvider(httpClient: httpClient, start: false)
+        let delivery = expectation(description: "stopped provider still invokes its handler")
+        provider.start { configuration in
+            XCTAssertEqual(configuration.rum?.applicationId, "after-stop")
+            delivery.fulfill()
+        }
+        XCTAssertEqual(httpClient.requestCount, 1)
+
+        provider.stop()
+        httpClient.complete(at: 0, applicationID: "after-stop")
+
+        wait(for: [delivery], timeout: 0.5)
+    }
+
+#if os(macOS) || canImport(UIKit)
+    func testDiagnostic_OutOfOrderSyncResponsesRegressAppliedConfiguration() {
+        let httpClient = ControlledHTTPClient()
+        let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
+        let provider = makeProvider(
+            httpClient: httpClient,
+            notificationCenterProvider: notificationCenterProvider,
+            start: false
+        )
+        let deliveries = expectation(description: "both overlapping syncs deliver")
+        deliveries.expectedFulfillmentCount = 2
+        var deliveredApplicationIDs: [String] = []
+        provider.start { configuration in
+            deliveredApplicationIDs.append(configuration.rum?.applicationId ?? "missing")
+            deliveries.fulfill()
+        }
+        notificationCenterProvider.postEnterForeground()
+        XCTAssertEqual(httpClient.requestCount, 2)
+
+        httpClient.complete(at: 1, applicationID: "newer")
+        httpClient.complete(at: 0, applicationID: "older")
+
+        wait(for: [deliveries], timeout: 0.5)
+        XCTAssertEqual(deliveredApplicationIDs, ["newer", "older"])
+        XCTAssertEqual(readConfiguration()?.rum?.applicationId, "older", "the older completion overwrites the newer cache")
+    }
+#endif
 
     // MARK: Initial sync
 

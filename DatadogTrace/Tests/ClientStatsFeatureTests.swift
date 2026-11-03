@@ -373,6 +373,18 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(bucket.service, "ios-app")
     }
 
+    func testDiagnostic_FlushReturnsBeforeExportedBucketsReachStorage() throws {
+        let (core, stats) = try enableClientStats()
+        core.defersWriteContexts = true
+        stats.record(.mockWith(resource: "accepted-before-flush", startTime: 0, duration: 100))
+
+        stats.flush()
+
+        XCTAssertTrue(core.exportedBuckets.isEmpty, "the Flushable acknowledgement precedes the deferred storage write")
+        core.runPendingWriteContexts()
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["accepted-before-flush"])
+    }
+
     // MARK: - Feature Name
 
     func testFeatureName() {

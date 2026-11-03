@@ -74,6 +74,58 @@ class MessageBusTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
         bus.flush()
     }
+
+    func testDiagnostic_LateReceiverMissesAccumulatedConfiguration() {
+        let firstDelivery = expectation(description: "configuration is delivered to the initial receiver")
+        let lateDelivery = expectation(description: "configuration is replayed to the late receiver")
+        lateDelivery.isInverted = true
+
+        let core = PassthroughCoreMock()
+        let bus = MessageBus(configurationDispatchTime: .milliseconds(20))
+        bus.connect(core: core)
+        bus.connect(
+            FeatureMessageReceiverMock { message in
+                guard case .telemetry(.configuration) = message else {
+                    return
+                }
+                firstDelivery.fulfill()
+            },
+            forKey: "initial"
+        )
+        bus.configuration(batchSize: 1)
+
+        wait(for: [firstDelivery], timeout: 0.5)
+        bus.connect(
+            FeatureMessageReceiverMock { message in
+                guard case .telemetry(.configuration) = message else {
+                    return
+                }
+                lateDelivery.fulfill()
+            },
+            forKey: "late"
+        )
+        bus.flush()
+
+        wait(for: [lateDelivery], timeout: 0.05)
+    }
+
+    func testDiagnostic_MessageFallbackIsNotCalledAfterCoreDeallocation() {
+        let fallback = expectation(description: "unhandled message invokes fallback")
+        fallback.isInverted = true
+
+        var core: PassthroughCoreMock? = PassthroughCoreMock()
+        weak var weakCore = core
+        let bus = MessageBus()
+        bus.connect(core: core!)
+        bus.flush()
+
+        core = nil
+        XCTAssertNil(weakCore)
+        bus.send(message: .payload("value")) { fallback.fulfill() }
+        bus.flush()
+
+        wait(for: [fallback], timeout: 0.05)
+    }
 }
 
 extension MessageBus: @retroactive Telemetry {
