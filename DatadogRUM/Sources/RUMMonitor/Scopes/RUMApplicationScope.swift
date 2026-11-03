@@ -124,6 +124,18 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        if let error = command as? RUMAddCurrentViewErrorCommand,
+           let ownership = error.capturedOwnership {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  ownership.owner.isValid,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+                  let session = activeSession, session.sessionUUID == ownership.sessionID else {
+                return
+            }
+            // A captured mirror cannot start, refresh or broadcast into another session.
+            session.processCapturedError(error, monotonicTime: monotonicTime, context: context, writer: writer)
+            return
+        }
         let actionReceipt = dependencies.isMultiSceneTrackingEnabled
             ? (command as? RUMUserActionCommand)?.actionReceipt : nil
         defer { actionReceipt?.reject() }

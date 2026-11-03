@@ -915,6 +915,14 @@ extension RUMViewScope {
 
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
+        let userActionID: RUMUUID?
+        if let error = command as? RUMAddCurrentViewErrorCommand,
+           case .captured(let capturedActionID) = error.userActionTarget {
+            userActionID = capturedActionID
+        } else {
+            userActionID = self.context.activeUserActionID
+        }
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -926,7 +934,7 @@ extension RUMViewScope {
                 )
             ),
             account: .init(context: context),
-            action: self.context.activeUserActionID.map { rumUUID in
+            action: userActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
