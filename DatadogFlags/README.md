@@ -117,11 +117,11 @@ Adding a case requires an upstream fixture change and snapshot refresh. It requi
 Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
 Do not add local exclusions to hide failures.
 
-Native Integer getters accept `integer`. Native Double getters accept `float`.
-Legacy `number` accepts Double reads and representable integral Integer reads.
-A whole-valued `float` still fails an Integer read with `TYPE_MISMATCH`.
-React Native's Number API has no separate integer type.
-These rules do not enable a new server wire format. Sending specific numeric types requires compatible capability negotiation.
+Numeric getters use lossless conversion regardless of the `integer`, `float`, or `number` wire label.
+Integer getters accept whole values within their native range. Double getters reject integer values that lose precision.
+Fractional Integer reads, range overflow, and inexact conversions return `TYPE_MISMATCH`.
+React Native exposes one Number getter. Its tests exclude cases that require a separate Integer getter or native integer precision.
+The service keeps sending `number`. This work adds no numeric capability.
 
 Cases cover values, defaults, errors, reasons, variants, emission gates, duplicate evaluations, and numeric boundaries.
 Obfuscation cases cover fixed digests, salts, Unicode, whitespace, malformed metadata, and plaintext event identity.

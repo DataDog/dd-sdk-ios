@@ -1,6 +1,6 @@
 {
   "name": "obfuscation-numeric-number",
-  "description": "numeric number.",
+  "description": "Lossless numeric reads are independent of the numeric wire label.",
   "context": {
     "targetingKey": "fixture-subject",
     "attributes": {}
@@ -10,98 +10,114 @@
       "attributes": {
         "createdAt": "2026-01-01T00:00:00Z",
         "flags": {
-          "085fa5b25a3d42952668a59d052deb6ee5bc2418a352b9887556fe862ef78ca8": {
+          "5d1d3c167fda7f3ecadb68da40228431ed0b74ec08597fc57398fbf7f253f0d6": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": 0,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "66aeb85f02e96149bd485b28375161c4bc154e748545593a40da549d53f479c2": {
+          "4dcb0659aaeb33eb329143c5ed994c52800521968edafd58c95c50377873ccc4": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": 0,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "eef7048e9d655ec6f29019eec43986e1d4ba6ff42523ecd8f46b6ac0ae883050": {
+          "8023572892cfed9fb5ee411c451eab7480329f32331f3845e76234275bede04d": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": 5,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "a46a4fdb29e1de92315dc1ee481f59a33455841d317e38191f13cdcdd9fd2eb0": {
+          "d15970ae43ef67b0a9844f04cd8680567400e12340d545aa608a0cc9b89bed95": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": 5,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "5f25ccca362e35bf27475aa056da166b4e7ecf6ed66b65bc25f9d573717d2628": {
+          "4373eda204ffa94cc5c15d29bd5a33b828033f4d2382f708801a7ea5c298b286": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": -5,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "914ae5836aae14f5bd8348d1669e008e400c43887d08cd6dc67b028d914e8c6a": {
+          "5a95ab1a979318a8d113fcdb44a9a5262f0f99a6fb58e0f782b1ac5dbc88f1ef": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": -5,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "3cecd82b1b8e3c49bc3fe1886fdd0a57de07ac68a437f59bf7c6c6317d83b03b": {
+          "dceef8e665186596db59e1c8bf2887adf20969530b48091e1bcf3517bf804a7b": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": 1.25,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "5a539f4ac96a34becffeed98230a919b3082e085bb79deed40d88600d5500636": {
+          "6b8f85c278e445167be847d3a94a91c1865221df7cc63dc8f31aacbb9454e430": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
             "variationValue": 1.25,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "ec97872ee38dc677992d1df24af2093298d35a35d246ea3dd39df7e33279b358": {
+          "81da1069b7cb802d039c7cd27d4c0f4db2515a5c64dd411a522d6f300592c31c": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
-            "variationValue": -1.25,
+            "variationValue": -0.5,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
           },
-          "4b33526589906dcabeefa0e880ad6697d4e6673af26187c67947124777a67bbc": {
+          "0a2bcee9cec623b02ca219d7b3f15415767bb630f6bcf9af75fda36c2a689f64": {
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "number",
-            "variationValue": -1.25,
+            "variationValue": -0.5,
             "reason": "TARGETING_MATCH",
-            "doLog": false
+            "doLog": true
+          },
+          "be4ecda1ccdb165dc68fcffc30f021c7e83a88b8a2283784498ac761385f26d0": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 1.2,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "c4f3ba7ee684fddd93335901ae9b0af3959704d06b5a028449b08854d5384e3d": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 1.2,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
           }
         },
         "obfuscated": true,
         "obfuscation": {
           "scheme": "flag-key-sha256-v1",
-          "salt": "000102030405060708090a0b0c0d0e0f"
+          "salt": "00112233445566778899aabbccddeeff"
         }
       }
     }
   },
   "evaluations": [
     {
-      "flag": "number-0-as-integer",
+      "flag": "obfuscation-numeric-number-0",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -112,7 +128,7 @@
       }
     },
     {
-      "flag": "number-0-as-float",
+      "flag": "obfuscation-numeric-number-1",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -123,7 +139,7 @@
       }
     },
     {
-      "flag": "number-5-as-integer",
+      "flag": "obfuscation-numeric-number-2",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -134,7 +150,7 @@
       }
     },
     {
-      "flag": "number-5-as-float",
+      "flag": "obfuscation-numeric-number-3",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -145,7 +161,7 @@
       }
     },
     {
-      "flag": "number--5-as-integer",
+      "flag": "obfuscation-numeric-number-4",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -156,7 +172,7 @@
       }
     },
     {
-      "flag": "number--5-as-float",
+      "flag": "obfuscation-numeric-number-5",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -167,7 +183,7 @@
       }
     },
     {
-      "flag": "number-1.25-as-integer",
+      "flag": "obfuscation-numeric-number-6",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -176,19 +192,27 @@
         "errorCode": "TYPE_MISMATCH",
         "variantKey": null
       },
-      "_skip": [
+      "_include": [
         {
-          "platform": "web",
-          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
         },
         {
-          "platform": "react-native",
-          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+          "platform": "android",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "unity",
+          "reason": "This case requires the stated native numeric accessor range."
         }
       ]
     },
     {
-      "flag": "number-1.25-as-float",
+      "flag": "obfuscation-numeric-number-7",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -199,7 +223,7 @@
       }
     },
     {
-      "flag": "number--1.25-as-integer",
+      "flag": "obfuscation-numeric-number-8",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -208,23 +232,71 @@
         "errorCode": "TYPE_MISMATCH",
         "variantKey": null
       },
-      "_skip": [
+      "_include": [
         {
-          "platform": "web",
-          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
         },
         {
-          "platform": "react-native",
-          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+          "platform": "android",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "unity",
+          "reason": "This case requires the stated native numeric accessor range."
         }
       ]
     },
     {
-      "flag": "number--1.25-as-float",
+      "flag": "obfuscation-numeric-number-9",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
-        "value": -1.25,
+        "value": -0.5,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "obfuscation-numeric-number-10",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -99,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "android",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "unity",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "obfuscation-numeric-number-11",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": 1.2,
         "reason": "TARGETING_MATCH",
         "errorCode": null,
         "variantKey": "variant"
@@ -233,48 +305,218 @@
   ],
   "expectations": {
     "noUnmatchedEvents": true,
-    "exposures": [],
-    "evaluationEvents": [
+    "exposures": [
       {
-        "_count": 10,
-        "_skip": [
-          {
-            "platform": "web",
-            "reason": "Single Number API."
-          },
-          {
-            "platform": "react-native",
-            "reason": "Single Number API."
-          }
-        ]
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-0"
+        }
       },
       {
-        "_count": 8,
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-1"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-2"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-3"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-4"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-5"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-7"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-9"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-11"
+        }
+      }
+    ],
+    "evaluationEvents": [
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-0"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-1"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-2"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-3"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-4"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-5"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-6"
+        },
+        "evaluation_count": 1,
         "_include": [
           {
-            "platform": "web",
-            "reason": "Single Number API."
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
           },
           {
-            "platform": "react-native",
-            "reason": "Single Number API."
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
           }
-        ]
+        ],
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-7"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-8"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ],
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-9"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-10"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ],
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "obfuscation-numeric-number-11"
+        },
+        "evaluation_count": 1
       }
     ]
   },
   "_include": [
     {
       "platform": "ios",
-      "reason": "Implements assignment-encoding-flag-key-256-v1."
+      "reason": "Requires native numeric precision or supported obfuscation."
     },
     {
       "platform": "android",
-      "reason": "Implements assignment-encoding-flag-key-256-v1."
+      "reason": "Requires native numeric precision or supported obfuscation."
     },
     {
       "platform": "flutter",
-      "reason": "Implements assignment-encoding-flag-key-256-v1."
+      "reason": "Requires native numeric precision or supported obfuscation."
     }
   ]
 }

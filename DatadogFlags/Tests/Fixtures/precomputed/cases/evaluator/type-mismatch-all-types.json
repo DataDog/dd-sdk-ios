@@ -1,6 +1,6 @@
 {
   "name": "type-mismatch-all-types",
-  "description": "Wrong typed getters return the caller default with TYPE_MISMATCH. APIs with one Number getter do not implement integer-versus-float mismatch.",
+  "description": "Wrong nonnumeric getters return TYPE_MISMATCH; an exact numeric conversion succeeds.",
   "context": {
     "targetingKey": "mismatch-user",
     "attributes": {}
@@ -84,21 +84,11 @@
       "variationType": "float",
       "defaultValue": 0.0,
       "expectedResult": {
-        "value": 0.0,
-        "reason": "ERROR",
-        "errorCode": "TYPE_MISMATCH",
-        "variantKey": null
-      },
-      "_skip": [
-        {
-          "platform": "web",
-          "reason": "The public API exposes one Number getter."
-        },
-        {
-          "platform": "react-native",
-          "reason": "The public API exposes one Number getter."
-        }
-      ]
+        "value": 7,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "var-int"
+      }
     },
     {
       "flag": "fixture.mismatch.float-as-bool",
@@ -125,19 +115,14 @@
   ],
   "expectations": {
     "noUnmatchedEvents": true,
+    "exposures": [
+      {
+        "_count": 1
+      }
+    ],
     "evaluationEvents": [
       {
-        "_count": 5,
-        "_skip": [
-          {
-            "platform": "web",
-            "reason": "Single Number API."
-          },
-          {
-            "platform": "react-native",
-            "reason": "Single Number API."
-          }
-        ]
+        "_count": 5
       }
     ]
   }

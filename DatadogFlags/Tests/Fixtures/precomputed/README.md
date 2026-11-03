@@ -180,11 +180,16 @@ python3 ci/validate-precomputed-fixtures.py
 
 ## Mobile conformance and numeric types
 
-Native Integer getters accept `integer`. Native Double getters accept `float`.
-The declared type controls this decision even when a `float` value is whole.
-Legacy `number` accepts Double reads and representable integral Integer reads.
-Fractional Integer reads return the default with `TYPE_MISMATCH`.
-Single-Number APIs use the explicit evaluation filters for cross-type tests.
+Numeric reads depend on the value, not the `integer`, `float`, or `number` label.
+Integer getters accept whole values within the accessor range. Double getters
+accept numeric values without losing integer precision. Fractional Integer reads,
+out-of-range reads, and inexact conversions return the default with `TYPE_MISMATCH`.
+No new global safe-integer limit is imposed. React Native and web expose one Number
+getter; Integer-only cases use explicit platform filters. Boundary fixtures cover
+native 32-bit and 64-bit accessors separately.
+
+The precompute service retains `number`. No numeric capability is introduced.
+See FFL-3568 and FFL-3564 for the lossless conversion decision.
 
 Discover cases recursively. Do not maintain a filename list. Fail when the
 corpus is missing or empty. Report the fixture revision, executed evaluations,

@@ -1,0 +1,1094 @@
+{
+  "name": "obfuscation-numeric-boundaries-number",
+  "description": "Lossless numeric reads are independent of the numeric wire label.",
+  "context": {
+    "targetingKey": "fixture-subject",
+    "attributes": {}
+  },
+  "response": {
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "b4ba8411e13132261ecb4f57a72e7ca330d2618c536f5546590abb0cc25b9c47": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "82796957263227e5d42ba913e864aca7aa0f6c06cf30ef1bd6a52cf771a5680e": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "9889dbdc0d0d8741c09f2d9e1f6b764e37995c66e76452502ff7a73398dc8fdb": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "20c38d5ef57bd5c41cc52d311ab1147afabfcdbb2abbdaf47f9c1d5f71736248": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 2147483647,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "a989158eea675eb49b1f62e15c2205b1a1168d9ed769e90e16ba8f43e65963c2": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 2147483647,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "fd02ac0da0683586431856ba869c1ff07669b94244e6c8a58c7e1ae8dcb3a04d": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 2147483647,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "0c4bdf647950f33d16dace93f197e1891b73d767a5bc3be0cf1e51a115775f63": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -2147483649,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "bb03a68efa88e918862e8a481ee25893c059765384e7a0835b022f742ecffc05": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -2147483649,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "596ef4687c078263b87dd17061e7471add9255b49814d72150bac75dce35787d": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -2147483649,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "920cb9612332743d61020ef481f4990bf0826040b3d087212a891115e9f30f22": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "62e88abd1cfc891df7f5703503077e82fb99db1e9be9b91d9a6b50333b4d1110": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "a99b58377ef7b9e52d6e1c3befd549d61e1ca234eca3cd8d4720c16928d9a7a0": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "ff66a9c09d22765cf9397d3e156bce434a683325f21ab6df1c9b7359056d676a": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 9007199254740992,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "9b15e9496c8eb9e19f2e8afc18ac298593ea8d45370e1fceb0f98b0f47e28fdb": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 9007199254740992,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "e0d4ba65f888bbf2b204e1ed4cc02d23b0e0c3f8a0f4f22b51501c7532d4781f": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "9b5089501d028a056aae6a5de88452f98f79340ba32f765a3950c6d8c0a82a9d": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "1706e7b05d435e118cb4dee1540e2109fd7a7b1b19b08fceec0cfebc8fc0abc1": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "3769e087d36053e2971961b47640ab9b7397f02b1eddda5d4e90819ef1b1f5bb": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "e0cff618c57a7aca3a66fbbb36b72aa53a4d4b7a08a5c67a0e25ffd564cea395": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 9223372036854775807,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "4d204756440205698d05663c5a511d991d8e7ad64f54b1a257034b8e2c52f80f": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 9223372036854775807,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "4c741509a1ac866498f61619846c2cdec7fd84bbc362ee6ff3f8d563f2156fc8": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -9223372036854775808,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "c9bbbec289c2c83e830e9bffd2ff577daf18bb71371cff7c08a5372ed860d957": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -9223372036854775808,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          }
+        },
+        "obfuscated": true,
+        "obfuscation": {
+          "scheme": "flag-key-sha256-v1",
+          "salt": "00112233445566778899aabbccddeeff"
+        }
+      }
+    }
+  },
+  "evaluations": [
+    {
+      "flag": "numeric-boundaries-number-0",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -2147483648,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "android",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "unity",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-1",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -2147483648,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-2",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -2147483648,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-3",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 2147483647,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "android",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "unity",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-4",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 2147483647,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-5",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": 2147483647,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-6",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -99,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_include": [
+        {
+          "platform": "android",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "unity",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-7",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -2147483649,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-8",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -2147483649,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-9",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -99,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_include": [
+        {
+          "platform": "android",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "unity",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-10",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 2147483648,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-11",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": 2147483648,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-12",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 9007199254740992,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-13",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": 9007199254740992,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-14",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 9007199254740993,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-15",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-16",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -9007199254740993,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-17",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-18",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 9223372036854775807,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-19",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      }
+    },
+    {
+      "flag": "numeric-boundaries-number-20",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -9223372036854775808,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      },
+      "_include": [
+        {
+          "platform": "ios",
+          "reason": "This case requires the stated native numeric accessor range."
+        },
+        {
+          "platform": "flutter",
+          "reason": "This case requires the stated native numeric accessor range."
+        }
+      ]
+    },
+    {
+      "flag": "numeric-boundaries-number-21",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -9223372036854775808,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    }
+  ],
+  "expectations": {
+    "noUnmatchedEvents": true,
+    "exposures": [
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-0"
+        },
+        "_include": [
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-1"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-2"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-3"
+        },
+        "_include": [
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-4"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-5"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-7"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-8"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-10"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-11"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-12"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-13"
+        }
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-14"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-16"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-18"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-20"
+        },
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-21"
+        }
+      }
+    ],
+    "evaluationEvents": [
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-0"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-1"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-2"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-3"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-4"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-5"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-6"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ],
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-7"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-8"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-9"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ],
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-10"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-11"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-12"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-13"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-14"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-15"
+        },
+        "evaluation_count": 1,
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-16"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-17"
+        },
+        "evaluation_count": 1,
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-18"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-19"
+        },
+        "evaluation_count": 1,
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-20"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-number-21"
+        },
+        "evaluation_count": 1
+      }
+    ]
+  },
+  "_include": [
+    {
+      "platform": "ios",
+      "reason": "Requires native numeric precision or supported obfuscation."
+    },
+    {
+      "platform": "android",
+      "reason": "Requires native numeric precision or supported obfuscation."
+    },
+    {
+      "platform": "flutter",
+      "reason": "Requires native numeric precision or supported obfuscation."
+    }
+  ]
+}

@@ -32,15 +32,15 @@ public struct FlagAssignment: Equatable {
         case .string(let value):
             return value as? T
         case .integer(let value):
-            // A whole number served as "number" decodes as `.integer`, so a Double
-            // read must accept it. A Double read of an assignment served as
-            // "integer" is a type mismatch.
             if T.self == Double.self {
-                return isNumberType ? Double(value) as? T : nil
+                return Double(exactly: value) as? T
             }
             return value as? T
         case .double(let value):
-            return value as? T
+            if T.self == Int.self {
+                return Int(exactly: value) as? T
+            }
+            return value.isFinite ? value as? T : nil
         case .object(let value):
             return value as? T
         case .unknown:
@@ -86,19 +86,15 @@ extension FlagAssignment: Codable {
             self.variation = try .boolean(container.decode(Bool.self, forKey: .variationValue))
         case "string":
             self.variation = try .string(container.decode(String.self, forKey: .variationValue))
-        case "number":
-            // "number" can carry an integer or a decimal flag. Check integer first, then
-            // double; `variation(as:)` lets a Double read accept the resulting `.integer`.
+        case "number", "integer", "float":
+            // Preserve integer precision before considering a floating-point value.
+            // Numeric wire labels do not constrain lossless getter conversions.
             if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 self.variation = .integer(number)
-                self.isNumberType = true
+                self.isNumberType = variationType == "number"
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
-        case "integer":
-            self.variation = try .integer(container.decode(Int.self, forKey: .variationValue))
-        case "float":
-            self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
         case "object":
             self.variation = try .object(container.decode(AnyValue.self, forKey: .variationValue))
         default:

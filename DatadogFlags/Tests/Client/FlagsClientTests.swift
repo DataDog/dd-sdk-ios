@@ -693,9 +693,10 @@ final class FlagsClientTests: XCTestCase {
         )
         XCTAssertEqual(integerDetails.value, 5)
         XCTAssertNil(integerDetails.error)
-        XCTAssertEqual(integerFlagAsDouble, FlagDetails(key: "integer-flag", value: 3.14, error: .typeMismatch))
-        XCTAssertEqual(exposureLogger.logExposureCalls.count, 2)
-        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, "TYPE_MISMATCH"])
+        XCTAssertEqual(integerFlagAsDouble.value, 7.0)
+        XCTAssertNil(integerFlagAsDouble.error)
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 3)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, nil])
     }
 
     func testFlagEvaluationTracking() {
