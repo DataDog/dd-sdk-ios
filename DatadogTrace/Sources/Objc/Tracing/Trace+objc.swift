@@ -282,28 +282,17 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
     public func extractWithFormat(_ format: String, carrier: Any) throws {
         // TODO: RUMM-385 - we don't need to support it now
     }
+}
 
-    // MARK: - Private
+/// Converts Objective-C tags to Swift, dropping tags whose key is not a `String`.
+internal func castTagsToSwift(_ tags: NSDictionary) -> [String: Encodable] {
+    var validTags: [String: Encodable] = [:]
 
-    private func castTagsToSwift(_ tags: NSDictionary) -> [String: Encodable] {
-        var validTags: [String: Encodable] = [:]
-
-        tags.forEach { tagKey, tagValue in
-            if let stringKey = tagKey as? String {
-                let encodableValue: Encodable = {
-                    if let stringValue = tagValue as? String {
-                        return stringValue
-                    } else if let urlValue = tagValue as? URL {
-                        return urlValue
-                    } else {
-                        return AnyEncodable(tagValue)
-                    }
-                }()
-
-                validTags[stringKey] = encodableValue
-            }
+    tags.forEach { tagKey, tagValue in
+        if let stringKey = tagKey as? String {
+            validTags[stringKey] = castTagValueToSwift(tagValue)
         }
-
-        return validTags
     }
+
+    return validTags
 }
