@@ -330,6 +330,8 @@
 		269035A62E41FAAC00F1A830 /* AccountConfigurationContextMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269035A42E41FAA500F1A830 /* AccountConfigurationContextMocks.swift */; };
 		26A0647230946E2500C6318A /* OperationFeatureRetirementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647130946E2500C6318A /* OperationFeatureRetirementTests.swift */; };
 		26A0647430946E2600C6318A /* RUMOperationOwnership.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647330946E2600C6318A /* RUMOperationOwnership.swift */; };
+		26A0647630946E2700C6318A /* OwnedOperationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647530946E2700C6318A /* OwnedOperationStore.swift */; };
+		26A0647830946E3300C6318A /* OwnedOperationStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647730946E3300C6318A /* OwnedOperationStoreTests.swift */; };
 		26A0647A30946E3400C6318A /* RUMOwnedOperationStepCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647930946E3400C6318A /* RUMOwnedOperationStepCommand.swift */; };
 		26A0647C30946E3500C6318A /* OwnedOperationMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647B30946E3500C6318A /* OwnedOperationMonitorTests.swift */; };
 		26A0647E30946E3600C6318A /* OwnedOperationSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */; };
@@ -2380,6 +2382,8 @@
 		269035A42E41FAA500F1A830 /* AccountConfigurationContextMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountConfigurationContextMocks.swift; sourceTree = "<group>"; };
 		26A0647130946E2500C6318A /* OperationFeatureRetirementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationFeatureRetirementTests.swift; sourceTree = "<group>"; };
 		26A0647330946E2600C6318A /* RUMOperationOwnership.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOperationOwnership.swift; sourceTree = "<group>"; };
+		26A0647530946E2700C6318A /* OwnedOperationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationStore.swift; sourceTree = "<group>"; };
+		26A0647730946E3300C6318A /* OwnedOperationStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationStoreTests.swift; sourceTree = "<group>"; };
 		26A0647930946E3400C6318A /* RUMOwnedOperationStepCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOwnedOperationStepCommand.swift; sourceTree = "<group>"; };
 		26A0647B30946E3500C6318A /* OwnedOperationMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationMonitorTests.swift; sourceTree = "<group>"; };
 		26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationSessionTests.swift; sourceTree = "<group>"; };
@@ -7800,6 +7804,7 @@
 				D229FF5B2E3BA298009CCD62 /* Mach */,
 				11C4E5912F571F86002196F4 /* Models */,
 				1121FCFA2EE305D900297156 /* SDKMetrics */,
+				26A0647530946E2700C6318A /* OwnedOperationStore.swift */,
 			);
 			name = DatadogProfiling;
 			path = ../DatadogProfiling/Sources;
@@ -7828,6 +7833,7 @@
 				110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */,
 				1121FD0B2EE848F700297156 /* SDKMetrics */,
 				D2023A9F2FFE64CE00A80981 /* ProfilingConfiguration+RemoteConfigurationTests.swift */,
+				26A0647730946E3300C6318A /* OwnedOperationStoreTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -9984,6 +9990,7 @@
 				11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */,
 				1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */,
 				11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */,
+				26A0647630946E2700C6318A /* OwnedOperationStore.swift in Sources */,
 				116232402F87FA6F00F20ABC /* ProfilingSamplerProvider.swift in Sources */,
 				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* dd_profiler.cpp in Sources */,
@@ -10642,6 +10649,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				26A0647830946E3300C6318A /* OwnedOperationStoreTests.swift in Sources */,
 				1162323A2F866B4000F20ABC /* MockThread.swift in Sources */,
 				110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */,
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
