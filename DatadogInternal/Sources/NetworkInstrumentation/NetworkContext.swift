@@ -12,6 +12,21 @@ public protocol RUMContextHandoffOwnerProviding {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
 }
 
+/// Synchronous activation capability implemented by the built-in Core only.
+/// Custom and NOP cores need not implement this SPI.
+@_spi(Internal)
+public protocol RUMContextHandoffActivating: RUMContextHandoffOwnerProviding {
+    func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner
+    func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner)
+    func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature
+}
+
+/// Receives activation directly, independently of asynchronous context messages.
+@_spi(Internal)
+public protocol RUMContextHandoffReceiving: AnyObject {
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool)
+}
+
 /// Declares request-local ownership; activation is supplied by the scene input layer.
 @_spi(Internal)
 public enum RUMContextHandoff {
@@ -26,7 +41,7 @@ public enum RUMContextHandoff {
             isActive = false
         }
 
-        var isValid: Bool { isActive }
+        public var isValid: Bool { isActive }
     }
 
     public struct CurrentValue {
@@ -34,6 +49,75 @@ public enum RUMContextHandoff {
         public let sceneIdentifier: String?
         public let hasPendingUserAction: Bool
         public let excludedUserActionID: String?
+
+        public init(
+            rumContext: RUMCoreContext?,
+            sceneIdentifier: String?,
+            hasPendingUserAction: Bool,
+            excludedUserActionID: String?
+        ) {
+            self.rumContext = rumContext
+            self.sceneIdentifier = sceneIdentifier
+            self.hasPendingUserAction = hasPendingUserAction
+            self.excludedUserActionID = excludedUserActionID
+        }
+    }
+
+    // All stored values are immutable. RUMCoreContext contains only scalar/string
+    // values and an immutable Sendable sampler, but does not declare Sendable.
+    private struct Binding: @unchecked Sendable {
+        let owner: Owner
+        let value: CurrentValue
+    }
+
+    @TaskLocal private static var binding: Binding?
+
+    private static var supportsExecutionScope: Bool {
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            return true
+        }
+        #endif
+        return false
+    }
+
+    /// Looks up only the current binding for the exact valid Core lifetime.
+    /// A returned value with nil RUM context remains an authoritative override.
+    public static func current(for owner: Owner?) -> CurrentValue? {
+        guard supportsExecutionScope, let owner = owner, owner.isValid,
+              let binding = binding, binding.owner === owner else {
+            return nil
+        }
+        return binding.value
+    }
+
+    /// Binds a synchronous operation and restores the prior binding on return or throw.
+    /// Unsupported systems and absent or invalid owners execute the operation directly.
+    /// This primitive does not authorize automatic customer-callback integration.
+    public static func withValue<T>(
+        _ value: CurrentValue,
+        for owner: Owner?,
+        operation: () throws -> T
+    ) rethrows -> T {
+        guard supportsExecutionScope, let owner = owner, owner.isValid else {
+            return try operation()
+        }
+        return try $binding.withValue(Binding(owner: owner, value: value), operation: operation)
+    }
+
+    /// Binds an asynchronous operation using the caller's isolation and restores the prior binding.
+    /// Unsupported systems and absent or invalid owners execute the operation directly.
+    /// Automatic customer-callback integration requires separate qualification.
+    public static func withValue<T>(
+        _ value: CurrentValue,
+        for owner: Owner?,
+        isolation: isolated (any Actor)? = #isolation,
+        operation: () async throws -> T
+    ) async rethrows -> T {
+        guard supportsExecutionScope, let owner = owner, owner.isValid else {
+            return try await operation()
+        }
+        return try await $binding.withValue(Binding(owner: owner, value: value), operation: operation, isolation: isolation)
     }
 
     public static func owner(in scope: Any) -> Owner? {
