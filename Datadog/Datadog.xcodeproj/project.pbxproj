@@ -335,6 +335,7 @@
 		26A0647A30946E3400C6318A /* RUMOwnedOperationStepCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647930946E3400C6318A /* RUMOwnedOperationStepCommand.swift */; };
 		26A0647C30946E3500C6318A /* OwnedOperationMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647B30946E3500C6318A /* OwnedOperationMonitorTests.swift */; };
 		26A0647E30946E3600C6318A /* OwnedOperationSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */; };
+		26A06482309498D200C6318A /* RUMSwiftUIViewLifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A06481309498D200C6318A /* RUMSwiftUIViewLifetime.swift */; };
 		26D89095303F398E00B5C5D0 /* CrashReportingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D89094303F398E00B5C5D0 /* CrashReportingConfiguration.swift */; };
 		27A047D86EB162480FF0C5AC /* EvaluationLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = C63A979F48771C3277A41396 /* EvaluationLogger.swift */; };
 		286A8E9E558A341A9505F874 /* predictor_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = 19777FBEB2C8C3720FCE88EB /* predictor_enc.c */; };
@@ -2387,6 +2388,7 @@
 		26A0647930946E3400C6318A /* RUMOwnedOperationStepCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOwnedOperationStepCommand.swift; sourceTree = "<group>"; };
 		26A0647B30946E3500C6318A /* OwnedOperationMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationMonitorTests.swift; sourceTree = "<group>"; };
 		26A0647D30946E3600C6318A /* OwnedOperationSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnedOperationSessionTests.swift; sourceTree = "<group>"; };
+		26A06481309498D200C6318A /* RUMSwiftUIViewLifetime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIViewLifetime.swift; sourceTree = "<group>"; };
 		26D89094303F398E00B5C5D0 /* CrashReportingConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingConfiguration.swift; sourceTree = "<group>"; };
 		2B6A3B154836FEB32C07EB50 /* EvaluationAggregator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationAggregator.swift; sourceTree = "<group>"; };
 		2BA6C5B2E4B4F2AFD7D644B2 /* quant_levels_utils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = quant_levels_utils.h; sourceTree = "<group>"; };
@@ -7434,6 +7436,7 @@
 				965497042D761FC2006428EE /* SwiftUIViewNameExtractor.swift */,
 				9629FFDD2D81C315008DFE39 /* SwiftUIViewPath.swift */,
 				962900232D8351A7008DFE39 /* TopLevelReflector.swift */,
+				26A06481309498D200C6318A /* RUMSwiftUIViewLifetime.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
@@ -10419,6 +10422,7 @@
 				09FF0AF32FD31DFD000D63F8 /* DDPlatformTypes.swift in Sources */,
 				962900242D8351AB008DFE39 /* TopLevelReflector.swift in Sources */,
 				6194B9332BB451DB00179430 /* FatalAppHangsHandler.swift in Sources */,
+				26A06482309498D200C6318A /* RUMSwiftUIViewLifetime.swift in Sources */,
 				D29D1CD02F6067D20085574B /* HeaderProcessor.swift in Sources */,
 				1D6C3C99D788AF6D8ED50979 /* DisallowList.swift in Sources */,
 				D29A9F6229DD85BB005C54A4 /* WebViewEventReceiver.swift in Sources */,

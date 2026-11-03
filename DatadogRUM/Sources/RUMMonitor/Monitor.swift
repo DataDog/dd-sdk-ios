@@ -33,7 +33,7 @@ internal extension RUMResourceType {
         let nativeHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
 
         if let requestMethod = request.httpMethod?.uppercased(),
-            nativeHTTPMethods.contains(requestMethod) {
+           nativeHTTPMethods.contains(requestMethod) {
             self = .native
         } else {
             return nil
@@ -249,7 +249,9 @@ internal class Monitor: RUMCommandSubscriber {
             if let flag = command as? RUMAddFeatureFlagEvaluationCommand,
                let ownership = flag.capturedOwnership {
                 guard self.isMultiSceneTrackingEnabled, ownership.owner.isValid,
-                      self.rumContextHandoffOwner === ownership.owner else { return }
+                      self.rumContextHandoffOwner === ownership.owner else {
+                          return
+                      }
             }
 
             if let error = command as? RUMAddCurrentViewErrorCommand,
@@ -267,48 +269,7 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             }
 
-            let transformedCommand = self.transform(command: command)
-
-            // Record the replay state this command sees before processing it, as it may end or pause the session,
-            // which flushes the collector before the context message bus delivers that state.
-            self.replayState?.update(from: context)
-
-            _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
-
-            if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.applicationScope)
-            }
-
-            if let activeSession = self.applicationScope.activeSession {
-                let representativeView = self.representativeView(in: activeSession)
-                self.sessionActivitySnapshot = (
-                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
-                    sessionStart: activeSession.sessionStart,
-                    lastInteraction: activeSession.lastInteraction
-                )
-                // A delayed interaction can keep this session alive after sampling self-stopped.
-                // Publish its activity snapshot first so the collector observes the refreshed lifetime.
-                if command.isUserInteraction && context.applicationStateHistory.currentState.isRunningInForeground {
-                    self.applicationScope.dependencies.timeseriesCollector?.noteActivity(sessionID: activeSession.sessionUUID.toRUMDataFormat)
-                }
-                if let sceneContextSnapshots = self.sceneContextSnapshots {
-                    var snapshot = SceneContextSnapshots.Value(
-                        representative: self.makeCoreContext(session: activeSession, view: representativeView),
-                        sessionID: activeSession.sessionUUID.toRUMDataFormat,
-                        sessionStart: activeSession.sessionStart,
-                        lastInteraction: activeSession.lastInteraction
-                    )
-                    for view in activeSession.viewScopes where view.isActiveView {
-                        if let sceneIdentifier = view.sceneIdentifier {
-                            snapshot.contextsByScene[sceneIdentifier] = self.makeCoreContext(session: activeSession, view: view)
-                        }
-                    }
-                    sceneContextSnapshots.value = snapshot
-                }
-            } else {
-                self.sessionActivitySnapshot = (nil, nil, nil)
-                self.sceneContextSnapshots?.value = SceneContextSnapshots.Value()
-            }
+            self.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
         }
 
         // update the core context with rum context
@@ -339,13 +300,99 @@ internal class Monitor: RUMCommandSubscriber {
         )
     }
 
+    private func process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        let transformedCommand = self.transform(command: command)
+
+        // Record the replay state this command sees before processing it, as it may end or pause the session,
+        // which flushes the collector before the context message bus delivers that state.
+        self.replayState?.update(from: context)
+
+        _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
+
+        if let debugging = self.debugging {
+            debugging.debug(applicationScope: self.applicationScope)
+        }
+
+        if let activeSession = self.applicationScope.activeSession {
+            let representativeView = self.representativeView(in: activeSession)
+            self.sessionActivitySnapshot = (
+                sessionID: activeSession.sessionUUID.toRUMDataFormat,
+                sessionStart: activeSession.sessionStart,
+                lastInteraction: activeSession.lastInteraction
+            )
+            // A delayed interaction can keep this session alive after sampling self-stopped.
+            // Publish its activity snapshot first so the collector observes the refreshed lifetime.
+            if command.isUserInteraction && context.applicationStateHistory.currentState.isRunningInForeground {
+                self.applicationScope.dependencies.timeseriesCollector?.noteActivity(sessionID: activeSession.sessionUUID.toRUMDataFormat)
+            }
+            if let sceneContextSnapshots = self.sceneContextSnapshots {
+                var snapshot = SceneContextSnapshots.Value(
+                    representative: self.makeCoreContext(session: activeSession, view: representativeView),
+                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
+                    sessionStart: activeSession.sessionStart,
+                    lastInteraction: activeSession.lastInteraction
+                )
+                for view in activeSession.viewScopes where view.isActiveView {
+                    if let sceneIdentifier = view.sceneIdentifier {
+                        snapshot.contextsByScene[sceneIdentifier] = self.makeCoreContext(session: activeSession, view: view)
+                    }
+                }
+                sceneContextSnapshots.value = snapshot
+            }
+        } else {
+            self.sessionActivitySnapshot = (nil, nil, nil)
+            self.sceneContextSnapshots?.value = SceneContextSnapshots.Value()
+        }
+    }
+
+    #if os(iOS)
+    var supportsOwnedSwiftUIViews: Bool {
+        isMultiSceneTrackingEnabled && featureScope is RUMContextHandoffContextUpdating
+    }
+
+    func process(command: RUMCommand, lifetime: RUMSwiftUIViewLifetime) {
+        guard isMultiSceneTrackingEnabled,
+              case .scene = command.target,
+              command is RUMStartViewCommand || command is RUMStopViewCommand,
+              lifetime.isValid(for: self),
+              let contextScope = featureScope as? RUMContextHandoffContextUpdating else {
+            return
+        }
+        var command = command
+        let monotonicTime = applicationScope.dependencies.monotonicClock.elapsedTime
+        command.globalAttributes = attributes
+
+        featureScope.eventWriteContext { [weak self] context, writer in
+            guard let self, lifetime.isValid(for: self) else {
+                return
+            }
+            self.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
+        }
+
+        let publication = RUMSwiftUIViewContextPublication(monitor: self, lifetime: lifetime)
+        contextScope.setRUMContext(for: lifetime.owner) {
+            guard publication.admit() else {
+                return .skip
+            }
+            return .set(publication.context { monitor in
+                guard let session = monitor.applicationScope.activeSession else {
+                    return nil
+                }
+                return monitor.makeCoreContext(session: session, view: monitor.representativeView(in: session))
+            })
+        }
+    }
+    #endif
+
     /// Enqueues only pending ownership before request modifiers can navigate.
     func prepareResource(capturing context: RUMURLSessionContext) -> RUMResourcePreparationReceipt? {
         guard isMultiSceneTrackingEnabled, featureScope is RUMContextHandoffContextUpdating,
               context.owner.isValid, rumContextHandoffOwner === context.owner,
               let rum = context.rumContext, rum.sessionSampler.isSampled,
               let sessionID = UUID(uuidString: rum.sessionID).map(RUMUUID.init(rawValue:)),
-              let viewID = rum.viewID.flatMap(UUID.init(uuidString:)).map(RUMUUID.init(rawValue:)) else { return nil }
+              let viewID = rum.viewID.flatMap(UUID.init(uuidString:)).map(RUMUUID.init(rawValue:)) else {
+                  return nil
+              }
         let identity = RUMResourcePreparationIdentity(owner: context.owner, resourceID: UUID(), sessionID: sessionID, viewID: viewID)
         enqueueResourcePreparation(RUMResourcePreparationCommand(identity: identity, operation: .reserve, time: dateProvider.now))
         return RUMResourcePreparationReceipt(identity: identity, publisher: self)
@@ -383,7 +430,9 @@ internal class Monitor: RUMCommandSubscriber {
                 // bookkeeping cleanup after Core invalidates this owner.
             } else {
                 guard command.identity.owner.isValid, self.rumContextHandoffOwner === command.identity.owner,
-                      self.featureScope is RUMContextHandoffContextUpdating else { return }
+                      self.featureScope is RUMContextHandoffContextUpdating else {
+                          return
+                      }
             }
             switch command.operation {
             case var .commit(start):
@@ -399,8 +448,13 @@ internal class Monitor: RUMCommandSubscriber {
                 break
             }
             guard self.applicationScope.processResourcePreparation(
-                command, monotonicTime: monotonicTime, context: context, writer: writer
-            ) else { return }
+                command,
+                monotonicTime: monotonicTime,
+                context: context,
+                writer: writer
+            ) else {
+                return
+            }
             self.refreshResourceContextSnapshots()
             guard let publisher = self.featureScope as? RUMContextHandoffContextUpdating else {
                 return
@@ -434,7 +488,9 @@ internal class Monitor: RUMCommandSubscriber {
             lastInteraction: session.lastInteraction
         )
         for view in session.viewScopes where view.isActiveView {
-            if let scene = view.sceneIdentifier { snapshot.contextsByScene[scene] = makeCoreContext(session: session, view: view) }
+            if let scene = view.sceneIdentifier {
+                snapshot.contextsByScene[scene] = makeCoreContext(session: session, view: view)
+            }
         }
         sceneContextSnapshots?.value = snapshot
     }
@@ -486,6 +542,10 @@ internal class Monitor: RUMCommandSubscriber {
         fatalErrorContext.globalAttributes = attributes
     }
 }
+
+#if os(iOS)
+extension Monitor: RUMOwnedSwiftUIViewCommandSubscriber {}
+#endif
 
 extension Monitor: RUMActiveContextReader {
     func isSessionExpired(sessionID: String) -> Bool {
@@ -883,7 +943,10 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func addFeatureFlagEvaluation(
-        name: String, value: Encodable, target: RUMCommandTarget, explicitTarget: RUMCommandTarget? = nil
+        name: String,
+        value: Encodable,
+        target: RUMCommandTarget,
+        explicitTarget: RUMCommandTarget? = nil
     ) {
         var command = RUMAddFeatureFlagEvaluationCommand(
             time: dateProvider.now,
@@ -896,7 +959,9 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func addCapturedFeatureFlagEvaluation(
-        name: String, value: Encodable, ownership: RUMCapturedFlagEvaluationOwnership
+        name: String,
+        value: Encodable,
+        ownership: RUMCapturedFlagEvaluationOwnership
     ) {
         var command = RUMAddFeatureFlagEvaluationCommand(time: dateProvider.now, name: name, value: value)
         command.capturedOwnership = ownership
@@ -979,8 +1044,8 @@ extension Monitor: RUMMonitorProtocol {
         }
         guard let provider = featureScope as? RUMOperationScopeProviding,
               let origin = provider.operationOrigin(for: self), origin.isCurrent else {
-                  return
-              }
+            return
+        }
         let capture = RUMContextHandoff.captureValue(for: origin.owner)
         // An explicit absent Session cannot acquire a later representative.
         if let capture, capture.rumContext == nil {
@@ -1129,10 +1194,10 @@ extension Monitor: RUMMonitorViewProtocol {
             return currentExecutionTarget
         }
         guard let identifier = viewController.viewIfLoaded?
-            .window?
-            .windowScene?
-            .session
-            .persistentIdentifier else {
+                .window?
+                .windowScene?
+                .session
+                .persistentIdentifier else {
             return currentExecutionTarget
         }
         return .scene(RUMSceneIdentifier(rawValue: identifier))
