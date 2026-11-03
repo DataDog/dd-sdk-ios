@@ -1050,3 +1050,45 @@ internal struct RUMSetInternalViewAttributeCommand: RUMCommand {
     let key: AttributeKey
     let value: AttributeValue
 }
+
+/// Original owner and pending key for one captured request preparation.
+internal struct RUMResourcePreparationIdentity {
+    let owner: RUMContextHandoff.Owner
+    let resourceID: UUID
+    let sessionID: RUMUUID
+    let viewID: RUMUUID
+
+    var resourceKey: String { resourceID.uuidString }
+}
+
+/// Private queue control; it is never sent through generic session processing.
+internal struct RUMResourcePreparationCommand {
+    enum Operation {
+        case reserve
+        case commit(RUMStartResourceCommand)
+        case resource(RUMCommand)
+        case abandon
+    }
+
+    let identity: RUMResourcePreparationIdentity
+    var operation: Operation
+    let time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+}
+
+/// Destruction releases only a pending key through the weak original publisher.
+internal final class RUMResourcePreparationReceipt {
+    let identity: RUMResourcePreparationIdentity
+    private(set) weak var publisher: Monitor?
+
+    init(identity: RUMResourcePreparationIdentity, publisher: Monitor) {
+        self.identity = identity
+        self.publisher = publisher
+    }
+
+    deinit {
+        // Send the value, never the object being destroyed, to the original queue.
+        let identity = identity
+        publisher?.abandonResourcePreparation(identity)
+    }
+}

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -123,6 +124,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        let actionReceipt = dependencies.isMultiSceneTrackingEnabled
+            ? (command as? RUMUserActionCommand)?.actionReceipt : nil
+        defer { actionReceipt?.reject() }
         if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
             if command is RUMStartUserActionCommand {
                 guard ownership.beginStart() else {
@@ -283,6 +287,30 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // sessions were created.
             sessionScopeDidUpdate(nil)
         }
+    }
+
+    /// Routes a private request control without launch resolution or session fanout.
+    @discardableResult
+    func processResourcePreparation(
+        _ command: RUMResourcePreparationCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer
+    ) -> Bool {
+        guard dependencies.isMultiSceneTrackingEnabled,
+              let session = sessionScopes.first(where: { $0.sessionUUID == command.identity.sessionID }),
+              let result = session.processResourcePreparation(command, monotonicTime: monotonicTime, context: context, writer: writer) else {
+            return false
+        }
+        if !result.keepAlive {
+            // Settling a stopped A must not overwrite a newer active B's metadata.
+            if result.publishesContext, activeSession == nil, sessionScopes.last === session {
+                lastSessionEndReason = session.endReason
+                applicationState.wasPreviousSessionStopped = session.endReason == .stopAPI
+            }
+            sessionScopes.removeAll { $0 === session }
+            if result.publishesContext {
+                dependencies.sessionEndedMetric.endMetric(sessionID: session.sessionUUID, with: context)
+            }
+        }
+        return result.publishesContext
     }
 
     // MARK: - Private
