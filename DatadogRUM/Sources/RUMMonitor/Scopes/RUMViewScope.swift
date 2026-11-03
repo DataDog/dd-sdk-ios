@@ -226,6 +226,7 @@ extension RUMViewScope {
         let command = command.resolvingResourceOwners(in: [self])
 
         if let longTaskCommand = command as? RUMAddLongTaskCommand,
+           longTaskCommand.isMeasuredOnMainRunLoop,
            mayIncludeAppSuspension(longTaskCommand, in: context.applicationStateHistory) {
             DD.logger.debug(
                 "Ignoring long task of \(longTaskCommand.duration)s overlapping a period in which the app may have been suspended"
@@ -904,10 +905,12 @@ extension RUMViewScope {
 
     /// Tells if the long task interval overlaps a period in which the OS may have suspended the process.
     ///
-    /// Long tasks are measured on the main thread's run loop with the wall clock. When the OS suspends the process in the
-    /// middle of a run loop iteration (e.g. shortly after the app entered background), the clock keeps running while no code
-    /// executes, and the iteration completes only once the app is resumed. The whole suspension is then reported as a single
-    /// long task, typically flagged as frozen frame, although it reflects no main thread work. Such long tasks are dropped.
+    /// This only concerns long tasks measured by the SDK on the main thread's run loop with the wall clock. When the OS
+    /// suspends the process in the middle of a run loop iteration (e.g. shortly after the app entered background), the clock
+    /// keeps running while no code executes, and the iteration completes only once the app is resumed. The whole suspension is
+    /// then reported as a single long task, typically flagged as frozen frame, although it reflects no main thread work.
+    /// Such long tasks are dropped. Long tasks measured by the caller and reported through the API are never dropped: the
+    /// app may legitimately execute permitted background work.
     ///
     /// The check uses the app state history from the SDK context. The history is updated on the main thread when the app
     /// state notification is received, so it always includes the transition to background that precedes a suspension.

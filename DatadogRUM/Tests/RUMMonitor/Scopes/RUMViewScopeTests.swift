@@ -3873,7 +3873,7 @@ class RUMViewScopeTests: XCTestCase {
         // measuring the whole suspension as one long task
         XCTAssertTrue(
             scope.process(
-                command: RUMAddLongTaskCommand(time: startViewDate + 61.5, attributes: [:], duration: 60),
+                command: RUMAddLongTaskCommand(time: startViewDate + 61.5, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: true),
                 context: context,
                 writer: writer
             )
@@ -3901,7 +3901,7 @@ class RUMViewScopeTests: XCTestCase {
         // When: a long task starts in the foreground and ends after the app left it
         XCTAssertTrue(
             scope.process(
-                command: RUMAddLongTaskCommand(time: startViewDate + 1.5, attributes: [:], duration: 1),
+                command: RUMAddLongTaskCommand(time: startViewDate + 1.5, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true),
                 context: context,
                 writer: writer
             )
@@ -3930,7 +3930,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // When
         _ = scope.process(
-            command: RUMAddLongTaskCommand(time: startViewDate + 1.05, attributes: [:], duration: 0.5),
+            command: RUMAddLongTaskCommand(time: startViewDate + 1.05, attributes: [:], duration: 0.5, isMeasuredOnMainRunLoop: true),
             context: context,
             writer: writer
         )
@@ -3963,14 +3963,14 @@ class RUMViewScopeTests: XCTestCase {
         // When: one long task ends exactly when the app leaves the foreground, another starts exactly when it resumes
         XCTAssertTrue(
             scope.process(
-                command: RUMAddLongTaskCommand(time: startViewDate + 2, attributes: [:], duration: 1),
+                command: RUMAddLongTaskCommand(time: startViewDate + 2, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true),
                 context: context,
                 writer: writer
             )
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMAddLongTaskCommand(time: startViewDate + 6, attributes: [:], duration: 1),
+                command: RUMAddLongTaskCommand(time: startViewDate + 6, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true),
                 context: context,
                 writer: writer
             )
@@ -3994,13 +3994,41 @@ class RUMViewScopeTests: XCTestCase {
         // When
         XCTAssertTrue(
             scope.process(
-                command: RUMAddLongTaskCommand(time: startViewDate + 61.5, attributes: [:], duration: 60),
+                command: RUMAddLongTaskCommand(time: startViewDate + 61.5, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: true),
                 context: context,
                 writer: writer
             )
         )
 
         // Then
+        XCTAssertEqual(writer.events(ofType: RUMLongTaskEvent.self).count, 1)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.longTask?.count, 1)
+    }
+
+    func testWhenLongTaskMeasuredByCallerSpansPeriodWhereAppMayBeSuspended_itSendsLongTask() throws {
+        // Given: the app leaves the foreground 1s after the view starts and comes back 60s later
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: startViewDate,
+            transitions: [
+                (state: suspendableAppState, date: startViewDate + 1),
+                (state: .active, date: startViewDate + 61)
+            ]
+        )
+        let scope = createStartedViewScope(startedAt: startViewDate, context: context)
+
+        // When: a long task measured by the caller (e.g. a cross-platform SDK) is reported through the API
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: startViewDate + 61.5, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: false),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then: it is trusted and sent, as the app may execute permitted background work
         XCTAssertEqual(writer.events(ofType: RUMLongTaskEvent.self).count, 1)
         XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.longTask?.count, 1)
     }

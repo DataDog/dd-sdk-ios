@@ -781,6 +781,10 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     let isUserInteraction = false // a long task is not an interactive event
 
     let duration: TimeInterval
+    /// `true` if the duration was measured by the SDK on the main thread's run loop with the wall clock (see `LongTaskObserver`),
+    /// `false` if it was measured by the caller and reported through the SDK API. A duration measured on the run loop may
+    /// include a period in which the OS suspended the process.
+    var isMeasuredOnMainRunLoop = false
     let missedEventType: SessionEndedMetric.MissedEventType? = .longTask
 }
 
