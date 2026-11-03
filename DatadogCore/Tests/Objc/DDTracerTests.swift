@@ -430,6 +430,53 @@ class DDTracerTests: XCTestCase {
         XCTAssertNil(try? span.meta.custom(keyPath: "meta.ctx.foo"))
     }
 
+    func testWhenSettingDictionaryTag_itIsFlattened() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary(dictionary: ["string": "value", "int": 1, "nested": ["double": 2.5]]))
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.string"), "value")
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.int"), "1")
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.nested.double"), "2.5")
+    }
+
+    func testWhenSettingDictionaryTagWithCollidingKeys_literalKeyWins() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary(dictionary: ["foo": ["bar": "nested-value"], "foo.bar": "literal-value"]))
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.foo.bar"), "literal-value")
+    }
+
+    func testWhenSettingEmptyDictionaryTag_itSetsNoTags() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary())
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertNil(try? matcher.meta.custom(keyPath: "meta.ctx"))
+    }
+
+    func testWhenSettingDictionaryTagWithNonStringKeys_thoseTagsAreDropped() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary(dictionary: [123: "invalid key", "valid": "valid key"]))
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.valid"), "valid key")
+        XCTAssertNil(try? matcher.meta.custom(keyPath: "meta.ctx.123"), "123 is not a valid tag-key, so it should be dropped")
+    }
+
     func testWhenNestedDictionaryTagHasNonStringKeys_itIsNotFlattened() throws {
         Trace.enable(with: config)
 
