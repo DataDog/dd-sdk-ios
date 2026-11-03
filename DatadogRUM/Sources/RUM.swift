@@ -64,6 +64,16 @@ public enum RUM {
             throw error
         }
 
+        #if canImport(SwiftUI) && os(iOS)
+        if rum.isMultiSceneTrackingEnabled {
+            rum.instrumentation.installSwiftUIViewFoundation(
+                feature: rum,
+                core: core,
+                notificationCenter: configuration.notificationCenterProvider.applicationCenter
+            )
+        }
+        #endif
+
         if rum.timeseriesCollector != nil {
             core.telemetry.usage(event: .timeseries)
         }
