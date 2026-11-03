@@ -53,7 +53,7 @@ final class FlagsResponseSigningTests: XCTestCase {
 
     private func corpus(
         name: String = "ResponseSigningCorpus",
-        hash: String = "f749069c3344eb72eac11a614bdb92215208e472feeb98467367d78ef42782c5"
+        hash: String = "393490bfefe382b9b75cf2964c131a910faa679888689457f99c2da2dc57fbbd"
     ) throws -> Corpus {
         #if SWIFT_PACKAGE
         let bundle = Bundle.module

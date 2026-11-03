@@ -3115,7 +3115,7 @@
           ],
           [
             "x-datadog-feature-flags-signature-version",
-            "3, 3"
+            "1, 1"
           ]
         ],
         "body_base64": "eyJmbGFncyI6eyJjcml0aWNhbC1kZW1vIjp7InZhcmlhdGlvbiI6Im9mZiIsInZhbHVlIjpmYWxzZX19LCJydWxlc1JldmlzaW9uIjoic3ludGhldGljLXIxIiwibGFiZWwiOiJjYWbDqSJ9"
@@ -3431,7 +3431,7 @@
           ],
           [
             "x-datadog-feature-flags-certificate-id",
-            "45c22d216e51de0f4750dbd127f5cbeeadef2bc3b426cb95d682abcc88c9210b"
+            "6738a6d5b76925e3a967b90c0932d159bf8524ad2db2d14b7a7bc705719bffaa"
           ],
           [
             "x-datadog-feature-flags-issued-at",
@@ -3443,7 +3443,7 @@
           ],
           [
             "x-datadog-feature-flags-signature",
-            "MEQCICd4gJ6SS+b86toF0aHTSFmKhhl15NCZSYSzddUH8363AiANVhVk9z3UFZVeShs2xdX9wtT8yyL3Jbpdt7CpU7jD6g=="
+            "MEQCIAtONBn1e9+mX5CtPvimsYrBLuc6T3VZF3LlVdCzuXiUAiAtr/SytbKwdYTAEJqIqvtVqCbuQUJit8MsvIcdY45ZgA=="
           ],
           [
             "x-datadog-feature-flags-signing-certificate",
@@ -3454,7 +3454,8 @@
       },
       "now": 1793062800,
       "expected_accept": false,
-      "rejection_reason": "certificate-encoding"
+      "rejection_reason": "certificate-encoding",
+      "transcript_base64": "ZGF0YWRvZy5mZWF0dXJlLWZsYWdzLnByZWNvbXB1dGVkLWFzc2lnbm1lbnRzLnYxAAAAAARQT1NUAAAABWh0dHBzAAAAEmZsYWdzLmV4YW1wbGUudGVzdAAAABcvcHJlY29tcHV0ZS9hc3NpZ25tZW50cwAAAB8/ZGRfZW52PXByb2R1Y3Rpb24mbWFya2VyPWElMkZiAAAAEMdE6KAiC4TmNqM4Bt71Nlq7RTYkNmgw7InPBvfo1awKbp0Kv9q6SfxCHygN4pcnh/6Ng8TcBPzzrxF/TDOL/e9gFxG7FxwZhrfj79251AdPAQAAABBhcHBsaWNhdGlvbi9qc29uAQAAAA1zeW50aGV0aWMtYXBwAAEAAAAEdHJ1ZQEAAAATcmVzcG9uc2Utc2lnbmluZy12MQAAyAAAAABq3/eQAAAAAGrf+LwAAAAAAAAAbBjoo2BVrsFBvsb7/kndkWuEJugJckBE6x8yNdHqNEVJZzim1bdpJeOpZ7kMCTLRWb+FJK0tstFLenvHBXGb/6qK5IXeXBsvfM61fHg4wyYFpic/Ia2/EMmSIZ43j2NQqw=="
     },
     {
       "id": "cryptographic-signature-tampering",
