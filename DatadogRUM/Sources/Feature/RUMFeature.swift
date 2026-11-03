@@ -60,10 +60,19 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         )
 
         let featureScope = core.scope(for: RUMFeature.self)
+
+        #if os(macOS)
+        // macOS apps have no background state. Events with no active view are tracked there without this option,
+        // see `RUMOffViewEventsHandlingRule`.
+        let trackBackgroundEvents = false
+        #else
+        let trackBackgroundEvents = configuration.trackBackgroundEvents
+        #endif
+
         let sessionEndedMetric = SessionEndedMetricController(
             telemetry: core.telemetry,
             sampleRate: configuration.debugSDK ? 100 : configuration.sessionEndedSampleRate,
-            tracksBackgroundEvents: configuration.trackBackgroundEvents,
+            tracksBackgroundEvents: trackBackgroundEvents,
             isUsingSceneLifecycle: configuration.bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") != nil
         )
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
@@ -118,7 +127,11 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         // Slow frames are measured on the render loop. Without an observer (macOS and watchOS for now),
         // tracking them would report an empty, perfectly smooth view instead of no data.
+        #if os(macOS)
+        let tracksSlowFrames = false
+        #else
         let tracksSlowFrames = configuration.trackSlowFrames && renderLoopObserver != nil
+        #endif
 
         let distributedTracing: (FirstPartyHosts, SampleRate)? = {
             switch configuration.urlSessionTracking?.firstPartyHostsTracing {
@@ -203,7 +216,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
             samplingRate: sessionSampleRate,
-            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackBackgroundEvents: trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
             firstPartyHosts: distributedTracing?.0,
@@ -410,7 +423,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
                 sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-                trackBackgroundEvents: configuration.trackBackgroundEvents,
+                trackBackgroundEvents: trackBackgroundEvents,
                 uuidGenerator: configuration.uuidGenerator,
                 ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
                 syntheticsTest: {
@@ -478,7 +491,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64.ddWithNoOverflow($0.sampleRate) },
             swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
             swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
-            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackBackgroundEvents: trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             trackLongTask: configuration.longTaskThreshold != nil,
             trackNativeLongTasks: configuration.longTaskThreshold != nil,

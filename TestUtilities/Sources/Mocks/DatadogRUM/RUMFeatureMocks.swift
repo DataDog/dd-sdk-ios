@@ -159,7 +159,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = DefaultSwiftUIRUMViewsPredicate(),
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = .mockAny(),
-        trackBackgroundEvents: Bool = .mockAny(),
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
@@ -173,8 +172,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = .mockAny(),
         trackAnonymousUser: Bool = .mockAny(),
-        trackMemoryWarnings: Bool = .mockAny(),
-        trackSlowFrames: Bool = .mockAny(),
         telemetrySampleRate: SampleRate = 0
     ) -> RUM.Configuration {
         .init(
@@ -185,7 +182,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             swiftUIViewsPredicate: swiftUIViewsPredicate,
             urlSessionTracking: urlSessionTracking,
             trackFrustrations: trackFrustrations,
-            trackBackgroundEvents: trackBackgroundEvents,
             longTaskThreshold: longTaskThreshold,
             appHangThreshold: appHangThreshold,
             vitalsUpdateFrequency: vitalsUpdateFrequency,
@@ -199,8 +195,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             onSessionStart: onSessionStart,
             customEndpoint: customEndpoint,
             trackAnonymousUser: trackAnonymousUser,
-            trackMemoryWarnings: trackMemoryWarnings,
-            trackSlowFrames: trackSlowFrames,
             telemetrySampleRate: telemetrySampleRate
         )
     }
@@ -212,18 +206,18 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             applicationID: .mockRandom(),
             sessionSampleRate: .mockRandom(min: 0, max: 100),
             trackFrustrations: .mockRandom(),
-            trackBackgroundEvents: .mockRandom(),
             longTaskThreshold: .mockRandom(),
             appHangThreshold: .mockRandom(),
             vitalsUpdateFrequency: [VitalsFrequency.frequent, .average, .rare].randomElement(),
             customEndpoint: .mockRandom(),
             trackAnonymousUser: .mockRandom(),
-            trackMemoryWarnings: .mockRandom(),
-            trackSlowFrames: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
         #if !os(macOS)
+        configuration.trackBackgroundEvents = .mockRandom()
         configuration.trackWatchdogTerminations = .mockRandom()
+        configuration.trackMemoryWarnings = .mockRandom()
+        configuration.trackSlowFrames = .mockRandom()
         #endif
         return configuration
     }
