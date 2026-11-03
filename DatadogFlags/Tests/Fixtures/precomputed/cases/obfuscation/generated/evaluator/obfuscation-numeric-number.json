@@ -1,6 +1,6 @@
 {
-  "name": "obfuscation-numeric-integer",
-  "description": "Lossless numeric reads are independent of the numeric wire label.",
+  "name": "obfuscation-numeric-number",
+  "description": "Generated obfuscated companion: Lossless numeric reads are independent of the numeric wire label.",
   "context": {
     "targetingKey": "fixture-subject",
     "attributes": {}
@@ -10,98 +10,98 @@
       "attributes": {
         "createdAt": "2026-01-01T00:00:00Z",
         "flags": {
-          "72101f81c2d474893bb90b2e9fbece5750b83659171b75d423eba3c8caa09af8": {
+          "5a1d7afff3fd522b50e8891f7af14267bdd253a1455ed12bc92188f78e12033d": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 0,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "158853f6fec44bdd14c7dcf732538d1932393333da0d38e5b1cf389febab173a": {
+          "cbc15a556f7e611fa26f06f6a6334ee91ad5d6a344496452557db41ed992bc25": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 0,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "5e716e405677ef15a943d1e3ec8577a5436ad2b08b619801fa115e3f6056e7e1": {
+          "f1c431305b153a3030fadebc0057e634b6162cd6acda9744a763082b1197c740": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 5,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "55aa24315699bb2e6b22e1e60dbc59588628d4987393d1709e63283f740da782": {
+          "7b3cbab857c42d32035705aa891dd7a2fbadcbe1fc0f1e28f3611076a6aa7945": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 5,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "11dbbd2cc435f0d8521f492798f5cdeda39b44612afb5b2e8dbbca244eac8afb": {
+          "acdfe2ec44b3eb617b86da9a49166e3abecbc85c00951e548516cfd748056403": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": -5,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "5f600bc0a426abe99c1d0f650b9b8eb243179105c4a73a59f696b99967088fcd": {
+          "3af8ba8e93c58c248ed0d943b8bfbc630236bbbeca96be121efc46ed8da4b9b0": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": -5,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "422fd4f38b4009a3443ac2334e4687d21e2eb02d7614a3eec83c7630585d7f4e": {
+          "efb49302883b084e49d51cb2f41fd795224a571d182536e203f6ab28e6648b77": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 1.25,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "77e8ec1779ffe7a8edd77b8c84358cae99993a9898b4c0cadf2336a88ae99ccd": {
+          "c38a503ec9a1c032f0a073e23d6d0ede2eccf245aac33f9db02a5374728c810e": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 1.25,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "6779f3038ba17b00bc22bd42f0fb7078c7a3cf7843adc7884e269ad0b33a0180": {
+          "499aef4e9d9d7df120a79816e9406b5925664e851fd638a129f525588e8a9385": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": -0.5,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "7224ebe3cb4e571ec923f2624b68bd3e183c199258e5523e6456b62e9254f8e5": {
+          "b004cb3fb7dbb1846ba17f461b1a0931cd52d9ffde2c5419d51c0b47e42baf99": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": -0.5,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "9483e1046878fedc712a9345a3e8406df5b24d42f7e0d4500ff8cc9fb1c9a161": {
+          "d858ab64de6a97983f95792030011b2dd635938aaefd90fee12b37ef67e9dac3": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 1.2,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "e3e9c957b3953d38da8ada7fadcb6bea2ce78691d7cc34dbc2c75297ee4c5a95": {
+          "3ece2688265c5c214d2904619cf0294042830dc10d72dae32e50050c7cded8c3": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "number",
             "variationValue": 1.2,
             "reason": "TARGETING_MATCH",
             "doLog": true
@@ -110,14 +110,14 @@
         "obfuscated": true,
         "obfuscation": {
           "scheme": "flag-key-sha256-v1",
-          "salt": "00112233445566778899aabbccddeeff"
+          "salt": "000102030405060708090a0b0c0d0e0f"
         }
       }
     }
   },
   "evaluations": [
     {
-      "flag": "obfuscation-numeric-integer-0",
+      "flag": "numeric-number-0",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -128,7 +128,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-1",
+      "flag": "numeric-number-1",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -139,7 +139,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-2",
+      "flag": "numeric-number-2",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -150,7 +150,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-3",
+      "flag": "numeric-number-3",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -161,7 +161,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-4",
+      "flag": "numeric-number-4",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -172,7 +172,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-5",
+      "flag": "numeric-number-5",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -183,7 +183,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-6",
+      "flag": "numeric-number-6",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -212,7 +212,7 @@
       ]
     },
     {
-      "flag": "obfuscation-numeric-integer-7",
+      "flag": "numeric-number-7",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -223,7 +223,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-8",
+      "flag": "numeric-number-8",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -252,7 +252,7 @@
       ]
     },
     {
-      "flag": "obfuscation-numeric-integer-9",
+      "flag": "numeric-number-9",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -263,7 +263,7 @@
       }
     },
     {
-      "flag": "obfuscation-numeric-integer-10",
+      "flag": "numeric-number-10",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -292,7 +292,7 @@
       ]
     },
     {
-      "flag": "obfuscation-numeric-integer-11",
+      "flag": "numeric-number-11",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -309,55 +309,55 @@
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-0"
+          "key": "numeric-number-0"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-1"
+          "key": "numeric-number-1"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-2"
+          "key": "numeric-number-2"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-3"
+          "key": "numeric-number-3"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-4"
+          "key": "numeric-number-4"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-5"
+          "key": "numeric-number-5"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-7"
+          "key": "numeric-number-7"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-9"
+          "key": "numeric-number-9"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-11"
+          "key": "numeric-number-11"
         }
       }
     ],
@@ -365,49 +365,49 @@
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-0"
+          "key": "numeric-number-0"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-1"
+          "key": "numeric-number-1"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-2"
+          "key": "numeric-number-2"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-3"
+          "key": "numeric-number-3"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-4"
+          "key": "numeric-number-4"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-5"
+          "key": "numeric-number-5"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-6"
+          "key": "numeric-number-6"
         },
         "evaluation_count": 1,
         "_include": [
@@ -433,14 +433,14 @@
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-7"
+          "key": "numeric-number-7"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-8"
+          "key": "numeric-number-8"
         },
         "evaluation_count": 1,
         "_include": [
@@ -466,14 +466,14 @@
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-9"
+          "key": "numeric-number-9"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-10"
+          "key": "numeric-number-10"
         },
         "evaluation_count": 1,
         "_include": [
@@ -499,7 +499,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "obfuscation-numeric-integer-11"
+          "key": "numeric-number-11"
         },
         "evaluation_count": 1
       }
@@ -508,15 +508,15 @@
   "_include": [
     {
       "platform": "ios",
-      "reason": "Requires native numeric precision or supported obfuscation."
+      "reason": "Supports obfuscation and the source fixture."
     },
     {
       "platform": "android",
-      "reason": "Requires native numeric precision or supported obfuscation."
+      "reason": "Supports obfuscation and the source fixture."
     },
     {
       "platform": "flutter",
-      "reason": "Requires native numeric precision or supported obfuscation."
+      "reason": "Supports obfuscation and the source fixture."
     }
   ]
 }

@@ -123,6 +123,8 @@ Fractional Integer reads, range overflow, and inexact conversions return `TYPE_M
 React Native exposes one Number getter. Its tests exclude cases that require a separate Integer getter or native integer precision.
 The service keeps sending `number`. This work adds no numeric capability.
 
+Upstream CI requires a generated obfuscated companion for each applicable plain fixture. It rejects missing, stale, or orphaned companions. Edit the plain case upstream and regenerate; do not maintain two sets of expectations. Dedicated malformed-encoding cases and fixed digest vectors remain separate.
+
 Cases cover values, defaults, errors, reasons, variants, emission gates, duplicate evaluations, and numeric boundaries.
 Obfuscation cases cover fixed digests, salts, Unicode, whitespace, malformed metadata, and plaintext event identity.
 The suite tests network decoding and serialized state. It checks real exposure and evaluation records. UTF-8 flag identity remains distinct during deduplication.

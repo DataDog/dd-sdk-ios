@@ -1,6 +1,6 @@
 {
-  "name": "obfuscation-numeric-boundaries-integer",
-  "description": "Lossless numeric reads are independent of the numeric wire label.",
+  "name": "obfuscation-numeric-boundaries-float",
+  "description": "Generated obfuscated companion: Lossless numeric reads are independent of the numeric wire label.",
   "context": {
     "targetingKey": "fixture-subject",
     "attributes": {}
@@ -10,178 +10,178 @@
       "attributes": {
         "createdAt": "2026-01-01T00:00:00Z",
         "flags": {
-          "7c5c55bbc1d947ebd29d4d22bbb8e854fb84a3168ec16c9b88ff1eb8048f1259": {
+          "35dd7544a6b9a875c5074a893aa3d5c95f015b6cff7f07f30390bc90b939839e": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -2147483648,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "1db93bef085224805fc0b94e254d8efea2ad144e255512c7822ba1941efd37ca": {
+          "54b3e4e77e354d4e049991350fe68ce1a90ba4e874933a9e269d5b99cb3ad115": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -2147483648,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "c65f42d21a69e9e63e768bb7c353ccc659d8fa7fda19d552c46571fe747939a1": {
+          "6cec42afe677ad01472e4754a611106037ddb8e786570bf9a730630b8d2f7f30": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -2147483648,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "57ea520510c0e0ffdf6c016032a1ad8fd7e930feddb56e512c5ba5e176bb747e": {
+          "8de4314e7ce11a9f64a3490e59968a1130f56b15c39276bdff9ebc344402101d": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 2147483647,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "3bae488ac7f7c5e64e8d80c5e5d3a01fede98ee9dc1dbfaaa1602bdb834e3199": {
+          "4182dc078ece15bc1c45cabf6e2ab2ad0b7acaf7f42eaa3ad63fe3956beb1db7": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 2147483647,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "d7e31a5af23eaed253fbab5d5ba775a49cc869265a762861623b9850ca45200e": {
+          "ec7fd610e215fd5d177ffa68bec26d50a871bc1cf0114636a734e1660bd6411e": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 2147483647,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "e214fbcdc5fa2e6b53e80a737cf3b01bf720e1da6bdc8d1a8126c82fae131cc5": {
+          "53d34567f5337f1104d86a9e821df4511fa74a9cc03516f426c9ab4c7af0ac52": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -2147483649,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "f87c7ffcbfc101c063bc2f6533d4a73054a4c3e0cc59b865b6d9a738cded6776": {
+          "3e69e701cc02087f7897b6f4832e8be0be9ca155876f8cb95597e6ad32b1e2ab": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -2147483649,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "24e2195a49630a3b88efcb5227d7044651ffa1e483006af5ef3e41db492ca96a": {
+          "bd1a3e85e06626dbb1c56432a8dea7a0128284f1d781013835a2564e70f87d98": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -2147483649,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "45316309ea93c9d4d63ebd704488bd9b862cb9d30303b54ccbc668a45f1a9cfd": {
+          "a212f6d288564e940e009835514eaad55a3d62caada53dd1fdda1b2475efed0a": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 2147483648,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "107e31005fc784e93f438721722b248ed66b8ed91d13eefca267786102fe5a81": {
+          "f8dc9d43242ec89a4db2212c3a70ee9c938b0cb36afac45b2000cd7c77bf7609": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 2147483648,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "ca603c439f5fa9a01c76f4febf58bf0b1034e100dd37fd1731c05f667409846e": {
+          "b1e20092aa2b67b3e8ed9d5533a2260ff177207d9b86fac2151864b2d7af492e": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 2147483648,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "bf801a713f62854431659efc54a0cb312dd601a8459d4390b13840fd7f414a02": {
+          "45f0d04656e98eb32b8221714cf169d57479d2be4af6b96c5ffe0f9fd589ad0a": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 9007199254740992,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "6c6bc2ace96267f8a839f207457b3d12b93f8211e7ce9a2f4ef9b2ddfc70412b": {
+          "680bb5138700a197f7896709b20d6a451854dfaf7fd2016374154dc214101f96": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 9007199254740992,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "cd01bfe31bd7117a646dddc5be9732400e8ee0076cafd79c189115b8b3081950": {
+          "5f0e609737393c76014f125cfe1d8b685065b3f8bb2833e393f4de4bb3f271fd": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 9007199254740993,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "fe4005d2eb3448257136861a88114cadcc85f06cb2ede14a36b581d4900e4a5e": {
+          "6de38d27b71396e8169bdf012bf53a9f6112b4f9533e492d1d0c372aa5b2b89a": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 9007199254740993,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "fb7e52e4c272d1e4e9602339c4f6a7094257194ea28d274314b8ca0a4aec639b": {
+          "e68a8c78bf6d545e6c949e88209611b6615ddeea9817440de9fd3fb7a289c335": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -9007199254740993,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "de7cefc4a649b9c39f7fe31b49d5fa5f8ac6b792e2227717e0130dd127bbfd70": {
+          "a6d6386fa18188d57ad46d118b937d77a1a8d814e3ff723871452b9d5f6abd03": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -9007199254740993,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "e084557c149a57fcf7e04041ad080c04586380baa9093a16dfee198a1ad51989": {
+          "9d28b9ca14aed8cd8edab7144dc09ff50ff608f1676df0c92be1a225fc4c95b4": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 9223372036854775807,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "f163106c94e153c44a0f9c882c90c6c5771e7df230fb847e3a9426bf18a8f312": {
+          "e026139b2c1ef067fcd194745a316b948ca17d4224a2c6ef0f54e42739a6f9e5": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": 9223372036854775807,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "40aa0011039c7b0946bb1264199ba576db480b932c341fa5a224340056ec0976": {
+          "9ad722f4aa0e6cbe77da0e6406a3f40ac0dbe3f556a524d1d504115896235fed": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -9223372036854775808,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "79ccc13c690d354291ea1fbee6c0b103d273130dd90bb6f3efe51840d1c562ae": {
+          "56cd8c449d33e0a19ca9b0d300b40bd994dfd1f4f3b16d093e453d8a97a3645f": {
             "allocationKey": "allocation",
             "variationKey": "variant",
-            "variationType": "integer",
+            "variationType": "float",
             "variationValue": -9223372036854775808,
             "reason": "TARGETING_MATCH",
             "doLog": true
@@ -190,14 +190,14 @@
         "obfuscated": true,
         "obfuscation": {
           "scheme": "flag-key-sha256-v1",
-          "salt": "00112233445566778899aabbccddeeff"
+          "salt": "000102030405060708090a0b0c0d0e0f"
         }
       }
     }
   },
   "evaluations": [
     {
-      "flag": "numeric-boundaries-integer-0",
+      "flag": "numeric-boundaries-float-0",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -218,7 +218,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-1",
+      "flag": "numeric-boundaries-float-1",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -239,7 +239,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-2",
+      "flag": "numeric-boundaries-float-2",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -250,7 +250,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-3",
+      "flag": "numeric-boundaries-float-3",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -271,7 +271,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-4",
+      "flag": "numeric-boundaries-float-4",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -292,7 +292,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-5",
+      "flag": "numeric-boundaries-float-5",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -303,7 +303,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-6",
+      "flag": "numeric-boundaries-float-6",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -324,7 +324,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-7",
+      "flag": "numeric-boundaries-float-7",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -345,7 +345,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-8",
+      "flag": "numeric-boundaries-float-8",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -356,7 +356,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-9",
+      "flag": "numeric-boundaries-float-9",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -377,7 +377,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-10",
+      "flag": "numeric-boundaries-float-10",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -398,7 +398,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-11",
+      "flag": "numeric-boundaries-float-11",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -409,7 +409,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-12",
+      "flag": "numeric-boundaries-float-12",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -430,7 +430,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-13",
+      "flag": "numeric-boundaries-float-13",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -441,7 +441,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-14",
+      "flag": "numeric-boundaries-float-14",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -462,7 +462,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-15",
+      "flag": "numeric-boundaries-float-15",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -473,7 +473,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-16",
+      "flag": "numeric-boundaries-float-16",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -494,7 +494,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-17",
+      "flag": "numeric-boundaries-float-17",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -505,7 +505,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-18",
+      "flag": "numeric-boundaries-float-18",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -526,7 +526,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-19",
+      "flag": "numeric-boundaries-float-19",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -537,7 +537,7 @@
       }
     },
     {
-      "flag": "numeric-boundaries-integer-20",
+      "flag": "numeric-boundaries-float-20",
       "variationType": "integer",
       "defaultValue": -99,
       "expectedResult": {
@@ -558,7 +558,7 @@
       ]
     },
     {
-      "flag": "numeric-boundaries-integer-21",
+      "flag": "numeric-boundaries-float-21",
       "variationType": "float",
       "defaultValue": -99.5,
       "expectedResult": {
@@ -575,7 +575,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-0"
+          "key": "numeric-boundaries-float-0"
         },
         "_include": [
           {
@@ -591,7 +591,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-1"
+          "key": "numeric-boundaries-float-1"
         },
         "_include": [
           {
@@ -607,13 +607,13 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-2"
+          "key": "numeric-boundaries-float-2"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-3"
+          "key": "numeric-boundaries-float-3"
         },
         "_include": [
           {
@@ -629,7 +629,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-4"
+          "key": "numeric-boundaries-float-4"
         },
         "_include": [
           {
@@ -645,13 +645,13 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-5"
+          "key": "numeric-boundaries-float-5"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-7"
+          "key": "numeric-boundaries-float-7"
         },
         "_include": [
           {
@@ -667,13 +667,13 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-8"
+          "key": "numeric-boundaries-float-8"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-10"
+          "key": "numeric-boundaries-float-10"
         },
         "_include": [
           {
@@ -689,13 +689,13 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-11"
+          "key": "numeric-boundaries-float-11"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-12"
+          "key": "numeric-boundaries-float-12"
         },
         "_include": [
           {
@@ -711,13 +711,13 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-13"
+          "key": "numeric-boundaries-float-13"
         }
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-14"
+          "key": "numeric-boundaries-float-14"
         },
         "_include": [
           {
@@ -733,7 +733,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-16"
+          "key": "numeric-boundaries-float-16"
         },
         "_include": [
           {
@@ -749,7 +749,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-18"
+          "key": "numeric-boundaries-float-18"
         },
         "_include": [
           {
@@ -765,7 +765,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-20"
+          "key": "numeric-boundaries-float-20"
         },
         "_include": [
           {
@@ -781,7 +781,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-21"
+          "key": "numeric-boundaries-float-21"
         }
       }
     ],
@@ -789,7 +789,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-0"
+          "key": "numeric-boundaries-float-0"
         },
         "evaluation_count": 1,
         "_include": [
@@ -806,7 +806,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-1"
+          "key": "numeric-boundaries-float-1"
         },
         "evaluation_count": 1,
         "_include": [
@@ -823,14 +823,14 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-2"
+          "key": "numeric-boundaries-float-2"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-3"
+          "key": "numeric-boundaries-float-3"
         },
         "evaluation_count": 1,
         "_include": [
@@ -847,7 +847,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-4"
+          "key": "numeric-boundaries-float-4"
         },
         "evaluation_count": 1,
         "_include": [
@@ -864,56 +864,14 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-5"
+          "key": "numeric-boundaries-float-5"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-6"
-        },
-        "evaluation_count": 1,
-        "_include": [
-          {
-            "platform": "android",
-            "reason": "This case requires the stated native numeric accessor range."
-          },
-          {
-            "platform": "unity",
-            "reason": "This case requires the stated native numeric accessor range."
-          }
-        ],
-        "runtime_default_used": true
-      },
-      {
-        "_count": 1,
-        "flag": {
-          "key": "numeric-boundaries-integer-7"
-        },
-        "evaluation_count": 1,
-        "_include": [
-          {
-            "platform": "ios",
-            "reason": "This case requires the stated native numeric accessor range."
-          },
-          {
-            "platform": "flutter",
-            "reason": "This case requires the stated native numeric accessor range."
-          }
-        ]
-      },
-      {
-        "_count": 1,
-        "flag": {
-          "key": "numeric-boundaries-integer-8"
-        },
-        "evaluation_count": 1
-      },
-      {
-        "_count": 1,
-        "flag": {
-          "key": "numeric-boundaries-integer-9"
+          "key": "numeric-boundaries-float-6"
         },
         "evaluation_count": 1,
         "_include": [
@@ -931,7 +889,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-10"
+          "key": "numeric-boundaries-float-7"
         },
         "evaluation_count": 1,
         "_include": [
@@ -948,14 +906,32 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-11"
+          "key": "numeric-boundaries-float-8"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-12"
+          "key": "numeric-boundaries-float-9"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "android",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "unity",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ],
+        "runtime_default_used": true
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-float-10"
         },
         "evaluation_count": 1,
         "_include": [
@@ -972,14 +948,14 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-13"
+          "key": "numeric-boundaries-float-11"
         },
         "evaluation_count": 1
       },
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-14"
+          "key": "numeric-boundaries-float-12"
         },
         "evaluation_count": 1,
         "_include": [
@@ -996,7 +972,31 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-15"
+          "key": "numeric-boundaries-float-13"
+        },
+        "evaluation_count": 1
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-float-14"
+        },
+        "evaluation_count": 1,
+        "_include": [
+          {
+            "platform": "ios",
+            "reason": "This case requires the stated native numeric accessor range."
+          },
+          {
+            "platform": "flutter",
+            "reason": "This case requires the stated native numeric accessor range."
+          }
+        ]
+      },
+      {
+        "_count": 1,
+        "flag": {
+          "key": "numeric-boundaries-float-15"
         },
         "evaluation_count": 1,
         "runtime_default_used": true
@@ -1004,7 +1004,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-16"
+          "key": "numeric-boundaries-float-16"
         },
         "evaluation_count": 1,
         "_include": [
@@ -1021,7 +1021,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-17"
+          "key": "numeric-boundaries-float-17"
         },
         "evaluation_count": 1,
         "runtime_default_used": true
@@ -1029,7 +1029,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-18"
+          "key": "numeric-boundaries-float-18"
         },
         "evaluation_count": 1,
         "_include": [
@@ -1046,7 +1046,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-19"
+          "key": "numeric-boundaries-float-19"
         },
         "evaluation_count": 1,
         "runtime_default_used": true
@@ -1054,7 +1054,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-20"
+          "key": "numeric-boundaries-float-20"
         },
         "evaluation_count": 1,
         "_include": [
@@ -1071,7 +1071,7 @@
       {
         "_count": 1,
         "flag": {
-          "key": "numeric-boundaries-integer-21"
+          "key": "numeric-boundaries-float-21"
         },
         "evaluation_count": 1
       }
@@ -1080,15 +1080,15 @@
   "_include": [
     {
       "platform": "ios",
-      "reason": "Requires native numeric precision or supported obfuscation."
+      "reason": "Supports obfuscation and the source fixture."
     },
     {
       "platform": "android",
-      "reason": "Requires native numeric precision or supported obfuscation."
+      "reason": "Supports obfuscation and the source fixture."
     },
     {
       "platform": "flutter",
-      "reason": "Requires native numeric precision or supported obfuscation."
+      "reason": "Supports obfuscation and the source fixture."
     }
   ]
 }

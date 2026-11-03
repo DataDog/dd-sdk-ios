@@ -213,6 +213,40 @@ emit one event with `evaluation_count: 2`. Exposure deduplication is independent
 Runners must inspect real event records, not synthesize them from expectations.
 Keep native bridge and deployed-backend proof separate from mocked conformance.
 
+## Plain and obfuscated coverage
+
+Every plain response fixture has a generated obfuscated companion. This checks
+that encoding preserves public evaluation results and emitted events. Dedicated
+malformed-encoding cases, unsupported-consumer cases, and fixed hash vectors
+remain separate. They do not require plain counterparts.
+
+Edit the plain fixture, then regenerate its companions:
+
+```bash
+python3 ci/precomputed_obfuscation.py --write
+python3 ci/precomputed_obfuscation.py --check
+python3 ci/validate-precomputed-fixtures.py
+```
+
+The generator discovers plain JSON files recursively. It changes response-map
+keys and encoding metadata. Public lookup keys, values, results, and event
+expectations stay unchanged. The generated platform filter intersects the
+source filter with consumers that support obfuscation. Evaluation and event
+filters remain unchanged.
+
+Generated files are under `cases/obfuscation/generated/`, preserving source
+categories and nested paths. Do not edit these files directly. CI compares them
+with freshly generated content and rejects missing, stale, or orphaned files.
+Adding a normal case needs no generator list or SDK runner change.
+
+When encoding does not apply, add the source path and a reason to
+`obfuscation-exceptions.json`. CI rejects blank reasons and stale paths. An SDK
+failure is not a reason for an exception. All current plain fixtures have
+companions; the exception map is empty.
+
+The independent digest vectors remain fixed. Generator regression tests check
+those known digests, including Unicode, whitespace, and embedded NUL keys.
+
 ## Snapshot maintenance
 
 Consumers can copy `ci/sync-precomputed-fixtures.py` and configure the destination
