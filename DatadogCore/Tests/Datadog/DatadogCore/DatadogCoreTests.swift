@@ -439,7 +439,7 @@ class DatadogCoreTests: XCTestCase {
         core.stop()
         busQueueBlocked.signal()
         core.send(message: .payload("sent after stop"))
-        core.bus.flush()
+        core.flush() // also awaits the storage work started by `register(feature:)`, so it cannot race `tearDown()`
 
         // Then
         let deliveredPayloads = messageReceiver.messages.compactMap { message -> String? in
@@ -474,7 +474,7 @@ class DatadogCoreTests: XCTestCase {
         // When
         core.stop()
         busQueueBlocked.signal()
-        core.bus.flush()
+        core.flush() // also awaits the storage work started by `register(feature:)`, so it cannot race `tearDown()`
 
         // Then
         let deliveredContexts = messageReceiver.messages.filter { message in
