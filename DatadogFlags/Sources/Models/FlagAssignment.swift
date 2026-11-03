@@ -22,7 +22,7 @@ public struct FlagAssignment: Equatable {
     public var reason: String
     public var doLog: Bool
     public var serialID: Int?
-    /// `true` when the server sent `"variationType": "number"`. The cache keeps this type.
+    /// `true` when a `"variationType": "number"` value decodes as Int. The cache keeps this type.
     internal var isNumberType = false
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
@@ -89,9 +89,9 @@ extension FlagAssignment: Codable {
         case "number":
             // "number" can carry an integer or a decimal flag. Check integer first, then
             // double; `variation(as:)` lets a Double read accept the resulting `.integer`.
-            self.isNumberType = true
             if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 self.variation = .integer(number)
+                self.isNumberType = true
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
@@ -123,7 +123,7 @@ extension FlagAssignment: Codable {
             try container.encode("string", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .double(let value):
-            try container.encode(isNumberType ? "number" : "float", forKey: .variationType)
+            try container.encode("float", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .integer(let value):
             try container.encode(isNumberType ? "number" : "integer", forKey: .variationType)

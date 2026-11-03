@@ -505,6 +505,17 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertEqual(cachedFloat.variation(as: Double.self), 5.0)
         XCTAssertNil(cachedFloat.variation(as: Int.self))
 
+        // A "number" that decodes as `.double` is not marked, so the cache writes it as "float".
+        // A whole Double must stay `.double`: some JSON decoders produce one for values such as 999999999999999.99.
+        XCTAssertFalse(fractionalNumber.isNumberType)
+        var wholeDouble = fractionalNumber
+        wholeDouble.variation = .double(1e15)
+        let cachedWholeDouble = try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeDouble))
+        XCTAssertEqual(cachedWholeDouble, wholeDouble)
+        XCTAssertNil(cachedWholeDouble.variation(as: Int.self))
+        let rounded = try assignment(type: "number", value: "999999999999999.99")
+        XCTAssertEqual(try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(rounded)), rounded)
+
         // Other types still do not convert
         XCTAssertNil(wholeNumber.variation(as: String.self))
         XCTAssertNil(wholeNumber.variation(as: Bool.self))
