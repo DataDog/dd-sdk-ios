@@ -1,0 +1,195 @@
+{
+  "name": "numeric-integer",
+  "description": "numeric integer.",
+  "context": {
+    "targetingKey": "fixture-subject",
+    "attributes": {}
+  },
+  "response": {
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "integer-0-as-integer": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 0,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "integer-0-as-float": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 0,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "integer-5-as-integer": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "integer-5-as-float": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "integer--5-as-integer": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": -5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "integer--5-as-float": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": -5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          }
+        }
+      }
+    }
+  },
+  "evaluations": [
+    {
+      "flag": "integer-0-as-integer",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 0,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "integer-0-as-float",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_skip": [
+        {
+          "platform": "web",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        },
+        {
+          "platform": "react-native",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        }
+      ]
+    },
+    {
+      "flag": "integer-5-as-integer",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 5,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "integer-5-as-float",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_skip": [
+        {
+          "platform": "web",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        },
+        {
+          "platform": "react-native",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        }
+      ]
+    },
+    {
+      "flag": "integer--5-as-integer",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -5,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "integer--5-as-float",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_skip": [
+        {
+          "platform": "web",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        },
+        {
+          "platform": "react-native",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        }
+      ]
+    }
+  ],
+  "expectations": {
+    "noUnmatchedEvents": true,
+    "exposures": [],
+    "evaluationEvents": [
+      {
+        "_count": 6,
+        "_skip": [
+          {
+            "platform": "web",
+            "reason": "Single Number API."
+          },
+          {
+            "platform": "react-native",
+            "reason": "Single Number API."
+          }
+        ]
+      },
+      {
+        "_count": 3,
+        "_include": [
+          {
+            "platform": "web",
+            "reason": "Single Number API."
+          },
+          {
+            "platform": "react-native",
+            "reason": "Single Number API."
+          }
+        ]
+      }
+    ]
+  }
+}

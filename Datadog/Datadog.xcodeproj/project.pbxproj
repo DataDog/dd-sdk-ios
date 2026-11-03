@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FFE000000000000000000001 /* CanonicalPrecomputedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFE000000000000000000002; };
+		FFE000000000000000000003 /* precomputed in Resources */ = {isa = PBXBuildFile; fileRef = FFE000000000000000000004; };
 		02421F8E41E4BAF26F46A7B7 /* quant_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = C6D2D3B98BAE2DA102048FE8 /* quant_enc.c */; };
 		0474714B086BA0F36C4D3EBB /* DDSketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9DD22142B7F7F44A9BAC86 /* DDSketch.swift */; };
 		05B9B20299CF44BB97F4A7C8 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */; };
@@ -2096,6 +2098,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FFE000000000000000000002 /* CanonicalPrecomputedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalPrecomputedTests.swift; sourceTree = "<group>"; };
+		FFE000000000000000000004 /* precomputed */ = {isa = PBXFileReference; lastKnownFileType = folder; name = precomputed; path = ../DatadogFlags/Tests/Fixtures/precomputed; sourceTree = SOURCE_ROOT; };
 		008B404A7E4C9A91B701C156 /* enc_sse41.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = enc_sse41.c; sourceTree = "<group>"; };
 		021E7D50031B06FE72D0D1A8 /* huffman_utils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = huffman_utils.h; sourceTree = "<group>"; };
 		048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierTests.swift; sourceTree = "<group>"; };
@@ -4623,6 +4627,8 @@
 			isa = PBXGroup;
 			children = (
 				5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */,
+				FFE000000000000000000002 /* CanonicalPrecomputedTests.swift */,
+				FFE000000000000000000004 /* precomputed */,
 				A33380013000000000000002 /* FlagsEvaluationContextTests.swift */,
 				62FAD0013000000000000006 /* FlagKeyObfuscationTests.swift */,
 				5B1D02902E8ED10500AB2391 /* ExposureEventTests.swift */,
@@ -8850,6 +8856,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FFE000000000000000000003 /* precomputed in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9220,6 +9227,7 @@
 				5B4F552F2E853D7700A241C3 /* FlagsClientMocks.swift in Sources */,
 				8DADC3C92E7CCF190060F558 /* FlagsClientTests.swift in Sources */,
 				5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */,
+				FFE000000000000000000001 /* CanonicalPrecomputedTests.swift in Sources */,
 				A33380013000000000000001 /* FlagsEvaluationContextTests.swift in Sources */,
 				62FAD0013000000000000005 /* FlagKeyObfuscationTests.swift in Sources */,
 				5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */,

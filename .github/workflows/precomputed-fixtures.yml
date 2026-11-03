@@ -1,0 +1,86 @@
+name: Precomputed flag fixtures
+on:
+  pull_request:
+    paths:
+      - 'ci/*precomputed*'
+      - 'DatadogFlags/Tests/Fixtures/precomputed/**'
+      - '.github/workflows/precomputed-fixtures.yml'
+  schedule:
+    - cron: '23 8 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: precomputed-fixtures-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify the local snapshot
+        run: python3 ci/sync-precomputed-fixtures.py --verify
+      - name: Compare with the recorded upstream commit
+        run: python3 ci/sync-precomputed-fixtures.py --check
+  update:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: DataDog/dd-octo-sts-action@c85802a58e202b7e764b5441e4378c76043c8108 # v1.0.5
+        id: token
+        with:
+          scope: DataDog/dd-sdk-ios
+          policy: self.precomputed-fixtures
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Import upstream fixtures
+        id: sync
+        run: python3 ci/sync-precomputed-fixtures.py --ref main
+      - name: Prepare a draft update
+        id: prepare
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          SOURCE_COMMIT: ${{ steps.sync.outputs.source_commit }}
+        run: |
+          existing=$(gh pr list --state open --search '"Update precomputed flag fixtures" in:title' --json number --jq 'length')
+          if [ "$existing" != 0 ]; then
+            echo 'An update PR is already open. Merge or close it before the next update.'
+            exit 0
+          fi
+          branch="automation/precomputed-fixtures-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git add -- 'DatadogFlags/Tests/Fixtures/precomputed'
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+          python3 - <<'BODY'
+          import os
+          from pathlib import Path
+          template = Path('ci/precomputed-fixtures-pr.md').read_text()
+          Path('/tmp/precomputed-pr.md').write_text(template.replace('SOURCE_COMMIT', os.environ['SOURCE_COMMIT']))
+          BODY
+      - name: Create a signed fixture commit
+        if: steps.prepare.outputs.ready == 'true'
+        uses: DataDog/commit-headless@d6afabfd690ea1dbdd7d368acbefd71304928699 # action/v3.4.1
+        with:
+          command: commit
+          token: ${{ steps.token.outputs.token }}
+          branch: ${{ steps.prepare.outputs.branch }}
+          head-sha: ${{ github.sha }}
+          create-branch: true
+          force: false
+          message: 'FFL-3568: Update precomputed flag fixtures'
+      - name: Open the draft pull request
+        if: steps.prepare.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          UPDATE_BRANCH: ${{ steps.prepare.outputs.branch }}
+        run: |
+          gh pr create --draft --base develop --head "$UPDATE_BRANCH" --title 'FFL-3568: Update precomputed flag fixtures' --body-file /tmp/precomputed-pr.md

@@ -1,0 +1,214 @@
+{
+  "name": "obfuscation-numeric-integer",
+  "description": "numeric integer.",
+  "context": {
+    "targetingKey": "fixture-subject",
+    "attributes": {}
+  },
+  "response": {
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "3a56e171b0efb081585be54227ac1792ebae79900fb0e0ee2c3850ebc7dd7fd0": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 0,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "3df507231bc602ed78f6e01db4497a88b33c086a455deba043f35dde999c0b7d": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 0,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "58e7c159ddb85fe9250395e7797d80ecb7dca88e1a22767261a9482611baa358": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "a4ef458efa0a3876a8509351d70fa007a68460b21c64cc64680c1099ec450dab": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": 5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "01c7f586a7f7bd98d4cbc75760f506b6ff8a9ba7195e88f975a708cc7b6ebb30": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": -5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          },
+          "14a559f9d240120a5038b7f3f6529a0cba11d3cbc84409c84678290f4116b809": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "integer",
+            "variationValue": -5,
+            "reason": "TARGETING_MATCH",
+            "doLog": false
+          }
+        },
+        "obfuscated": true,
+        "obfuscation": {
+          "scheme": "flag-key-sha256-v1",
+          "salt": "000102030405060708090a0b0c0d0e0f"
+        }
+      }
+    }
+  },
+  "evaluations": [
+    {
+      "flag": "integer-0-as-integer",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 0,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "integer-0-as-float",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_skip": [
+        {
+          "platform": "web",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        },
+        {
+          "platform": "react-native",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        }
+      ]
+    },
+    {
+      "flag": "integer-5-as-integer",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": 5,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "integer-5-as-float",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_skip": [
+        {
+          "platform": "web",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        },
+        {
+          "platform": "react-native",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        }
+      ]
+    },
+    {
+      "flag": "integer--5-as-integer",
+      "variationType": "integer",
+      "defaultValue": -99,
+      "expectedResult": {
+        "value": -5,
+        "reason": "TARGETING_MATCH",
+        "errorCode": null,
+        "variantKey": "variant"
+      }
+    },
+    {
+      "flag": "integer--5-as-float",
+      "variationType": "float",
+      "defaultValue": -99.5,
+      "expectedResult": {
+        "value": -99.5,
+        "reason": "ERROR",
+        "errorCode": "TYPE_MISMATCH",
+        "variantKey": null
+      },
+      "_skip": [
+        {
+          "platform": "web",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        },
+        {
+          "platform": "react-native",
+          "reason": "The public API exposes one Number getter, not distinct Integer and Double getters."
+        }
+      ]
+    }
+  ],
+  "expectations": {
+    "noUnmatchedEvents": true,
+    "exposures": [],
+    "evaluationEvents": [
+      {
+        "_count": 6,
+        "_skip": [
+          {
+            "platform": "web",
+            "reason": "Single Number API."
+          },
+          {
+            "platform": "react-native",
+            "reason": "Single Number API."
+          }
+        ]
+      },
+      {
+        "_count": 3,
+        "_include": [
+          {
+            "platform": "web",
+            "reason": "Single Number API."
+          },
+          {
+            "platform": "react-native",
+            "reason": "Single Number API."
+          }
+        ]
+      }
+    ]
+  },
+  "_include": [
+    {
+      "platform": "ios",
+      "reason": "Implements assignment-encoding-flag-key-256-v1."
+    },
+    {
+      "platform": "android",
+      "reason": "Implements assignment-encoding-flag-key-256-v1."
+    },
+    {
+      "platform": "flutter",
+      "reason": "Implements assignment-encoding-flag-key-256-v1."
+    }
+  ]
+}
