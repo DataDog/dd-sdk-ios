@@ -112,6 +112,17 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func _process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        if dependencies.isMultiSceneTrackingEnabled, var error = command as? RUMAddCurrentViewErrorCommand {
+            let completionWriter = ErrorCompletionWriter(writer: writer, completion: error.completionHandler)
+            error.completionHandler = NOPCompletionHandler
+            processResolved(command: error, monotonicTime: monotonicTime, context: context, writer: completionWriter)
+            completionWriter.finishProcessing()
+        } else {
+            processResolved(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
+        }
+    }
+
+    private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
@@ -478,5 +489,39 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         #else
         context.applicationStateHistory.currentState == .background
         #endif
+    }
+}
+
+/// Completes one error after processing and all admitted writes.
+private final class ErrorCompletionWriter: Writer {
+    private let writer: Writer
+    private let lock = NSLock()
+    private var pending = 1
+    private var completion: CompletionHandler?
+
+    init(writer: Writer, completion: @escaping CompletionHandler) {
+        self.writer = writer
+        self.completion = completion
+    }
+
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        lock.lock()
+        pending += 1
+        lock.unlock()
+        writer.write(value: value, metadata: metadata) { [self] in
+            completion()
+            finishProcessing()
+        }
+    }
+
+    func finishProcessing() {
+        lock.lock()
+        pending -= 1
+        let callback = pending == 0 ? completion : nil
+        if pending == 0 {
+            completion = nil
+        }
+        lock.unlock()
+        callback?()
     }
 }

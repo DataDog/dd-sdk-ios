@@ -682,6 +682,22 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         sceneState.restoredViews.removeAll()
     }
 
+    private func effectiveTarget(of command: RUMCommand) -> RUMCommandTarget {
+        let explicit = (command as? RUMExplicitViewTargetCommand)?.explicitTarget
+            ?? (command as? RUMUserActionCommand)?.explicitTarget
+        if let explicit {
+            if case .view(let id) = explicit {
+                if viewScopes.contains(where: { $0.isActiveView && $0.viewUUID == id }) {
+                    return explicit
+                }
+            } else if !activeRecipients(for: explicit).isEmpty {
+                return explicit
+            }
+        }
+        // Invalid optional API override preserves its independently inferred owner.
+        return command.target
+    }
+
     private func activeRecipients(for target: RUMCommandTarget) -> [RUMViewScope] {
         switch target {
         case .none:
@@ -733,10 +749,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     || (command is RUMStartViewCommand && $0.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL)
             }
         }
-        if command is RUMStopUserActionCommand, case .view(let id) = command.target {
+        if command is RUMStopUserActionCommand, case .view(let id) = effectiveTarget(of: command) {
             return viewScopes.filter { $0.viewUUID == id && $0.userActionScope != nil }
         }
-        return activeRecipients(for: command.target)
+        return activeRecipients(for: effectiveTarget(of: command))
     }
 
     private func propagateOwned(_ command: RUMCommand, context: DatadogContext, writer: Writer) {

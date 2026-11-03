@@ -1300,3 +1300,81 @@ extension RUMApplicationScopeTests {
         }
     }
 }
+
+extension RUMApplicationScopeTests {
+    func testMultiSceneErrorCompletion_waitsForAllRecipientWrites() throws {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let deferred = DeferredRoutingWriter()
+        var count = 0
+        var command = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingDate.addingTimeInterval(3), completionHandler: { count += 1 })
+        command.target = .allActiveViews
+        _ = routeApplicationCommand(app: app, command: command, context: context, writer: deferred)
+        XCTAssertEqual(deferred.events.compactMap { $0 as? RUMErrorEvent }.count, 2)
+        XCTAssertEqual(deferred.completions.count, 4)
+        XCTAssertEqual(count, 0)
+        while deferred.completions.count > 1 {
+            deferred.completions.removeLast()()
+            XCTAssertEqual(count, 0)
+        }
+        let last = try XCTUnwrap(deferred.completions.popLast())
+        last()
+        XCTAssertEqual(count, 1)
+    }
+
+    func testMultiSceneErrorCompletion_withNoEligibleRecipient_finishesOnce() {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let deferred = DeferredRoutingWriter()
+        var count = 0
+        var command = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingDate.addingTimeInterval(3), completionHandler: { count += 1 })
+        command.target = .none
+        _ = routeApplicationCommand(app: app, command: command, context: context, writer: deferred)
+        XCTAssertTrue(deferred.events.isEmpty)
+        XCTAssertEqual(count, 1)
+    }
+
+    func testMultiSceneErrorCompletion_withMapperDrop_finishesOnce() {
+        let mapper = RUMEventsMapper.mockWith(errorEventMapper: { $0.view.name == "a" ? nil : $0 })
+        let (app, context) = routingApplication(mapper: mapper)
+        startRoutingPeers(app, context: context)
+        let deferred = DeferredRoutingWriter()
+        var count = 0
+        var command = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingDate.addingTimeInterval(3), completionHandler: { count += 1 })
+        command.target = .allActiveViews
+        _ = routeApplicationCommand(app: app, command: command, context: context, writer: deferred)
+        XCTAssertEqual(deferred.events.compactMap { $0 as? RUMErrorEvent }.count, 1)
+        XCTAssertEqual(deferred.completions.count, 2)
+        XCTAssertEqual(count, 0)
+        deferred.completions.removeLast()()
+        XCTAssertEqual(count, 0)
+        deferred.completions.removeLast()()
+        XCTAssertEqual(count, 1)
+    }
+
+    func testDefaultModeErrorCompletion_preservesExistingWriterDelivery() throws {
+        let (app, context) = routingApplication(enabled: false)
+        startRoutingPeers(app, context: context)
+        let deferred = DeferredRoutingWriter()
+        var count = 0
+        let command = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingDate.addingTimeInterval(3), completionHandler: { count += 1 })
+        _ = routeApplicationCommand(app: app, command: command, context: context, writer: deferred)
+        XCTAssertEqual(deferred.events.compactMap { $0 as? RUMErrorEvent }.count, 1)
+        XCTAssertEqual(deferred.completions.count, 2)
+        deferred.completions.removeFirst()()
+        XCTAssertEqual(count, 0)
+        let viewCompletion = try XCTUnwrap(deferred.completions.popLast())
+        viewCompletion()
+        XCTAssertEqual(count, 1)
+    }
+
+    private final class DeferredRoutingWriter: Writer {
+        var events: [Encodable] = []
+        var completions: [CompletionHandler] = []
+
+        func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+            events.append(value)
+            completions.append(completion)
+        }
+    }
+}
