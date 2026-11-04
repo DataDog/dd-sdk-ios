@@ -30,7 +30,7 @@
             "allocationKey": "allocation",
             "variationKey": "variant",
             "variationType": "float",
-            "variationValue": 5,
+            "variationValue": 5.0,
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
