@@ -517,9 +517,14 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             XCTAssertNil(try cached(fractional).variation(as: Int.self), type)
         }
 
+        // The `_pointerBitWidth(_64)` blocks need a 64-bit Int, because their values or results depend on
+        // the width of Int.
+
         // A Double converts to Int only within +/-(2^53 - 1), where it represents every integer exactly
+        #if _pointerBitWidth(_64)
         XCTAssertEqual(built(.double(9_007_199_254_740_991)).variation(as: Int.self), 9_007_199_254_740_991)
         XCTAssertEqual(built(.double(-9_007_199_254_740_991)).variation(as: Int.self), -9_007_199_254_740_991)
+        #endif
         XCTAssertNil(built(.double(9_007_199_254_740_992)).variation(as: Int.self))
         XCTAssertNil(built(.double(-9_007_199_254_740_992)).variation(as: Int.self))
         XCTAssertNil(built(.double(1e20)).variation(as: Int.self))
@@ -527,24 +532,30 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertNil(built(.double(.nan)).variation(as: Int.self))
 
         // An Int converts to Double only when the Double represents it exactly
+        #if _pointerBitWidth(_64)
         XCTAssertEqual(built(.integer(1 << 60)).variation(as: Double.self), 1_152_921_504_606_846_976.0)
         XCTAssertNil(built(.integer((1 << 53) + 1)).variation(as: Double.self))
         XCTAssertNil(built(.integer(Int.max)).variation(as: Double.self))
+        #endif
 
         // A stored `.double` keeps its representation through the cache
         let wholeDouble = built(.double(1e15))
         XCTAssertEqual(try cached(wholeDouble), wholeDouble)
+        #if _pointerBitWidth(_64)
         XCTAssertEqual(wholeDouble.variation(as: Int.self), 1_000_000_000_000_000)
+        #endif
         let rounded = try decoded(type: "number", value: "999999999999999.99")
         XCTAssertEqual(try cached(rounded), rounded)
 
         // A "number" or "integer" value above 2^53 keeps every digit
+        #if _pointerBitWidth(_64)
         let large = try decoded(type: "number", value: "9007199254740993")
         XCTAssertEqual(large.variation(as: Int.self), 9_007_199_254_740_993)
         XCTAssertNil(large.variation(as: Double.self))
         XCTAssertEqual(try cached(large).variation(as: Int.self), 9_007_199_254_740_993)
+        #endif
         XCTAssertEqual(try decoded(type: "integer", value: "\(Int.max)").variation(as: Int.self), .max)
-        XCTAssertEqual(try decoded(type: "number", value: "\(Int.min)").variation(as: Double.self), -9_223_372_036_854_775_808.0)
+        XCTAssertEqual(try decoded(type: "number", value: "\(Int.min)").variation(as: Double.self), Double(Int.min))
         let huge = try decoded(type: "number", value: "1e20")
         XCTAssertEqual(huge.variation(as: Double.self), 1e20)
         XCTAssertNil(huge.variation(as: Int.self))
