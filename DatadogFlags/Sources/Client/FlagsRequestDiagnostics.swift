@@ -8,12 +8,29 @@ import Foundation
 
 /// Ephemeral identity and sequence owned by one repository, never used for evaluation or persistence.
 internal final class FlagsRequestDiagnostics {
-    enum Trigger: String {
+    enum Trigger: String, Encodable {
         case initialization
         case contextChange = "context_change"
     }
 
-    private let lock = NSLock()
+    struct Snapshot: Encodable {
+        struct SDK: Encodable {
+            let instanceID: String
+
+            private enum CodingKeys: String, CodingKey {
+                case instanceID = "instance_id"
+            }
+        }
+
+        struct Fetch: Encodable {
+            let sequence: Int64
+            let trigger: Trigger
+        }
+
+        let sdk: SDK
+        let fetch: Fetch
+    }
+
     private let instanceID: String
     private var sequence: Int64 = 0
 
@@ -39,22 +56,11 @@ internal final class FlagsRequestDiagnostics {
         }
     }
 
-    func accept() -> Data? {
-        lock.lock()
-        defer { lock.unlock() }
+    /// Called under the repository write lock. Sequence is diagnostic only, not network ordering.
+    func accept() -> Snapshot {
         // The first accepted context initialises this repository; subsequent calls change context.
         let trigger: Trigger = sequence == 0 ? .initialization : .contextChange
         sequence = min(sequence + 1, 9_007_199_254_740_991)
-        let envelope: [String: AnyValue] = [
-            "sdk": .dictionary(["instance_id": .string(instanceID)]),
-            "fetch": .dictionary([
-                "sequence": .double(Double(sequence)),
-                "trigger": .string(trigger.rawValue)
-            ])
-        ]
-        guard let data = try? JSONEncoder().encode(envelope), data.count <= 4_096 else {
-            return nil
-        }
-        return data
+        return Snapshot(sdk: .init(instanceID: instanceID), fetch: .init(sequence: sequence, trigger: trigger))
     }
 }

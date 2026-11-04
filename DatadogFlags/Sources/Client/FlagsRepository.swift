@@ -572,7 +572,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        var diagnostics: Data?
+        var diagnostics: FlagsRequestDiagnostics.Snapshot?
         var contextUpdateID: UInt64 = 0
         var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false

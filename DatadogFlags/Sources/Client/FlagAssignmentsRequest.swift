@@ -13,7 +13,7 @@ extension URLRequest {
         evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
         customHeaders: [String: String]?,
-        diagnostics: Data? = nil
+        diagnostics: FlagsRequestDiagnostics.Snapshot? = nil
     ) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -39,10 +39,6 @@ extension URLRequest {
             }
         }
 
-        // Decode the optional diagnostics envelope; assignment values are encoded once below.
-        let diagnosticFields = diagnostics.flatMap { data -> [String: AnyValue]? in
-            return try? JSONDecoder().decode([String: AnyValue].self, from: data)
-        }
         let requestBody = FlagAssignmentsRequestBody(
             environment: FlagAssignmentsRequestBody.Environment(
                 name: context.env,
@@ -56,7 +52,7 @@ extension URLRequest {
                 targetingKey: evaluationContext.targetingKey,
                 targetingAttributes: evaluationContext.attributes
             ),
-            diagnostics: diagnosticFields
+            diagnostics: diagnostics
         )
 
         let encoder = JSONEncoder.dd.default()
@@ -100,7 +96,7 @@ internal struct FlagAssignmentsRequestBody {
     let environment: Environment
     let source: Source
     let subject: Subject
-    var diagnostics: [String: AnyValue]? = nil
+    var diagnostics: FlagsRequestDiagnostics.Snapshot? = nil
 }
 
 extension FlagAssignmentsRequestBody: Encodable {

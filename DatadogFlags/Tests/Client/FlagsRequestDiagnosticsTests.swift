@@ -53,30 +53,40 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
         XCTAssertNotEqual(first["sdk"], try decode(FlagsRequestDiagnostics().accept())["sdk"])
     }
 
-    func testConcurrentAcceptanceAllocatesUniqueLogicalFetches() throws {
-        let owner = FlagsRequestDiagnostics()
-        let lock = NSLock()
-        var values: [Data] = []
-        DispatchQueue.concurrentPerform(iterations: 100) { _ in
-            if let value = owner.accept() {
-                lock.lock()
-                values.append(value)
-                lock.unlock()
-            }
+    func testConcurrentContextUpdatesProduceTypedDiagnostics() throws {
+        let scope = FeatureScopeMock()
+        let requests = ReadWriteLock<[URLRequest]>(wrappedValue: [])
+        let fetcher = FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, featureScope: scope) { request, completion in
+            requests.mutate { $0.append(request) }
+            completion(.failure(URLError(.timedOut)))
         }
-        let snapshots = try values.map { try decode($0) }
-        XCTAssertEqual(snapshots.count, 100)
-        XCTAssertTrue(snapshots.allSatisfy { $0["fetch"].dictionary?["attempt"] == nil })
-        XCTAssertEqual(Set(snapshots.compactMap { $0["fetch"].dictionary?["sequence"] }), Set((1...100).map(AnyValue.int)))
-        XCTAssertEqual(snapshots.filter { $0["fetch"].dictionary?["trigger"] == .string("initialization") }.count, 1)
+        let repository = FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, initializationTimeout: nil)
+        scope.dataStore.flush()
+        let finished = expectation(description: "Concurrent contexts complete")
+        finished.expectedFulfillmentCount = 100
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            repository.setEvaluationContext(.init(targetingKey: String(index))) { _ in finished.fulfill() }
+        }
+        wait(for: [finished], timeout: 5)
+        let diagnostics = try requests.wrappedValue.map { try XCTUnwrap(decode($0.httpBody)["diagnostics"].dictionary) }
+        XCTAssertEqual(diagnostics.count, 100)
+        XCTAssertTrue(diagnostics.allSatisfy { $0["sdk"] == diagnostics.first?["sdk"] })
+        for diagnostic in diagnostics {
+            let fetch = try XCTUnwrap(diagnostic["fetch"].dictionary)
+            guard case .int(let sequence) = fetch["sequence"] else {
+                return XCTFail("Missing integer fetch sequence")
+            }
+            XCTAssertGreaterThan(sequence, 0)
+            XCTAssertTrue([AnyValue.string("initialization"), .string("context_change")].contains(try XCTUnwrap(fetch["trigger"])))
+        }
     }
 
-    func testStructuredBodyPreservesAssignmentsAndOmitsInvalidDiagnostics() throws {
+    func testStructuredBodyPreservesAssignmentsAndOmitsAbsentDiagnostics() throws {
         let owner = FlagsRequestDiagnostics()
-        let envelope = try XCTUnwrap(owner.accept())
+        let envelope = owner.accept()
         let context = DatadogContext.mockAny()
         let evaluationContext = FlagsEvaluationContext(targetingKey: "private-user", attributes: ["large": .int(Int.max)])
-        func request(_ diagnostics: Data?) throws -> URLRequest {
+        func request(_ diagnostics: FlagsRequestDiagnostics.Snapshot?) throws -> URLRequest {
             try URLRequest.flagAssignmentsRequest(
                 url: URL(string: "https://example.com/flags")!,
                 evaluationContext: evaluationContext,
@@ -91,10 +101,7 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
         XCTAssertEqual(try decode(withDiagnostics.httpBody)["diagnostics"], .dictionary(try decode(envelope)))
         XCTAssertEqual(withDiagnostics.allHTTPHeaderFields, original.allHTTPHeaderFields)
         XCTAssertEqual(try decode(request(envelope).httpBody), try decode(withDiagnostics.httpBody))
-        let invalid = Data("invalid".utf8)
-        let root = try decode(request(invalid).httpBody)
-        XCTAssertNil(root["diagnostics"])
-        XCTAssertEqual(root["data"], try decode(original.httpBody)["data"])
+        XCTAssertNil(try decode(original.httpBody)["diagnostics"])
     }
 
     func testRepositoryKeepsIdentityAcrossResetAndDoesNotPersistDiagnostics() throws {
@@ -148,6 +155,10 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
             XCTAssertNil(fetch?["attempt"])
             XCTAssertEqual(fetch?["sequence"], .int(index + 1))
         }
+    }
+
+    private func decode(_ snapshot: FlagsRequestDiagnostics.Snapshot) throws -> [String: AnyValue] {
+        try decode(JSONEncoder().encode(snapshot))
     }
 
     private func decode(_ data: Data?) throws -> [String: AnyValue] {

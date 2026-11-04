@@ -226,7 +226,7 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        diagnostics: Data?,
+        diagnostics: FlagsRequestDiagnostics.Snapshot?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         flagAssignmentsStub?(evaluationContext, completion)
