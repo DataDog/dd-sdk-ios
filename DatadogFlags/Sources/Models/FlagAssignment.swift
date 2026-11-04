@@ -23,7 +23,7 @@ public struct FlagAssignment: Equatable {
     public var doLog: Bool
     public var serialID: Int?
 
-    /// 2^53 − 1. Above this magnitude, a whole `Double` can be the rounded form of a different integer.
+    /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different integer.
     private static let maxSafeInteger: Double = 9_007_199_254_740_991
 
     /// Returns the variation as `T`. Numeric variations convert between `Int` and `Double` only
@@ -41,7 +41,11 @@ public struct FlagAssignment: Equatable {
             return value as? T
         case .double(let value):
             if T.self == Int.self {
-                return Self.wholeInt(value) as? T
+                // Above 2^53 - 1, decoding may have rounded a different served integer to `value`, for example
+                // `9007199254740993` to `9007199254740992`. Exactness applies to the decoded value, not to the
+                // JSON text: `JSONDecoder` rounds over-precise literals such as `999999999999999.99` to
+                // `1000000000000000` before the SDK sees them.
+                return abs(value) <= Self.maxSafeInteger ? Int(exactly: value) as? T : nil
             }
             return value as? T
         case .object(let value):
@@ -49,16 +53,6 @@ public struct FlagAssignment: Equatable {
         case .unknown:
             return nil
         }
-    }
-
-    /// Returns `value` as an `Int` when it is a whole number within `Int` range and within ±(2^53 − 1).
-    /// Above that magnitude, decoding may have rounded a different served integer to `value`, for example
-    /// `9007199254740993` to `9007199254740992`.
-    private static func wholeInt(_ value: Double) -> Int? {
-        guard abs(value) <= maxSafeInteger else {
-            return nil
-        }
-        return Int(exactly: value)
     }
 
     public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool, serialID: Int? = nil) {

@@ -687,6 +687,7 @@ final class FlagsClientTests: XCTestCase {
         let integerAsInteger = client.getIntegerDetails(key: "integer-flag", defaultValue: 0)
         let wholeDoubleAsInteger = client.getIntegerDetails(key: "whole-double-flag", defaultValue: 0)
         let fractionalAsDouble = client.getDoubleDetails(key: "fractional-double-flag", defaultValue: 3.14)
+        let exposuresBeforeMismatch = exposureLogger.logExposureCalls.map(\.flagKey)
         let fractionalAsInteger = client.getIntegerDetails(key: "fractional-double-flag", defaultValue: 0)
 
         // Then
@@ -715,7 +716,9 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(fractionalAsDouble.value, 1.2)
         XCTAssertNil(fractionalAsDouble.error)
         XCTAssertEqual(fractionalAsInteger, FlagDetails(key: "fractional-double-flag", value: 0, error: .typeMismatch))
-        XCTAssertEqual(exposureLogger.logExposureCalls.count, 4)
+        let expectedExposures = ["integer-flag", "integer-flag", "whole-double-flag", "fractional-double-flag"]
+        XCTAssertEqual(exposuresBeforeMismatch, expectedExposures)
+        XCTAssertEqual(exposureLogger.logExposureCalls.map(\.flagKey), expectedExposures)
         XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, nil, nil, "TYPE_MISMATCH"])
     }
 

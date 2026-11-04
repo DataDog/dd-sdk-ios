@@ -517,7 +517,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             XCTAssertNil(try cached(fractional).variation(as: Int.self), type)
         }
 
-        // A Double converts to Int only within ±(2^53 − 1), where it represents every integer exactly
+        // A Double converts to Int only within +/-(2^53 - 1), where it represents every integer exactly
         XCTAssertEqual(built(.double(9_007_199_254_740_991)).variation(as: Int.self), 9_007_199_254_740_991)
         XCTAssertEqual(built(.double(-9_007_199_254_740_991)).variation(as: Int.self), -9_007_199_254_740_991)
         XCTAssertNil(built(.double(9_007_199_254_740_992)).variation(as: Int.self))
@@ -537,6 +537,17 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertEqual(wholeDouble.variation(as: Int.self), 1_000_000_000_000_000)
         let rounded = try decoded(type: "number", value: "999999999999999.99")
         XCTAssertEqual(try cached(rounded), rounded)
+
+        // A "number" or "integer" value above 2^53 keeps every digit
+        let large = try decoded(type: "number", value: "9007199254740993")
+        XCTAssertEqual(large.variation(as: Int.self), 9_007_199_254_740_993)
+        XCTAssertNil(large.variation(as: Double.self))
+        XCTAssertEqual(try cached(large).variation(as: Int.self), 9_007_199_254_740_993)
+        XCTAssertEqual(try decoded(type: "integer", value: "\(Int.max)").variation(as: Int.self), .max)
+        XCTAssertEqual(try decoded(type: "number", value: "\(Int.min)").variation(as: Double.self), -9_223_372_036_854_775_808.0)
+        let huge = try decoded(type: "number", value: "1e20")
+        XCTAssertEqual(huge.variation(as: Double.self), 1e20)
+        XCTAssertNil(huge.variation(as: Int.self))
 
         // Other types still do not convert
         let whole = try decoded(type: "number", value: "5")
