@@ -123,6 +123,8 @@ internal final class FlagsResponseVerifier {
         guard status == errSecSuccess else {
             throw FlagsSigningError.unsupportedRequest
         }
+        // Whole-body proofs require buffered delivery, regardless of the server rollout.
+        request.setValue("false", forHTTPHeaderField: "X-stream")
         request.setValue("1", forHTTPHeaderField: Self.prefix + "signature-version")
         request.setValue(Self.hex(Data(nonce)), forHTTPHeaderField: Self.prefix + "request-nonce")
         let existing = (request.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities") ?? "")

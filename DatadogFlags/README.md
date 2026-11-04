@@ -31,6 +31,9 @@ This option controls evaluation telemetry only. Exposure events can still contai
 
 # Assignment response signing (draft)
 
+Signing-enabled requests set `X-stream: false` because whole-body proofs require buffered delivery.
+Both observe and required modes apply this override. Signing-off requests keep their ordinary transport selection.
+
 The first public response-signing protocol is v1. The SDK advertises `response-signing-v1`, sends signature version `1`, and verifies the `datadog.feature-flags.precomputed-assignments.v1` transcript. Earlier POC v1/v2 and draft v3 labels are not supported public versions; public v1 does not accept their proofs. X.509 v3 certificate encoding is unchanged.
 
 Response signing is disabled by default. The browser pilot leads rollout; this native draft must pass Apple CryptoKit and simulator conformance before a protected mobile release. Signing protects accepted assignment responses against modification. It does not change subject authorization.

@@ -256,6 +256,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                     responseSigning: .init(mode: mode, trustedRootCertificates: [Data(base64Encoded: corpus.anchor)!]),
                     signingFetch: { request, completion in
                         signedCalls += 1
+                        XCTAssertEqual(request.value(forHTTPHeaderField: "X-stream"), "false")
                         let url = redirected ? URL(string: "https://unexpected.example.test/")! : request.url!
                         completion(
                             .success(
@@ -268,6 +269,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                     },
                     fetch: { request, completion in
                         ordinaryCalls += 1
+                        XCTAssertNil(request.value(forHTTPHeaderField: "X-stream"))
                         XCTAssertNil(
                             request.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "signature-version")
                         )
