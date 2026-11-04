@@ -15,6 +15,7 @@
 set -eo pipefail
 source ./tools/utils/echo-color.sh
 source ./tools/utils/argparse.sh
+source ./tools/utils/boot-simulator.sh
 
 set_description "Executes UI tests for a specified --test-plan using the provided --os, --platform, and --device."
 define_arg "test-plan" "" "Identifies the test plan to run (not used with '--mode build-for-testing')" "string" "false"
@@ -81,6 +82,7 @@ case "$mode" in
         disable_apple_crash_reporter
         trap enable_apple_crash_reporter EXIT INT
 
+        boot_simulator_in_background "$platform" "$os" "$device"
         run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN"
         ;;
 
@@ -97,6 +99,8 @@ case "$mode" in
         ;;
 
     test-without-building)
+        boot_simulator_in_background "$platform" "$os" "$device"
+
         XCTESTRUN_PATH=$(ls "$products_path"/Build/Products/${SCHEME}_${TEST_PLAN}_*.xctestrun)
 
         # `-xctestrun` runs no scheme pre-action, so the mock server is started here, on the localhost
