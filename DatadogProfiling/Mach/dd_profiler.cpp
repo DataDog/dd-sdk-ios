@@ -10,6 +10,7 @@
 
 #include "profile.h"
 #include "mach_sampling_profiler.h"
+#include "aggregation_worker.h"
 #include "binary_image_resolver.h"
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -254,10 +255,9 @@ public:
         sync_status();
         if (status == DD_PROFILER_STATUS_RUNNING) return 1;
 
-        if (profiler->has_failed()) {
-            // Join the failed threads and reset the worker before restarting.
-            profiler->stop_sampling();
-        }
+        // Join any session that stopped on its own (timeout, allocation or
+        // thread failure) before restarting; a no-op when nothing is running.
+        profiler->stop_sampling();
 
         if (!profiler->start_sampling()) {
             status = DD_PROFILER_STATUS_NOT_STARTED;
@@ -451,9 +451,13 @@ private:
 
         if (!profile) return;
 
+        // `add_samples` appends one sample per fully aggregated trace.
+        const size_t samples_before = profile->samples().size();
         try {
             if (g_fail_next_aggregation.load(std::memory_order_relaxed)
                 && g_fail_next_aggregation.exchange(false, std::memory_order_relaxed)) {
+                // Simulate a failure partway through the batch.
+                profile->add_samples(traces, count / 2, profiler->image_cache);
                 throw std::bad_alloc();
             }
             profile->add_samples(traces, count, profiler->image_cache);
@@ -461,12 +465,13 @@ private:
             // Aggregation allocates (`std::bad_alloc` under memory pressure).
             // Stop profiling instead of letting the exception terminate the
             // host app. `profile::add_samples` keeps the profile consistent:
-            // tables are appended before lookups reference them.
+            // tables are appended before lookups reference them, so samples
+            // aggregated before the failure remain valid.
             profiler->profiler->request_stop();
             profiler->status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
-            // Rethrow so the aggregation worker counts the discarded batch in
-            // diagnostics (and therefore telemetry) before releasing it.
-            throw;
+            // Report how much was aggregated, so the worker counts only the
+            // samples actually lost in diagnostics (and therefore telemetry).
+            throw dd::profiler::partial_batch_failure(profile->samples().size() - samples_before);
         }
 
         // Check for timeout after adding samples

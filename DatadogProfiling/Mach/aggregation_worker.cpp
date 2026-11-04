@@ -306,12 +306,15 @@ void aggregation_worker::worker_main() {
             if (config.callback && !batch->traces.empty()) {
                 try {
                     config.callback(batch->traces.data(), batch->traces.size(), config.ctx);
+                } catch (const partial_batch_failure& failure) {
+                    // Samples aggregated before the failure stay in the profile;
+                    // count only the remainder as lost.
+                    const size_t total = batch->traces.size();
+                    record_dropped_samples(total - std::min(failure.aggregated_count, total));
                 } catch (...) {
                     // Never let aggregation terminate the host app. Drop the
                     // batch; its payloads are still released below.
-                    std::lock_guard<std::mutex> lock(work_mutex);
-                    diagnostics.dropped_batch_count += 1;
-                    diagnostics.dropped_sample_count += batch->traces.size();
+                    record_dropped_samples(batch->traces.size());
                 }
             }
 
@@ -344,6 +347,15 @@ void aggregation_worker::complete_flush(uint64_t flush_id) {
     }
 
     flush_cv.notify_all();
+}
+
+void aggregation_worker::record_dropped_samples(size_t dropped_samples) {
+    if (dropped_samples == 0) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(work_mutex);
+    diagnostics.dropped_batch_count += 1;
+    diagnostics.dropped_sample_count += dropped_samples;
 }
 
 void aggregation_worker::complete_batch(uint64_t footprint_bytes) {

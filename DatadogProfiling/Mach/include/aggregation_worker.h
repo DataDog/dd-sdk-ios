@@ -14,6 +14,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <deque>
+#include <exception>
 #include <functional>
 #include <mutex>
 #include <pthread.h>
@@ -21,6 +22,18 @@
 #include <vector>
 
 namespace dd::profiler {
+
+/**
+ * @brief Thrown by a batch callback that failed after aggregating only part of
+ * a batch, so diagnostics count just the samples that were actually lost.
+ */
+struct partial_batch_failure : std::exception {
+    explicit partial_batch_failure(size_t aggregated_count) : aggregated_count(aggregated_count) {}
+    const char* what() const noexcept override { return "partial batch aggregation failure"; }
+
+    /// Number of traces from the batch that were aggregated before the failure.
+    size_t aggregated_count;
+};
 
 /**
  * @brief Serialized worker that drains sampled stack-trace batches in-order.
@@ -192,6 +205,7 @@ private:
     static void* worker_thread_entry(void* arg);
     void worker_main();
     void complete_batch(uint64_t footprint_bytes);
+    void record_dropped_samples(size_t dropped_samples);
     void complete_flush(uint64_t flush_id);
     static void free_batch_payloads(std::vector<stack_trace_t>& batch);
     void clear_pending_work_locked();

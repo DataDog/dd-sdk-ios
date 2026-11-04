@@ -106,8 +106,9 @@ final class DDProfilerTests: XCTestCase {
         }
 
         // The flush drives the pending batch through aggregation on the worker thread.
-        let profile = dd_profiler_flush_and_get_profile()
-        if let profile {
+        var harvestedSamples = 0
+        if let profile = dd_profiler_flush_and_get_profile() {
+            harvestedSamples = Int(dd_pprof_sample_count(profile))
             dd_pprof_destroy(profile)
         }
 
@@ -121,6 +122,17 @@ final class DDProfilerTests: XCTestCase {
         let diagnostics = dd_profiler_diagnostics()
         XCTAssertGreaterThan(diagnostics.dropped_batch_count, 0, "The batch discarded by the failure should be reported")
         XCTAssertGreaterThan(diagnostics.dropped_sample_count, 0, "Samples discarded by the failure should be reported")
+        XCTAssertGreaterThan(harvestedSamples, 0, "Samples aggregated before the failure should still be harvested")
+        // The injected failure aggregates the first half of the batch, so only the
+        // remainder is lost; counting the whole batch would exceed this bound.
+        XCTAssertLessThanOrEqual(
+            Int(diagnostics.dropped_sample_count),
+            harvestedSamples + 1,
+            "Only samples actually lost should be counted as dropped"
+        )
+
+        XCTAssertEqual(dd_profiler_start(), 1, "Starting again should join the stopped session and restart sampling")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
     }
 
     func testDDProfiler_whenSamplingThreadFails_reportsAllocationFailedAndCanRestart() {

@@ -73,7 +73,8 @@ void dd_delete_profiling_defaults(void);
 void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns, uint64_t hard_limit_bytes);
 
 /**
- * @brief Makes the next aggregated batch fail with `std::bad_alloc`.
+ * @brief Makes the next aggregated batch fail with `std::bad_alloc` after
+ * aggregating its first half.
  *
  * Simulates an allocation failure while adding samples to the profile, so tests
  * can verify the profiler stops with `DD_PROFILER_STATUS_ALLOCATION_FAILED`
