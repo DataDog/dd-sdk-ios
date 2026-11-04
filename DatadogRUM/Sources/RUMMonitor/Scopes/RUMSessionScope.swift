@@ -381,7 +381,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 #if !os(watchOS)
                 appLaunchManager.process(command, context: context, writer: writer, activeView: activeView)
                 #endif
-                dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
+                if let firstFrameReader = dependencies.firstFrameReader {
+                    dependencies.renderLoopObserver?.unregister(firstFrameReader)
+                }
                 // command doesn't need to be propagated to other scopes
                 return true
             case let command as RUMTimeToFullDisplayCommand:

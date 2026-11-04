@@ -11,6 +11,7 @@ import UIKit
 import AppKit
 #endif
 
+#if !os(macOS)
 /// Class that reads the first frame presented to the user.
 internal final class FirstFrameReader: RUMCommandPublisher {
     /// The date provider for the first frame date.
@@ -51,6 +52,7 @@ extension FirstFrameReader: RenderLoopReader {
         }
     }
 }
+#endif
 
 #if os(macOS)
 /// Class that reads the first window presented to the user on macOS.

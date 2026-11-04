@@ -12,6 +12,7 @@ import AppKit
 
 @testable import DatadogRUM
 
+#if !os(macOS)
 final class FirstFrameReaderTests: XCTestCase {
     func testFirstFrameIsProcessedCorrectly() {
         let dateProvider = DateProviderMock()
@@ -37,6 +38,7 @@ final class FirstFrameReaderTests: XCTestCase {
         )
     }
 }
+#endif
 
 #if os(macOS)
 final class FirstWindowReaderTests: XCTestCase {

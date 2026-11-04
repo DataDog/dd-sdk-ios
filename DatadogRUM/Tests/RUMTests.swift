@@ -199,8 +199,12 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
-        #if !os(macOS)
+        #if os(macOS)
+        XCTAssertIdentical(monitor, rum.instrumentation.firstWindowReader.subscriber)
+        XCTAssertNil(monitor.applicationScope.dependencies.firstFrameReader, "macOS reads the first window instead of the first frame")
+        #else
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
+        XCTAssertIdentical(monitor, (monitor.applicationScope.dependencies.firstFrameReader as? FirstFrameReader)?.subscriber)
         #endif
     }
 

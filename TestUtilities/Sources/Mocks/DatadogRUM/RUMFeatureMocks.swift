@@ -1260,7 +1260,7 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         renderLoopObserver: RenderLoopObserver? = nil,
-        firstFrameReader: RenderLoopReader = FirstFrameReader(dateProvider: DateProviderMock(), mediaTimeProvider: MediaTimeProviderMock()),
+        firstFrameReader: RenderLoopReader? = nil,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)? = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
         accessibilityReader: AccessibilityReading? = nil,
