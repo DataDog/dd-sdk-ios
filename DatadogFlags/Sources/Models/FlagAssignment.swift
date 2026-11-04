@@ -23,7 +23,7 @@ public struct FlagAssignment: Equatable {
     public var doLog: Bool
     public var serialID: Int?
 
-    /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different integer.
+    /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
     private static let maxSafeInteger: Double = 9_007_199_254_740_991
 
     /// Returns the variation as `T`. Numeric variations convert between `Int` and `Double` only
@@ -41,10 +41,10 @@ public struct FlagAssignment: Equatable {
             return value as? T
         case .double(let value):
             if T.self == Int.self {
-                // Decoding keeps every whole value that fits `Int` as `.integer`. Above 2^53 - 1, a `.double` can
-                // be the rounded form of a different integer, so it does not convert. Exactness applies to the
-                // decoded value, not to the JSON text: `JSONDecoder` rounds over-precise literals such as
-                // `999999999999999.99` to `1000000000000000` before the SDK sees them.
+                // Above 2^53 - 1, a `.double` can be the rounded form of a different number, so it does not
+                // convert. For example, `JSONDecoder` decodes `9007199254740993.0001` as `9007199254740994.0`.
+                // Below the limit, exactness applies to the decoded value, not to the JSON text: `JSONDecoder`
+                // rounds over-precise literals such as `999999999999999.99` to `1000000000000000`.
                 return abs(value) <= Self.maxSafeInteger ? Int(exactly: value) as? T : nil
             }
             return value as? T
@@ -62,6 +62,23 @@ public struct FlagAssignment: Equatable {
         self.reason = reason
         self.doLog = doLog
         self.serialID = serialID
+    }
+}
+
+internal extension CodingUserInfoKey {
+    /// Set on the decoder that reads the flags cache.
+    static let decodesStoredVariations = CodingUserInfoKey(
+        rawValue: "com.datadoghq.flags.decodes-stored-variations"
+    )
+}
+
+internal extension Decoder {
+    /// Whether this decoder reads variations that the flags cache wrote.
+    var decodesStoredVariations: Bool {
+        guard let key = CodingUserInfoKey.decodesStoredVariations else {
+            return false
+        }
+        return userInfo[key] as? Bool ?? false
     }
 }
 
@@ -94,9 +111,13 @@ extension FlagAssignment: Codable {
         case "string":
             self.variation = try .string(container.decode(String.self, forKey: .variationValue))
         case "number", "integer", "float":
-            // The served numeric type does not limit reads. Check integer first, so a whole value keeps
-            // every digit, then double.
-            if let number = try? container.decode(Int.self, forKey: .variationValue) {
+            if variationType == "float", decoder.decodesStoredVariations {
+                // The flags cache writes a `.double` as "float". Restore it as `.double`, so a restore does not
+                // change its reads.
+                self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
+            } else if let number = try? container.decode(Int.self, forKey: .variationValue) {
+                // The served numeric type does not limit reads. Try `Int` before `Double` to keep integer
+                // literals exact.
                 self.variation = .integer(number)
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))

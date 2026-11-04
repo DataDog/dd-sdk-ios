@@ -9,7 +9,13 @@ import DatadogInternal
 
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
-    private static let decoder = JSONDecoder()
+    private static let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        if let key = CodingUserInfoKey.decodesStoredVariations {
+            decoder.userInfo[key] = true
+        }
+        return decoder
+    }()
     // Version 2 readers support obfuscated keys but do not understand experimentation opt-out.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
     private static let filteredAssignmentsVersion: DataStoreKeyVersion = 3

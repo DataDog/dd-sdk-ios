@@ -18,6 +18,11 @@ import Foundation
 /// Numeric flags convert between `Int` and `Double` only when the conversion is exact. For example, a flag
 /// value of `5` reads as `Int` or `Double`, and `1.2` reads only as `Double`. Otherwise evaluation returns
 /// the default value with ``FlagEvaluationError/typeMismatch``.
+///
+/// Above 2^53 - 1 in magnitude, a value that decodes as `Double` does not read as `Int`, because the `Double` can
+/// be the rounded form of a different number. For example, `9007199254740993.0001` decodes as the `Double`
+/// `9007199254740994`. In network responses, integer literals that fit `Int`, such as `9007199254740993`, decode as
+/// `Int` and keep every digit.
 public protocol FlagValue: Encodable {}
 
 extension Bool: FlagValue {}

@@ -429,11 +429,14 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     func testNumericVariationsCachedByEarlierVersionsReadWithoutLoss() throws {
-        // SDK 3.21.0 and earlier write whole "number" values to the cache as "integer" and decimal values as "float"
+        // SDK 3.21.0 and earlier write whole "number" values to the cache as "integer" and decimal values as "float".
+        // Every version writes a stored `.double` as "float", and the cache restores it as `.double`: above
+        // 2^53 - 1, its `Int` read stays rejected after a restore.
         let cases: [(variationType: String, variationValue: Any, integer: Int?, double: Double)] = [
             ("integer", 5, 5, 5.0),
             ("float", 5.0, 5, 5.0),
-            ("float", 1.2, nil, 1.2)
+            ("float", 1.2, nil, 1.2),
+            ("float", 9_007_199_254_740_994.0, nil, 9_007_199_254_740_994.0)
         ]
         for (index, entry) in cases.enumerated() {
             // Given
