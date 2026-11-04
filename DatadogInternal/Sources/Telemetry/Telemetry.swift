@@ -25,6 +25,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let initializationType: String?
     public let invTimeThresholdMs: Int64?
     public let mobileVitalsUpdatePeriod: Int64?
+    public let profilingApplicationLaunchSampleRate: Double?
+    public let profilingSampleRate: Double?
     public let reactNativeVersion: String?
     public let reactVersion: String?
     public let sessionReplaySampleRate: Int64?
@@ -446,6 +448,8 @@ extension Telemetry {
         initializationType: String? = nil,
         invTimeThresholdMs: Int64? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
+        profilingApplicationLaunchSampleRate: Double? = nil,
+        profilingSampleRate: Double? = nil,
         reactNativeVersion: String? = nil,
         reactVersion: String? = nil,
         sessionReplaySampleRate: Int64? = nil,
@@ -506,6 +510,8 @@ extension Telemetry {
             initializationType: initializationType,
             invTimeThresholdMs: invTimeThresholdMs,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
+            profilingApplicationLaunchSampleRate: profilingApplicationLaunchSampleRate,
+            profilingSampleRate: profilingSampleRate,
             reactNativeVersion: reactNativeVersion,
             reactVersion: reactVersion,
             sessionReplaySampleRate: sessionReplaySampleRate,
@@ -651,6 +657,8 @@ extension ConfigurationTelemetry {
             initializationType: other.initializationType ?? initializationType,
             invTimeThresholdMs: other.invTimeThresholdMs ?? invTimeThresholdMs,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
+            profilingApplicationLaunchSampleRate: other.profilingApplicationLaunchSampleRate ?? profilingApplicationLaunchSampleRate,
+            profilingSampleRate: other.profilingSampleRate ?? profilingSampleRate,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
             reactVersion: other.reactVersion ?? reactVersion,
             sessionReplaySampleRate: other.sessionReplaySampleRate ?? sessionReplaySampleRate,

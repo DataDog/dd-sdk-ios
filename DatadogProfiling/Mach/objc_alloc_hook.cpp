@@ -5,225 +5,353 @@
  */
 
 #include "objc_alloc_hook.h"
-#include "memory_profiler.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if !TARGET_OS_WATCH
+
+#if DEBUG
+#include "objc_alloc_hook_testing.h"
+#endif
 
 #include <atomic>
+#include <condition_variable>
 #include <malloc/malloc.h>
-#include <objc/objc.h>
+#include <mutex>
+#include <new>
 #include <objc/runtime.h>
-#include <objc/message.h>
-
-// =====================================================================
-// +allocWithZone: / -dealloc Obj-C allocation interception (RUM-16460)
-//
-// Strategy:
-//   1. Resolve +[NSObject allocWithZone:] and -[NSObject dealloc] via
-//      the Obj-C runtime (no @selector / no Obj-C source — runtime API
-//      is plain C).
-//   2. Install trampolines over their IMPs, capturing the previous IMP so
-//      calls are forwarded. The trampolines are never restored on stop
-//      (see dd_objc_alloc_hook_stop) so the interceptor composes safely
-//      with third-party swizzles installed in any order.
-//   3. Allocation invocations forward first, then report the new instance
-//      and class to the passive sampler. Deallocation invocations remove
-//      the instance from the live table before forwarding.
-//
-// The trampoline writes through the same Poisson sampler / reentrancy
-// guard / side-table as the swift_allocObject path: any allocation
-// triggered by our own backtrace() / table insertion is caught by the
-// tls_in_profiler guard inside record_allocation and skipped. See
-// docs/SWIZZLING.md for why this path uses a hand-written C trampoline
-// rather than MethodSwizzler.
-// =====================================================================
 
 namespace {
 
-std::atomic<bool> g_swizzle_enabled{false};
-std::atomic<IMP> g_original_alloc_imp{nullptr};
-std::atomic<IMP> g_original_dealloc_imp{nullptr};
-bool g_alloc_layer_installed = false;
-bool g_dealloc_layer_installed = false;
+// NSZone is an opaque pointer in this ABI. Keep the trampoline in plain C++.
+using AllocFn = id (*)(Class, SEL, void *);
+using DeallocFn = void (*)(id, SEL);
 
-std::atomic<uint64_t> g_total_invocations{0};
-std::atomic<uint64_t> g_observed_allocations{0};
-std::atomic<uint64_t> g_skipped_disabled{0};
-std::atomic<uint64_t> g_total_dealloc_invocations{0};
-std::atomic<uint64_t> g_observed_deallocations{0};
-std::atomic<uint64_t> g_skipped_dealloc_disabled{0};
+class ObjCAllocHook {
+public:
+  ObjCAllocHook() = default;
+  ~ObjCAllocHook() = default;
+  ObjCAllocHook(const ObjCAllocHook &) = delete;
+  ObjCAllocHook &operator=(const ObjCAllocHook &) = delete;
+  ObjCAllocHook(ObjCAllocHook &&) = delete;
+  ObjCAllocHook &operator=(ObjCAllocHook &&) = delete;
 
-/// Trampoline that replaces +[NSObject allocWithZone:].
-///
-/// Signature must match the original class method exactly: (Class self,
-/// SEL _cmd, struct _NSZone* zone). The Obj-C runtime invokes IMPs via
-/// objc_msgSend, which arranges these arguments in registers — same ABI
-/// as a C function pointer call.
-id swizzled_alloc_with_zone(Class cls, SEL cmd, struct _NSZone* zone) {
-    g_total_invocations.fetch_add(1, std::memory_order_relaxed);
+  dd_objc_alloc_hook_status_t
+  start(dd_objc_allocation_observer_t allocation_observer,
+        dd_objc_deallocation_observer_t deallocation_observer);
+  void stop();
+  dd_objc_alloc_hook_diagnostics_t diagnostics() const;
+  id interceptAlloc(Class cls, SEL selector, void *zone);
+  void interceptDealloc(id object, SEL selector);
+#if DEBUG
+  void failAfterAllocOnce();
+#endif
 
-    // Forward to the original implementation first. The instance comes
-    // out fully constructed (or nil under allocation failure).
-    using AllocFn = id(*)(Class, SEL, struct _NSZone*);
-    const IMP original = g_original_alloc_imp.load(std::memory_order_acquire);
-    id obj = reinterpret_cast<AllocFn>(original)(cls, cmd, zone);
+private:
+  static constexpr uint64_t kObservationEnabled = 0x8000000000000000ULL;
+  static constexpr uint64_t kInFlightMask = ~kObservationEnabled;
 
-    if (!g_swizzle_enabled.load(std::memory_order_relaxed)) {
-        g_skipped_disabled.fetch_add(1, std::memory_order_relaxed);
-        return obj;
-    }
-    if (obj == nullptr) {
-        return obj;
-    }
+  bool observationEnabled() const;
+  void endObservation();
+  bool beginObservation(uint64_t generation);
+  void disableAndDrainObservation();
 
-    // Prefer the allocator's actual block size (malloc_size) over the class's
-    // ivar footprint (class_getInstanceSize): it reflects the real heap cost,
-    // including allocator rounding and overhead. Fall back to the ivar size on
-    // the rare pointer malloc_size does not recognise.
-    size_t size = malloc_size(reinterpret_cast<const void*>(obj));
-    if (size == 0) {
-        size = class_getInstanceSize(cls);
-    }
-    // class_getName returns a pointer into the class's metadata that is valid
-    // for the class's lifetime. The Obj-C runtime does not unload classes that
-    // vend instances, so the observer may store it as a borrowed pointer.
-    const char* name = class_getName(cls);
-    dd_memory_observe_allocation(reinterpret_cast<const void*>(obj),
-                                  static_cast<uint64_t>(size),
-                                  name);
-    g_observed_allocations.fetch_add(1, std::memory_order_relaxed);
-    return obj;
+  std::mutex install_mutex_;
+  std::mutex drain_mutex_;
+  std::condition_variable drain_condition_;
+  std::atomic<uint64_t> observation_state_{0};
+  std::atomic<uint64_t> observation_generation_{0};
+  std::atomic<bool> alloc_installed_{false};
+  std::atomic<bool> dealloc_installed_{false};
+  std::atomic<AllocFn> previous_alloc_{nullptr};
+  std::atomic<DeallocFn> previous_dealloc_{nullptr};
+  std::atomic<dd_objc_allocation_observer_t> allocation_observer_{nullptr};
+  std::atomic<dd_objc_deallocation_observer_t> deallocation_observer_{nullptr};
+  std::atomic<uint64_t> allocations_{0};
+  std::atomic<uint64_t> deallocations_{0};
+  std::atomic<uint64_t> reentrant_skips_{0};
+  bool unrecoverable_install_failure_ = false;
+#if DEBUG
+  std::atomic<bool> fail_after_alloc_once_{false};
+#endif
+  std::atomic<Method> alloc_method_{nullptr};
+  std::atomic<Method> dealloc_method_{nullptr};
+  inline static thread_local bool observing_callback_ = false;
+};
+
+ObjCAllocHook &hook();
+id intercept_alloc(Class cls, SEL selector, void *zone);
+void intercept_dealloc(id object, SEL selector);
+
+bool ObjCAllocHook::observationEnabled() const {
+  return (observation_state_.load(std::memory_order_acquire) &
+          kObservationEnabled) != 0;
 }
 
-/// Trampoline that replaces -[NSObject dealloc].
-///
-/// Recording must happen before forwarding because the original implementation
-/// releases the object's storage. This function must never message or retain
-/// `obj`; the observer treats it only as an address.
-void swizzled_dealloc(id obj, SEL cmd) {
-    g_total_dealloc_invocations.fetch_add(1, std::memory_order_relaxed);
+void ObjCAllocHook::endObservation() {
+  const uint64_t prior =
+      observation_state_.fetch_sub(1, std::memory_order_acq_rel);
+  if ((prior & kInFlightMask) == 1 &&
+      (prior & kObservationEnabled) == 0) {
+    std::lock_guard<std::mutex> lock(drain_mutex_);
+    drain_condition_.notify_all();
+  }
+}
 
-    if (g_swizzle_enabled.load(std::memory_order_relaxed)) {
-        dd_memory_observe_deallocation(reinterpret_cast<const void*>(obj));
-        g_observed_deallocations.fetch_add(1, std::memory_order_relaxed);
+bool ObjCAllocHook::beginObservation(uint64_t generation) {
+  if (!observationEnabled()) {
+    return false;
+  }
+  const uint64_t prior =
+      observation_state_.fetch_add(1, std::memory_order_acq_rel);
+  if ((prior & kObservationEnabled) != 0 &&
+      observation_generation_.load(std::memory_order_acquire) == generation) {
+    return true;
+  }
+  endObservation();
+  return false;
+}
+
+// Call while holding install_mutex_ so observers cannot be replaced until
+// every callback admitted to the previous session has finished.
+void ObjCAllocHook::disableAndDrainObservation() {
+  observation_state_.fetch_and(kInFlightMask, std::memory_order_acq_rel);
+  std::unique_lock<std::mutex> lock(drain_mutex_);
+  drain_condition_.wait(lock, [this] {
+    return (observation_state_.load(std::memory_order_acquire) &
+            kInFlightMask) == 0;
+  });
+}
+
+// A block-backed override can allocate while observing these hot paths and
+// re-enter them. Use C-callable IMPs to avoid that and per-call block overhead.
+// Publish the forwarding target before replacing either method so an in-flight
+// call can always forward.
+id ObjCAllocHook::interceptAlloc(Class cls, SEL selector, void *zone) {
+  const uint64_t generation =
+      observation_generation_.load(std::memory_order_acquire);
+  const AllocFn previous = previous_alloc_.load(std::memory_order_acquire);
+  id object = previous != nullptr ? previous(cls, selector, zone) : nil;
+  if (object == nil || !beginObservation(generation)) {
+    return object;
+  }
+  if (observing_callback_) {
+    reentrant_skips_.fetch_add(1, std::memory_order_relaxed);
+    endObservation();
+    return object;
+  }
+
+  observing_callback_ = true;
+  const size_t allocated_size = malloc_size(object);
+  const size_t size = allocated_size != 0
+                          ? allocated_size
+                          : class_getInstanceSize(cls);
+  const char *name = class_getName(cls);
+  const auto observer = allocation_observer_.load(std::memory_order_acquire);
+  if (observer != nullptr) {
+    observer(object, static_cast<uint64_t>(size), name);
+    allocations_.fetch_add(1, std::memory_order_relaxed);
+  }
+  observing_callback_ = false;
+  endObservation();
+  return object;
+}
+
+void ObjCAllocHook::interceptDealloc(id object, SEL selector) {
+  const uint64_t generation =
+      observation_generation_.load(std::memory_order_acquire);
+  // Do not send any Objective-C message to object here. Its subclass may
+  // already have destroyed its ivars. The observer receives its address only.
+  if (object != nil && beginObservation(generation)) {
+    if (observing_callback_) {
+      reentrant_skips_.fetch_add(1, std::memory_order_relaxed);
     } else {
-        g_skipped_dealloc_disabled.fetch_add(1, std::memory_order_relaxed);
+      observing_callback_ = true;
+      const auto observer =
+          deallocation_observer_.load(std::memory_order_acquire);
+      if (observer != nullptr) {
+        observer(object);
+        deallocations_.fetch_add(1, std::memory_order_relaxed);
+      }
+      observing_callback_ = false;
     }
+    endObservation();
+  }
 
-    using DeallocFn = void(*)(id, SEL);
-    const IMP original = g_original_dealloc_imp.load(std::memory_order_acquire);
-    reinterpret_cast<DeallocFn>(original)(obj, cmd);
+  const DeallocFn previous =
+      previous_dealloc_.load(std::memory_order_acquire);
+  if (previous != nullptr) {
+    previous(object, selector);
+  }
 }
 
-void reset_swizzle_diagnostics() {
-    g_total_invocations.store(0, std::memory_order_relaxed);
-    g_observed_allocations.store(0, std::memory_order_relaxed);
-    g_skipped_disabled.store(0, std::memory_order_relaxed);
-    g_total_dealloc_invocations.store(0, std::memory_order_relaxed);
-    g_observed_deallocations.store(0, std::memory_order_relaxed);
-    g_skipped_dealloc_disabled.store(0, std::memory_order_relaxed);
+dd_objc_alloc_hook_status_t ObjCAllocHook::start(
+    dd_objc_allocation_observer_t allocation_observer,
+    dd_objc_deallocation_observer_t deallocation_observer) {
+  std::lock_guard<std::mutex> lock(install_mutex_);
+  if (allocation_observer == nullptr || deallocation_observer == nullptr) {
+    return DD_OBJC_ALLOC_HOOK_FAILED_INVALID_OBSERVER;
+  }
+  if (unrecoverable_install_failure_) {
+    return DD_OBJC_ALLOC_HOOK_FAILED_INSTALL;
+  }
+
+  // Installation state is historical. A third-party restoration can remove
+  // our trampoline while these flags remain true; see objc_alloc_hook.h.
+  const bool already_installed =
+      alloc_installed_.load(std::memory_order_acquire) &&
+      dealloc_installed_.load(std::memory_order_acquire);
+  if (!already_installed) {
+    Class nsobject = objc_getClass("NSObject");
+    if (nsobject == Nil) {
+      return DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD;
+    }
+    const SEL alloc_selector = sel_registerName("allocWithZone:");
+    const SEL dealloc_selector = sel_registerName("dealloc");
+    Method alloc_method = class_getClassMethod(nsobject, alloc_selector);
+    Method dealloc_method = class_getInstanceMethod(nsobject, dealloc_selector);
+    if (alloc_method == nullptr || dealloc_method == nullptr) {
+      return DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD;
+    }
+    alloc_method_.store(alloc_method, std::memory_order_release);
+    dealloc_method_.store(dealloc_method, std::memory_order_release);
+
+    // Preflight both forwarding targets before modifying either method.
+    const IMP current_alloc = method_getImplementation(alloc_method);
+    const IMP current_dealloc = method_getImplementation(dealloc_method);
+    if (current_alloc == nullptr || current_dealloc == nullptr) {
+      return DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD;
+    }
+    if ((!alloc_installed_.load(std::memory_order_acquire) &&
+         current_alloc == reinterpret_cast<IMP>(intercept_alloc)) ||
+        (!dealloc_installed_.load(std::memory_order_acquire) &&
+         current_dealloc == reinterpret_cast<IMP>(intercept_dealloc))) {
+      unrecoverable_install_failure_ = true;
+      return DD_OBJC_ALLOC_HOOK_FAILED_INSTALL;
+    }
+
+    if (!alloc_installed_.load(std::memory_order_acquire)) {
+      previous_alloc_.store(
+          reinterpret_cast<AllocFn>(current_alloc),
+          std::memory_order_release);
+      IMP previous = method_setImplementation(
+          alloc_method, reinterpret_cast<IMP>(intercept_alloc));
+      if (previous == nullptr ||
+          previous == reinterpret_cast<IMP>(intercept_alloc)) {
+        // The runtime may already have installed our IMP. Retrying could
+        // capture that trampoline as its own forward target and recurse.
+        unrecoverable_install_failure_ = true;
+        return DD_OBJC_ALLOC_HOOK_FAILED_INSTALL;
+      }
+      previous_alloc_.store(reinterpret_cast<AllocFn>(previous),
+                            std::memory_order_release);
+      alloc_installed_.store(true, std::memory_order_release);
+    }
+
+#if DEBUG
+    if (fail_after_alloc_once_.exchange(false, std::memory_order_acq_rel)) {
+      return DD_OBJC_ALLOC_HOOK_FAILED_INSTALL;
+    }
+#endif
+
+    if (!dealloc_installed_.load(std::memory_order_acquire)) {
+      previous_dealloc_.store(
+          reinterpret_cast<DeallocFn>(current_dealloc),
+          std::memory_order_release);
+      IMP previous = method_setImplementation(
+          dealloc_method, reinterpret_cast<IMP>(intercept_dealloc));
+      if (previous == nullptr ||
+          previous == reinterpret_cast<IMP>(intercept_dealloc)) {
+        unrecoverable_install_failure_ = true;
+        return DD_OBJC_ALLOC_HOOK_FAILED_INSTALL;
+      }
+      previous_dealloc_.store(reinterpret_cast<DeallocFn>(previous),
+                              std::memory_order_release);
+      dealloc_installed_.store(true, std::memory_order_release);
+    }
+  }
+
+  disableAndDrainObservation();
+  allocation_observer_.store(allocation_observer, std::memory_order_release);
+  deallocation_observer_.store(deallocation_observer,
+                               std::memory_order_release);
+  observation_generation_.fetch_add(1, std::memory_order_acq_rel);
+  observation_state_.fetch_or(kObservationEnabled,
+                              std::memory_order_release);
+  return already_installed ? DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED
+                           : DD_OBJC_ALLOC_HOOK_OK;
+}
+
+void ObjCAllocHook::stop() {
+  // Never restore either IMP: an outer layer can retain our trampoline as its
+  // forwarding target, and an inner layer may have since been disabled.
+  std::lock_guard<std::mutex> lock(install_mutex_);
+  disableAndDrainObservation();
+}
+
+dd_objc_alloc_hook_diagnostics_t ObjCAllocHook::diagnostics() const {
+  dd_objc_alloc_hook_diagnostics_t result{};
+  result.allocations = allocations_.load(std::memory_order_relaxed);
+  result.deallocations = deallocations_.load(std::memory_order_relaxed);
+  result.reentrant_skips = reentrant_skips_.load(std::memory_order_relaxed);
+  result.alloc_installed = alloc_installed_.load(std::memory_order_acquire);
+  result.dealloc_installed = dealloc_installed_.load(std::memory_order_acquire);
+  result.is_enabled = observationEnabled();
+  const Method alloc_method = alloc_method_.load(std::memory_order_acquire);
+  const Method dealloc_method = dealloc_method_.load(std::memory_order_acquire);
+  result.has_outer_alloc_hook =
+      result.alloc_installed && alloc_method != nullptr &&
+      method_getImplementation(alloc_method) !=
+          reinterpret_cast<IMP>(intercept_alloc);
+  result.has_outer_dealloc_hook =
+      result.dealloc_installed && dealloc_method != nullptr &&
+      method_getImplementation(dealloc_method) !=
+          reinterpret_cast<IMP>(intercept_dealloc);
+  return result;
+}
+
+#if DEBUG
+void ObjCAllocHook::failAfterAllocOnce() {
+  fail_after_alloc_once_.store(true, std::memory_order_release);
+}
+#endif
+
+// Trampolines remain installed for the process lifetime. Construct the state
+// before replacing either IMP and never destroy it at shutdown.
+ObjCAllocHook &hook() {
+  alignas(ObjCAllocHook) static unsigned char storage[sizeof(ObjCAllocHook)];
+  static auto *instance = new (storage) ObjCAllocHook();
+  return *instance;
+}
+
+id intercept_alloc(Class cls, SEL selector, void *zone) {
+  return hook().interceptAlloc(cls, selector, zone);
+}
+
+void intercept_dealloc(id object, SEL selector) {
+  hook().interceptDealloc(object, selector);
 }
 
 } // namespace
 
-extern "C" dd_objc_alloc_hook_status_t dd_objc_alloc_hook_start(uint64_t poisson_rate_bytes) {
-    if (g_swizzle_enabled.load(std::memory_order_acquire)) {
-        return DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED;
-    }
-
-    // Resolve both methods before starting the sampler so a missing runtime
-    // method cannot leave passive profiling enabled without interception.
-    Class nsobject_class = objc_getClass("NSObject");
-    if (nsobject_class == nullptr) {
-        return DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD;
-    }
-    SEL alloc_sel = sel_registerName("allocWithZone:");
-    SEL dealloc_sel = sel_registerName("dealloc");
-    Method alloc_method = class_getClassMethod(nsobject_class, alloc_sel);
-    Method dealloc_method = class_getInstanceMethod(nsobject_class, dealloc_sel);
-    if (alloc_method == nullptr || dealloc_method == nullptr) {
-        return DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD;
-    }
-
-    if (!dd_memory_profiler_start_passive(poisson_rate_bytes)) {
-        return DD_OBJC_ALLOC_HOOK_FAILED_SAMPLER;
-    }
-
-    reset_swizzle_diagnostics();
-
-    if (!g_alloc_layer_installed) {
-        // Prime the forwarding pointer before publishing the trampoline. The
-        // value returned by method_setImplementation is stored again to retain
-        // the exact outermost implementation present at installation time.
-        g_original_alloc_imp.store(method_getImplementation(alloc_method),
-                                   std::memory_order_release);
-        const IMP previous = method_setImplementation(
-            alloc_method,
-            reinterpret_cast<IMP>(swizzled_alloc_with_zone)
-        );
-        g_original_alloc_imp.store(previous, std::memory_order_release);
-        g_alloc_layer_installed = true;
-    }
-
-    if (!g_dealloc_layer_installed) {
-        g_original_dealloc_imp.store(method_getImplementation(dealloc_method),
-                                     std::memory_order_release);
-        const IMP previous = method_setImplementation(
-            dealloc_method,
-            reinterpret_cast<IMP>(swizzled_dealloc)
-        );
-        g_original_dealloc_imp.store(previous, std::memory_order_release);
-        g_dealloc_layer_installed = true;
-    }
-
-    g_swizzle_enabled.store(true, std::memory_order_release);
-    return DD_OBJC_ALLOC_HOOK_OK;
+extern "C" dd_objc_alloc_hook_status_t dd_objc_alloc_hook_start(
+    dd_objc_allocation_observer_t allocation_observer,
+    dd_objc_deallocation_observer_t deallocation_observer) {
+  return hook().start(allocation_observer, deallocation_observer);
 }
 
-extern "C" void dd_objc_alloc_hook_stop(void) {
-    // Deliberately NOT gated on whether this path was the one observing. The
-    // shared sampler can be running because the *Swift* path started it — the
-    // two install independently and either one alone is treated as success — and
-    // this is the only stop entry point that disables it (dd_swift_alloc_hook_stop
-    // just clears its own flag). Returning early when our swizzle never installed
-    // would leave the sampler enabled with its live set intact, so a caller that
-    // stopped both paths to honour revoked tracking consent would keep the
-    // sampled data resident and hand it to the next session. Both operations
-    // below are idempotent, so running them unconditionally is safe.
-    g_swizzle_enabled.store(false, std::memory_order_release);
+extern "C" void dd_objc_alloc_hook_stop(void) { hook().stop(); }
 
-    // Never-restore discipline: leave the +allocWithZone: / -dealloc trampolines
-    // installed and forwarding to the implementation captured at install time.
-    // We only stop observing (g_swizzle_enabled was just cleared, making the
-    // trampolines forward-only) and disable the sampler.
-    //
-    // Restoring the original IMP here would be unsafe on these two of the most
-    // heavily-swizzled Obj-C selectors:
-    //   - A framework that swizzled ON TOP of us would be silently clobbered.
-    //   - A framework that swizzled BEFORE us left *its* IMP as our captured
-    //     "original"; it may since have torn itself down, so reinstating that
-    //     pointer would forward every allocation/deallocation into freed code.
-    // This mirrors dd_swift_alloc_hook_stop() and satisfies the composition
-    // rules in docs/SWIZZLING.md. A later
-    // dd_objc_alloc_hook_start re-enables observation without reinstalling (the
-    // g_*_layer_installed guards keep us from re-capturing our own trampoline as
-    // the "original").
-    dd_memory_profiler_stop();
+extern "C" dd_objc_alloc_hook_diagnostics_t
+dd_objc_alloc_hook_diagnostics(void) {
+  return hook().diagnostics();
 }
 
-extern "C" bool dd_objc_alloc_hook_is_running(void) {
-    return g_swizzle_enabled.load(std::memory_order_acquire);
+#if DEBUG
+extern "C" void dd_objc_alloc_hook_test_fail_after_alloc_once(void) {
+  hook().failAfterAllocOnce();
 }
+#endif
 
-extern "C" dd_objc_alloc_hook_diagnostics_t dd_objc_alloc_hook_diagnostics(void) {
-    dd_objc_alloc_hook_diagnostics_t d = {};
-    d.total_invocations = g_total_invocations.load(std::memory_order_relaxed);
-    d.observed_allocations = g_observed_allocations.load(std::memory_order_relaxed);
-    d.skipped_disabled = g_skipped_disabled.load(std::memory_order_relaxed);
-    d.total_dealloc_invocations = g_total_dealloc_invocations.load(std::memory_order_relaxed);
-    d.observed_deallocations = g_observed_deallocations.load(std::memory_order_relaxed);
-    d.skipped_dealloc_disabled = g_skipped_dealloc_disabled.load(std::memory_order_relaxed);
-    return d;
-}
-
-#endif // defined(__APPLE__) && !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH
+#endif // __APPLE__

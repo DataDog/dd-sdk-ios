@@ -681,6 +681,7 @@ extension RUMViewScope {
                 hasReplay: hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 sampledForReplay: nil,
                 type: dependencies.sessionType
             ),
@@ -698,7 +699,7 @@ extension RUMViewScope {
                 let update = previousEvent.update(from: event)
                 lastSentViewEvent = event
                 consecutiveViewUpdatesCount += 1
-                writer.write(value: update, completion: completionHandler)
+                writer.write(value: update, metadata: update.metadata(), completion: completionHandler)
             } else {
                 writer.write(
                     value: event,
@@ -866,6 +867,7 @@ extension RUMViewScope {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -958,6 +960,7 @@ extension RUMViewScope {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,

@@ -12,6 +12,34 @@ import TestUtilities
 final class WatchdogTerminationReporterTests: XCTestCase {
     let featureScope = FeatureScopeMock()
 
+    func testSend_whenViewHasIsMainProcessFalse_itCarriesItOverToErrorAndView() throws {
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let viewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0, isMainProcess: false)
+        let featureScope = FeatureScopeMock()
+
+        let reporter = WatchdogTerminationReporter(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
+        )
+
+        // When
+        reporter.send(
+            date: currentDate,
+            state: .mockWith(trackingConsent: .granted),
+            viewEvent: viewEvent
+        )
+
+        // Then
+        let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(sentRUMError.session.isMainProcess, false)
+
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(sentRUMView.session.isMainProcess, viewEvent.session.isMainProcess)
+    }
+
     func testSend_sanitizesRUMErrorContextBeforeWriting() throws {
         let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
         let currentDate: Date = .mockDecember15th2019At10AMUTC()

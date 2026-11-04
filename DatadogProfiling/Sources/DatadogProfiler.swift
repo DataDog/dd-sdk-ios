@@ -35,8 +35,6 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
-    /// Whether the native profiler started at process launch and the latest configuration permits harvesting it.
-    private let hasAppLaunchProfileToHarvest: Bool
     private var timer: DispatchSourceTimer?
 
     let featureScope: FeatureScope
@@ -96,7 +94,6 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         profilingConditions: ProfilingConditions = .init(),
         profilingInterval: TimeInterval = Constants.maxProfileDuration,
         minProfileDuration: TimeInterval = Constants.minProfileDuration,
-        isAppLaunchProfilingEnabled: Bool = false,
         encoder: JSONEncoder = JSONEncoder(),
         dateProvider: DateProvider = SystemDateProvider()
     ) {
@@ -108,7 +105,6 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         self.profilingConditions = profilingConditions
         self.profilingInterval = profilingInterval
         self.minProfileDuration = minProfileDuration
-        self.hasAppLaunchProfileToHarvest = isAppLaunchProfilingEnabled && dd_profiler_was_started_at_launch()
         self.encoder = encoder
         self.dateProvider = dateProvider
         self.profileStartDate = dateProvider.now
@@ -150,13 +146,13 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     /// `ProfilingHandler` asks the handler for a heap attachment while writing a CPU profile. The
     /// coordinator owns no heap state — it forwards to the unit that does.
     func heapAttachment(
-        fittingAlongside cpuProfileSize: Int,
+        fittingAlongside otherAttachmentsSize: Int,
         attributes: [AttributeKey: AttributeValue],
         operation: ProfilingOperation,
         drainingAllocWindow: Bool
     ) -> Data? {
         memoryProfiler.heapAttachment(
-            fittingAlongside: cpuProfileSize,
+            fittingAlongside: otherAttachmentsSize,
             attributes: attributes,
             operation: operation,
             drainingAllocWindow: drainingAllocWindow
@@ -243,9 +239,11 @@ private extension DatadogProfiler {
                 return
             }
 
+            var didChangeRUMSession = false
             if let sessionID = context.additionalContext(ofType: RUMCoreContext.self)?.sessionID,
                sessionID != currentRUMSessionID {
                 currentRUMSessionID = sessionID
+                didChangeRUMSession = true
                 telemetryController.resetContinuousCycleIndex()
             }
 
@@ -263,6 +261,13 @@ private extension DatadogProfiler {
             let wasTrackingConsentAllowed = isTrackingConsentAllowed
             isTrackingConsentAllowed = context.trackingConsent != .notGranted
             if !isTrackingConsentAllowed {
+                cleanUpState(preservingOngoingOperations: false)
+                updateProfilerState(canProfile: false)
+                return
+            }
+
+            if context.additionalContext(ofType: RUMCoreContext.self)?.sessionSampler.isSampled == false {
+                isContinuousProfilingGraceAvailable = false
                 cleanUpState(preservingOngoingOperations: false)
                 updateProfilerState(canProfile: false)
                 return
@@ -313,7 +318,8 @@ private extension DatadogProfiler {
                 updateProfilerState(canProfile: shouldKeepProfilerRunning(), shouldSendProfile: true)
             }
             // If the conditions are the same, ignore the update profiler state
-            else if currentAppState != previousAppState
+            else if didChangeRUMSession
+                        || currentAppState != previousAppState
                         || hasConditionsToProfile != previousConditions
                         || isTrackingConsentAllowed != wasTrackingConsentAllowed {
                 switch ProfilingContext.Status.current {
@@ -501,21 +507,23 @@ private extension DatadogProfiler {
 
         if let cpuProfile {
             if canWriteProfile {
-                // Coupled path: CPU/wall profile; heap is attached when memory is active. The event
-                // carries the CPU machine's correlation — plus memory's pending warnings, which
-                // have no other carrier: the CPU machine never records one, so a warning folded by
-                // the emission cooldown would otherwise be wiped unreported when this window closes.
-                let didWrite = write(
+                // A failed heap capture can leave correlation pending after the CPU window ends.
+                // Include those events when a later coupled profile finally carries the heap.
+                let cpuVitals = Array(currentRUMVitals.values)
+                let heapCorrelation = wantsHeap
+                    ? memoryProfiler.correlation(merging: cpuVitals, hangs: hangs, longTasks: longTasks)
+                    : nil
+                let writeResult = write(
                     profile: cpuProfile,
                     operation: operation,
-                    rumVitals: Array(self.currentRUMVitals.values),
-                    hangs: hangs,
-                    longTasks: longTasks,
-                    errors: wantsHeap ? memoryProfiler.pendingWarnings : nil,
+                    rumVitals: heapCorrelation?.vitals ?? cpuVitals,
+                    hangs: heapCorrelation?.hangs ?? hangs,
+                    longTasks: heapCorrelation?.longTasks ?? longTasks,
+                    errors: heapCorrelation?.warnings,
                     captureHeapProfile: wantsHeap
                 )
                 if wantsHeap {
-                    closeMemoryWindow(at: windowEnd, reported: didWrite)
+                    closeMemoryWindow(at: windowEnd, reported: writeResult.didWriteHeapProfile)
                 }
             } else if wantsHeap {
                 // CPU profile isn't writable this window — emit a heap-only profile carrying
@@ -536,10 +544,9 @@ private extension DatadogProfiler {
 
     /// Ends the memory window the emitter just consumed.
     ///
-    /// The window start always advances — the heap capture drains the native alloc window even
-    /// when the profile is then dropped by a guard — but the correlation and the emission cooldown
-    /// only move when an event actually reached the writer. Consuming them on a dropped profile
-    /// would discard a hang or memory warning that nothing ever carried.
+    /// A successful native drain advances the start even if a later guard drops the profile.
+    /// A failed capture retains allocation totals and their original start. Correlation and the
+    /// emission cooldown only move when an event actually reached the writer.
     func closeMemoryWindow(at date: Date, reported: Bool) {
         memoryProfiler.advanceWindow(to: date)
         if reported {
@@ -586,6 +593,11 @@ private extension DatadogProfiler {
             hasProcessedAppLaunchVital = true
 
             guard isTrackingConsentAllowed else {
+                return
+            }
+            if profilingSamplerProvider.isAppLaunchProfilingAvailable,
+               profilingSamplerProvider.appLaunchProfilingSampled == false {
+                updateProfilerState(canProfile: false)
                 return
             }
             let shouldHarvestAppLaunchProfile = shouldHarvestAppLaunchProfileOnTTID
@@ -640,7 +652,7 @@ private extension DatadogProfiler {
             return
         }
 
-        if hasAppLaunchProfileToHarvest {
+        if profilingSamplerProvider.appLaunchProfilingSampled == true {
             writeAppLaunchProfile(profile)
         }
         cleanUpState()
@@ -648,8 +660,10 @@ private extension DatadogProfiler {
     }
 
     func writeAppLaunchProfile(_ profile: OpaquePointer) {
-        // Preserve the existing fail-open behavior while quota is pending:
-        // only an explicit quota rejection blocks the app-launch upload.
+        guard profilingSamplerProvider.appLaunchProfilingSampled == true else {
+            return
+        }
+        // Preserve the existing fail-open behavior while quota is pending.
         guard !quotaChecker.isRejectedByQuota else {
             telemetryController.sendProfileDropped(for: .appLaunch, reason: .quotaRejected(quotaChecker.quotaResult?.reason))
             return
@@ -661,7 +675,7 @@ private extension DatadogProfiler {
         // the load-time constructor installed the hooks. This is what puts memory profiling in the
         // app-launch / TTID window. The live set is NOT reset here — capturing the alloc window is
         // capture-and-reset, but the live set carries forward into the continuous windows.
-        let didWrite = write(
+        let writeResult = write(
             profile: profile,
             operation: .appLaunch,
             rumVitals: Array(currentRUMVitals.values),
@@ -671,11 +685,10 @@ private extension DatadogProfiler {
         )
 
         if memoryProfiler.isRecording {
-            // The launch allocations were just captured (alloc window reset); advance the memory
-            // window so a subsequent heap-only emission is bounded from TTID, not from launch.
+            // Advance from TTID only if the native capture drained the launch allocation totals.
             memoryProfiler.advanceWindow(to: dateProvider.now)
 
-            // Stamp the cooldown only if the launch profile really was written — that stamp is
+            // Stamp the cooldown only if the launch heap was written — that stamp is
             // what makes the TTID trigger queued behind this fold into the launch profile. When a
             // size or serialization guard dropped the profile, nothing carried the launch heap, so
             // the trigger must be left free to emit the launch snapshot itself.
@@ -683,7 +696,7 @@ private extension DatadogProfiler {
             // Correlation is deliberately NOT consumed: the launch profile carries the CPU
             // machine's vitals, and memory's own accumulation stays live for the windows after
             // TTID, as it did before this lifecycle moved into `MemoryProfiler`.
-            if didWrite {
+            if writeResult.didWriteHeapProfile {
                 memoryProfiler.recordEmission(at: dateProvider.now, consumingCorrelation: false)
             }
         }
@@ -780,7 +793,8 @@ private extension DatadogProfiler {
     var shouldWaitForAppLaunchVital: Bool {
         // If continuous profiling samples out before TTID, keep the native profiler
         // briefly so it can harvest the launch profile.
-        hasAppLaunchProfileToHarvest
+        profilingSamplerProvider.isAppLaunchProfilingAvailable
+            && profilingSamplerProvider.appLaunchProfilingSampled != false
             && isTrackingConsentAllowed
             && !quotaChecker.isRejectedByQuota
             && hasConditionsToProfile
@@ -806,7 +820,7 @@ private extension DatadogProfiler {
     var shouldHarvestAppLaunchProfileOnTTID: Bool {
         // TTID may still be attached to continuous/custom profiles when standalone
         // app-launch upload is disabled; this gate only decides standalone launch harvesting.
-        guard hasAppLaunchProfileToHarvest
+        guard profilingSamplerProvider.appLaunchProfilingSampled == true
                 && hasProcessedAppLaunchVital
                 && !quotaChecker.isRejectedByQuota else {
             return false

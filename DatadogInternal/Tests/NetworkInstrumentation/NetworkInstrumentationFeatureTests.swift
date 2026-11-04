@@ -689,6 +689,403 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
+    func testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce() throws {
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
+
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        let url = try XCTUnwrap(URL(string: "https://example.com/repeated-resume-\(UUID().uuidString)"))
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url {
+                mutations.mutate { $0 += 1 }
+            }
+        }
+
+        let task = session.dataTask(with: url)
+        task.resume()
+        task.resume()
+
+        wait(
+            for: [notifyInterceptionDidStart, notifyInterceptionDidComplete],
+            timeout: 5,
+            enforceOrder: false
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+    }
+
+    func testAutomaticMode_whenTaskSuspendsAndResumes_itKeepsOnePreparedLifecycle() throws {
+        #if os(watchOS)
+        throw XCTSkip("watchOS ignores URLProtocol stubs; this test must keep native transport pending.")
+        #else
+        let url = URL(string: "https://example.com/suspend-resume")!
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.onRequestMutation = { [weak handler = handler] request, _, _ in
+            guard request.url == url else {
+                return
+            }
+            mutations.mutate { $0 += 1 }
+            var prepared = request
+            prepared.setValue("retained", forHTTPHeaderField: "X-Preparation")
+            handler?.modifiedRequest = prepared
+        }
+        let started = expectation(description: "One start across suspend/resume")
+        let completed = expectation(description: "One completion across suspend/resume")
+        let appCompleted = expectation(description: "Native cancellation completes")
+        handler.onInterceptionDidStart = { _ in started.fulfill() }
+        handler.onInterceptionDidComplete = { _ in completed.fulfill() }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PendingRequestURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let task = session.dataTask(with: url) { _, _, error in
+            XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)
+            appCompleted.fulfill()
+        }
+
+        task.resume()
+        waitForState(.running, of: task)
+        task.suspend()
+        waitForState(.suspended, of: task)
+        task.resume()
+        waitForState(.running, of: task)
+        task.cancel()
+        wait(for: [started, completed, appCompleted], timeout: 5)
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(task.currentRequest?.value(forHTTPHeaderField: "X-Preparation"), "retained")
+        XCTAssertNotNil(handler.interceptions.first?.value.completion)
+        #endif
+    }
+
+    /// Waits for `task` to report `state`. URLSession can publish a state change after `resume()` or `suspend()` returns.
+    private func waitForState(_ state: URLSessionTask.State, of task: URLSessionTask) {
+        let reached = expectation(description: "Task reaches state \(state.rawValue)")
+        wait(until: { task.state == state }, andThenFulfill: reached)
+        wait(for: [reached], timeout: 5)
+    }
+
+    private final class PendingRequestURLProtocol: URLProtocol {
+        override class func canInit(with request: URLRequest) -> Bool { true }
+        override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+        override func startLoading() { }
+        override func stopLoading() { }
+    }
+
+    func testAutomaticMode_whenCancelledDuringPreparation_itCompletesOnce() throws {
+        #if os(watchOS)
+        throw XCTSkip("watchOS ignores URLProtocol stubs; this test must keep native transport pending.")
+        #else
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = URL(string: "https://example.com/cancel-during-preparation")!
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PendingRequestURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let nativeCompleted = expectation(description: "Native cancellation completes")
+        let task = session.dataTask(with: url) { _, _, error in
+            XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)
+            nativeCompleted.fulfill()
+        }
+        let completed = expectation(description: "Interception completes once")
+        let order = ReadWriteLock(wrappedValue: [String]())
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        handler.onInterceptionDidStart = { _ in order.mutate { $0.append("start") } }
+        handler.onInterceptionDidComplete = { interception in
+            XCTAssertEqual((interception.completion?.error as NSError?)?.code, NSURLErrorCancelled)
+            order.mutate { $0.append("complete") }
+            completed.fulfill()
+        }
+        let mutationEntered = expectation(description: "Preparation entered")
+        let cancellationEntered = expectation(description: "Cancellation attempted")
+        let resumeReturned = expectation(description: "Resume returned")
+        let cancelReturned = expectation(description: "Cancel returned")
+        let releaseMutation = DispatchSemaphore(value: 0)
+        defer {
+            releaseMutation.signal()
+            handler.onRequestMutation = nil
+        }
+        handler.onRequestMutation = { request, _, _ in
+            guard request.url == url else {
+                return
+            }
+            mutationEntered.fulfill()
+            XCTAssertEqual(releaseMutation.wait(timeout: .now() + 5), .success)
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        DispatchQueue.global().async {
+            task.resume()
+            resumeReturned.fulfill()
+        }
+        wait(for: [mutationEntered], timeout: 5)
+        DispatchQueue.global().async {
+            cancellationEntered.fulfill()
+            task.cancel()
+            cancelReturned.fulfill()
+        }
+        wait(for: [cancellationEntered], timeout: 5)
+        // Release from this independent thread: cancel may be waiting on preparation's task lock.
+        releaseMutation.signal()
+        wait(for: [resumeReturned, cancelReturned, nativeCompleted, completed], timeout: 5)
+        feature.flush()
+
+        XCTAssertEqual(order.wrappedValue, ["start", "complete"])
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(task.state, .completed)
+        #endif
+    }
+
+    func testAutomaticMode_whenCompletedTaskResumes_itDoesNotInstrumentAgain() throws {
+        let (server, started, completed) = setupInterceptionTest()
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = try XCTUnwrap(URL(string: "https://example.com/completed-resume"))
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url { mutations.mutate { $0 += 1 } }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession()
+        defer { session.finishTasksAndInvalidate() }
+        let task = session.dataTask(with: url)
+        task.resume()
+        wait(for: [started, completed], timeout: 5, enforceOrder: true)
+        feature.flush()
+        _ = server.waitAndReturnRequests(count: 1)
+
+        task.resume()
+        feature.flush()
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertNotNil(handler.interceptions.first?.value.completion)
+    }
+
+    func testRegisteredDelegate_whenResumedTwice_itMutatesOnceAndPreservesMetrics() throws {
+        let (server, started, completed) = setupInterceptionTest()
+        let url = try XCTUnwrap(URL(string: "https://example.com/registered-repeated-resume"))
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url { mutations.mutate { $0 += 1 } }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
+        defer { session.finishTasksAndInvalidate() }
+        let task = session.dataTask(with: url)
+
+        task.resume()
+        task.resume()
+        wait(for: [started, completed], timeout: 5, enforceOrder: true)
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let interception = try XCTUnwrap(handler.interceptions.first?.value)
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate)
+        XCTAssertNotNil(interception.metrics)
+        XCTAssertNotNil(interception.completion)
+    }
+
+    func testAutomaticMode_whenCancelledBeforeFirstResume_itDoesNotInstrument() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = URL(string: "https://example.com/cancel-before-resume")!
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.invalidateAndCancel() }
+        let nativeCompleted = expectation(description: "Unstarted task finishes cancellation")
+        let task = session.dataTask(with: url) { _, _, error in
+            XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)
+            nativeCompleted.fulfill()
+        }
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        handler.onRequestMutation = { _, _, _ in mutations.mutate { $0 += 1 } }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        task.cancel()
+        wait(for: [nativeCompleted], timeout: 5)
+        XCTAssertEqual(task.state, .completed)
+        task.resume()
+        feature.flush()
+
+        XCTAssertEqual(mutations.wrappedValue, 0)
+        XCTAssertTrue(handler.interceptions.isEmpty)
+    }
+
+    func testAutomaticMode_whenTwoSDKInstancesObserveTask_eachPreparesOnceWithoutBeingRetained() throws {
+        try assertTwoSDKInstancesPrepareOnce(mode: .automatic)
+    }
+
+    func testRegisteredDelegate_whenTwoSDKInstancesObserveTask_eachPreparesOnceWithoutBeingRetained() throws {
+        try assertTwoSDKInstancesPrepareOnce(mode: .registeredDelegate)
+    }
+
+    private func assertTwoSDKInstancesPrepareOnce(mode: TrackingMode) throws {
+        let (server, firstStarted, firstCompleted) = setupInterceptionTest()
+        let url = URL(string: "https://example.com/multiple-sdk-instances")!
+        let session = server.getInterceptedURLSession(delegate: mode == .registeredDelegate ? SessionDataDelegateMock() : nil)
+        defer { session.invalidateAndCancel() }
+        var retainedTask: URLSessionTask?
+        weak var firstFeature: NetworkInstrumentationFeature?
+        weak var secondFeature: NetworkInstrumentationFeature?
+        let mutations = ReadWriteLock(wrappedValue: [Int: Int]())
+        let secondStarted = expectation(description: "Second SDK starts once")
+        let secondCompleted = expectation(description: "Second SDK completes once")
+
+        try autoreleasepool {
+            let secondCore = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+            let secondHandler = URLSessionHandlerMock()
+            secondHandler.shouldInterceptRequest = { $0.url == url }
+            secondHandler.onInterceptionDidStart = { _ in secondStarted.fulfill() }
+            secondHandler.onInterceptionDidComplete = { _ in secondCompleted.fulfill() }
+            try secondCore.register(urlSessionHandler: secondHandler)
+            for (index, instanceHandler) in [handler!, secondHandler].enumerated() {
+                instanceHandler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+                instanceHandler.onRequestMutation = { [weak instanceHandler] request, _, _ in
+                    guard request.url == url else {
+                        return
+                    }
+                    mutations.mutate { $0[index, default: 0] += 1 }
+                    var modified = request
+                    modified.setValue("prepared", forHTTPHeaderField: "X-Instance-\(index)")
+                    instanceHandler?.modifiedRequest = modified
+                }
+            }
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: secondCore)
+            if mode == .registeredDelegate {
+                try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+                try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: secondCore)
+            }
+            firstFeature = core.get(feature: NetworkInstrumentationFeature.self)
+            secondFeature = secondCore.get(feature: NetworkInstrumentationFeature.self)
+            let task = session.dataTask(with: url)
+            retainedTask = task
+            task.resume()
+            task.resume()
+            wait(for: [firstStarted, firstCompleted, secondStarted, secondCompleted], timeout: 5)
+            firstFeature?.flush()
+            secondFeature?.flush()
+            task.resume()
+            firstFeature?.flush()
+            secondFeature?.flush()
+
+            let request = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-Instance-0"), "prepared")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-Instance-1"), "prepared")
+            XCTAssertTrue(server.isMyRequest(try XCTUnwrap(task.currentRequest)), "Preparation preserves URLSession configuration headers")
+            XCTAssertEqual(mutations.wrappedValue, [0: 1, 1: 1])
+            XCTAssertEqual(handler.interceptions.count, 1)
+            XCTAssertEqual(secondHandler.interceptions.count, 1)
+            for instanceHandler in [handler!, secondHandler] {
+                let interception = try XCTUnwrap(instanceHandler.interceptions.first?.value)
+                XCTAssertEqual(interception.trackingMode, mode)
+                XCTAssertEqual(interception.metrics != nil, mode == .registeredDelegate)
+                XCTAssertNotNil(interception.completion)
+            }
+            core = nil
+        }
+
+        XCTAssertEqual(retainedTask?.state, .completed)
+        XCTAssertNil(firstFeature, "A live task must not retain the first SDK instance")
+        XCTAssertNil(secondFeature, "A live task must not retain the second SDK instance")
+    }
+
+    func testPreparation_whenDelegateIsReboundForSuspendedTask_itDoesNotPrepareAgain() throws {
+        #if os(watchOS)
+        throw XCTSkip("watchOS ignores URLProtocol stubs; this test must keep native transport pending.")
+        #else
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = URL(string: "https://example.com/rebind-suspended-task")!
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PendingRequestURLProtocol.self]
+        let session = URLSession(configuration: configuration, delegate: SessionDataDelegateMock(), delegateQueue: nil)
+        defer { session.invalidateAndCancel() }
+        let started = expectation(description: "One start across delegate rebinding")
+        let completed = expectation(description: "One completion across delegate rebinding")
+        let nativeCompleted = expectation(description: "Native cancellation completes")
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        handler.onRequestMutation = { _, _, _ in mutations.mutate { $0 += 1 } }
+        handler.onInterceptionDidStart = { _ in started.fulfill() }
+        handler.onInterceptionDidComplete = { _ in completed.fulfill() }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let task = session.dataTask(with: url) { _, _, error in
+            XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)
+            nativeCompleted.fulfill()
+        }
+
+        task.resume()
+        wait(for: [started], timeout: 5)
+        task.suspend()
+        waitForState(.suspended, of: task)
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        task.resume()
+        waitForState(.running, of: task)
+        task.cancel()
+        wait(for: [completed, nativeCompleted], timeout: 5)
+        feature.flush()
+
+        XCTAssertEqual(mutations.wrappedValue, 1, "The same SDK instance keeps its preparation identity when rebinding")
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(handler.interceptions.first?.value.trackingMode, .registeredDelegate)
+        XCTAssertNotNil(handler.interceptions.first?.value.completion)
+        #endif
+    }
+
+    func testPreparation_rebindingDelegatePreservesCompletedTaskAndStartsNewTaskOnce() throws {
+        let (server, started, completed) = setupInterceptionTest(expectedFulfillmentCount: 2)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        let completions = ReadWriteLock(wrappedValue: 0)
+        let firstCompleted = expectation(description: "First task finishes before rebind")
+        let existingCompletion = handler.onInterceptionDidComplete
+        handler.onInterceptionDidComplete = { interception in
+            existingCompletion?(interception)
+            var isFirst = false
+            completions.mutate { $0 += 1; isFirst = $0 == 1 }
+            if isFirst { firstCompleted.fulfill() }
+        }
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.onRequestMutation = { _, _, _ in mutations.mutate { $0 += 1 } }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
+        defer { session.finishTasksAndInvalidate() }
+        let first = session.dataTask(with: URL(string: "https://example.com/rebind-first")!)
+        first.resume()
+        wait(for: [firstCompleted], timeout: 5)
+        feature.flush()
+
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        first.resume()
+        let second = session.dataTask(with: URL(string: "https://example.com/rebind-second")!)
+        second.resume()
+        second.resume()
+        wait(for: [started, completed], timeout: 5)
+        feature.flush()
+        _ = server.waitAndReturnRequests(count: 2)
+
+        XCTAssertEqual(mutations.wrappedValue, 2)
+        XCTAssertEqual(handler.interceptions.count, 2)
+        XCTAssertTrue(handler.interceptions.values.allSatisfy { $0.trackingMode == .registeredDelegate && $0.metrics != nil && $0.completion != nil })
+    }
+
     func testAutomaticMode_tracksAsyncAwaitTasks() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {

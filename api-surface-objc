@@ -594,6 +594,7 @@ public class objc_RUMActionEventOperatingSystem: NSObject
 public class objc_RUMActionEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMActionEventSessionRUMSessionType
 public enum objc_RUMActionEventSessionRUMSessionType: Int
     case user
@@ -979,7 +980,13 @@ public class objc_RUMErrorEventErrorThreads: NSObject
     public var state: String?
 public class objc_RUMErrorEventErrorWasmModules: NSObject
     public var buildId: String
+    public var debugInfoType: objc_RUMErrorEventErrorWasmModulesDebugInfoType
     public var url: String
+public enum objc_RUMErrorEventErrorWasmModulesDebugInfoType: Int
+    case none
+    case dwarf
+    case sourcemap
+    case unknown
 public class objc_RUMErrorEventExecutionContext: NSObject
     public var id: String
     public var name: String?
@@ -1000,6 +1007,7 @@ public class objc_RUMErrorEventOperatingSystem: NSObject
 public class objc_RUMErrorEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMErrorEventSessionRUMSessionType
 public enum objc_RUMErrorEventSessionRUMSessionType: Int
     case user
@@ -1271,6 +1279,7 @@ public class objc_RUMLongTaskEventOperatingSystem: NSObject
 public class objc_RUMLongTaskEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMLongTaskEventSessionRUMSessionType
 public enum objc_RUMLongTaskEventSessionRUMSessionType: Int
     case user
@@ -1612,6 +1621,7 @@ public class objc_RUMResourceEventResourceWorker: NSObject
 public class objc_RUMResourceEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMResourceEventSessionRUMSessionType
 public enum objc_RUMResourceEventSessionRUMSessionType: Int
     case user
@@ -1792,6 +1802,7 @@ public class objc_RUMTimeseriesCpuEventOperatingSystem: NSObject
 public class objc_RUMTimeseriesCpuEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType
 public enum objc_RUMTimeseriesCpuEventSessionRUMSessionType: Int
     case user
@@ -1984,6 +1995,7 @@ public class objc_RUMTimeseriesMemoryEventOperatingSystem: NSObject
 public class objc_RUMTimeseriesMemoryEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType
 public enum objc_RUMTimeseriesMemoryEventSessionRUMSessionType: Int
     case user
@@ -2258,6 +2270,7 @@ public class objc_RUMViewEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
     public var isActive: NSNumber?
+    public var isMainProcess: NSNumber?
     public var sampledForReplay: NSNumber?
     public var type: objc_RUMViewEventSessionRUMSessionType
 public enum objc_RUMViewEventSessionRUMSessionType: Int
@@ -2696,6 +2709,7 @@ public class objc_RUMViewUpdateEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
     public var isActive: NSNumber?
+    public var isMainProcess: NSNumber?
     public var sampledForReplay: NSNumber?
     public var type: objc_RUMViewUpdateEventSessionRUMSessionType
 public enum objc_RUMViewUpdateEventSessionRUMSessionType: Int
@@ -3097,6 +3111,7 @@ public class objc_RUMVitalAppLaunchEventOperatingSystem: NSObject
 public class objc_RUMVitalAppLaunchEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType
 public enum objc_RUMVitalAppLaunchEventSessionRUMSessionType: Int
     case user
@@ -3338,6 +3353,7 @@ public class objc_RUMVitalDurationEventOperatingSystem: NSObject
 public class objc_RUMVitalDurationEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalDurationEventSessionRUMSessionType
 public enum objc_RUMVitalDurationEventSessionRUMSessionType: Int
     case user
@@ -3568,6 +3584,7 @@ public class objc_RUMVitalOperationStepEventOperatingSystem: NSObject
 public class objc_RUMVitalOperationStepEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
+    public var isMainProcess: NSNumber?
     public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType
 public enum objc_RUMVitalOperationStepEventSessionRUMSessionType: Int
     case user
@@ -3698,6 +3715,8 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var numberOfDisplays: NSNumber?
     public var plugins: [objc_TelemetryConfigurationEventTelemetryConfigurationPlugins]?
     public var premiumSampleRate: NSNumber?
+    public var profilingAnrEnabled: NSNumber?
+    public var profilingApplicationLaunchSampleRate: NSNumber?
     public var profilingSampleRate: NSNumber?
     public var propagateTraceBaggage: NSNumber?
     public var reactNativeVersion: String?

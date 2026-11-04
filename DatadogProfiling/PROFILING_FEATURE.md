@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-02
-sdk_version: 3.18.0
-verified_against_commit: 0f9f36fb5
+last_updated: 2026-09-30
+sdk_version: 3.19.0
+verified_against_commit: c7d0eba6b
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -155,6 +155,8 @@ flowchart TD
 
 ### Native Profiler
 - **`DatadogProfiling/Mach/`** - Native Mach sampler and pprof aggregation layer exposed to Swift through `dd_profiler.h` and `dd_pprof.h`.
+- **`DatadogProfiling/Mach/memory_profiler.cpp`** - Owns allocation-hook observers, one Poisson sampler per thread, and the bounded allocation window. Event captures snapshot live objects without draining periodic allocation totals; Swift type names resolve during heap encoding.
+- **`DatadogProfiling/Sources/Memory/MemoryProfiler.swift`** - Coordinates memory recording, heap emission, RUM correlation, and trigger cooldowns independently of the CPU profiler.
 
 ## Configuration Categories
 
@@ -178,14 +180,14 @@ Continuous profiles are also flushed when the app backgrounds after foreground a
 #### Memory profiling records through all of them
 Memory profiling is deliberately asymmetric. The CPU profiler must stop under these conditions because its sampling thread actively burns CPU. Allocation interception is passive — a Poisson-sampled table write on allocations the app makes anyway — and costs nothing at all while the process is suspended. So **recording continues in the background, in Low Power Mode, and at low battery**, which is what gives visibility into background allocation growth (background fetch, URLSession completions, silent pushes) — a common route to a jetsam kill.
 
-What the blockers still gate is the *upload*: the periodic emission timer is not kept alive for memory while a blocker is active. Allocations observed meanwhile are not lost — they accumulate in the native alloc window and are attributed to the first window that does emit. A long accumulation widens the sampling interval under back-pressure rather than dropping samples.
+What the blockers still gate is the *upload*: the periodic emission timer is not kept alive for memory while a blocker is active. Samples accumulate in the native allocation window and are attributed to the first window that emits. The Poisson sampling interval stays fixed at 512 KiB. Allocation records and the live set have independent bounds of 4,096 entries and drop new entries when full; their diagnostics report these losses. Recorder saturation can therefore understate `alloc_*`, while live-set saturation can understate `inuse_*`.
 
 The flush triggered by the background transition itself still carries its heap, since it closes out the foreground window. A further context update arriving while *already* backgrounded does not re-emit, so the same live set is never uploaded twice.
 
 Memory recording stops only for reasons that are terminal for the session: tracking consent `.notGranted`, the RUM-composed memory decision sampling out, an interception install failure, or a quota rejection. Each of those clears the sample table, which is correct — a stop-and-restart is a genuinely fresh session rather than a resumed one with an invisible gap in its sampling. This is why background is *not* on that list: tearing recording down and restarting it would clear the live set on every background round-trip, erasing exactly the long-lived objects `inuse_*` exists to surface.
 
 ### Continuous memory profiling
-Memory emits on **every** window in which sampling is active, matching the Go profiler's delta model — not only on windows that happen to carry a RUM event. `alloc_*` is the delta for that window (the native alloc log is captured-and-reset each time), while `inuse_*` is the point-in-time live set, which carries across windows and is never reset by an emission. This is why `alloc_*` can read lower than `inuse_*`: one is a per-window rate, the other a cumulative snapshot. Both directions are normal, and which is larger reflects churn versus retention, not a fault.
+Memory emits on **every** window in which sampling is active, matching the Go profiler's delta model — not only on windows that happen to carry a RUM event. `alloc_*` is the delta for that window (the native allocation log is drained on each successful periodic capture), while `inuse_*` is the point-in-time live set, which carries across windows and is never reset by an emission. Fractional sampling weights are aggregated before rounding during heap encoding. A failed capture retains both allocation records and the window start for the next attempt. `alloc_*` can read lower than `inuse_*`: one is a per-window total and the other is a cumulative snapshot.
 
 The only thing that suppresses an emission is having nothing to report: when neither the live set nor the alloc window holds a sample, no event is written, so an idle app uploads nothing.
 

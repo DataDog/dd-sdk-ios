@@ -93,7 +93,7 @@ push_repo() {
         echo_warn "Running in DRY RUN mode. Skipping push."
     else
         HEADLESS_TOKEN="$GITHUB_TOKEN" commit-headless push \
-            -T "DataDog/$REPO_NAME" \
+            -T "$REPO_OWNER/$REPO_NAME" \
             --branch "$DOGFOODING_BRANCH_NAME" \
             --head-sha "$BASE_SHA" \
             --create-branch \
@@ -245,11 +245,12 @@ read_dogfooded_version
 resolve_dd_sdk_ios_package
 
 if [ "$shopist" = "true" ]; then
+    REPO_OWNER="DataDog"
     REPO_NAME="shopist-ios"
     CLONE_PATH="$DEPENDENT_REPO_CLONE_DIR/$REPO_NAME"
     DEFAULT_BRANCH="main"
 
-    clone_repo "git@github.com:DataDog/shopist-ios.git" $DEFAULT_BRANCH $CLONE_PATH
+    clone_repo "git@github.com:$REPO_OWNER/$REPO_NAME.git" $DEFAULT_BRANCH $CLONE_PATH
 
     # Generate CHANGELOG:
     LAST_DOGFOODED_COMMIT=$(read_dogfooded_commit "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift")
@@ -261,7 +262,7 @@ if [ "$shopist" = "true" ]; then
     update_dependent_pbxproj_branch "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.pbxproj"
 
     echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
-    export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/shopist-ios --policy dd-sdk-ios.gitlab.pr)
+    export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope "$REPO_OWNER/$REPO_NAME" --policy dd-sdk-ios.gitlab.pr)
     verify_gh_auth
 
     # Push & create PR:
@@ -273,11 +274,12 @@ if [ "$shopist" = "true" ]; then
 fi
 
 if [ "$datadog_app" = "true" ]; then
+    REPO_OWNER="ddoghq"
     REPO_NAME="datadog-ios"
     CLONE_PATH="$DEPENDENT_REPO_CLONE_DIR/$REPO_NAME"
     DEFAULT_BRANCH="develop"
 
-    clone_repo "git@github.com:DataDog/datadog-ios.git" $DEFAULT_BRANCH $CLONE_PATH
+    clone_repo "git@github.com:$REPO_OWNER/$REPO_NAME.git" $DEFAULT_BRANCH $CLONE_PATH
 
     # Generate CHANGELOG:
     LAST_DOGFOODED_COMMIT=$(read_dogfooded_commit "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift")
@@ -288,7 +290,7 @@ if [ "$datadog_app" = "true" ]; then
     update_dependent_sdk_version "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift"
 
     echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
-    export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/datadog-ios --policy dd-sdk-ios.gitlab.pr)
+    export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope "$REPO_OWNER/$REPO_NAME" --policy dd-sdk-ios.gitlab.pr)
     verify_gh_auth
 
     # Push & create PR:

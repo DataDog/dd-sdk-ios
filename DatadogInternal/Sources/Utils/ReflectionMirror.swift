@@ -198,14 +198,19 @@ extension ReflectionMirror {
 }
 
 extension ReflectionMirror {
-    /// Returns a specific descendant of the reflected subject, or `nil` if no
-    /// such descendant exists.
+    /// Returns a specific descendant of the reflected subject, or `nil` if the
+    /// descendant does not exist or the path is unsupported.
     ///
     /// Pass a variadic list of string and integer arguments. Each string
     /// argument selects the first child with a matching label. Each integer
-    /// argument selects the child at that offset. For example, passing
-    /// `1, "two", 3` as arguments to `myMirror.descendant(_:_:)` is equivalent
-    /// to:
+    /// argument selects the child at that offset.
+    ///
+    /// When traversing stored properties of a Swift class, paths must use property names.
+    /// Intermediate structs are read in place. Unsupported intermediate layouts return
+    /// `nil` without being copied.
+    ///
+    /// For a path through structs and tuples, passing `1, "two", 3` as arguments to
+    /// `myMirror.descendant(_:_:)` selects the same descendant as:
     ///
     ///     var result: Any? = nil
     ///     let children = myMirror.children
@@ -213,10 +218,10 @@ extension ReflectionMirror {
     ///         children.startIndex, offsetBy: 1, limitedBy: children.endIndex),
     ///         i0 != children.endIndex
     ///     {
-    ///         let grandChildren = Mirror(reflecting: children[i0].value).children
+    ///         let grandChildren = ReflectionMirror(reflecting: children[i0].value).children
     ///         if let i1 = grandChildren.firstIndex(where: { $0.label == "two" }) {
     ///             let greatGrandChildren =
-    ///                 Mirror(reflecting: grandChildren[i1].value).children
+    ///                 ReflectionMirror(reflecting: grandChildren[i1].value).children
     ///             if let i2 = greatGrandChildren.index(
     ///                 greatGrandChildren.startIndex,
     ///                 offsetBy: 3,
@@ -229,46 +234,71 @@ extension ReflectionMirror {
     ///         }
     ///     }
     ///
-    /// This function is suitable for exploring the structure of a mirror in a
-    /// REPL or playground, but is not intended to be efficient. The efficiency
-    /// of finding each element in the argument list depends on the argument
-    /// type and the capabilities of the each level of the mirror's `children`
-    /// collections. Each string argument requires a linear search, and unless
-    /// the underlying collection supports random-access traversal, each integer
-    /// argument also requires a linear operation.
+    /// The efficiency of finding each element depends on the reflected type and
+    /// the capabilities of each level's `children` collection. Looking up a named
+    /// field can require a linear search through runtime metadata.
     ///
     /// - Parameters:
     ///   - first: The first mirror path component to access.
     ///   - rest: Any remaining mirror path components.
     /// - Returns: The descendant of this mirror specified by the given mirror
-    ///   path components if such a descendant exists; otherwise, `nil`.
+    ///   path components, or `nil` if the path is missing or unsupported.
     func descendant(_ first: Path, _ rest: Path...) -> Any? {
-        var paths = [first] + rest
-        return descendant(paths: &paths)
+        descendant([first] + rest)
     }
 
+    /// Returns the descendant at the given path, or `nil` if it cannot be read.
+    ///
+    /// When traversing stored properties of a Swift class, paths must use property names.
+    /// Intermediate structs are read in place. Unsupported intermediate layouts return
+    /// `nil` without being copied.
+    ///
+    /// - Parameter paths: The path to the descendant.
+    /// - Returns: The descendant, or `nil` if the path is missing or unsupported.
     public func descendant(_ paths: [Path]) -> Any? {
-        var paths = paths
-        return descendant(paths: &paths)
-    }
+        guard let first = paths.first else {
+            return nil
+        }
+        let remainingPaths = Array(paths.dropFirst())
 
-    private func descendant(paths: inout [Path]) -> Any? {
-        let path = paths.removeFirst()
+        guard _MetadataKind(subjectType) == .class else {
+            // Value subjects are already owned by this mirror.
+            guard let child = descendant(path: first) else {
+                return nil
+            }
+            return remainingPaths.isEmpty ? child : ReflectionMirror(reflecting: child).descendant(remainingPaths)
+        }
 
-        guard let child = descendant(path: path) else {
+        guard case let .key(name) = first,
+              let field = _getStoredField(named: name, in: subjectType) else {
             return nil
         }
 
-        if paths.isEmpty {
-            return child
-        }
+        let owner = subject as AnyObject
+        return withExtendedLifetime(owner) {
+            if remainingPaths.isEmpty {
+                // Use the declaring class's local index when reading inherited fields.
+                return descendant(path: first)
+            }
 
-        return ReflectionMirror(reflecting: child)
-            .descendant(paths: &paths)
+            switch _MetadataKind(field.type) {
+            case .struct:
+                let address = UnsafeRawPointer(Unmanaged.passUnretained(owner).toOpaque())
+                return descendant(at: address.advanced(by: field.offset), type: field.type, paths: remainingPaths)
+            case .class:
+                // Retaining a class reference does not copy its stored properties.
+                guard let child = descendant(path: first) else {
+                    return nil
+                }
+                return ReflectionMirror(reflecting: child).descendant(remainingPaths)
+            default:
+                return nil
+            }
+        }
     }
 
     private func descendant(path: Path) -> Any? {
-        if case let .index(index) = path, index < children.count {
+        if case let .index(index) = path, index >= 0, index < children.count {
             return children[AnyIndex(index)].value
         }
 
@@ -277,6 +307,28 @@ extension ReflectionMirror {
         }
 
         return superclassMirror?.descendant(path: path)
+    }
+
+    private func descendant(at address: UnsafeRawPointer, type: Any.Type, paths: [Path]) -> Any? {
+        guard case let .key(name)? = paths.first,
+              let field = _getStoredField(named: name, in: type) else {
+            return nil
+        }
+        let remainingPaths = Array(paths.dropFirst())
+
+        if remainingPaths.isEmpty {
+            return _getChild(at: address, type: type, index: field.index)
+        }
+
+        switch _MetadataKind(field.type) {
+        case .struct:
+            return descendant(at: address.advanced(by: field.offset), type: field.type, paths: remainingPaths)
+        case .class:
+            let child = _getChild(at: address, type: type, index: field.index)
+            return ReflectionMirror(reflecting: child).descendant(remainingPaths)
+        default:
+            return nil
+        }
     }
 }
 
@@ -292,7 +344,7 @@ extension ReflectionMirror.Path: ExpressibleByStringLiteral {
     }
 }
 
-private func _getChild<T>(of value: T, type: Any.Type, index: Int) -> ReflectionMirror.Child {
+private func _getChild<T: ~Copyable>(of value: borrowing T, type: Any.Type, index: Int) -> ReflectionMirror.Child {
     var nameC: UnsafePointer<CChar>? = nil
     var freeFunc: NameFreeFunc? = nil
     let value = _getChild(of: value, type: type, index: index, outName: &nameC, outFreeFunc: &freeFunc)
@@ -305,6 +357,50 @@ private func _getChildren<T>(of value: T, type: Any.Type, count: Int) -> any Col
     (0 ..< count).lazy.map {
         _getChild(of: value, type: type, index: $0)
     }
+}
+
+// Field lookup follows Swift's field enumeration implementation:
+// https://github.com/swiftlang/swift/blob/33ed3118bb034651a01d874eb6a61918b82c6df8/stdlib/public/core/ReflectionMirror.swift
+//
+// Returns nil for missing fields or unsupported storage, without reading their values.
+private func _getStoredField(named name: String, in type: Any.Type) -> (offset: Int, index: Int, type: Any.Type)? {
+    // Inherited fields precede the most derived class's fields.
+    for index in (0..<_getRecursiveChildCount(type)).reversed() {
+        var field = _FieldReflectionMetadata()
+        let fieldType = _getChildMetadata(type, index: index, fieldMetadata: &field)
+        defer { field.freeFunc?(field.name) }
+
+        guard field.name.map({ String(cString: $0) }) == name else {
+            continue
+        }
+        guard field.isStrong else {
+            return nil
+        }
+        let offset = _getChildOffset(type, index: index)
+        guard offset >= 0 else {
+            return nil
+        }
+        return (offset: offset, index: index, type: fieldType)
+    }
+    return nil
+}
+
+private func _getChild(at address: UnsafeRawPointer, type: Any.Type, index: Int) -> Any {
+    func open<Parent>(_ parent: Parent.Type) -> Any {
+        _getBorrowedChild(at: address, parent: parent, type: type, index: index)
+    }
+    return _openExistential(type, do: open)
+}
+
+private func _getBorrowedChild<Parent: ~Copyable>(
+    at address: UnsafeRawPointer,
+    parent: Parent.Type,
+    type: Any.Type,
+    index: Int
+) -> Any {
+    // Suppressing Copyable is essential: a Copyable generic parent can be
+    // copied into temporary storage even when the callee borrows it.
+    return _getChild(of: address.assumingMemoryBound(to: Parent.self).pointee, type: type, index: index).value
 }
 
 /// Gets indexes of non-recursive named fields of a reference type.
@@ -380,11 +476,14 @@ private func _getChildMetadata(
     fieldMetadata: UnsafeMutablePointer<_FieldReflectionMetadata>
 ) -> Any.Type
 
+@_silgen_name("swift_reflectionMirror_recursiveChildOffset")
+private func _getChildOffset(_: Any.Type, index: Int) -> Int
+
 private typealias NameFreeFunc = @convention(c) (UnsafePointer<CChar>?) -> Void
 
 @_silgen_name("swift_reflectionMirror_subscript")
-private func _getChild<T>(
-    of: T,
+private func _getChild<T: ~Copyable>(
+    of: borrowing T,
     type: Any.Type,
     index: Int,
     outName: UnsafeMutablePointer<UnsafePointer<CChar>?>,

@@ -64,6 +64,14 @@ void dd_pprof_add_heap_sample_for_testing(
  */
 size_t dd_pprof_serialize_heap_for_testing(dd_pprof_t* profile, uint8_t** data);
 
+/// Fails the zero-based heap packing allocation at failure_index. SIZE_MAX
+/// allows all allocations. Reports attempted allocations and temporary blocks
+/// still owned after return; the caller separately owns successful output data.
+/// FOR TESTING USE ONLY.
+size_t dd_pprof_serialize_heap_with_allocation_failure_for_testing(
+    dd_pprof_t *profile, size_t failure_index,
+    size_t *allocation_attempts, size_t *outstanding_allocations, uint8_t **data);
+
 #ifdef __cplusplus
 }
 #endif

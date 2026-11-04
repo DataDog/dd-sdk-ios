@@ -65,6 +65,77 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(scope.parent.context.activeUserActionID, try XCTUnwrap(provider.context.activeUserActionID))
     }
 
+    func testGivenAppRunningAsAppExtension_whenResourceLoadingEnds_itSendsIsMainProcessFalse() throws {
+        let context: DatadogContext = .mockWith(
+            buildId: self.context.buildId,
+            applicationBundleType: .iOSAppExtension
+        )
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        _ = scope.process(
+            command: RUMStopResourceCommand(
+                resourceKey: "/resource/1",
+                time: currentTime,
+                attributes: [:],
+                kind: .image,
+                httpStatusCode: 200,
+                size: 1_024
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
+    func testGivenAppRunningAsAppExtension_whenResourceLoadingEndsWithError_itSendsIsMainProcessFalse() throws {
+        let context: DatadogContext = .mockWith(
+            buildId: self.context.buildId,
+            applicationBundleType: .iOSAppExtension
+        )
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand(
+                resourceKey: "/resource/1",
+                time: currentTime,
+                error: ErrorMock("network issue explanation"),
+                source: .network,
+                httpStatusCode: 500,
+                globalAttributes: [:],
+                attributes: [:]
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context

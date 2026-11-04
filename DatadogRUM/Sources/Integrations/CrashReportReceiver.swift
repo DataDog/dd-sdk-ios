@@ -365,6 +365,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 hasReplay: hasReplay,
                 id: sessionUUID.toRUMDataFormat,
                 isActive: true,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 sampledForReplay: nil,
                 type: ciTest != nil ? .ciTest : (syntheticsTest != nil ? .synthetics : .user)
             ),

@@ -6,18 +6,18 @@
 
 import DatadogInternal
 
-/// Stores the continuous profiling sampling state derived from the current RUM session.
+/// Stores profiling sampling decisions.
 ///
-/// This type separates static SDK configuration from the dynamic, session-linked sampling decision:
+/// It keeps the RUM session-linked decisions for each profiling mode:
 /// - `isContinuousProfilingConfigured` reflects the configured `continuousSampleRate`
 /// - `continuousProfilingSampled` reflects the current RUM-linked sampling result
+/// - `appLaunchProfilingSampled` reflects whether the current RUM session admits the launch profile
 ///
-/// The provider intentionally stores only the resolved sampling result, not the deterministic sampler
-/// itself. This keeps all profiling sampling reads contextualized in one place and allows other
-/// components to react to three distinct states:
+/// The provider stores the resolved results rather than the deterministic sampler. Each result has
+/// three states:
 /// - `nil`: no RUM sampling decision received yet
-/// - `true`: the current RUM session samples continuous profiling in
-/// - `false`: the current RUM session samples continuous profiling out
+/// - `true`: this profiling mode is eligible in the current RUM session
+/// - `false`: this profiling mode is ineligible, either by configuration or sampling
 internal final class ProfilingSamplerProvider: @unchecked Sendable {
     private let continuousSampleRate: SampleRate
     private let memorySampleRate: SampleRate
@@ -43,13 +43,26 @@ internal final class ProfilingSamplerProvider: @unchecked Sendable {
     /// `true` when memory profiling is configured with a sample rate greater than zero.
     let isMemoryProfilingConfigured: Bool
 
-    init(continuousSampleRate: SampleRate, memorySampleRate: SampleRate = 0) {
+    /// Whether the native launch profile is available for the current configuration.
+    let isAppLaunchProfilingAvailable: Bool
+
+    /// Whether the current RUM session admits the available app-launch profile.
+    @ReadWriteLock
+    private(set) var appLaunchProfilingSampled: Bool?
+
+    init(
+        continuousSampleRate: SampleRate,
+        appLaunchSampleRate: SampleRate = 0,
+        memorySampleRate: SampleRate = 0
+    ) {
         self.continuousSampleRate = continuousSampleRate.normalizedSampleRate
         self.memorySampleRate = memorySampleRate.normalizedSampleRate
         self.continuousProfilingSampled = nil
+        self.appLaunchProfilingSampled = nil
         self.memoryProfilingSampled = nil
-        self.isContinuousProfilingConfigured = continuousSampleRate > 0
         self.isMemoryProfilingConfigured = memorySampleRate > 0
+        self.isContinuousProfilingConfigured = continuousSampleRate > 0
+        self.isAppLaunchProfilingAvailable = appLaunchSampleRate > 0
     }
 
     /// Updates the session-linked sampling results from the current RUM session sampler.
@@ -60,5 +73,7 @@ internal final class ProfilingSamplerProvider: @unchecked Sendable {
     func updateWith(deterministicSampler: DeterministicSampler) {
         continuousProfilingSampled = deterministicSampler.combined(with: continuousSampleRate).sample()
         memoryProfilingSampled = deterministicSampler.combined(with: memorySampleRate).sample()
+        // Native startup already applied the app-launch rate; only RUM session eligibility remains.
+        appLaunchProfilingSampled = isAppLaunchProfilingAvailable && deterministicSampler.isSampled
     }
 }

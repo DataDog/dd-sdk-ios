@@ -26,6 +26,9 @@
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <cstdlib>
+#include <limits>
+#include <memory>
+#include <new>
 
 #include "profile.h"
 #include "profile.pb-c.h"
@@ -61,6 +64,78 @@ static ProtobufCAllocator profile_allocator = {
 static inline void* pb_alloc(ProtobufCAllocator* allocator, size_t size) {
     return allocator->alloc(allocator->allocator_data, size);
 }
+
+namespace {
+
+struct heap_pack_allocation_state {
+    size_t failure_index = std::numeric_limits<size_t>::max();
+    size_t attempts = 0;
+    size_t outstanding = 0;
+};
+
+// Owns the temporary protobuf object graph, including partially initialized
+// arrays. Protobuf free_unpacked cannot safely walk those arrays after a failed
+// allocation, so all blocks remain owned here until packing finishes.
+class heap_pack_storage {
+public:
+    explicit heap_pack_storage(heap_pack_allocation_state &state) : state_(state) {}
+
+    ~heap_pack_storage() {
+        while (head_) {
+            auto *previous = head_->previous;
+            std::free(head_);
+            head_ = previous;
+            --state_.outstanding;
+        }
+    }
+
+    heap_pack_storage(const heap_pack_storage &) = delete;
+    heap_pack_storage &operator=(const heap_pack_storage &) = delete;
+    heap_pack_storage(heap_pack_storage &&) = delete;
+    heap_pack_storage &operator=(heap_pack_storage &&) = delete;
+
+    ProtobufCAllocator allocator() {
+        return {allocate, release, this};
+    }
+
+    uint8_t *output_buffer(size_t size) {
+        if (state_.attempts++ == state_.failure_index) {
+            return nullptr;
+        }
+        return static_cast<uint8_t *>(std::malloc(size));
+    }
+
+private:
+    struct alignas(std::max_align_t) block {
+        block *previous;
+    };
+
+    static void *allocate(void *context, size_t size) {
+        auto &storage = *static_cast<heap_pack_storage *>(context);
+        const bool fail_allocation = storage.state_.attempts++ == storage.state_.failure_index;
+        const bool size_overflows = size > std::numeric_limits<size_t>::max() - sizeof(block);
+        void *memory = fail_allocation || size_overflows ? nullptr : std::malloc(sizeof(block) + size);
+        if (!memory) {
+            throw std::bad_alloc();
+        }
+        auto *entry = new (memory) block{storage.head_};
+        storage.head_ = entry;
+        ++storage.state_.outstanding;
+        // Only the C++ construction helpers use this allocator. A failed malloc
+        // throws before they can dereference a null result, and the heap packer
+        // catches the failure while this owner releases every successful block.
+        return entry + 1;
+    }
+
+    static void release(void *, void *) {
+        // Temporary protobuf blocks are released together by the owner.
+    }
+
+    heap_pack_allocation_state &state_;
+    block *head_ = nullptr;
+};
+
+} // namespace
 
 namespace dd::profiler {
 
@@ -194,57 +269,78 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
  *
  * @note The caller is responsible for freeing the returned buffer with free()
  */
-size_t profile_pprof_pack_heap(const profile& prof, uint8_t** data) {
-    if (!data) return 0;
-
-    auto* pprof = static_cast<Perftools__Profiles__Profile*>(
-        pb_alloc(&profile_allocator, sizeof(Perftools__Profiles__Profile))
-    );
-    perftools__profiles__profile__init(pprof);
-
-    perftools_profiles_profile_add_strings(prof.strings(), pprof, &profile_allocator);
-    perftools_profiles_profile_set_sample_type_heap(
-        prof.alloc_objects_str_id(), prof.alloc_space_str_id(),
-        prof.inuse_objects_str_id(), prof.inuse_space_str_id(),
-        prof.count_str_id(), prof.bytes_str_id(),
-        pprof, &profile_allocator
-    );
-    perftools_profiles_profile_set_period(
-        prof.space_str_id(), prof.bytes_str_id(),
-        static_cast<int64_t>(prof.sampling_interval_ns()),
-        pprof, &profile_allocator
-    );
-    perftools_profiles_profile_add_mappings(prof.mappings(), pprof, &profile_allocator);
-    perftools_profiles_profile_add_locations(prof.locations(), pprof, &profile_allocator);
-    perftools_profiles_profile_add_samples(prof, pprof, &profile_allocator);
-
-    size_t packed_size = perftools__profiles__profile__get_packed_size(pprof);
-
-    if (packed_size == 0) {
-        perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
+static size_t profile_pprof_pack_heap(
+    const profile &prof, uint8_t **data, heap_pack_allocation_state &state) {
+    if (!data) {
         return 0;
     }
+    *data = nullptr;
 
-    uint8_t* buffer = static_cast<uint8_t*>(malloc(packed_size));
-    if (!buffer) {
-        perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
+    try {
+        heap_pack_storage storage(state);
+        auto allocator = storage.allocator();
+        auto *pprof = static_cast<Perftools__Profiles__Profile *>(
+            pb_alloc(&allocator, sizeof(Perftools__Profiles__Profile))
+        );
+        perftools__profiles__profile__init(pprof);
+
+        perftools_profiles_profile_add_strings(prof.strings(), pprof, &allocator);
+        perftools_profiles_profile_set_sample_type_heap(
+            prof.alloc_objects_str_id(), prof.alloc_space_str_id(),
+            prof.inuse_objects_str_id(), prof.inuse_space_str_id(),
+            prof.count_str_id(), prof.bytes_str_id(),
+            pprof, &allocator
+        );
+        perftools_profiles_profile_set_period(
+            prof.space_str_id(), prof.bytes_str_id(),
+            static_cast<int64_t>(prof.sampling_interval_ns()),
+            pprof, &allocator
+        );
+        perftools_profiles_profile_add_mappings(prof.mappings(), pprof, &allocator);
+        perftools_profiles_profile_add_locations(prof.locations(), pprof, &allocator);
+        perftools_profiles_profile_add_samples(prof, pprof, &allocator);
+
+        const size_t packed_size = perftools__profiles__profile__get_packed_size(pprof);
+        if (packed_size == 0) {
+            return 0;
+        }
+        std::unique_ptr<uint8_t, decltype(&std::free)> buffer(
+            storage.output_buffer(packed_size), std::free
+        );
+        if (!buffer) {
+            return 0;
+        }
+        const size_t actual_size = pprof_pb_message_pack(
+            reinterpret_cast<const ProtobufCMessage *>(pprof), buffer.get()
+        );
+        if (actual_size == 0) {
+            return 0;
+        }
+        *data = buffer.release();
+        return actual_size;
+    } catch (...) {
         return 0;
     }
+}
 
-    size_t actual_size = pprof_pb_message_pack(
-        reinterpret_cast<const ProtobufCMessage*>(pprof),
-        buffer
-    );
+size_t profile_pprof_pack_heap(const profile &prof, uint8_t **data) {
+    heap_pack_allocation_state state;
+    return profile_pprof_pack_heap(prof, data, state);
+}
 
-    perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
-
-    if (actual_size == 0) {
-        free(buffer);
-        return 0;
+size_t profile_pprof_pack_heap_with_allocation_failure_for_testing(
+    const profile &prof, uint8_t **data, size_t failure_index,
+    size_t *allocation_attempts, size_t *outstanding_allocations) {
+    heap_pack_allocation_state state;
+    state.failure_index = failure_index;
+    const size_t size = profile_pprof_pack_heap(prof, data, state);
+    if (allocation_attempts) {
+        *allocation_attempts = state.attempts;
     }
-
-    *data = buffer;
-    return actual_size;
+    if (outstanding_allocations) {
+        *outstanding_allocations = state.outstanding;
+    }
+    return size;
 }
 
 /**

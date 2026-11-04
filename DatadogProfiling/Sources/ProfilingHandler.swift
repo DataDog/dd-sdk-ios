@@ -13,6 +13,12 @@ import DatadogInternal
 // transitive module dependency, but it is not distributed as an XCFramework.
 @_implementationOnly import DatadogMachProfiler
 
+/// Which profile data was handed to the feature writer.
+internal struct ProfileWriteResult {
+    let didWriteProfile: Bool
+    let didWriteHeapProfile: Bool
+}
+
 internal protocol ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue] { get }
     var currentServerTimeOffset: TimeInterval { get }
@@ -21,7 +27,7 @@ internal protocol ProfilingHandler {
     var telemetryController: ProfilingTelemetryController { get }
     var encoder: JSONEncoder { get }
 
-    /// The `heap.pprof` bytes to attach to a CPU profile event of the given serialized size, or
+    /// The `heap.pprof` bytes to fit alongside the other serialized profile attachments, or
     /// `nil` when there is nothing to attach or no room in the shared attachment budget.
     ///
     /// Declared here rather than only in the extension so the witness table dispatches to the
@@ -30,7 +36,7 @@ internal protocol ProfilingHandler {
     ///   periodic cycle may: the capture is destructive, so an event-triggered snapshot takes the
     ///   live set alone and leaves the delta for the profile that owns it.
     func heapAttachment(
-        fittingAlongside cpuProfileSize: Int,
+        fittingAlongside otherAttachmentsSize: Int,
         attributes: [AttributeKey: AttributeValue],
         operation: ProfilingOperation,
         drainingAllocWindow: Bool
@@ -40,7 +46,7 @@ internal protocol ProfilingHandler {
 extension ProfilingHandler {
     /// A handler with no memory profiling behind it attaches nothing.
     func heapAttachment(
-        fittingAlongside cpuProfileSize: Int,
+        fittingAlongside otherAttachmentsSize: Int,
         attributes: [AttributeKey: AttributeValue],
         operation: ProfilingOperation,
         drainingAllocWindow: Bool
@@ -91,7 +97,7 @@ extension ProfilingHandler {
         longTasks: [DurationEvent]? = nil,
         errors: [DurationEvent]? = nil,
         captureHeapProfile: Bool = false
-    ) -> Bool {
+    ) -> ProfileWriteResult {
         let (attributes, rumEvents) = rumCorrelation(
             rumVitals: rumVitals,
             hangs: hangs,
@@ -108,16 +114,15 @@ extension ProfilingHandler {
         )
     }
 
-    /// - Returns: `true` when a `ProfileEvent` was handed to the writer. Callers use this to
-    ///   decide whether the correlation they passed in has actually been reported — the guards
-    ///   below can drop the profile entirely.
+    /// Reports CPU and heap writes separately so a CPU-only fallback does not consume heap
+    /// correlation or spend the memory emission cooldown.
     private func writeProfilingEvent(
         with profile: OpaquePointer,
         operation: ProfilingOperation,
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue],
         captureHeapProfile: Bool
-    ) -> Bool {
+    ) -> ProfileWriteResult {
         let timeOffsetInNanoseconds = currentServerTimeOffset.dd.toInt64Nanoseconds
         dd_pprof_set_server_time_offset_ns(profile, timeOffsetInNanoseconds)
 
@@ -129,14 +134,14 @@ extension ProfilingHandler {
 
         guard let data else {
             telemetryController.sendNoData(durationMs: durationMs, for: operation)
-            return false
+            return ProfileWriteResult(didWriteProfile: false, didWriteHeapProfile: false)
         }
 
         let serializedProfileSize = Int(clamping: size)
         guard serializedProfileSize <= Int(ProfilerFeature.Constants.maxObjectSize) else {
             dd_pprof_free_serialized_data(data)
             telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
-            return false
+            return ProfileWriteResult(didWriteProfile: false, didWriteHeapProfile: false)
         }
 
         let pprof = Data(bytes: data, count: serializedProfileSize)
@@ -150,9 +155,11 @@ extension ProfilingHandler {
         // Go-aligned model: one event carries multiple pprof attachments (wall/CPU + heap) that the
         // backend merges into a single profile, so wall/CPU and memory appear together in the UI
         // instead of as two profiles.
+        let rumEventsData = try? encoder.encode(rumEvents)
+        let otherAttachmentsSize = serializedProfileSize + (rumEventsData?.count ?? 0)
         let heapPprof = captureHeapProfile
             ? heapAttachment(
-                fittingAlongside: serializedProfileSize,
+                fittingAlongside: otherAttachmentsSize,
                 attributes: attributes,
                 operation: operation,
                 // The coupled profile is the periodic cycle's event, so it owns the delta.
@@ -181,7 +188,6 @@ extension ProfilingHandler {
                 additionalAttributes: attributes
             )
 
-            let rumEventsData = try? encoder.encode(rumEvents)
             let attachments = ProfileAttachments(pprof: pprof, rumEvents: rumEventsData, heapPprof: heapPprof)
             writer.write(value: event, metadata: attachments)
             self.telemetryController.sendProfile(
@@ -190,7 +196,7 @@ extension ProfilingHandler {
                 for: operation
             )
         }
-        return true
+        return ProfileWriteResult(didWriteProfile: true, didWriteHeapProfile: heapPprof != nil)
     }
 
     /// Emits a heap-only `ProfileEvent` — used when memory profiling is active but there is no
@@ -220,8 +226,9 @@ extension ProfilingHandler {
         // nothing to fall back to: an oversized snapshot is dropped outright by `heapAttachment`
         // (with telemetry) rather than written into a metadata block the writer would silently
         // discard, leaving an event that can never upload.
+        let rumEventsData = try? encoder.encode(rumEvents)
         guard let heapPprof = heapAttachment(
-            fittingAlongside: 0,
+            fittingAlongside: rumEventsData?.count ?? 0,
             attributes: attributes,
             operation: operation,
             // A `trigger` is exactly what distinguishes an event snapshot from the periodic cycle,
@@ -250,7 +257,6 @@ extension ProfilingHandler {
                 tags: self.profileTags(context: context, operation: operation, trigger: trigger),
                 additionalAttributes: attributes
             )
-            let rumEventsData = try? self.encoder.encode(rumEvents)
             let attachments = ProfileAttachments(pprof: nil, rumEvents: rumEventsData, heapPprof: heapPprof)
             writer.write(value: event, metadata: attachments)
             self.telemetryController.sendProfile(

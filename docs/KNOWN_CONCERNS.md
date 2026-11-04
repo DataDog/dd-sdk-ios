@@ -6,6 +6,7 @@ These areas require extra caution when modifying. Changes here have caused produ
 |------|----------|------|
 | **SwiftUI view name extraction** | `DatadogRUM/Sources/Instrumentation/Views/SwiftUI/` | Uses `Mirror`/`String(describing:)` reflection — fragile across Swift compiler versions. Do not change without extensive testing. |
 | **UIKit method swizzling** | `DatadogRUM/Sources/Instrumentation/` | Depends on UIKit internal method signatures — iOS version changes could break silently. See `docs/SWIZZLING.md`. |
+| **Objective-C allocation interception** | `DatadogProfiling/Mach/objc_alloc_hook.cpp` | An earlier swizzle restoring its saved IMP can remove either Datadog trampoline. A later start relies on historical installation flags and may report enabled while missing allocation or deallocation callbacks. The current IMP cannot establish whether an outer swizzle still forwards to Datadog, so automatic reinstallation is unsafe. |
 | **KSCrash report parsing** | `DatadogCrashReporting/Sources/` | Parsing C-level crash reports depends on KSCrash output format |
 | **Optional precondition in RUMSessionScope** | `RUMMonitor/Scopes/RUMSessionScope.swift` | Silent in production, crashes in debug — masks invalid state |
 | **500 concurrent feature operations** | `RUMFeatureOperationManager.swift` | Active operations capped at 500 with `Set<String>` tracking |

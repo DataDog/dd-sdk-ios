@@ -21,6 +21,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Datadog modifications: Copyright 2019-Present Datadog, Inc.
+// Licensed under the Apache License Version 2.0.
+// Upstream: facebook/fishhook@aadc161ac3b80db07a9908851839a17ba63a9eb1.
+
 #include "fishhook.h"
 
 #include <dlfcn.h>
@@ -35,6 +39,24 @@
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
+#if __has_feature(ptrauth_calls)
+#include <ptrauth.h>
+#elif defined(__aarch64__)
+// An arm64 SDK can still rebind authenticated imports in arm64e system images.
+// Clang's ptrauth intrinsics are unavailable for arm64. Use the IA key and the
+// slot address, matching the arm64e path below, only for authenticated slots.
+__attribute__((target("pauth"), noinline)) static void *authenticate_got_pointer(
+    void *pointer, void *slot) {
+  __asm__ volatile("autia %0, %1" : "+r"(pointer) : "r"(slot));
+  return pointer;
+}
+
+__attribute__((target("pauth"), noinline)) static void *sign_got_pointer(
+    void *pointer, void *slot) {
+  __asm__ volatile("pacia %0, %1" : "+r"(pointer) : "r"(slot));
+  return pointer;
+}
+#endif
 
 #ifdef __LP64__
 typedef struct mach_header_64 mach_header_t;
@@ -52,6 +74,10 @@ typedef struct nlist nlist_t;
 
 #ifndef SEG_DATA_CONST
 #define SEG_DATA_CONST  "__DATA_CONST"
+#endif
+
+#ifndef SEG_AUTH_CONST
+#define SEG_AUTH_CONST "__AUTH_CONST"
 #endif
 
 struct rebindings_entry {
@@ -116,7 +142,12 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
                                            intptr_t slide,
                                            nlist_t *symtab,
                                            char *strtab,
-                                           uint32_t *indirect_symtab) {
+                                           uint32_t *indirect_symtab,
+                                           uintptr_t stub_helper_start,
+                                           uintptr_t stub_helper_end) {
+  bool authenticated_got =
+      strncmp(section->sectname, "__auth_got", sizeof(section->sectname)) == 0 ||
+      strncmp(section->sectname, "__weak_auth_got", sizeof(section->sectname)) == 0;
   uint32_t *indirect_symbol_indices = indirect_symtab + section->reserved1;
   void **indirect_symbol_bindings = (void **)((uintptr_t)slide + section->addr);
 
@@ -134,9 +165,64 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
       for (uint j = 0; j < cur->rebindings_nel; j++) {
         if (symbol_name_longer_than_1 && strcmp(&symbol_name[1], cur->rebindings[j].name) == 0) {
           kern_return_t err;
+          void *previous = indirect_symbol_bindings[i];
+          void *replacement = cur->rebindings[j].replacement;
+          void *forward_target = previous;
 
-          if (cur->rebindings[j].replaced != NULL && indirect_symbol_bindings[i] != cur->rebindings[j].replacement)
-            *(cur->rebindings[j].replaced) = indirect_symbol_bindings[i];
+#if __has_feature(ptrauth_calls)
+          if (authenticated_got) {
+            // Authenticated GOT entries use their slot address as the
+            // discriminator. Convert the old value to an ordinary function
+            // pointer before saving it, and sign the replacement for this slot.
+            forward_target = ptrauth_auth_and_resign(
+                previous, ptrauth_key_process_independent_code,
+                &indirect_symbol_bindings[i], ptrauth_key_function_pointer, 0);
+            replacement = ptrauth_sign_unauthenticated(
+                ptrauth_strip(replacement, ptrauth_key_process_independent_code),
+                ptrauth_key_process_independent_code,
+                &indirect_symbol_bindings[i]);
+          }
+#else
+          if (authenticated_got) {
+#if defined(__aarch64__)
+            forward_target = authenticate_got_pointer(
+                previous, &indirect_symbol_bindings[i]);
+            replacement = sign_got_pointer(
+                replacement, &indirect_symbol_bindings[i]);
+#else
+            // An unsigned replacement would crash an arm64e caller. Leave the
+            // slot untouched and let the hook fail closed.
+            if (cur->rebindings[j].failed_count != NULL)
+              __atomic_fetch_add(cur->rebindings[j].failed_count, 1, __ATOMIC_RELAXED);
+            goto symbol_loop;
+#endif
+          }
+#endif
+
+          if ((section->flags & SECTION_TYPE) == S_LAZY_SYMBOL_POINTERS) {
+            uintptr_t previous_address = (uintptr_t)forward_target;
+#if __has_feature(ptrauth_calls)
+            previous_address = (uintptr_t)ptrauth_strip(
+                forward_target, ptrauth_key_function_pointer);
+#endif
+            if (stub_helper_start <= previous_address &&
+                previous_address < stub_helper_end) {
+              // A lazy resolver helper cannot be called as this symbol's C
+              // function. Forward through the dlsym-resolved implementation.
+              forward_target = cur->rebindings[j].resolved_symbol;
+              if (forward_target == NULL) {
+                if (cur->rebindings[j].failed_count != NULL)
+                  __atomic_fetch_add(cur->rebindings[j].failed_count, 1, __ATOMIC_RELAXED);
+                goto symbol_loop;
+              }
+            }
+          }
+
+          if (previous == replacement)
+            goto symbol_loop;
+
+          if (cur->rebindings[j].replaced != NULL)
+            *(cur->rebindings[j].replaced) = forward_target;
 
           /**
            * 1. Moved the vm protection modifying codes to here to reduce the
@@ -147,13 +233,34 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
            **/
           err = vm_protect (mach_task_self (), (uintptr_t)indirect_symbol_bindings, section->size, 0, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
           if (err == KERN_SUCCESS) {
+            /* Datadog extension: one trampoline can forward through only one
+             * previous implementation. Leave a conflicting slot untouched. */
+            if (cur->rebindings[j].first_replaced != NULL) {
+              void *expected = NULL;
+              if (!__atomic_compare_exchange_n(cur->rebindings[j].first_replaced,
+                                               &expected, forward_target, false,
+                                               __ATOMIC_RELEASE, __ATOMIC_ACQUIRE) &&
+                  expected != forward_target) {
+                if (cur->rebindings[j].conflict_count != NULL)
+                  __atomic_fetch_add(cur->rebindings[j].conflict_count, 1, __ATOMIC_RELAXED);
+                goto symbol_loop;
+              }
+            }
             /**
              * Once we failed to change the vm protection, we
              * MUST NOT continue the following write actions!
              * iOS 15 has corrected the const segments prot.
              * -- Lionfore Hao Jun 11th, 2021
              **/
-            indirect_symbol_bindings[i] = cur->rebindings[j].replacement;
+            indirect_symbol_bindings[i] = replacement;
+            if (indirect_symbol_bindings[i] == replacement) {
+              if (cur->rebindings[j].patched_count != NULL)
+                __atomic_fetch_add(cur->rebindings[j].patched_count, 1, __ATOMIC_RELAXED);
+            } else if (cur->rebindings[j].failed_count != NULL) {
+              __atomic_fetch_add(cur->rebindings[j].failed_count, 1, __ATOMIC_RELAXED);
+            }
+          } else if (cur->rebindings[j].failed_count != NULL) {
+            __atomic_fetch_add(cur->rebindings[j].failed_count, 1, __ATOMIC_RELAXED);
           }
           goto symbol_loop;
         }
@@ -176,6 +283,8 @@ static void rebind_symbols_for_image(struct rebindings_entry *rebindings,
   segment_command_t *linkedit_segment = NULL;
   struct symtab_command* symtab_cmd = NULL;
   struct dysymtab_command* dysymtab_cmd = NULL;
+  uintptr_t stub_helper_start = 0;
+  uintptr_t stub_helper_end = 0;
 
   uintptr_t cur = (uintptr_t)header + sizeof(mach_header_t);
   for (uint i = 0; i < header->ncmds; i++, cur += cur_seg_cmd->cmdsize) {
@@ -183,6 +292,14 @@ static void rebind_symbols_for_image(struct rebindings_entry *rebindings,
     if (cur_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
       if (strcmp(cur_seg_cmd->segname, SEG_LINKEDIT) == 0) {
         linkedit_segment = cur_seg_cmd;
+      } else if (strcmp(cur_seg_cmd->segname, SEG_TEXT) == 0) {
+        for (uint j = 0; j < cur_seg_cmd->nsects; j++) {
+          section_t *sect = (section_t *)(cur + sizeof(segment_command_t)) + j;
+          if (strncmp(sect->sectname, "__stub_helper", sizeof(sect->sectname)) == 0) {
+            stub_helper_start = (uintptr_t)slide + sect->addr;
+            stub_helper_end = stub_helper_start + sect->size;
+          }
+        }
       }
     } else if (cur_seg_cmd->cmd == LC_SYMTAB) {
       symtab_cmd = (struct symtab_command*)cur_seg_cmd;
@@ -209,17 +326,20 @@ static void rebind_symbols_for_image(struct rebindings_entry *rebindings,
     cur_seg_cmd = (segment_command_t *)cur;
     if (cur_seg_cmd->cmd == LC_SEGMENT_ARCH_DEPENDENT) {
       if (strcmp(cur_seg_cmd->segname, SEG_DATA) != 0 &&
-          strcmp(cur_seg_cmd->segname, SEG_DATA_CONST) != 0) {
+          strcmp(cur_seg_cmd->segname, SEG_DATA_CONST) != 0 &&
+          strcmp(cur_seg_cmd->segname, SEG_AUTH_CONST) != 0) {
         continue;
       }
       for (uint j = 0; j < cur_seg_cmd->nsects; j++) {
         section_t *sect =
           (section_t *)(cur + sizeof(segment_command_t)) + j;
         if ((sect->flags & SECTION_TYPE) == S_LAZY_SYMBOL_POINTERS) {
-          perform_rebinding_with_section(rebindings, sect, slide, symtab, strtab, indirect_symtab);
+          perform_rebinding_with_section(rebindings, sect, slide, symtab, strtab,
+                                         indirect_symtab, stub_helper_start, stub_helper_end);
         }
         if ((sect->flags & SECTION_TYPE) == S_NON_LAZY_SYMBOL_POINTERS) {
-          perform_rebinding_with_section(rebindings, sect, slide, symtab, strtab, indirect_symtab);
+          perform_rebinding_with_section(rebindings, sect, slide, symtab, strtab,
+                                         indirect_symtab, stub_helper_start, stub_helper_end);
         }
       }
     }

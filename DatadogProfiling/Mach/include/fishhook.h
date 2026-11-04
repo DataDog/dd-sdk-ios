@@ -21,6 +21,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Datadog modifications: Copyright 2019-Present Datadog, Inc.
+// Licensed under the Apache License Version 2.0.
+// Upstream: facebook/fishhook@aadc161ac3b80db07a9908851839a17ba63a9eb1.
+
 #ifndef fishhook_h
 #define fishhook_h
 
@@ -45,6 +49,16 @@ struct rebinding {
   const char *name;
   void *replacement;
   void **replaced;
+  /* Datadog extension: optional evidence for fail-closed installation.
+   * These pointers must remain valid for the lifetime of the process because
+   * fishhook also applies rebindings to images loaded after this call. */
+  void **first_replaced;
+  uint64_t *patched_count;
+  uint64_t *conflict_count;
+  uint64_t *failed_count;
+  /* Callable target resolved with dlsym, used when a lazy slot still points
+   * into its image's __stub_helper. */
+  void *resolved_symbol;
 };
 
 /*
@@ -55,8 +69,12 @@ struct rebinding {
  * rebind are added to the existing list of rebindings, and if a given symbol
  * is rebound more than once, the later rebinding will take precedence.
  */
+/* Datadog: Keep upstream source names while giving this private copy unique
+ * Mach-O symbols, including the leading underscore, for static linking.
+ */
 FISHHOOK_VISIBILITY
-int rebind_symbols(struct rebinding rebindings[], size_t rebindings_nel);
+int rebind_symbols(struct rebinding rebindings[], size_t rebindings_nel)
+    __asm__("_dd_profiling_rebind_symbols");
 
 /*
  * Rebinds as above, but only in the specified image. The header should point
@@ -66,7 +84,8 @@ FISHHOOK_VISIBILITY
 int rebind_symbols_image(void *header,
                          intptr_t slide,
                          struct rebinding rebindings[],
-                         size_t rebindings_nel);
+                         size_t rebindings_nel)
+    __asm__("_dd_profiling_rebind_symbols_image");
 
 #ifdef __cplusplus
 }

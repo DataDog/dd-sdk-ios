@@ -108,9 +108,23 @@ void dd_pprof_add_heap_sample_for_testing(
 }
 
 size_t dd_pprof_serialize_heap_for_testing(dd_pprof_t* profile, uint8_t** data) {
+    if (data) *data = nullptr;
     if (!profile || !data) return 0;
     return dd::profiler::profile_pprof_pack_heap(
         *reinterpret_cast<dd::profiler::profile*>(profile), data
+    );
+}
+
+size_t dd_pprof_serialize_heap_with_allocation_failure_for_testing(
+    dd_pprof_t *profile, size_t failure_index,
+    size_t *allocation_attempts, size_t *outstanding_allocations, uint8_t **data) {
+    if (data) *data = nullptr;
+    if (allocation_attempts) *allocation_attempts = 0;
+    if (outstanding_allocations) *outstanding_allocations = 0;
+    if (!profile || !data) return 0;
+    return dd::profiler::profile_pprof_pack_heap_with_allocation_failure_for_testing(
+        *reinterpret_cast<dd::profiler::profile *>(profile), data, failure_index,
+        allocation_attempts, outstanding_allocations
     );
 }
 

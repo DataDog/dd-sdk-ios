@@ -40,7 +40,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
         telemetryController: ProfilingTelemetryController,
-        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaChecker(),
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
@@ -48,14 +47,14 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
         let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        // Memory profiling is opt-in (default 0). In debug builds force it fully sampled-in ONLY when
-        // the customer configured it (> 0), so debugSDK never silently enables an opt-in feature.
-        let memorySampleRate = (configuration.debugSDK && configuration.memorySampleRate > 0)
+        let memorySampleRate = configuration.debugSDK && configuration.memorySampleRate > 0
             ? .maxSampleRate : configuration.memorySampleRate
         self.profilingSamplerProvider = ProfilingSamplerProvider(
             continuousSampleRate: continuousSampleRate,
+            appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0,
             memorySampleRate: memorySampleRate
         )
+        let quotaChecker = ProfilingQuotaChecker(profilingSamplerProvider: profilingSamplerProvider)
 
         Self.setProfilingEnabled(in: userDefaults)
         // Persist the debug-adjusted rate, matching `setAppLaunch` below. This value is read by the
@@ -72,8 +71,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             telemetryController: telemetryController,
-            minProfileDuration: configuration.minProfileDuration,
-            isAppLaunchProfilingEnabled: appLaunchSampleRate > 0
+            minProfileDuration: configuration.minProfileDuration
         )
         self.messageReceiver = CombinedFeatureMessageReceiver([
             ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),

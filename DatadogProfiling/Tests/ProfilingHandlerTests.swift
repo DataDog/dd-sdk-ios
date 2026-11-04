@@ -178,6 +178,68 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(errorEvent["duration_ns"] as? NSNumber, NSNumber(value: hang.duration))
     }
 
+    func testCoupledWrite_reservesBudgetForCPUAndRUMAttachments() throws {
+        let profile = try startProfilerAndFlushSampledProfile()
+        var otherAttachmentsSize: Int?
+        handler.heapAttachmentHandler = { size in
+            otherAttachmentsSize = size
+            return Data([1, 2, 3])
+        }
+
+        let result = handler.write(
+            profile: profile,
+            operation: .continuousProfiling,
+            rumVitals: [.mockWith(id: "vital", name: "operation")],
+            captureHeapProfile: true
+        )
+
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let cpuSize = try XCTUnwrap(attachments.pprof).count
+        let rumSize = try XCTUnwrap(attachments.rumEvents).count
+        XCTAssertGreaterThan(rumSize, 0)
+        XCTAssertEqual(otherAttachmentsSize, cpuSize + rumSize)
+        XCTAssertTrue(result.didWriteProfile)
+        XCTAssertTrue(result.didWriteHeapProfile)
+    }
+
+    func testHeapOnlyWrite_reservesBudgetForRUMAttachment() throws {
+        var otherAttachmentsSize: Int?
+        handler.heapAttachmentHandler = { size in
+            otherAttachmentsSize = size
+            return Data([1, 2, 3])
+        }
+
+        let didWrite = handler.writeHeapOnlyProfile(
+            start: Date(timeIntervalSince1970: 0),
+            end: Date(timeIntervalSince1970: 60),
+            operation: .continuousProfiling,
+            rumVitals: [.mockWith(id: "vital", name: "operation")]
+        )
+
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumSize = try XCTUnwrap(attachments.rumEvents).count
+        XCTAssertGreaterThan(rumSize, 0)
+        XCTAssertEqual(otherAttachmentsSize, rumSize)
+        XCTAssertTrue(didWrite)
+    }
+
+    func testCPUOnlyFallback_doesNotReportAHeapWrite() throws {
+        let profile = try startProfilerAndFlushSampledProfile()
+
+        let result = handler.write(
+            profile: profile,
+            operation: .continuousProfiling,
+            rumVitals: [],
+            captureHeapProfile: true
+        )
+
+        XCTAssertTrue(result.didWriteProfile)
+        XCTAssertFalse(result.didWriteHeapProfile)
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertNotNil(attachments.pprof)
+        XCTAssertNil(attachments.heapPprof)
+    }
+
     // MARK: - Memory warning correlation
 
     func testWrite_carriesMemoryWarningIDsAlongsideHangs() throws {
@@ -317,6 +379,16 @@ private final class ProfilingHandlerMock: ProfilingHandler {
     var featureScope: FeatureScope
     var telemetryController: ProfilingTelemetryController
     var encoder: JSONEncoder
+    var heapAttachmentHandler: ((Int) -> Data?)?
+
+    func heapAttachment(
+        fittingAlongside otherAttachmentsSize: Int,
+        attributes: [AttributeKey: AttributeValue],
+        operation: ProfilingOperation,
+        drainingAllocWindow: Bool
+    ) -> Data? {
+        heapAttachmentHandler?(otherAttachmentsSize)
+    }
 
     init(
         attributes: [AttributeKey: AttributeValue],

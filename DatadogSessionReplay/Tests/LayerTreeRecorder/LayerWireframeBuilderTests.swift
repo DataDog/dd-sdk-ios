@@ -8,7 +8,7 @@
 import DatadogInternal
 import QuartzCore
 import Testing
-import DatadogSDKTesting
+import TestUtilities
 import UIKit
 
 @_spi(Internal)

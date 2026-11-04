@@ -224,6 +224,7 @@ private extension RUMAppLaunchManager {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: parent.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,

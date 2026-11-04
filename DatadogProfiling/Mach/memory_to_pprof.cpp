@@ -4,295 +4,128 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-/**
- * @file memory_to_pprof.cpp
- * @brief Convert a heap snapshot into a serialized heap-pprof buffer.
- *
- * Aggregates live allocations from a `dd_memory_snapshot_t` into a `profile`
- * object and serializes it with `profile_pprof_pack_heap`.  Symbolication
- * reuses the existing `profile::resolve_locations` path (which wraps
- * `intern_frame`) to avoid duplicating any interning logic.
- */
-
 #include "memory_to_pprof.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
+#include "binary_image_resolver.h"
+#include "poisson_allocation_sampler.h"
 #include "profile.h"
 #include "profile_pprof_packer.h"
-#include "binary_image_resolver.h"
-#include "dd_profiler.h"
 
 #include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <functional>
-#include <new>
+#include <limits>
+#include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
 
 namespace {
 
-/**
- * Build a stack_trace_t (without tid/name/timestamp — not needed for heap
- * symbolication) from the raw instruction-pointer array in a memory sample.
- *
- * The returned frames array is allocated on the stack of the caller's loop
- * body; it is valid only for the lifetime of that iteration.
- */
-struct ScopedStackTrace {
-    // Reserve the maximum depth the memory profiler can produce.
-    stack_frame_t frames[DD_MEMORY_DEFAULT_STACK_DEPTH];
+struct heap_stack_trace {
+    stack_frame_t frames[DD_MEMORY_LIVE_SET_MAX_FRAMES]{};
     stack_trace_t trace{};
 
-    explicit ScopedStackTrace(const dd_memory_sample_t& sample) {
-        uint32_t count = sample.frame_count < DD_MEMORY_DEFAULT_STACK_DEPTH
-                       ? sample.frame_count
-                       : DD_MEMORY_DEFAULT_STACK_DEPTH;
-        for (uint32_t i = 0; i < count; ++i) {
-            // Leave image zeroed — intern_frame resolves it lazily from the cache.
-            frames[i].instruction_ptr = sample.frames[i];
-            frames[i].image = binary_image_t{};
+    explicit heap_stack_trace(const dd_memory_aggregation_key_t &key) {
+        trace.frame_count = key.frame_count < DD_MEMORY_LIVE_SET_MAX_FRAMES
+                          ? key.frame_count : DD_MEMORY_LIVE_SET_MAX_FRAMES;
+        for (uint32_t i = 0; i < trace.frame_count; ++i) {
+            frames[i].instruction_ptr = key.frames[i];
         }
-        trace.tid                    = 0;
-        trace.thread_name            = nullptr;
-        trace.timestamp              = sample.timestamp_ns;
-        trace.sampling_interval_nanos = 0;
-        trace.frames                 = frames;
-        trace.frame_count            = count;
+        trace.frames = frames;
     }
 };
 
-/// Aggregation key: unique (resolved stack, class name, source).
-struct HeapKey {
-    std::vector<uint32_t> loc_ids;
-    std::string class_name;   // empty when the sample had no class
-    int source = 0;
-    bool operator==(const HeapKey& o) const {
-        return source == o.source && class_name == o.class_name && loc_ids == o.loc_ids;
+int64_t rounded_total(double total) {
+    if (!(total > 0)) {
+        return 0;
     }
-};
-
-struct HeapKeyHash {
-    size_t operator()(const HeapKey& k) const noexcept {
-        size_t seed = k.loc_ids.size();
-        for (uint32_t x : k.loc_ids) {
-            // FNV-inspired combine.
-            seed ^= static_cast<size_t>(x) + 0x9e3779b9u + (seed << 6) + (seed >> 2);
-        }
-        seed ^= std::hash<std::string>{}(k.class_name) + 0x9e3779b9u + (seed << 6) + (seed >> 2);
-        seed ^= static_cast<size_t>(k.source) + 0x9e3779b9u + (seed << 6) + (seed >> 2);
-        return seed;
+    constexpr int64_t maximum = std::numeric_limits<int64_t>::max();
+    if (total >= static_cast<double>(maximum)) {
+        return maximum;
     }
-};
+    return std::llround(total);
+}
 
-/// Accumulated four-value totals per unique key. `alloc_*` come from the
-/// per-window allocation log; `inuse_*` from the live-set snapshot. A key can
-/// appear in one side only (e.g. a transient allocated and freed within the
-/// window has alloc_* > 0 but inuse_* == 0).
-struct HeapAccum {
-    int64_t alloc_objects = 0;
-    int64_t alloc_space   = 0;
-    int64_t inuse_objects = 0;
-    int64_t inuse_space   = 0;
-};
-
-/// Maps a source enum value to its Go-aligned label string.
-const char* source_label_value(int source) {
+const char *source_label(dd_memory_live_sample_source_t source) {
     switch (source) {
-        case 1: return "objc";
-        case 2: return "swift";
+        case DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC: return "objc";
+        case DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT: return "swift";
         default: return "zone";
     }
 }
 
-/// Resolves each sample's stack and folds its Poisson-unbiased object/byte
-/// estimates into `accum`, keyed by (resolved stack, class, source). `is_alloc`
-/// selects which pair of totals to grow: the allocation-window totals (`alloc_*`)
-/// or the live-set totals (`inuse_*`).
-void aggregate_snapshot(const dd_memory_snapshot_t* snapshot,
-                        dd::profiler::profile& prof,
-                        dd::profiler::binary_image_cache* cache,
-                        std::unordered_map<HeapKey, HeapAccum, HeapKeyHash>& accum,
-                        bool is_alloc) {
-    if (snapshot == nullptr) {
-        return;
-    }
-    for (size_t i = 0; i < snapshot->sample_count; ++i) {
-        const dd_memory_sample_t& s = snapshot->samples[i];
-
-        ScopedStackTrace sst(s);
-        HeapKey key;
-        key.loc_ids = prof.resolve_locations(sst.trace, cache);
-        key.class_name = (s.class_name != nullptr) ? std::string(s.class_name) : std::string();
-        key.source = static_cast<int>(s.source);
-
-        // Poisson-unbiased estimates: space += round(size * weight),
-        // objects += round(weight)  (weight ≈ 1/P).
-        const int64_t space   = static_cast<int64_t>(std::llround(
-                                    static_cast<double>(s.size) * s.weight));
-        const int64_t objects = static_cast<int64_t>(std::llround(s.weight));
-
-        HeapAccum& a = accum[key];
-        if (is_alloc) {
-            a.alloc_space   += space;
-            a.alloc_objects += objects;
-        } else {
-            a.inuse_space   += space;
-            a.inuse_objects += objects;
+std::string allocation_class(const dd_memory_aggregation_key_t &key) {
+    if (key.source == DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT) {
+        if (key.swift_metadata && key.swift_name_resolver) {
+            const auto name = key.swift_name_resolver(key.swift_metadata);
+            if (name.data && name.length > 0) {
+                return std::string(name.data, name.length);
+            }
         }
+        return {};
     }
+    return key.class_name ? key.class_name : "";
 }
 
-} // anonymous namespace
+} // namespace
 
-// ---------------------------------------------------------------------------
-// Public C API
-// ---------------------------------------------------------------------------
-
-extern "C" {
-
-size_t dd_memory_snapshots_to_pprof(
-    const dd_memory_snapshot_t* inuse_snapshot,
-    const dd_memory_snapshot_t* alloc_snapshot,
-    const char* session_id,
-    const char* view_id,
-    const char* application_id,
-    uint8_t** out_data)
-{
-    if (out_data) *out_data = nullptr;
+extern "C" size_t dd_memory_aggregates_to_pprof(
+    const dd_memory_aggregation_view_t *view,
+    const char *session_id,
+    const char *view_id,
+    const char *application_id,
+    uint8_t **out_data) {
     if (!out_data) {
         return 0;
     }
-    const size_t inuse_count = inuse_snapshot ? inuse_snapshot->sample_count : 0;
-    const size_t alloc_count = alloc_snapshot ? alloc_snapshot->sample_count : 0;
-    if (inuse_count == 0 && alloc_count == 0) {
+    *out_data = nullptr;
+    if (!view || !view->samples || view->count == 0) {
         return 0;
     }
 
-    // ------------------------------------------------------------------
-    // 1. Build the profile with the standard heap period (524288 bytes).
-    // ------------------------------------------------------------------
-    dd::profiler::profile prof(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES);
-
-    // ------------------------------------------------------------------
-    // 2. Pre-build the RUM correlation labels (uniform across all samples
-    //    — this is a point-in-time snapshot so every sample carries the
-    //    same context).  Label keys use Go-aligned names ("session_id",
-    //    "view_id", "application_id").  NULL or empty strings are omitted.
-    //
-    //    Strings are interned via prof.make_string_label() which delegates
-    //    to the private intern_string() path — no duplication of interning.
-    // ------------------------------------------------------------------
-    std::vector<dd::profiler::label_t> rum_labels;
-    rum_labels.reserve(3);
-
-    auto non_empty = [](const char* s) -> bool {
-        return s != nullptr && s[0] != '\0';
-    };
-
-    if (non_empty(session_id)) {
-        rum_labels.push_back(prof.make_string_label("session_id", session_id));
-    }
-    if (non_empty(view_id)) {
-        rum_labels.push_back(prof.make_string_label("view_id", view_id));
-    }
-    if (non_empty(application_id)) {
-        rum_labels.push_back(prof.make_string_label("application_id", application_id));
-    }
-
-    // ------------------------------------------------------------------
-    // 3. Obtain a binary_image_cache the same way the wall-profiling path
-    //    does in dd_profiler.cpp::auto_start().
-    // ------------------------------------------------------------------
-    dd::profiler::binary_image_cache* cache =
-        new (std::nothrow) dd::profiler::binary_image_cache();
-    if (cache && !cache->load()) {
-        delete cache;
-        cache = nullptr;
-    }
-
-    // ------------------------------------------------------------------
-    // 4. Aggregate BOTH snapshots by unique (resolved stack, class, source).
-    //    The allocation window feeds alloc_*; the live set feeds inuse_*.
-    //    A key present in only one snapshot gets zeros on the other side —
-    //    e.g. an object allocated and freed within the window contributes to
-    //    alloc_* but not inuse_*, which is exactly what makes the two diverge.
-    //
-    //    RUM labels are uniform and applied after aggregation, so they do NOT
-    //    affect the aggregation key.
-    // ------------------------------------------------------------------
-    std::unordered_map<HeapKey, HeapAccum, HeapKeyHash> accum;
-    aggregate_snapshot(alloc_snapshot, prof, cache, accum, /*is_alloc=*/true);
-    aggregate_snapshot(inuse_snapshot, prof, cache, accum, /*is_alloc=*/false);
-
-    delete cache;
-
-    // ------------------------------------------------------------------
-    // 5. Emit one sample_t per aggregated stack.
-    //
-    //    Value order (Go-aligned, matching profile_pprof_pack_heap):
-    //      [0] alloc_objects
-    //      [1] alloc_space
-    //      [2] inuse_objects
-    //      [3] inuse_space
-    //
-    //    alloc_* come from the allocation window; inuse_* from the live set.
-    //
-    //    RUM correlation labels are appended to every sample (uniform).
-    // ------------------------------------------------------------------
-    for (auto& [key, a] : accum) {
-        dd::profiler::sample_t sample;
-        sample.location_ids        = key.loc_ids;
-        sample.timestamp_uptime_ns = 0;  // heap samples have no per-sample timestamp
-        sample.values = {
-            a.alloc_objects,  // alloc_objects
-            a.alloc_space,    // alloc_space
-            a.inuse_objects,  // inuse_objects
-            a.inuse_space,    // inuse_space
-        };
-        // RUM correlation labels (uniform), plus the per-key allocated class and source.
-        //
-        // The class label is named "allocation class" because that is the name the profiling
-        // backend already recognizes for this concept across Ruby, .NET, and Java
-        // (LabelNames.ALLOCATED_CLASS). Emitting our own spelling would leave the backend's
-        // allocated-class handling blind to it: the "top types" allocation metrics aggregate over
-        // that exact label name, so a bespoke name yields an empty metric rather than an error,
-        // and the UI's existing "Allocated Type" grouping would have nothing to resolve.
-        sample.labels = rum_labels;
-        if (!key.class_name.empty()) {
-            sample.labels.push_back(prof.make_string_label("allocation class", key.class_name.c_str()));
+    try {
+        dd::profiler::profile prof(dd::profiler::poisson_allocation_sampler::sampling_interval());
+        std::vector<dd::profiler::label_t> rum_labels;
+        rum_labels.reserve(3);
+        if (session_id && session_id[0]) {
+            rum_labels.push_back(prof.make_string_label("session_id", session_id));
         }
-        sample.labels.push_back(prof.make_string_label("source", source_label_value(key.source)));
-        prof.add_raw_sample(std::move(sample));
+        if (view_id && view_id[0]) {
+            rum_labels.push_back(prof.make_string_label("view_id", view_id));
+        }
+        if (application_id && application_id[0]) {
+            rum_labels.push_back(prof.make_string_label("application_id", application_id));
+        }
+
+        auto cache = std::make_unique<dd::profiler::binary_image_cache>();
+        if (!cache->load()) {
+            cache.reset();
+        }
+
+        for (size_t i = 0; i < view->count; ++i) {
+            const auto &aggregate = view->samples[i];
+            heap_stack_trace stack(aggregate.key);
+            dd::profiler::sample_t sample;
+            sample.location_ids = prof.resolve_locations(stack.trace, cache.get());
+            sample.timestamp_uptime_ns = 0;
+            sample.values = {
+                rounded_total(aggregate.alloc_objects),
+                rounded_total(aggregate.alloc_space),
+                rounded_total(aggregate.inuse_objects),
+                rounded_total(aggregate.inuse_space),
+            };
+            sample.labels = rum_labels;
+            const auto class_name = allocation_class(aggregate.key);
+            if (!class_name.empty()) {
+                sample.labels.push_back(prof.make_string_label("allocation class", class_name));
+            }
+            sample.labels.push_back(prof.make_string_label("source", source_label(aggregate.key.source)));
+            prof.add_raw_sample(std::move(sample));
+        }
+        return dd::profiler::profile_pprof_pack_heap(prof, out_data);
+    } catch (...) {
+        return 0;
     }
-
-    // ------------------------------------------------------------------
-    // 6. Serialize with the heap packer and return.
-    // ------------------------------------------------------------------
-    return dd::profiler::profile_pprof_pack_heap(prof, out_data);
 }
 
-size_t dd_memory_snapshot_to_pprof(
-    const dd_memory_snapshot_t* snapshot,
-    const char* session_id,
-    const char* view_id,
-    const char* application_id,
-    uint8_t** out_data)
-{
-    // Backward-compatible single-snapshot entry point: alloc_* == inuse_*,
-    // both derived from the one snapshot. Kept for callers/tests that don't
-    // supply an independent allocation window.
-    return dd_memory_snapshots_to_pprof(snapshot, snapshot,
-                                        session_id, view_id, application_id,
-                                        out_data);
-}
-
-} // extern "C"
-
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // defined(__APPLE__) && !TARGET_OS_WATCH

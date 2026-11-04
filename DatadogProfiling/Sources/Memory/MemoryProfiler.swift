@@ -69,15 +69,14 @@ internal final class MemoryProfiler: ProfilingHandler {
     private var warnings: [DurationEvent] = []
 
     /// Start of the current emission window, used to bound a heap-only `ProfileEvent` (which has no
-    /// CPU profile to source timestamps from). Advanced on each emission.
+    /// CPU profile to source timestamps from). Advanced only when allocation totals are drained.
     private var windowStart: Date
+    private var didDrainAllocationWindow = false
     /// Whether memory interception is currently installed. Tracked so reconciliation only calls
     /// start/stop on an actual state change.
     private(set) var isRecording = false
-    /// Latched once neither interception path could install. Memory profiling then stays off for
-    /// the lifetime of this profiler — the failure (a sample table that could not be allocated, or
-    /// both hook targets unresolvable) is not transient, so retrying each context update would only
-    /// repeat the telemetry.
+    /// Latched when native recording could not start. Retrying a failed install on each context
+    /// update would repeat telemetry without restoring a complete allocation lifecycle.
     private var hasInterceptionFailed = false
     /// Lets the sampler run optimistically at launch (before the RUM memory sampling decision
     /// arrives) so the first window covers app launch. Consumed once a definitive decision arrives.
@@ -149,8 +148,8 @@ internal extension MemoryProfiler {
     ///
     /// Allocations observed while the timer is held off are not lost: they accumulate in the native
     /// alloc window (capture-and-reset, drained only when a profile is actually emitted) and are
-    /// attributed to the first window that does emit. A long accumulation widens the sampling
-    /// interval under back-pressure rather than dropping samples.
+    /// attributed to the first window that does emit. The bounded recorder drops new allocation
+    /// records at capacity; live-set admission remains independent.
     var shouldEmitPeriodicProfile: Bool {
         shouldRecord() && hasConditionsToProfile
     }
@@ -198,10 +197,16 @@ internal extension MemoryProfiler {
     }
 
     func update(attributes: [AttributeKey: AttributeValue]) {
+        guard isRecording else {
+            return
+        }
         self.attributes = attributes
     }
 
     func record(vital: Vital) {
+        guard isRecording else {
+            return
+        }
         vitals[vital.key] = vital
     }
 
@@ -209,6 +214,9 @@ internal extension MemoryProfiler {
     /// *memory* recorded. That start can differ from the CPU machine's, which clears on its own
     /// schedule — so the duration is computed here rather than taken from the coordinator.
     func recordOperationEnd(_ operation: Vital) {
+        guard isRecording else {
+            return
+        }
         guard var vital = vitals[operation.key] else {
             return
         }
@@ -217,14 +225,23 @@ internal extension MemoryProfiler {
     }
 
     func record(hang: DurationEvent) {
+        guard isRecording else {
+            return
+        }
         hangs.append(hang)
     }
 
     func record(longTask: DurationEvent) {
+        guard isRecording else {
+            return
+        }
         longTasks.append(longTask)
     }
 
     func record(warning: DurationEvent) {
+        guard isRecording else {
+            return
+        }
         warnings.append(warning)
     }
 
@@ -237,21 +254,34 @@ internal extension MemoryProfiler {
         warnings
     }
 
+    /// Adds pending heap correlation to the current CPU window, preserving CPU values for matching IDs.
+    func correlation(
+        merging cpuVitals: [Vital],
+        hangs cpuHangs: [DurationEvent],
+        longTasks cpuLongTasks: [DurationEvent]
+    ) -> (vitals: [Vital], hangs: [DurationEvent], longTasks: [DurationEvent], warnings: [DurationEvent]) {
+        (
+            vitals: appendingMissing(cpuVitals, from: Array(vitals.values), identifiedBy: \.id),
+            hangs: appendingMissing(cpuHangs, from: hangs, identifiedBy: \.id),
+            longTasks: appendingMissing(cpuLongTasks, from: longTasks, identifiedBy: \.id),
+            warnings: warnings
+        )
+    }
+
     /// Reconciles the interception state with `shouldRecord()`, starting or stopping only on an
     /// actual transition. Safe to call repeatedly.
     func updateState() {
         let shouldRun = shouldRecord()
         if shouldRun, !isRecording {
             guard startInterception() else {
-                // Neither path installed — fail closed rather than report a running profiler that
-                // can never produce a sample. Latched so the next context update does not retry a
-                // failure that is not transient (and re-emit its telemetry every cycle).
+                // Fail closed if the native owner cannot install the complete allocation lifecycle.
+                // Latch the failure so context updates do not retry or repeat telemetry.
                 hasInterceptionFailed = true
                 stopInterception()
                 return
             }
             isRecording = true
-            // A start from a stopped state takes the native `start_new_session()` path, which
+            // A start from a stopped state creates a fresh native generation, which
             // clears the sample table and the alloc window, so this window's data begins now.
             // Without advancing, a restart after a quota rejection would keep a `windowStart` from
             // before the rejection and claim to cover a span it holds no samples for.
@@ -260,9 +290,16 @@ internal extension MemoryProfiler {
             // `dd_memory_profiler_is_running()`, so an already-running pre-`main` sampler takes no
             // start branch and keeps its original window start.
             windowStart = dateProvider.now
+            didDrainAllocationWindow = false
         } else if !shouldRun, isRecording {
             stopInterception()
             isRecording = false
+            didDrainAllocationWindow = false
+            vitals.removeAll()
+            hangs.removeAll()
+            longTasks.removeAll()
+            warnings.removeAll()
+            attributes = [:]
         }
     }
 
@@ -290,9 +327,8 @@ internal extension MemoryProfiler {
     /// Captures a heap snapshot for a RUM event of interest, outside the periodic cadence.
     ///
     /// Deliberately never touches the periodic timer — `DatadogProfiler` owns it. An event snapshot
-    /// only closes the current memory window early; the next periodic emission still fires on
-    /// schedule, carrying a shorter window. `alloc_*` stays correct because the window reports its
-    /// true duration, and `inuse_*` is a point-in-time view either way.
+    /// captures the live set without draining the allocation window or moving its start. The next
+    /// periodic emission retains the full delta and duration.
     ///
     /// Must be called on the shared queue.
     func trigger(_ trigger: HeapSnapshotTrigger, operation: ProfilingOperation) {
@@ -324,10 +360,14 @@ internal extension MemoryProfiler {
         }
     }
 
-    /// Advances the window start. Called after every capture attempt, because the native alloc
-    /// window is captured-and-reset even when the attempt yields no bytes — so the next window
-    /// genuinely does begin here.
+    /// Advances the window start only after a successful draining capture. A failed capture retains
+    /// allocation records and their original start; an empty capture or later encoding failure still
+    /// ends the allocation window if the native drain succeeded.
     func advanceWindow(to date: Date) {
+        guard didDrainAllocationWindow else {
+            return
+        }
+        didDrainAllocationWindow = false
         windowStart = date
     }
 
@@ -361,8 +401,8 @@ internal extension MemoryProfiler {
 // MARK: - Heap capture
 
 extension MemoryProfiler {
-    /// Captures the heap snapshot for a coupled event, but only if it fits in what the CPU profile
-    /// leaves of the attachment budget. Returns `nil` when there is nothing to attach or no room.
+    /// Captures the heap snapshot only if it fits alongside the other serialized attachments.
+    /// Returns `nil` when there is nothing to attach or no room.
     ///
     /// The budget is shared, not per-attachment. All attachments travel in one `ProfileAttachments`
     /// metadata block, which the core writer caps at `performance.maxObjectSize`; `Data` fields are
@@ -375,7 +415,7 @@ extension MemoryProfiler {
     /// When the heap does not fit, the CPU profile is still written: the heap is the supplementary
     /// attachment, so dropping it preserves the more valuable payload rather than losing both.
     func heapAttachment(
-        fittingAlongside cpuProfileSize: Int,
+        fittingAlongside otherAttachmentsSize: Int,
         attributes: [AttributeKey: AttributeValue],
         operation: ProfilingOperation,
         drainingAllocWindow: Bool
@@ -384,7 +424,7 @@ extension MemoryProfiler {
             return nil
         }
         let budget = Int(ProfilerFeature.Constants.maxObjectSize)
-        guard cpuProfileSize + heapPprof.count <= budget else {
+        guard otherAttachmentsSize + heapPprof.count <= budget else {
             telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
             return nil
         }
@@ -405,14 +445,14 @@ private extension MemoryProfiler {
     /// `shouldEmitPeriodicProfile` gates the part that does cost battery: the upload.
     ///
     /// That is also what preserves the live set. A stop followed by a start takes the native
-    /// `start_new_session()` path, which clears the sample table — so a background round-trip used
+    /// new-generation path, which clears the sample table — so a background round-trip used
     /// to erase every long-lived object, i.e. precisely the objects `inuse_*` exists to surface.
     /// The conditions that DO stop memory profiling (consent revoked, sampled out, install failure,
     /// quota rejection) are ones where clearing is the correct semantics, so no window ever ships
     /// with a silent hole in it.
     ///
     /// Consent is checked here — not only by the CPU machine — because memory profiling has its own
-    /// lifecycle: `.notGranted` must uninstall the interception outright, not merely stop the CPU
+    /// lifecycle: `.notGranted` must disable allocation observation, not merely stop the CPU
     /// profiler.
     func shouldRecord() -> Bool {
         guard isTrackingConsentAllowed,
@@ -431,47 +471,19 @@ private extension MemoryProfiler {
         }
     }
 
-    /// Installs both interception paths.
-    ///
-    /// - Returns: `true` when at least one path is observing. A single-path failure still returns
-    ///   `true`: the surviving path yields real (if narrower) attribution, and the failure is
-    ///   reported via telemetry. Only a total failure — typically the shared sampler failing to
-    ///   start, which takes both paths down — returns `false`, so the caller can fail closed rather
-    ///   than emit windows that can never contain a sample.
+    /// Starts the native owner, which connects both reviewed interception paths to the recorder.
     func startInterception() -> Bool {
-        // Passive profiler start (allocates sample table, initialises Poisson sampler, flips
-        // the enabled flag) MUST precede the swizzle installation so that allocations observed
-        // by the +allocWithZone: trampoline have a live sample table to write into.
-        // dd_objc_alloc_hook_start internally calls dd_memory_profiler_start_passive and
-        // installs the swizzle in the correct order, so a single call is sufficient.
-        let objcStatus = ObjCAllocInterception.start(poissonRateBytes: ObjCAllocInterception.defaultPoissonRateBytes)
-        if !objcStatus.isInstalled {
-            telemetryController.sendMemoryInterceptionInstallFailure(path: "Obj-C +allocWithZone:", status: "\(objcStatus)")
+        guard dd_memory_profiler_start() else {
+            telemetryController.sendMemoryInterceptionInstallFailure(path: "allocation observers", status: "unavailable")
+            return false
         }
-
-        // Dual interception: also intercept pure-Swift class allocations
-        // (swift_allocObject), which bypass the Obj-C +allocWithZone: swizzle.
-        // start() joins the same passive sampler (idempotent start_passive), so
-        // both paths feed one shared sampler / live-set / encoder. Samples are
-        // tagged source=swift and unioned with the Obj-C path (disjoint, no
-        // double-count).
-        let swiftStatus = SwiftAllocInterception.start(poissonRateBytes: SwiftAllocInterception.defaultPoissonRateBytes)
-        if !swiftStatus.isInstalled {
-            telemetryController.sendMemoryInterceptionInstallFailure(path: "swift_allocObject", status: "\(swiftStatus)")
-        }
-
-        return objcStatus.isInstalled || swiftStatus.isInstalled
+        return true
     }
 
     func stopInterception() {
-        // Never-restore: the +allocWithZone: / -dealloc trampolines stay installed and keep
-        // forwarding; dd_objc_alloc_hook_stop only clears the observing flag and disables the
-        // sampler. Safe to call even when not running.
-        ObjCAllocInterception.stop()
-        // Stop recording pure-Swift allocations. Never-restore: the rebound
-        // trampolines stay installed and keep forwarding; they simply stop
-        // observing. Safe to call even when not running.
-        SwiftAllocInterception.stop()
+        // The native owner drains callbacks before stopping the recorder. Installed trampolines
+        // keep forwarding to the implementations captured at installation.
+        dd_memory_profiler_stop()
     }
 
     /// Captures a live-heap snapshot on the profiling queue and serializes it to `heap.pprof`
@@ -488,23 +500,14 @@ private extension MemoryProfiler {
         attributes: [AttributeKey: AttributeValue],
         drainingAllocWindow: Bool
     ) -> Data? {
-        // Live set (inuse_*) — a point-in-time view, never reset.
-        var snapshot = dd_memory_snapshot_capture()
-        defer { dd_memory_snapshot_destroy(&snapshot) }
-
-        // This window's sampled allocations (alloc_*) — captured-and-reset so the next window
-        // accumulates fresh. Independent of the live set: transient objects allocated and freed
-        // within the window show up here but not in `snapshot`, which is what makes alloc_*
-        // diverge from inuse_*.
-        //
-        // The delta belongs to the periodic cycle alone. An event-triggered snapshot passes an
-        // empty window and reports `inuse_*` only: the native capture is destructive, so draining
-        // it here would hand the trigger a prefix of the periodic window's delta and leave the
-        // periodic profile under-reporting everything allocated before the trigger — two
-        // overlapping deltas the backend would double-count. A trigger is a point-in-time view of
-        // the live set, which is what memory correlation means for a moment.
-        var allocWindow = drainingAllocWindow ? dd_memory_alloc_window_capture() : dd_memory_snapshot_t()
-        defer { dd_memory_snapshot_destroy(&allocWindow) }
+        // A periodic capture drains alloc_* and snapshots inuse_* at the same boundary. A
+        // trigger captures only the live set and leaves periodic allocation totals untouched.
+        didDrainAllocationWindow = false
+        var aggregates = dd_memory_aggregation_view_t()
+        guard dd_memory_profiler_capture(drainingAllocWindow, &aggregates) else {
+            return nil
+        }
+        didDrainAllocationWindow = drainingAllocWindow
 
         // Extract RUM correlation IDs from attributes using the same keys the wall
         // profiling path receives from the RUM feature message.
@@ -519,7 +522,7 @@ private extension MemoryProfiler {
         let size = withOptionalCString(sessionID) { sidPtr in
             withOptionalCString(viewID) { vidPtr in
                 withOptionalCString(applicationID) { aidPtr in
-                    dd_memory_snapshots_to_pprof(&snapshot, &allocWindow, sidPtr, vidPtr, aidPtr, &raw)
+                    dd_memory_aggregates_to_pprof(&aggregates, sidPtr, vidPtr, aidPtr, &raw)
                 }
             }
         }
@@ -542,6 +545,20 @@ private extension Dictionary where Key == String, Value == Vital {
     func ongoingOperations() -> [String: Vital] {
         filter { $0.value.stepType == .start && $0.value.duration == nil }
     }
+}
+
+/// Appends pending events absent from the current window without replacing its event values.
+private func appendingMissing<Event>(
+    _ current: [Event],
+    from pending: [Event],
+    identifiedBy id: KeyPath<Event, String>
+) -> [Event] {
+    var result = current
+    var seenIDs = Set(current.lazy.map { $0[keyPath: id] })
+    for event in pending where seenIDs.insert(event[keyPath: id]).inserted {
+        result.append(event)
+    }
+    return result
 }
 
 /// Calls `body` with a `UnsafePointer<CChar>?` for the given optional String.

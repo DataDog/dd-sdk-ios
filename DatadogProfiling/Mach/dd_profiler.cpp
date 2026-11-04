@@ -12,8 +12,6 @@
 #include "mach_sampling_profiler.h"
 #include "binary_image_resolver.h"
 #include "memory_profiler.h"
-#include "objc_alloc_hook.h"
-#include "swift_alloc_hook.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <cstdlib>
@@ -501,20 +499,14 @@ static void dd_profiler_auto_start() {
     // match the CPU auto-start's caution.
     //
     // The interception started here flows into the Swift-managed lifecycle with
-    // NO restart: `dd_objc_alloc_hook_start` / `dd_swift_alloc_hook_start` and the
-    // shared passive sampler are idempotent and preserve the live set, so
-    // `DatadogProfiler` adopts this already-running sampler rather than clearing
-    // it (see `isMemoryProfilingRunning` adoption). If the RUM-composed memory
-    // decision later samples out, the Swift layer stops it.
+    // NO restart: the native memory recorder's start is idempotent and preserves
+    // the live set, so the Swift lifecycle adopts this already-running recorder.
+    // If the RUM-composed memory decision later samples out, it stops recording.
     if (dd_is_profiling_enabled()
         && !is_active_prewarm()
         && !is_thread_sanitizer_enabled()
         && sample(read_profiling_memory_sample_rate())) {
-        // Order matches DatadogProfiler.startMemoryProfiling(): the Obj-C swizzle
-        // brings up the shared passive sampler and records via +allocWithZone:;
-        // the pure-Swift rebinding then joins the same sampler (idempotent).
-        dd_objc_alloc_hook_start(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES);
-        dd_swift_alloc_hook_start(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES);
+        dd_memory_profiler_start();
     }
 
     // Reset profiling defaults to be re-evaluated again

@@ -1,9 +1,11 @@
 module DatadogMachProfiler {
   header "dd_profiler.h"
   header "dd_pprof.h"
-  header "memory_profiler.h"
-  header "objc_alloc_hook.h"
   header "swift_alloc_hook.h"
+  header "objc_alloc_hook.h"
+  header "memory_live_set.h"
+  header "memory_allocation_window.h"
+  header "memory_profiler.h"
   header "memory_to_pprof.h"
   export *
 
@@ -12,6 +14,7 @@ module DatadogMachProfiler {
       header "mach_sampling_profiler.h"
       header "profile.h"
       header "profile_pprof_packer.h"
+      header "poisson_allocation_sampler.h"
       export *
   }
 
@@ -25,6 +28,9 @@ module DatadogMachProfiler {
       header "dd_profiler_testing.h"
       header "dd_pprof_testing.h"
       header "safe_read_testing.h"
+      header "swift_alloc_hook_testing.h"
+      header "objc_alloc_hook_testing.h"
+      header "memory_live_set_testing.h"
       header "memory_profiler_testing.h"
       export *
   }

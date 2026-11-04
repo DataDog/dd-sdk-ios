@@ -11,454 +11,531 @@
 #if !TARGET_OS_WATCH
 
 #include "fishhook.h"
-#include "memory_profiler.h"
 
 #include <atomic>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
-#include <cstdlib>
 #include <dlfcn.h>
 #include <mutex>
-#include <unordered_set>
+#include <new>
 
 namespace {
 
-// Opaque Swift runtime types. We only ever pass these pointers through.
 struct HeapObject;
-struct HeapMetadata;
 
-// swift_allocObject(metadata, requiredSize, requiredAlignmentMask) -> object.
-// swift_deallocClassInstance(object, allocatedSize, allocatedAlignMask).
-// Both use the C calling convention (SWIFT_RUNTIME_EXPORT / __cdecl-compatible).
 using AllocFn = HeapObject *(*)(HeapMetadata *, size_t, size_t);
 using DeallocFn = void (*)(HeapObject *, size_t, size_t);
-
-// swift_getTypeName(metadata, qualified) -> { malloc'd C string, length }.
-struct SwiftTypeNamePair { const char *data; uintptr_t length; };
-using GetTypeNameFn = SwiftTypeNamePair (*)(const HeapMetadata *, bool);
-
-std::atomic<AllocFn> g_orig_alloc{nullptr};
-std::atomic<DeallocFn> g_orig_dealloc{nullptr};
-std::atomic<DeallocFn> g_orig_dealloc_object{nullptr};
-
-std::atomic<bool> g_installed{false};
-std::atomic<bool> g_enabled{false};
-
-std::atomic<uint64_t> g_alloc_invocations{0};
-std::atomic<uint64_t> g_dealloc_invocations{0};
-std::atomic<uint64_t> g_dealloc_object_invocations{0};
-std::atomic<uint64_t> g_reentrant_skips{0};
-/// Type-name resolution *attempts* — one per call to resolve_type_name,
-/// counted before the non-type, cache-hit and saturation early-outs, so it is
-/// an upper bound on work rather than a count of names produced. That is the
-/// quantity the hot-path guarantee is about: only sampled allocations may ask
-/// for a name at all, so this stays orders of magnitude below
-/// g_alloc_invocations.
-std::atomic<uint64_t> g_name_resolutions{0};
-std::atomic<bool> g_alloc_bound{false};
-std::atomic<bool> g_dealloc_bound{false};
-
-// swift_getTypeName resolver, resolved once and cached.
-std::atomic<GetTypeNameFn> g_get_type_name{nullptr};
-
-// Fixed-size, allocation-free metadata -> demangled name cache. Open-addressed;
-// never rehashes or grows, so it is safe to touch from the allocation hot path
-// (unlike a std::unordered_map, whose rehash mallocs on every growth). Writes
-// are serialized by g_name_mutex; reads are lock-free via the atomic metadata
-// key, which is published only after the name pointer is written. strdup runs
-// at most once per unique type (bounded by the capacity), never per allocation.
-constexpr size_t NAME_CACHE_CAPACITY = 1024;  // power of two
-static_assert((NAME_CACHE_CAPACITY & (NAME_CACHE_CAPACITY - 1)) == 0,
-              "NAME_CACHE_CAPACITY must be a power of two");
-
-struct NameCacheEntry {
-    std::atomic<const void *> metadata{nullptr};
-    const char *name{nullptr};
+using PartialClassDeallocFn = void (*)(HeapObject *, const HeapMetadata *,
+                                      size_t, size_t);
+struct SwiftTypeName {
+  const char *data;
+  uintptr_t length;
 };
-NameCacheEntry g_name_cache[NAME_CACHE_CAPACITY];
-std::mutex g_name_mutex;
-/// Set once a probe has proven there is no free slot left. Latched: entries are
-/// never evicted, so saturation is permanent for the life of the process. Read
-/// before any probing so a full cache costs one relaxed load instead of two
-/// full scans plus a global mutex acquisition per unknown type.
-std::atomic<bool> g_name_cache_saturated{false};
+using GetTypeNameFn = SwiftTypeName (*)(const HeapMetadata *, bool);
 
-size_t name_bucket(const void *metadata) {
-    uintptr_t v = reinterpret_cast<uintptr_t>(metadata) >> 4;
-    v ^= v >> 30;
-    v *= 0xbf58476d1ce4e5b9ULL;
-    v ^= v >> 27;
-    return static_cast<size_t>(v) & (NAME_CACHE_CAPACITY - 1);
+class SwiftAllocHook {
+public:
+  SwiftAllocHook() = default;
+  ~SwiftAllocHook() = default;
+  SwiftAllocHook(const SwiftAllocHook &) = delete;
+  SwiftAllocHook &operator=(const SwiftAllocHook &) = delete;
+  SwiftAllocHook(SwiftAllocHook &&) = delete;
+  SwiftAllocHook &operator=(SwiftAllocHook &&) = delete;
+
+  dd_swift_alloc_hook_status_t
+  start(dd_swift_allocation_observer_t allocation_observer,
+        dd_swift_deallocation_observer_t deallocation_observer);
+  void stop();
+  dd_swift_alloc_hook_diagnostics_t diagnostics() const;
+
+  HeapObject *interceptAlloc(HeapMetadata *metadata, size_t size,
+                             size_t alignment_mask);
+  void interceptClassDealloc(HeapObject *object, size_t size,
+                             size_t alignment_mask);
+  void interceptPartialClassDealloc(HeapObject *object,
+                                    const HeapMetadata *metadata, size_t size,
+                                    size_t alignment_mask);
+  void interceptObjectDealloc(HeapObject *object, size_t size,
+                              size_t alignment_mask);
+  void interceptUninitializedObjectDealloc(HeapObject *object, size_t size,
+                                           size_t alignment_mask);
+  dd_swift_class_name_t resolveClassName(const HeapMetadata *metadata) const;
+
+private:
+  enum class InstallState : std::uint8_t { neverAttempted, installed, failed };
+  static constexpr uint64_t kObservationEnabled = 0x8000000000000000ULL;
+  static constexpr uint64_t kInFlightMask = ~kObservationEnabled;
+
+  static uint64_t loadCount(const uint64_t *count);
+  uint64_t conflictCount() const;
+  uint64_t failureCount() const;
+  bool observing() const;
+  void releaseObservation();
+  bool beginObservation(uint64_t generation);
+  void disableAndDrainObservation();
+  template <typename Function>
+  static Function previous(void *const *slot,
+                           const std::atomic<Function> &runtime);
+  static bool hasNominalType(const HeapMetadata *metadata);
+  void observeDeallocation(const HeapObject *object,
+                           std::atomic<uint64_t> &counter);
+
+  std::mutex install_mutex_;
+  std::mutex drain_mutex_;
+  std::condition_variable drain_condition_;
+  InstallState install_state_ = InstallState::neverAttempted;
+  dd_swift_alloc_hook_status_t failure_status_ =
+      DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+
+  // The enabled bit and callback count share one atomic so stop cannot miss a
+  // callback admitted just before it disables observation.
+  std::atomic<uint64_t> observation_state_{0};
+  // A trampoline can pause in the Swift runtime across stop and restart. Such
+  // a call must not enter the replacement observer session when it resumes.
+  std::atomic<uint64_t> observation_generation_{0};
+  std::atomic<dd_swift_allocation_observer_t> allocation_observer_{nullptr};
+  std::atomic<dd_swift_deallocation_observer_t> deallocation_observer_{nullptr};
+  std::atomic<AllocFn> runtime_alloc_{nullptr};
+  std::atomic<DeallocFn> runtime_class_dealloc_{nullptr};
+  std::atomic<PartialClassDeallocFn> runtime_partial_class_dealloc_{nullptr};
+  std::atomic<DeallocFn> runtime_object_dealloc_{nullptr};
+  std::atomic<DeallocFn> runtime_uninitialized_object_dealloc_{nullptr};
+  std::atomic<GetTypeNameFn> get_type_name_{nullptr};
+
+  // fishhook retains these addresses for future images. The instance must
+  // remain alive after stop and until process exit.
+  void *first_alloc_ = nullptr;
+  void *first_class_dealloc_ = nullptr;
+  void *first_partial_class_dealloc_ = nullptr;
+  void *first_object_dealloc_ = nullptr;
+  void *first_uninitialized_object_dealloc_ = nullptr;
+  uint64_t alloc_patches_ = 0;
+  uint64_t class_dealloc_patches_ = 0;
+  uint64_t partial_class_dealloc_patches_ = 0;
+  uint64_t object_dealloc_patches_ = 0;
+  uint64_t uninitialized_object_dealloc_patches_ = 0;
+  uint64_t alloc_conflicts_ = 0;
+  uint64_t class_dealloc_conflicts_ = 0;
+  uint64_t partial_class_dealloc_conflicts_ = 0;
+  uint64_t object_dealloc_conflicts_ = 0;
+  uint64_t uninitialized_object_dealloc_conflicts_ = 0;
+  uint64_t alloc_failures_ = 0;
+  uint64_t class_dealloc_failures_ = 0;
+  uint64_t partial_class_dealloc_failures_ = 0;
+  uint64_t object_dealloc_failures_ = 0;
+  uint64_t uninitialized_object_dealloc_failures_ = 0;
+
+  std::atomic<uint64_t> allocations_{0};
+  std::atomic<uint64_t> class_deallocations_{0};
+  std::atomic<uint64_t> object_deallocations_{0};
+  std::atomic<uint64_t> reentrant_skips_{0};
+  inline static thread_local bool observing_callback_ = false;
+};
+
+// Fishhook and observer callbacks are defined after the class implementation.
+HeapObject *intercept_alloc(HeapMetadata *, size_t, size_t);
+void intercept_class_dealloc(HeapObject *, size_t, size_t);
+void intercept_partial_class_dealloc(HeapObject *, const HeapMetadata *, size_t,
+                                     size_t);
+void intercept_object_dealloc(HeapObject *, size_t, size_t);
+void intercept_uninitialized_object_dealloc(HeapObject *, size_t, size_t);
+dd_swift_class_name_t resolve_class_name(const HeapMetadata *);
+
+uint64_t SwiftAllocHook::loadCount(const uint64_t *count) {
+  return __atomic_load_n(count, __ATOMIC_ACQUIRE);
 }
 
-// One-shot capture for tests. thread_local arm flag keeps it
-// deterministic per test; the captured slot is global.
-thread_local bool t_in_hook = false;
-thread_local bool t_arm_capture = false;
-std::atomic<HeapMetadata *> g_captured_metadata{nullptr};
-std::atomic<uint64_t> g_captured_size{0};
-
-// SQ4 free-side / live-set validation. Only allocations whose type metadata
-// has been registered by the test are tracked, so the process-wide hook does
-// not fill the set with unrelated Swift allocations. `g_track_enabled` gates
-// the locked section so there is zero cost in production (nothing registers).
-std::atomic<bool> g_track_enabled{false};
-std::mutex g_track_mutex;
-std::unordered_set<const void *> g_registered_metadata;
-std::unordered_set<const void *> g_live_addresses;
-
-/// Swift ABI: metadata kinds at or above this value are *non-type* metadata —
-/// HeapLocalVariable (0x400), HeapGenericLocalVariable (0x401), ErrorObject
-/// (0x402). They describe heap objects that have no nominal type, so there is
-/// no name to resolve for them.
-constexpr uintptr_t METADATA_KIND_IS_NON_TYPE = 0x400;
-/// Upper bound for a small integer metadata kind. Real class metadata starts
-/// with an ObjC isa pointer, which is far above any kind value, so this cleanly
-/// separates "kind enum" from "pointer" without depending on the exact set of
-/// kinds a future runtime might add.
-constexpr uintptr_t METADATA_KIND_MAX = 0x800;
-
-/// Whether this metadata describes something with no nominal type name.
-bool is_non_type_metadata(const HeapMetadata *metadata) {
-    const uintptr_t kind = *reinterpret_cast<const uintptr_t *>(metadata);
-    return kind >= METADATA_KIND_IS_NON_TYPE && kind < METADATA_KIND_MAX;
+uint64_t SwiftAllocHook::conflictCount() const {
+  return loadCount(&alloc_conflicts_) + loadCount(&class_dealloc_conflicts_) +
+         loadCount(&partial_class_dealloc_conflicts_) +
+         loadCount(&object_dealloc_conflicts_) +
+         loadCount(&uninitialized_object_dealloc_conflicts_);
 }
 
-// Resolve the demangled type name for a metadata pointer, caching a leak-once
-// stable copy. Runs only from inside the reentrancy guard. Returns nullptr if
-// the runtime symbol is unavailable or resolution fails.
-const char *resolve_type_name(HeapMetadata *metadata) {
-    // Counted here rather than at the call site so the metric reflects real
-    // resolution work on whichever path invoked it.
-    g_name_resolutions.fetch_add(1, std::memory_order_relaxed);
-    if (metadata == nullptr) {
-        return nullptr;
-    }
-    // Not every swift_allocObject allocation is a class instance. Closure
-    // contexts and capture boxes are heap objects whose metadata is *non-type*
-    // metadata, which has no nominal type to name: swift_getTypeName answers
-    // them with the literal "<<< invalid type >>>". Emitting that as a class
-    // name puts a garbage bucket at the top of the allocated-type breakdown,
-    // and — worse — burns a slot in this never-evicting cache for every
-    // distinct capture layout, which drives the permanent saturation latch
-    // below and would eventually cost type names for real classes too.
-    //
-    // The Swift ABI marks non-type metadata with kind >= MetadataKindIsNonType
-    // (0x400: HeapLocalVariable, HeapGenericLocalVariable, ErrorObject). Class
-    // metadata never collides with that range — its first word is the ObjC isa
-    // pointer, orders of magnitude larger (verified on-device: 0x15af4c560 for
-    // a pure-Swift class vs 0x400 for a capture box).
-    if (is_non_type_metadata(metadata)) {
-        return nullptr;
-    }
-    const void *key = static_cast<const void *>(metadata);
-    const size_t start = name_bucket(key);
-
-    // Lock-free read probe. An empty slot terminates the chain (nothing was
-    // ever inserted past it for this bucket).
-    //
-    // Runs BEFORE the saturation check on purpose. Saturation means no *new*
-    // type can be admitted; it must not stop types already in the cache from
-    // resolving. Checking the flag first would throw away every name the cache
-    // had learned the moment it filled up, turning a bounded loss of new types
-    // into a total, permanent loss of type attribution.
-    for (size_t i = 0; i < NAME_CACHE_CAPACITY; ++i) {
-        NameCacheEntry &e = g_name_cache[(start + i) & (NAME_CACHE_CAPACITY - 1)];
-        const void *m = e.metadata.load(std::memory_order_acquire);
-        if (m == key) {
-            return e.name;
-        }
-        if (m == nullptr) {
-            break;
-        }
-    }
-
-    // Saturation short-circuit for a type the probe above did not find. Once
-    // every slot is taken no further type can be admitted, and without this flag
-    // each unknown type would take the global mutex, probe the full cache again,
-    // and still resolve nothing. One relaxed load replaces all of that.
-    if (g_name_cache_saturated.load(std::memory_order_relaxed)) {
-        return nullptr;
-    }
-
-    // Resolve the runtime symbol once.
-    GetTypeNameFn getName = g_get_type_name.load(std::memory_order_acquire);
-    if (getName == nullptr) {
-        getName = reinterpret_cast<GetTypeNameFn>(dlsym(RTLD_DEFAULT, "swift_getTypeName"));
-        if (getName == nullptr) {
-            return nullptr;
-        }
-        g_get_type_name.store(getName, std::memory_order_release);
-    }
-
-    std::lock_guard<std::mutex> lock(g_name_mutex);
-    // Re-probe under the lock: another thread may have inserted meanwhile, or we
-    // claim the first empty slot for this key.
-    for (size_t i = 0; i < NAME_CACHE_CAPACITY; ++i) {
-        NameCacheEntry &e = g_name_cache[(start + i) & (NAME_CACHE_CAPACITY - 1)];
-        const void *m = e.metadata.load(std::memory_order_relaxed);
-        if (m == key) {
-            return e.name;
-        }
-        if (m == nullptr) {
-            // swift_getTypeName returns a runtime-cached, process-stable pointer
-            // for a given metadata (repeated calls return the same buffer). Do
-            // NOT free it — the runtime owns it — and do NOT copy it; caching the
-            // pointer directly is both correct and allocation-free.
-            SwiftTypeNamePair pair = getName(metadata, /*qualified=*/false);
-            const char *stable = pair.data;
-            e.name = stable;                                   // publish name first
-            e.metadata.store(key, std::memory_order_release);  // then the key
-            return stable;
-        }
-    }
-    // Cache full: degrade to no class name (bounded, no per-alloc leak) and
-    // latch the flag so subsequent unknown types skip the probing entirely.
-    g_name_cache_saturated.store(true, std::memory_order_relaxed);
-    return nullptr;
+uint64_t SwiftAllocHook::failureCount() const {
+  return loadCount(&alloc_failures_) + loadCount(&class_dealloc_failures_) +
+         loadCount(&partial_class_dealloc_failures_) +
+         loadCount(&object_dealloc_failures_) +
+         loadCount(&uninitialized_object_dealloc_failures_);
 }
 
-/// C-linkage adapter so the sampler can resolve the type name lazily, on the
-/// sampled path only. `context` is the HeapMetadata pointer.
-extern "C" const char *dd_swift_alloc_resolve_class_name(void *context) {
-    return resolve_type_name(static_cast<HeapMetadata *>(context));
+bool SwiftAllocHook::observing() const {
+  return (observation_state_.load(std::memory_order_acquire) &
+          kObservationEnabled) != 0 &&
+         conflictCount() == 0 && failureCount() == 0;
 }
 
-HeapObject *trampoline_alloc(HeapMetadata *metadata, size_t size, size_t alignMask) {
-    // Forward first so the object exists regardless of our bookkeeping.
-    AllocFn orig = g_orig_alloc.load(std::memory_order_acquire);
-    HeapObject *obj = orig(metadata, size, alignMask);
-
-    if (!g_enabled.load(std::memory_order_relaxed)) {
-        return obj;
-    }
-    if (t_in_hook) {
-        g_reentrant_skips.fetch_add(1, std::memory_order_relaxed);
-        return obj;
-    }
-    t_in_hook = true;
-
-    g_alloc_invocations.fetch_add(1, std::memory_order_relaxed);
-    if (t_arm_capture) {
-        g_captured_metadata.store(metadata, std::memory_order_relaxed);
-        g_captured_size.store(size, std::memory_order_relaxed);
-        t_arm_capture = false;
-    }
-    if (g_track_enabled.load(std::memory_order_relaxed)) {
-        std::lock_guard<std::mutex> lock(g_track_mutex);
-        if (g_registered_metadata.count(static_cast<const void *>(metadata)) != 0) {
-            g_live_addresses.insert(static_cast<const void *>(obj));
-        }
-    }
-
-    // Production path: record into the shared sampler/live-set/encoder pipeline.
-    // The type name is resolved through a callback so it runs ONLY when the
-    // Poisson decision samples this allocation. Resolving eagerly would put a
-    // cache probe — and, at saturation, a global mutex — on every Swift
-    // allocation in the process, for a name that is discarded in all but roughly
-    // one allocation per sampling interval.
-    dd_memory_observe_allocation_resolved(
-        static_cast<const void *>(obj),
-        static_cast<uint64_t>(size),
-        &dd_swift_alloc_resolve_class_name,
-        static_cast<void *>(metadata),
-        DD_MEMORY_SOURCE_SWIFT);
-
-    t_in_hook = false;
-    return obj;
+void SwiftAllocHook::releaseObservation() {
+  const uint64_t prior =
+      observation_state_.fetch_sub(1, std::memory_order_acq_rel);
+  if ((prior & kInFlightMask) == 1 && (prior & kObservationEnabled) == 0) {
+    std::lock_guard<std::mutex> lock(drain_mutex_);
+    drain_condition_.notify_all();
+  }
 }
 
-void trampoline_dealloc(HeapObject *object, size_t size, size_t alignMask) {
-    if (g_enabled.load(std::memory_order_relaxed) && !t_in_hook) {
-        g_dealloc_invocations.fetch_add(1, std::memory_order_relaxed);
-        dd_memory_observe_deallocation(static_cast<const void *>(object));
-        if (g_track_enabled.load(std::memory_order_relaxed)) {
-            std::lock_guard<std::mutex> lock(g_track_mutex);
-            g_live_addresses.erase(static_cast<const void *>(object));
-        }
-    }
-    DeallocFn orig = g_orig_dealloc.load(std::memory_order_acquire);
-    orig(object, size, alignMask);
+bool SwiftAllocHook::beginObservation(uint64_t generation) {
+  if ((observation_state_.load(std::memory_order_acquire) &
+       kObservationEnabled) == 0) {
+    return false;
+  }
+  const uint64_t prior =
+      observation_state_.fetch_add(1, std::memory_order_acq_rel);
+  if ((prior & kObservationEnabled) != 0 &&
+      observation_generation_.load(std::memory_order_acquire) == generation) {
+    return true;
+  }
+  // Stop or restart changed the observer session before admission.
+  releaseObservation();
+  return false;
 }
 
-// Defensive second free path. swift_deallocObject shares the (object, size,
-// alignMask) ABI and may run instead of / in addition to
-// swift_deallocClassInstance. dd_memory_observe_deallocation is idempotent by
-// address, so a double-fire is harmless; the separate counter lets us see in
-// practice whether this path ever runs (RUM-16460 open question).
-void trampoline_dealloc_object(HeapObject *object, size_t size, size_t alignMask) {
-    if (g_enabled.load(std::memory_order_relaxed) && !t_in_hook) {
-        g_dealloc_object_invocations.fetch_add(1, std::memory_order_relaxed);
-        dd_memory_observe_deallocation(static_cast<const void *>(object));
-        if (g_track_enabled.load(std::memory_order_relaxed)) {
-            std::lock_guard<std::mutex> lock(g_track_mutex);
-            g_live_addresses.erase(static_cast<const void *>(object));
-        }
+// Call only while holding install_mutex_. Start uses the same drain before
+// replacing observers, so an admitted callback cannot switch to a new one.
+void SwiftAllocHook::disableAndDrainObservation() {
+  observation_state_.fetch_and(kInFlightMask, std::memory_order_acq_rel);
+  std::unique_lock<std::mutex> lock(drain_mutex_);
+  drain_condition_.wait(lock, [this] {
+    return (observation_state_.load(std::memory_order_acquire) &
+            kInFlightMask) == 0;
+  });
+}
+
+template <typename Function>
+Function SwiftAllocHook::previous(void *const *slot,
+                                  const std::atomic<Function> &runtime) {
+  void *prior = __atomic_load_n(slot, __ATOMIC_ACQUIRE);
+  return prior != nullptr ? reinterpret_cast<Function>(prior)
+                          : runtime.load(std::memory_order_acquire);
+}
+
+// Swift's heap-local-variable and error-object metadata have no nominal type.
+// The first metadata word is a small kind value; class metadata starts with an
+// isa pointer. This mirrors the guard exercised in the memory-profiling PoC.
+bool SwiftAllocHook::hasNominalType(const HeapMetadata *metadata) {
+  if (metadata == nullptr) {
+    return false;
+  }
+  uintptr_t kind = *reinterpret_cast<const uintptr_t *>(metadata);
+  return kind < 0x400 || kind >= 0x800;
+}
+
+dd_swift_class_name_t
+SwiftAllocHook::resolveClassName(const HeapMetadata *metadata) const {
+  auto get_name = get_type_name_.load(std::memory_order_acquire);
+  if (get_name == nullptr || !hasNominalType(metadata)) {
+    return {nullptr, 0};
+  }
+  SwiftTypeName name = get_name(metadata, false);
+  return name.data != nullptr ? dd_swift_class_name_t{name.data, name.length}
+                              : dd_swift_class_name_t{nullptr, 0};
+}
+
+HeapObject *SwiftAllocHook::interceptAlloc(HeapMetadata *metadata, size_t size,
+                                           size_t alignment_mask) {
+  const uint64_t generation =
+      observation_generation_.load(std::memory_order_acquire);
+  AllocFn original = previous(&first_alloc_, runtime_alloc_);
+  HeapObject *object = original(metadata, size, alignment_mask);
+  if (!observing() || object == nullptr || !hasNominalType(metadata)) {
+    return object;
+  }
+  if (observing_callback_) {
+    reentrant_skips_.fetch_add(1, std::memory_order_relaxed);
+    return object;
+  }
+  if (!beginObservation(generation)) {
+    return object;
+  }
+
+  observing_callback_ = true;
+  allocations_.fetch_add(1, std::memory_order_relaxed);
+  auto observer = allocation_observer_.load(std::memory_order_acquire);
+  if (observer != nullptr) {
+    observer(object, static_cast<uint64_t>(size), metadata, resolve_class_name);
+  }
+  observing_callback_ = false;
+  releaseObservation();
+  return object;
+}
+
+void SwiftAllocHook::observeDeallocation(const HeapObject *object,
+                                         std::atomic<uint64_t> &counter) {
+  const uint64_t generation =
+      observation_generation_.load(std::memory_order_acquire);
+  if (!observing() || object == nullptr) {
+    return;
+  }
+  if (observing_callback_) {
+    reentrant_skips_.fetch_add(1, std::memory_order_relaxed);
+    return;
+  }
+  if (!beginObservation(generation)) {
+    return;
+  }
+
+  observing_callback_ = true;
+  counter.fetch_add(1, std::memory_order_relaxed);
+  auto observer = deallocation_observer_.load(std::memory_order_acquire);
+  if (observer != nullptr) {
+    // These entry points may run before storage is freed if unowned references
+    // remain. Both can report an address, so observers must deduplicate it.
+    observer(object);
+  }
+  observing_callback_ = false;
+  releaseObservation();
+}
+
+void SwiftAllocHook::interceptClassDealloc(HeapObject *object, size_t size,
+                                           size_t alignment_mask) {
+  observeDeallocation(object, class_deallocations_);
+  DeallocFn original = previous(&first_class_dealloc_, runtime_class_dealloc_);
+  original(object, size, alignment_mask);
+}
+
+void SwiftAllocHook::interceptPartialClassDealloc(
+    HeapObject *object, const HeapMetadata *metadata, size_t size,
+    size_t alignment_mask) {
+  observeDeallocation(object, class_deallocations_);
+  PartialClassDeallocFn original = previous(&first_partial_class_dealloc_,
+                                            runtime_partial_class_dealloc_);
+  original(object, metadata, size, alignment_mask);
+}
+
+void SwiftAllocHook::interceptObjectDealloc(HeapObject *object, size_t size,
+                                            size_t alignment_mask) {
+  observeDeallocation(object, object_deallocations_);
+  DeallocFn original =
+      previous(&first_object_dealloc_, runtime_object_dealloc_);
+  original(object, size, alignment_mask);
+}
+
+void SwiftAllocHook::interceptUninitializedObjectDealloc(
+    HeapObject *object, size_t size, size_t alignment_mask) {
+  observeDeallocation(object, object_deallocations_);
+  DeallocFn original = previous(&first_uninitialized_object_dealloc_,
+                                runtime_uninitialized_object_dealloc_);
+  original(object, size, alignment_mask);
+}
+
+dd_swift_alloc_hook_status_t
+SwiftAllocHook::start(dd_swift_allocation_observer_t allocation_observer,
+                      dd_swift_deallocation_observer_t deallocation_observer) {
+  if (allocation_observer == nullptr || deallocation_observer == nullptr) {
+    return DD_SWIFT_ALLOC_HOOK_FAILED_INVALID_OBSERVER;
+  }
+
+  std::lock_guard<std::mutex> lock(install_mutex_);
+  if (install_state_ == InstallState::installed) {
+    disableAndDrainObservation();
+    if (failureCount() != 0) {
+      install_state_ = InstallState::failed;
+      failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+      return failure_status_;
     }
-    DeallocFn orig = g_orig_dealloc_object.load(std::memory_order_acquire);
-    if (orig != nullptr) {
-        orig(object, size, alignMask);
+    if (conflictCount() != 0) {
+      install_state_ = InstallState::failed;
+      failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
+      return failure_status_;
     }
+    allocation_observer_.store(allocation_observer, std::memory_order_release);
+    deallocation_observer_.store(deallocation_observer,
+                                 std::memory_order_release);
+    observation_generation_.fetch_add(1, std::memory_order_acq_rel);
+    observation_state_.fetch_or(kObservationEnabled, std::memory_order_release);
+    return DD_SWIFT_ALLOC_HOOK_ALREADY_INSTALLED;
+  }
+  if (install_state_ == InstallState::failed) {
+    return failure_status_;
+  }
+
+  // Resolve every forward target before any import slot can point at a
+  // trampoline. A partial rebind must never make an app call a null pointer.
+  void *alloc_symbol = dlsym(RTLD_DEFAULT, "swift_allocObject");
+  void *class_dealloc_symbol =
+      dlsym(RTLD_DEFAULT, "swift_deallocClassInstance");
+  void *partial_class_dealloc_symbol =
+      dlsym(RTLD_DEFAULT, "swift_deallocPartialClassInstance");
+  void *object_dealloc_symbol = dlsym(RTLD_DEFAULT, "swift_deallocObject");
+  void *uninitialized_object_dealloc_symbol =
+      dlsym(RTLD_DEFAULT, "swift_deallocUninitializedObject");
+  auto alloc = reinterpret_cast<AllocFn>(alloc_symbol);
+  auto class_dealloc = reinterpret_cast<DeallocFn>(class_dealloc_symbol);
+  auto partial_class_dealloc =
+      reinterpret_cast<PartialClassDeallocFn>(partial_class_dealloc_symbol);
+  auto object_dealloc = reinterpret_cast<DeallocFn>(object_dealloc_symbol);
+  auto uninitialized_object_dealloc =
+      reinterpret_cast<DeallocFn>(uninitialized_object_dealloc_symbol);
+  auto get_name =
+      reinterpret_cast<GetTypeNameFn>(dlsym(RTLD_DEFAULT, "swift_getTypeName"));
+  if (alloc == nullptr || class_dealloc == nullptr ||
+      partial_class_dealloc == nullptr || object_dealloc == nullptr ||
+      uninitialized_object_dealloc == nullptr || get_name == nullptr) {
+    return DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL;
+  }
+  runtime_alloc_.store(alloc, std::memory_order_release);
+  runtime_class_dealloc_.store(class_dealloc, std::memory_order_release);
+  runtime_partial_class_dealloc_.store(partial_class_dealloc,
+                                       std::memory_order_release);
+  runtime_object_dealloc_.store(object_dealloc, std::memory_order_release);
+  runtime_uninitialized_object_dealloc_.store(uninitialized_object_dealloc,
+                                              std::memory_order_release);
+  get_type_name_.store(get_name, std::memory_order_release);
+
+  // first_replaced is published before a slot is patched. fishhook leaves
+  // slots with a different previous implementation untouched, because a
+  // single trampoline cannot safely forward through two different chains.
+  struct rebinding bindings[] = {
+      {
+          "swift_allocObject",
+          reinterpret_cast<void *>(intercept_alloc),
+          nullptr,
+          &first_alloc_,
+          &alloc_patches_,
+          &alloc_conflicts_,
+          &alloc_failures_,
+          alloc_symbol,
+      },
+      {
+          "swift_deallocClassInstance",
+          reinterpret_cast<void *>(intercept_class_dealloc),
+          nullptr,
+          &first_class_dealloc_,
+          &class_dealloc_patches_,
+          &class_dealloc_conflicts_,
+          &class_dealloc_failures_,
+          class_dealloc_symbol,
+      },
+      {
+          "swift_deallocPartialClassInstance",
+          reinterpret_cast<void *>(intercept_partial_class_dealloc),
+          nullptr,
+          &first_partial_class_dealloc_,
+          &partial_class_dealloc_patches_,
+          &partial_class_dealloc_conflicts_,
+          &partial_class_dealloc_failures_,
+          partial_class_dealloc_symbol,
+      },
+      {
+          "swift_deallocObject",
+          reinterpret_cast<void *>(intercept_object_dealloc),
+          nullptr,
+          &first_object_dealloc_,
+          &object_dealloc_patches_,
+          &object_dealloc_conflicts_,
+          &object_dealloc_failures_,
+          object_dealloc_symbol,
+      },
+      {
+          "swift_deallocUninitializedObject",
+          reinterpret_cast<void *>(intercept_uninitialized_object_dealloc),
+          nullptr,
+          &first_uninitialized_object_dealloc_,
+          &uninitialized_object_dealloc_patches_,
+          &uninitialized_object_dealloc_conflicts_,
+          &uninitialized_object_dealloc_failures_,
+          uninitialized_object_dealloc_symbol,
+      },
+  };
+  int result = rebind_symbols(bindings, sizeof(bindings) / sizeof(bindings[0]));
+  install_state_ =
+      InstallState::failed; // fishhook cannot unregister a partial install
+  if (result != 0 || failureCount() != 0 || loadCount(&alloc_patches_) == 0 ||
+      loadCount(&class_dealloc_patches_) == 0) {
+    failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+    return DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+  }
+  if (conflictCount() != 0) {
+    failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
+    return DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
+  }
+
+  allocation_observer_.store(allocation_observer, std::memory_order_release);
+  deallocation_observer_.store(deallocation_observer,
+                               std::memory_order_release);
+  install_state_ = InstallState::installed;
+  observation_generation_.fetch_add(1, std::memory_order_acq_rel);
+  observation_state_.fetch_or(kObservationEnabled, std::memory_order_release);
+  return DD_SWIFT_ALLOC_HOOK_OK;
+}
+
+void SwiftAllocHook::stop() {
+  // Never restore patched import slots: another rebinder may now own them.
+  std::lock_guard<std::mutex> lock(install_mutex_);
+  disableAndDrainObservation();
+}
+
+dd_swift_alloc_hook_diagnostics_t SwiftAllocHook::diagnostics() const {
+  dd_swift_alloc_hook_diagnostics_t result{};
+  result.allocations = allocations_.load(std::memory_order_relaxed);
+  result.class_deallocations =
+      class_deallocations_.load(std::memory_order_relaxed);
+  result.object_deallocations =
+      object_deallocations_.load(std::memory_order_relaxed);
+  result.reentrant_skips = reentrant_skips_.load(std::memory_order_relaxed);
+  result.alloc_slots_patched = loadCount(&alloc_patches_);
+  result.class_dealloc_slots_patched = loadCount(&class_dealloc_patches_);
+  result.object_dealloc_slots_patched = loadCount(&object_dealloc_patches_);
+  result.uninitialized_object_dealloc_slots_patched =
+      loadCount(&uninitialized_object_dealloc_patches_);
+  result.conflicting_slots = conflictCount();
+  result.failed_slot_writes = failureCount();
+  result.is_enabled = observing();
+  return result;
+}
+
+// Rebindings persist for the process lifetime. Construct before the first
+// rebind, and intentionally never destroy the state used by its trampolines.
+SwiftAllocHook &hook() {
+  alignas(SwiftAllocHook) static unsigned char storage[sizeof(SwiftAllocHook)];
+  static auto *instance = new (storage) SwiftAllocHook();
+  return *instance;
+}
+
+HeapObject *intercept_alloc(HeapMetadata *metadata, size_t size,
+                            size_t alignment_mask) {
+  return hook().interceptAlloc(metadata, size, alignment_mask);
+}
+
+void intercept_class_dealloc(HeapObject *object, size_t size,
+                             size_t alignment_mask) {
+  hook().interceptClassDealloc(object, size, alignment_mask);
+}
+
+void intercept_partial_class_dealloc(HeapObject *object,
+                                     const HeapMetadata *metadata, size_t size,
+                                     size_t alignment_mask) {
+  hook().interceptPartialClassDealloc(object, metadata, size, alignment_mask);
+}
+
+void intercept_object_dealloc(HeapObject *object, size_t size,
+                              size_t alignment_mask) {
+  hook().interceptObjectDealloc(object, size, alignment_mask);
+}
+
+void intercept_uninitialized_object_dealloc(HeapObject *object, size_t size,
+                                            size_t alignment_mask) {
+  hook().interceptUninitializedObjectDealloc(object, size, alignment_mask);
+}
+
+dd_swift_class_name_t resolve_class_name(const HeapMetadata *metadata) {
+  return hook().resolveClassName(metadata);
 }
 
 } // namespace
 
-extern "C" dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(uint64_t poisson_rate_bytes) {
-    // Bring up (or join) the shared passive sampler. Idempotent: if the Obj-C
-    // swizzle already started it, this leaves the active session untouched.
-    if (!dd_memory_profiler_start_passive(poisson_rate_bytes)) {
-        return DD_SWIFT_ALLOC_HOOK_FAILED_SAMPLER;
-    }
-
-    if (g_installed.exchange(true)) {
-        g_enabled.store(true, std::memory_order_release);
-        return DD_SWIFT_ALLOC_HOOK_ALREADY_INSTALLED;
-    }
-
-    // Pre-resolve the originals so the trampolines always have a valid forward
-    // target, even if another thread calls through a rebound slot mid-install.
-    auto alloc = reinterpret_cast<AllocFn>(dlsym(RTLD_DEFAULT, "swift_allocObject"));
-    auto dealloc = reinterpret_cast<DeallocFn>(dlsym(RTLD_DEFAULT, "swift_deallocClassInstance"));
-    auto deallocObj = reinterpret_cast<DeallocFn>(dlsym(RTLD_DEFAULT, "swift_deallocObject"));
-    if (alloc == nullptr) {
-        g_installed.store(false, std::memory_order_release);
-        return DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL;
-    }
-    g_orig_alloc.store(alloc, std::memory_order_release);
-    if (dealloc != nullptr) {
-        g_orig_dealloc.store(dealloc, std::memory_order_release);
-    }
-    if (deallocObj != nullptr) {
-        g_orig_dealloc_object.store(deallocObj, std::memory_order_release);
-    }
-
-    g_enabled.store(true, std::memory_order_release);
-
-    // fishhook writes the previous slot value (== the real runtime function)
-    // back into these, and rebinds current + future images.
-    static void *replaced_alloc = nullptr;
-    static void *replaced_dealloc = nullptr;
-    static void *replaced_dealloc_object = nullptr;
-    struct rebinding rebindings[3] = {
-        {"swift_allocObject", reinterpret_cast<void *>(trampoline_alloc), &replaced_alloc},
-        {"swift_deallocClassInstance", reinterpret_cast<void *>(trampoline_dealloc), &replaced_dealloc},
-        {"swift_deallocObject", reinterpret_cast<void *>(trampoline_dealloc_object), &replaced_dealloc_object},
-    };
-    // Multi-SDK compose stance: fishhook writes the previous slot value into
-    // `replaced_*`, which becomes our forward target. If another library
-    // rebinds these symbols BEFORE us, we chain on top of theirs (their
-    // function is our `orig`, and it still runs). If another rebinds AFTER us,
-    // our trampoline is bypassed for future images but our already-bound slots
-    // keep working; g_installed makes re-entry idempotent. We never restore
-    // (see dd_swift_alloc_hook_stop), mirroring the +allocWithZone: swizzle's stance.
-    rebind_symbols(rebindings, 3);
-
-    if (replaced_alloc != nullptr) {
-        g_orig_alloc.store(reinterpret_cast<AllocFn>(replaced_alloc), std::memory_order_release);
-        g_alloc_bound.store(true, std::memory_order_relaxed);
-    }
-    if (replaced_dealloc != nullptr) {
-        g_orig_dealloc.store(reinterpret_cast<DeallocFn>(replaced_dealloc), std::memory_order_release);
-        g_dealloc_bound.store(true, std::memory_order_relaxed);
-    }
-    if (replaced_dealloc_object != nullptr) {
-        g_orig_dealloc_object.store(reinterpret_cast<DeallocFn>(replaced_dealloc_object), std::memory_order_release);
-    }
-
-    return DD_SWIFT_ALLOC_HOOK_OK;
+extern "C" dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(
+    dd_swift_allocation_observer_t allocation_observer,
+    dd_swift_deallocation_observer_t deallocation_observer) {
+  return hook().start(allocation_observer, deallocation_observer);
 }
 
-extern "C" void dd_swift_alloc_hook_stop(void) {
-    // Never-restore: leave the trampolines installed, just stop recording.
-    g_enabled.store(false, std::memory_order_release);
-}
+extern "C" void dd_swift_alloc_hook_stop(void) { hook().stop(); }
 
-extern "C" dd_swift_alloc_hook_diagnostics_t dd_swift_alloc_hook_diagnostics(void) {
-    dd_swift_alloc_hook_diagnostics_t diag;
-    diag.alloc_invocations = g_alloc_invocations.load(std::memory_order_relaxed);
-    diag.dealloc_invocations = g_dealloc_invocations.load(std::memory_order_relaxed);
-    diag.dealloc_object_invocations = g_dealloc_object_invocations.load(std::memory_order_relaxed);
-    diag.reentrant_skips = g_reentrant_skips.load(std::memory_order_relaxed);
-    diag.name_resolutions = g_name_resolutions.load(std::memory_order_relaxed);
-    diag.alloc_bound = g_alloc_bound.load(std::memory_order_relaxed);
-    diag.dealloc_bound = g_dealloc_bound.load(std::memory_order_relaxed);
-    return diag;
-}
-
-extern "C" void dd_swift_alloc_test_reset(void) {
-    g_alloc_invocations.store(0, std::memory_order_relaxed);
-    g_dealloc_invocations.store(0, std::memory_order_relaxed);
-    g_dealloc_object_invocations.store(0, std::memory_order_relaxed);
-    g_reentrant_skips.store(0, std::memory_order_relaxed);
-    g_name_resolutions.store(0, std::memory_order_relaxed);
-    g_captured_metadata.store(nullptr, std::memory_order_relaxed);
-    g_captured_size.store(0, std::memory_order_relaxed);
-    t_arm_capture = false;
-    {
-        std::lock_guard<std::mutex> lock(g_track_mutex);
-        g_registered_metadata.clear();
-        g_live_addresses.clear();
-    }
-    g_track_enabled.store(false, std::memory_order_release);
-}
-
-extern "C" void dd_swift_alloc_test_register_class(void *metadata) {
-    std::lock_guard<std::mutex> lock(g_track_mutex);
-    g_registered_metadata.insert(static_cast<const void *>(metadata));
-    g_track_enabled.store(true, std::memory_order_release);
-}
-
-extern "C" uint64_t dd_swift_alloc_test_live_count(void) {
-    std::lock_guard<std::mutex> lock(g_track_mutex);
-    return static_cast<uint64_t>(g_live_addresses.size());
-}
-
-extern "C" bool dd_swift_alloc_test_is_live(void *address) {
-    std::lock_guard<std::mutex> lock(g_track_mutex);
-    return g_live_addresses.count(static_cast<const void *>(address)) != 0;
-}
-
-extern "C" void dd_swift_alloc_test_arm_capture(void) {
-    t_arm_capture = true;
-}
-
-extern "C" uint64_t dd_swift_alloc_test_captured_size(void) {
-    return g_captured_size.load(std::memory_order_relaxed);
-}
-
-extern "C" const char *dd_swift_alloc_test_resolve_class_name(void *metadata) {
-    return resolve_type_name(static_cast<HeapMetadata *>(metadata));
-}
-
-extern "C" uint64_t dd_swift_alloc_test_captured_name(char *buf, uint64_t buf_len) {
-    if (buf == nullptr || buf_len == 0) {
-        return 0;
-    }
-    buf[0] = '\0';
-    HeapMetadata *metadata = g_captured_metadata.load(std::memory_order_relaxed);
-    if (metadata == nullptr) {
-        return 0;
-    }
-    auto getTypeName = reinterpret_cast<GetTypeNameFn>(dlsym(RTLD_DEFAULT, "swift_getTypeName"));
-    if (getTypeName == nullptr) {
-        return 0;
-    }
-    // Resolve off the hot path. The result string is malloc'd; we own it.
-    SwiftTypeNamePair pair = getTypeName(metadata, /*qualified=*/false);
-    if (pair.data == nullptr) {
-        return 0;
-    }
-    uint64_t n = pair.length;
-    if (n > buf_len - 1) {
-        n = buf_len - 1;
-    }
-    memcpy(buf, pair.data, n);
-    buf[n] = '\0';
-    // Do not free pair.data: swift_getTypeName returns a runtime-cached,
-    // process-stable pointer (repeated calls return the same buffer), so
-    // freeing it here would corrupt the heap for any later caller.
-    return n;
+extern "C" dd_swift_alloc_hook_diagnostics_t
+dd_swift_alloc_hook_diagnostics(void) {
+  return hook().diagnostics();
 }
 
 #endif // !TARGET_OS_WATCH

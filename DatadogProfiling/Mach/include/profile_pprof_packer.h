@@ -23,7 +23,7 @@ class profile;
  *
  * Converts internal profile data structures to the standardized pprof
  * protobuf format for serialization and consumption by profiling tools.
- * Emits a single wall-time/nanoseconds sample type.
+ * Emits wall-time/nanoseconds and, when enabled, cpu-time/nanoseconds sample types.
  *
  * @param prof The profile data to pack
  * @param data Output buffer pointer - allocated buffer containing serialized data
@@ -54,6 +54,12 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data);
  * @note This function is thread-safe and does not modify the input profile
  */
 size_t profile_pprof_pack_heap(const profile& prof, uint8_t** data);
+
+/// Fails a zero-based heap packing allocation and reports temporary storage
+/// ownership after cleanup. SIZE_MAX leaves allocations enabled. Testing only.
+size_t profile_pprof_pack_heap_with_allocation_failure_for_testing(
+    const profile &prof, uint8_t **data, size_t failure_index,
+    size_t *allocation_attempts, size_t *outstanding_allocations);
 
 } // namespace dd::profiler
 

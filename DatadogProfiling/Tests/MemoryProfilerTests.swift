@@ -43,18 +43,13 @@ final class MemoryProfilerTests: XCTestCase {
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
         dd_profiler_stop()
         dd_profiler_destroy()
-        ObjCAllocInterception.stop()
-        SwiftAllocInterception.stop()
+        dd_memory_profiler_stop()
         dd_memory_test_reset()
     }
 
     override func tearDown() {
-        ObjCAllocInterception.stop()
-        SwiftAllocInterception.stop()
+        dd_memory_profiler_stop()
         dd_memory_test_reset()
-        // Process-global and not covered by `dd_memory_test_reset()`; these tests sample Swift
-        // allocations, which would otherwise inflate another suite's diagnostics assertions.
-        dd_swift_alloc_test_reset()
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
@@ -163,15 +158,16 @@ final class MemoryProfilerTests: XCTestCase {
     /// the TTID snapshot, so the trigger must fold rather than upload the same live set twice.
     func testTTID_foldsIntoTheAppLaunchProfile_whenOneIsHarvested() throws {
         let dateProvider = DateProviderMock()
-        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
-        // Model the native pre-main start before the Swift coordinator captures its launch state.
+        // Model the native pre-main start and an eligible RUM session before the coordinator.
         dd_profiler_start_testing(100, false, 60.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertTrue(dd_profiler_was_started_at_launch())
-        let profiler = makeProfiler(
-            profilingSamplerProvider: provider,
-            dateProvider: dateProvider,
-            isAppLaunchProfilingEnabled: true
+        let provider = makeSamplerProvider(
+            continuousSampleRate: 0,
+            appLaunchSampleRate: .maxSampleRate,
+            memorySampleRate: .maxSampleRate
         )
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: .maxSampleRate))
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
         connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
         enterForeground()
         XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory must be recording")
@@ -191,6 +187,39 @@ final class MemoryProfilerTests: XCTestCase {
                 event.tags.contains("trigger:"),
                 "A coupled launch profile is not tagged as event-triggered"
             )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCPUOnlyAppLaunchWrite_allowsTheQueuedTTIDHeapTrigger() throws {
+        let dateProvider = DateProviderMock()
+        dd_profiler_start_testing(100, false, 60.seconds.dd.toInt64Nanoseconds, 0)
+        let provider = makeSamplerProvider(
+            continuousSampleRate: 0,
+            appLaunchSampleRate: .maxSampleRate,
+            memorySampleRate: .maxSampleRate
+        )
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: .maxSampleRate))
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        enterForeground()
+        XCTAssertEqual(dd_profiler_start(), 1)
+        defer { dd_memory_test_force_capture_failure(false) }
+
+        try withSampledObject {
+            dd_memory_test_force_capture_failure(true)
+            // The CPU-only write completes before the separately queued TTID heap trigger.
+            core.onEventWriteContext = { _ in dd_memory_test_force_capture_failure(false) }
+            sendTTID(to: profiler, at: dateProvider.now)
+
+            let attachments = core.metadata.compactMap { $0 as? ProfileAttachments }
+            XCTAssertEqual(attachments.count, 2)
+            XCTAssertNotNil(attachments.first?.pprof)
+            XCTAssertNil(attachments.first?.heapPprof)
+            XCTAssertNil(attachments.last?.pprof)
+            XCTAssertNotNil(attachments.last?.heapPprof)
+            let heapEvent = try XCTUnwrap(core.events.last as? ProfileEvent)
+            XCTAssertTrue(heapEvent.tags.contains("trigger:ttid"))
         }
         withExtendedLifetime(profiler) {}
     }
@@ -270,11 +299,8 @@ final class MemoryProfilerTests: XCTestCase {
             sendHang(id: "hang-1", to: profiler)
             XCTAssertEqual(heapAttachmentCount, 1, "Precondition: the trigger emitted a snapshot")
 
-            // Draining here is the assertion: the sample must still be in the window.
-            var window = dd_memory_alloc_window_capture()
-            defer { dd_memory_snapshot_destroy(&window) }
             XCTAssertGreaterThan(
-                window.sample_count,
+                dd_memory_profiler_diagnostics().recorded_allocations,
                 0,
                 "A triggered snapshot must leave the alloc window intact for the periodic cycle"
             )
@@ -291,13 +317,57 @@ final class MemoryProfilerTests: XCTestCase {
             enterBackground(at: dateProvider.now) // flushes the window the periodic way
             XCTAssertEqual(heapAttachmentCount, 1, "Precondition: the periodic window emitted")
 
-            var window = dd_memory_alloc_window_capture()
-            defer { dd_memory_snapshot_destroy(&window) }
             XCTAssertEqual(
-                window.sample_count,
+                dd_memory_profiler_diagnostics().recorded_allocations,
                 0,
                 "The periodic emission owns the delta and must drain it"
             )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testFailedPeriodicCapture_retainsAllocationsAndWindowStartUntilSuccessfulDrain() throws {
+        let dateProvider = DateProviderMock()
+        let start = dateProvider.now
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+        defer { dd_memory_test_force_capture_failure(false) }
+
+        try withSampledObject {
+            dd_memory_test_force_capture_failure(true)
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 0)
+            XCTAssertGreaterThan(dd_memory_profiler_diagnostics().recorded_allocations, 0)
+
+            dd_memory_test_force_capture_failure(false)
+            enterForeground()
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 1)
+            let event = try XCTUnwrap(core.events.compactMap { $0 as? ProfileEvent }.last)
+            XCTAssertEqual(event.start.timeIntervalSince1970, start.timeIntervalSince1970, accuracy: 0.001)
+            XCTAssertEqual(dd_memory_profiler_diagnostics().recorded_allocations, 0)
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testSuccessfulEmptyPeriodicCapture_advancesWindowStart() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+        dateProvider.now.addTimeInterval(10)
+        let firstBoundary = dateProvider.now
+        enterBackground(at: firstBoundary)
+        XCTAssertEqual(heapAttachmentCount, 0)
+
+        enterForeground()
+        try withSampledObject {
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            let event = try XCTUnwrap(core.events.compactMap { $0 as? ProfileEvent }.last)
+            XCTAssertEqual(event.start.timeIntervalSince1970, firstBoundary.timeIntervalSince1970, accuracy: 0.001)
         }
         withExtendedLifetime(profiler) {}
     }
@@ -358,6 +428,97 @@ final class MemoryProfilerTests: XCTestCase {
                 errorIDs.contains("warning-1"),
                 "The folded memory warning must correlate on the coupled profile that consumed its window, got \(errorIDs)"
             )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCPUOnlyCoupledWrite_retainsPendingWarningForTheNextHeapTrigger() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundCoupledProfiler(dateProvider: dateProvider)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        defer { dd_memory_test_force_capture_failure(false) }
+
+        try withSampledObject {
+            dd_memory_test_force_capture_failure(true)
+            sendMemoryWarning(id: "pending-warning", to: profiler)
+            sendHang(id: "first-hang", to: profiler)
+            core.onEventWriteContext = { _ in dd_memory_test_force_capture_failure(false) }
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            let cpuOnly = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            XCTAssertNotNil(cpuOnly.pprof)
+            XCTAssertNil(cpuOnly.heapPprof)
+            XCTAssertEqual(heapAttachmentCount, 0)
+
+            enterForeground(sampledIn: true)
+            dateProvider.now.addTimeInterval(1)
+            sendHang(id: "next-hang", to: profiler)
+
+            XCTAssertEqual(heapAttachmentCount, 1)
+            let heapEvent = try XCTUnwrap(core.events.last as? ProfileEvent)
+            let errors = heapEvent.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String]
+            XCTAssertTrue(errors?.contains("pending-warning") == true)
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testNextCoupledHeapWrite_reportsCorrelationRetainedAfterCPUOnlyWindow() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundCoupledProfiler(dateProvider: dateProvider)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        defer { dd_memory_test_force_capture_failure(false) }
+
+        try withSampledObject {
+            dd_memory_test_force_capture_failure(true)
+            _ = profiler.receive(
+                message: .payload(OperationMessage(
+                    attributes: ["cpu.attribute": "old"],
+                    operation: .mockWith(id: "old-vital", name: "old-operation", stepType: nil)
+                )),
+                from: core
+            )
+            _ = profiler.receive(
+                message: .payload(LongTaskMessage(
+                    attributes: ["cpu.attribute": "old"],
+                    longTask: DurationEvent(id: "old-task", type: .longTask, start: 0, duration: 100)
+                )),
+                from: core
+            )
+            sendHang(id: "old-hang", to: profiler)
+            sendMemoryWarning(id: "old-warning", to: profiler)
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            let cpuOnly = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            XCTAssertNotNil(cpuOnly.pprof)
+            XCTAssertNil(cpuOnly.heapPprof)
+
+            enterForeground(sampledIn: true)
+            _ = profiler.receive(
+                message: .payload(LongTaskMessage(
+                    attributes: ["cpu.attribute": "current"],
+                    longTask: DurationEvent(id: "current-task", type: .longTask, start: 10, duration: 100)
+                )),
+                from: core
+            )
+            flushQueue()
+            dd_memory_test_force_capture_failure(false)
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            let coupled = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            XCTAssertNotNil(coupled.pprof)
+            XCTAssertNotNil(coupled.heapPprof)
+            let event = try XCTUnwrap(core.events.last as? ProfileEvent)
+            XCTAssertEqual(event.additionalAttributes?["cpu.attribute"] as? String, "current")
+            let rumEvents = try XCTUnwrap(
+                JSONSerialization.jsonObject(with: XCTUnwrap(coupled.rumEvents)) as? [[String: Any]]
+            )
+            let ids = rumEvents.compactMap { $0["id"] as? String }
+            for expectedID in ["old-vital", "old-task", "old-hang", "old-warning", "current-task"] {
+                XCTAssertEqual(ids.filter { $0 == expectedID }.count, 1, "Missing or duplicated correlation: \(expectedID)")
+            }
         }
         withExtendedLifetime(profiler) {}
     }
@@ -575,16 +736,20 @@ final class MemoryProfilerTests: XCTestCase {
 
     private func makeSamplerProvider(
         continuousSampleRate: SampleRate = .maxSampleRate,
+        appLaunchSampleRate: SampleRate = 0,
         memorySampleRate: SampleRate = 0
     ) -> ProfilingSamplerProvider {
-        ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate, memorySampleRate: memorySampleRate)
+        ProfilingSamplerProvider(
+            continuousSampleRate: continuousSampleRate,
+            appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0,
+            memorySampleRate: memorySampleRate
+        )
     }
 
     private func makeProfiler(
         profilingSamplerProvider: ProfilingSamplerProvider,
         quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock(),
-        dateProvider: DateProvider = DateProviderMock(),
-        isAppLaunchProfilingEnabled: Bool = false
+        dateProvider: DateProvider = DateProviderMock()
     ) -> DatadogProfiler {
         DatadogProfiler(
             core: core,
@@ -592,7 +757,6 @@ final class MemoryProfilerTests: XCTestCase {
             quotaChecker: quotaChecker,
             queue: profilerQueue,
             profilingInterval: .infinity,
-            isAppLaunchProfilingEnabled: isAppLaunchProfilingEnabled,
             dateProvider: dateProvider
         )
     }

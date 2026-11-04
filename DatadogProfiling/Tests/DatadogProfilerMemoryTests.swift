@@ -44,20 +44,13 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         dd_profiler_stop()
         dd_profiler_destroy()
         // Ensure the memory interception paths are clean at test start.
-        ObjCAllocInterception.stop()
-        SwiftAllocInterception.stop()
+        dd_memory_profiler_stop()
         dd_memory_test_reset()
-        // `dd_memory_test_reset()` clears the sampler's counters but NOT the Swift hook's, which
-        // are process-global and survive every other reset. `testSwiftTypeNameResolvesOnlyFor...`
-        // asserts on `nameResolutions` from zero, so any earlier test in the process that sampled
-        // a Swift allocation would break it.
-        dd_swift_alloc_test_reset()
     }
 
     override func tearDown() {
         // Always stop the memory interception — process-global, must not leak into other tests.
-        ObjCAllocInterception.stop()
-        SwiftAllocInterception.stop()
+        dd_memory_profiler_stop()
         dd_memory_test_reset()
         dd_profiler_stop()
         dd_profiler_destroy()
@@ -79,6 +72,26 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
         XCTAssertTrue(dd_memory_profiler_is_running(), "Memory profiling must run when configured + foreground")
         withExtendedLifetime(profiler) {}
+    }
+
+    func testDisabledMemoryProfilingDoesNotRetainWarningCorrelationOrAttributes() {
+        let memoryProfiler = MemoryProfiler(
+            core: core,
+            profilingSamplerProvider: ProfilingSamplerProvider(continuousSampleRate: .maxSampleRate),
+            quotaChecker: ProfilingQuotaCheckerMock(),
+            telemetryController: ProfilingTelemetryController(),
+            profilingConditions: ProfilingConditions(),
+            dateProvider: DateProviderMock()
+        )
+        memoryProfiler.update(attributes: [RUMCoreContext.IDs.sessionID: "cpu-only-session"])
+        memoryProfiler.record(vital: .mockAny())
+        memoryProfiler.record(hang: DurationEvent(id: "hang", type: .error, start: 0, duration: 10))
+        memoryProfiler.record(longTask: DurationEvent(id: "task", type: .longTask, start: 0, duration: 10))
+        memoryProfiler.record(warning: DurationEvent(id: "warning", type: .error, start: 0, duration: 0))
+
+        XCTAssertFalse(memoryProfiler.isRecording)
+        XCTAssertTrue(memoryProfiler.attributes.isEmpty)
+        XCTAssertTrue(memoryProfiler.pendingWarnings.isEmpty)
     }
 
     func testMemoryProfilingDoesNotRun_whenNotConfigured() {
@@ -234,7 +247,7 @@ final class DatadogProfilerMemoryTests: XCTestCase {
     /// observing, and is never torn down and restarted.
     ///
     /// The session-generation assertion is the point of this test, not a proxy for it. A stop
-    /// followed by a start takes the native `start_new_session()` path, which bumps the generation
+    /// followed by a start creates a fresh native generation, which bumps the generation
     /// AND clears the sample table. An unchanged generation therefore proves no table-clearing
     /// restart happened, i.e. objects sampled before the app backgrounded are still in the live
     /// set — precisely the long-lived objects `inuse_*` exists to surface.
@@ -257,18 +270,21 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
             XCTAssertTrue(dd_memory_profiler_is_running(), "Passive recording must continue in the background")
             XCTAssertEqual(
-                dd_memory_test_session_generation(), generationBefore,
+                dd_memory_test_session_generation(),
+                generationBefore,
                 "Backgrounding must not restart the session — a restart clears the sample table"
             )
             XCTAssertEqual(
-                dd_memory_test_live_count(), liveBefore,
+                dd_memory_test_live_count(),
+                liveBefore,
                 "The live set must survive the background transition"
             )
 
             // Allocations made while backgrounded are recorded too — that is the point of staying on.
             withSampledObject {
                 XCTAssertEqual(
-                    dd_memory_test_live_count(), liveBefore + 1,
+                    dd_memory_test_live_count(),
+                    liveBefore + 1,
                     "An allocation made in the background must be recorded"
                 )
 
@@ -277,11 +293,13 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
                 XCTAssertTrue(dd_memory_profiler_is_running())
                 XCTAssertEqual(
-                    dd_memory_test_session_generation(), generationBefore,
+                    dd_memory_test_session_generation(),
+                    generationBefore,
                     "Returning to the foreground must not restart the session either"
                 )
                 XCTAssertEqual(
-                    dd_memory_test_live_count(), liveBefore + 1,
+                    dd_memory_test_live_count(),
+                    liveBefore + 1,
                     "Both the pre-background and the background allocation must still be live"
                 )
             }
@@ -314,7 +332,8 @@ final class DatadogProfilerMemoryTests: XCTestCase {
             enterBackground(at: dateProvider.now)
 
             XCTAssertEqual(
-                heapAttachmentCount, 1,
+                heapAttachmentCount,
+                1,
                 "a context update arriving while already backgrounded must not re-emit the live set"
             )
             XCTAssertTrue(dd_memory_profiler_is_running(), "recording must still be on regardless")
@@ -351,7 +370,8 @@ final class DatadogProfilerMemoryTests: XCTestCase {
             enterBackground(at: dateProvider.now)
 
             XCTAssertEqual(
-                heapAttachmentCount, 1,
+                heapAttachmentCount,
+                1,
                 "an .inactive flicker must not re-arm the closing flush"
             )
         }
@@ -377,7 +397,8 @@ final class DatadogProfilerMemoryTests: XCTestCase {
                 enterBackground(at: dateProvider.now)
 
                 XCTAssertEqual(
-                    heapAttachmentCount, 2,
+                    heapAttachmentCount,
+                    2,
                     "the next foreground window must emit its own heap"
                 )
             }
@@ -387,7 +408,7 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
     // MARK: - Tracking consent
 
-    /// `.notGranted` must stop memory profiling outright — the interception is uninstalled, not just
+    /// `.notGranted` must stop memory profiling outright — allocation observation is disabled, not just
     /// the CPU profiler stopped. Memory has its own lifecycle, so it needs its own consent gate.
     func testMemoryProfilingStopsOnConsentNotGranted_andResumesWhenGrantedAgain() {
         let provider = makeSamplerProvider(memorySampleRate: .maxSampleRate)
@@ -430,8 +451,11 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         dd_memory_test_force_next_sample()
         let recorded = ProdSwiftFixture()
         withExtendedLifetime(recorded) {
-            XCTAssertEqual(dd_memory_test_live_count(), baseline + 1,
-                           "Precondition: allocations must be recorded while consent is granted")
+            XCTAssertEqual(
+                dd_memory_test_live_count(),
+                baseline + 1,
+                "Precondition: allocations must be recorded while consent is granted"
+            )
         }
 
         // Consent revoked → no further allocation may be recorded.
@@ -442,8 +466,11 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         dd_memory_test_force_next_sample()
         let ignored = ProdSwiftFixture()
         withExtendedLifetime(ignored) {
-            XCTAssertEqual(dd_memory_test_live_count(), afterRevocation,
-                           "No allocation may be recorded once tracking consent is .notGranted")
+            XCTAssertEqual(
+                dd_memory_test_live_count(),
+                afterRevocation,
+                "No allocation may be recorded once tracking consent is .notGranted"
+            )
         }
         withExtendedLifetime(profiler) {}
     }
@@ -475,7 +502,8 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         let ignored = ProdSwiftFixture()
         withExtendedLifetime(ignored) {
             XCTAssertEqual(
-                dd_memory_test_live_count(), afterRevocation,
+                dd_memory_test_live_count(),
+                afterRevocation,
                 "No allocation may be recorded in the background once consent is .notGranted"
             )
         }
@@ -520,7 +548,8 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
             XCTAssertFalse(dd_memory_profiler_is_running(), "Consent revocation must stop recording")
             XCTAssertNotEqual(
-                dd_memory_test_session_generation(), generationBefore,
+                dd_memory_test_session_generation(),
+                generationBefore,
                 "Consent revocation must end the session, not pause it"
             )
         }
@@ -566,7 +595,8 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
         XCTAssertTrue(dd_memory_profiler_is_running(), "A quota reset must restart recording")
         XCTAssertNotEqual(
-            dd_memory_test_session_generation(), generationBeforeRejection,
+            dd_memory_test_session_generation(),
+            generationBeforeRejection,
             "The restart must be a fresh session, not a resumed one"
         )
 
@@ -578,9 +608,67 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
             let event = try XCTUnwrap(core.events(ofType: ProfileEvent.self).last)
             XCTAssertEqual(
-                event.start, restartMoment.addingTimeInterval(profiler.currentServerTimeOffset),
+                event.start,
+                restartMoment.addingTimeInterval(profiler.currentServerTimeOffset),
                 "the window must start at the restart, not before the quota rejection it holds no samples for"
             )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQuotaReset_doesNotCarryRejectedSessionCorrelationIntoTheNewSession() throws {
+        let dateProvider = DateProviderMock()
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(
+            profilingSamplerProvider: provider,
+            quotaChecker: quotaChecker,
+            dateProvider: dateProvider
+        )
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        let firstSession: UUID = .mockRandom()
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionID: firstSession, sessionSampleRate: .maxSampleRate)]
+        )
+        flushQueue()
+
+        // Keep correlation pending regardless of whether any ambient allocation was sampled.
+        dd_memory_test_force_capture_failure(true)
+        _ = profiler.receive(
+            message: .payload(MemoryWarningMessage(
+                attributes: [RUMCoreContext.IDs.sessionID: firstSession.uuidString.lowercased()],
+                error: DurationEvent(id: "rejected-session-warning", type: .error, start: 0, duration: 0)
+            )),
+            from: core
+        )
+        flushQueue()
+        dd_memory_test_force_capture_failure(false)
+        XCTAssertEqual(heapAttachmentCount, 0)
+
+        let rejection = ProfilingQuotaResult(decision: .quotaKO, reason: .quotaExceeded)
+        quotaChecker.quotaResult = rejection
+        quotaChecker.onQuotaResultUpdate?(rejection)
+        flushQueue()
+        XCTAssertFalse(dd_memory_profiler_is_running())
+
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionID: .mockRandom(), sessionSampleRate: .maxSampleRate)]
+        )
+        flushQueue()
+        quotaChecker.quotaResult = nil
+        quotaChecker.onQuotaResultUpdate?(nil)
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running())
+
+        try withSampledObject {
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            let event = try XCTUnwrap(core.events(ofType: ProfileEvent.self).last)
+            XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.errorID])
+            XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.sessionID])
         }
         withExtendedLifetime(profiler) {}
     }
@@ -620,7 +708,8 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         flushQueue()
 
         XCTAssertEqual(
-            installFailureCount(in: telemetry), attemptsAfterFirstInstall,
+            installFailureCount(in: telemetry),
+            attemptsAfterFirstInstall,
             "A latched install failure must not be retried, and must not re-report"
         )
         XCTAssertFalse(dd_memory_profiler_is_running(), "The sampler must still not be running")
@@ -629,45 +718,25 @@ final class DatadogProfilerMemoryTests: XCTestCase {
 
     // MARK: - Type name resolution stays off the hot path
 
-    /// Resolving a Swift type name probes a cache and, at saturation, takes a
-    /// global mutex. It must therefore run only for allocations the Poisson
-    /// sampler actually selects — never once per allocation.
-    func testSwiftTypeNameResolvesOnlyForSampledAllocations() {
+    func testSwiftSamplesPreserveMetadataForDeferredTypeNameResolution() throws {
         let provider = makeSamplerProvider(memorySampleRate: .maxSampleRate)
         let profiler = makeProfiler(profilingSamplerProvider: provider)
         connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
-
         enterForeground()
-        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory profiling must be running")
 
-        dd_swift_alloc_test_reset()
-
-        // Allocate without forcing a sample. These are far too small to trip the
-        // 512 KB Poisson counter, so none should resolve a name.
-        var retained: [ProdSwiftFixture] = []
-        for _ in 0..<500 {
-            retained.append(ProdSwiftFixture())
-        }
-        withExtendedLifetime(retained) {
-            let unsampled = SwiftAllocInterception.diagnostics()
-            XCTAssertGreaterThanOrEqual(
-                unsampled.allocInvocations, 500,
-                "Precondition: the trampoline must have observed the allocations"
-            )
-            XCTAssertEqual(
-                unsampled.nameResolutions, 0,
-                "No type name may be resolved for an unsampled allocation"
-            )
-
-            // Force exactly one sample: that one — and only that one — resolves.
-            dd_memory_test_force_next_sample()
-            let sampledObject = ProdSwiftFixture()
-            withExtendedLifetime(sampledObject) {
-                XCTAssertEqual(
-                    SwiftAllocInterception.diagnostics().nameResolutions, 1,
-                    "The sampled allocation must resolve its type name exactly once"
-                )
-            }
+        dd_memory_test_force_next_sample()
+        let object = ProdSwiftFixture()
+        try withExtendedLifetime(object) {
+            var view = dd_memory_aggregation_view_t()
+            XCTAssertTrue(dd_memory_profiler_capture(false, &view))
+            let samples = try XCTUnwrap(view.samples)
+            let swiftSample = try XCTUnwrap((0..<Int(view.count)).map { samples[$0] }.first {
+                $0.key.source == DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT
+            })
+            XCTAssertNil(swiftSample.key.class_name)
+            XCTAssertNotNil(swiftSample.key.swift_metadata)
+            XCTAssertNotNil(swiftSample.key.swift_name_resolver)
+            XCTAssertGreaterThan(swiftSample.inuse_objects, 0)
         }
         withExtendedLifetime(profiler) {}
     }
@@ -705,8 +774,11 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         let before = dd_memory_test_live_count()
         let obj = ProdSwiftFixture()
         withExtendedLifetime(obj) {
-            XCTAssertEqual(dd_memory_test_live_count(), before + 1,
-                           "pure-Swift alloc must be captured => Swift interception active in the production path")
+            XCTAssertEqual(
+                dd_memory_test_live_count(),
+                before + 1,
+                "pure-Swift alloc must be captured => Swift interception active in the production path"
+            )
         }
         withExtendedLifetime(profiler) {}
     }

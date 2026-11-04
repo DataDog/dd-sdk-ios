@@ -442,3 +442,11 @@ internal enum RemoteConfigurationError: Error, LocalizedError {
         }
     }
 }
+
+extension RemoteConfigurationError: TelemetrySanitizableError {
+    /// Cases only ever carry an HTTP status code or nothing - never response content or customer data -
+    /// so the full description is safe to report as-is.
+    func sanitize() -> TelemetrySanitizedError {
+        TelemetrySanitizedError(unsafelyDescribing: self)
+    }
+}

@@ -613,7 +613,7 @@ final class FlagsClientTests: XCTestCase {
                             allocationKey: "allocation-123",
                             variationKey: "variation-123",
                             variation: .string("red"),
-                            reason: "TARGETING_MATCH",
+                            reason: "CACHED",
                             doLog: false
                         )
                     ],
@@ -634,12 +634,15 @@ final class FlagsClientTests: XCTestCase {
         // Then — all error paths return nil allocationKey
         XCTAssertEqual(providerNotReadyDetails.error, .providerNotReady)
         XCTAssertNil(providerNotReadyDetails.allocationKey)
+        XCTAssertNil(providerNotReadyDetails.reason)
 
         XCTAssertEqual(flagNotFoundDetails.error, .flagNotFound)
         XCTAssertNil(flagNotFoundDetails.allocationKey)
+        XCTAssertNil(flagNotFoundDetails.reason)
 
         XCTAssertEqual(typeMismatchDetails.error, .typeMismatch)
         XCTAssertNil(typeMismatchDetails.allocationKey)
+        XCTAssertNil(typeMismatchDetails.reason)
     }
 
     func testSendFlagEvaluation() {

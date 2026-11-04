@@ -14,14 +14,14 @@ The SDK installs into thousands of apps alongside frameworks like RxSwift, RxCoc
 
 ## How the SDK swizzles
 
-All swizzles use `MethodSwizzler<Signature, Override>` in `DatadogInternal/Sources/Swizzling/MethodSwizzler.swift`. This class:
+SDK method swizzles normally use `MethodSwizzler<Signature, Override>` in `DatadogInternal/Sources/Swizzling/MethodSwizzler.swift`. This class:
 
 - Captures the IMP that is current at install time as `previousImplementation`
 - Sets a new IMP that calls the override closure, which receives `previousImplementation`
-- Maintains a linked list so multiple independent swizzles on the same method compose correctly
-- Provides `unswizzle()` to remove a specific layer without disturbing others
+- Maintains a linked list so multiple swizzles on the same method that this class manages compose correctly
+- Provides `unswizzle()` to remove a managed layer without disturbing other managed layers
 
-**Always use `MethodSwizzler`. Never call `method_exchangeImplementations` or `method_setImplementation` directly in production code.**
+**Use `MethodSwizzler` for method swizzles. A direct IMP replacement requires a documented exception.**
 
 ---
 
@@ -37,7 +37,7 @@ There is exactly **one** sanctioned exception to the "always use `MethodSwizzler
 2. **Reentrancy guarded in C.** The only path that can allocate (backtrace + side-table insertion) is fenced by a C thread-local guard (`tls_in_profiler`); any allocation our own bookkeeping triggers is observed re-entrantly and skipped. A Swift closure cannot make this guarantee, which is the crux of why it is unsafe here.
 3. **Never-restore on stop.** `stop` only flips an enabled flag; the trampolines stay installed and keep forwarding to the implementation captured at install time. Restoring the original IMP is forbidden — on these two of the most heavily-swizzled selectors it would either clobber a framework that swizzled on top of us, or reinstate a captured "original" that was actually another framework's now-torn-down IMP. This is the same never-restore stance used by the `swift_allocObject` fishhook path, and it is what makes the interceptor compose correctly with third-party swizzles installed in any order.
 
-Any change to the allocation interceptors must preserve all three properties. Entry/exit is funneled through a reviewed Swift facade (`ObjCAllocInterception` / `SwiftAllocInterception`) so the C swizzle is never driven ad hoc.
+Any change to the allocation interceptors must preserve all three properties. The native `dd_memory_profiler_start` / `dd_memory_profiler_stop` owner supplies both hooks with observers and drains their callbacks before stopping or resetting the recorder. Swift lifecycle coordination calls that owner rather than controlling each hook separately.
 
 ---
 
@@ -277,7 +277,7 @@ Additionally, when reusing an existing proxy on a delegate, the handler is now u
 
 Before submitting a swizzle:
 
-- [ ] Uses `MethodSwizzler` — no direct `method_setImplementation` calls
+- [ ] Uses `MethodSwizzler`, or documents why a direct IMP replacement is required
 - [ ] Setter wrapping a value → getter swizzle installed that unwraps it
 - [ ] Setter calls `previousImplementation` → re-entrancy guard keyed on object identity
 - [ ] Proxy with `responds(to:)` / `forwardingTarget(for:)` → `isRespondingToSelector` guard

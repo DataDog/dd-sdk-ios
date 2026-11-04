@@ -208,6 +208,7 @@ extension RUMViewEvent.Session {
             hasReplay: s.hasReplay,
             id: s.id,
             isActive: s.isActive,
+            isMainProcess: s.isMainProcess,
             sampledForReplay: s.sampledForReplay,
             type: s.type
         )

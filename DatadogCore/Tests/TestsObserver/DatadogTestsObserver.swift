@@ -106,7 +106,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: { DatadogCoreProxy.referenceCount == 0 },
-            problem: "Leaking reference to `DatadogCoreProtocol`",
+            problem: "Leaking reference to `DatadogCoreProtocol` (`DatadogCoreProxy`).",
             solution: """
             There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
             but some instances of `DatadogCoreProxy` are still alive.
@@ -121,7 +121,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: { PassthroughCoreMock.referenceCount == 0 },
-            problem: "Leaking reference to `DatadogCoreProtocol`",
+            problem: "Leaking reference to `DatadogCoreProtocol` (`PassthroughCoreMock`).",
             solution: """
             There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
             but some instances of `PassthroughCoreMock` are still alive.
@@ -145,11 +145,13 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         let failedChecks = checks.filter { $0.assert() == false }
 
         if !failedChecks.isEmpty {
+            // CI formats `xcodebuild` output with `xcbeautify`, which prints only the first line of a fatal error
+            // and drops the rest. Keep the failing test and broken rules on that first line.
+            let brokenRules = failedChecks.map { "⚠️ \($0.problem)" }.joined(separator: " ")
             var message = """
-            🐶✋ `DatadogTests` integrity check failure.
+            🐶✋ `DatadogTests` integrity check failure: `\(testCase.name)` breaks \(failedChecks.count) integrity rule(s): \(brokenRules)
 
-            `DatadogTestsObserver` found that `\(testCase.name)` breaks \(failedChecks.count) integrity rule(s) which
-            must be fulfilled before and after each unit test. Find potential root cause analysis below and try running
+            These rules must be fulfilled before and after each unit test. Find potential root cause analysis below and try running
             surrounding tests in isolation to pinpoint the issue:
             """
             failedChecks.forEach { check in

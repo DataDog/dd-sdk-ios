@@ -434,6 +434,40 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
     }
 
+    func testGivenCrashDuringApplicationLaunchInAppExtension_whenSending_itSendsIsMainProcessFalse() throws {
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
+
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: nil, // means there was no active view
+            lastRUMSessionState: nil, // there was no RUM session
+            lastIsAppInForeground: .mockRandom(), // no matter if crashed in foreground or in background
+            applicationBundleType: .iOSAppExtension
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            trackBackgroundEvents: true // BET enabled
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: crashReport, context: crashContext)
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let error = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        let view = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(error.session.isMainProcess, false)
+        XCTAssertEqual(view.session.isMainProcess, false)
+    }
+
     func testGivenCrashDuringAppLaunchAndNoSampling_whenSending_itIsDropped() throws {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
