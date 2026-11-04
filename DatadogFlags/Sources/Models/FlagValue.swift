@@ -23,6 +23,10 @@ import Foundation
 /// be the rounded form of a different number. For example, `9007199254740993.0001` decodes as the `Double`
 /// `9007199254740994`. In network responses, integer literals that fit `Int`, such as `9007199254740993`, decode as
 /// `Int` and keep every digit.
+///
+/// Known issue: `JSONDecoder` can decode some numbers with a fractional part as `Int`. For example,
+/// `9007199254740993.5` decodes as `9007199254740993`, and `4503599627370497.5` as `4503599627370498`. An `Int` read
+/// of such a value returns that `Int` instead of ``FlagEvaluationError/typeMismatch``.
 public protocol FlagValue: Encodable {}
 
 extension Bool: FlagValue {}

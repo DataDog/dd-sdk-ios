@@ -117,7 +117,9 @@ extension FlagAssignment: Codable {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             } else if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 // The served numeric type does not limit reads. Try `Int` before `Double` to keep integer
-                // literals exact.
+                // literals exact. Known issue: `JSONDecoder` can decode a number with a fractional part as `Int`,
+                // for example `9007199254740993.5` as `9007199254740993`. This decode path cannot detect the lost
+                // fraction, because `JSONDecoder` does not expose the number text.
                 self.variation = .integer(number)
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
