@@ -25,22 +25,22 @@ final class CanonicalPrecomputedTests: XCTestCase {
         var executed = 0
         var excluded = 0
         for file in files {
-            let fixture = try object(Data(contentsOf: file))
+            // Decode only expectations here; raw response bytes may exceed Double range.
+            let metadata = try decoder.decode(FixtureMetadata.self, from: Data(contentsOf: file))
+            let fixture = try object(JSONEncoder().encode(metadata))
             guard applies(fixture) else { excluded += 1; continue }
             executed += 1
             try XCTContext.runActivity(named: "\(source["commit"]!) / \(file.lastPathComponent)") { _ in
-                let responseData = try data(fixture["response"]!)
+                let responseData = try Data(contentsOf: root.appendingPathComponent("responses/cases").appendingPathComponent(String(file.path.dropFirst(cases.path.count + 1))))
                 if fixture["expectedResponseError"] != nil {
                     XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
-                    XCTAssertThrowsError(try decoder.decode(FlagAssignmentsResponse.self, from: responseData)) { error in
-                        XCTAssertTrue(error is DecodingError, "Unexpected rejection: \(error)")
-                    }
+                    try runRejected(fixture, responseData: responseData)
                     return
                 }
-                let response = try decoder.decode(FlagAssignmentsResponse.self, from: responseData)
+                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: responseData)
                 let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
                 let initial = FlagsData(flags: response.flags, context: context, date: Date(), obfuscation: response.obfuscation)
-                let restored = try decoder.decode(FlagsData.self, from: JSONEncoder().encode(initial))
+                let restored = try FlagsNumericJSON.decode(FlagsData.self, from: JSONEncoder().encode(initial), cached: true)
                 for (label, state) in [("network-decoded", initial), ("serialized-state", restored)] {
                     try XCTContext.runActivity(named: label) { _ in try run(fixture, state: state) }
                 }
@@ -48,6 +48,47 @@ final class CanonicalPrecomputedTests: XCTestCase {
         }
         XCTAssertGreaterThan(executed, 0, "All canonical fixtures were excluded (\(excluded))")
         print("Canonical precompute: \(executed) fixtures executed, \(excluded) excluded")
+    }
+
+    private struct FixtureMetadata: Codable {
+        let context: AnyValue
+        let evaluations: AnyValue
+        let expectations: AnyValue
+        let expectedResponseError: String?
+        let _include: AnyValue?
+        let _skip: AnyValue?
+    }
+
+    private func runRejected(_ fixture: [String: Any], responseData: Data) throws {
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let date = DateProviderMock()
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil, customHeaders: nil, featureScope: scope,
+            fetch: { _, complete in complete(.success(responseData)) }
+        )
+        let repository = FlagsRepository(
+            clientName: UUID().uuidString, flagAssignmentsFetcher: fetcher,
+            dateProvider: date, featureScope: scope, initializationTimeout: nil
+        )
+        let aggregator = EvaluationAggregator(dateProvider: date, featureScope: scope, flushInterval: 100)
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLogger(dateProvider: date, featureScope: scope),
+            evaluationLogger: EvaluationLogger(aggregator: aggregator),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+        let completed = expectation(description: "Rejected canonical response")
+        let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
+        client.setEvaluationContext(context) { result in
+            if case .failure(.invalidResponse) = result {} else { XCTFail("Expected invalidResponse, got \(result)") }
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        repository.flush()
+        aggregator.sendEvaluations()
+        XCTAssertEqual(repository.state.currentState, .error)
+        XCTAssertTrue(try scope.eventsWritten(ofType: ExposureEvent.self).isEmpty)
+        XCTAssertTrue(try scope.eventsWritten(ofType: FlagEvaluationEvent.self).isEmpty)
     }
 
     private func run(_ fixture: [String: Any], state: FlagsData) throws {

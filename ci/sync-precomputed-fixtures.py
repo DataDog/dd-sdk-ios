@@ -27,6 +27,30 @@ def git(source, *args):
     return subprocess.check_output(['git', '-C', str(source), *args])
 
 
+def response_bytes(content):
+    """Extract the top-level response without re-encoding any numeric token."""
+    text = content.decode('utf-8')
+    decoder = json.JSONDecoder()
+    position = text.index('{') + 1
+    while True:
+        while text[position].isspace() or text[position] == ',':
+            position += 1
+        if text[position] == '}':
+            raise ValueError('Fixture is missing response')
+        key, position = decoder.raw_decode(text, position)
+        while text[position].isspace():
+            position += 1
+        if text[position] != ':':
+            raise ValueError('Invalid fixture object')
+        position += 1
+        while text[position].isspace():
+            position += 1
+        start = position
+        _, position = decoder.raw_decode(text, position)
+        if key == 'response':
+            return text[start:position].encode('utf-8') + b'\n'
+
+
 def snapshot(source, ref):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', ref) or '..' in ref:
         raise ValueError('Invalid fixture revision')
@@ -57,6 +81,7 @@ def snapshot(source, ref):
             raise ValueError('Invalid fixture identity: ' + path)
         if not isinstance(data.get('evaluations'), list):
             raise TypeError('Missing evaluations: ' + path)
+        result['responses/' + path] = response_bytes(result[path])
     result['index.json'] = (json.dumps(cases, indent=2) + '\n').encode()
     result['SOURCE.json'] = (json.dumps({
         'repository': REPOSITORY,
@@ -117,8 +142,26 @@ def main():
     if relative.is_absolute() or '..' in relative.parts:
         raise ValueError('Destination must be inside the repository')
     destination = root / relative
-    if not destination.resolve().is_relative_to(root):
+    resolved = destination.resolve()
+    if not resolved.is_relative_to(root):
         raise ValueError('Destination escapes the repository')
+    if resolved == root or '.git' in relative.parts:
+        raise ValueError('Destination must be a dedicated directory inside the repository')
+    if resolved != destination:
+        raise ValueError('Destination must not contain symbolic links')
+    if destination.exists():
+        if not destination.is_dir():
+            raise ValueError('Destination must be a directory')
+        if any(destination.iterdir()):
+            provenance = destination / 'SOURCE.json'
+            if not provenance.is_file():
+                raise ValueError('Destination must be empty or contain a previous snapshot')
+            metadata = json.loads(provenance.read_text())
+            if metadata.get('repository') != REPOSITORY or not isinstance(metadata.get('files'), dict):
+                raise ValueError('Destination must contain valid snapshot provenance')
+            extra = read_snapshot(destination).keys() - metadata['files'].keys() - {'SOURCE.json'}
+            if extra:
+                raise ValueError('Destination contains files outside the previous snapshot')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', args.ref) or '..' in args.ref:
         raise ValueError('Invalid fixture revision')
     if args.verify:

@@ -1,0 +1,185 @@
+{
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "numeric-boundaries-float-0": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-1": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-2": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-3": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 2147483647,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-4": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 2147483647,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-5": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 2147483647,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-6": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -2147483649,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-7": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -2147483649,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-8": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -2147483649,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-9": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-10": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-11": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 2147483648,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-12": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 9007199254740992,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-13": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 9007199254740992,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-14": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-15": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-16": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-17": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-18": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 9223372036854775807,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-19": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": 9223372036854775807,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-20": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -9223372036854775808,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-boundaries-float-21": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "float",
+            "variationValue": -9223372036854775808,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          }
+        }
+      }
+    }
+  }

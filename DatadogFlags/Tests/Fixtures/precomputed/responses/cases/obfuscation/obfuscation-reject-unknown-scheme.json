@@ -1,0 +1,13 @@
+{
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {},
+        "obfuscated": true,
+        "obfuscation": {
+          "scheme": "unknown",
+          "salt": "000102030405060708090a0b0c0d0e0f"
+        }
+      }
+    }
+  }

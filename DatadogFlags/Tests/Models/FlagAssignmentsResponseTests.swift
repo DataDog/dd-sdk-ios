@@ -12,6 +12,37 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagAssignmentsResponseTests: XCTestCase {
+
+    func testOriginalNumericTokensSurviveGettersAndCache() throws {
+        let cases: [(String, Int?, Double?)] = [
+            ("5.0", 5, 5), ("1.20000000000000001", nil, 1.2),
+            ("1.00000000000000001", nil, 1),
+            ("4503599627370497.5", nil, 4503599627370498),
+            ("9007199254740993.5", nil, 9007199254740994),
+            ("9007199254740993", 9007199254740993, nil),
+            ("1e-400", nil, nil), ("1e400", nil, nil),
+            ("0e999999", 0, 0), ("-0.0", 0, 0)
+        ]
+        for label in ["number", "integer", "float"] {
+            for (literal, integer, double) in cases {
+                let json = #"{"allocationKey":"a","variationKey":"v","variationType":"\#(label)","variationValue":\#(literal),"reason":"STATIC","doLog":false}"#
+                let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+                let restored = try FlagsNumericJSON.decode(FlagAssignment.self, from: JSONEncoder().encode(assignment), cached: true)
+                for value in [assignment, restored] {
+                    XCTAssertEqual(value.variation(as: Int.self), integer, "\(label): \(literal)")
+                    XCTAssertEqual(value.variation(as: Double.self), double, "\(label): \(literal)")
+                }
+            }
+        }
+    }
+
+    func testNumericMetadataCannotOverrideTheWireValue() throws {
+        let json = #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":5,"_numericLiteral":"1e400","reason":"STATIC","doLog":false}"#
+        let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+        XCTAssertEqual(assignment.variation(as: Int.self), 5)
+        let stringValue = json.replacingOccurrences(of: #""variationValue":5"#, with: #""variationValue":"5""#)
+        XCTAssertThrowsError(try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(stringValue.utf8)))
+    }
     func testCachedAssignmentEqualityAndSerialization() throws {
         let cached = FlagAssignment(
             allocationKey: "allocation",

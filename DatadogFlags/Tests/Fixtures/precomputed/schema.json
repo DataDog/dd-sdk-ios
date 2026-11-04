@@ -385,6 +385,22 @@
         "properties": {
           "evaluations": {
             "maxItems": 0
+          },
+          "expectations": {
+            "required": [
+              "noUnmatchedEvents"
+            ],
+            "properties": {
+              "noUnmatchedEvents": {
+                "const": true
+              },
+              "exposures": {
+                "maxItems": 0
+              },
+              "evaluationEvents": {
+                "maxItems": 0
+              }
+            }
           }
         }
       },

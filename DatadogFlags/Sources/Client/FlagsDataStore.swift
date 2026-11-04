@@ -9,7 +9,6 @@ import DatadogInternal
 
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
-    private static let decoder = JSONDecoder()
     // Version 2 readers support obfuscated keys but do not understand experimentation opt-out.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
     private static let filteredAssignmentsVersion: DataStoreKeyVersion = 3
@@ -49,7 +48,7 @@ internal struct FlagsDataStore {
             }
 
             do {
-                let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
+                let flagsData = try FlagsNumericJSON.decode(FlagsData.self, from: data, cached: true)
                 guard result.data(expectedVersion: Self.version(for: flagsData)) != nil else {
                     throw FlagsError.invalidResponse
                 }
