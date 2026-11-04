@@ -881,6 +881,64 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertFalse(keep, "The scope should be closed")
     }
 
+    #if !os(watchOS)
+    func testWhenSampledSessionIsStopped_itStopsSavingItsViewsForWatchdogTerminations() throws {
+        let featureScope = FeatureScopeMock()
+        let watchdogTermination = WatchdogTerminationMonitor(
+            appStateManager: .mockRandom(),
+            checker: .mockRandom(),
+            storage: NOPDatadogCore().storage,
+            feature: featureScope,
+            reporter: WatchdogTerminationReporter.mockRandom()
+        )
+        watchdogTermination.currentState = .started
+
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            dependencies: .mockWith(samplingRate: 100, watchdogTermination: watchdogTermination)
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime, identity: ViewIdentifier("view")), context: context, writer: writer)
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: sessionStartTime + 1), context: context, writer: writer)
+
+        // Then
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
+    }
+
+    func testWhenNotSampledSessionIsStopped_itSavesTheStopForWatchdogTerminations() throws {
+        let featureScope = FeatureScopeMock()
+        let watchdogTermination = WatchdogTerminationMonitor(
+            appStateManager: .mockRandom(),
+            checker: .mockRandom(),
+            storage: NOPDatadogCore().storage,
+            feature: featureScope,
+            reporter: WatchdogTerminationReporter.mockRandom()
+        )
+        watchdogTermination.currentState = .started
+
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(samplingRate: 0, watchdogTermination: watchdogTermination)
+        )
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+
+        // Then
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
+    }
+    #endif
+
     func testWhenScopeEnded_itDoesNotStartNewViews() throws {
         // Given
         let scope: RUMSessionScope = .mockWith(

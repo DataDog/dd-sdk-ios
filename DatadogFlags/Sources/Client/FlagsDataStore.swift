@@ -10,12 +10,13 @@ import DatadogInternal
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
     private static let decoder = JSONDecoder()
-    // Older native SDKs and React Native bridges accept only version 1.
+    // Version 2 readers support obfuscated keys but do not understand flag selection or experimentation opt-out.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
-    // SDKs without flag selection read only versions 1 and 2, so they skip a cache that holds only the selected flags.
-    private static let flagSelectionVersion: DataStoreKeyVersion = 3
+    // Version 3 readers understand flag selection and experimentation opt-out. Earlier readers skip a cache
+    // filtered by either, because it does not hold the full flag configuration for its subject.
+    private static let filteredAssignmentsVersion: DataStoreKeyVersion = 3
     private static let knownVersions: Set<DataStoreKeyVersion> = [
-        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, flagSelectionVersion
+        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion
     ]
 
     let featureScope: FeatureScope
@@ -31,7 +32,7 @@ internal struct FlagsDataStore {
     func encodeFlagsData(_ flagsData: FlagsData) -> (data: Data, version: DataStoreKeyVersion)? {
         do {
             let data = try Self.encoder.encode(flagsData)
-            return (data, Self.version(of: flagsData))
+            return (data, Self.version(for: flagsData))
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
@@ -52,7 +53,7 @@ internal struct FlagsDataStore {
 
             do {
                 let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
-                guard Self.version(of: flagsData) == version else {
+                guard Self.version(for: flagsData) == version else {
                     throw FlagsError.invalidResponse
                 }
                 callback(flagsData)
@@ -64,15 +65,16 @@ internal struct FlagsDataStore {
         }
     }
 
-    func removeFlagsData(forClientNamed clientName: String) {
-        featureScope.dataStore.removeValue(forKey: clientName)
-    }
-
-    private static func version(of flagsData: FlagsData) -> DataStoreKeyVersion {
-        if flagsData.flagSelection != nil {
-            return flagSelectionVersion
+    private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
+        // Protect both key encodings from readers that would ignore the persisted selection or policy.
+        if flagsData.flagSelection != nil || flagsData.experimentationOptOutPolicy != nil {
+            return filteredAssignmentsVersion
         }
         return flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : encodedAssignmentsVersion
+    }
+
+    func removeFlagsData(forClientNamed clientName: String) {
+        featureScope.dataStore.removeValue(forKey: clientName)
     }
 }
 

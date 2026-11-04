@@ -80,6 +80,8 @@ struct CompositionLayerBuilderTests {
         }
 
         #expect(maskImageModifier.resourceId == resource.calculateIdentifier())
+        #expect(resource.mimeType == "image/png")
+        #expect(resource.calculateIdentifier().hasSuffix(".png"))
     }
 }
 #endif

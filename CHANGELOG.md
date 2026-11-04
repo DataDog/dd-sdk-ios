@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Flags: Add `Flags.Configuration.flagSelection` to load only the flags that match the given tags or key patterns. See [#3344][]
+- [FEATURE] Flags: Add per-subject experimentation opt-out through `FlagsClient.Configuration.experimentationOptOutMode`. The `dd_experimentation_opt_out_at` context attribute supports `.immediate` and `.futureExperimentsOnly` modes. Adds `FlagsError.invalidContext` and `FlagEvaluationError.invalidContext`; exhaustive switches need the new case. Timestamps use proleptic Gregorian dates with UTC year bounds. Filtered responses are rejected when no subject opt-out applies. See [#3338][]
 
 # 3.21.0 / 29-10-2026
 
@@ -1332,6 +1333,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3351]: https://github.com/DataDog/dd-sdk-ios/pull/3351
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 [#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
+[#3338]: https://github.com/DataDog/dd-sdk-ios/pull/3338
 [#3317]: https://github.com/DataDog/dd-sdk-ios/pull/3317
 [#3269]: https://github.com/DataDog/dd-sdk-ios/pull/3269
 [#3342]: https://github.com/DataDog/dd-sdk-ios/pull/3342

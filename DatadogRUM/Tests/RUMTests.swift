@@ -119,7 +119,9 @@ class RUMTests: XCTestCase {
 
     func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
         // Given
+        #if !os(macOS)
         config.trackSlowFrames = true
+        #endif
 
         // When
         RUM.enable(with: config, in: core)
@@ -236,7 +238,9 @@ class RUMTests: XCTestCase {
         #endif
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
+        #if !os(macOS)
         config.trackMemoryWarnings = false
+        #endif
 
         // When
         RUM.enable(with: config, in: core)
@@ -501,7 +505,39 @@ class RUMTests: XCTestCase {
     func testWhenEnabled_itAppliesRemoteConfigurationOnTopOfInCodeConfiguration() throws {
         // Given
         config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackFrustrations = false
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackFrustrations: true)
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackFrustrations)
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackFrustrations = false
+        core.remoteConfiguration = nil
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertFalse(monitor.applicationScope.dependencies.trackFrustrations)
+    }
+
+    func testWhenRemoteConfigurationEnablesBackgroundEvents_itTracksThemExceptOnMacOS() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        #if !os(macOS)
         config.trackBackgroundEvents = false
+        #endif
         core.remoteConfiguration = RemoteConfiguration(
             rum: .init(applicationId: .mockRandom(), trackBackgroundEvents: true)
         )
@@ -511,21 +547,14 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        #if os(macOS)
+        XCTAssertFalse(
+            monitor.applicationScope.dependencies.trackBackgroundEvents,
+            "Remote configuration must not turn background events on for macOS"
+        )
+        #else
         XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
-    }
-
-    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() throws {
-        // Given
-        config = RUM.Configuration(applicationID: .mockRandom())
-        config.trackBackgroundEvents = true
-        core.remoteConfiguration = nil
-
-        // When
-        RUM.enable(with: config, in: core)
-
-        // Then
-        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+        #endif
     }
 
     func testWhenRemoteConfigurationEnablesWatchdogTerminations_itRegistersTheMonitorExceptOnMacOS() throws {

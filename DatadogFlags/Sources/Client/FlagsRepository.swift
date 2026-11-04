@@ -36,6 +36,8 @@ internal struct FlagEvaluationSnapshot {
     let context: FlagsEvaluationContext?
     let assignment: FlagAssignment?
     let telemetryOptedOut: Bool
+    var requestedContext: FlagsEvaluationContext? = nil
+    var error: FlagEvaluationError? = nil
 }
 
 /// Retain decisions only while their subjects have installed or pending assignments.
@@ -154,6 +156,7 @@ internal final class FlagsRepository {
     )
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
+    private let experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode
 
     @ReadWriteLock
     private var repositoryState = RepositoryState()
@@ -200,6 +203,9 @@ internal final class FlagsRepository {
     /// Synchronizes assignments, request supersession, and disk-read lifecycle. Client-state transitions
     /// acquire this lock before the state-manager lock; listeners and completions run after unlocking.
     private struct RepositoryState {
+        var experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
+        var requestedOptOut: ExperimentationOptOut?
+        var hasInvalidContext = false
         var telemetry = SubjectTelemetryPolicy()
         var activeFlagsData: CachedFlagsData?
         var flagsData: FlagsData? {
@@ -216,6 +222,13 @@ internal final class FlagsRepository {
 
         var readableFlagsData: FlagsData? {
             guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
+                return nil
+            }
+            if experimentationOptOutMode != .disabled {
+                guard !hasInvalidContext,
+                      latestRequestedContext == data.context,
+                      requestedOptOut == data.experimentationOptOutPolicy else { return nil }
+            } else if data.experimentationOptOutPolicy != nil {
                 return nil
             }
             return data
@@ -265,11 +278,13 @@ internal final class FlagsRepository {
         }
 
         func flagsData(matching context: FlagsEvaluationContext) -> FlagsData? {
-            if flagsData?.context == context {
-                return flagsData
+            if let data = flagsData, data.context == context,
+               data.experimentationOptOutPolicy == requestedOptOut {
+                return data
             }
-            if cachedFlagsData?.context == context {
-                return cachedFlagsData
+            if let data = cachedFlagsData, data.context == context,
+               data.experimentationOptOutPolicy == requestedOptOut {
+                return data
             }
             return nil
         }
@@ -283,7 +298,8 @@ internal final class FlagsRepository {
         flagSelection: CanonicalFlagSelection?,
         readTimeout: TimeInterval = 0.1,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
-        scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
+        scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil,
+        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
@@ -292,6 +308,8 @@ internal final class FlagsRepository {
         self.flagSelection = flagSelection
         self.readTimeout = readTimeout
         self.initializationTimeout = initializationTimeout
+        self.experimentationOptOutMode = experimentationOptOutMode
+        self.repositoryState = RepositoryState(experimentationOptOutMode: experimentationOptOutMode)
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         featureScope.context { [weak self] context in
             guard let self else {
@@ -528,15 +546,19 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         let snapshot = repositoryState
 
         func result(from state: RepositoryState, assignment: FlagAssignment?) -> FlagEvaluationSnapshot {
-            let readable = !hasError && (state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation)
+            let readable = !hasError && state.readableFlagsData != nil
             let context = readable ? state.flagsData?.context : nil
             // Until a context is requested, a pending cache read may still contain an opt-out.
-            let isPolicyLoading = state.shouldWaitForFlagsDataRead && !state.hasStartedEvaluationContextRequest
+            let isPolicyLoading = state.shouldWaitForFlagsDataRead && state.latestRequestedContext == nil
+            let telemetryContext = state.experimentationOptOutMode == .disabled
+                ? state.flagsData?.context : (state.latestRequestedContext ?? state.flagsData?.context)
             return FlagEvaluationSnapshot(
                 context: context,
                 assignment: readable ? assignment : nil,
                 // Unreadable assignments must not discard the stored subject's reporting policy.
-                telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: state.flagsData?.context)
+                telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: telemetryContext),
+                requestedContext: state.experimentationOptOutMode == .disabled ? nil : state.latestRequestedContext,
+                error: state.hasInvalidContext ? .invalidContext : nil
             )
         }
 
@@ -575,6 +597,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        let parsedPolicy = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
+        let policy = try? parsedPolicy.get()
+        let invalidContext = if case .failure = parsedPolicy { true } else { false }
         var contextUpdateID: UInt64 = 0
         var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false
@@ -588,8 +613,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             contextUpdateID = state.contextUpdateID
             versionAtStart = state.flagsDataVersion
             isFirstContextUpdate = !state.hasStartedEvaluationContextRequest
+            // The first call consumes the initialization timeout even when it sends no request.
             state.hasStartedEvaluationContextRequest = true
             state.latestRequestedContext = context
+            state.requestedOptOut = policy
+            state.hasInvalidContext = invalidContext
+            if invalidContext {
+                // Retain the last successful snapshot for a later valid context or offline restart.
+                state.telemetry.finish(context.targetingKey, installed: state.flagsData?.context)
+                notifyReconciling = stateManager.updateStateWithoutNotifying(.error)
+                return
+            }
             // Apply the same context check whether the initial disk read wins or loses the race.
             if state.flagsDataVersion == 0 {
                 state.flagsData = state.flagsData(matching: context)
@@ -599,6 +633,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         }
         Self.publishFirstFlags(publish)
         notifyReconciling?()
+        guard !invalidContext else {
+            // Keep validation completions off the caller's stack, consistent with fetch completions.
+            DispatchQueue.global(qos: .utility).async { completion(.failure(.invalidContext)) }
+            return
+        }
         let initializationCompletion = isFirstContextUpdate
             ? makeInitializationCompletion(completion, context: context, contextUpdateID: contextUpdateID)
             : nil
@@ -630,7 +669,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             }
         }
 
-        flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+        flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: policy) { [weak self] result in
             guard let self else {
                 complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
                 return
@@ -643,7 +682,10 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 }
             }
 
-            switch result {
+            let validated = result.flatMap { response -> Result<FlagAssignmentsResponse, FlagsError> in
+                ExperimentationOptOut.accepts(response, for: policy) ? .success(response) : .failure(.invalidResponse)
+            }
+            switch validated {
             case .success(let response):
                 // Claim success before processing assignments or publishing ready can race the timeout.
                 let operationCompletion = takeCompletion()
@@ -652,9 +694,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     context: context,
                     date: self.dateProvider.now,
                     obfuscation: response.obfuscation,
-                    flagSelection: self.flagSelection
+                    flagSelection: self.flagSelection,
+                    experimentationOptOutPolicy: policy
                 )
                 var versionAfterSuccess: UInt64?
+                var isServingRequestedContext = false
                 var callbacks: [PendingCacheReadCallback] = []
                 var notifyListeners: (() -> Void)?
                 var publish: (() -> Void)?
@@ -665,6 +709,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     let isFreshForLatestContext = state.latestRequestedContext == context
                         && state.flagsDataVersion == versionAtStart
                     guard isLatestRequest || isFreshForLatestContext else {
+                        // A newer success for the same context and policy still satisfies this request.
+                        isServingRequestedContext = state.readableFlagsData?.context == context
                         return
                     }
                     state.flagsData = flagsData
@@ -676,7 +722,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
                 guard let versionAfterSuccess else {
-                    complete(.success(()), notifyListeners: nil, completion: operationCompletion)
+                    let result: Result<Void, FlagsError> = self.experimentationOptOutMode == .disabled || isServingRequestedContext
+                        ? .success(()) : .failure(.invalidResponse)
+                    complete(result, notifyListeners: nil, completion: operationCompletion)
                     return
                 }
                 let pendingCompletions = callbacks.map { $0.prepare() }
@@ -718,6 +766,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.flagsDataVersion += 1
             state.contextUpdateID += 1
             state.latestRequestedContext = nil
+            state.requestedOptOut = nil
+            state.hasInvalidContext = false
             callbacks = state.finishWaitingForInitialFlagsData()
             notifyListeners = stateManager.updateStateWithoutNotifying(.notReady)
             // Order removal with reset so newer successes enqueue their writes after it.

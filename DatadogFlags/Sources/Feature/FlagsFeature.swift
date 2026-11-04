@@ -31,10 +31,11 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     init(
         configuration: Flags.Configuration,
         featureScope: FeatureScope,
-        core: DatadogCoreProtocol
+        core: DatadogCoreProtocol,
+        flagAssignmentsFetcher: (any FlagAssignmentsFetching)? = nil
     ) {
         flagSelection = CanonicalFlagSelection.resolve(configuration.flagSelection, telemetry: featureScope.telemetry)
-        flagAssignmentsFetcher = FlagAssignmentsFetcher(
+        self.flagAssignmentsFetcher = flagAssignmentsFetcher ?? FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
             flagSelection: flagSelection,

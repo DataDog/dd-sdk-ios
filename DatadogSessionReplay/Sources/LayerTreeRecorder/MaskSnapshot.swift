@@ -17,6 +17,18 @@ internal final class MaskSnapshot: Sendable {
     }
 }
 
+extension MaskSnapshot {
+    func makeResource() -> ImageSnapshotResource? {
+        let resource = ImageSnapshotResource(image: image, format: .png)
+
+        guard !resource.calculateIdentifier().isEmpty else {
+            return nil
+        }
+
+        return resource
+    }
+}
+
 /// A mask snapshot and the layer state used to render it.
 internal struct MaskSnapshotData: Sendable {
     let snapshot: MaskSnapshot

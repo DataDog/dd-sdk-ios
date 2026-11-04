@@ -13,7 +13,8 @@ extension URLRequest {
         evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
         customHeaders: [String: String]?,
-        flagSelection: CanonicalFlagSelection?
+        flagSelection: CanonicalFlagSelection?,
+        experimentationOptOut: ExperimentationOptOut? = nil
     ) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -52,7 +53,8 @@ extension URLRequest {
                 targetingKey: evaluationContext.targetingKey,
                 targetingAttributes: evaluationContext.attributes
             ),
-            flagSelection: flagSelection
+            flagSelection: flagSelection,
+            experimentationOptOut: experimentationOptOut
         )
 
         let encoder = JSONEncoder.dd.default()
@@ -97,6 +99,7 @@ internal struct FlagAssignmentsRequestBody {
     let source: Source
     let subject: Subject
     let flagSelection: CanonicalFlagSelection?
+    var experimentationOptOut: ExperimentationOptOut?
 }
 
 extension FlagAssignmentsRequestBody: Encodable {
@@ -109,6 +112,8 @@ extension FlagAssignmentsRequestBody: Encodable {
         case source
         case subject
         case flagSelection = "flag_selection"
+        case evaluationOptions = "evaluation_options"
+        case experimentationOptOutMode = "experimentation_opt_out_mode"
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -121,6 +126,10 @@ extension FlagAssignmentsRequestBody: Encodable {
         try attributesContainer.encode(environment, forKey: .environment)
         try attributesContainer.encode(source, forKey: .source)
         try attributesContainer.encode(subject, forKey: .subject)
+        if let experimentationOptOut {
+            var options = attributesContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .evaluationOptions)
+            try options.encode(experimentationOptOut.wireMode, forKey: .experimentationOptOutMode)
+        }
         try attributesContainer.encodeIfPresent(flagSelection, forKey: .flagSelection)
     }
 }

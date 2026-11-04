@@ -197,6 +197,7 @@ extension RUM {
         /// Default: `true`.
         public var trackFrustrations: Bool
 
+        #if !os(macOS)
         /// Determines whether RUM events should be tracked when no view is active (including when the app is in the background).
         ///
         /// If enabled, RUM will attach events to an automatically created "background" view.
@@ -205,6 +206,7 @@ extension RUM {
         ///
         /// Default: `false`.
         public var trackBackgroundEvents: Bool
+        #endif
 
         #if !os(macOS)
         /// Determines whether the SDK should track application termination by the watchdog.
@@ -342,7 +344,7 @@ extension RUM {
         /// Default: `true`.
         public var trackAnonymousUser: Bool
 
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         /// Enables the collection of memory warnings.
         ///
         /// When enabled, all the memory warnings are reported as RUM Errors.
@@ -351,12 +353,14 @@ extension RUM {
         public var trackMemoryWarnings: Bool
         #endif
 
+        #if !os(macOS)
         /// Enables the collection of slow frames (view hitches).
         ///
         /// When enabled, captured view hitches are attached to the corresponding RUM view.
         ///
         /// Default: `true`.
         public var trackSlowFrames: Bool
+        #endif
 
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
@@ -642,20 +646,17 @@ extension RUM.Configuration.Timeseries {
 }
 
 extension RUM.Configuration {
+    #if os(watchOS)
     /// Creates RUM configuration.
     /// - Parameters:
     ///   - applicationID: The RUM application identifier.
     ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
-    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `UIKit` as RUM views. Default: `nil`. **Unavailable on watchOS.**
-    ///   - uiKitActionsPredicate: The UIKit predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`. **Unavailable on watchOS.**
-    ///   - swiftUIViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `SwiftUI` as RUM views. Default: `nil`. **Unavailable on watchOS.**
-    ///   - swiftUIActionsPredicate: The SwiftUI predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`. **Unavailable on watchOS.**
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
-    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`. **Unavailable on macOS.**
+    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
     ///   - networkSettledResourcePredicate: Predicate used to classify resources for the Time-to-Network-Settled (TNS) metric calculation.
     ///     Default: `TimeBasedTNSResourcePredicate()`.
@@ -669,17 +670,14 @@ extension RUM.Configuration {
     ///   - onSessionStart: RUM session start callback receiving a session ID matching emitted RUM event `session.id`. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
-    ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
     ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - featureFlags: Experimental feature flags.
-    /// 
-    /// - Note: On watchOS, automatic UIKit and SwiftUI view/action tracking is unavailable. The predicate parameters will be ignored.
-    ///   Use manual tracking APIs instead:
+    ///
+    /// - Note: On watchOS, automatic view and action tracking is unavailable. Use manual tracking APIs instead:
     ///   - `RUMMonitor.shared().startView(key:name:attributes:)` for view tracking
     ///   - `RUMMonitor.shared().addAction(type:name:attributes:)` for action tracking
-    #if os(watchOS)
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
@@ -731,6 +729,33 @@ extension RUM.Configuration {
         self.featureFlags = featureFlags
     }
     #elseif os(macOS)
+    /// Creates RUM configuration.
+    /// - Parameters:
+    ///   - applicationID: The RUM application identifier.
+    ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
+    ///   - appKitViewsPredicate: The predicate for automatically tracking `NSViewControllers` in `AppKit` as RUM views. Default: `nil`.
+    ///   - macOSActionsPredicate: The predicate for automatically tracking user interactions in `AppKit` as RUM actions. Default: `nil`.
+    ///   - swiftUIViewsPredicate: The predicate for automatically tracking `SwiftUI` views as RUM views. Default: `nil`.
+    ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
+    ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
+    ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
+    ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
+    ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
+    ///   - networkSettledResourcePredicate: Predicate used to classify resources for the Time-to-Network-Settled (TNS) metric calculation.
+    ///     Default: `TimeBasedTNSResourcePredicate()`.
+    ///   - nextViewActionPredicate: The predicate used to classify which action in the previous view is considered the "last interaction"
+    ///     for the Interaction-to-Next-View (INV) metric. Default: `TimeBasedINVActionPredicate()`.
+    ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
+    ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
+    ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
+    ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
+    ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
+    ///   - onSessionStart: RUM session start callback receiving a session ID matching emitted RUM event `session.id`. Default: `nil`.
+    ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
+    ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
+    ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
+    ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
+    ///   - featureFlags: Experimental feature flags.
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
@@ -739,7 +764,6 @@ extension RUM.Configuration {
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
-        trackBackgroundEvents: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
@@ -753,8 +777,6 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
-        trackMemoryWarnings: Bool = true,
-        trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         featureFlags: FeatureFlags = .defaults
@@ -766,7 +788,6 @@ extension RUM.Configuration {
         self.swiftUIViewsPredicate = swiftUIViewsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
-        self.trackBackgroundEvents = trackBackgroundEvents
         self.longTaskThreshold = longTaskThreshold
         self.appHangThreshold = appHangThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency
@@ -780,14 +801,44 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
-        self.trackMemoryWarnings = trackMemoryWarnings
-        self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
         self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #else // iOS, everything else
+    /// Creates RUM configuration.
+    /// - Parameters:
+    ///   - applicationID: The RUM application identifier.
+    ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
+    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `UIKit` as RUM views. Default: `nil`.
+    ///   - uiKitActionsPredicate: The UIKit predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+    ///   - swiftUIViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `SwiftUI` as RUM views. Default: `nil`.
+    ///   - swiftUIActionsPredicate: The SwiftUI predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+    ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
+    ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
+    ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
+    ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
+    ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
+    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
+    ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
+    ///   - networkSettledResourcePredicate: Predicate used to classify resources for the Time-to-Network-Settled (TNS) metric calculation.
+    ///     Default: `TimeBasedTNSResourcePredicate()`.
+    ///   - nextViewActionPredicate: The predicate used to classify which action in the previous view is considered the "last interaction"
+    ///     for the Interaction-to-Next-View (INV) metric. Default: `TimeBasedINVActionPredicate()`.
+    ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
+    ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
+    ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
+    ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
+    ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
+    ///   - onSessionStart: RUM session start callback receiving a session ID matching emitted RUM event `session.id`. Default: `nil`.
+    ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
+    ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
+    ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
+    ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
+    ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
+    ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
+    ///   - featureFlags: Experimental feature flags.
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,

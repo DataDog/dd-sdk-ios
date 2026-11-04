@@ -292,6 +292,7 @@ public final class objc_Configuration: NSObject {
         set { sdkConfiguration._internal_mutation { $0.additionalConfiguration = newValue } }
     }
 
+    #if !os(macOS)
     /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
     /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
     ///
@@ -302,6 +303,7 @@ public final class objc_Configuration: NSObject {
         get { sdkConfiguration.backgroundTasksEnabled }
         set { sdkConfiguration.backgroundTasksEnabled = newValue }
     }
+    #endif
 
     /// Sets the remote configuration used to fetch SDK settings from the Datadog CDN at startup.
     ///
