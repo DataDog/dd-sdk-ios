@@ -239,9 +239,25 @@ public:
         return started_at_launch ? 1 : 0;
     }
 
+    /**
+     * Reflects a profiler thread that exited after an unexpected exception:
+     * the sampler is no longer running even though `status` still says so.
+     */
+    void sync_status() {
+        if (status == DD_PROFILER_STATUS_RUNNING && profiler && profiler->has_failed()) {
+            status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
+        }
+    }
+
     int start() {
         if (!create_profile_and_profiler()) return 0;
+        sync_status();
         if (status == DD_PROFILER_STATUS_RUNNING) return 1;
+
+        if (profiler->has_failed()) {
+            // Join the failed threads and reset the worker before restarting.
+            profiler->stop_sampling();
+        }
 
         if (!profiler->start_sampling()) {
             status = DD_PROFILER_STATUS_NOT_STARTED;
@@ -448,7 +464,9 @@ private:
             // tables are appended before lookups reference them.
             profiler->profiler->request_stop();
             profiler->status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
-            return;
+            // Rethrow so the aggregation worker counts the discarded batch in
+            // diagnostics (and therefore telemetry) before releasing it.
+            throw;
         }
 
         // Check for timeout after adding samples
@@ -512,7 +530,9 @@ void dd_profiler_stop(void) {
 
 dd_profiler_status_t dd_profiler_get_status(void) {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
-    return g_dd_profiler ? g_dd_profiler->status : DD_PROFILER_STATUS_NOT_CREATED;
+    if (!g_dd_profiler) return DD_PROFILER_STATUS_NOT_CREATED;
+    g_dd_profiler->sync_status();
+    return g_dd_profiler->status;
 }
 
 dd_profiler_diagnostics_t dd_profiler_diagnostics(void) {
@@ -525,7 +545,9 @@ dd_profiler_diagnostics_t dd_profiler_diagnostics(void) {
 
 bool dd_profiler_is_running() {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
-    return g_dd_profiler ? g_dd_profiler->status == DD_PROFILER_STATUS_RUNNING : false;
+    if (!g_dd_profiler) return false;
+    g_dd_profiler->sync_status();
+    return g_dd_profiler->status == DD_PROFILER_STATUS_RUNNING;
 }
 
 bool dd_profiler_was_started_at_launch() {
@@ -570,6 +592,7 @@ void dd_profiler_start_testing(
 ) {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
     g_fail_next_aggregation.store(false, std::memory_order_relaxed);
+    dd::profiler::reset_sampling_fault_injection_for_testing();
     delete g_dd_profiler;
     g_dd_profiler = new (std::nothrow) dd::profiler::dd_profiler(
         sample_rate,

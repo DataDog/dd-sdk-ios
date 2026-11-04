@@ -116,6 +116,12 @@ public:
     void finish_after_failure(bool worker_failed);
 
     /**
+     * @brief Returns true when the worker thread exited after an unexpected
+     * exception. Producers should stop sampling: nothing drains the queue.
+     */
+    bool has_failed() const;
+
+    /**
      * @brief Returns true when called from the worker thread itself.
      */
     bool is_worker_thread();
@@ -178,6 +184,8 @@ private:
     bool producer_finished = true;
     /// Set once the worker has drained all queued work and exited.
     bool worker_finished = true;
+    /// Set when the worker thread exited after an unexpected exception.
+    std::atomic<bool> failed{false};
 
     static constexpr size_t sampled_thread_name_capacity = 64;
 

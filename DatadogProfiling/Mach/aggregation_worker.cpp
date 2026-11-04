@@ -49,6 +49,9 @@ void* aggregation_worker::worker_thread_entry(void* arg) {
 }
 
 void aggregation_worker::finish_after_failure(bool worker_failed) {
+    if (worker_failed) {
+        failed.store(true, std::memory_order_relaxed);
+    }
     {
         // `work_mutex` is a member of a live worker: `stop()` joins the
         // profiler threads before the worker is destroyed.
@@ -60,6 +63,10 @@ void aggregation_worker::finish_after_failure(bool worker_failed) {
     }
     work_cv.notify_all();
     flush_cv.notify_all();
+}
+
+bool aggregation_worker::has_failed() const {
+    return failed.load(std::memory_order_relaxed);
 }
 
 bool aggregation_worker::start() {
@@ -76,6 +83,7 @@ bool aggregation_worker::start() {
     diagnostics = dd_profiler_diagnostics_t{};
     producer_finished = false;
     worker_finished = false;
+    failed.store(false, std::memory_order_relaxed);
     worker_mach_thread.store(MACH_PORT_NULL, std::memory_order_relaxed);
 
     pthread_attr_t worker_attr;
@@ -178,12 +186,19 @@ void aggregation_worker::enqueue_active_buffer(std::vector<stack_trace_t>& activ
             dropped_batch = std::move(batch);
             did_drop = true;
         } else {
-            pending_bytes += batch_bytes;
-            diagnostics.max_pending_bytes = std::max(diagnostics.max_pending_bytes, pending_bytes);
-            pending_work.emplace_back(batch_item{
-                std::move(batch),
-                batch_bytes,
-            });
+            batch_item item{std::move(batch), batch_bytes};
+            try {
+                // `std::deque::emplace_back` leaves `item` untouched if it
+                // throws, so a failed insertion can still release the traces.
+                pending_work.emplace_back(std::move(item));
+                pending_bytes += batch_bytes;
+                diagnostics.max_pending_bytes = std::max(diagnostics.max_pending_bytes, pending_bytes);
+            } catch (const std::bad_alloc&) {
+                diagnostics.dropped_batch_count += 1;
+                diagnostics.dropped_sample_count += item.traces.size();
+                dropped_batch = std::move(item.traces);
+                did_drop = true;
+            }
         }
     }
 

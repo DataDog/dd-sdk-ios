@@ -590,7 +590,14 @@ static void stack_trace_sample_thread(
     walk_frames(trace, fp, pc, stack_base, stack_buf, bytes_read, max_depth, true);
 }
 
+// Test-only fault injection; see `dd_profiler_fail_next_sampling_for_testing()`.
+static std::atomic<bool> g_fail_next_sampling{false};
+
 namespace dd::profiler {
+
+void reset_sampling_fault_injection_for_testing() {
+    g_fail_next_sampling.store(false, std::memory_order_relaxed);
+}
 
 /**
  * Constructs a profiler instance.
@@ -641,15 +648,28 @@ void* mach_sampling_profiler::sampling_thread_entry(void* arg) {
         profiler->main();
     } catch (...) {
         // Last-resort barrier: an exception escaping a thread entry calls
-        // `std::terminate`. Stop sampling and hand off what was captured.
+        // `std::terminate`. Stop sampling, record the failure so the owner
+        // stops reporting the profiler as running, and hand off what was
+        // captured.
         profiler->request_stop();
+        profiler->sampling_failed.store(true, std::memory_order_relaxed);
         try {
             profiler->worker->finish_producer(profiler->sample_buffer);
         } catch (...) {
             profiler->worker->finish_after_failure(false);
+            // The worker never took these traces; release their payloads.
+            for (auto& trace : profiler->sample_buffer) {
+                stack_trace_destroy(&trace);
+            }
+            profiler->sample_buffer.clear();
         }
     }
     return nullptr;
+}
+
+bool mach_sampling_profiler::has_failed() const {
+    return sampling_failed.load(std::memory_order_relaxed)
+        || (worker && worker->has_failed());
 }
 
 /**
@@ -676,6 +696,7 @@ bool mach_sampling_profiler::start_sampling() {
         sample_buffer.reserve(config.max_buffer_size);
     }
     sampling_thread_mach.store(MACH_PORT_NULL, std::memory_order_relaxed);
+    sampling_failed.store(false, std::memory_order_relaxed);
 
     if (!worker || !worker->start()) {
         return false;
@@ -865,11 +886,23 @@ void mach_sampling_profiler::prune_thread_cpu_time_state() {
     }
 }
 
+bool mach_sampling_profiler::should_keep_sampling() const {
+    // Stop when the aggregation worker failed: nothing would drain the queue.
+    if (!should_sample.load(std::memory_order_relaxed) || worker->has_failed()) {
+        return false;
+    }
+    if (g_fail_next_sampling.load(std::memory_order_relaxed)
+        && g_fail_next_sampling.exchange(false, std::memory_order_relaxed)) {
+        throw std::bad_alloc();
+    }
+    return true;
+}
+
 /**
  * Main sampling loop that collects stack traces from threads.
  */
 void mach_sampling_profiler::main() {
-    while (should_sample.load(std::memory_order_relaxed)) {
+    while (should_keep_sampling()) {
         // Check for flush request at a safe point (no threads suspended).
         worker->service_pending_flush_request(sample_buffer);
 
@@ -936,6 +969,10 @@ void mach_sampling_profiler::main() {
 } // namespace dd::profiler
 
 extern "C" {
+
+void dd_profiler_fail_next_sampling_for_testing(void) {
+    g_fail_next_sampling.store(true, std::memory_order_relaxed);
+}
 
 bool dd_profiler_get_thread_id_for_testing(mach_port_t thread, uint64_t* thread_id) {
     return thread_identifier(thread, thread_id);

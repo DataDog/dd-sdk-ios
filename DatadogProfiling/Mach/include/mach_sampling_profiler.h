@@ -45,6 +45,9 @@ namespace dd::profiler {
 
 class aggregation_worker;
 
+/// Clears the test-only sampling fault injection. Called by `dd_profiler_start_testing()`.
+void reset_sampling_fault_injection_for_testing();
+
 /**
  * @brief Mach-based sampling profiler
  * 
@@ -113,6 +116,13 @@ public:
     void consume_diagnostics(dd_profiler_diagnostics_t& out);
 
     /**
+     * @brief Returns true when the sampling or aggregation thread exited after
+     * an unexpected exception (typically `std::bad_alloc`). Sampling has stopped;
+     * the owner should report the profiler as no longer running.
+     */
+    bool has_failed() const;
+
+    /**
      * @brief Atomic flag indicating whether the sampling loop should keep running.
      */
     std::atomic<bool> should_sample;
@@ -161,6 +171,12 @@ protected:
     void main();
 
     /**
+     * @brief Returns true while the sampling loop should continue: sampling is
+     * requested and the aggregation worker is still draining batches.
+     */
+    bool should_keep_sampling() const;
+
+    /**
      * @brief Samples a single thread's stack (common implementation)
      * 
      * @param thread The thread to sample
@@ -193,6 +209,11 @@ private:
      * @brief Static entry point for the sampling thread
      */
     static void* sampling_thread_entry(void* arg);
+
+    /**
+     * @brief Set when the sampling thread exited after an unexpected exception.
+     */
+    std::atomic<bool> sampling_failed{false};
 
     /**
      * @brief Mutex to protect start/stop operations from concurrent access

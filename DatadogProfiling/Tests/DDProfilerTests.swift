@@ -117,6 +117,35 @@ final class DDProfilerTests: XCTestCase {
             DD_PROFILER_STATUS_ALLOCATION_FAILED,
             "An allocation failure during aggregation should stop the profiler, not terminate the process"
         )
+
+        let diagnostics = dd_profiler_diagnostics()
+        XCTAssertGreaterThan(diagnostics.dropped_batch_count, 0, "The batch discarded by the failure should be reported")
+        XCTAssertGreaterThan(diagnostics.dropped_sample_count, 0, "Samples discarded by the failure should be reported")
+    }
+
+    func testDDProfiler_whenSamplingThreadFails_reportsAllocationFailedAndCanRestart() {
+        // Given
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When
+        dd_profiler_fail_next_sampling_for_testing()
+
+        let deadline = Date().addingTimeInterval(2)
+        while dd_profiler_get_status() == DD_PROFILER_STATUS_RUNNING && Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.01)
+        }
+
+        // Then
+        XCTAssertEqual(
+            dd_profiler_get_status(),
+            DD_PROFILER_STATUS_ALLOCATION_FAILED,
+            "A failed sampling thread should not be reported as running"
+        )
+        XCTAssertFalse(dd_profiler_is_running())
+
+        XCTAssertEqual(dd_profiler_start(), 1, "Starting again should restart sampling after a thread failure")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
     }
 
     func testDDProfiler_consumeDiagnostics_reportsDroppedBatchesAtHardLimit() {

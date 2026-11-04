@@ -83,6 +83,17 @@ void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t t
  */
 void dd_profiler_fail_next_aggregation_for_testing(void);
 
+/**
+ * @brief Makes the sampling thread fail with `std::bad_alloc` at its next loop iteration.
+ *
+ * Simulates an allocation failure on the sampling thread, so tests can verify the
+ * profiler reports `DD_PROFILER_STATUS_ALLOCATION_FAILED` instead of staying
+ * `RUNNING` with a dead sampler. `dd_profiler_start_testing()` clears it.
+ *
+ * @warning FOR TESTING USE ONLY
+ */
+void dd_profiler_fail_next_sampling_for_testing(void);
+
 #ifdef __cplusplus
 }
 #endif
