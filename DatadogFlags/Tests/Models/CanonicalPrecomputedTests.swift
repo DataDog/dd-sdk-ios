@@ -71,12 +71,17 @@ final class CanonicalPrecomputedTests: XCTestCase {
         let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
         let date = DateProviderMock()
         let fetcher = FlagAssignmentsFetcher(
-            customEndpoint: nil, customHeaders: nil, featureScope: scope,
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: scope,
             fetch: { _, complete in complete(.success(responseData)) }
         )
         let repository = FlagsRepository(
-            clientName: UUID().uuidString, flagAssignmentsFetcher: fetcher,
-            dateProvider: date, featureScope: scope, initializationTimeout: nil
+            clientName: UUID().uuidString,
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: date,
+            featureScope: scope,
+            initializationTimeout: nil
         )
         let aggregator = EvaluationAggregator(dateProvider: date, featureScope: scope, flushInterval: 100)
         let client = FlagsClient(

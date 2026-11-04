@@ -26,8 +26,12 @@ public struct FlagAssignment: Equatable {
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         if let numericConversion {
-            if T.self == Int.self { return numericConversion.integer as? T }
-            if T.self == Double.self { return numericConversion.double as? T }
+            if T.self == Int.self {
+                return numericConversion.integer as? T
+            }
+            if T.self == Double.self {
+                return numericConversion.double as? T
+            }
         }
         switch self.variation {
         case .boolean(let value):
@@ -205,23 +209,31 @@ internal enum FlagsNumericJSON {
     }
 
     static func literal(in decoder: Decoder, key: String) -> String? {
-        guard let tokensKey else { return nil }
+        guard let tokensKey else {
+            return nil
+        }
         var value = decoder.userInfo[tokensKey] as? FlagNumericTokenTree
         for component in decoder.codingPath {
             switch value {
             case .object(let object): value = object[component.stringValue]
             case .array(let array):
-                guard let index = component.intValue, array.indices.contains(index) else { return nil }
+                guard let index = component.intValue, array.indices.contains(index) else {
+                    return nil
+                }
                 value = array[index]
             default: return nil
             }
         }
-        guard case .object(let object) = value, case .string(let literal) = object[key] else { return nil }
+        guard case .object(let object) = value, case .string(let literal) = object[key] else {
+            return nil
+        }
         return literal
     }
 
     static func isCache(_ decoder: Decoder) -> Bool {
-        guard let cacheKey else { return false }
+        guard let cacheKey else {
+            return false
+        }
         return decoder.userInfo[cacheKey] as? Bool == true
     }
 }

@@ -32,7 +32,6 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private let assignmentFetchQueue: DispatchQueue
     private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
 
-
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,

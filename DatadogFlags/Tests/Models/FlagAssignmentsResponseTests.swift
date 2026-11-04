@@ -12,14 +12,13 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagAssignmentsResponseTests: XCTestCase {
-
     func testOriginalNumericTokensSurviveGettersAndCache() throws {
         let cases: [(String, Int?, Double?)] = [
             ("5.0", 5, 5), ("1.20000000000000001", nil, 1.2),
             ("1.00000000000000001", nil, 1),
-            ("4503599627370497.5", nil, 4503599627370498),
-            ("9007199254740993.5", nil, 9007199254740994),
-            ("9007199254740993", 9007199254740993, nil),
+            ("4503599627370497.5", nil, 4_503_599_627_370_498),
+            ("9007199254740993.5", nil, 9_007_199_254_740_994),
+            ("9007199254740993", 9_007_199_254_740_993, nil),
             ("1e-400", nil, nil), ("1e400", nil, nil),
             ("0e999999", 0, 0), ("-0.0", 0, 0)
         ]
