@@ -12,6 +12,36 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagAssignmentsResponseTests: XCTestCase {
+    func testOriginalNumericTokensSurviveGettersAndCache() throws {
+        let cases: [(String, Int?, Double?)] = [
+            ("5.0", 5, 5), ("1.20000000000000001", nil, 1.2),
+            ("1.00000000000000001", nil, 1),
+            ("4503599627370497.5", nil, 4_503_599_627_370_498),
+            ("9007199254740993.5", nil, 9_007_199_254_740_994),
+            ("9007199254740993", 9_007_199_254_740_993, nil),
+            ("1e-400", nil, nil), ("1e400", nil, nil),
+            ("0e999999", 0, 0), ("-0.0", 0, 0)
+        ]
+        for label in ["number", "integer", "float"] {
+            for (literal, integer, double) in cases {
+                let json = #"{"allocationKey":"a","variationKey":"v","variationType":"\#(label)","variationValue":\#(literal),"reason":"STATIC","doLog":false}"#
+                let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+                let restored = try FlagsNumericJSON.decode(FlagAssignment.self, from: JSONEncoder().encode(assignment), cached: true)
+                for value in [assignment, restored] {
+                    XCTAssertEqual(value.variation(as: Int.self), integer, "\(label): \(literal)")
+                    XCTAssertEqual(value.variation(as: Double.self), double, "\(label): \(literal)")
+                }
+            }
+        }
+    }
+
+    func testNumericMetadataCannotOverrideTheWireValue() throws {
+        let json = #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":5,"_numericLiteral":"1e400","reason":"STATIC","doLog":false}"#
+        let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+        XCTAssertEqual(assignment.variation(as: Int.self), 5)
+        let stringValue = json.replacingOccurrences(of: #""variationValue":5"#, with: #""variationValue":"5""#)
+        XCTAssertThrowsError(try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(stringValue.utf8)))
+    }
     func testCachedAssignmentEqualityAndSerialization() throws {
         let cached = FlagAssignment(
             allocationKey: "allocation",
@@ -193,7 +223,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                         variation: .integer(99),
                         reason: "TARGETING_MATCH",
                         doLog: true
-                    ),
+                    ).servedAsNumber(),
                     "json-flag": .init(
                         allocationKey: "allocation-127",
                         variationKey: "variation-127",
@@ -463,7 +493,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
               "reason": "TARGETING_MATCH"
             }
             """.data(using: .utf8)!
-            return try JSONDecoder().decode(FlagAssignment.self, from: json)
+            return try FlagsNumericJSON.decode(FlagAssignment.self, from: json)
         }
         func built(_ variation: FlagAssignment.Variation) -> FlagAssignment {
             FlagAssignment(
@@ -475,7 +505,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             )
         }
         func cached(_ assignment: FlagAssignment) throws -> FlagAssignment {
-            try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(assignment))
+            try FlagsNumericJSON.decode(FlagAssignment.self, from: JSONEncoder().encode(assignment), cached: true)
         }
 
         // A whole value reads as Int and Double, whatever its served numeric type, also after a cache restore
@@ -520,13 +550,13 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         // The `_pointerBitWidth(_64)` blocks need a 64-bit Int, because their values or results depend on
         // the width of Int.
 
-        // A Double converts to Int only within +/-(2^53 - 1), where it represents every integer exactly
+        // Already-constructed Double values convert when they are exact and within Int range.
         #if _pointerBitWidth(_64)
         XCTAssertEqual(built(.double(9_007_199_254_740_991)).variation(as: Int.self), 9_007_199_254_740_991)
         XCTAssertEqual(built(.double(-9_007_199_254_740_991)).variation(as: Int.self), -9_007_199_254_740_991)
+        XCTAssertEqual(built(.double(9_007_199_254_740_992)).variation(as: Int.self), 9_007_199_254_740_992)
+        XCTAssertEqual(built(.double(-9_007_199_254_740_992)).variation(as: Int.self), -9_007_199_254_740_992)
         #endif
-        XCTAssertNil(built(.double(9_007_199_254_740_992)).variation(as: Int.self))
-        XCTAssertNil(built(.double(-9_007_199_254_740_992)).variation(as: Int.self))
         XCTAssertNil(built(.double(1e20)).variation(as: Int.self))
         XCTAssertNil(built(.double(.infinity)).variation(as: Int.self))
         XCTAssertNil(built(.double(.nan)).variation(as: Int.self))

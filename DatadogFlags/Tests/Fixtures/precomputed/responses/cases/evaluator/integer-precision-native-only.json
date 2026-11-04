@@ -1,0 +1,17 @@
+{
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "fixture.large-int": {
+            "allocationKey": "allocation-a",
+            "variationKey": "large",
+            "variationType": "integer",
+            "variationValue": 9007199254740993,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          }
+        }
+      }
+    }
+  }

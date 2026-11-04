@@ -104,3 +104,49 @@ Older allocations retained by future mode still produce their normal exposures. 
 Immediate withdrawal can change an enrolled subject's experience. Account for that change in experiment analysis.
 
 Client configuration is fixed for each client name. Creating a client with an existing name returns the existing client, which keeps its original configuration.
+
+## Shared precomputed response tests
+
+The Flags module uses the JSON contract from [ffe-system-test-data](https://github.com/DataDog/ffe-system-test-data/tree/main/precomputed-assignments).
+This keeps response behavior consistent across mobile SDKs. The snapshot is test data only.
+It adds no runtime dependency and requires no Git submodule.
+
+The generated snapshot is at `DatadogFlags/Tests/Fixtures/precomputed`. `SOURCE.json` records the source commit and file digests.
+The runner discovers all nested JSON cases.
+Adding a case requires an upstream fixture change and snapshot refresh. It requires no runner or filename-list change.
+Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
+Do not add local exclusions to hide failures.
+
+Numeric behavior follows the [shared numeric contract](https://github.com/DataDog/ffe-system-test-data/blob/main/precomputed-assignments/README.md#mobile-conformance-and-numeric-types).
+The native context API requires a string targeting key. Fixtures with `targetingKey: null` must declare this platform in `_skip` upstream; the runner reports an actionable fixture error if an applicable case violates that requirement.
+
+Upstream CI requires a generated obfuscated companion for each applicable plain fixture. It rejects missing, stale, or orphaned companions. Edit the plain case upstream and regenerate; do not maintain two sets of expectations. Dedicated malformed-encoding cases and fixed digest vectors remain separate.
+
+Cases cover values, defaults, errors, reasons, variants, emission gates, duplicate evaluations, and numeric boundaries.
+Obfuscation cases cover fixed digests, salts, Unicode, whitespace, malformed metadata, and plaintext event identity.
+The suite tests network decoding and serialized state. It checks real exposure and evaluation records. UTF-8 flag identity remains distinct during deduplication.
+
+Run from the repository root:
+
+```sh
+python3 ci/sync-precomputed-fixtures.py --verify
+xcodebuild -workspace Datadog.xcworkspace -scheme DatadogFlags -destination '<installed simulator>' -only-testing:DatadogFlagsTests/CanonicalPrecomputedTests test
+```
+
+Refresh the snapshot from a reviewed upstream commit:
+
+```sh
+python3 ci/sync-precomputed-fixtures.py --ref <full-upstream-sha>
+python3 ci/sync-precomputed-fixtures.py --check
+```
+
+The importer copies committed bytes, regenerates the index, and removes deleted cases.
+It preserves Unity asset GUIDs where applicable. Do not edit imported JSON or its checksums.
+Use `--source <local-checkout> --ref <commit>` to test an upstream fixture branch before publication.
+`--verify` checks local integrity without networking. `--check` also compares the recorded upstream commit.
+
+The weekly `Precomputed flag fixtures` workflow opens a draft update PR when fixture content changes.
+It uses a short-lived token restricted to the default branch and this workflow.
+It waits when an update PR is already open. Normal SDK CI must pass before merge.
+Merge the upstream fixture contract before merging its consumer PRs.
+The update workflow never merges or publishes an SDK release.

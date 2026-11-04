@@ -1,0 +1,48 @@
+{
+    "data": {
+      "attributes": {
+        "flags": {
+          "8c7c04076517d2c3c0633fda9a6664d4b114cb359cc512dd38c4ef69373032fd": {
+            "allocationKey": "holdout-allocation",
+            "variationKey": "on",
+            "variationType": "boolean",
+            "variationValue": true,
+            "reason": "TARGETING_MATCH",
+            "doLog": true,
+            "serialId": 340132
+          },
+          "36d69e5a88de3b456cd6bfca1070ee06c667c9c94d7de9022616661c71928e50": {
+            "allocationKey": "regular-allocation",
+            "variationKey": "off",
+            "variationType": "boolean",
+            "variationValue": false,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "9c7eac87f0bcefab56284d70561f954ffccd2f88fcd895067ffc94832023d3be": {
+            "allocationKey": "zero-allocation",
+            "variationKey": "on",
+            "variationType": "boolean",
+            "variationValue": true,
+            "reason": "TARGETING_MATCH",
+            "doLog": true,
+            "serialId": 0
+          },
+          "6597def4cb332745af4ade37ee996a8958091ccadc58082c2c49c4db66c24e98": {
+            "allocationKey": "null-allocation",
+            "variationKey": "off",
+            "variationType": "boolean",
+            "variationValue": false,
+            "reason": "TARGETING_MATCH",
+            "doLog": true,
+            "serialId": null
+          }
+        },
+        "obfuscated": true,
+        "obfuscation": {
+          "scheme": "flag-key-sha256-v1",
+          "salt": "000102030405060708090a0b0c0d0e0f"
+        }
+      }
+    }
+  }

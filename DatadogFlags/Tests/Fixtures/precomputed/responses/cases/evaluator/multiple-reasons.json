@@ -1,0 +1,33 @@
+{
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "fixture.reason.targeted": {
+            "allocationKey": "alloc-target",
+            "variationKey": "targeted-on",
+            "variationType": "boolean",
+            "variationValue": true,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "fixture.reason.default": {
+            "allocationKey": "alloc-default",
+            "variationKey": "default-val",
+            "variationType": "string",
+            "variationValue": "baseline",
+            "reason": "DEFAULT",
+            "doLog": true
+          },
+          "fixture.reason.split": {
+            "allocationKey": "alloc-split",
+            "variationKey": "bucket-a",
+            "variationType": "integer",
+            "variationValue": 42,
+            "reason": "SPLIT",
+            "doLog": true
+          }
+        }
+      }
+    }
+  }

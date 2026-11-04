@@ -32,8 +32,6 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private let assignmentFetchQueue: DispatchQueue
     private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
 
-    private static let decoder = JSONDecoder()
-
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
@@ -140,7 +138,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         switch result {
         case .success(let data):
             do {
-                let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
+                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data)
                 guard response.obfuscation == nil || supportsObfuscation else {
                     throw FlagsError.invalidResponse
                 }

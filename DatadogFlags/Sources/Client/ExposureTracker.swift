@@ -17,11 +17,11 @@ internal final class ExposureTracker {
 
     private final class ExposureKey: NSObject {
         let targetingKey: String
-        let flagKey: String
+        let flagKey: Data
 
         init(_ exposure: Exposure) {
             self.targetingKey = exposure.targetingKey
-            self.flagKey = exposure.flagKey
+            self.flagKey = Data(exposure.flagKey.utf8)
         }
 
         override var hash: Int {
