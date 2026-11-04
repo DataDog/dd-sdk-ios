@@ -492,7 +492,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertEqual(try decoded(type: "number", value: "-5").variation(as: Int.self), -5)
 
         // Whole decimal and exponent spellings read as Int
-        for type in ["number", "float"] {
+        for type in ["number", "integer", "float"] {
             for (literal, expected) in [("5.0", 5), ("1e3", 1_000), ("-0.0", 0)] {
                 let whole = try decoded(type: type, value: literal)
                 XCTAssertEqual(whole.variation(as: Int.self), expected, "\(type) \(literal)")
@@ -508,8 +508,8 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         let encoded = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(number)) as? [String: Any])
         XCTAssertEqual(encoded["variationType"] as? String, "integer")
 
-        // A fractional value reads only as Double
-        for type in ["number", "float"] {
+        // A fractional value reads only as Double, whatever its served numeric type
+        for type in ["number", "integer", "float"] {
             let fractional = try decoded(type: type, value: "5.5")
             XCTAssertEqual(fractional.variation(as: Double.self), 5.5, type)
             XCTAssertNil(fractional.variation(as: Int.self), type)
@@ -538,22 +538,26 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertNil(built(.integer(Int.max)).variation(as: Double.self))
         #endif
 
-        // A stored `.double` keeps its representation through the cache
+        // A whole `.double` reads the same after a cache restore, which decodes it as `.integer`
         let wholeDouble = built(.double(1e15))
-        XCTAssertEqual(try cached(wholeDouble), wholeDouble)
         #if _pointerBitWidth(_64)
         XCTAssertEqual(wholeDouble.variation(as: Int.self), 1_000_000_000_000_000)
+        XCTAssertEqual(try cached(wholeDouble).variation, .integer(1_000_000_000_000_000))
         #endif
+        XCTAssertEqual(try cached(wholeDouble).variation(as: Double.self), 1e15)
         let rounded = try decoded(type: "number", value: "999999999999999.99")
         XCTAssertEqual(try cached(rounded), rounded)
 
-        // A "number" or "integer" value above 2^53 keeps every digit
+        // A whole value above 2^53 keeps every digit, whatever its served numeric type
         #if _pointerBitWidth(_64)
-        let large = try decoded(type: "number", value: "9007199254740993")
-        XCTAssertEqual(large.variation(as: Int.self), 9_007_199_254_740_993)
-        XCTAssertNil(large.variation(as: Double.self))
-        XCTAssertEqual(try cached(large).variation(as: Int.self), 9_007_199_254_740_993)
+        for type in ["number", "integer", "float"] {
+            let large = try decoded(type: type, value: "9007199254740993")
+            XCTAssertEqual(large.variation(as: Int.self), 9_007_199_254_740_993, type)
+            XCTAssertNil(large.variation(as: Double.self), type)
+            XCTAssertEqual(try cached(large).variation(as: Int.self), 9_007_199_254_740_993, type)
+        }
         #endif
+        XCTAssertEqual(try decoded(type: "float", value: "\(Int.max)").variation(as: Int.self), .max)
         XCTAssertEqual(try decoded(type: "integer", value: "\(Int.max)").variation(as: Int.self), .max)
         XCTAssertEqual(try decoded(type: "number", value: "\(Int.min)").variation(as: Double.self), Double(Int.min))
         let huge = try decoded(type: "number", value: "1e20")
