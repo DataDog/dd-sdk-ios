@@ -313,7 +313,8 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, it is safe to assume that all events recorded before this call were stored and got uploaded. The SDK
+    /// Upon return, it is safe to assume that all events recorded before this call were stored and that one upload was
+    /// attempted for each batch. Batches are deleted after their attempt, whether or not the upload succeeded. The SDK
     /// was deinitialised and its message bus disconnected, so this instance of core is non-functional and no message is
     /// delivered after return.
     func flushAndTearDown() {
@@ -339,7 +340,8 @@ internal final class DatadogCore {
     /// Uploads all pending data immediately without tearing down the SDK.
     ///
     /// Unlike `flushAndTearDown()`, this method leaves the SDK fully operational after return.
-    /// Upon return, it is safe to assume that all events were stored and got uploaded.
+    /// Upon return, it is safe to assume that all events were stored and that one upload was attempted for each batch.
+    /// Batches are deleted after their attempt, whether or not the upload succeeded.
     func flushAndUpload() {
         flush()
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
