@@ -428,6 +428,61 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testNumericVariationsCachedByEarlierVersionsReadWithoutLoss() throws {
+        // SDK 3.21.0 and earlier write whole "number" values to the cache as "integer" and decimal values as "float"
+        let cases: [(variationType: String, variationValue: Any, integer: Int?, double: Double)] = [
+            ("integer", 5, 5, 5.0),
+            ("float", 5.0, 5, 5.0),
+            ("float", 1.2, nil, 1.2)
+        ]
+        for (index, entry) in cases.enumerated() {
+            // Given
+            let label = "\(entry.variationType) \(entry.variationValue)"
+            let clientName = "legacy-\(index)"
+            let data = FlagsData(flags: ["flag": .mockAnyBoolean()], context: .init(targetingKey: "subject"), date: .mockAny())
+            var object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(data)) as? [String: Any])
+            var flags = try XCTUnwrap(object["flags"] as? [String: Any])
+            var flag = try XCTUnwrap(flags["flag"] as? [String: Any])
+            flag["variationType"] = entry.variationType
+            flag["variationValue"] = entry.variationValue
+            flags["flag"] = flag
+            object["flags"] = flags
+            let scope = FeatureScopeMock()
+            scope.dataStoreMock.setValue(try JSONSerialization.data(withJSONObject: object), forKey: clientName)
+            let repository = FlagsRepository(
+                clientName: clientName,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.failure(.invalidResponse)) },
+                dateProvider: DateProviderMock(),
+                featureScope: scope
+            )
+            let completed = expectation(description: "cache restored \(label)")
+            repository.setEvaluationContext(data.context) { _ in completed.fulfill() }
+            wait(for: [completed], timeout: 2)
+            let client = FlagsClient(
+                repository: repository,
+                exposureLogger: ExposureLoggerMock(),
+                evaluationLogger: EvaluationLoggerMock(),
+                rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+            )
+
+            // When
+            let doubleDetails = client.getDoubleDetails(key: "flag", defaultValue: -1)
+            let integerDetails = client.getIntegerDetails(key: "flag", defaultValue: -1)
+
+            // Then
+            XCTAssertEqual(doubleDetails.value, entry.double, label)
+            XCTAssertNil(doubleDetails.error, label)
+            XCTAssertEqual(doubleDetails.reason, "CACHED", label)
+            if let integer = entry.integer {
+                XCTAssertEqual(integerDetails.value, integer, label)
+                XCTAssertNil(integerDetails.error, label)
+            } else {
+                XCTAssertEqual(integerDetails.value, -1, label)
+                XCTAssertEqual(integerDetails.error, .typeMismatch, label)
+            }
+        }
+    }
+
     func testEnabledPendingSubjectDoesNotInheritPreviousSubjectsTelemetryOptOut() {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []

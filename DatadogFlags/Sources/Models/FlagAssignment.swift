@@ -22,8 +22,6 @@ public struct FlagAssignment: Equatable {
     public var reason: String
     public var doLog: Bool
     public var serialID: Int?
-    /// `true` when a `"variationType": "number"` value decodes as Int. The cache keeps this type.
-    internal var isNumberType = false
     internal var numericConversion: FlagNumericConversion?
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
@@ -104,7 +102,6 @@ extension FlagAssignment: Codable {
                 let conversion = FlagNumericConversion(literal)
                 if let integer = conversion.integer {
                     self.variation = .integer(integer)
-                    self.isNumberType = variationType == "number"
                     if conversion.double != Double(exactly: integer) { self.numericConversion = conversion }
                 } else {
                     let approximate = conversion.double ?? 0
@@ -115,7 +112,6 @@ extension FlagAssignment: Codable {
                 }
             } else if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 self.variation = .integer(number)
-                self.isNumberType = variationType == "number"
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
@@ -147,7 +143,7 @@ extension FlagAssignment: Codable {
             try container.encode("float", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .integer(let value):
-            try container.encode(isNumberType ? "number" : "integer", forKey: .variationType)
+            try container.encode("integer", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .object(let value):
             try container.encode("object", forKey: .variationType)

@@ -117,11 +117,8 @@ Adding a case requires an upstream fixture change and snapshot refresh. It requi
 Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
 Do not add local exclusions to hide failures.
 
-Numeric getters use lossless conversion regardless of the `integer`, `float`, or `number` wire label.
-Integer getters accept whole values within their native range. Double getters reject integer values that lose precision.
-Fractional Integer reads, range overflow, and inexact conversions return `TYPE_MISMATCH`.
-React Native exposes one Number getter. Its tests exclude cases that require a separate Integer getter or native integer precision.
-The service keeps sending `number`. This work adds no numeric capability.
+Numeric behavior follows the [shared numeric contract](https://github.com/DataDog/ffe-system-test-data/blob/main/precomputed-assignments/README.md#mobile-conformance-and-numeric-types).
+The native context API requires a string targeting key. Fixtures with `targetingKey: null` must declare this platform in `_skip` upstream; the runner reports an actionable fixture error if an applicable case violates that requirement.
 
 Upstream CI requires a generated obfuscated companion for each applicable plain fixture. It rejects missing, stale, or orphaned companions. Edit the plain case upstream and regenerate; do not maintain two sets of expectations. Dedicated malformed-encoding cases and fixed digest vectors remain separate.
 

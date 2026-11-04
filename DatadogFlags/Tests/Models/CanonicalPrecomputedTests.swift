@@ -25,25 +25,33 @@ final class CanonicalPrecomputedTests: XCTestCase {
         var executed = 0
         var excluded = 0
         for file in files {
-            // Decode only expectations here; raw response bytes may exceed Double range.
-            let metadata = try decoder.decode(FixtureMetadata.self, from: Data(contentsOf: file))
-            let fixture = try object(JSONEncoder().encode(metadata))
-            guard applies(fixture) else { excluded += 1; continue }
-            executed += 1
-            try XCTContext.runActivity(named: "\(source["commit"]!) / \(file.lastPathComponent)") { _ in
-                let responseData = try Data(contentsOf: root.appendingPathComponent("responses/cases").appendingPathComponent(String(file.path.dropFirst(cases.path.count + 1))))
-                if fixture["expectedResponseError"] != nil {
-                    XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
-                    try runRejected(fixture, responseData: responseData)
-                    return
+            do {
+                // Decode only expectations here; raw response bytes may exceed Double range.
+                let metadata = try decoder.decode(FixtureMetadata.self, from: Data(contentsOf: file))
+                let fixture = try object(JSONEncoder().encode(metadata))
+                guard applies(fixture) else { excluded += 1; continue }
+                guard (fixture["context"] as? [String: Any])?["targetingKey"] is String else {
+                    XCTFail("\(file.lastPathComponent): iOS requires a string targetingKey; null-context fixtures must exclude ios upstream")
+                    continue
                 }
-                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: responseData)
-                let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
-                let initial = FlagsData(flags: response.flags, context: context, date: Date(), obfuscation: response.obfuscation)
-                let restored = try FlagsNumericJSON.decode(FlagsData.self, from: JSONEncoder().encode(initial), cached: true)
-                for (label, state) in [("network-decoded", initial), ("serialized-state", restored)] {
-                    try XCTContext.runActivity(named: label) { _ in try run(fixture, state: state) }
+                executed += 1
+                try XCTContext.runActivity(named: "\(source["commit"]!) / \(file.lastPathComponent)") { _ in
+                    let responseData = try Data(contentsOf: root.appendingPathComponent("responses/cases").appendingPathComponent(String(file.path.dropFirst(cases.path.count + 1))))
+                    if fixture["expectedResponseError"] != nil {
+                        XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
+                        try runRejected(fixture, responseData: responseData)
+                        return
+                    }
+                    let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: responseData)
+                    let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
+                    let initial = FlagsData(flags: response.flags, context: context, date: Date(), obfuscation: response.obfuscation)
+                    let restored = try FlagsNumericJSON.decode(FlagsData.self, from: JSONEncoder().encode(initial), cached: true)
+                    for (label, state) in [("network-decoded", initial), ("serialized-state", restored)] {
+                        try XCTContext.runActivity(named: label) { _ in try run(fixture, state: state) }
+                    }
                 }
+            } catch {
+                XCTFail("Canonical fixture \(file.lastPathComponent): \(error)")
             }
         }
         XCTAssertGreaterThan(executed, 0, "All canonical fixtures were excluded (\(excluded))")
