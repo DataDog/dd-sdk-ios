@@ -757,12 +757,12 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
     }
-    #endif
 
     public var trackMemoryWarnings: Bool {
         set { swiftConfig.trackMemoryWarnings = newValue }
         get { swiftConfig.trackMemoryWarnings }
     }
+    #endif
 
     public var collectAccessibility: Bool {
         set { swiftConfig.collectAccessibility = newValue }
@@ -789,6 +789,7 @@ public class objc_RUMConfiguration: NSObject {
         get { swiftConfig.trackFrustrations }
     }
 
+    #if !os(macOS)
     public var trackBackgroundEvents: Bool {
         set { swiftConfig.trackBackgroundEvents = newValue }
         get { swiftConfig.trackBackgroundEvents }
@@ -798,6 +799,7 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.trackWatchdogTerminations = newValue }
         get { swiftConfig.trackWatchdogTerminations }
     }
+    #endif
 
     public var longTaskThreshold: TimeInterval {
         set { swiftConfig.longTaskThreshold = newValue }

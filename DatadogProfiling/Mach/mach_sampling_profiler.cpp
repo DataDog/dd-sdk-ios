@@ -8,7 +8,7 @@
 #include "aggregation_worker.h"
 #include "dd_profiler_testing.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <dlfcn.h>
 #include <algorithm>
@@ -765,7 +765,9 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
         trace.cpu_time_nanos = thread_cpu_time_delta_nanos(thread, trace.tid);
     }
 
-    trace.timestamp = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+    // CLOCK_MONOTONIC_RAW: it counts time spent asleep, matching the
+    // basis of `monotonic_epoch_offset()`.
+    trace.timestamp = clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
 
     if (thread_suspend(thread) == KERN_SUCCESS) {
         // CRITICAL: Thread is suspended - avoid operations that could deadlock
@@ -932,4 +934,4 @@ size_t read_stack_region_for_testing(void* sp, void* buf, size_t buf_size) {
 
 } // extern "C"
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

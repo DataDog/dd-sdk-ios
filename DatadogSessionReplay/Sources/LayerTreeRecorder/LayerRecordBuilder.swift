@@ -46,18 +46,23 @@ internal struct LayerRecordBuilder {
         return .fullSnapshotRecord(value: record)
     }
 
-    func wireframeMutationRecord(
+    /// Builds an ordered mutation pair whenever wireframes or the composition tree change.
+    func mutationRecords(
         from snapshot: LayerTreeSnapshot,
         wireframes: [SRWireframe],
-        previousWireframes: [SRWireframe]
-    ) throws -> SRRecord? {
+        previousWireframes: [SRWireframe],
+        compositionTree: SRCompositionTree,
+        previousCompositionTree: SRCompositionTree
+    ) throws -> [SRRecord] {
         let diff = try computeDiff(oldArray: previousWireframes, newArray: wireframes)
+        let compositionTreeMutation = try compositionTree.mutations(from: previousCompositionTree)
 
-        guard !diff.isEmpty else {
-            return nil
+        guard !diff.isEmpty || compositionTreeMutation != nil else {
+            return []
         }
 
-        let record = SRIncrementalSnapshotRecord(
+        let timestamp = snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
+        let wireframeRecord = SRIncrementalSnapshotRecord(
             data: .mutationData(
                 value: .init(
                     adds: diff.adds.map { addition in
@@ -71,27 +76,18 @@ internal struct LayerRecordBuilder {
                     }
                 )
             ),
-            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
+            timestamp: timestamp
+        )
+        let compositionTreeRecord = SRIncrementalSnapshotRecord(
+            data: .compositionTreeMutationData(value: compositionTreeMutation ?? .init()),
+            timestamp: timestamp
         )
 
-        return .incrementalSnapshotRecord(value: record)
-    }
-
-    func compositionTreeMutationRecord(
-        from snapshot: LayerTreeSnapshot,
-        compositionTree: SRCompositionTree,
-        previousCompositionTree: SRCompositionTree
-    ) throws -> SRRecord? {
-        guard let mutation = try compositionTree.mutations(from: previousCompositionTree) else {
-            return nil
-        }
-
-        let record = SRIncrementalSnapshotRecord(
-            data: .compositionTreeMutationData(value: mutation),
-            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
-        )
-
-        return .incrementalSnapshotRecord(value: record)
+        // The composition tree mutation completes the update, even when its diff is empty.
+        return [
+            .incrementalSnapshotRecord(value: wireframeRecord),
+            .incrementalSnapshotRecord(value: compositionTreeRecord)
+        ]
     }
 
     func touchRecords(from snapshot: TouchSnapshot) -> [SRRecord] {

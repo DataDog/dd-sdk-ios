@@ -413,6 +413,62 @@ final class FlagKeyObfuscationTests: XCTestCase {
         XCTAssertNil(scope.dataStoreMock.storage["client"]?.data(expectedVersion: 2))
     }
 
+    func testFilteredCacheIsRejectedByLegacyReaders() throws {
+        let policies: [ExperimentationOptOut] = [.immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
+        for policy in policies {
+            for obfuscated in [false, true] {
+                let scope = FeatureScopeMock()
+                let data = try cacheData(obfuscated: obfuscated, policy: policy)
+                let encoded = try XCTUnwrap(scope.flagsDataStore.encodeFlagsData(data))
+                scope.flagsDataStore.setFlagsData(data, forClientNamed: "client")
+                let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"])
+                XCTAssertEqual(encoded.version, 3)
+                XCTAssertNil(stored.data(), "Version 1 consumers must not read filtered assignments")
+                XCTAssertNil(stored.data(expectedVersion: 2), "Version 2 consumers do not understand opt-out policy")
+            }
+        }
+    }
+
+    func testCacheRoundTripsAllSupportedVersions() throws {
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
+        for policy in policies {
+            for obfuscated in [false, true] {
+                let scope = FeatureScopeMock()
+                let data = try cacheData(obfuscated: obfuscated, policy: policy)
+                scope.flagsDataStore.setFlagsData(data, forClientNamed: "client")
+                let version: DataStoreKeyVersion = policy != nil ? 3 : (obfuscated ? 2 : 1)
+                let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"])
+                XCTAssertNotNil(stored.data(expectedVersion: version))
+                let completed = expectation(description: "cache round trip")
+                scope.flagsDataStore.flagsData(forClientNamed: "client") {
+                    XCTAssertEqual($0, data)
+                    completed.fulfill()
+                }
+                waitForExpectations(timeout: 1)
+            }
+        }
+    }
+
+    func testCacheRejectsMismatchedPolicyAndVersion() throws {
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
+        for policy in policies {
+            for obfuscated in [false, true] {
+                let scope = FeatureScopeMock()
+                let data = try cacheData(obfuscated: obfuscated, policy: policy)
+                let expectedVersion: DataStoreKeyVersion = policy != nil ? 3 : (obfuscated ? 2 : 1)
+                for version in [DataStoreKeyVersion(1), 2, 3, 4] where version != expectedVersion {
+                    scope.dataStore.setValue(try JSONEncoder().encode(data), forKey: "client", version: version)
+                    let completed = expectation(description: "mismatched cache rejected")
+                    scope.flagsDataStore.flagsData(forClientNamed: "client") {
+                        XCTAssertNil($0, "Accepted policy \(String(describing: policy)), obfuscated \(obfuscated), version \(version)")
+                        completed.fulfill()
+                    }
+                    waitForExpectations(timeout: 1)
+                }
+            }
+        }
+    }
+
     func testRequestAdvertisesCapabilitiesWithoutChangingSourceVersion() throws {
         for (source, sdkName) in [
             ("ios", "dd-sdk-ios"),
@@ -424,7 +480,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
                 url: URL(string: "https://example.com/precompute-assignments")!,
                 evaluationContext: .mockAny(),
                 context: .mockWith(source: source, sdkVersion: "99.1.2-telemetry"),
-                customHeaders: nil
+                customHeaders: nil,
+                flagSelection: nil
             )
             let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
             let data = try XCTUnwrap(body["data"] as? [String: Any])
@@ -506,6 +563,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             XCTAssertNil(repository.context)
@@ -539,7 +597,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
                     clientName: "client",
                     flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
                     dateProvider: DateProviderMock(),
-                    featureScope: scope
+                    featureScope: scope,
+                    flagSelection: nil
                 )
                 let evaluations = EvaluationLoggerMock()
                 let exposures = ExposureLoggerMock()
@@ -575,6 +634,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: NOPFeatureScope(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let completed = expectation(description: "repository completes without core context")
@@ -663,6 +723,17 @@ final class FlagKeyObfuscationTests: XCTestCase {
         }
     }
 
+    private func cacheData(obfuscated: Bool, policy: ExperimentationOptOut?) throws -> FlagsData {
+        let response = try decode(flags: [obfuscated ? digest : "flag": assignment], metadata: obfuscated ? metadata() : [:])
+        return FlagsData(
+            flags: response.flags,
+            context: .init(targetingKey: "subject"),
+            date: Date(timeIntervalSince1970: 1_700_000_000),
+            obfuscation: response.obfuscation,
+            experimentationOptOutPolicy: policy
+        )
+    }
+
     private func metadata(salt: String? = nil) -> [String: Any] {
         ["obfuscated": true, "obfuscation": ["scheme": "flag-key-sha256-v1", "salt": salt ?? self.salt]]
     }
@@ -683,13 +754,13 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     private func makeFetcher(scope: FeatureScopeMock, data: @escaping () -> Data) -> FlagAssignmentsFetcher {
-        FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, featureScope: scope) { _, completion in
-            completion(.success(data()))
+        FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, flagSelection: nil, featureScope: scope) { _, completion in
+            completion(.success((data(), .mockAny())))
         }
     }
 
     private func makeRepository(scope: FeatureScopeMock, fetcher: FlagAssignmentsFetching) -> FlagsRepository {
-        FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope)
+        FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, flagSelection: nil)
     }
 }
 

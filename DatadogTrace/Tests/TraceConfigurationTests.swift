@@ -21,6 +21,30 @@ class TraceConfigurationTests: XCTestCase {
         XCTAssertFalse(config.networkInfoEnabled)
         XCTAssertNil(config.eventMapper)
         XCTAssertNil(config.customEndpoint)
+        XCTAssertNil(config.customStatsEndpoint)
+        XCTAssertFalse(config.featureFlags[.clientSideStats])
+    }
+
+    func testFeatureFlagsSubscriptFallsBackToDefaults() {
+        // When
+        let emptyFlags: Trace.Configuration.FeatureFlags = [:]
+        let overriddenFlags: Trace.Configuration.FeatureFlags = [.clientSideStats: true]
+
+        // Then
+        XCTAssertFalse(emptyFlags[.clientSideStats], "should fall back to `.defaults` when not set")
+        XCTAssertTrue(overriddenFlags[.clientSideStats], "should use the explicitly set value")
+    }
+
+    func testCustomStatsEndpointInitParameter() {
+        // Given
+        let endpoint = URL(string: "https://stats.example.com")!
+
+        // When
+        let config = Trace.Configuration(customStatsEndpoint: endpoint)
+
+        // Then
+        XCTAssertEqual(config.customStatsEndpoint, endpoint)
+        XCTAssertNil(config.customEndpoint, "customEndpoint should remain independent of customStatsEndpoint")
     }
 
     func testDefaultURLSessionTrackingConfiguration() {

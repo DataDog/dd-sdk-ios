@@ -794,7 +794,11 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             in: core
         )
 
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        // Use an explicit non-media type so body capture does not depend on MIME sniffing the mocked bytes.
+        let responseData = Data("{\"key\":42}".utf8)
+        let server = ServerMock(
+            delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: responseData)
+        )
         let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
 
         // No completion handler — data is captured via the delegate's didReceive callback
@@ -803,7 +807,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         wait(for: [providerExpectation], timeout: 5)
         _ = server.waitAndReturnRequests(count: 1)
 
-        XCTAssertEqual(providerData?.count, 10, "Metrics mode must capture response data via delegate didReceive for tasks without completion handlers")
+        XCTAssertEqual(providerData, responseData, "Metrics mode must capture response data via delegate didReceive for tasks without completion handlers")
     }
 
     private class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {}

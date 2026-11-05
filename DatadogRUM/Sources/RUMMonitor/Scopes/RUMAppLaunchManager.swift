@@ -14,22 +14,50 @@ internal class RUMAppLaunchManager {
         // Maximum time for an erroneous ttfd
         static let maxTTFDDuration: TimeInterval = 90 // 90 seconds
     }
+
+    private struct TimeToFullDisplay {
+        let duration: TimeInterval
+        let vitalId: String
+        let attributes: [AttributeKey: AttributeValue]
+        let view: RUMVitalAppLaunchEvent.View
+        let context: DatadogContext
+        let profiling: DDProfiling?
+    }
     // MARK: - Properties
 
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
     private let telemetryController: AppLaunchMetricController
     private let sanitizer = RUMEventSanitizer()
+    private lazy var startupTypeHandler = StartupTypeHandler(telemetryController: telemetryController)
 
-    private var timeToInitialDisplay: Double?
-    private var timeToFullDisplay: (
-        duration: TimeInterval,
-        vitalId: String,
-        attributes: [AttributeKey: AttributeValue]
-    )?
+    // MARK: - State
+    // All the state variables are read and written in the same queue (core-context)
+    // so there's no need to lock.
+
+    /// Represents the state of a received TTFD.
+    private enum TimeToFullDisplayState {
+        /// Pending means the TTFD was reported through the `process` method, but not yet written.
+        case pending(TimeToFullDisplay)
+
+        /// The TTFD was either written or discarded (due to TTID being refused). This exists as an optimization
+        /// to delete the TTFD from memory when it's not needed any more.
+        case completed
+    }
+
+    /// This variable is written already inside the `currentAppStateInfo` block. If the var has a value,
+    /// it means the TTID was already sent to the write queue, so it can be used reliably as an indicator TTID,
+    /// for the purposes of this class, was written.
     private var startupType: RUMVitalAppLaunchEvent.Vital.StartupType?
 
-    private lazy var startupTypeHandler = StartupTypeHandler(telemetryController: telemetryController)
+    /// This variable exists if the TTID was already reported through the `process` function. It may or may
+    /// not be yet written.
+    private var timeToInitialDisplay: Double?
+
+    /// Is this variable exists, the TTFD was already reported through the `process` command. If the value
+    /// is `pending(TTFD)` it means TTFD was not yet written, since the TTID wasn't yet written as well.
+    /// If `written`, the TTFD was already written.
+    private var timeToFullDisplayState: TimeToFullDisplayState?
 
     // MARK: - Initialization
 
@@ -59,28 +87,24 @@ internal class RUMAppLaunchManager {
 // MARK: - TTID
 
 private extension RUMAppLaunchManager {
-    func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
+    private func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
         guard shouldProcess(command: command, context: context),
               let ttid = time(from: command, context: context)
         else {
+            timeToFullDisplayState = .completed
             return
         }
 
-        self.timeToInitialDisplay = ttid
+        timeToInitialDisplay = ttid
+
         let ttidVitalId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
-        if let timeToFullDisplay {
-            let ttfdVital = Vital(
-                id: timeToFullDisplay.vitalId,
-                name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttfd.name,
-                date: context.launchInfo.processLaunchDate,
-                serverTimeOffset: context.serverTimeOffset,
-                duration: max(ttid, timeToFullDisplay.duration).dd.toInt64Nanoseconds
-            )
-
+        // There is a pending TTFD here only if TTID didn't exist yet. In that situation we know
+        // the TTFD was not yet reported to the profiler, so report it here.
+        if case let .pending(timeToFullDisplay) = timeToFullDisplayState {
             // TTID closes app-launch profiling, so only a TTFD reported earlier is sent here.
-            sendTTFDMessageToProfiler(vital: ttfdVital)
+            sendTTFDMessageToProfiler(ttfd: timeToFullDisplay, ttid: ttid)
         }
 
         sendTTIDMessageToProfiler(
@@ -93,8 +117,11 @@ private extension RUMAppLaunchManager {
             )
         )
 
+        // Running on core-context queue
         dependencies.appStateManager.previousAppStateInfo { [weak self] previousAppStateInfo in
+            // Running on app-state-manager queue
             self?.dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
+                // Running on core-context queue
                 guard let self else {
                     return
                 }
@@ -113,12 +140,12 @@ private extension RUMAppLaunchManager {
                     attributes: attributes,
                     context: context,
                     writer: writer,
-                    activeView: activeView,
+                    view: .init(activeView: activeView),
                     profiling: profiling
                 )
 
                 // The TTFD is always written after the TTID. If it exists already, means it was not written before.
-                if let timeToFullDisplay {
+                if case let .pending(timeToFullDisplay) = timeToFullDisplayState {
                     let ttfd = max(ttid, timeToFullDisplay.duration)
                     self.writeVitalEvent(
                         vitalId: timeToFullDisplay.vitalId,
@@ -126,13 +153,14 @@ private extension RUMAppLaunchManager {
                         appLaunchMetric: .ttfd,
                         startupType: startupType,
                         attributes: timeToFullDisplay.attributes,
-                        context: context,
+                        context: timeToFullDisplay.context,
                         writer: writer,
-                        activeView: activeView,
-                        profiling: profiling
+                        view: timeToFullDisplay.view,
+                        profiling: timeToFullDisplay.profiling
                     )
 
                     telemetryController.trackTTFD(duration: ttfd.dd.toInt64Nanoseconds)
+                    timeToFullDisplayState = .completed
                 }
 
                 telemetryController.sendMetric()
@@ -140,9 +168,9 @@ private extension RUMAppLaunchManager {
         }
     }
 
-    func shouldProcess(command: RUMTimeToInitialDisplayCommand, context: DatadogContext) -> Bool {
+    private func shouldProcess(command: RUMTimeToInitialDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to initial display was already written
-        guard self.timeToInitialDisplay == nil else {
+        guard timeToInitialDisplay == nil else {
             telemetryController.incrementTTIDCounter()
             return false
         }
@@ -170,7 +198,7 @@ private extension RUMAppLaunchManager {
         return true
     }
 
-    func time(from command: RUMCommand, context: DatadogContext) -> TimeInterval? {
+    private func time(from command: RUMCommand, context: DatadogContext) -> TimeInterval? {
         switch context.launchInfo.launchReason {
         case .userLaunch:
             return command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
@@ -185,7 +213,7 @@ private extension RUMAppLaunchManager {
         }
     }
 
-    func writeVitalEvent(
+    private func writeVitalEvent(
         vitalId: String,
         duration: TimeInterval,
         appLaunchMetric: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric,
@@ -193,7 +221,7 @@ private extension RUMAppLaunchManager {
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
         writer: Writer,
-        activeView: RUMViewScope?,
+        view: RUMVitalAppLaunchEvent.View,
         profiling: DDProfiling? = nil
     ) {
         let vital = RUMVitalAppLaunchEvent.Vital(
@@ -232,20 +260,17 @@ private extension RUMAppLaunchManager {
             synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
-            view: .init(
-                id: (activeView?.viewUUID).orNull.toRUMDataFormat,
-                name: activeView?.viewName,
-                url: activeView?.viewPath ?? ""
-            ),
+            view: view,
             vital: vital
         )
 
         let sanitizedVitalEvent = sanitizer.sanitize(event: vitalEvent)
+        // Eventually writes in ios-sdk-read-write queue
         writer.write(value: sanitizedVitalEvent)
         telemetryController.track(ttidEvent: sanitizedVitalEvent, context: context)
     }
 
-    func sendTTIDMessageToProfiler(vital: Vital) {
+    private func sendTTIDMessageToProfiler(vital: Vital) {
         let contextAttributes: [String: Encodable] = parent.rumContextAttributes
         dependencies.featureScope.send(message: .payload(TTIDMessage(attributes: contextAttributes, ttid: vital)))
     }
@@ -254,48 +279,53 @@ private extension RUMAppLaunchManager {
 // MARK: - TTFD
 
 private extension RUMAppLaunchManager {
-    func writeTTFDVitalEvent(from command: RUMTimeToFullDisplayCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
+    private func writeTTFDVitalEvent(from command: RUMTimeToFullDisplayCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
         guard shouldProcess(command: command, context: context),
               let ttfd = time(from: command, context: context) else { return }
 
-        let timeToFullDisplay = (
+        let timeToFullDisplay = TimeToFullDisplay(
             duration: timeToInitialDisplay.map { max($0, ttfd) } ?? ttfd,
             vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            attributes: command.globalAttributes.merging(command.attributes) { $1 }
+            attributes: command.globalAttributes.merging(command.attributes) { $1 },
+            // Captured now so a TTFD held until the TTID completes keeps its own view and context.
+            view: RUMVitalAppLaunchEvent.View(activeView: activeView),
+            context: context,
+            profiling: context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling,
         )
-        self.timeToFullDisplay = timeToFullDisplay
 
-        if timeToInitialDisplay != nil {
-            let ttfdVital = Vital(
-                id: timeToFullDisplay.vitalId,
-                name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttfd.name,
-                date: context.launchInfo.processLaunchDate,
-                serverTimeOffset: context.serverTimeOffset,
-                duration: timeToFullDisplay.duration.dd.toInt64Nanoseconds
-            )
-            sendTTFDMessageToProfiler(vital: ttfdVital)
+        self.timeToFullDisplayState = .pending(timeToFullDisplay)
+
+        if let ttid = timeToInitialDisplay {
+            // If ttid exists, we can be sure the TTID was either already written,
+            // or the TTID flow is switching queues due to the `previousAppStateInfo`
+            // and `currentAppStateInfo` calls. Either way the code in `writeTTIDVitalEvent`
+            // that would report the TTFD to the profiler was already executed (without
+            // reporting) so we can report here.
+            sendTTFDMessageToProfiler(ttfd: timeToFullDisplay, ttid: ttid)
 
             if let startupType {
-                let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
-
+                // This means the whole `writeTTIDVitalEvent` was already executed without
+                // writing the TTFD. So we are free to write it here, and we're done.
                 self.writeVitalEvent(
-                    vitalId: ttfdVital.id,
+                    vitalId: timeToFullDisplay.vitalId,
                     duration: Double(timeToFullDisplay.duration.dd.toInt64Nanoseconds),
                     appLaunchMetric: .ttfd,
                     startupType: startupType,
                     attributes: timeToFullDisplay.attributes,
-                    context: context,
+                    context: timeToFullDisplay.context,
                     writer: writer,
-                    activeView: activeView,
-                    profiling: profiling
+                    view: timeToFullDisplay.view,
+                    profiling: timeToFullDisplay.profiling
                 )
+
+                self.timeToFullDisplayState = .completed
             }
         }
     }
 
-    func shouldProcess(command: RUMTimeToFullDisplayCommand, context: DatadogContext) -> Bool {
+    private func shouldProcess(command: RUMTimeToFullDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to full display was already written
-        guard self.timeToFullDisplay == nil else {
+        guard timeToFullDisplayState == nil else {
             return false
         }
 
@@ -309,9 +339,36 @@ private extension RUMAppLaunchManager {
         return true
     }
 
-    func sendTTFDMessageToProfiler(vital: Vital) {
-        let contextAttributes: [String: Encodable] = parent.rumContextAttributes
-        dependencies.featureScope.send(message: .payload(OperationMessage(attributes: contextAttributes, operation: vital)))
+    private func sendTTFDMessageToProfiler(ttfd: TimeToFullDisplay, ttid: Double) {
+        let ttfdVital = Vital(
+            id: ttfd.vitalId,
+            name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttfd.name,
+            date: ttfd.context.launchInfo.processLaunchDate,
+            serverTimeOffset: ttfd.context.serverTimeOffset,
+            duration: max(ttid, ttfd.duration).dd.toInt64Nanoseconds
+        )
+
+        var contextAttributes: [String: Encodable] = parent.rumContextAttributes
+
+        if ttfd.view.id == RUMUUID.nullUUID.toRUMDataFormat {
+            contextAttributes.removeValue(forKey: RUMCoreContext.IDs.viewID)
+            contextAttributes.removeValue(forKey: RUMCoreContext.IDs.viewName)
+        } else {
+            contextAttributes[RUMCoreContext.IDs.viewID] = [ttfd.view.id]
+            contextAttributes[RUMCoreContext.IDs.viewName] = ttfd.view.name.map { [$0] }
+        }
+
+        dependencies.featureScope.send(message: .payload(OperationMessage(attributes: contextAttributes, operation: ttfdVital)))
+    }
+}
+
+private extension RUMVitalAppLaunchEvent.View {
+    init(activeView: RUMViewScope?) {
+        self.init(
+            id: (activeView?.viewUUID).orNull.toRUMDataFormat,
+            name: activeView?.viewName,
+            url: activeView?.viewPath ?? ""
+        )
     }
 }
 

@@ -334,7 +334,7 @@ fileprivate extension Array where Element == DataUploadConditions.Blocker {
 /// These list should evolve and we may want to add more codes in there.
 ///
 /// Ref.: https://developer.apple.com/documentation/foundation/1508628-url_loading_system_error_codes
-private let telemetryIgnoredNSURLErrorCodes: Set<Int> = [
+internal let telemetryIgnoredNSURLErrorCodes: Set<Int> = [
     NSURLErrorNetworkConnectionLost, // -1005
     NSURLErrorTimedOut, // -1001
     NSURLErrorCannotParseResponse, // - 1017

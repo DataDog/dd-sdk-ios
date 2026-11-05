@@ -153,29 +153,32 @@ internal class CompositionTreeBuilder {
             children.append(backgroundWireframe)
         }
 
-        children.append(
-            contentsOf: snapshot.sublayers.compactMap { sublayer in
-                childReference(for: sublayer, context: context)
-            }
-        )
+        for sublayer in snapshot.sublayers {
+            appendChildReferences(for: sublayer, context: context, to: &children)
+        }
 
         return children
     }
 
-    private func childReference(
+    private func appendChildReferences(
         for snapshot: CALayerSnapshot,
-        context: Context
-    ) -> SRCompositionLayerChild? {
-        guard !snapshot.sublayers.isEmpty || snapshot.requiresCompositionLayer else {
+        context: Context,
+        to children: inout [SRCompositionLayerChild]
+    ) {
+        switch snapshot.compositionTreeRepresentation {
+        case .wireframe:
             var context = context
             context.append(heatmapKey: snapshot.heatmapKey)
-            return makeWireframeReference(for: snapshot, context: context)
+            if let reference = makeWireframeReference(for: snapshot, context: context) {
+                children.append(reference)
+            }
+        case .layer:
+            let layer = makeCompositionLayer(from: snapshot, context: context)
+            layers.append(layer)
+            children.append(.init(id: layer.id, type: .layer))
+        case .passthrough:
+            children.append(contentsOf: self.children(for: snapshot, context: context))
         }
-
-        let layer = makeCompositionLayer(from: snapshot, context: context)
-        layers.append(layer)
-
-        return .init(id: layer.id, type: .layer)
     }
 
     private func makeWireframeReference(

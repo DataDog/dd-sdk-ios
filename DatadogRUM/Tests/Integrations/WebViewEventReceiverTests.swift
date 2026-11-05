@@ -240,7 +240,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            timeseriesCollector: TimeseriesCollectorMock(hasData: true)
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -270,7 +271,8 @@ class WebViewEventReceiverTests: XCTestCase {
             "application": ["id": rumContext.applicationID],
             "session": [
                 "id": rumContext.sessionID,
-                "is_main_process": true
+                "is_main_process": true,
+                "has_timeseries": true
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
@@ -315,7 +317,7 @@ class WebViewEventReceiverTests: XCTestCase {
         // Then
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
+            "session": ["id": rumContext.sessionID, "is_main_process": true, "has_timeseries": false] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": "browser_sdk_version:3.6.13,env:abc,sdk_version:5.2.0,service:abc,version:abc"
@@ -357,7 +359,7 @@ class WebViewEventReceiverTests: XCTestCase {
         // Then
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
+            "session": ["id": rumContext.sessionID, "is_main_process": true, "has_timeseries": false] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags
@@ -400,7 +402,7 @@ class WebViewEventReceiverTests: XCTestCase {
         // Then
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID, "is_main_process": false] as [String: Any],
+            "session": ["id": rumContext.sessionID, "is_main_process": false, "has_timeseries": false] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags
@@ -502,7 +504,8 @@ class WebViewEventReceiverTests: XCTestCase {
             "session": [
                 "id": rumContext.sessionID,
                 "has_replay": webHasReplay,
-                "is_main_process": true
+                "is_main_process": true,
+                "has_timeseries": false
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
@@ -580,7 +583,8 @@ class WebViewEventReceiverTests: XCTestCase {
             "session": [
                 "id": rumContext.sessionID,
                 "has_replay": false,
-                "is_main_process": true
+                "is_main_process": true,
+                "has_timeseries": false
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
@@ -636,7 +640,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
+            "session": ["id": rumContext.sessionID, "is_main_process": true, "has_timeseries": false] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags,
@@ -686,7 +690,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
+            "session": ["id": rumContext.sessionID, "is_main_process": true, "has_timeseries": false] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags,
@@ -929,7 +933,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID, "is_main_process": true] as [String: Any],
+            "session": ["id": rumContext.sessionID, "is_main_process": true, "has_timeseries": false] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
             "ddtags": featureScope.contextMock.ddTags,
@@ -1025,7 +1029,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualJSON = try AnyCodable(actual).toJSONObject()
 
         DDAssertJSONEqual(actualJSON["application"], ["id": "rum-207"] as JSON)
-        DDAssertJSONEqual(actualJSON["session"], ["id": rumContext.sessionID, "has_replay": true, "is_main_process": true] as JSON)
+        DDAssertJSONEqual(actualJSON["session"], ["id": rumContext.sessionID, "has_replay": true, "is_main_process": true, "has_timeseries": false] as JSON)
         DDAssertJSONEqual(actualJSON["view"], ["id": "browser-view"] as JSON)
         DDAssertJSONEqual(actualJSON["date"], delayedDate)
         DDAssertJSONEqual(actualJSON["ddtags"], featureScope.contextMock.ddTags)

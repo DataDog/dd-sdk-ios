@@ -28,12 +28,14 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.swiftUIViewsPredicate)
         #if !os(macOS)
         XCTAssertNil(config.swiftUIActionsPredicate)
-        #endif
         XCTAssertTrue(config.trackMemoryWarnings)
+        #endif
         #endif
         XCTAssertNil(config.urlSessionTracking)
         XCTAssertTrue(config.trackFrustrations)
+        #if !os(macOS)
         XCTAssertFalse(config.trackBackgroundEvents)
+        #endif
         XCTAssertEqual(config.longTaskThreshold, 0.1)
         XCTAssertNil(config.appHangThreshold)
         XCTAssertEqual(config.vitalsUpdateFrequency, .average)

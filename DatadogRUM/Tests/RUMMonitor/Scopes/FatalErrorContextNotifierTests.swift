@@ -45,6 +45,21 @@ class FatalErrorContextNotifierTests: XCTestCase {
         XCTAssertEqual(originalSessionState, sessionStateMessage)
     }
 
+    // MARK: - Stopping Session
+
+    func testWhenSessionStops_itSendsSessionStopMessage() throws {
+        // Given
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+
+        // When
+        fatalErrorContext.sessionDidStop()
+
+        // Then
+        let messages = featureScope.messagesSent()
+        XCTAssertEqual(messages.count, 1)
+        XCTAssertEqual(messages.lastPayload as? String, RUMPayloadMessages.sessionStop)
+    }
+
     // MARK: - Changing View State
 
     func testWhenViewIsSet_itSendsViewEventMessage() throws {

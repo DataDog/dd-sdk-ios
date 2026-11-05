@@ -56,11 +56,11 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
     func testConcurrentContextUpdatesProduceTypedDiagnostics() throws {
         let scope = FeatureScopeMock()
         let requests = ReadWriteLock<[URLRequest]>(wrappedValue: [])
-        let fetcher = FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, featureScope: scope) { request, completion in
+        let fetcher = FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, flagSelection: nil, featureScope: scope) { request, completion in
             requests.mutate { $0.append(request) }
             completion(.failure(URLError(.timedOut)))
         }
-        let repository = FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, initializationTimeout: nil)
+        let repository = FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, flagSelection: nil, initializationTimeout: nil)
         scope.dataStore.flush()
         let finished = expectation(description: "Concurrent contexts complete")
         finished.expectedFulfillmentCount = 100
@@ -92,6 +92,8 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
                 evaluationContext: evaluationContext,
                 context: context,
                 customHeaders: nil,
+                flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+                experimentationOptOut: .immediate,
                 diagnostics: diagnostics
             )
         }
@@ -108,11 +110,11 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
         let scope = FeatureScopeMock()
         let context = FlagsEvaluationContext.mockAny()
         var requests: [URLRequest] = []
-        let fetcher = FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, featureScope: scope) { request, completion in
+        let fetcher = FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, flagSelection: nil, featureScope: scope) { request, completion in
             requests.append(request)
-            completion(.success(.mockAnyFlagAssignmentsResponse()))
+            completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
         }
-        let repository = FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, initializationTimeout: nil)
+        let repository = FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, flagSelection: nil, initializationTimeout: nil)
         scope.dataStore.flush()
         let initialized = expectation(description: "Initial context completes")
         repository.setEvaluationContext(context) { _ in initialized.fulfill() }
@@ -137,13 +139,13 @@ final class FlagsRequestDiagnosticsTests: XCTestCase {
         let scope = FeatureScopeMock()
         let owner = FlagsRequestDiagnostics()
         var requests: [URLRequest] = []
-        let fetcher = FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, featureScope: scope) { request, completion in
+        let fetcher = FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, flagSelection: nil, featureScope: scope) { request, completion in
             requests.append(request)
             completion(.failure(URLError(.timedOut)))
         }
         for _ in 0..<2 {
             let finished = expectation(description: "Transport failure completes")
-            fetcher.flagAssignments(for: .mockAny(), diagnostics: owner.accept()) { result in
+            fetcher.flagAssignments(for: .mockAny(), experimentationOptOut: nil, diagnostics: owner.accept()) { result in
                 if case .success = result { XCTFail("Expected transport failure") }
                 finished.fulfill()
             }
