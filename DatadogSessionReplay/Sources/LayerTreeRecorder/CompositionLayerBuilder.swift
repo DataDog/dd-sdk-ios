@@ -51,13 +51,7 @@ internal struct CompositionLayerBuilder {
             return nil
         }
 
-        let resource = ImageSnapshotResource(image: maskSnapshot.image)
-
-        guard !resource.calculateIdentifier().isEmpty else {
-            return nil
-        }
-
-        return resource
+        return maskSnapshot.makeResource()
     }
 }
 #endif

@@ -445,6 +445,13 @@ extension DatadogCore {
             )
         }
 
+        #if os(macOS)
+        // macOS has no UIKit background tasks, so uploads never use them.
+        let backgroundTasksEnabled = false
+        #else
+        let backgroundTasksEnabled = configuration.backgroundTasksEnabled
+        #endif
+
         self.init(
             directory: directory,
             dateProvider: configuration.dateProvider,
@@ -483,13 +490,13 @@ extension DatadogCore {
             ),
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            backgroundTasksEnabled: backgroundTasksEnabled,
             isRunFromExtension: isRunFromExtension,
             remoteConfigurationProvider: remoteConfigurationProvider
         )
 
         telemetry.configuration(
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            backgroundTasksEnabled: backgroundTasksEnabled,
             batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
             batchSize: performance.uploaderWindow.dd.toInt64Milliseconds,
             batchUploadFrequency: performance.minUploadDelay.dd.toInt64Milliseconds,

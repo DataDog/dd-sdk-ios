@@ -12,7 +12,8 @@ extension URLRequest {
         url: URL,
         evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
-        customHeaders: [String: String]?
+        customHeaders: [String: String]?,
+        experimentationOptOut: ExperimentationOptOut? = nil
     ) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -50,7 +51,8 @@ extension URLRequest {
             subject: FlagAssignmentsRequestBody.Subject(
                 targetingKey: evaluationContext.targetingKey,
                 targetingAttributes: evaluationContext.attributes
-            )
+            ),
+            experimentationOptOut: experimentationOptOut
         )
 
         let encoder = JSONEncoder.dd.default()
@@ -94,6 +96,7 @@ internal struct FlagAssignmentsRequestBody {
     let environment: Environment
     let source: Source
     let subject: Subject
+    var experimentationOptOut: ExperimentationOptOut?
 }
 
 extension FlagAssignmentsRequestBody: Encodable {
@@ -105,6 +108,8 @@ extension FlagAssignmentsRequestBody: Encodable {
         case environment = "env"
         case source
         case subject
+        case evaluationOptions = "evaluation_options"
+        case experimentationOptOutMode = "experimentation_opt_out_mode"
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -117,5 +122,9 @@ extension FlagAssignmentsRequestBody: Encodable {
         try attributesContainer.encode(environment, forKey: .environment)
         try attributesContainer.encode(source, forKey: .source)
         try attributesContainer.encode(subject, forKey: .subject)
+        if let experimentationOptOut {
+            var options = attributesContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .evaluationOptions)
+            try options.encode(experimentationOptOut.wireMode, forKey: .experimentationOptOutMode)
+        }
     }
 }

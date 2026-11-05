@@ -74,6 +74,38 @@ class MessageBusTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
         bus.flush()
     }
+
+    func testWhenDisconnected_itDoesNotDeliverMessages() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let receiver = FeatureMessageReceiverMock()
+        let bus = MessageBus()
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "receiver")
+        bus.send(message: .payload("sent before disconnect"))
+        bus.flush()
+
+        let queueBlocked = DispatchSemaphore(value: 0)
+        bus.queue.async { queueBlocked.wait() } // keep the next message queued until `disconnect()` returns
+        let fallbacks = ReadWriteLock<[String]>(wrappedValue: [])
+        bus.send(message: .payload("queued before disconnect"), else: { fallbacks.mutate { $0.append("queued before disconnect") } })
+
+        // When
+        bus.disconnect()
+        queueBlocked.signal()
+        bus.send(message: .payload("sent after disconnect"), else: { fallbacks.mutate { $0.append("sent after disconnect") } })
+        bus.flush()
+
+        // Then
+        let deliveredPayloads = receiver.messages.compactMap { message -> String? in
+            guard case .payload(let payload as String) = message else {
+                return nil
+            }
+            return payload
+        }
+        XCTAssertEqual(deliveredPayloads, ["sent before disconnect"])
+        XCTAssertEqual(fallbacks.wrappedValue, ["queued before disconnect", "sent after disconnect"], "Dropped messages must invoke their fallback")
+    }
 }
 
 extension MessageBus: @retroactive Telemetry {

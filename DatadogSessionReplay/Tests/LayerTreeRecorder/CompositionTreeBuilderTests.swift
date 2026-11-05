@@ -151,7 +151,7 @@ struct CompositionTreeBuilderTests {
             cornerRadii: cornerRadii,
             cornerCurve: .circular
         ).dd.svgString
-        #expect(glass.requiresCompositionLayer)
+        #expect(glass.compositionTreeRepresentation == .layer)
         #expect(layer.modifiers == [
             .compositionLayerClipModifier(value: .init(path: clipPath)),
             .compositionLayerShadowModifier(value: .init(
@@ -269,6 +269,49 @@ struct CompositionTreeBuilderTests {
             .init(id: .init(namespace: .shape, replayID: leaf.replayID), type: .wireframe)
         ])
         #expect(output.wireframes.count == 1)
+    }
+
+    @Test("Build composes grouped scroll pockets with the scroll content")
+    func buildComposesGroupedScrollPocketsWithScrollContent() throws {
+        // Given
+        let content = CALayerSnapshot.mockWith(replayID: 6, backgroundColor: UIColor.red.cgColor)
+        let topPocket = CALayerSnapshot.mockWith(
+            replayID: 3,
+            observation: .init(semantics: .visualEffect(.scrollPocket(.top)))
+        )
+        let bottomPocket = CALayerSnapshot.mockWith(
+            replayID: 4,
+            observation: .init(semantics: .visualEffect(.scrollPocket(.bottom)))
+        )
+        let group = CALayerSnapshot.mockWith(
+            replayID: 2,
+            observation: .init(semantics: .visualEffect(.scrollPocketGroup)),
+            sublayers: [topPocket, bottomPocket]
+        )
+        let standalonePocket = CALayerSnapshot.mockWith(
+            replayID: 5,
+            observation: .init(semantics: .visualEffect(.scrollPocket(.top)))
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [content, group, standalonePocket]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children == [
+            .init(id: .init(namespace: .shape, replayID: content.replayID), type: .wireframe),
+            .init(id: topPocket.replayID, type: .layer),
+            .init(id: bottomPocket.replayID, type: .layer),
+            .init(id: standalonePocket.replayID, type: .layer)
+        ])
+        let layers = try #require(output.compositionTree.layers).sorted { $0.id < $1.id }
+        #expect(layers.map(\.id) == [topPocket.replayID, bottomPocket.replayID, standalonePocket.replayID])
+        #expect(layers.allSatisfy { $0.compositeOperation == .destinationOut })
     }
 
     @Test("Build applies inherited visual effect to descendant wireframe")

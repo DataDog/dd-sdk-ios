@@ -10,8 +10,18 @@ import DatadogInternal
 internal protocol FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: ExperimentationOptOut?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
+}
+
+extension FlagAssignmentsFetching {
+    func flagAssignments(
+        for evaluationContext: FlagsEvaluationContext,
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
+    ) {
+        flagAssignments(for: evaluationContext, experimentationOptOut: nil, completion: completion)
+    }
 }
 
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
@@ -62,6 +72,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: ExperimentationOptOut?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         // Repository callbacks can invoke application code; keep them off shared SDK work queues.
@@ -79,6 +90,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             self.assignmentFetchQueue.async {
                 self.fetchAssignments(
                     for: evaluationContext,
+                    experimentationOptOut: experimentationOptOut,
                     context: context,
                     completion: completion
                 )
@@ -88,6 +100,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private func fetchAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: ExperimentationOptOut?,
         context: DatadogContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
@@ -96,12 +109,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 url: url(with: context),
                 evaluationContext: evaluationContext,
                 context: context,
-                customHeaders: customHeaders
+                customHeaders: customHeaders,
+                experimentationOptOut: experimentationOptOut
             )
             fetch(request) { [assignmentFetchQueue, featureScope] result in
                 assignmentFetchQueue.async {
                     Self.handleFetchResult(
                         result,
+                        experimentationOptOut: experimentationOptOut,
                         supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
                         featureScope: featureScope,
                         completion: completion
@@ -117,6 +132,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private static func handleFetchResult(
         _ result: Result<Data, Error>,
+        experimentationOptOut: ExperimentationOptOut?,
         supportsObfuscation: Bool,
         featureScope: any FeatureScope,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
@@ -126,6 +142,10 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             do {
                 let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
                 guard response.obfuscation == nil || supportsObfuscation else {
+                    throw FlagsError.invalidResponse
+                }
+
+                guard ExperimentationOptOut.accepts(response, for: experimentationOptOut) else {
                     throw FlagsError.invalidResponse
                 }
 
@@ -156,8 +176,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 completion(.failure(.invalidResponse))
             }
         case .failure(let error):
-            DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
-            featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
+            // The repository handles fetch failures through its error or stale state.
+            DD.logger.warn("Failed to fetch flag assignments from the server.", error: error)
             completion(.failure(.networkError(error)))
         }
     }

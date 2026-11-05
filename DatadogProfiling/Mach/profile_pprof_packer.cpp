@@ -23,7 +23,7 @@
 
 #include "profile_pprof_packer.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <cstdlib>
 
@@ -316,4 +316,4 @@ void perftools_profiles_profile_add_samples(const profile& prof, Perftools__Prof
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

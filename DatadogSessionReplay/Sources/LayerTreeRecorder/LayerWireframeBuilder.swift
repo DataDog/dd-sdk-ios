@@ -221,7 +221,7 @@ internal struct LayerWireframeBuilder {
             do {
                 switch try imageSnapshot.redacted(parentTextInput: textInput) {
                 case .image(let image):
-                    let resource = ImageSnapshotResource(image: image)
+                    let resource = ImageSnapshotResource(image: image, format: imageSnapshot.resourceFormat)
                     guard !resource.calculateIdentifier().isEmpty else {
                         return nil
                     }

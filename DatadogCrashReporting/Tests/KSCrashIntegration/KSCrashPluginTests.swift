@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogCrashReporting
 import KSCrashRecording
 
@@ -13,13 +14,40 @@ final class KSCrashPluginTests: XCTestCase {
 
     func testConfiguration() throws {
         // When
-        let config: KSCrashConfiguration = try .datadog()
+        let config: KSCrashConfiguration = try .datadog(bundle: .mockWith(bundleIdentifier: "com.example.app"))
 
         // Then
-        XCTAssertTrue(config.installPath?.contains("/Library/Caches/com.datadoghq.crash-reporting/v2") ?? false)
+        let caches = try XCTUnwrap(FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first)
+        #if os(macOS)
+        XCTAssertEqual(config.installPath, caches.appendingPathComponent("com.example.app/com.datadoghq.crash-reporting/v2").path)
+        #else
+        XCTAssertEqual(config.installPath, caches.appendingPathComponent("com.datadoghq.crash-reporting/v2").path)
+        #endif
         XCTAssertEqual(config.reportStoreConfiguration.maxReportCount, 1)
         XCTAssertEqual(config.reportStoreConfiguration.reportCleanupPolicy, .never)
     }
+
+    #if os(macOS)
+    func testOnMacOS_givenExecutableWithoutBundleIdentifier_whenConfiguring_thenInstallPathIsInTheExecutableSubdirectory() throws {
+        // When
+        let config: KSCrashConfiguration = try .datadog(
+            bundle: .mockWith(bundleIdentifier: nil, executableURL: URL(fileURLWithPath: "/usr/local/bin/helper"))
+        )
+
+        // Then
+        let caches = try XCTUnwrap(FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first)
+        XCTAssertEqual(config.installPath, caches.appendingPathComponent("helper-ddece4a4663236ed/com.datadoghq.crash-reporting/v2").path)
+    }
+
+    func testOnMacOS_givenTwoApps_whenConfiguring_thenInstallPathsAreDifferent() throws {
+        // When
+        let config1: KSCrashConfiguration = try .datadog(bundle: .mockWith(bundleIdentifier: "com.example.app1"))
+        let config2: KSCrashConfiguration = try .datadog(bundle: .mockWith(bundleIdentifier: "com.example.app2"))
+
+        // Then
+        XCTAssertNotEqual(config1.installPath, config2.installPath)
+    }
+    #endif
 
     func testCStringFromContextAppendsTrailingNullTerminator() {
         // Given

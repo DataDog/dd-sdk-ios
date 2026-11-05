@@ -66,6 +66,17 @@ extension CALayer {
         delegate?.isKind(of: Classes.scrollEdgeEffectView) == true
     }
 
+    var isScrollPocketGroup: Bool {
+        guard
+            superlayer?.delegate is UIScrollView,
+            let sublayers, !sublayers.isEmpty
+        else {
+            return false
+        }
+
+        return sublayers.allSatisfy(\.isScrollEdgeEffect)
+    }
+
     @MainActor var scrollPocketEdge: UIRectEdge? {
         var next = superlayer
 
