@@ -15,6 +15,7 @@ source ./tools/utils/argparse.sh
 source ./tools/utils/echo-color.sh
 source ./tools/utils/current-git.sh
 source ./tools/secrets/get-secret.sh
+source ./tools/utils/boot-simulator.sh
 
 set_description "Executes unit tests for a specified --scheme, using the provided --os, --platform, and --device."
 define_arg "scheme" "" "Identifies the test scheme to execute" "string" "true"
@@ -101,6 +102,9 @@ fi
 
 # Suppress lint Build Phase during xcodebuild test runs. CI runs `make lint` standalone
 export SKIP_LINT=1
+
+# Boots the simulator while xcodebuild builds the tests.
+boot_simulator_in_background "$platform" "$os" "$device"
 
 set -x
 

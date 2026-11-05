@@ -70,6 +70,9 @@ export DD_TEST_UTILITIES_ENABLED=1
 WORKSPACE="IntegrationTests/IntegrationTests.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME="IntegrationScenarios"
+# Test classes are spread over two clones of the destination simulator. xcodebuild creates and boots the clones,
+# so the destination simulator is not booted ahead of time like in unit and smoke tests.
+PARALLEL_TESTING_ARGS=(-parallel-testing-enabled YES -parallel-testing-worker-count 2)
 TEST_PLAN="$test_plan"
 
 xcodebuild -version
@@ -81,7 +84,7 @@ case "$mode" in
         disable_apple_crash_reporter
         trap enable_apple_crash_reporter EXIT INT
 
-        run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN"
+        run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" "${PARALLEL_TESTING_ARGS[@]}"
         ;;
 
     build-for-testing)
@@ -107,7 +110,7 @@ case "$mode" in
         disable_apple_crash_reporter
         trap "kill $MOCK_SERVER_PID; enable_apple_crash_reporter" EXIT INT
 
-        run_tests test-without-building -xctestrun "$XCTESTRUN_PATH" -destination "$DESTINATION"
+        run_tests test-without-building -xctestrun "$XCTESTRUN_PATH" -destination "$DESTINATION" "${PARALLEL_TESTING_ARGS[@]}"
         ;;
 
     *)

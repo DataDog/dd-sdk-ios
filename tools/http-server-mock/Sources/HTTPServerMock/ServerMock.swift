@@ -88,6 +88,15 @@ public class ServerMock {
         URLSession.shared.dataTask(with: request).resume()
     }
 
+    /// Removes the requests recorded in the session with given identifier and returns once the server has removed them.
+    internal func clearRecordedRequests(sessionIdentifier: String) {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/requests/\(sessionIdentifier)"))
+        request.httpMethod = "DELETE"
+        let semaphore = DispatchSemaphore(value: 0)
+        URLSession.shared.dataTask(with: request) { _, _, _ in semaphore.signal() }.resume()
+        semaphore.wait()
+    }
+
     // MARK: - Endpoints
 
     /// Fetches all requests recorded by the server.

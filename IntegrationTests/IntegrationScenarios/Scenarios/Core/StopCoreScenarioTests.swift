@@ -80,7 +80,9 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
         try assertLoggingDataWasCollected(by: loggingServerSession)
         try assertTracingDataWasCollected(by: tracingServerSession)
         try assertInitialRUMSessionWasCollected(by: rumServerSession)
-        server.clearAllRequests()
+        loggingServerSession.clearRecordedRequests()
+        tracingServerSession.clearRecordedRequests()
+        rumServerSession.clearRecordedRequests()
 
         // Stop the core and replay the scenario
         root.stopCore()
