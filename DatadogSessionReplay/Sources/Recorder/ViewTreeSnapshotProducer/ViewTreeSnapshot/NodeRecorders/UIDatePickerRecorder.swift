@@ -117,8 +117,10 @@ private struct InlineStyleDatePickerRecorder {
     }
 
     func record(_ view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
+        let shouldMaskInputElements = attributes.resolveTextAndInputPrivacyLevel(in: context).shouldMaskInputElements
+
         viewRecorder.semanticsOverride = { _, viewAttributes in
-            if context.recorder.textAndInputPrivacy.shouldMaskInputElements {
+            if shouldMaskInputElements {
                 let isSquare = viewAttributes.frame.width == viewAttributes.frame.height
                 let isCircle = isSquare && viewAttributes.layerCornerRadius == viewAttributes.frame.width * 0.5
                 if isCircle {
@@ -128,7 +130,7 @@ private struct InlineStyleDatePickerRecorder {
             return nil
         }
 
-        if context.recorder.textAndInputPrivacy.shouldMaskInputElements {
+        if shouldMaskInputElements {
             labelRecorder.builderOverride = { builder in
                 var builder = builder
                 builder.textColor = SystemColors.label
