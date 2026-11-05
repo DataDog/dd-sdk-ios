@@ -299,6 +299,7 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func stopSession() {
+        telemetry.usage(event: .stopSession)
         process(command: RUMStopSessionCommand(time: dateProvider.now))
     }
 
@@ -473,6 +474,7 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - actions
 
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        telemetry.usage(event: .addAction)
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.now,
@@ -681,6 +683,7 @@ extension Monitor: RUMMonitorViewProtocol {
 
     #if !os(watchOS)
     func startView(viewController: DDViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        telemetry.usage(event: .startView)
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -707,6 +710,7 @@ extension Monitor: RUMMonitorViewProtocol {
     #endif
 
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        telemetry.usage(event: .startView)
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,

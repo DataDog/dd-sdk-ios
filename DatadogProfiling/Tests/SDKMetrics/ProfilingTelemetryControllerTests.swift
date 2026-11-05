@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -327,4 +327,4 @@ private extension Array where Element == TelemetryMessage {
             .attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)
