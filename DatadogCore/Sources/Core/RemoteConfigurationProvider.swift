@@ -196,10 +196,12 @@ internal final class RemoteConfigurationProvider {
 
     /// Stops the provider.
     ///
-    /// Unsubscribes from foreground notifications so that no new sync starts. It does not
-    /// cancel a request already in flight: if the provider is still alive when that request
-    /// completes, the result is cached and passed to the handler given to `start(_:)`.
-    /// The result is discarded only if the provider was deallocated in the meantime.
+    /// Removes the foreground notification observer, so later notifications don't start a sync.
+    /// A notification callback that is already running can still start one.
+    ///
+    /// A request already in flight is not cancelled. If it returns a new configuration while the
+    /// provider is alive, the configuration is cached and passed to the `start(_:)` handler. It is
+    /// dropped only if the provider is deallocated first.
     ///
     /// Safe to call multiple times and from any thread.
     func stop() {
