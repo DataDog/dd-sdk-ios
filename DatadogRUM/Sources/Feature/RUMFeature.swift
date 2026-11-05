@@ -112,7 +112,13 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         var renderLoopObserver: RenderLoopObserver? = nil
         var accessibilityReader: AccessibilityReading? = nil
 
-        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        let firstFrameReader: (RenderLoopReader & RUMCommandPublisher)?
+        #if os(macOS)
+        // macOS has no render loop to read the first frame from: `RUMInstrumentation` reads the first window instead.
+        firstFrameReader = nil
+        #else
+        firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        #endif
 
         #if !os(watchOS) && !os(macOS)
         if configuration.collectAccessibility {
@@ -298,8 +304,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             dependencies.renderLoopObserver?.register(refreshRateVital)
         }
 
-        firstFrameReader.publish(to: monitor)
-        dependencies.renderLoopObserver?.register(firstFrameReader)
+        if let firstFrameReader {
+            firstFrameReader.publish(to: monitor)
+            dependencies.renderLoopObserver?.register(firstFrameReader)
+        }
 
         // Resolved on each hang rather than captured here, as Crash Reporting - which owns this setting - can be
         // enabled after RUM. A missing Crash Reporting Feature means backtrace generation is *unavailable* rather

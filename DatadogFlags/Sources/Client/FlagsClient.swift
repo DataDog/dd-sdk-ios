@@ -296,6 +296,7 @@ public final class FlagsClient {
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
+                flagSelection: feature.flagSelection,
                 initializationTimeout: feature.initializationTimeout,
                 experimentationOptOutMode: configuration.experimentationOptOutMode
             ),

@@ -49,7 +49,8 @@ internal struct RUMScopeDependencies {
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
     let renderLoopObserver: RenderLoopObserver?
-    let firstFrameReader: RenderLoopReader
+    /// Reads the first frame for the time to initial display. It is `nil` on macOS, which reads the first window instead.
+    let firstFrameReader: RenderLoopReader?
     let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
     let timeseriesCollector: TimeseriesCollecting?
@@ -96,7 +97,7 @@ internal struct RUMScopeDependencies {
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
         renderLoopObserver: RenderLoopObserver?,
-        firstFrameReader: RenderLoopReader,
+        firstFrameReader: RenderLoopReader?,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
         accessibilityReader: AccessibilityReading?,

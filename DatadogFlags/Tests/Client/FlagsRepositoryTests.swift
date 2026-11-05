@@ -21,6 +21,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(),
+                flagSelection: nil,
                 initializationTimeout: nil,
                 experimentationOptOutMode: mode
             )
@@ -59,6 +60,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     },
                     dateProvider: DateProviderMock(),
                     featureScope: FeatureScopeMock(dataStore: store),
+                    flagSelection: nil,
                     scheduleInitializationTimeout: { _, _ in
                         scheduledTimeouts += 1
                         return {}
@@ -133,6 +135,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.success(.init(flags: [:]))) },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 scheduleInitializationTimeout: { _, _ in
                     scheduledTimeouts += 1
                     return {}
@@ -166,6 +169,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flagAssignmentsFetcher: fetcher,
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil,
                 experimentationOptOutMode: mode
             )
@@ -242,6 +246,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in responses.append(complete) },
             dateProvider: DateProviderMock(),
             featureScope: scope,
+            flagSelection: nil,
             initializationTimeout: nil,
             experimentationOptOutMode: mode
         )
@@ -284,6 +289,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil,
                 experimentationOptOutMode: mode
             )
@@ -320,6 +326,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 experimentationOptOutMode: mode
             )
             repository.setEvaluationContext(context) { _ in }
@@ -346,6 +353,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 experimentationOptOutMode: mode
             )
             let finished = expectation(description: "offline restoration")
@@ -364,6 +372,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { context, complete in requests.append((context, complete)) },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(),
+                flagSelection: nil,
                 initializationTimeout: nil,
                 experimentationOptOutMode: mode
             )
@@ -412,6 +421,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.failure(.invalidResponse)) },
                     dateProvider: DateProviderMock(),
                     featureScope: scope,
+                    flagSelection: nil,
                     experimentationOptOutMode: mode
                 )
                 let completed = expectation(description: "legacy cache")
@@ -456,7 +466,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 clientName: clientName,
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.failure(.invalidResponse)) },
                 dateProvider: DateProviderMock(),
-                featureScope: scope
+                featureScope: scope,
+                flagSelection: nil
             )
             let completed = expectation(description: "cache restored \(label)")
             repository.setEvaluationContext(data.context) { _ in completed.fulfill() }
@@ -495,6 +506,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in responses.append(complete) },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil,
                 experimentationOptOutMode: mode
             )
@@ -546,6 +558,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     flagAssignmentsFetcher: fetcher,
                     dateProvider: DateProviderMock(),
                     featureScope: featureScope,
+                    flagSelection: nil,
                     experimentationOptOutMode: mode
                 )
                 var attributes: [String: AnyValue] = [:]
@@ -584,6 +597,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 experimentationOptOutMode: .futureExperimentsOnly
             )
             defer { repository.flush() }
@@ -617,6 +631,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             experimentationOptOutMode: .futureExperimentsOnly
         )
         let loaded = expectation(description: "first delivery")
@@ -634,6 +649,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 experimentationOptOutMode: mode
             )
             defer { restored.flush() }
@@ -657,6 +673,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             experimentationOptOutMode: .futureExperimentsOnly
         )
         featureScope.dataStore.flush()
@@ -697,6 +714,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             experimentationOptOutMode: .immediate
         )
         featureScope.dataStore.flush()
@@ -723,6 +741,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             experimentationOptOutMode: .immediate
         )
         featureScope.dataStore.flush()
@@ -752,6 +771,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             experimentationOptOutMode: .immediate
         )
         featureScope.dataStore.flush()
@@ -788,6 +808,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 experimentationOptOutMode: .immediate
             )
             let complete = expectation(description: "response")
@@ -803,6 +824,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 experimentationOptOutMode: .immediate
             )
             featureScope.dataStore.flush()
@@ -822,6 +844,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in completions.append(complete) },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             scheduleInitializationTimeout: { _, action in timeout = action; return {} },
             experimentationOptOutMode: .immediate
         )
@@ -859,6 +882,7 @@ final class FlagsRepositoryTests: XCTestCase {
             let fetcher = FlagAssignmentsFetcher(
                 customEndpoint: nil,
                 customHeaders: nil,
+                flagSelection: nil,
                 featureScope: scope,
                 fetch: { _, completion in
                     fetchCount += 1
@@ -869,7 +893,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 clientName: "client",
                 flagAssignmentsFetcher: fetcher,
                 dateProvider: DateProviderMock(),
-                featureScope: scope
+                featureScope: scope,
+                flagSelection: nil
             )
             scope.dataStore.flush()
             var results: [Result<Void, FlagsError>] = []
@@ -926,6 +951,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
                     dateProvider: DateProviderMock(),
                     featureScope: FeatureScopeMock(dataStore: dataStore),
+                    flagSelection: nil,
                     readTimeout: 0,
                     initializationTimeout: nil
                 )
@@ -990,6 +1016,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(dataStore: dataStore),
+                flagSelection: nil,
                 readTimeout: 0,
                 initializationTimeout: nil
             )
@@ -1096,7 +1123,8 @@ final class FlagsRepositoryTests: XCTestCase {
                     completion(.success(response))
                 },
                 dateProvider: DateProviderMock(),
-                featureScope: FeatureScopeMock(context: .mockWith(source: "ios"), dataStore: dataStore)
+                featureScope: FeatureScopeMock(context: .mockWith(source: "ios"), dataStore: dataStore),
+                flagSelection: nil
             )
             defer {
                 dataStore.resumeRead()
@@ -1492,6 +1520,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(dataStore: dataStore),
+            flagSelection: nil,
             initializationTimeout: 5,
             scheduleInitializationTimeout: { _, _ in { onTimeoutCancellation?() } }
         )
@@ -1567,6 +1596,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(dataStore: dataStore),
+                flagSelection: nil,
                 initializationTimeout: 5,
                 scheduleInitializationTimeout: { _, action in
                     timeoutAction = action
@@ -1668,6 +1698,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(dataStore: dataStore),
+                flagSelection: nil,
                 readTimeout: 5
             )
             let started = DispatchGroup()
@@ -1825,7 +1856,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.success(.init(flags: ["flag": network])))
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         featureScope.dataStore.flush()
         let aggregator = EvaluationAggregator(
@@ -1894,7 +1926,8 @@ final class FlagsRepositoryTests: XCTestCase {
             clientName: "cached",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         featureScope.dataStore.flush()
         XCTAssertEqual(reloaded.flagAssignment(for: "flag")?.reason, "CACHED")
@@ -1912,7 +1945,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 clientName: "cached",
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
                 dateProvider: DateProviderMock(),
-                featureScope: scope
+                featureScope: scope,
+                flagSelection: nil
             )
             scope.dataStore.flush()
             XCTAssertEqual(repository.flagAssignments(), valid ? [:] : nil)
@@ -1937,7 +1971,8 @@ final class FlagsRepositoryTests: XCTestCase {
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         featureScope.dataStore.flush()
 
@@ -1969,7 +2004,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.success(.init(flags: flags)))
             },
             dateProvider: dateProvider,
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         let completed = expectation(description: "completed")
 
@@ -2011,7 +2047,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.failure(.invalidResponse))
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         let completed = expectation(description: "completed")
 
@@ -2047,6 +2084,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { timeout, action in
                 scheduledTimeout = timeout
@@ -2102,6 +2140,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
                     dateProvider: DateProviderMock(),
                     featureScope: FeatureScopeMock(dataStore: dataStore),
+                    flagSelection: nil,
                     initializationTimeout: 5,
                     scheduleInitializationTimeout: { timeout, action in
                         scheduledTimeout = timeout
@@ -2170,6 +2209,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
                 timeoutAction = action
@@ -2209,6 +2249,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
                 timeoutAction = action
@@ -2263,6 +2304,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
                 timeoutAction = action
@@ -2314,6 +2356,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 initializationTimeout: 2.5,
                 scheduleInitializationTimeout: { _, action in
                     timeoutAction = action
@@ -2359,6 +2402,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: dateProvider,
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
                 timeoutAction = action
@@ -2455,6 +2499,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 initializationTimeout: 2.5,
                 scheduleInitializationTimeout: { _, action in
                     timeoutAction = action
@@ -2500,6 +2545,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
                 timeoutAction = action
@@ -2540,6 +2586,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 initializationTimeout: timeout,
                 scheduleInitializationTimeout: { _, _ in
                     scheduledTimeoutCount += 1
@@ -2570,6 +2617,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
                 timeoutAction = action
@@ -2598,6 +2646,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, _ in
                 scheduledTimeoutCount += 1
@@ -2626,6 +2675,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            flagSelection: nil,
             scheduleInitializationTimeout: { timeout, _ in
                 scheduledTimeoutCount += 1
                 scheduledTimeout = timeout
@@ -2666,7 +2716,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.success(.init(flags: ["test": .mockAny()])))
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         XCTAssertEqual(flagsRepository.state.currentState, .notReady)
         let completed = expectation(description: "completed")
@@ -2689,7 +2740,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.failure(.networkError(URLError(.notConnectedToInternet))))
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         XCTAssertEqual(flagsRepository.state.currentState, .notReady)
         let completed = expectation(description: "completed")
@@ -2713,7 +2765,8 @@ final class FlagsRepositoryTests: XCTestCase {
             clientName: .mockAny(),
             flagAssignmentsFetcher: fetcherMock,
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         let firstCompleted = expectation(description: "first completed")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in
@@ -2749,7 +2802,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 capturedCompletion = completion
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         XCTAssertEqual(flagsRepository.state.currentState, .notReady)
 
@@ -2772,7 +2826,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.success(.init(flags: ["test": .mockAny()])))
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         let completed = expectation(description: "completed")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in
@@ -2810,7 +2865,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.failure(.networkError(URLError(.notConnectedToInternet))))
             },
             dateProvider: DateProviderMock(),
-            featureScope: asyncFeatureScope
+            featureScope: asyncFeatureScope,
+            flagSelection: nil
         )
 
         // When — call setEvaluationContext while the disk read may still be in-flight.
@@ -2838,7 +2894,8 @@ final class FlagsRepositoryTests: XCTestCase {
             clientName: .mockAny(),
             flagAssignmentsFetcher: fetcherMock,
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         let firstCompleted = expectation(description: "first completed")
         flagsRepository.setEvaluationContext(contextA) { _ in
@@ -2873,7 +2930,8 @@ final class FlagsRepositoryTests: XCTestCase {
             clientName: .mockAny(),
             flagAssignmentsFetcher: fetcherMock,
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
 
         // Reach ready state
@@ -2917,6 +2975,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
+                flagSelection: nil,
                 initializationTimeout: 5,
                 scheduleInitializationTimeout: { _, _ in {} }
             )
@@ -2984,10 +3043,11 @@ final class FlagsRepositoryTests: XCTestCase {
         let requested = expectation(description: "both requests started")
         requested.expectedFulfillmentCount = 2
         @ReadWriteLock
-        var networkCompletions: [(Result<Data, Error>) -> Void] = []
+        var networkCompletions: [(Result<(Data, HTTPURLResponse), Error>) -> Void] = []
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
+            flagSelection: nil,
             featureScope: featureScope,
             fetch: { _, completion in
                 _networkCompletions.mutate { $0.append(completion) }
@@ -2999,6 +3059,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: dateProvider,
             featureScope: featureScope,
+            flagSelection: nil,
             initializationTimeout: nil
         )
         featureScope.dataStore.flush()
@@ -3035,9 +3096,9 @@ final class FlagsRepositoryTests: XCTestCase {
         }
 
         // When A's success processing is paused and B's success arrives
-        completions[0](.success(.mockAnyFlagAssignmentsResponse()))
+        completions[0](.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
         XCTAssertEqual(dateProvider.started.wait(timeout: .now() + 1), .success)
-        completions[1](.success(.mockAnyFlagAssignmentsResponse()))
+        completions[1](.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
 
         // Then B completes without waiting for A
         XCTAssertEqual(secondFinished.wait(timeout: .now() + 1), .success)
@@ -3360,7 +3421,8 @@ final class FlagsRepositoryTests: XCTestCase {
             clientName: .mockAny(),
             flagAssignmentsFetcher: fetcherMock,
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
 
         let completedA = expectation(description: "request A completed")
@@ -3407,7 +3469,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.success(.init(flags: ["test": .mockAny()])))
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         let completed = expectation(description: "completed")
 
@@ -3432,7 +3495,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 completion(.failure(.networkError(URLError(.notConnectedToInternet))))
             },
             dateProvider: DateProviderMock(),
-            featureScope: featureScope
+            featureScope: featureScope,
+            flagSelection: nil
         )
         let completed = expectation(description: "completed")
 
@@ -3447,6 +3511,263 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
+    }
+
+    // MARK: - Flag Selection
+
+    func testCachedFlagsDataWithMatchingFlagSelectionIsLoaded() throws {
+        // Given
+        let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: ["checkout.*"])
+        let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: selection)
+        featureScope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
+
+        // When
+        let repository = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: ["checkout.*"])
+        )
+        featureScope.dataStore.flush()
+
+        // Then
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context, .mockAny())
+    }
+
+    func testCachedFlagsDataWithDifferentFlagSelectionIsNotLoaded() throws {
+        let mobile = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        let cases: [(cached: CanonicalFlagSelection?, configured: CanonicalFlagSelection?)] = [
+            (mobile, CanonicalFlagSelection(tags: ["web"], keyPatterns: [])),
+            (mobile, CanonicalFlagSelection(tags: [], keyPatterns: ["mobile"])),
+            (nil, mobile),
+            (mobile, nil),
+            (CanonicalFlagSelection(tags: ["caf\u{00E9}"], keyPatterns: []), CanonicalFlagSelection(tags: ["cafe\u{0301}"], keyPatterns: [])),
+        ]
+
+        for (cached, configured) in cases {
+            // Given
+            let scope = FeatureScopeMock()
+            let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: cached)
+            scope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
+
+            // When
+            let repository = FlagsRepository(
+                clientName: "cached",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                flagSelection: configured
+            )
+            scope.dataStore.flush()
+
+            // Then
+            XCTAssertNil(repository.flagAssignment(for: "flag"), "cached: \(String(describing: cached)), configured: \(String(describing: configured))")
+            XCTAssertNil(repository.flagAssignments())
+            XCTAssertNil(repository.context)
+        }
+    }
+
+    func testFlagSelectionMatchingNothingIsReadyWithoutFlags() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let fetcher = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(.init(flags: [:])))
+        }
+        let repository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: CanonicalFlagSelection(tags: ["no-such-tag"], keyPatterns: [])
+        )
+        featureScope.dataStore.flush()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<Void, FlagsError>?
+
+        // When
+        client.setEvaluationContext(.mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        repository.flush()
+        XCTAssertNoThrow(try XCTUnwrap(capturedResult).get())
+        XCTAssertEqual(client.state.currentState, .ready)
+        XCTAssertEqual(repository.flagAssignments(), [:])
+        let details = client.getDetails(key: "checkout.enabled", defaultValue: false)
+        XCTAssertFalse(details.value)
+        XCTAssertEqual(details.error, .flagNotFound)
+        XCTAssertTrue(dd.logger.recordedLogs.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
+
+        // When a later fetch for the same context fails
+        fetcher.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+        }
+        let failed = expectation(description: "failed")
+        client.setEvaluationContext(.mockAny()) { _ in
+            failed.fulfill()
+        }
+
+        // Then the empty configuration is still the loaded configuration for that context
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(client.state.currentState, .stale)
+        XCTAssertEqual(repository.flagAssignments(), [:])
+    }
+
+    func testEqualCanonicalFlagSelectionsShareTheCachedSnapshot() throws {
+        // Given
+        let cached = try XCTUnwrap(CanonicalFlagSelection.make(from: .init(tags: [" checkout", "checkout"])).get())
+        let configured = try XCTUnwrap(CanonicalFlagSelection.make(from: .init(tags: ["checkout"])).get())
+        let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: cached)
+        featureScope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
+
+        // When
+        let repository = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: configured
+        )
+        featureScope.dataStore.flush()
+
+        // Then
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context, .mockAny())
+    }
+
+    func testFetchedFlagsDataIsPersistedWithFlagSelection() throws {
+        // Given
+        let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        let repository = FlagsRepository(
+            clientName: "persisted",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(.init(flags: ["flag": .mockAny()])))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: selection
+        )
+        featureScope.dataStore.flush()
+        let completed = expectation(description: "completed")
+
+        // When
+        repository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        repository.flush()
+        featureScope.dataStore.flush()
+        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["persisted"]?.data(expectedVersion: 3))
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: persisted).flagSelection, selection)
+    }
+
+    func testFlagsDataWithFlagSelectionIsStoredAtAVersionThatOlderSDKsDoNotRead() throws {
+        // Given
+        let selection = CanonicalFlagSelection(tags: ["cafe\u{0301}"], keyPatterns: ["checkout.*"])
+        let obfuscation = try mockObfuscation()
+
+        for obfuscation in [nil, obfuscation] {
+            let scope = FeatureScopeMock()
+            let flagsData = FlagsData(
+                flags: ["flag": .mockAny()],
+                context: .mockAny(),
+                date: .mockAny(),
+                obfuscation: obfuscation,
+                flagSelection: selection
+            )
+
+            // When
+            scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "cached")
+
+            // Then
+            // SDKs without flag selection read only versions 1 and 2, and would load the selected flags as the full configuration.
+            let stored = try XCTUnwrap(scope.dataStoreMock.storage["cached"])
+            XCTAssertNil(stored.data(), "obfuscation: \(String(describing: obfuscation))")
+            XCTAssertNil(stored.data(expectedVersion: 2), "obfuscation: \(String(describing: obfuscation))")
+            XCTAssertNotNil(stored.data(expectedVersion: 3), "obfuscation: \(String(describing: obfuscation))")
+            let restored = expectation(description: "restored")
+            scope.flagsDataStore.flagsData(forClientNamed: "cached") {
+                XCTAssertEqual($0, flagsData)
+                restored.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+    }
+
+    func testFlagsDataStoredAtAVersionThatDoesNotMatchItsFlagSelectionIsNotLoaded() throws {
+        let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        let obfuscation = try mockObfuscation()
+        let selected = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), flagSelection: selection)
+        let selectedObfuscated = FlagsData(
+            flags: ["flag": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny(),
+            obfuscation: obfuscation,
+            flagSelection: selection
+        )
+        let unselected = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny())
+
+        for (flagsData, version) in [(selected, DataStoreKeyVersion(1)), (selected, 2), (selectedObfuscated, 2), (unselected, 3)] {
+            // Given
+            let scope = FeatureScopeMock()
+            try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: version)
+            let completed = expectation(description: "inconsistent cache rejected")
+
+            // When
+            scope.flagsDataStore.flagsData(forClientNamed: "cached") {
+                // Then
+                XCTAssertNil($0, "version: \(version), obfuscated: \(flagsData.obfuscation != nil)")
+                completed.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+    }
+
+    func testFlagsDataStoredAtAnUnknownVersionIsNotLoadedAndNotReported() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let scope = FeatureScopeMock()
+        let flagsData = FlagsData(
+            flags: ["flag": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny(),
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        )
+        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 4)
+        let completed = expectation(description: "unknown version skipped")
+
+        // When
+        scope.flagsDataStore.flagsData(forClientNamed: "cached") {
+            // Then
+            XCTAssertNil($0)
+            completed.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(dd.logger.errorMessages, [])
+        XCTAssertEqual(scope.telemetryMock.messages.count, 0)
+    }
+
+    private func mockObfuscation() throws -> FlagKeyObfuscation {
+        try JSONDecoder().decode(
+            FlagKeyObfuscation.self,
+            from: Data(#"{"scheme":"flag-key-sha256-v1","salt":"00000000000000000000000000000000"}"#.utf8)
+        )
     }
 
     private func withBlockedCacheWrite(_ assertions: (FlagsRepository, BlockingWriteDataStore) -> Void) {
@@ -3522,6 +3843,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in responses.append(complete) },
                     dateProvider: DateProviderMock(),
                     featureScope: FeatureScopeMock(dataStore: store),
+                    flagSelection: nil,
                     initializationTimeout: nil,
                     experimentationOptOutMode: mode
                 )
@@ -3587,6 +3909,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(dataStore: dataStore),
+            flagSelection: nil,
             initializationTimeout: initializationTimeout,
             experimentationOptOutMode: experimentationOptOutMode
         )
