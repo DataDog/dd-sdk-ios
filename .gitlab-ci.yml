@@ -439,29 +439,11 @@ RUM FIT:
     DYNAMIC_BUILD_RENDER_RULES: ios
     TARGET_SHA_DD_SDK_IOS: $CI_COMMIT_SHA
 
-Smoke Tests (iOS):
+.smoke-tests:
   stage: smoke-test
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
   dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
-  variables:
-    PLATFORM: "iOS Simulator"
-    DEVICE: "iPhone 17 Pro"
-  parallel:
-    matrix:
-      - SUITE: &smoke-test-suites
-          - spm
-          - spm-6
-          - carthage
-          - cocoapods
-          - xcframeworks
-  script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
-    - make clean repo-setup ENV=ci
-    - make smoke-test-ios TEST_DIRECTORY="SmokeTests/$SUITE" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
   after_script:
     - ./tools/upload-smoke-test-reports.sh
   artifacts:
@@ -471,32 +453,68 @@ Smoke Tests (iOS):
       junit: "artifacts/smoke-test-reports/**/*.xml"
     when: always
 
-Smoke Tests (tvOS):
-  stage: smoke-test
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
-  dependencies: []
-  id_tokens:
-    <<: *dd-octo-sts-id-token
+.smoke-tests-ios:
+  extends: .smoke-tests
+  variables:
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 17 Pro"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
+    - make clean repo-setup ENV=ci
+    - make smoke-test-ios TEST_DIRECTORY="SmokeTests/$SUITE" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+
+.smoke-tests-tvos:
+  extends: .smoke-tests
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
-  parallel:
-    matrix:
-      - SUITE: *smoke-test-suites
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos TEST_DIRECTORY="SmokeTests/$SUITE" OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
-  after_script:
-    - ./tools/upload-smoke-test-reports.sh
-  artifacts:
-    paths:
-      - "artifacts/smoke-test-reports/**/*.xml"
-    reports:
-      junit: "artifacts/smoke-test-reports/**/*.xml"
-    when: always
+
+# SPM suites run in every test pipeline.
+Smoke Tests (iOS):
+  extends: .smoke-tests-ios
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: &smoke-test-suites
+          - spm
+          - spm-6
+
+Smoke Tests (tvOS):
+  extends: .smoke-tests-tvos
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: *smoke-test-suites
+
+# Carthage, CocoaPods and XCFramework suites only run on release and hotfix branches.
+Release Smoke Tests (iOS):
+  extends: .smoke-tests-ios
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+    - !reference [.release-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: &release-smoke-test-suites
+          - carthage
+          - cocoapods
+          - xcframeworks
+
+Release Smoke Tests (tvOS):
+  extends: .smoke-tests-tvos
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+    - !reference [.release-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: *release-smoke-test-suites
 
 Smoke Tests (macOS):
   stage: smoke-test
