@@ -150,6 +150,32 @@ final class BinaryImageResolverTests: XCTestCase {
         XCTAssertEqual(binary_image_cache_size_for_testing(cache), 1)
     }
 
+    func testCacheMissWithFilenameAllocationFailurePreservesMetadata() throws {
+        let cache = try XCTUnwrap(binary_image_cache_create_for_testing())
+        defer { binary_image_cache_destroy_for_testing(cache) }
+        let symbol = try XCTUnwrap(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "malloc"))
+        let address = UInt64(UInt(bitPattern: symbol))
+        var owned = binary_image_t()
+        defer { binary_image_destroy(&owned) }
+        XCTAssertTrue(binary_image_lookup_pc(&owned, symbol))
+        XCTAssertNotNil(owned.filename)
+        binary_image_cache_fail_next_filename_allocation_for_testing(cache)
+
+        var cached = binary_image_t()
+        XCTAssertTrue(binary_image_cache_lookup_for_testing(cache, address, &cached))
+        XCTAssertEqual(cached.load_address, owned.load_address)
+        XCTAssertEqual(UUID(uuid: cached.uuid), UUID(uuid: owned.uuid))
+        XCTAssertNil(cached.filename)
+        XCTAssertEqual(binary_image_cache_size_for_testing(cache), 1)
+
+        var repeated = binary_image_t()
+        XCTAssertTrue(binary_image_cache_lookup_for_testing(cache, address, &repeated))
+        XCTAssertEqual(repeated.load_address, owned.load_address)
+        XCTAssertEqual(UUID(uuid: repeated.uuid), UUID(uuid: owned.uuid))
+        XCTAssertNil(repeated.filename)
+        XCTAssertEqual(binary_image_cache_size_for_testing(cache), 1)
+    }
+
     func testDuplicateNotificationAndUUIDOnlyChangeReuseFilenameStorage() throws {
         let cache = try XCTUnwrap(binary_image_cache_create_for_testing())
         defer { binary_image_cache_destroy_for_testing(cache) }

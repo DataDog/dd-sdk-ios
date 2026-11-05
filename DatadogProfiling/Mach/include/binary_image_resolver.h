@@ -12,7 +12,8 @@
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <mutex>
-#include <memory>
+#include <forward_list>
+#include <string>
 #include <unordered_map>
 #include <mach-o/dyld.h>
 
@@ -68,7 +69,7 @@ struct cached_image_t {
     /** UUID of the binary image */
     uuid_t uuid;
     /** Null-terminated filename borrowed from cache-owned storage, or nullptr */
-    char* filename;
+    const char* filename;
 };
 
 /**
@@ -141,14 +142,12 @@ private:
     /** Map from image load address → cached image metadata */
     std::unordered_map<uintptr_t, cached_image_t> cache;
 
-    struct filename_storage;
-
-    /** Every published filename remains owned until this cache is destroyed. */
-    std::unique_ptr<filename_storage> filenames;
+    /** Published strings are never changed or erased, keeping borrowed pointers valid. */
+    std::forward_list<std::string> filenames;
     bool fail_next_filename_allocation = false;
 
-    /** Takes ownership of a malloc buffer, freeing it on admission failure. */
-    char* retain_filename_locked(char* filename);
+    /** Moves a filename into stable storage, or returns nullptr on allocation failure. */
+    const char* retain_filename_locked(std::string filename);
 
     /**
      * Add a single image to the cache from its Mach-O header.

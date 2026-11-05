@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <new>
+#include <optional>
 #include <utility>
 #include <mach-o/loader.h>
 
@@ -71,6 +72,43 @@ static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
 static std::mutex g_cacheptr_mutex;
 static dd::profiler::binary_image_cache* g_binary_image_cache = nullptr;
 
+static bool binary_image_read_metadata(binary_image_t* info, const Dl_info& dl_info) {
+    if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
+
+    // Get UUID from the Mach-O header
+    const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
+    // Only support 64-bit images
+    if (!header || header->magic != MH_MAGIC_64) return false;
+    if (!is_valid_load_command_count(header->ncmds)) return false;
+
+    const struct load_command* cmd = (const struct load_command*)(header + 1);
+    for (uint32_t i = 0; i < header->ncmds; ++i) {
+        if (!is_valid_load_command_size(cmd->cmdsize)) break;
+
+        if (cmd->cmd == LC_UUID) {
+            const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
+            if (cmd->cmdsize >= sizeof(struct uuid_command)) {
+                memcpy(info->uuid, uuid_cmd->uuid, sizeof(uuid_t));
+                info->load_address = (uintptr_t)dl_info.dli_fbase;
+                return true;
+            }
+            break;
+        }
+        cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
+    }
+
+    return false;
+}
+
+static std::optional<std::string> copy_filename(const char* filename) {
+    if (!filename) return std::nullopt;
+    try {
+        return std::string(filename);
+    } catch (const std::bad_alloc&) {
+        return std::nullopt;
+    }
+}
+
 // ============================================================================
 // Binary image utility functions
 // ============================================================================
@@ -104,32 +142,7 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
 
     Dl_info dl_info;
     if (dladdr(pc, &dl_info) == 0) return false;
-    if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
-
-    // Get UUID from the Mach-O header
-    const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
-    // Only support 64-bit images
-    if (!header || header->magic != MH_MAGIC_64) return false;
-    if (!is_valid_load_command_count(header->ncmds)) return false;
-
-    bool found_uuid = false;
-    const struct load_command* cmd = (const struct load_command*)(header + 1);
-    for (uint32_t i = 0; i < header->ncmds; ++i) {
-        if (!is_valid_load_command_size(cmd->cmdsize)) break;
-
-        if (cmd->cmd == LC_UUID) {
-            const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
-            if (cmd->cmdsize >= sizeof(struct uuid_command)) {
-                memcpy(info->uuid, uuid_cmd->uuid, sizeof(uuid_t));
-                info->load_address = (uintptr_t)dl_info.dli_fbase;
-                found_uuid = true;
-            }
-            break;
-        }
-        cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
-    }
-
-    if (!found_uuid) return false;
+    if (!binary_image_read_metadata(info, dl_info)) return false;
 
     // Copy filename if available. We still consider lookup successful
     // even if allocation fails; UUID + load address are enough to map.
@@ -152,15 +165,6 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
 
 namespace dd::profiler {
 
-struct binary_image_cache::filename_storage {
-    struct deleter {
-        void operator()(char* value) const noexcept { free(value); }
-    };
-
-    std::unique_ptr<char, deleter> value;
-    std::unique_ptr<filename_storage> next;
-};
-
 binary_image_cache* shared_binary_image_cache() {
     // Function-local initialization serializes first acquisition. load() must
     // run without g_cacheptr_mutex held because dyld calls back synchronously.
@@ -181,36 +185,23 @@ binary_image_cache::binary_image_cache() = default;
 
 binary_image_cache::~binary_image_cache() {
     // Null the global pointer so late dyld callbacks become no-ops.
-    {
-        std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
-        if (g_binary_image_cache == this) {
-            g_binary_image_cache = nullptr;
-        }
-    }
-
-    // No more dyld callbacks will reference this instance. Drain ownership
-    // iteratively so a long image-reload history cannot exhaust the stack.
-    cache.clear();
-    while (filenames) {
-        auto current = std::move(filenames);
-        filenames = std::move(current->next);
+    std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
+    if (g_binary_image_cache == this) {
+        g_binary_image_cache = nullptr;
     }
 }
 
-char* binary_image_cache::retain_filename_locked(char* filename) {
-    std::unique_ptr<char, filename_storage::deleter> value(filename);
-    if (!value) return nullptr;
+const char* binary_image_cache::retain_filename_locked(std::string filename) {
     if (fail_next_filename_allocation) {
         fail_next_filename_allocation = false;
         return nullptr;
     }
 
-    auto storage = std::unique_ptr<filename_storage>(new (std::nothrow) filename_storage());
-    if (!storage) return nullptr;
-    storage->value = std::move(value);
-    storage->next = std::move(filenames);
-    filenames = std::move(storage);
-    return filenames->value.get();
+    try {
+        return filenames.emplace_front(std::move(filename)).c_str();
+    } catch (const std::bad_alloc&) {
+        return nullptr;
+    }
 }
 
 void binary_image_cache::fail_next_filename_allocation_for_testing() {
@@ -304,14 +295,9 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
         }
     }
 
-    if (name) {
-        const size_t length = strlen(name) + 1;
-        cached.filename = (char*)malloc(length);
-        if (cached.filename) {
-            memcpy(cached.filename, name, length);
-        }
+    if (auto filename = copy_filename(name)) {
+        cached.filename = retain_filename_locked(std::move(*filename));
     }
-    cached.filename = retain_filename_locked(cached.filename);
     if (existing != cache.end()) {
         // Existing names already have stable ownership, so replacing this
         // borrowed pointer needs no allocation and cannot invalidate readers.
@@ -349,20 +335,21 @@ bool binary_image_cache::lookup(uint64_t instruction_ptr, binary_image_t* out_im
     // Cache miss — fall back to full Mach-O header parsing.
     // This handles images loaded between load() and now, or images
     // that the dyld callback missed.
-    if (binary_image_lookup_pc(out_image, (void*)instruction_ptr)) {
+    // Refresh loader metadata after the cache lookup's possible mutex wait.
+    if (!is_valid_userspace_addr((uintptr_t)instruction_ptr) ||
+        dladdr((void*)instruction_ptr, &dl_info) == 0) return false;
+    if (binary_image_read_metadata(out_image, dl_info)) {
+        // Copy loader-owned bytes before waiting for the cache mutex.
+        auto filename = copy_filename(dl_info.dli_fname);
         // Cache the result for future lookups
         cached_image_t cached{};
         cached.load_address = out_image->load_address;
         memcpy(cached.uuid, out_image->uuid, sizeof(uuid_t));
-        cached.filename = (char*)out_image->filename;
 
         std::lock_guard<std::mutex> lock(mutex);
         auto [it, inserted] = cache.emplace(cached.load_address, cached);
-        if (inserted) {
-            it->second.filename = retain_filename_locked(cached.filename);
-        } else {
-            // Another thread inserted first (e.g., dyld callback).
-            free(cached.filename);
+        if (inserted && filename) {
+            it->second.filename = retain_filename_locked(std::move(*filename));
         }
         // Borrow from whichever entry is in the cache.
         out_image->load_address = it->second.load_address;
