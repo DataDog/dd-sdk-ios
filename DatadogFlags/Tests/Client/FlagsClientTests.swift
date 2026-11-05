@@ -643,6 +643,67 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNotNil(evaluationLogger.logEvaluationCalls[7].error, "typeMismatch should have error")
     }
 
+    func testLegacyClientIgnoresDependentResponseFields() throws {
+        // Given
+        let responseJSON = """
+        {
+          "data": {
+            "type": "precomputed-assignments",
+            "attributes": {
+              "flags": {
+                "root-flag": {
+                  "allocationKey": "root-allocation",
+                  "variationKey": "root-variant",
+                  "variationType": "boolean",
+                  "variationValue": true,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH",
+                  "dependencyEvaluations": [{
+                    "flagKey": "Eb_cST-0-FZKdvcpKLHbDDG_CX2hK4Xfrw7h5o-47Gp6GyFntOGTZO3wmLg",
+                    "isPresentInAssignment": true
+                  }]
+                }
+              },
+              "flagEvaluationErrors": {
+                "failed-flag": {
+                  "reason": "ERROR",
+                  "errorCode": "GENERAL",
+                  "dependencyEvaluations": [{
+                    "flagKey": "Eb_cST-0-FZKdvcpKLHbDDG_CX2hK4Xfrw7h5o-47Gp6GyFntOGTZO3wmLg",
+                    "isPresentInAssignment": true
+                  }]
+                }
+              }
+            }
+          }
+        }
+        """
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(responseJSON.utf8))
+        let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
+        let rumReporter = RUMFlagEvaluationReporterMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                flagsData: .init(flags: response.flags, context: .mockAny(), date: .mockAny())
+            ),
+            exposureLogger: exposureLogger,
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: rumReporter
+        )
+
+        // When
+        let details = client.getBooleanDetails(key: "root-flag", defaultValue: false)
+
+        // Then
+        XCTAssertTrue(details.value)
+        XCTAssertNil(details.error)
+        XCTAssertEqual(details.variant, "root-variant")
+        XCTAssertEqual(response.failedFlags, [:])
+        XCTAssertEqual(exposureLogger.logExposureCalls.map(\.flagKey), ["root-flag"])
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.flagKey), ["root-flag"])
+        XCTAssertEqual(rumReporter.sendFlagEvaluationCalls.map { $0.0 }, ["root-flag"])
+    }
+
     func testNumericEvaluationConvertsWithoutLoss() {
         // Given - whole and fractional numeric variations
         let exposureLogger = ExposureLoggerMock()
