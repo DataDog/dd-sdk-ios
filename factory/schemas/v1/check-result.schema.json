@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mode", "decision", "candidate", "comparison", "configuration", "findings", "coverage_limits", "required_evaluation_errors", "advisories"],
+  "properties": {
+    "schema_version": {"const": 1}, "mode": {"enum": ["report-only", "gate"]}, "decision": {"enum": ["allow", "block", null]}, "candidate": {"type": "object"}, "comparison": {"type": ["object", "null"]}, "configuration": {"type": "object"}, "findings": {"type": "object"}, "coverage_limits": {"type": "array"}, "required_evaluation_errors": {"type": "array"}, "advisories": {"type": "array"}
+  }
+}
