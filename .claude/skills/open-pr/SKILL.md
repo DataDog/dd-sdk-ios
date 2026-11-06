@@ -22,7 +22,7 @@ For regular release PRs, use `dd-sdk-ios:prepare-release` for titles, descriptio
 
 - **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket for internal development PRs
 - **Target branch**: `develop` or the change's shared feature branch
-- **Always open as draft** — mark ready when build/test checks pass and the diff is ready; approval-dependent gates may still be pending
+- **Always open as draft** — mark ready when the diff is ready and CI is green; only approval-dependent gates may remain pending
 - **Follow `CONTRIBUTING.md` for human assignment** — Datadog team members add `ready-for-human-review` after automated feedback is resolved; external contributors wait for a team member to pick up the PR
 - All commits on the branch must be signed
 
@@ -79,7 +79,7 @@ Marking the PR ready starts automated review; it is not the human-assignment sig
    missing rerun. Existing findings must still be addressed and resolved. Record
    unavailable runs without describing them as passed reviews. Required CI checks
    and human approvals still apply.
-4. Once that loop is clear and required build/test checks pass, follow the human
+4. Once that loop is clear and CI is green, follow the human
    handoff paths in `CONTRIBUTING.md`. Approval-dependent gates such as MergeGate
    can remain pending until humans approve; do not wait for them before handoff.
 
