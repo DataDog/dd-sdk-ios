@@ -8,6 +8,9 @@ tracked_files:
   - DatadogCrashReporting/Sources/KSCrashIntegration/KSCrashPlugin.swift
   - DatadogInternal/Sources/Models/CrashReporting/DDCrashReport.swift
   - DatadogInternal/Sources/Models/CrashReporting/BacktraceReport.swift
+  - DatadogInternal/Sources/Models/CrashReporting/CrashContext.swift
+  - DatadogInternal/Sources/Models/CrashReporting/CrashReportingConfiguration.swift
+  - DatadogInternal/Sources/BacktraceReporting/BacktraceReporter.swift
   - DatadogRUM/Sources/Integrations/CrashReportReceiver.swift
 ---
 
@@ -39,7 +42,20 @@ Datadog.initialize(
     trackingConsent: .granted
 )
 
-// 2. Enable Crash Reporting as early as possible in app launch
+// 2. Enable RUM before Crash Reporting (required: crashes are sent as RUM errors)
+// Crash Reporting reads the pending crash report asynchronously as soon as it is enabled,
+// so RUM must already be registered to receive it.
+RUM.enable(
+    with: RUM.Configuration(
+        applicationID: "<rum_application_id>",
+        // Optional: report App Hangs; their stack traces come from Crash Reporting
+        appHangThreshold: 0.25,
+        // Optional: report Watchdog Terminations; requires Crash Reporting
+        trackWatchdogTerminations: true
+    )
+)
+
+// 3. Enable Crash Reporting right after RUM, as early as possible in app launch
 CrashReporting.enable(
     with: CrashReporting.Configuration(
         // Generate stack traces for App Hangs detected by RUM
@@ -52,17 +68,6 @@ CrashReporting.enable(
 
 // Shorthand with the default configuration:
 // CrashReporting.enable()
-
-// 3. Enable RUM in the same synchronous launch sequence (required: crashes are sent as RUM errors)
-RUM.enable(
-    with: RUM.Configuration(
-        applicationID: "<rum_application_id>",
-        // Optional: report App Hangs; their stack traces come from Crash Reporting
-        appHangThreshold: 0.25,
-        // Optional: report Watchdog Terminations; requires Crash Reporting
-        trackWatchdogTerminations: true
-    )
-)
 ```
 
 ### Custom Plugin (Advanced)
@@ -70,6 +75,7 @@ RUM.enable(
 `CrashReporting.enable(with:configuration:in:)` accepts a `CrashReportingPlugin` that replaces KSCrash. The plugin's types (`DDCrashReport`, `BacktraceReporting`) live in `DatadogInternal`, so an implementation must import it:
 
 ```swift
+import Foundation
 import DatadogCrashReporting
 import DatadogInternal
 
@@ -161,11 +167,12 @@ These types are `public` in `DatadogInternal` because `CrashReportingPlugin` use
 
 ### App Hang Stack Traces
 - **`appHangBacktraceEnabled`** (default: `true`) — When `false`, RUM still reports App Hang errors, without a stack trace. The stack trace is captured while the main thread is still blocked, so its cost adds to the measured hang duration. Disabling it matters most for apps using a small `RUM.Configuration.appHangThreshold`. Crash reports are unaffected.
-- RUM reads this setting on each hang, so Crash Reporting and RUM can be enabled in either order.
+- RUM reads this setting on each hang, so it applies whichever feature is enabled first. Crash delivery still requires RUM to be enabled first. See ["Crashes not appearing in Datadog"](#crashes-not-appearing-in-datadog).
 
 ### Custom Plugin
 - `CrashReporting.enable(with: plugin)` and `CrashReporting.enable(with: plugin, configuration:)` replace KSCrash. See [Custom Plugin](#custom-plugin-advanced).
-- The SDK calls the plugin on a background thread, and calls are serialized.
+- The SDK calls `readPendingCrashReport(completion:)` and `inject(context:)` on a background thread, and those calls are serialized.
+- `backtraceReporter` is read once, synchronously on the main thread, during `CrashReporting.enable()`. Keep it cheap: expensive work there delays app launch.
 
 ### Fixed Behavior (not configurable)
 - KSCrash monitors: `.signal`, `.cppException`, `.nsException`, `.system` (`.system` collects device and app info; it is not a crash monitor). The Mach exception monitor is disabled on purpose. Datadog relies on BSD signals instead.
@@ -196,7 +203,9 @@ Crash stack traces are collected as raw addresses. Datadog symbolicates them usi
 - **Fastlane**: [`fastlane-plugin-datadog`](https://github.com/DataDog/datadog-fastlane-plugin) (`fastlane add_plugin datadog`), action `upload_symbols_to_datadog(api_key:, dsym_paths:, site:)`. Used after `download_dsyms`, it picks up the downloaded `dsym_paths` automatically.
 - **GitHub Actions**: [`DataDog/upload-dsyms-github-action`](https://github.com/DataDog/upload-dsyms-github-action) (`uses: DataDog/upload-dsyms-github-action@v1`, inputs `api_key`, `site`, `dsym_paths`, `dry_run`).
 
-Each `.dSYM` file is limited to 2 GB. Re-uploading a `.dSYM` for the same app version does not override the existing one.
+`datadog-ci dsyms upload` runs only on macOS, so the GitHub Action needs a macOS runner (`runs-on: macos-latest`), and CI jobs on Linux cannot upload dSYMs.
+
+Symbolication is supported only for crashes on physical devices, not on simulators. Each `.dSYM` file is limited to 2 GB. Re-uploading a `.dSYM` for the same app version does not override the existing one.
 
 ## Common Troubleshooting Patterns
 
@@ -204,7 +213,7 @@ Each `.dSYM` file is limited to 2 GB. Re-uploading a `.dSYM` for the same app ve
 1. Crash reports are sent on the **next launch**. The app must be relaunched after the crash, and `CrashReporting.enable()` must run again.
 2. The Xcode debugger was attached when the crash happened. It catches the crash before KSCrash does. Reproduce without the debugger attached.
 3. RUM is not enabled. The console shows `In order to use Crash Reporting, RUM feature must be enabled`.
-4. RUM was enabled too late. The report is read on a background queue right after `CrashReporting.enable()`, and the message bus does not buffer. If RUM is not registered by the time the `Crash` payload is sent, the crash is dropped and the report is already purged. Enable RUM in the same synchronous launch sequence, not after asynchronous work.
+4. RUM was enabled after Crash Reporting. The report is read on a background queue as soon as `CrashReporting.enable()` returns, and the message bus does not buffer. If RUM is not registered by the time the `Crash` payload is sent, the crash is dropped and the report is already purged. Calling `RUM.enable()` right after `CrashReporting.enable()` does not close this race. Call `RUM.enable()` **before** `CrashReporting.enable()`.
 5. Tracking consent was not `.granted` when the crash happened (for example `.pending` before the user accepts). The report is dropped, even if consent is granted later ([#1701](https://github.com/DataDog/dd-sdk-ios/issues/1701)).
 6. The crash was dropped by RUM: sampled-out session, `stopSession()`, a background crash with `trackBackgroundEvents: false`, or a duplicate of a crash already on the view. See [Linking Crashes to RUM Sessions](#linking-crashes-to-rum-sessions).
 7. watchOS: signal-based crashes (Swift runtime traps, `EXC_BAD_ACCESS`) are not captured.
@@ -224,7 +233,7 @@ Running two crash reporters in one process is not guaranteed to work. Signal han
 - **Another KSCrash installation** (the app or another SDK using the shared `KSCrash` instance without renamed symbols): Datadog logs `DatadogCrashReporting error: crash reporting is already installed`. It reuses the existing installation without its own configuration and filters, so the reports it reads are not `DDCrashReport`s. They fail to load and are deleted. This setup is not supported. Calling `CrashReporting.enable()` a second time also logs this warning, which is harmless in that case.
 
 ### "Crash stack traces are not symbolicated"
-Upload the `.dSYM` files of the exact build that crashed. See [dSYM Upload](#dsym-upload-symbolication). For App Store builds, download the dSYMs from App Store Connect, or use Fastlane `download_dsyms`.
+Crashes from simulators are never symbolicated. Reproduce on a physical device. Otherwise, upload the `.dSYM` files of the exact build that crashed. See [dSYM Upload](#dsym-upload-symbolication). For App Store builds, download the dSYMs from App Store Connect, or use Fastlane `download_dsyms`.
 
 ### "Crash appears on an unexpected view or session"
 See [Linking Crashes to RUM Sessions](#linking-crashes-to-rum-sessions). Crashes reported more than 4 hours after they happened are sent as an error without updating the view.
