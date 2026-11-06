@@ -130,9 +130,6 @@
             reference = "container:TestPlans/UnitTests-macOS.xctestplan"
             default = "YES">
          </TestPlanReference>
-         <TestPlanReference
-            reference = "container:TestPlans/UnitTestsThreadSanitizer.xctestplan">
-         </TestPlanReference>
       </TestPlans>
    </TestAction>
    <LaunchAction

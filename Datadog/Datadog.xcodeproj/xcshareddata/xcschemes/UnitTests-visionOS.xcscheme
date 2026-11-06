@@ -159,9 +159,6 @@
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:TestPlans/UnitTestsThreadSanitizer.xctestplan">
-         </TestPlanReference>
-         <TestPlanReference
             reference = "container:TestPlans/IntegrationTests.xctestplan">
          </TestPlanReference>
       </TestPlans>
