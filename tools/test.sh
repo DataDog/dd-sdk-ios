@@ -9,6 +9,8 @@
 #   --scheme: Identifies the test scheme to execute
 #   --platform: Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'
 #   --os: Sets the operating system version for the tests, e.g. '17.5'
+#   --test-plans: Runs only these test plans of the scheme, separated by spaces, e.g. 'UnitTestsThreadSanitizer'
+#   --skip-test-plans: Runs every test plan of the scheme except these, separated by spaces
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
@@ -21,6 +23,8 @@ define_arg "scheme" "" "Identifies the test scheme to execute" "string" "true"
 define_arg "os" "" "Sets the operating system version for the tests, e.g. '17.5'" "string" "true"
 define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'" "string" "true"
 define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "true"
+define_arg "test-plans" "" "Runs only these test plans of the scheme, separated by spaces" "string" "false"
+define_arg "skip-test-plans" "" "Runs every test plan of the scheme except these, separated by spaces" "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -132,11 +136,18 @@ run_tests() {
 
 # Schemes with test plans (e.g. `UnitTests-iOS`) run each plan in turn, so every test target
 # runs with its plan's options. Schemes without test plans run their own test action.
-TEST_PLANS=($(xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -showTestPlans -json | sed -n 's/.*"name" : "\(.*\)".*/\1/p'))
+# --test-plans and --skip-test-plans narrow the run to some of the scheme's plans.
+SCHEME_TEST_PLANS=($(xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -showTestPlans -json | sed -n 's/.*"name" : "\(.*\)".*/\1/p'))
 
-if (( ${#TEST_PLANS} == 0 )); then
+if (( ${#SCHEME_TEST_PLANS} == 0 )); then
     run_tests ""
 else
+    if [ -n "$test_plans" ]; then
+        TEST_PLANS=(${=test_plans})
+    else
+        SKIPPED_TEST_PLANS=(${=skip_test_plans})
+        TEST_PLANS=(${SCHEME_TEST_PLANS:|SKIPPED_TEST_PLANS})
+    fi
     for test_plan in "${TEST_PLANS[@]}"; do
         run_tests "$test_plan"
     done
