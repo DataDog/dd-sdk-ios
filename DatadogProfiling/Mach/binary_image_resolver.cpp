@@ -5,12 +5,16 @@
  */
 
 #include "binary_image_resolver.h"
+#include "binary_image_resolver_testing.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <dlfcn.h>
 #include <string.h>
 #include <stdlib.h>
+#include <new>
+#include <optional>
+#include <utility>
 #include <mach-o/loader.h>
 
 // Address validation constants
@@ -68,6 +72,34 @@ static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
 static std::mutex g_cacheptr_mutex;
 static dd::profiler::binary_image_cache* g_binary_image_cache = nullptr;
 
+static bool binary_image_read_metadata(binary_image_t* info, const Dl_info& dl_info) {
+    if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
+
+    // Get UUID from the Mach-O header
+    const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
+    // Only support 64-bit images
+    if (!header || header->magic != MH_MAGIC_64) return false;
+    if (!is_valid_load_command_count(header->ncmds)) return false;
+
+    const struct load_command* cmd = (const struct load_command*)(header + 1);
+    for (uint32_t i = 0; i < header->ncmds; ++i) {
+        if (!is_valid_load_command_size(cmd->cmdsize)) break;
+
+        if (cmd->cmd == LC_UUID) {
+            const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
+            if (cmd->cmdsize >= sizeof(struct uuid_command)) {
+                memcpy(info->uuid, uuid_cmd->uuid, sizeof(uuid_t));
+                info->load_address = (uintptr_t)dl_info.dli_fbase;
+                return true;
+            }
+            break;
+        }
+        cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
+    }
+
+    return false;
+}
+
 // ============================================================================
 // Binary image utility functions
 // ============================================================================
@@ -101,32 +133,7 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
 
     Dl_info dl_info;
     if (dladdr(pc, &dl_info) == 0) return false;
-    if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
-
-    // Get UUID from the Mach-O header
-    const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
-    // Only support 64-bit images
-    if (!header || header->magic != MH_MAGIC_64) return false;
-    if (!is_valid_load_command_count(header->ncmds)) return false;
-
-    bool found_uuid = false;
-    const struct load_command* cmd = (const struct load_command*)(header + 1);
-    for (uint32_t i = 0; i < header->ncmds; ++i) {
-        if (!is_valid_load_command_size(cmd->cmdsize)) break;
-
-        if (cmd->cmd == LC_UUID) {
-            const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
-            if (cmd->cmdsize >= sizeof(struct uuid_command)) {
-                memcpy(info->uuid, uuid_cmd->uuid, sizeof(uuid_t));
-                info->load_address = (uintptr_t)dl_info.dli_fbase;
-                found_uuid = true;
-            }
-            break;
-        }
-        cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
-    }
-
-    if (!found_uuid) return false;
+    if (!binary_image_read_metadata(info, dl_info)) return false;
 
     // Copy filename if available. We still consider lookup successful
     // even if allocation fails; UUID + load address are enough to map.
@@ -149,31 +156,63 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
 
 namespace dd::profiler {
 
+binary_image_cache* shared_binary_image_cache() {
+    // Function-local initialization serializes first acquisition. load() must
+    // run without g_cacheptr_mutex held because dyld calls back synchronously.
+    // Keep this owner for process lifetime so callbacks and borrowed filenames
+    // remain valid after either profiler stops or is destroyed.
+    static binary_image_cache* cache = [] {
+        auto* created = new (std::nothrow) binary_image_cache();
+        if (created && !created->load()) {
+            delete created;
+            created = nullptr;
+        }
+        return created;
+    }();
+    return cache;
+}
+
 binary_image_cache::binary_image_cache() = default;
 
 binary_image_cache::~binary_image_cache() {
     // Null the global pointer so late dyld callbacks become no-ops.
-    {
-        std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
-        if (g_binary_image_cache == this) {
-            g_binary_image_cache = nullptr;
-        }
+    std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
+    if (g_binary_image_cache == this) {
+        g_binary_image_cache = nullptr;
     }
+}
 
-    // No more dyld callbacks will reference this instance.
-    // Clean up cached data.
-    for (auto& pair : cache) {
-        if (pair.second.filename) {
-            free(pair.second.filename);
-        }
+std::string_view binary_image_cache::retain_filename_locked(const char* filename) {
+    if (!filename) return {};
+    try {
+        return retain_filename_locked(std::string(filename));
+    } catch (const std::bad_alloc&) {
+        return {};
     }
-    cache.clear();
+}
+
+std::string_view binary_image_cache::retain_filename_locked(std::string filename) {
+    if (fail_next_filename_allocation) {
+        fail_next_filename_allocation = false;
+        return {};
+    }
+    try {
+        return filenames.emplace_front(std::move(filename));
+    } catch (const std::bad_alloc&) {
+        return {};
+    }
+}
+
+void binary_image_cache::fail_next_filename_allocation_for_testing() {
+    std::lock_guard<std::mutex> lock(mutex);
+    fail_next_filename_allocation = true;
 }
 
 bool binary_image_cache::load() {
     {
         std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
         if (started) return started;
+        if (g_binary_image_cache) return false;
         started = true;
         g_binary_image_cache = this;
     }
@@ -197,9 +236,13 @@ void binary_image_cache::dyld_add_image_callback(const struct mach_header* mh, i
         name = dl_info.dli_fname;
     }
 
-    // Lock the instance mutex to modify the cache map.
-    std::lock_guard<std::mutex> ilock(g_binary_image_cache->mutex);
-    g_binary_image_cache->add_image_locked(mh, name);
+    g_binary_image_cache->add_image(mh, name);
+}
+
+void binary_image_cache::add_image(const struct mach_header* header, const char* name) {
+    if (!header) return;
+    std::lock_guard<std::mutex> lock(mutex);
+    add_image_locked(header, name);
 }
 
 void binary_image_cache::add_image_locked(const struct mach_header* header, const char* name) {
@@ -211,9 +254,6 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
     const struct mach_header_64* header64 = (const struct mach_header_64*)header;
     uintptr_t load_address = (uintptr_t)header;
 
-    // Skip if already cached
-    if (cache.find(load_address) != cache.end()) return;
-
     // Validate load commands
     if (!is_valid_load_command_count(header64->ncmds)) return;
 
@@ -221,16 +261,6 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
     cached_image_t cached{};
     cached.load_address = load_address;
     memset(cached.uuid, 0, sizeof(uuid_t));
-    cached.filename = nullptr;
-
-    // Copy filename
-    if (name) {
-        size_t len = strlen(name) + 1;
-        cached.filename = (char*)malloc(len);
-        if (cached.filename) {
-            memcpy(cached.filename, name, len);
-        }
-    }
 
     // Find UUID in load commands
     const struct load_command* cmd = (const struct load_command*)(header64 + 1);
@@ -247,7 +277,43 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
         cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
     }
 
+    auto existing = cache.find(load_address);
+    if (existing != cache.end()) {
+        cached_image_t& previous = existing->second;
+        const bool same_name = (name == nullptr && previous.filename.data() == nullptr) ||
+            (name != nullptr && previous.filename.data() != nullptr &&
+             previous.filename == name);
+        if (same_name) {
+            // Identical dyld notifications perform no allocation. A changed
+            // UUID with the same filename can retain the existing name bytes.
+            if (memcmp(previous.uuid, cached.uuid, sizeof(uuid_t)) != 0) {
+                memcpy(previous.uuid, cached.uuid, sizeof(uuid_t));
+            }
+            return;
+        }
+    }
+
+    cached.filename = retain_filename_locked(name);
+    if (existing != cache.end()) {
+        // Existing names already have stable ownership, so replacing this
+        // borrowed pointer needs no allocation and cannot invalidate readers.
+        existing->second = cached;
+        return;
+    }
     cache.emplace(load_address, cached);
+}
+
+bool binary_image_cache::lookup_image(uintptr_t load_address, binary_image_t* out_image) {
+    if (!out_image) return false;
+    binary_image_init(out_image);
+    std::lock_guard<std::mutex> lock(mutex);
+    auto entry = cache.find(load_address);
+    if (entry == cache.end()) return false;
+    const cached_image_t& cached = entry->second;
+    out_image->load_address = cached.load_address;
+    memcpy(out_image->uuid, cached.uuid, sizeof(uuid_t));
+    out_image->filename = cached.filename.data();
+    return true;
 }
 
 bool binary_image_cache::lookup(uint64_t instruction_ptr, binary_image_t* out_image) {
@@ -260,37 +326,37 @@ bool binary_image_cache::lookup(uint64_t instruction_ptr, binary_image_t* out_im
 
     uintptr_t load_address = (uintptr_t)dl_info.dli_fbase;
 
-    {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto it = cache.find(load_address);
-        if (it != cache.end()) {
-            // Cache hit — copy cached data to output
-            const cached_image_t& cached = it->second;
-            out_image->load_address = cached.load_address;
-            memcpy(out_image->uuid, cached.uuid, sizeof(uuid_t));
-            out_image->filename = cached.filename;
-            return true;
-        }
-    }
+    if (lookup_image(load_address, out_image)) return true;
 
     // Cache miss — fall back to full Mach-O header parsing.
     // This handles images loaded between load() and now, or images
     // that the dyld callback missed.
-    if (binary_image_lookup_pc(out_image, (void*)instruction_ptr)) {
+    // Refresh loader metadata after the cache lookup's possible mutex wait.
+    if (!is_valid_userspace_addr((uintptr_t)instruction_ptr) ||
+        dladdr((void*)instruction_ptr, &dl_info) == 0) return false;
+    if (binary_image_read_metadata(out_image, dl_info)) {
+        // Own loader-provided bytes before waiting for the map mutex.
+        std::optional<std::string> filename;
+        try {
+            if (dl_info.dli_fname) filename.emplace(dl_info.dli_fname);
+        } catch (const std::bad_alloc&) {
+            // Continue with metadata only when the filename cannot be copied.
+            filename.reset();
+        }
         // Cache the result for future lookups
         cached_image_t cached{};
         cached.load_address = out_image->load_address;
         memcpy(cached.uuid, out_image->uuid, sizeof(uuid_t));
-        cached.filename = (char*)out_image->filename;
 
         std::lock_guard<std::mutex> lock(mutex);
         auto [it, inserted] = cache.emplace(cached.load_address, cached);
-        if (!inserted) {
-            // Another thread inserted first (e.g., dyld callback).
-            free(cached.filename);
+        if (inserted && filename) {
+            it->second.filename = retain_filename_locked(std::move(*filename));
         }
         // Borrow from whichever entry is in the cache.
-        out_image->filename = it->second.filename;
+        out_image->load_address = it->second.load_address;
+        memcpy(out_image->uuid, it->second.uuid, sizeof(uuid_t));
+        out_image->filename = it->second.filename.data();
         return true;
     }
 
@@ -327,5 +393,44 @@ void resolve_stack_trace_frames(stack_trace_t* traces, size_t count, binary_imag
 }
 
 } // namespace dd::profiler
+
+extern "C" {
+
+binary_image_cache_testing_t* binary_image_cache_create_for_testing(void) {
+    return new (std::nothrow) dd::profiler::binary_image_cache();
+}
+
+void binary_image_cache_destroy_for_testing(binary_image_cache_testing_t* cache) {
+    delete cache;
+}
+
+binary_image_cache_testing_t* binary_image_cache_shared_for_testing(void) {
+    return dd::profiler::shared_binary_image_cache();
+}
+
+void binary_image_cache_add_image_for_testing(
+    binary_image_cache_testing_t* cache, const void* header, const char* name) {
+    if (cache) cache->add_image(static_cast<const mach_header*>(header), name);
+}
+
+bool binary_image_cache_lookup_for_testing(
+    binary_image_cache_testing_t* cache, uint64_t pc, binary_image_t* image) {
+    return cache && cache->lookup(pc, image);
+}
+
+bool binary_image_cache_lookup_image_for_testing(
+    binary_image_cache_testing_t* cache, uintptr_t load_address, binary_image_t* image) {
+    return cache && cache->lookup_image(load_address, image);
+}
+
+size_t binary_image_cache_size_for_testing(binary_image_cache_testing_t* cache) {
+    return cache ? cache->size() : 0;
+}
+
+void binary_image_cache_fail_next_filename_allocation_for_testing(binary_image_cache_testing_t* cache) {
+    if (cache) cache->fail_next_filename_allocation_for_testing();
+}
+
+} // extern "C"
 
 #endif // __APPLE__ && !TARGET_OS_WATCH
