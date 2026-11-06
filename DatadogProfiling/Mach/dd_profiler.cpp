@@ -53,7 +53,8 @@ static dd_profiler_diagnostics_t empty_diagnostics() {
 namespace dd::profiler { class dd_profiler; }
 
 static dd::profiler::dd_profiler* g_dd_profiler = nullptr;
-static std::mutex g_dd_profiler_mutex;
+// SDK callbacks can still use this mutex while exit-time cleanup runs.
+[[clang::no_destroy]] static std::mutex g_dd_profiler_mutex;
 
 /**
  * Checks if ThreadSanitizer is enabled
