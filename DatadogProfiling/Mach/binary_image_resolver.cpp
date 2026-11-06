@@ -100,15 +100,6 @@ static bool binary_image_read_metadata(binary_image_t* info, const Dl_info& dl_i
     return false;
 }
 
-static std::optional<std::string> copy_filename(const char* filename) {
-    if (!filename) return std::nullopt;
-    try {
-        return std::string(filename);
-    } catch (const std::bad_alloc&) {
-        return std::nullopt;
-    }
-}
-
 // ============================================================================
 // Binary image utility functions
 // ============================================================================
@@ -191,16 +182,24 @@ binary_image_cache::~binary_image_cache() {
     }
 }
 
-const char* binary_image_cache::retain_filename_locked(std::string filename) {
+std::string_view binary_image_cache::retain_filename_locked(const char* filename) {
+    if (!filename) return {};
+    try {
+        return retain_filename_locked(std::string(filename));
+    } catch (const std::bad_alloc&) {
+        return {};
+    }
+}
+
+std::string_view binary_image_cache::retain_filename_locked(std::string filename) {
     if (fail_next_filename_allocation) {
         fail_next_filename_allocation = false;
-        return nullptr;
+        return {};
     }
-
     try {
-        return filenames.emplace_front(std::move(filename)).c_str();
+        return filenames.emplace_front(std::move(filename));
     } catch (const std::bad_alloc&) {
-        return nullptr;
+        return {};
     }
 }
 
@@ -262,7 +261,6 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
     cached_image_t cached{};
     cached.load_address = load_address;
     memset(cached.uuid, 0, sizeof(uuid_t));
-    cached.filename = nullptr;
 
     // Find UUID in load commands
     const struct load_command* cmd = (const struct load_command*)(header64 + 1);
@@ -282,9 +280,9 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
     auto existing = cache.find(load_address);
     if (existing != cache.end()) {
         cached_image_t& previous = existing->second;
-        const bool same_name = (name == nullptr && previous.filename == nullptr) ||
-            (name != nullptr && previous.filename != nullptr &&
-             strcmp(name, previous.filename) == 0);
+        const bool same_name = (name == nullptr && previous.filename.data() == nullptr) ||
+            (name != nullptr && previous.filename.data() != nullptr &&
+             previous.filename == name);
         if (same_name) {
             // Identical dyld notifications perform no allocation. A changed
             // UUID with the same filename can retain the existing name bytes.
@@ -295,9 +293,7 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
         }
     }
 
-    if (auto filename = copy_filename(name)) {
-        cached.filename = retain_filename_locked(std::move(*filename));
-    }
+    cached.filename = retain_filename_locked(name);
     if (existing != cache.end()) {
         // Existing names already have stable ownership, so replacing this
         // borrowed pointer needs no allocation and cannot invalidate readers.
@@ -316,7 +312,7 @@ bool binary_image_cache::lookup_image(uintptr_t load_address, binary_image_t* ou
     const cached_image_t& cached = entry->second;
     out_image->load_address = cached.load_address;
     memcpy(out_image->uuid, cached.uuid, sizeof(uuid_t));
-    out_image->filename = cached.filename;
+    out_image->filename = cached.filename.data();
     return true;
 }
 
@@ -339,8 +335,14 @@ bool binary_image_cache::lookup(uint64_t instruction_ptr, binary_image_t* out_im
     if (!is_valid_userspace_addr((uintptr_t)instruction_ptr) ||
         dladdr((void*)instruction_ptr, &dl_info) == 0) return false;
     if (binary_image_read_metadata(out_image, dl_info)) {
-        // Copy loader-owned bytes before waiting for the cache mutex.
-        auto filename = copy_filename(dl_info.dli_fname);
+        // Own loader-provided bytes before waiting for the map mutex.
+        std::optional<std::string> filename;
+        try {
+            if (dl_info.dli_fname) filename.emplace(dl_info.dli_fname);
+        } catch (const std::bad_alloc&) {
+            // Continue with metadata only when the filename cannot be copied.
+            filename.reset();
+        }
         // Cache the result for future lookups
         cached_image_t cached{};
         cached.load_address = out_image->load_address;
@@ -354,7 +356,7 @@ bool binary_image_cache::lookup(uint64_t instruction_ptr, binary_image_t* out_im
         // Borrow from whichever entry is in the cache.
         out_image->load_address = it->second.load_address;
         memcpy(out_image->uuid, it->second.uuid, sizeof(uuid_t));
-        out_image->filename = it->second.filename;
+        out_image->filename = it->second.filename.data();
         return true;
     }
 

@@ -14,6 +14,7 @@
 #include <mutex>
 #include <forward_list>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <mach-o/dyld.h>
 
@@ -68,8 +69,8 @@ struct cached_image_t {
     uintptr_t load_address;
     /** UUID of the binary image */
     uuid_t uuid;
-    /** Null-terminated filename borrowed from cache-owned storage, or nullptr */
-    const char* filename;
+    /** View of a complete cache-owned, null-terminated filename; default view if unavailable. */
+    std::string_view filename;
 };
 
 /**
@@ -146,8 +147,9 @@ private:
     std::forward_list<std::string> filenames;
     bool fail_next_filename_allocation = false;
 
-    /** Moves a filename into stable storage, or returns nullptr on allocation failure. */
-    const char* retain_filename_locked(std::string filename);
+    /** Caller holds mutex. Copies borrowed names or moves owned names; default view on allocation failure. */
+    std::string_view retain_filename_locked(const char* filename);
+    std::string_view retain_filename_locked(std::string filename);
 
     /**
      * Add a single image to the cache from its Mach-O header.
