@@ -22,7 +22,8 @@ For regular release PRs, use `dd-sdk-ios:prepare-release` for titles, descriptio
 
 - **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket for internal development PRs
 - **Target branch**: `develop` or the change's shared feature branch
-- **Always open as draft** — mark ready only when CI passes and the PR is ready for review
+- **Always open as draft** — mark ready when the diff is ready and CI is green; only approval-dependent gates may remain pending
+- **Follow `CONTRIBUTING.md` for human assignment** — Datadog team members add `ready-for-human-review` after automated feedback is resolved; external contributors wait for a team member to pick up the PR
 - All commits on the branch must be signed
 
 ## Creating via gh
@@ -60,6 +61,50 @@ gh pr create \
 - [ ] `make api-surface-verify` passes (if public API changed)
 - [ ] Changelog metadata follows the PR template
 
+## Automated review and human handoff
+
+Marking the PR ready starts automated review; it is not the human-assignment signal.
+
+1. Wait for active automated reviews to finish. Read review submissions,
+   conversation comments, inline feedback and open threads; a completed review
+   can still have unresolved findings.
+2. Fix each accepted finding, run the relevant validation, commit and push, then
+   reply with the change and evidence and resolve the addressed feedback. Explain
+   stale or inapplicable findings before resolving them. Do not delete feedback
+   to clear the queue.
+3. Monitor reviews triggered automatically by the new push and repeat this loop
+   when more feedback arrives. Never manually request another automated review,
+   regardless of the reviewer. If no new run or feedback arrives from a reviewer,
+   assume it has no further feedback and continue; do not wait for or request a
+   missing rerun. Existing findings must still be addressed and resolved. Record
+   unavailable runs without describing them as passed reviews. Required CI checks
+   and human approvals still apply.
+4. Once that loop is clear and CI is green, follow the human
+   handoff paths in `CONTRIBUTING.md`. Approval-dependent gates such as MergeGate
+   can remain pending until humans approve; do not wait for them before handoff.
+
+   **Datadog team members:** add the label used by the daily reviewer-assignment bot:
+
+   ```bash
+   gh pr edit "<PR number>" --add-label "ready-for-human-review"
+   ```
+
+   Verify the label is present. A team review request does not replace it, and the
+   label does not replace required approvals or MergeGate.
+
+   **External contributors:** wait for a team member to pick up the PR and take
+   it through human review; adding or verifying the label is not required.
+5. Keep owning the PR through human feedback and merge. Poll frequently during
+   automated review and fixes (for example, every five minutes), then less often
+   while waiting on humans with no open feedback (for example, every fifteen
+   minutes). If another push or finding reopens automated review, return to frequent
+   checks and address it alongside human review, keeping the label. Remove the
+   label only when human feedback requires significant rework, and reapply it
+   after the reworked head clears automated review.
+
+   Re-request review only from a human after fixing their findings. Reply with
+   the changes and validation evidence, then ask that human to review again.
+
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -67,3 +112,4 @@ gh pr create \
 | Wrong base branch | Use `develop` or the change's shared feature branch |
 | Missing `[PROJECT-XXXX]` title prefix | Required for internal development PRs |
 | Skipping review checklist items | Fill out checklist before marking PR ready |
+| Assuming a ready PR assigns a human | Finish automated review, then follow the internal or external handoff path in `CONTRIBUTING.md` |
