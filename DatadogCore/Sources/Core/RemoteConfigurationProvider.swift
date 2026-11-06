@@ -66,8 +66,8 @@ extension RemoteConfigurationCache.Metadata {
 ///
 /// On `start(_:)`, the provider immediately delivers any previously cached configuration
 /// from disk, then fires an async CDN request to refresh it. On UIKit platforms it also
-/// re-syncs whenever the app returns to the foreground, so long-lived sessions always
-/// converge on the latest configuration without requiring a restart.
+/// re-syncs whenever the app becomes active, so long-lived sessions always converge on the
+/// latest configuration without requiring a restart.
 ///
 /// ## Caching
 /// A successful fetch is persisted as `<id>.json` inside the supplied `directory`, as a single
@@ -94,6 +94,8 @@ internal final class RemoteConfigurationProvider {
     private let notificationCenterProvider: NotificationCenterProvider
     private let dateProvider: DateProvider
     private let minimumSyncInterval: TimeInterval = 300
+    /// Date the last sync request was sent, or `nil` if it failed. Re-syncs are skipped until
+    /// `minimumSyncInterval` has elapsed since this date.
     @ReadWriteLock
     private var lastSyncDate: Date? = nil
     @ReadWriteLock
@@ -123,7 +125,7 @@ internal final class RemoteConfigurationProvider {
     /// result becomes available:
     /// - synchronously with the cached configuration, if one exists on disk;
     /// - asynchronously when the CDN request completes (success or failure);
-    /// - on UIKit platforms, again on each `UIApplication.willEnterForegroundNotification`
+    /// - on UIKit platforms, again on each `UIApplication.didBecomeActiveNotification`
     ///   that triggers a refresh.
     ///
     /// Each invocation carries the latest result, so callers should replace the previously
@@ -170,7 +172,7 @@ internal final class RemoteConfigurationProvider {
         }
 #elseif canImport(UIKit)
         foregroundObserver = notificationCenterProvider.applicationCenter.addObserver(
-            forName: ApplicationNotifications.willEnterForeground,
+            forName: ApplicationNotifications.didBecomeActive,
             object: nil,
             queue: nil
         ) { [weak self] _ in
@@ -283,8 +285,12 @@ internal final class RemoteConfigurationProvider {
             }
         }
 
+        let syncDate = dateProvider.now
+        lastSyncDate = syncDate
+
         httpClient.send(request: request, delegate: nil) { [weak self] result in
-            guard let self else {
+            // A newer sync started after this one, so its result supersedes this one.
+            guard let self, self.lastSyncDate == syncDate else {
                 return
             }
 
@@ -292,7 +298,6 @@ internal final class RemoteConfigurationProvider {
                 let (http, data) = try result.get()
 
                 if http.statusCode == 304 {
-                    self.lastSyncDate = self.dateProvider.now
                     return
                 }
 
@@ -327,13 +332,12 @@ internal final class RemoteConfigurationProvider {
                 // later sync will retry.
                 try self.saveCache(data: data, from: http)
 
-                self.lastSyncDate = self.dateProvider.now
-
                 handler(remoteConfiguration)
             } catch let error as NSError where error.domain == NSURLErrorDomain && telemetryIgnoredNSURLErrorCodes.contains(error.code) {
                 // Do not report network transport errors: they come from the device's connectivity,
                 // not from an SDK issue, and a later sync will retry.
             } catch {
+                self.lastSyncDate = nil
                 telemetry.error("[RemoteConfig] Failed to sync remote configuration", error: error)
             }
         }
