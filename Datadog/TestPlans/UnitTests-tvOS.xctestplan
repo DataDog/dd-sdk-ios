@@ -38,6 +38,16 @@
           "containerPath" : "container:Datadog.xcodeproj",
           "identifier" : "D229FF8B2E3BC6D4009CCD62",
           "name" : "DatadogProfiling"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "61133B81242393DE00786299",
+          "name" : "DatadogCore"
+        },
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "61B7885325C180CB002675B5",
+          "name" : "DatadogCrashReporting"
         }
       ]
     },
@@ -202,6 +212,20 @@
         "containerPath" : "container:Datadog.xcodeproj",
         "identifier" : "D2C9F0382E3B89D7008397FD",
         "name" : "DatadogProfilingTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "61133B8A242393DE00786299",
+        "name" : "DatadogCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "61B7885B25C180CB002675B5",
+        "name" : "DatadogCrashReportingTests"
       }
     }
   ],

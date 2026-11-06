@@ -7,21 +7,26 @@
 import XCTest
 @testable import DatadogRUM
 
+/// Maps `numberOfBytes` of fresh memory and writes to every page, so each allocation grows the process footprint
+/// and each deallocation shrinks it. `malloc` would keep and reuse the freed block instead.
 private class Allocation {
     fileprivate let numberOfBytes: Int
-    private var pointer: UnsafeMutablePointer<UInt8>! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var pointer: UnsafeMutableRawPointer?
 
     init(numberOfBytes: Int) {
         self.numberOfBytes = numberOfBytes
     }
 
     func allocate() {
-        pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: numberOfBytes)
-        pointer.initialize(repeating: 0, count: numberOfBytes)
+        let pointer = mmap(nil, numberOfBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0)
+        precondition(pointer != MAP_FAILED)
+        memset(pointer, 1, numberOfBytes)
+        self.pointer = pointer
     }
 
     func deallocate() {
-        pointer.deallocate()
+        munmap(pointer, numberOfBytes)
+        pointer = nil
     }
 }
 
