@@ -73,7 +73,7 @@ Feature-specific docs (in each module directory):
 - **Do NOT introduce new public API** without RFC review.
 - **Do NOT edit build scripts** unless instructed.
 - **Do NOT name branches with `codex`.** Use repo branch naming conventions instead.
-- **Human review requires `ready-for-human-review`.** After marking a PR ready, wait for all automated reviews on the latest head and resolve their feedback, repeating the fix/review loop as needed. Only then add this label so a human reviewer can be assigned. A ready PR or team review request alone does not trigger that handoff. See `.claude/skills/open-pr/SKILL.md`.
+- **Complete automated review before human handoff.** Wait for all automated reviews on the latest head and resolve their feedback, repeating the fix/review loop as needed. Datadog team members then add `ready-for-human-review`; external contributors wait for a team member to pick up the PR. Keep the label during routine follow-ups; remove it only for significant rework requested during human review. See `CONTRIBUTING.md` and `.claude/skills/open-pr/SKILL.md`.
 - **Never mention AI assistant names** (Claude, ChatGPT, Cursor, Copilot, etc.) in commit messages, PR descriptions, code comments, or co-author tags.
 - **Never write or modify a swizzle without reading `docs/SWIZZLING.md` first.** Past incidents have caused production crashes.
 - **Never report a raw `Error` to internal telemetry.** `"\(error)"` can embed customer data (e.g. `EncodingError.invalidValue` embeds the offending value). Always go through `Telemetry.error(_:)`, which sanitizes via `TelemetrySanitizableError`; see `docs/ERROR_HANDLING.md`. Past incidents have leaked customer PII and auth tokens this way.

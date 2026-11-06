@@ -23,7 +23,7 @@ For regular release PRs, use `dd-sdk-ios:prepare-release` for titles, descriptio
 - **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket for internal development PRs
 - **Target branch**: `develop` or the change's shared feature branch
 - **Always open as draft** — mark ready when build/test checks pass and the diff is ready; approval-dependent gates may still be pending
-- **Human assignment requires `ready-for-human-review`** — add it only after automated reviews finish and all feedback is resolved
+- **Follow `CONTRIBUTING.md` for human assignment** — Datadog team members add `ready-for-human-review` after automated feedback is resolved; external contributors wait for a team member to pick up the PR
 - All commits on the branch must be signed
 
 ## Creating via gh
@@ -75,10 +75,11 @@ Marking the PR ready starts automated review; it is not the human-assignment sig
 3. Wait for any reviews triggered by the new push and repeat this loop until no
    feedback remains unaddressed or unresolved. If an expected review did not
    rerun, use its documented trigger. Previous-head results do not clear a new head.
-4. Once that loop is clear and required build/test checks pass, add the label
-   required for a human reviewer to be assigned. Approval-dependent gates such as
-   MergeGate can remain pending until humans approve; do not wait for them before
-   routing human review:
+4. Once that loop is clear and required build/test checks pass, follow the human
+   handoff paths in `CONTRIBUTING.md`. Approval-dependent gates such as MergeGate
+   can remain pending until humans approve; do not wait for them before handoff.
+
+   **Datadog team members:** add the label used by the daily reviewer-assignment bot:
 
    ```bash
    gh pr edit "<PR number>" --add-label "ready-for-human-review"
@@ -86,11 +87,16 @@ Marking the PR ready starts automated review; it is not the human-assignment sig
 
    Verify the label is present. A team review request does not replace it, and the
    label does not replace required approvals or MergeGate.
+
+   **External contributors:** wait for a team member to pick up the PR and take
+   it through human review; adding or verifying the label is not required.
 5. Keep owning the PR through human feedback and merge. Poll frequently during
    automated review and fixes (for example, every five minutes), then less often
    while waiting on humans with no open feedback (for example, every fifteen
-   minutes). If another push or finding reopens automated review, remove the label,
-   return to frequent checks, and reapply it only after the latest head is clear.
+   minutes). If another push or finding reopens automated review, return to frequent
+   checks and address it alongside human review, keeping the label. Remove the
+   label only when human feedback requires significant rework, and reapply it
+   after the reworked head clears automated review.
 
 ## Common Mistakes
 
@@ -99,4 +105,4 @@ Marking the PR ready starts automated review; it is not the human-assignment sig
 | Wrong base branch | Use `develop` or the change's shared feature branch |
 | Missing `[PROJECT-XXXX]` title prefix | Required for internal development PRs |
 | Skipping review checklist items | Fill out checklist before marking PR ready |
-| Assuming a ready PR assigns a human | Finish automated review, resolve feedback, then add `ready-for-human-review` |
+| Assuming a ready PR assigns a human | Finish automated review, then follow the internal or external handoff path in `CONTRIBUTING.md` |
