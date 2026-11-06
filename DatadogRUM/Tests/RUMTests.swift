@@ -650,6 +650,25 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(featureWasRegisteredWhenTelemetryReceived, true)
     }
 
+    func testWhenEnabledWithTimeseries_itCollectsTimeseriesOnlyInApps() throws {
+        for (bundlePath, expectsCollector) in [("app.app", true), ("widget.appex", false)] {
+            // Given
+            let core = SingleFeatureCoreMock<RUMFeature>()
+            // `TimeseriesSessionCollector` keeps a long-lived reference to its feature scope, which would otherwise
+            // create a core -> feature -> collector -> scope -> core retain cycle with the default `self`-as-scope.
+            core.featureScopeOverride = NOPFeatureScope()
+            config.bundle = .mockWith(bundlePath: bundlePath)
+            config.timeseries = .default
+
+            // When
+            RUM.enable(with: config, in: core)
+
+            // Then
+            let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+            XCTAssertEqual(rum.timeseriesCollector != nil, expectsCollector, "Bundle: \(bundlePath)")
+        }
+    }
+
     func testWhenEnabled_itSetsRUMContextInCore() throws {
         let core = PassthroughCoreMock()
         let applicationID: String = .mockRandom()
