@@ -105,8 +105,9 @@ test:
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
 	@:$(eval USE_TEST_VISIBILITY ?= $(DEFAULT_USE_TEST_VISIBILITY))
-	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)'"
-	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)' TEST_PLANS='$(TEST_PLANS)' SKIP_TEST_PLANS='$(SKIP_TEST_PLANS)'"
+	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)" \
+		$(if $(TEST_PLANS),--test-plans "$(TEST_PLANS)") $(if $(SKIP_TEST_PLANS),--skip-test-plans "$(SKIP_TEST_PLANS)")
 
 # Run unit tests for specified SCHEME using iOS Simulator
 test-ios:
