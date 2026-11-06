@@ -1,0 +1,301 @@
+syntax = "proto3";
+
+package datadog.ffe.flagging.ufc.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/DataDog/dd-source/domains/ffe/libs/flagging/ufc/ufcpb";
+
+// FlagsConfiguration is a compiled rules-based flag configuration.
+message FlagsConfiguration {
+  google.protobuf.Timestamp created_at = 1;
+  string environment_name = 2;
+  map<string, Flag> flags = 3;
+
+  // Interned data referenced by zero-based indexes in conditions. An index must
+  // refer to an element in its corresponding list.
+  repeated AttributeReference attributes = 4;
+  repeated string strings = 5;
+  repeated string regexes = 6;
+  repeated Version versions = 7;
+  // Interned JSON variation values, each a serialized JSON document. Indexed
+  // by Variation.json_string_index.
+  //
+  // JSON values are stored as strings because for some SDKs, our
+  // users want to override the JSON parser or get the variant as a
+  // string they can parse on their own.
+  repeated string json_strings = 8;
+  repeated Condition conditions = 9;
+
+  // Opt-in flag for emitting full flag-evaluation data from SDKs to
+  // Datadog. May contain PII; defaults to false for privacy.
+  bool observe_full_evaluation_data = 10;
+}
+
+message Version {
+  // Main version components (usually "major.minor.patch" but can have more/less
+  // parts). Missing components should be treated as "0" for comparison
+  // purposes.
+  repeated string components = 1;
+  repeated string prerelease = 2;
+}
+
+message Flag {
+  // The minimum feature level an SDK must support to evaluate this flag.
+  // SDKs that don't support this level must not evaluate the flag and should
+  // report an informative flag-scoped error rather than treat it as absent.
+  uint32 minimum_feature_level = 1;
+  VariationType variation_type = 2;
+  // Split.variation_index indexes this array.
+  repeated Variation variations = 3;
+  repeated Allocation allocations = 4;
+}
+
+enum VariationType {
+  VARIATION_TYPE_UNSPECIFIED = 0;
+  VARIATION_TYPE_STRING = 1;
+  VARIATION_TYPE_INTEGER = 2;
+  VARIATION_TYPE_NUMERIC = 3;
+  VARIATION_TYPE_BOOLEAN = 4;
+  VARIATION_TYPE_JSON = 5;
+}
+
+message Variation {
+  // Variation key. Index into FlagsConfiguration.strings
+  uint32 key_string_index = 1;
+  // The populated field must agree with Flag.variation_type.
+  oneof value {
+    // Index into FlagsConfiguration.strings
+    uint32 string_value_index = 2;
+    int64 integer_value = 3;
+    double numeric_value = 4;
+    bool boolean_value = 5;
+    // JSON variations may be any valid JSON value, including scalar values.
+    // Index into FlagsConfiguration.json_strings.
+    uint32 json_string_index = 6;
+  }
+}
+
+// An allocation first selects subjects matching its targeting expression. It
+// then computes each partition key once and chooses the split whose ranges
+// contain that key tuple.
+message Allocation {
+  string key = 1;
+  // Zero-based index into FlagsConfiguration.conditions. Unset means
+  // this allocation matches every subject.
+  optional uint32 targeting_condition_index = 2;
+  repeated PartitionKey partition_key = 3;
+  repeated Split splits = 4;
+  // Whether an evaluation resolved by this allocation should emit an
+  // exposure event (e.g. for experiments).
+  bool log_exposure_event = 5;
+}
+
+// AttributeReference identifies either the targeting key or a value reached by
+// traversing an attribute path. Object keys are indexed into
+// FlagsConfiguration.strings. Array indexes address elements positionally.
+message AttributeReference {
+  oneof kind {
+    google.protobuf.Empty targeting_key = 1;
+    AttributePath attribute_path = 2;
+  }
+}
+
+message AttributePath {
+  // Contains at least one segment and starts with a string.
+  repeated AttributePathSegment segments = 1;
+}
+
+message AttributePathSegment {
+  oneof kind {
+    // Index into FlagsConfiguration.strings.
+    uint32 object_key_string_index = 1;
+    uint32 array_index = 2;
+  }
+}
+
+// Leaf conditions are grouped by the attribute value type they operate on,
+// so implementations can fetch and convert the attribute once per group
+// before dispatching on the specific comparator.
+message Condition {
+  oneof kind {
+    // Logical AND. True when every referenced condition is
+    // true. Empty ALL is true.
+    ConditionOperands all = 1;
+    // Logical OR. True when any referenced condition is true. Empty
+    // ANY is false.
+    ConditionOperands any = 2;
+
+    NumericCondition numeric = 3;
+    RegexCondition regex = 4;
+    StringMembershipCondition string_membership = 5;
+    Sha256MembershipCondition sha256_membership = 6;
+    AttributePresenceCondition attribute_presence = 7;
+    VersionCondition version = 8;
+    StringComparisonCondition string_comparison = 9;
+    Sha256StringComparisonCondition sha256_string_comparison = 10;
+  }
+}
+
+message ConditionOperands {
+  // Zero-based indexes into FlagsConfiguration.conditions.
+  repeated uint32 condition_indexes = 1;
+}
+
+enum NumericComparator {
+  NUMERIC_COMPARATOR_UNSPECIFIED = 0;
+  NUMERIC_COMPARATOR_LESS_THAN = 1;
+  NUMERIC_COMPARATOR_LESS_THAN_OR_EQUAL = 2;
+  NUMERIC_COMPARATOR_GREATER_THAN = 3;
+  NUMERIC_COMPARATOR_GREATER_THAN_OR_EQUAL = 4;
+}
+
+message NumericCondition {
+  uint32 attribute_index = 1;
+  NumericComparator comparator = 2;
+  double comparand = 3;
+}
+
+message RegexCondition {
+  uint32 attribute_index = 1;
+  // Index into FlagsConfiguration.regexes.
+  uint32 regex_index = 2;
+  // True negates the regex match.
+  bool negate = 3;
+}
+
+message StringMembershipCondition {
+  uint32 attribute_index = 1;
+  // Indices into FlagsConfiguration.strings. Sorted by referenced value.
+  repeated uint32 string_indexes = 2;
+  // True negates membership.
+  bool negate = 3;
+}
+
+enum StringComparator {
+  STRING_COMPARATOR_UNSPECIFIED = 0;
+  STRING_COMPARATOR_STARTS_WITH = 1;
+  STRING_COMPARATOR_ENDS_WITH = 2;
+  STRING_COMPARATOR_CONTAINS = 3;
+}
+
+message StringComparisonCondition {
+  uint32 attribute_index = 1;
+  StringComparator comparator = 2;
+  // Index into FlagsConfiguration.strings.
+  uint32 string_index = 3;
+  // True negates the comparator.
+  bool negate = 4;
+}
+
+enum Sha256StringComparator {
+  SHA256_STRING_COMPARATOR_UNSPECIFIED = 0;
+  SHA256_STRING_COMPARATOR_STARTS_WITH = 1;
+  SHA256_STRING_COMPARATOR_ENDS_WITH = 2;
+}
+
+// Compares a prefix or suffix without exposing its plaintext value. For
+// non-string attributes, SDKs must first apply the same conversion used by
+// StringMembershipCondition. SDKs must then encode the resulting string as
+// UTF-8 exactly as provided, without Unicode normalization or case folding.
+// length is measured in UTF-8 bytes. The byte
+// boundary at length (starts-with) or len(attribute)-length (ends-with) must be
+// a Unicode code point boundary; otherwise the condition is false. This avoids
+// hashing malformed partial code points, especially when extracting a suffix.
+message Sha256StringComparisonCondition {
+  uint32 attribute_index = 1;
+  bytes salt = 2;
+  Sha256StringComparator comparator = 3;
+  // Number of UTF-8 bytes to extract from the start or end. If the attribute
+  // has fewer bytes, or extraction would split a code point, the condition is
+  // false.
+  uint32 length = 4;
+  // Expected SHA-256(salt || extracted UTF-8 bytes), as raw digest bytes.
+  bytes sha256 = 5;
+  // True negates the comparator.
+  bool negate = 6;
+}
+
+// True when SHA-256(salt || attribute_value) matches one of sha256 values.
+message Sha256MembershipCondition {
+  uint32 attribute_index = 1;
+  bytes salt = 2;
+  // Sorted lexicographically as raw bytes.
+  repeated bytes sha256 = 3;
+  // True negates membership.
+  bool negate = 4;
+}
+
+message AttributePresenceCondition {
+  uint32 attribute_index = 1;
+  // True checks that the attribute is null/absent (is_null); false checks
+  // that it is present/not-null (is_not_null).
+  bool expect_null = 2;
+}
+
+enum VersionComparator {
+  VERSION_COMPARATOR_UNSPECIFIED = 0;
+  VERSION_COMPARATOR_EQUAL = 1;
+  VERSION_COMPARATOR_NOT_EQUAL = 2;
+  VERSION_COMPARATOR_LESS_THAN = 3;
+  VERSION_COMPARATOR_LESS_THAN_OR_EQUAL = 4;
+  VERSION_COMPARATOR_GREATER_THAN = 5;
+  VERSION_COMPARATOR_GREATER_THAN_OR_EQUAL = 6;
+}
+
+message VersionCondition {
+  uint32 attribute_index = 1;
+  VersionComparator comparator = 2;
+  // Index into FlagsConfiguration.versions.
+  uint32 version_index = 3;
+}
+
+// PartitionKey computes one coordinate of the composite key used to select a
+// split. Partition keys are evaluated in declaration order.
+message PartitionKey {
+  oneof kind {
+    TimePartitionKey time = 1;
+    Md5ShardPartitionKey shard_md5 = 2;
+  }
+}
+
+// Time is the current Unix timestamp in milliseconds.
+message TimePartitionKey {}
+
+// Partition value is computed as follows:
+// uint32_be(md5(salt || attribute_value)[0:4]) % total_shards
+message Md5ShardPartitionKey {
+  // Includes any separator between the salt and the hashed value; callers
+  // must concatenate salt and attribute_value directly, with no implicit
+  // separator of their own.
+  string salt = 1;
+  // Index into FlagsConfiguration.attributes.
+  uint32 attribute_index = 2;
+  uint64 total_shards = 3;
+}
+
+// Split.ranges is a Cartesian-product range over Allocation.partition_key.
+// ranges[i] applies to partition_key[i], and must have the same cardinality.
+message Split {
+  // Has the same number of elements as the partition key.
+  repeated PartitionRange ranges = 1;
+  uint32 variation_index = 2;
+  optional int32 serial_id = 3;
+  Reason reason = 4;
+}
+
+// A half-open range: from <= partition coordinate < to. Time coordinates are
+// Unix milliseconds; shard coordinates are in [0, total_shards).
+message PartitionRange {
+  optional uint64 from = 1;
+  optional uint64 to = 2;
+}
+
+enum Reason {
+  REASON_UNSPECIFIED = 0;
+  REASON_TARGETING_MATCH = 1;
+  REASON_SPLIT = 2;
+  REASON_STATIC = 3;
+  REASON_DEFAULT = 4;
+}
