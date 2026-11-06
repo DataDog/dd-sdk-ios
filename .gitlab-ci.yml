@@ -155,8 +155,8 @@ Lint:
 API Surface Verify:
   stage: lint
   rules:
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.tag-pipeline-job, rules]
+    - !reference [.develop-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
@@ -558,8 +558,8 @@ SPM Build (Swift 6.2):
 SPI Docs Build:
   stage: lint
   rules:
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.tag-pipeline-job, rules]
+    - !reference [.develop-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   script:
