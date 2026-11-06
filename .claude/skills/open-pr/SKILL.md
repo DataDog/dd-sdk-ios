@@ -65,16 +65,20 @@ gh pr create \
 
 Marking the PR ready starts automated review; it is not the human-assignment signal.
 
-1. Wait for every enabled or required automated reviewer to finish on the latest
-   head. Read review submissions, conversation comments, inline feedback and open
-   threads; a completed review can still have unresolved findings.
+1. Wait for active automated reviews to finish. Read review submissions,
+   conversation comments, inline feedback and open threads; a completed review
+   can still have unresolved findings.
 2. Fix each accepted finding, run the relevant validation, commit and push, then
    reply with the change and evidence and resolve the addressed feedback. Explain
    stale or inapplicable findings before resolving them. Do not delete feedback
    to clear the queue.
-3. Wait for any reviews triggered by the new push and repeat this loop until no
-   feedback remains unaddressed or unresolved. If an expected review did not
-   rerun, use its documented trigger. Previous-head results do not clear a new head.
+3. Monitor reviews triggered automatically by the new push and repeat this loop
+   when more feedback arrives. Never manually request another automated review,
+   regardless of the reviewer. If no new run or feedback arrives from a reviewer,
+   assume it has no further feedback and continue; do not wait for or request a
+   missing rerun. Existing findings must still be addressed and resolved. Record
+   unavailable runs without describing them as passed reviews. Required CI checks
+   and human approvals still apply.
 4. Once that loop is clear and required build/test checks pass, follow the human
    handoff paths in `CONTRIBUTING.md`. Approval-dependent gates such as MergeGate
    can remain pending until humans approve; do not wait for them before handoff.
@@ -97,6 +101,9 @@ Marking the PR ready starts automated review; it is not the human-assignment sig
    checks and address it alongside human review, keeping the label. Remove the
    label only when human feedback requires significant rework, and reapply it
    after the reworked head clears automated review.
+
+   Re-request review only from a human after fixing their findings. Reply with
+   the changes and validation evidence, then ask that human to review again.
 
 ## Common Mistakes
 
