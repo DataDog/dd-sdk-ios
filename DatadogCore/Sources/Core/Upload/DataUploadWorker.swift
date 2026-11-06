@@ -216,7 +216,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     previousUploadStatus = nil
                 }
                 do {
-                    // Try uploading the batch and do one more retry on failure.
+                    // Try uploading the batch, and try once more if the request could not be created. A returned
+                    // status that needs retry is not retried.
                     previousUploadStatus = try self.dataUploader.upload(
                         events: nextBatch.events,
                         context: self.contextProvider.read(),
