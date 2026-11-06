@@ -98,13 +98,6 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             doLog: doLog
         )
     }
-
-    /// Returns a copy marked as served with `"variationType": "number"`.
-    func servedAsNumber() -> FlagAssignment {
-        var assignment = self
-        assignment.isNumberType = true
-        return assignment
-    }
 }
 
 extension FlagAssignment.Variation: AnyMockable, RandomMockable {
