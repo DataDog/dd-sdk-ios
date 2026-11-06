@@ -79,17 +79,25 @@ workflow:
           - "BenchmarkTests/**/*"
         compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
+.develop-pipeline-job:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+
 .release-pipeline-job:
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+
+.tag-pipeline-job:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
 
-.release-pipeline-20m-delayed-job:
+.tag-pipeline-20m-delayed-job:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
       when: delayed
       start_in: 20 minutes
 
-.release-pipeline-40m-delayed-job:
+.tag-pipeline-40m-delayed-job:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
       when: delayed
@@ -103,7 +111,7 @@ ENV check:
   stage: pre
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   script:
     - ./tools/runner-setup.sh --datadog-ci
     - make env-check
@@ -116,7 +124,7 @@ Build Dependencies:
   stage: pre
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   artifacts:
     paths:
       - Carthage/Build
@@ -137,7 +145,7 @@ Lint:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.benchmark-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies: []
   script:
     - make clean repo-setup ENV=ci
@@ -148,7 +156,7 @@ API Surface Verify:
   stage: lint
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
@@ -158,7 +166,7 @@ API Surface Verify:
 Feature Docs Verify:
   stage: lint
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+    - !reference [.release-pipeline-job, rules]
   # tools/feature-docs-verify.sh runs `git diff <verified_against_commit>..HEAD`,
   # which requires that commit to be reachable in the local history. GitLab CI
   # shallow-clones at depth 20 by default, which would silently bury baselines
@@ -175,7 +183,7 @@ Unit Tests (iOS):
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   # Job-level timeout below the project's global 1h CI/CD timeout, paired with a shorter
@@ -201,7 +209,7 @@ Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
@@ -225,7 +233,7 @@ Unit Tests (watchOS):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
@@ -249,7 +257,7 @@ Unit Tests (visionOS):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
@@ -273,7 +281,7 @@ Unit Tests (macOS):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   variables:
@@ -295,7 +303,7 @@ UI Tests (build):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   variables:
@@ -314,7 +322,7 @@ UI Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "UI Tests (build)"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
@@ -345,7 +353,7 @@ SR Snapshot Tests:
   stage: ui-test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
@@ -375,7 +383,7 @@ SR Layer Snapshot Tests:
   stage: ui-test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
@@ -478,7 +486,7 @@ Smoke Tests (iOS):
   extends: .smoke-tests-ios
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   parallel:
     matrix:
       - SUITE: &smoke-test-suites
@@ -489,7 +497,7 @@ Smoke Tests (tvOS):
   extends: .smoke-tests-tvos
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   parallel:
     matrix:
       - SUITE: *smoke-test-suites
@@ -498,8 +506,8 @@ Smoke Tests (tvOS):
 Release Smoke Tests (iOS):
   extends: .smoke-tests-ios
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
     - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   parallel:
     matrix:
       - SUITE: &release-smoke-test-suites
@@ -510,8 +518,8 @@ Release Smoke Tests (iOS):
 Release Smoke Tests (tvOS):
   extends: .smoke-tests-tvos
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
     - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   parallel:
     matrix:
       - SUITE: *release-smoke-test-suites
@@ -520,7 +528,7 @@ Smoke Tests (macOS):
   stage: smoke-test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
@@ -536,7 +544,7 @@ SPM Build (Swift 6.2):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
@@ -549,9 +557,9 @@ SPM Build (Swift 6.2):
 
 SPI Docs Build:
   stage: lint
-  rules: 
+  rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   script:
@@ -566,7 +574,7 @@ SPI Docs Build:
 E2E Test (upload to s8s):
   stage: e2e-test
   rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+    - !reference [.develop-pipeline-job, rules]
   artifacts:
     paths:
       - artifacts
@@ -585,8 +593,8 @@ E2E Test (upload to s8s):
 Benchmark Test (upload to s8s):
   stage: benchmark-test
   rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
-      allow_failure: true
+    - !reference [.develop-pipeline-job, rules]
+  allow_failure: true
   artifacts:
     paths:
       - artifacts
@@ -643,7 +651,7 @@ Build Artifacts:
   stage: release-build
   interruptible: false
   rules:
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
   artifacts:
@@ -662,7 +670,7 @@ Publish GH Asset:
   stage: release-publish
   interruptible: false
   rules:
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
   before_script:
