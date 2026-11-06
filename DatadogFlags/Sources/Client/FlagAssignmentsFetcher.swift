@@ -11,6 +11,7 @@ internal protocol FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
+        diagnostics: FlagsRequestDiagnostics.Snapshot?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
 }
@@ -20,7 +21,7 @@ extension FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
-        flagAssignments(for: evaluationContext, experimentationOptOut: nil, completion: completion)
+        flagAssignments(for: evaluationContext, experimentationOptOut: nil, diagnostics: nil, completion: completion)
     }
 }
 
@@ -87,6 +88,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
+        diagnostics: FlagsRequestDiagnostics.Snapshot? = nil,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         // Repository callbacks can invoke application code; keep them off shared SDK work queues.
@@ -105,6 +107,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 self.fetchAssignments(
                     for: evaluationContext,
                     experimentationOptOut: experimentationOptOut,
+                    diagnostics: diagnostics,
                     context: context,
                     completion: completion
                 )
@@ -115,6 +118,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private func fetchAssignments(
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
+        diagnostics: FlagsRequestDiagnostics.Snapshot?,
         context: DatadogContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
@@ -125,7 +129,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 context: context,
                 customHeaders: customHeaders,
                 flagSelection: flagSelection,
-                experimentationOptOut: experimentationOptOut
+                experimentationOptOut: experimentationOptOut,
+                diagnostics: diagnostics
             )
             fetch(request) { [assignmentFetchQueue, featureScope, flagSelection] result in
                 assignmentFetchQueue.async {

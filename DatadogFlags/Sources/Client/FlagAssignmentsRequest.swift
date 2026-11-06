@@ -14,7 +14,8 @@ extension URLRequest {
         context: DatadogContext,
         customHeaders: [String: String]?,
         flagSelection: CanonicalFlagSelection?,
-        experimentationOptOut: ExperimentationOptOut? = nil
+        experimentationOptOut: ExperimentationOptOut? = nil,
+        diagnostics: FlagsRequestDiagnostics.Snapshot? = nil
     ) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -46,7 +47,7 @@ extension URLRequest {
                 datadogEnvironment: context.env
             ),
             source: FlagAssignmentsRequestBody.Source(
-                sdkName: "dd-sdk-ios",
+                sdkName: context.source == "ios" ? "dd-sdk-ios" : context.source,
                 sdkVersion: context.sdkVersion
             ),
             subject: FlagAssignmentsRequestBody.Subject(
@@ -54,7 +55,8 @@ extension URLRequest {
                 targetingAttributes: evaluationContext.attributes
             ),
             flagSelection: flagSelection,
-            experimentationOptOut: experimentationOptOut
+            experimentationOptOut: experimentationOptOut,
+            diagnostics: diagnostics
         )
 
         let encoder = JSONEncoder.dd.default()
@@ -100,10 +102,12 @@ internal struct FlagAssignmentsRequestBody {
     let subject: Subject
     let flagSelection: CanonicalFlagSelection?
     var experimentationOptOut: ExperimentationOptOut?
+    var diagnostics: FlagsRequestDiagnostics.Snapshot? = nil
 }
 
 extension FlagAssignmentsRequestBody: Encodable {
     private enum CodingKeys: String, CodingKey {
+        case diagnostics
         case type
         case data
         case attributes
@@ -119,6 +123,7 @@ extension FlagAssignmentsRequestBody: Encodable {
     func encode(to encoder: any Encoder) throws {
         var rootContainer = encoder.container(keyedBy: CodingKeys.self)
 
+        try rootContainer.encodeIfPresent(diagnostics, forKey: .diagnostics)
         var dataContainer = rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         try dataContainer.encode("precompute-assignments-request", forKey: .type)
 

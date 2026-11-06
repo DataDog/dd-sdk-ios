@@ -143,6 +143,7 @@ internal final class FlagsRepository {
     let clientName: String
     private let stateManager = FlagsStateManager()
     private let firstFlags = FirstFlagsCallbacks()
+    private let requestDiagnostics = FlagsRequestDiagnostics()
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
@@ -600,6 +601,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         let parsedPolicy = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
         let policy = try? parsedPolicy.get()
         let invalidContext = if case .failure = parsedPolicy { true } else { false }
+        var diagnostics: FlagsRequestDiagnostics.Snapshot?
         var contextUpdateID: UInt64 = 0
         var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false
@@ -608,6 +610,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         // Request registration, assignments, and client state use the same synchronization boundary.
         // Listener delivery and public completions must remain outside this lock.
         _repositoryState.mutate { state in
+            diagnostics = requestDiagnostics.accept()
             state.telemetry.begin(context, installed: state.flagsData?.context)
             state.contextUpdateID += 1
             contextUpdateID = state.contextUpdateID
@@ -669,7 +672,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             }
         }
 
-        flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: policy) { [weak self] result in
+        flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: policy, diagnostics: diagnostics) { [weak self] result in
             guard let self else {
                 complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
                 return

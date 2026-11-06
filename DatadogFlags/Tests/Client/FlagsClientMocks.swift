@@ -235,6 +235,7 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
+        diagnostics: FlagsRequestDiagnostics.Snapshot?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         experimentationOptOutPolicies.append(experimentationOptOut)
