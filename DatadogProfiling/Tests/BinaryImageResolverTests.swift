@@ -177,25 +177,29 @@ final class BinaryImageResolverTests: XCTestCase {
     }
 
     func testDuplicateNotificationAndUUIDOnlyChangeReuseFilenameStorage() throws {
-        let cache = try XCTUnwrap(binary_image_cache_create_for_testing())
-        defer { binary_image_cache_destroy_for_testing(cache) }
-        let fixture = BinaryImageFixture(identity: 1)
-        binary_image_cache_add_image_for_testing(cache, fixture.storage, "libSame")
-        var first = binary_image_t()
-        XCTAssertTrue(binary_image_cache_lookup_image_for_testing(cache, fixture.address, &first))
+        for filename in ["libSame", ""] {
+            let cache = try XCTUnwrap(binary_image_cache_create_for_testing())
+            defer { binary_image_cache_destroy_for_testing(cache) }
+            let fixture = BinaryImageFixture(identity: 1)
+            binary_image_cache_add_image_for_testing(cache, fixture.storage, nil)
+            binary_image_cache_add_image_for_testing(cache, fixture.storage, filename)
+            var first = binary_image_t()
+            XCTAssertTrue(binary_image_cache_lookup_image_for_testing(cache, fixture.address, &first))
+            XCTAssertEqual(String(cString: try XCTUnwrap(first.filename)), filename)
 
-        binary_image_cache_add_image_for_testing(cache, fixture.storage, "libSame")
-        var duplicate = binary_image_t()
-        XCTAssertTrue(binary_image_cache_lookup_image_for_testing(cache, fixture.address, &duplicate))
-        XCTAssertEqual(duplicate.filename, first.filename)
+            binary_image_cache_add_image_for_testing(cache, fixture.storage, filename)
+            var duplicate = binary_image_t()
+            XCTAssertTrue(binary_image_cache_lookup_image_for_testing(cache, fixture.address, &duplicate))
+            XCTAssertEqual(duplicate.filename, first.filename)
 
-        fixture.updateIdentity(2)
-        binary_image_cache_add_image_for_testing(cache, fixture.storage, "libSame")
-        var updated = binary_image_t()
-        XCTAssertTrue(binary_image_cache_lookup_image_for_testing(cache, fixture.address, &updated))
-        XCTAssertEqual(updated.uuid.0, 2)
-        XCTAssertEqual(updated.filename, first.filename)
-        XCTAssertEqual(binary_image_cache_size_for_testing(cache), 1)
+            fixture.updateIdentity(2)
+            binary_image_cache_add_image_for_testing(cache, fixture.storage, filename)
+            var updated = binary_image_t()
+            XCTAssertTrue(binary_image_cache_lookup_image_for_testing(cache, fixture.address, &updated))
+            XCTAssertEqual(updated.uuid.0, 2)
+            XCTAssertEqual(updated.filename, first.filename)
+            XCTAssertEqual(binary_image_cache_size_for_testing(cache), 1)
+        }
     }
 
     func testReplacementAtReusedImageAddressPreservesBorrowedNames() throws {

@@ -9,7 +9,7 @@
 
 #include "memory_allocation_window.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #ifdef __cplusplus
 namespace dd::profiler { class HeapPprofEncoder; }
@@ -94,5 +94,5 @@ dd_memory_pprof_diagnostics_t dd_memory_pprof_encoder_diagnostics(
 }
 #endif
 
-#endif // defined(__APPLE__) && !TARGET_OS_WATCH
+#endif // defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // DD_MEMORY_PPROF_H_

@@ -6,7 +6,7 @@
 
 #include "memory_pprof.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include "binary_image_resolver.h"
 #include "poisson_allocation_sampler.h"
@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <limits>
@@ -43,23 +42,23 @@ static_assert(kClassNameIndexCapacity != 0 &&
               "class-name index capacity must be a nonzero power of two");
 
 enum class StringID : uint8_t {
-    kEmpty,
-    kAllocObjects,
-    kCount,
-    kAllocSpace,
-    kBytes,
-    kInuseObjects,
-    kInuseSpace,
-    kSpace,
-    kAllocatedClass,
-    kSource,
-    kObjC,
-    kSwift,
-    kUnknown,
-    kInitialStringCount,
+    empty,
+    allocObjects,
+    count,
+    allocSpace,
+    bytes,
+    inuseObjects,
+    inuseSpace,
+    space,
+    allocatedClass,
+    source,
+    objc,
+    swift,
+    unknown,
+    initialStringCount,
 };
 
-constexpr size_t kInitialStringCount = static_cast<size_t>(StringID::kInitialStringCount);
+constexpr size_t kInitialStringCount = static_cast<size_t>(StringID::initialStringCount);
 
 // Each aggregate adds at most one class name; each mapping adds two strings.
 static_assert(kInitialStringCount + DD_MEMORY_AGGREGATION_CAPACITY +
@@ -113,8 +112,10 @@ size_t mapped_bytes(size_t bytes) {
 
 namespace dd::profiler {
 
-/// Serializes already aggregated heap totals into one bounded pprof payload.
-/// Owns its output and per-profile indexes; image metadata is borrowed.
+/// Serializes already aggregated alloc_objects, alloc_space, inuse_objects,
+/// and inuse_space totals, rounding each independently once during encoding.
+/// Owns reusable output and per-profile indexes; image metadata is borrowed.
+/// Encoding and view readers are serialized by the caller.
 class HeapPprofEncoder final {
 public:
     static HeapPprofEncoder *create(size_t capacity);
@@ -138,6 +139,8 @@ private:
 
     binary_image_cache *image_cache = nullptr;
     uint8_t *output = nullptr;
+    // written tracks construction; encoded_size publishes only a complete profile.
+    // Failed or skipped attempts leave encoded_size zero, hiding partial output.
     size_t encoded_size = 0;
     size_t written = 0;
     size_t location_count = 0;
@@ -148,6 +151,9 @@ private:
     std::array<IndexEntry, kMappingIndexCapacity> mappings{};
     std::array<ClassNameEntry, kClassNameIndexCapacity> class_names{};
 
+    // Helpers return true when encoding can continue, including when optional
+    // metadata is omitted. False rejects the entire profile on invalid input,
+    // exhausted limits or a write failure.
     bool append(const Perftools__Profiles__Profile &chunk);
     bool append_string(const char *value, int64_t &id, const uint8_t **encoded_data = nullptr);
     bool append_schema(int64_t time_nanos, int64_t duration_nanos);
@@ -155,7 +161,9 @@ private:
     bool location_id(uint64_t pc, uint64_t &id);
     bool mapping_id(uint64_t pc, uint64_t &id);
     bool rounded_value(double value, int64_t &output_value);
-    bool class_name_id(const dd_memory_aggregation_key_t &key, int64_t &id);
+    /// Missing or unusable class names leave id == 0 and omit only the class label.
+    /// A write failure returns false and rejects the entire profile.
+    bool append_class_name_if_available(const dd_memory_aggregation_key_t &key, int64_t &id);
     bool intern_class_name(const char *name, size_t length, int64_t &id);
     bool invalid() {
         ++counters.invalid_profiles;
@@ -167,33 +175,14 @@ private:
     }
 };
 
-namespace {
-
-// Partial construction and the opaque C handle use the same allocation owner.
-struct EncoderDeleter {
-    void operator()(HeapPprofEncoder *encoder) const noexcept {
-        if (encoder != nullptr) {
-            encoder->~HeapPprofEncoder();
-            std::free(encoder);
-        }
-    }
-};
-
-using EncoderOwner = std::unique_ptr<HeapPprofEncoder, EncoderDeleter>;
-
-} // namespace
-
 HeapPprofEncoder *HeapPprofEncoder::create(size_t capacity) {
     if (capacity == 0 || capacity > DD_MEMORY_PPROF_MAX_PAYLOAD_BYTES) {
         return nullptr;
     }
-    // calloc and explicit member initialization agree on the initial state;
-    // optimized builds can elide redundant clearing of the large indexes.
-    void *storage = std::calloc(1, sizeof(HeapPprofEncoder));
-    if (storage == nullptr) {
+    std::unique_ptr<HeapPprofEncoder> encoder(new (std::nothrow) HeapPprofEncoder);
+    if (!encoder) {
         return nullptr;
     }
-    EncoderOwner encoder(new (storage) HeapPprofEncoder);
     encoder->counters.max_payload_bytes = capacity;
     void *output_storage = mmap(nullptr, capacity,
                                 PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
@@ -269,27 +258,27 @@ bool HeapPprofEncoder::append_schema(int64_t time_nanos,
         },
     };
     const std::array<int64_t, 4> type_ids = {
-        string_id(StringID::kAllocObjects),
-        string_id(StringID::kAllocSpace),
-        string_id(StringID::kInuseObjects),
-        string_id(StringID::kInuseSpace),
+        string_id(StringID::allocObjects),
+        string_id(StringID::allocSpace),
+        string_id(StringID::inuseObjects),
+        string_id(StringID::inuseSpace),
     };
     std::array<Perftools__Profiles__ValueType *, 4> type_pointers{};
     for (size_t index = 0; index < 4; ++index) {
         types[index].type = type_ids[index];
-        types[index].unit = index % 2 == 0 ? string_id(StringID::kCount) : string_id(StringID::kBytes);
+        types[index].unit = index % 2 == 0 ? string_id(StringID::count) : string_id(StringID::bytes);
         type_pointers[index] = &types[index];
     }
     Perftools__Profiles__ValueType period = PERFTOOLS__PROFILES__VALUE_TYPE__INIT;
-    period.type = string_id(StringID::kSpace);
-    period.unit = string_id(StringID::kBytes);
+    period.type = string_id(StringID::space);
+    period.unit = string_id(StringID::bytes);
     chunk.n_string_table = kInitialStringCount;
     chunk.string_table = string_pointers.data();
     chunk.n_sample_type = 4;
     chunk.sample_type = type_pointers.data();
     chunk.period_type = &period;
     chunk.period = poisson_allocation_sampler::sampling_interval();
-    chunk.default_sample_type = string_id(StringID::kInuseSpace);
+    chunk.default_sample_type = string_id(StringID::inuseSpace);
     chunk.time_nanos = time_nanos;
     chunk.duration_nanos = duration_nanos;
     next_string_id = kInitialStringCount;
@@ -311,7 +300,7 @@ bool HeapPprofEncoder::rounded_value(double value, int64_t &output_value) {
     return true;
 }
 
-bool HeapPprofEncoder::class_name_id(
+bool HeapPprofEncoder::append_class_name_if_available(
     const dd_memory_aggregation_key_t &key, int64_t &id) {
     id = 0;
     char name[DD_MEMORY_PPROF_MAX_CLASS_NAME_BYTES + 1];
@@ -382,6 +371,7 @@ bool HeapPprofEncoder::mapping_id(uint64_t pc, uint64_t &id) {
     id = 0;
     binary_image_t image{};
     if (!image_cache->lookup(pc, &image)) {
+        // Missing attribution leaves mapping ID 0; the caller still emits the raw PC.
         ++counters.unresolved_locations;
         return true;
     }
@@ -481,18 +471,18 @@ bool HeapPprofEncoder::append_sample(const dd_memory_aggregate_t &aggregate) {
         }
     }
     int64_t class_id = 0;
-    if (!class_name_id(key, class_id)) {
+    if (!append_class_name_if_available(key, class_id)) {
         return false;
     }
     Perftools__Profiles__Label source_label = PERFTOOLS__PROFILES__LABEL__INIT;
-    source_label.key = string_id(StringID::kSource);
+    source_label.key = string_id(StringID::source);
     switch (key.source) {
-        case DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC: source_label.str = string_id(StringID::kObjC); break;
-        case DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT: source_label.str = string_id(StringID::kSwift); break;
-        default: source_label.str = string_id(StringID::kUnknown); break;
+        case DD_MEMORY_LIVE_SAMPLE_SOURCE_OBJC: source_label.str = string_id(StringID::objc); break;
+        case DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT: source_label.str = string_id(StringID::swift); break;
+        default: source_label.str = string_id(StringID::unknown); break;
     }
     Perftools__Profiles__Label class_label = PERFTOOLS__PROFILES__LABEL__INIT;
-    class_label.key = string_id(StringID::kAllocatedClass);
+    class_label.key = string_id(StringID::allocatedClass);
     class_label.str = class_id;
     Perftools__Profiles__Label *labels[2] = {&source_label, &class_label};
 
@@ -557,7 +547,7 @@ extern "C" dd_memory_pprof_encoder_t *dd_memory_pprof_encoder_create(
 }
 
 extern "C" void dd_memory_pprof_encoder_destroy(dd_memory_pprof_encoder_t *encoder) {
-    dd::profiler::EncoderOwner owner(encoder);
+    delete encoder;
 }
 
 extern "C" bool dd_memory_pprof_encoder_encode(
@@ -576,4 +566,4 @@ extern "C" dd_memory_pprof_diagnostics_t dd_memory_pprof_encoder_diagnostics(
     return encoder != nullptr ? encoder->diagnostics() : dd_memory_pprof_diagnostics_t{};
 }
 
-#endif // defined(__APPLE__) && !TARGET_OS_WATCH
+#endif // defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
