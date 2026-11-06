@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import Darwin
 import XCTest
 
@@ -631,4 +631,4 @@ private struct DecodedHeapProfile {
     let buildIDs: [String]
     let filenames: [String]
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)
