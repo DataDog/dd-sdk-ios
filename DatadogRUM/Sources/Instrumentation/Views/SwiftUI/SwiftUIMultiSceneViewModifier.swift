@@ -339,6 +339,14 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         guard startsOnInitialMount else {
             return nil
         }
+        if let navigationOccurrenceSource {
+            return admission.withSession { session in
+                transitionArbiter?.sceneIdentifier(
+                    for: session.trackingState,
+                    navigationOccurrenceSource: navigationOccurrenceSource
+                )
+            } ?? nil
+        }
         return sceneIdentifier.map { RUMSceneIdentifier(rawValue: $0) }
     }
 
@@ -477,6 +485,15 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         _ = admission.withSession { session in
             let trackingState = session.trackingState
             let navigationOccurrenceRegistration = session.navigationRegistration
+
+            if startsOnInitialMount, let navigationOccurrenceSource {
+                guard let currentScene = transitionArbiter?.sceneIdentifier(
+                    for: trackingState,
+                    navigationOccurrenceSource: navigationOccurrenceSource
+                ), currentScene == sceneIdentifier else {
+                    return
+                }
+            }
 
             if let configuration {
                 switch resolveNavigationCandidate(configuration, in: sceneIdentifier) {
@@ -1002,15 +1019,24 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         } ?? false
     }
 
-    private func attachment(for sceneIdentifier: String?) -> RUMViewTrackingState.Attachment {
-        return admission.withSession { session in
+    private func attachment(for sceneIdentifier: String?) -> RUMViewTrackingState.Attachment? {
+        return admission.withSession { session -> RUMViewTrackingState.Attachment? in
             let trackingState = session.trackingState
             let navigationOccurrenceRegistration = session.navigationRegistration
 
+            if startsOnInitialMount, let navigationOccurrenceSource {
+                guard let scene = transitionArbiter?.sceneIdentifier(
+                    for: trackingState,
+                    navigationOccurrenceSource: navigationOccurrenceSource
+                ) else {
+                    return nil
+                }
+                return .attached(scene)
+            }
             return sceneIdentifier
                 .map { .attached(RUMSceneIdentifier(rawValue: $0)) }
                 ?? .detached
-        } ?? .detached
+        } ?? nil
     }
 }
 #endif // os(iOS)
