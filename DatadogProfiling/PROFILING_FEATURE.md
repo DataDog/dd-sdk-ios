@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-02
+last_updated: 2026-11-07
 sdk_version: 3.21.0
 verified_against_commit: 2654f0234
 tracked_files:
@@ -210,7 +210,8 @@ This is expected. Background state is a profiling blocker, and the profiler flus
 
 ## Additional Context
 
-- Profiling supports one SDK core instance per process. If another core calls `Profiling.enable`, the existing Profiling feature remains active and the SDK logs a warning identifying its core instance.
+- Profiling can be enabled for only one SDK core instance per process. Later calls to `Profiling.enable` keep the existing feature active and log an error identifying that instance.
 - Profiles include wall-time and CPU-time sample values by default.
-- Profiling can stop when runtime conditions block sampling and restart when conditions become valid again, such as after the app returns to foreground.
-- Profile uploads include pprof data, correlated RUM events, and profile metadata.
+- Continuous Profiling can stop when runtime conditions block sampling and restart when conditions become valid again, provided consent, sampling, and quota still allow profiling.
+- If profiling stops because of a memory allocation failure, it remains disabled until the next app launch. The active profile and queued work are discarded.
+- Profile uploads include pprof data and profile metadata, plus correlated RUM events when available.

@@ -104,6 +104,9 @@ public:
      */
     void finish_producer(std::vector<stack_trace_t>& active_buffer);
 
+    /// Discards queued work and stops the worker after its current callback.
+    void cancel();
+
     /**
      * @brief Returns true when called from the worker thread itself.
      */
@@ -167,6 +170,7 @@ private:
     bool producer_finished = true;
     /// Set once the worker has drained all queued work and exited.
     bool worker_finished = true;
+    bool cancelled = false;
 
     static constexpr size_t sampled_thread_name_capacity = 64;
 

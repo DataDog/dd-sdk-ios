@@ -50,6 +50,18 @@ internal final class ProfilingTelemetryController {
         continuousCycleIndex = 0
     }
 
+    /// Sends a metric for a terminal allocation failure.
+    func sendAllocationFailure(for operation: ProfilingOperation) {
+        send(
+            .allocationFailure(
+                startReason: operation.startReason,
+                status: .current,
+                cycleIndex: cycleIndex(for: operation),
+                appStartInfo: operation == .appLaunch ? appStartInfo : nil
+            )
+        )
+    }
+
     /// Sends a metric for a written profile, decorated with shared profiling telemetry state.
     func sendProfile(durationMs: Int64, fileSize: Int64, for operation: ProfilingOperation) {
         send(
