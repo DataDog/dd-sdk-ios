@@ -963,6 +963,58 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         )
     }
 
+    /// Uses current UIKit attachment, never a cached trait or scene identifier.
+    @MainActor
+    func sceneIdentifier(
+        for state: RUMViewTrackingState,
+        navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource,
+        admission: RUMSwiftUIViewCallbackAdmission
+    ) -> RUMSceneIdentifier? {
+        guard admitsCallbacks(), Thread.isMainThread, admission.isValid,
+              state.admission?.matches(admission) == true,
+              let foundation = admission.binding.foundation else {
+            return nil
+        }
+        var hasOwnRegistration = false
+        var ownScene: RUMSceneIdentifier?
+        var ownSceneIsAmbiguous = false
+        var sourceScene: RUMSceneIdentifier?
+        var sourceSceneIsAmbiguous = false
+        for registration in observerRegistrations.values {
+            guard let original = registration.admission, original.isValid,
+                  let registeredState = registration.state,
+                  registeredState.admission?.matches(original) == true,
+                  original.binding.epoch == admission.binding.epoch,
+                  original.binding.lifetime === admission.binding.lifetime,
+                  original.binding.foundation === foundation else {
+                continue
+            }
+            let isOwnReader = registeredState === state
+            guard isOwnReader || registration.navigationOccurrenceSource === navigationOccurrenceSource else {
+                continue
+            }
+            if isOwnReader {
+                hasOwnRegistration = true
+            }
+            guard let observer = registration.observer,
+                  let scene = observer.currentSceneIdentifier,
+                  original.admits(sceneIdentifier: scene) else {
+                continue
+            }
+            if isOwnReader {
+                if let ownScene, ownScene != scene { ownSceneIsAmbiguous = true }
+                ownScene = scene
+            } else {
+                if let sourceScene, sourceScene != scene { sourceSceneIsAmbiguous = true }
+                sourceScene = scene
+            }
+        }
+        if hasOwnRegistration {
+            return ownSceneIsAmbiguous ? nil : ownScene
+        }
+        return sourceSceneIsAmbiguous ? nil : sourceScene
+    }
+
     @MainActor
     func process(
         _ intent: Intent,
