@@ -183,7 +183,9 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 )
             )
             .onChange(of: sceneIdentifier, initial: true) { _, sceneIdentifier in
-                guard let attachment = attachment(for: sceneIdentifier) else { return }
+                guard let attachment = attachment(for: sceneIdentifier) else {
+                    return
+                }
                 update(attachment: attachment)
                 // SwiftUI defines the initial callback as part of this view's
                 // appearance. Enqueue once from this supported signal so the
@@ -198,7 +200,9 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 }
             }
             .onAppear {
-                guard let attachment = attachment(for: sceneIdentifier) else { return }
+                guard let attachment = attachment(for: sceneIdentifier) else {
+                    return
+                }
                 update(attachment: attachment)
                 appear()
             }
