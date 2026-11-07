@@ -72,6 +72,9 @@ void dd_delete_profiling_defaults(void);
  */
 void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns, uint64_t hard_limit_bytes);
 
+/// Makes the next aggregated batch throw an allocation failure.
+void dd_profiler_fail_next_aggregation_for_testing(void);
+
 #ifdef __cplusplus
 }
 #endif
