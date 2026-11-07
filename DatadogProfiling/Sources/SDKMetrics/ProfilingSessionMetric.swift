@@ -20,6 +20,7 @@ internal final class ProfilingSessionMetric {
         static let sessionKey = "profiling_session"
         static let noProfileErrorMessage = "No profile was stored."
         static let noDataErrorMessage = "Error serializing the profile."
+        static let allocationFailureErrorMessage = "Profiling stopped after a memory allocation failure."
         static let noProfiledEventsErrorMessage = "Profile was not written because no profiled events were collected."
         static let profileTooLargeErrorMessage = "Profile was not written because its serialized size exceeded the limit."
         static let quotaErrorMessage = "Profile was not written because profiling quota rejected the session."
@@ -153,6 +154,22 @@ internal final class ProfilingSessionMetric {
 // MARK: - ProfilingSessionMetric errors
 
 extension ProfilingSessionMetric {
+    static func allocationFailure(
+        startReason: StartReason,
+        status: ProfilingContext.Status,
+        cycleIndex: Int? = nil,
+        appStartInfo: String? = nil
+    ) -> ProfilingSessionMetric {
+        .init(
+            startReason: startReason,
+            status: status,
+            errorCode: .init(status: status),
+            errorMessage: Constants.allocationFailureErrorMessage,
+            cycleIndex: cycleIndex,
+            appStartInfo: appStartInfo
+        )
+    }
+
     static func noProfile(
         startReason: StartReason,
         status: ProfilingContext.Status,
