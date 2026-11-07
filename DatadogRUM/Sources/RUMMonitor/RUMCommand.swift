@@ -781,7 +781,34 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     let isUserInteraction = false // a long task is not an interactive event
 
     let duration: TimeInterval
+    /// `true` if the duration was measured by the SDK on the main thread's run loop with the wall clock (see `LongTaskObserver`),
+    /// `false` if it was measured by the caller and reported through the SDK API. A duration measured on the run loop may
+    /// include a period in which the OS suspended the process.
+    var isMeasuredOnMainRunLoop = false
     let missedEventType: SessionEndedMetric.MissedEventType? = .longTask
+}
+
+extension RUMAddLongTaskCommand {
+    /// Tells if this long task was measured on the main run loop over a period in which the OS may have suspended the process.
+    ///
+    /// When the OS suspends the process in the middle of a run loop iteration (e.g. shortly after the app entered background),
+    /// the wall clock keeps running while no code executes, and the iteration completes only once the app is resumed. The
+    /// whole suspension is then measured as a single long task, typically flagged as frozen frame, although it reflects no
+    /// main thread work. Such commands must be ignored before reaching any scope: besides the event itself, they would
+    /// refresh an expired session or start a view like any other command.
+    ///
+    /// Long tasks measured by the caller and reported through the API are never considered: the app may legitimately
+    /// execute permitted background work.
+    ///
+    /// - Parameter appStateHistory: The app state history from the SDK context. It is updated on the main thread when the
+    /// app state notification is received, so it always includes the transition to background that precedes a suspension.
+    func mayIncludeAppSuspension(given appStateHistory: AppStateHistory) -> Bool {
+        guard isMeasuredOnMainRunLoop, duration > 0 else {
+            return false
+        }
+        let longTaskInterval = (time - duration)...time
+        return appStateHistory.containsState(during: longTaskInterval, where: { $0.applicationMayBeSuspended })
+    }
 }
 
 // MARK: - RUM Web Events related commands

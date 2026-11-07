@@ -161,4 +161,95 @@ class RUMCommandTests: XCTestCase {
         XCTAssertEqual(command2.isNetworkError, true)
         XCTAssertEqual(command2.errorSource, .network)
     }
+
+    // MARK: - RUMAddLongTaskCommand
+
+    /// An app state in which the OS may suspend the process.
+    private var suspendableAppState: AppState {
+        #if os(macOS)
+        return .sleeping
+        #else
+        return .background
+        #endif
+    }
+
+    func testWhenLongTaskMeasuredOnMainRunLoopOverlapsSuspendableAppState_itMayIncludeAppSuspension() {
+        let t0: Date = .mockDecember15th2019At10AMUTC()
+        let history: AppStateHistory = .mockWith(
+            initialState: .active,
+            date: t0,
+            transitions: [
+                (state: suspendableAppState, date: t0 + 1),
+                (state: .active, date: t0 + 61)
+            ]
+        )
+
+        // spanning the whole suspendable period
+        XCTAssertTrue(
+            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 61, isMeasuredOnMainRunLoop: true)
+                .mayIncludeAppSuspension(given: history)
+        )
+        // starting before it
+        XCTAssertTrue(
+            RUMAddLongTaskCommand(time: t0 + 1.5, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true)
+                .mayIncludeAppSuspension(given: history)
+        )
+        // entirely inside it
+        XCTAssertTrue(
+            RUMAddLongTaskCommand(time: t0 + 30, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true)
+                .mayIncludeAppSuspension(given: history)
+        )
+    }
+
+    func testWhenLongTaskMeasuredOnMainRunLoopDoesNotOverlapSuspendableAppState_itDoesNotIncludeAppSuspension() {
+        let t0: Date = .mockDecember15th2019At10AMUTC()
+        let history: AppStateHistory = .mockWith(
+            initialState: .active,
+            date: t0,
+            transitions: [
+                (state: suspendableAppState, date: t0 + 2),
+                (state: .active, date: t0 + 5)
+            ]
+        )
+
+        // ending exactly when the app may start being suspended
+        XCTAssertFalse(
+            RUMAddLongTaskCommand(time: t0 + 2, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true)
+                .mayIncludeAppSuspension(given: history)
+        )
+        // starting exactly when the app resumes
+        XCTAssertFalse(
+            RUMAddLongTaskCommand(time: t0 + 6, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true)
+                .mayIncludeAppSuspension(given: history)
+        )
+        // no app state change at all
+        XCTAssertFalse(
+            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: true)
+                .mayIncludeAppSuspension(given: .mockWith(initialState: .active, date: t0))
+        )
+    }
+
+    func testWhenLongTaskIsMeasuredByCallerOrHasNoDuration_itDoesNotIncludeAppSuspension() {
+        let t0: Date = .mockDecember15th2019At10AMUTC()
+        let history: AppStateHistory = .mockWith(
+            initialState: .active,
+            date: t0,
+            transitions: [(state: suspendableAppState, date: t0 + 1)]
+        )
+
+        // measured by the caller (e.g. a cross-platform SDK) and reported through the API
+        XCTAssertFalse(
+            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: false)
+                .mayIncludeAppSuspension(given: history)
+        )
+        XCTAssertFalse(
+            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60)
+                .mayIncludeAppSuspension(given: history)
+        )
+        // no duration to overlap with
+        XCTAssertFalse(
+            RUMAddLongTaskCommand(time: t0 + 2, attributes: [:], duration: 0, isMeasuredOnMainRunLoop: true)
+                .mayIncludeAppSuspension(given: history)
+        )
+    }
 }
