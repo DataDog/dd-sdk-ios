@@ -14,6 +14,7 @@ import Combine
 @_spi(Internal)
 @testable import DatadogCore
 @testable import DatadogRUM
+@testable import RUMSceneTestHost
 
 #if os(iOS) && canImport(SwiftUI)
 extension SwiftUINavigationOwnershipTests {
@@ -937,8 +938,8 @@ extension SwiftUINavigationOwnershipTests {
 
         func relinquishDestroyedReferences() {
             // Qualifying measurement: release fixture ownership without causing a second detach.
-            if let window, var delegate = scene?.delegate as? UIWindowSceneDelegate,
-                (delegate.window ?? nil) === window {
+            if let window, let delegate = scene?.delegate as? RUMTestSceneDelegate,
+                delegate.window === window {
                 delegate.window = nil
             }
             originalRoot = nil
