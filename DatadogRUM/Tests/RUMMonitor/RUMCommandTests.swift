@@ -173,7 +173,13 @@ class RUMCommandTests: XCTestCase {
         #endif
     }
 
-    func testWhenLongTaskMeasuredOnMainRunLoopIsMostlyInSuspendableAppState_itMostlyOverlapsAppSuspension() {
+    private func trimmedDuration(time: Date, duration: TimeInterval, threshold: TimeInterval? = 0.5, history: AppStateHistory) -> TimeInterval? {
+        RUMAddLongTaskCommand(time: time, attributes: [:], duration: duration, mainRunLoopThreshold: threshold)
+            .trimmingAppSuspension(given: history)?
+            .duration
+    }
+
+    func testWhenLongTaskMeasuredOnMainRunLoopOverlapsSuspendableAppState_itKeepsOnlyTheNotSuspendedDuration() throws {
         let t0: Date = .mockDecember15th2019At10AMUTC()
         let history: AppStateHistory = .mockWith(
             initialState: .active,
@@ -184,24 +190,22 @@ class RUMCommandTests: XCTestCase {
             ]
         )
 
-        // spanning the whole suspendable period
-        XCTAssertTrue(
-            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 61, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
-        // starting before it, with most of the duration inside it
-        XCTAssertTrue(
-            RUMAddLongTaskCommand(time: t0 + 2, attributes: [:], duration: 1.5, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
+        // spanning the whole suspendable period only
+        XCTAssertNil(trimmedDuration(time: t0 + 61, duration: 60, history: history))
+        // spanning it with real work on both sides
+        XCTAssertEqual(try XCTUnwrap(trimmedDuration(time: t0 + 63, duration: 62.5, history: history)), 2.5, accuracy: 0.001)
+        // starting before it, with the not suspended part below threshold
+        XCTAssertNil(trimmedDuration(time: t0 + 2, duration: 1.3, history: history))
+        // ending after it, with the not suspended part at threshold
+        XCTAssertEqual(try XCTUnwrap(trimmedDuration(time: t0 + 61.5, duration: 1, history: history)), 0.5, accuracy: 0.001)
         // entirely inside it
-        XCTAssertTrue(
-            RUMAddLongTaskCommand(time: t0 + 30, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
+        XCTAssertNil(trimmedDuration(time: t0 + 30, duration: 1, history: history))
+        // the trimmed command keeps its time
+        let command = RUMAddLongTaskCommand(time: t0 + 63, attributes: [:], duration: 62.5, mainRunLoopThreshold: 0.5)
+        XCTAssertEqual(command.trimmingAppSuspension(given: history)?.time, t0 + 63)
     }
 
-    func testWhenLongTaskMeasuredOnMainRunLoopIsMostlyOutsideSuspendableAppState_itDoesNotMostlyOverlapAppSuspension() {
+    func testWhenLongTaskMeasuredOnMainRunLoopDoesNotOverlapSuspendableAppState_itIsUnchanged() {
         let t0: Date = .mockDecember15th2019At10AMUTC()
         let history: AppStateHistory = .mockWith(
             initialState: .active,
@@ -213,28 +217,14 @@ class RUMCommandTests: XCTestCase {
         )
 
         // ending exactly when the app may start being suspended
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 2, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
+        XCTAssertEqual(trimmedDuration(time: t0 + 2, duration: 1, history: history), 1)
         // starting exactly when the app resumes
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 6, attributes: [:], duration: 1, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
-        // exactly half of the duration in the suspendable period
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 3, attributes: [:], duration: 2, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
+        XCTAssertEqual(trimmedDuration(time: t0 + 6, duration: 1, history: history), 1)
         // no app state change at all
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: .mockWith(initialState: .active, date: t0))
-        )
+        XCTAssertEqual(trimmedDuration(time: t0 + 61.5, duration: 60, history: .mockWith(initialState: .active, date: t0)), 60)
     }
 
-    func testWhenLongTaskMeasuredOnMainRunLoopSpansAppResume_itDoesNotMostlyOverlapAppSuspension() {
+    func testWhenLongTaskMeasuredOnMainRunLoopSpansAppResume_itKeepsTheHang() throws {
         // Given: the app leaves the foreground, then the run loop iteration resuming it records `.inactive` before `.active`
         let t0: Date = .mockDecember15th2019At10AMUTC()
         let history: AppStateHistory = .mockWith(
@@ -248,18 +238,12 @@ class RUMCommandTests: XCTestCase {
         )
 
         // a hang in the resuming iteration starts while the app may still be suspended
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 63, attributes: [:], duration: 2.5, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
+        XCTAssertEqual(try XCTUnwrap(trimmedDuration(time: t0 + 63, duration: 2.5, history: history)), 2, accuracy: 0.001)
         // the suspension itself ends in the same iteration
-        XCTAssertTrue(
-            RUMAddLongTaskCommand(time: t0 + 61.1, attributes: [:], duration: 60.5, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
+        XCTAssertNil(trimmedDuration(time: t0 + 61.1, duration: 60.3, history: history))
     }
 
-    func testWhenLongTaskIsMeasuredByCallerOrHasNoDuration_itDoesNotMostlyOverlapAppSuspension() {
+    func testWhenLongTaskIsMeasuredByCallerOrHasNoDuration_itIsUnchanged() {
         let t0: Date = .mockDecember15th2019At10AMUTC()
         let history: AppStateHistory = .mockWith(
             initialState: .active,
@@ -268,18 +252,12 @@ class RUMCommandTests: XCTestCase {
         )
 
         // measured by the caller (e.g. a cross-platform SDK) and reported through the API
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: false)
-                .mostlyOverlapsAppSuspension(given: history)
+        XCTAssertEqual(trimmedDuration(time: t0 + 61.5, duration: 60, threshold: nil, history: history), 60)
+        XCTAssertEqual(
+            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60).trimmingAppSuspension(given: history)?.duration,
+            60
         )
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
-        // no duration to overlap with
-        XCTAssertFalse(
-            RUMAddLongTaskCommand(time: t0 + 2, attributes: [:], duration: 0, isMeasuredOnMainRunLoop: true)
-                .mostlyOverlapsAppSuspension(given: history)
-        )
+        // no duration to trim
+        XCTAssertEqual(trimmedDuration(time: t0 + 2, duration: 0, history: history), 0)
     }
 }

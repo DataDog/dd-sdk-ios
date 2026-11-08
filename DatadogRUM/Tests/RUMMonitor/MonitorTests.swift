@@ -301,12 +301,12 @@ class MonitorTests: XCTestCase {
                 (state: .active, date: backgroundStart + awayDuration)
             ]
         )
-        dateProvider.now.addTimeInterval(1 + awayDuration + 0.5)
-        clock.advance(by: 1 + awayDuration + 0.5)
+        dateProvider.now.addTimeInterval(1 + awayDuration + 0.05)
+        clock.advance(by: 1 + awayDuration + 0.05)
 
         // When: the run loop iteration interrupted by the suspension completes and measures the whole suspension
         monitor.process(
-            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: awayDuration, isMeasuredOnMainRunLoop: true)
+            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: awayDuration, mainRunLoopThreshold: 0.1)
         )
 
         // Then: no long task is sent and the expired session is neither refreshed nor its view restarted
@@ -341,11 +341,11 @@ class MonitorTests: XCTestCase {
                 (state: .active, date: backgroundStart + 60)
             ]
         )
-        dateProvider.now.addTimeInterval(61.5)
+        dateProvider.now.addTimeInterval(61.05)
 
         // When: one long task measured on the run loop spans the suspension, another one is reported through the API
         monitor.process(
-            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: 60, isMeasuredOnMainRunLoop: true)
+            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: 60, mainRunLoopThreshold: 0.1)
         )
         try XCTUnwrap(monitor._internal).addLongTask(at: dateProvider.now, duration: 60)
         monitor.stopView(key: "view", attributes: [:])
@@ -359,8 +359,8 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(lastViewUpdate.view.frozenFrame?.count, 1)
     }
 
-    func testWhenRunLoopLongTaskSpansAppResume_itIsSent() throws {
-        // Given: an active view, then the app leaves the foreground for a minute and a hang occurs while it resumes
+    func testWhenRunLoopLongTaskSpansAppSuspensionAndResume_itIsSentWithOnlyTheHangDuration() throws {
+        // Given: an active view, then the app leaves the foreground for a minute and hangs while it resumes
         let dateProvider = DateProviderMock()
         let featureScope = FeatureScopeMock(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: dateProvider.now)))
         let monitor = Monitor(
@@ -382,16 +382,16 @@ class MonitorTests: XCTestCase {
         )
         dateProvider.now.addTimeInterval(63)
 
-        // When: the run loop iteration resuming the app hangs, starting while the app may still be suspended
+        // When: one run loop iteration starts before the suspension and hangs for 2s after the app resumes
         monitor.process(
-            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: 2.5, isMeasuredOnMainRunLoop: true)
+            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: 62.5, mainRunLoopThreshold: 0.1)
         )
         monitor.stopView(key: "view", attributes: [:])
 
-        // Then: the hang is sent and counted
+        // Then: the long task is sent with only the time not spent in background
         let longTasks = featureScope.eventsWritten(ofType: RUMLongTaskEvent.self)
         XCTAssertEqual(longTasks.count, 1)
-        XCTAssertEqual(longTasks.first?.longTask.duration, (2.5).dd.toInt64Nanoseconds)
+        XCTAssertEqual(try XCTUnwrap(longTasks.first?.longTask.duration), (2.5).dd.toInt64Nanoseconds, accuracy: 1_000)
         let lastViewUpdate = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.name == "View" })
         XCTAssertEqual(lastViewUpdate.view.longTask?.count, 1)
     }

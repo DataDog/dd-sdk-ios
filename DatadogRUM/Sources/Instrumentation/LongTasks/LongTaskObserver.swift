@@ -78,7 +78,7 @@ internal class LongTaskObserver: RUMCommandPublisher {
                 time: date,
                 attributes: [:],
                 duration: duration,
-                isMeasuredOnMainRunLoop: true
+                mainRunLoopThreshold: longTaskDurationThreshold
             )
             subscriber?.process(command: longTaskCommand)
         }

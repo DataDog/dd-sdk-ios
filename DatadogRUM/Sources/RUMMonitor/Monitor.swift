@@ -159,15 +159,17 @@ internal class Monitor: RUMCommandSubscriber {
                 return
             }
 
-            let transformedCommand = self.transform(command: command)
+            var transformedCommand = self.transform(command: command)
 
-            if let longTaskCommand = transformedCommand as? RUMAddLongTaskCommand,
-               longTaskCommand.mostlyOverlapsAppSuspension(given: context.applicationStateHistory) {
-                // Dropped before the scopes, so it neither refreshes an expired session nor starts a view.
-                DD.logger.debug(
-                    "Ignoring long task of \(longTaskCommand.duration)s mostly spent in a period in which the app may have been suspended"
-                )
-                return
+            if let longTaskCommand = transformedCommand as? RUMAddLongTaskCommand {
+                // Trimmed before the scopes, so a suspension neither refreshes an expired session nor starts a view.
+                guard let trimmedCommand = longTaskCommand.trimmingAppSuspension(given: context.applicationStateHistory) else {
+                    DD.logger.debug(
+                        "Ignoring long task of \(longTaskCommand.duration)s spent in a period in which the app may have been suspended"
+                    )
+                    return
+                }
+                transformedCommand = trimmedCommand
             }
 
             // Record the replay state this command sees before processing it, as it may end or pause the session,

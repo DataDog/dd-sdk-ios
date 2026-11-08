@@ -20,7 +20,7 @@ class LongTaskObserverTests: XCTestCase {
         RunLoop.main.run(until: Date() + 0.1)
     }
 
-    func testWhenRunLoopIterationExceedsThreshold_itSendsLongTaskMeasuredOnMainRunLoop() throws {
+    func testWhenRunLoopIterationExceedsThreshold_itSendsLongTaskWithItsThreshold() throws {
         // Given
         let observer = LongTaskObserver(threshold: 0.5, dateProvider: dateProvider)
         observer.publish(to: subscriber)
@@ -34,7 +34,7 @@ class LongTaskObserverTests: XCTestCase {
         let longTasks = subscriber.receivedCommands.compactMap { $0 as? RUMAddLongTaskCommand }
         let longTask = try XCTUnwrap(longTasks.first)
         XCTAssertEqual(longTasks.count, 1)
-        XCTAssertTrue(longTask.isMeasuredOnMainRunLoop)
+        XCTAssertEqual(longTask.mainRunLoopThreshold, 0.5)
         XCTAssertEqual(longTask.duration, 1)
         XCTAssertEqual(longTask.time, dateProvider.now)
     }
