@@ -1,5 +1,6 @@
 name: Publish Changelog and Feature Docs to Confluence
 on:
+    workflow_dispatch:
     push:
         branches:
             - master
@@ -14,6 +15,8 @@ permissions:
     contents: read
 jobs:
     publish:
+        # Manual runs publish released docs only
+        if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code

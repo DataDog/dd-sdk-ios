@@ -34,7 +34,7 @@ struct UIImageWebPTests {
 
         // When
         let maxSize = resizing ? CGSize(width: 16, height: 16) : CGSize(width: 1_000, height: 1_000)
-        let data = try #require(image.webPData(maxSize: maxSize))
+        let data = try #require(image.resizedWebPData(maxSize: maxSize))
 
         // Then
         let source = try #require(CGImageSourceCreateWithData(data as CFData, nil))
@@ -72,7 +72,7 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(image.webPData())
+        let data = try #require(image.resizedWebPData())
 
         // Then
         let output = try #require(CGImage.make(data: data)?.premultipliedRGBA())
@@ -105,7 +105,7 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(image.webPData())
+        let data = try #require(image.resizedWebPData())
 
         // Then
         let output = try #require(CGImage.make(data: data)?.premultipliedRGBA())
@@ -149,7 +149,7 @@ struct UIImageWebPTests {
 
         // When
         let data = try #require(
-            image.webPData(maxSize: resizing ? CGSize(width: 8, height: 4) : image.size)
+            image.resizedWebPData(maxSize: resizing ? CGSize(width: 8, height: 4) : image.size)
         )
 
         // Then
@@ -178,7 +178,7 @@ struct UIImageWebPTests {
         let expected = try #require(image.cgImage?.premultipliedRGBA()?.first)
 
         // When
-        let data = try #require(image.webPData())
+        let data = try #require(image.resizedWebPData())
 
         // Then
         let pixel = try #require(CGImage.make(data: data)?.premultipliedRGBA()?.first)
@@ -219,7 +219,7 @@ struct UIImageWebPTests {
 
         // When
         let data = try #require(
-            image.webPData(maxSize: resizing ? CGSize(width: 8, height: 8) : image.size)
+            image.resizedWebPData(maxSize: resizing ? CGSize(width: 8, height: 8) : image.size)
         )
 
         // Then
@@ -255,7 +255,7 @@ struct UIImageWebPTests {
                 UIImage(pixels: pixels, width: 16, height: 16)
             )
             return try #require(
-                image.webPData()
+                image.resizedWebPData()
             )
         }
 
@@ -276,7 +276,7 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(image.webPData(maxSize: CGSize(width: 8, height: 4)))
+        let data = try #require(image.resizedWebPData(maxSize: CGSize(width: 8, height: 4)))
 
         // Then
         let decoded = try #require(CGImage.make(data: data))
@@ -310,7 +310,7 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(image.webPData())
+        let data = try #require(image.resizedWebPData())
 
         // Then
         let decoded = try #require(CGImage.make(data: data))
@@ -326,7 +326,7 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = try #require(image.webPData())
+        let data = try #require(image.resizedWebPData())
 
         // Then
         let decoded = try #require(CGImage.make(data: data))
@@ -347,7 +347,7 @@ struct UIImageWebPTests {
         let image = try #require(UIImage(pixels: [255, 0, 0, 255], width: 1, height: 1))
 
         // When
-        let data = image.webPData(maxSize: maxSize)
+        let data = image.resizedWebPData(maxSize: maxSize)
 
         // Then
         #expect(data == nil)
@@ -361,7 +361,7 @@ struct UIImageWebPTests {
         )
 
         // When
-        let data = image.webPData(maxSize: CGSize(width: 16_384, height: 16_384))
+        let data = image.resizedWebPData(maxSize: CGSize(width: 16_384, height: 16_384))
 
         // Then
         #expect(data == nil)
@@ -381,7 +381,7 @@ struct UIImageWebPTests {
         }
 
         // When
-        let data = image.webPData()
+        let data = image.resizedWebPData()
 
         // Then
         #expect(data == nil)

@@ -15,7 +15,7 @@ extension RUMViewEvent {
     /// - `self` is the previously sent `RUMViewEvent` (stored in `RUMViewScope.lastSentViewEvent`).
     /// - `event` is the newly built `RUMViewEvent` (post-mapper). Its values win.
     /// - Fields equal between `self` and `event` are set to `nil` (meaning "unchanged").
-    ///   `dd`, `usr`, and `account` are always forwarded wholesale from `event`, since `nil`
+    ///   `dd`, `usr`, `account`, and `executionContext` are always forwarded wholesale from `event`, since `nil`
     ///   would be ambiguous between "unchanged" and "explicitly cleared" for these fields.
     ///
     func update(from event: RUMViewEvent) -> RUMViewUpdateEvent {
@@ -33,6 +33,7 @@ extension RUMViewEvent {
             ddtags: diff(ddtags, event.ddtags),
             device: diff(device, event.device),
             display: diffMap(display, event.display, RUMViewUpdateEvent.Display.init),
+            executionContext: event.executionContext.map { .init($0) },
             featureFlags: diffMap(featureFlags, event.featureFlags, RUMViewUpdateEvent.FeatureFlags.init),
             os: diff(os, event.os),
             privacy: diffMap(privacy, event.privacy, RUMViewUpdateEvent.Privacy.init),
@@ -96,6 +97,16 @@ private extension RUMViewUpdateEvent.Container.Source {
         case .cpp: self = .cpp
         case .maui: self = .maui
         case .unreal: self = .unreal
+        }
+    }
+}
+
+private extension RUMViewUpdateEvent.ExecutionContext.ExecutionContextType {
+    init(_ s: RUMViewEvent.ExecutionContext.ExecutionContextType) {
+        switch s {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
         }
     }
 }
@@ -248,6 +259,12 @@ private extension RUMViewUpdateEvent.Display.Scroll {
 
 private extension RUMViewUpdateEvent.Display.Viewport {
     init(_ s: RUMViewEvent.Display.Viewport) { self.init(height: s.height, width: s.width) }
+}
+
+private extension RUMViewUpdateEvent.ExecutionContext {
+    init(_ s: RUMViewEvent.ExecutionContext) {
+        self.init(id: s.id, name: s.name, type: .init(s.type))
+    }
 }
 
 private extension RUMViewUpdateEvent.FeatureFlags {

@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 /// Tracks profiling telemetry under the "Profiling Session" metric.
 internal final class ProfilingSessionMetric {

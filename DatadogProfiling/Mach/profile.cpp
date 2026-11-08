@@ -25,7 +25,7 @@
 #include "profile.h"
 #include "binary_image_resolver.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <time.h>
 #include <algorithm>
@@ -309,4 +309,4 @@ uint32_t profile::intern_location(const location_t& location) {
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

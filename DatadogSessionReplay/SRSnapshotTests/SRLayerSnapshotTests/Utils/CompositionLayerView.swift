@@ -26,13 +26,18 @@ internal final class CompositionLayerView: UIView {
         contentView.backgroundColor = .clear
         addSubview(contentView)
 
-        addViews(
-            for: layer.children,
-            parentFrame: layer.absoluteFrame,
-            identifiedLayers: identifiedLayers,
-            identifiedWireframes: identifiedWireframes,
-            identifiedResources: identifiedResources
-        )
+        for child in layer.children {
+            guard let childView = makeView(
+                for: child,
+                in: layer,
+                identifiedLayers: identifiedLayers,
+                identifiedWireframes: identifiedWireframes,
+                identifiedResources: identifiedResources
+            ) else {
+                continue
+            }
+            contentView.addSubview(childView)
+        }
 
         applyModifiers(layer.modifiers ?? [], identifiedResources: identifiedResources)
         applyCompositeOperation(layer.compositeOperation)
@@ -43,54 +48,34 @@ internal final class CompositionLayerView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func addViews(
-        for children: [SRCompositionLayerChild],
-        parentFrame: CGRect,
+    private func makeView(
+        for child: SRCompositionLayerChild,
+        in layer: SRCompositionLayer,
         identifiedLayers: [Int64: SRCompositionLayer],
         identifiedWireframes: [Int64: SRWireframe],
         identifiedResources: [String: Resource]
-    ) {
-        for child in children {
-            switch child.type {
-            case .layer:
-                guard let childLayer = identifiedLayers[child.id] else {
-                    continue
-                }
-                if (childLayer.modifiers ?? []).isEmpty,
-                   childLayer.compositeOperation == nil || childLayer.compositeOperation == .sourceOver {
-                    // Plain groups share their parent's destination. An extra UIView would isolate
-                    // descendant compositing operations from content painted before the group.
-                    addViews(
-                        for: childLayer.children,
-                        parentFrame: parentFrame,
-                        identifiedLayers: identifiedLayers,
-                        identifiedWireframes: identifiedWireframes,
-                        identifiedResources: identifiedResources
-                    )
-                } else {
-                    contentView.addSubview(
-                        CompositionLayerView(
-                            childLayer,
-                            identifiedLayers: identifiedLayers,
-                            identifiedWireframes: identifiedWireframes,
-                            identifiedResources: identifiedResources,
-                            parentFrame: parentFrame
-                        )
-                    )
-                }
-            case .wireframe:
-                guard
-                    let wireframe = identifiedWireframes[child.id],
-                    let view = WireframeView(
-                        wireframe,
-                        identifiedResources: identifiedResources,
-                        parentFrame: parentFrame
-                    )
-                else {
-                    continue
-                }
-                contentView.addSubview(view)
+    ) -> UIView? {
+        switch child.type {
+        case .layer:
+            guard let childLayer = identifiedLayers[child.id] else {
+                return nil
             }
+            return CompositionLayerView(
+                childLayer,
+                identifiedLayers: identifiedLayers,
+                identifiedWireframes: identifiedWireframes,
+                identifiedResources: identifiedResources,
+                parentFrame: layer.absoluteFrame
+            )
+        case .wireframe:
+            guard let wireframe = identifiedWireframes[child.id] else {
+                return nil
+            }
+            return WireframeView(
+                wireframe,
+                identifiedResources: identifiedResources,
+                parentFrame: layer.absoluteFrame
+            )
         }
     }
 

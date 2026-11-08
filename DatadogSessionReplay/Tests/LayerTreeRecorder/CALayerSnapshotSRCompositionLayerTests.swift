@@ -45,7 +45,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let modifiers = snapshot.modifiers(maskImageResourceID: resourceID)
 
         // Then
-        #expect(snapshot.requiresCompositionLayer)
+        #expect(snapshot.compositionTreeRepresentation == .layer)
         #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "opacity", "maskImage"])
 
         let modifier = try #require(modifiers.last)
@@ -79,7 +79,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
             return
         }
 
-        #expect(snapshot.requiresCompositionLayer)
+        #expect(snapshot.compositionTreeRepresentation == .layer)
         #expect(modifiers.count == 1)
         #expect(shadow.color == "#00000080")
         #expect(shadow.offsetX == 2)
@@ -115,7 +115,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let modifiers = snapshot.modifiers()
 
         // Then
-        #expect(snapshot.requiresCompositionLayer)
+        #expect(snapshot.compositionTreeRepresentation == .layer)
         #expect(modifierTypes(modifiers) == ["clip", "shadow"])
 
         let firstModifier = try #require(modifiers.first)
@@ -156,7 +156,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
             return
         }
 
-        #expect(snapshot.requiresCompositionLayer)
+        #expect(snapshot.compositionTreeRepresentation == .layer)
         #expect(colorMatrix.matrix.count == 20)
         #expect(colorMatrix.matrix[0] > 0)
         #expect(colorMatrix.matrix[6] > 0)
@@ -212,9 +212,9 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let backdropLayerModifiers = backdropLayer.modifiers()
 
         // Then
-        #expect(regularLayer.requiresCompositionLayer)
+        #expect(regularLayer.compositionTreeRepresentation == .layer)
         #expect(modifierTypes(regularLayerModifiers) == ["gaussianBlur"])
-        #expect(!backdropLayer.requiresCompositionLayer)
+        #expect(backdropLayer.compositionTreeRepresentation == .wireframe)
         #expect(backdropLayerModifiers.isEmpty)
     }
 
