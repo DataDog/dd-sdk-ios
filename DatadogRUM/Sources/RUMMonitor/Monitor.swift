@@ -162,11 +162,10 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
 
             if let longTaskCommand = transformedCommand as? RUMAddLongTaskCommand,
-               longTaskCommand.mayIncludeAppSuspension(given: context.applicationStateHistory) {
-                // Ignored before reaching the scopes, so the suspension artifact can neither refresh an expired session
-                // nor start a view (see `RUMAddLongTaskCommand.mayIncludeAppSuspension(given:)`).
+               longTaskCommand.mostlyOverlapsAppSuspension(given: context.applicationStateHistory) {
+                // Dropped before the scopes, so it neither refreshes an expired session nor starts a view.
                 DD.logger.debug(
-                    "Ignoring long task of \(longTaskCommand.duration)s overlapping a period in which the app may have been suspended"
+                    "Ignoring long task of \(longTaskCommand.duration)s mostly spent in a period in which the app may have been suspended"
                 )
                 return
             }

@@ -359,6 +359,43 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(lastViewUpdate.view.frozenFrame?.count, 1)
     }
 
+    func testWhenRunLoopLongTaskSpansAppResume_itIsSent() throws {
+        // Given: an active view, then the app leaves the foreground for a minute and a hang occurs while it resumes
+        let dateProvider = DateProviderMock()
+        let featureScope = FeatureScopeMock(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: dateProvider.now)))
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, featureFlags: [.viewUpdates: false]),
+            dateProvider: dateProvider
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "view", name: "View", attributes: [:])
+
+        let backgroundStart = dateProvider.now + 1
+        featureScope.contextMock.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: dateProvider.now,
+            transitions: [
+                (state: suspendableAppState, date: backgroundStart),
+                (state: .inactive, date: backgroundStart + 60),
+                (state: .active, date: backgroundStart + 60.2)
+            ]
+        )
+        dateProvider.now.addTimeInterval(63)
+
+        // When: the run loop iteration resuming the app hangs, starting while the app may still be suspended
+        monitor.process(
+            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: 2.5, isMeasuredOnMainRunLoop: true)
+        )
+        monitor.stopView(key: "view", attributes: [:])
+
+        // Then: the hang is sent and counted
+        let longTasks = featureScope.eventsWritten(ofType: RUMLongTaskEvent.self)
+        XCTAssertEqual(longTasks.count, 1)
+        XCTAssertEqual(longTasks.first?.longTask.duration, (2.5).dd.toInt64Nanoseconds)
+        let lastViewUpdate = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.name == "View" })
+        XCTAssertEqual(lastViewUpdate.view.longTask?.count, 1)
+    }
+
     func testWhenCrossPlatformClockLagsDeviceClock_itKeepsTheSameSession() throws {
         try assertSessionSurvivesCrossPlatformClockSkew(-2 * RUMSessionScope.Constants.sessionMaxDuration)
     }
