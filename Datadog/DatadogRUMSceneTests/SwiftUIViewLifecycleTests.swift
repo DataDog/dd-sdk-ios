@@ -428,7 +428,7 @@ extension SwiftUINavigationOwnershipTests {
     @MainActor
     private func exerciseLastSceneHostRelease(multiSceneEnabled: Bool) async throws {
         let application = UIApplication.shared
-        let delegateClass = try XCTUnwrap(NSClassFromString("RUMSceneTestHost.RUMTestSceneDelegate"))
+        let delegateClass: AnyClass = try XCTUnwrap(NSClassFromString("RUMSceneTestHost.RUMTestSceneDelegate"))
         let ownedScenes = application.connectedScenes.compactMap { $0 as? UIWindowScene }.filter {
             $0.delegate.map { ObjectIdentifier(type(of: $0)) == ObjectIdentifier(delegateClass) } == true
         }
@@ -746,7 +746,7 @@ extension SwiftUINavigationOwnershipTests {
             !originalSessionIDs.contains($0.session.persistentIdentifier)
         }
         let scene = try XCTUnwrap(scenes.count == 1 ? scenes.first : nil, "Exactly one new OS scene")
-        let expectedDelegate = try XCTUnwrap(NSClassFromString("RUMSceneTestHost.RUMTestSceneDelegate"))
+        let expectedDelegate: AnyClass = try XCTUnwrap(NSClassFromString("RUMSceneTestHost.RUMTestSceneDelegate"))
         try requireSceneHost(
             scene.delegate.map {
                 ObjectIdentifier(type(of: $0)) == ObjectIdentifier(expectedDelegate)
@@ -937,7 +937,7 @@ extension SwiftUINavigationOwnershipTests {
 
         func relinquishDestroyedReferences() {
             // Qualifying measurement: release fixture ownership without causing a second detach.
-            if let window, let delegate = scene?.delegate as? UIWindowSceneDelegate,
+            if let window, var delegate = scene?.delegate as? UIWindowSceneDelegate,
                 (delegate.window ?? nil) === window {
                 delegate.window = nil
             }
