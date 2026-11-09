@@ -46,6 +46,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     /// completed bucket's sketches.
     private let flushQueue = DispatchQueue(label: "com.datadoghq.client-stats-flush", qos: .utility)
     private var flushTimer: DispatchSourceTimer?
+    /// Disables sudden termination while exported buckets are on their way to storage.
+    private let suddenTermination: SuddenTerminationControl
 
     /// Interval between periodic flushes (default: 30 seconds).
     let flushInterval: TimeInterval
@@ -54,8 +56,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         core: DatadogCoreProtocol,
         configuration: Trace.Configuration,
         dateProvider: DateProvider,
-        flushInterval: TimeInterval = 30
+        flushInterval: TimeInterval = 30,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
+        self.suddenTermination = suddenTermination
         self.requestBuilder = StatsRequestBuilder(
             customIntakeURL: configuration.customStatsEndpoint,
             telemetry: core.telemetry
@@ -67,7 +71,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         self.metricController = TraceClientStatsMetricController(telemetry: featureScope.telemetry)
 
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
-        let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry)
+        let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry, suddenTermination: suddenTermination)
         self.concentrator = concentrator
 
         // Observe context changes through the message bus. The core delivers the current context
@@ -95,6 +99,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         case appMayBeSuspended
         /// SDK teardown through `Flushable`, which flushes every buffered bucket.
         case teardown
+        /// The app is terminating, on macOS, so every buffered bucket is flushed.
+        case appTermination
     }
 
     /// The longest a span finished while the app may be suspended stays only in memory. Spans finished
@@ -112,6 +118,11 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
 
     /// Flushes buffered buckets and writes them to the feature storage for upload.
     func flushStats(_ reason: FlushReason = .periodic) {
+        // Exported buckets leave the concentrator before the event write context opens, so sudden
+        // termination stays disabled until then.
+        suddenTermination.disableSuddenTermination()
+        defer { suddenTermination.enableSuddenTermination() }
+
         let force = reason != .periodic
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
         let (exportedBuckets, clearGeneration) = concentrator.flushForStorage(now: now, force: force)
@@ -202,6 +213,16 @@ extension ClientStatsFeature: DataClearable {
     // its write context runs later. The span itself is stored after the clear too, so this is not specific to stats.
     func clearAllData() {
         concentrator.clearAllData()
+    }
+}
+
+extension ClientStatsFeature: BufferedDataWritable {
+    func writeBufferedData() {
+        // On the flush queue, so it waits for a periodic flush that exported buckets but has not
+        // opened its event write context yet.
+        flushQueue.sync {
+            flushStats(.appTermination)
+        }
     }
 }
 

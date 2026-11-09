@@ -306,6 +306,7 @@ Event mappers allow modifying or dropping events before upload:
 - `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
 - `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
 - Timeseries are not collected in app extensions (e.g. widgets): `RUMFeature` creates no collector when the bundle type is not `.iOSApp`, because extensions receive no app lifecycle notifications to pause collection and write buffered samples.
+- Samples are buffered in memory and written in batches of 120, and when the session is paused, stopped, or the SDK is flushed. On macOS, buffered samples are also written when the app terminates, and sudden termination stays disabled while samples are buffered, which is most of the session.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 
 ## Remote Configuration

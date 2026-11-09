@@ -60,8 +60,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
     private let replayState: HasReplayMessageReceiver?
 
-    private var memoryBuffer: [MemorySample] = []
-    private var cpuBuffer: [CPUSample] = []
+    private var memoryBuffer: [MemorySample] = [] {
+        didSet { updateSuddenTerminationHold() }
+    }
+    private var cpuBuffer: [CPUSample] = [] {
+        didSet { updateSuddenTerminationHold() }
+    }
+    /// Keeps sudden termination disabled while samples are buffered, so they are written when the app terminates.
+    private let suddenTerminationHold: SuddenTerminationHold
     private var sessionID: String = ""
     private var applicationID: String = ""
     private var sessionType: RUMSessionType = .user
@@ -97,9 +103,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         sessionSampleRate: Double = 100,
         now: @escaping () -> Date = Date.init,
         mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider(),
-        replayState: HasReplayMessageReceiver? = nil
+        replayState: HasReplayMessageReceiver? = nil,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
         self.replayState = replayState
+        self.suddenTerminationHold = SuddenTerminationHold(control: suddenTermination)
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
         self.collectTypes = collectTypes
@@ -321,6 +329,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
+    private func updateSuddenTerminationHold() {
+        suddenTerminationHold.isHeld = !memoryBuffer.isEmpty || !cpuBuffer.isEmpty
+    }
+
     private func markSessionAsSampled() {
         guard !sampledSessionIDs.contains(sessionID) else {
             return
@@ -333,7 +345,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             return
         }
         let batch = memoryBuffer
-        memoryBuffer = []
         let sessionID = self.sessionID
         let applicationID = self.applicationID
         let sessionType = self.sessionType
@@ -386,6 +397,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             )
             writer.write(value: self.sanitizer.sanitize(event: event))
         }
+        // Cleared after the write context opens, so sudden termination stays disabled in between.
+        memoryBuffer = []
     }
 
     private func flushCPU() {
@@ -393,7 +406,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             return
         }
         let batch = cpuBuffer
-        cpuBuffer = []
         let sessionID = self.sessionID
         let applicationID = self.applicationID
         let sessionType = self.sessionType
@@ -443,5 +455,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             )
             writer.write(value: self.sanitizer.sanitize(event: event))
         }
+        // Cleared after the write context opens, so sudden termination stays disabled in between.
+        cpuBuffer = []
     }
 }

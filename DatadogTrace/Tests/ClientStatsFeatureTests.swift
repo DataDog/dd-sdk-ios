@@ -251,6 +251,49 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertTrue(core.exportedBuckets.isEmpty)
     }
 
+    func testWhenTheAppTerminates_bufferedStatsAreStoredAndSuddenTerminationIsEnabledAgain() throws {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let stats = ClientStatsFeature(
+            core: core,
+            configuration: config,
+            dateProvider: RelativeDateProvider(using: Date(timeIntervalSince1970: 0)),
+            suddenTermination: suddenTermination
+        )
+        try core.register(feature: stats)
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        // When
+        stats.writeBufferedData()
+
+        // Then
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [1])
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
+    func testWhenStatsAreFlushed_suddenTerminationStaysDisabledUntilTheWriteContextIsRequested() throws {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let stats = ClientStatsFeature(
+            core: core,
+            configuration: config,
+            dateProvider: RelativeDateProvider(using: Date(timeIntervalSince1970: 0)),
+            suddenTermination: suddenTermination
+        )
+        try core.register(feature: stats)
+        stats.record(.mockWith(startTime: 0, duration: 100))
+        var isDisabledAtWrite: [Bool] = []
+        core.onEventWriteContext = { isDisabledAtWrite.append(suddenTermination.isDisabled) }
+
+        // When
+        stats.flushStats(.teardown)
+
+        // Then
+        XCTAssertEqual(isDisabledAtWrite, [true])
+    }
+
     // MARK: - Request Builder
 
     func testWhenStatsComputationEnabled_thenRequestBuilderUsesStatsEndpoint() throws {
@@ -1653,6 +1696,7 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        onEventWriteContext?()
         _writeContextBypassConsentValues.mutate { $0.append(bypassConsent) }
         _writeContextOnMainThread.mutate { $0.append(Thread.isMainThread) }
         if defersWriteContexts {
@@ -1662,6 +1706,9 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
             block(contextValue, writer)
         }
     }
+
+    /// Called when an event write context is requested, before its block runs.
+    var onEventWriteContext: (() -> Void)?
 
     /// When `true`, write contexts wait for `runPendingWriteContexts()`, like a context read that has
     /// not completed yet.

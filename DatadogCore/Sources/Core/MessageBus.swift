@@ -42,12 +42,20 @@ internal final class MessageBus {
     @ReadWriteLock
     private var isDisconnected = false
 
+    /// Keeps sudden termination disabled while a message is queued, as it can carry data to write.
+    private let suddenTermination: SuddenTerminationControl
+
     /// Creates a bus for the given core.
     ///
     /// The message-bus keeps a weak reference to the core.
-    /// - Parameter configurationDispatchTime: The delay to dispatch the
-    /// configuration telemetry
-    init(configurationDispatchTime: DispatchTimeInterval = .seconds(5)) {
+    /// - Parameters:
+    ///   - configurationDispatchTime: The delay to dispatch the configuration telemetry
+    ///   - suddenTermination: Disables sudden termination until queued messages are delivered.
+    init(
+        configurationDispatchTime: DispatchTimeInterval = .seconds(5),
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
+    ) {
+        self.suddenTermination = suddenTermination
         queue.asyncAfter(deadline: .now() + configurationDispatchTime) {
             guard !self.isDisconnected, let core = self.core, let configuration = self.configuration else {
                 return
@@ -127,7 +135,15 @@ internal final class MessageBus {
             return save(configuration: configuration)
         }
 
+        #if os(macOS)
+        // A receiver that writes the message opens its event write context while handling it,
+        // which keeps sudden termination disabled until the write.
+        suddenTermination.disableSuddenTermination()
+        #endif
         queue.async {
+            #if os(macOS)
+            defer { self.suddenTermination.enableSuddenTermination() }
+            #endif
             guard !self.isDisconnected, let core = self.core else {
                 return fallback() // no feature can process the message
             }
