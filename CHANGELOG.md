@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Protect Flags evaluation telemetry by default: hash targeting keys, omit evaluation context, preserve evaluation-time consent through cache/refresh, and report stable error codes. Full evaluation data requires explicit configuration consent.
+
 # 3.22.0 / 12-11-2026
 
 - [FEATURE] Flags: Add `Flags.Configuration.flagSelection` to load only the flags that match the given tags or key patterns. See [#3344][]
