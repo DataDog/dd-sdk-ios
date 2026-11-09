@@ -15,6 +15,8 @@ internal final class EvaluationAggregator {
     private let featureScope: FeatureScope
     @ReadWriteLock
     private var aggregations: [AggregationKey: AggregatedEvaluation] = [:]
+    @ReadWriteLock
+    private var lastTargetingKey: TelemetryTargetingKey?
     private var flushTimer: Timer?
 
     init(
@@ -52,11 +54,9 @@ internal final class EvaluationAggregator {
             }
         }
         let observeFullEvaluationData = assignment.observeFullEvaluationData
-        // Swift String contains Unicode scalars; preserve its exact UTF-8 without normalization.
-        let protectedTargetingKey = observeFullEvaluationData || evaluationContext.targetingKey.isEmpty
-            ? evaluationContext.targetingKey
-            : "sha256_" + SHA256.hash(data: Data(evaluationContext.targetingKey.utf8)).map { String(format: "%02x", $0) }.joined()
-        let targetingKey = evaluationContext.hasTargetingKey ? protectedTargetingKey : nil
+        let targetingKey = evaluationContext.hasTargetingKey
+            ? telemetryTargetingKey(for: evaluationContext.targetingKey, observeFullEvaluationData: observeFullEvaluationData)
+            : nil
         // AnyValue, Array and Dictionary are value types: this is an owned copy-on-write value.
         let context = observeFullEvaluationData ? evaluationContext.attributes : [:]
         let now = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
@@ -106,6 +106,18 @@ internal final class EvaluationAggregator {
         }
     }
 
+    private func telemetryTargetingKey(for source: String, observeFullEvaluationData: Bool) -> String? {
+        // Swift `==` treats canonically equivalent strings as equal, but their UTF-8 bytes and hashes differ.
+        if let cached = lastTargetingKey,
+           cached.observeFullEvaluationData == observeFullEvaluationData,
+           (cached.source as NSString).isEqual(to: source) {
+            return cached.value
+        }
+        let entry = TelemetryTargetingKey(source: source, observeFullEvaluationData: observeFullEvaluationData)
+        lastTargetingKey = entry
+        return entry.value
+    }
+
     func sendEvaluations() {
         var evaluationsToSend: [AggregatedEvaluation] = []
 
@@ -133,6 +145,42 @@ internal final class EvaluationAggregator {
         ) { [weak self] _ in
             self?.sendEvaluations()
         }
+    }
+}
+
+/// The targeting key as sent in evaluation telemetry: `sha256_` and the lowercase hex SHA-256 of its UTF-8 bytes
+/// without full-data consent, or nil when the key is not valid UTF-16.
+internal struct TelemetryTargetingKey {
+    let source: String
+    let observeFullEvaluationData: Bool
+    let value: String?
+
+    init(source: String, observeFullEvaluationData: Bool) {
+        self.source = source
+        self.observeFullEvaluationData = observeFullEvaluationData
+        self.value = Self.value(for: source, observeFullEvaluationData: observeFullEvaluationData)
+    }
+
+    private static let hexDigits = Array("0123456789abcdef".utf8)
+
+    private static func value(for source: String, observeFullEvaluationData: Bool) -> String? {
+        guard !source.isEmpty else {
+            return source
+        }
+        // A bridged NSString can hold unpaired surrogates, which `String.utf8` replaces with U+FFFD.
+        guard let bytes = (source as NSString).data(using: String.Encoding.utf8.rawValue, allowLossyConversion: false) else {
+            return nil
+        }
+        guard !observeFullEvaluationData else {
+            return source
+        }
+        var hex: [UInt8] = []
+        hex.reserveCapacity(2 * SHA256.byteCount)
+        for byte in SHA256.hash(data: bytes) {
+            hex.append(hexDigits[Int(byte >> 4)])
+            hex.append(hexDigits[Int(byte & 0x0f)])
+        }
+        return "sha256_" + String(decoding: hex, as: UTF8.self)
     }
 }
 
