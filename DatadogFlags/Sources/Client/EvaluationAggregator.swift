@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import CryptoKit
 import Foundation
 import DatadogInternal
 
@@ -41,16 +42,35 @@ internal final class EvaluationAggregator {
         evaluationContext: FlagsEvaluationContext,
         flagError: String?
     ) {
-        let errorMessage = flagError
+        let errorMessage = (flagError ?? (assignment.reason == "ERROR" ? "GENERAL" : nil)).map { error in
+            switch error {
+            case "PROVIDER_NOT_READY", "PROVIDER_FATAL", "FLAG_NOT_FOUND", "PARSE_ERROR",
+                 "TYPE_MISMATCH", "TARGETING_KEY_MISSING", "INVALID_CONTEXT", "GENERAL":
+                return error
+            default:
+                return "GENERAL"
+            }
+        }
+        let observeFullEvaluationData = assignment.observeFullEvaluationData
+        // Swift String contains Unicode scalars; preserve its exact UTF-8 without normalization.
+        let protectedTargetingKey = observeFullEvaluationData || evaluationContext.targetingKey.isEmpty
+            ? evaluationContext.targetingKey
+            : "sha256_" + SHA256.hash(data: Data(evaluationContext.targetingKey.utf8)).map { String(format: "%02x", $0) }.joined()
+        let targetingKey = evaluationContext.hasTargetingKey ? protectedTargetingKey : nil
+        // AnyValue, Array and Dictionary are value types: this is an owned copy-on-write value.
+        let context = observeFullEvaluationData ? evaluationContext.attributes : [:]
         let now = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
 
+        let runtimeDefaultUsed = assignment.reason == "DEFAULT" || errorMessage != nil
         let key = AggregationKey(
             flagKey: flagKey,
             variantKey: assignment.variationKey,
             allocationKey: assignment.allocationKey,
-            targetingKey: evaluationContext.targetingKey,
+            targetingKey: targetingKey,
             errorMessage: errorMessage,
-            context: evaluationContext.attributes
+            context: context,
+            observeFullEvaluationData: observeFullEvaluationData,
+            runtimeDefaultUsed: runtimeDefaultUsed
         )
 
         var shouldFlush = false
@@ -61,16 +81,14 @@ internal final class EvaluationAggregator {
                 existing.lastEvaluation = now
                 aggregations[key] = existing
             } else {
-                let runtimeDefaultUsed = assignment.reason == "DEFAULT" || errorMessage != nil
-
                 let aggregated = AggregatedEvaluation(
                     flagKey: flagKey,
                     variantKey: assignment.variationKey,
                     allocationKey: assignment.allocationKey,
-                    targetingKey: evaluationContext.targetingKey,
+                    targetingKey: targetingKey,
                     targetingRuleKey: nil,
                     errorMessage: errorMessage,
-                    context: evaluationContext.attributes,
+                    context: context,
                     firstEvaluation: now,
                     lastEvaluation: now,
                     evaluationCount: 1,
@@ -122,29 +140,30 @@ private struct AggregationKey: Hashable {
     let flagKey: String
     let variantKey: String
     let allocationKey: String
-    let targetingKey: String
+    let targetingKey: String?
     let errorMessage: String?
-    let contextHash: Int
+    let context: [String: AnyValue]
+    let observeFullEvaluationData: Bool
+    let runtimeDefaultUsed: Bool
 
     init(
         flagKey: String,
         variantKey: String,
         allocationKey: String,
-        targetingKey: String,
+        targetingKey: String?,
         errorMessage: String?,
-        context: [String: AnyValue]
+        context: [String: AnyValue],
+        observeFullEvaluationData: Bool,
+        runtimeDefaultUsed: Bool
     ) {
         self.flagKey = flagKey
         self.variantKey = variantKey
         self.allocationKey = allocationKey
         self.targetingKey = targetingKey
         self.errorMessage = errorMessage
-        var hasher = Hasher()
-        for key in context.keys.sorted() {
-            hasher.combine(key)
-            hasher.combine(context[key])
-        }
-        self.contextHash = hasher.finalize()
+        self.context = context
+        self.observeFullEvaluationData = observeFullEvaluationData
+        self.runtimeDefaultUsed = runtimeDefaultUsed
     }
 }
 
@@ -152,7 +171,7 @@ private struct AggregatedEvaluation {
     let flagKey: String
     let variantKey: String
     let allocationKey: String
-    let targetingKey: String
+    let targetingKey: String?
     let targetingRuleKey: String?
     let errorMessage: String?
     let context: [String: AnyValue]
