@@ -41,6 +41,7 @@ Feature-specific docs (in each module directory):
 ├── DatadogTrace/TRACE_FEATURE.md
 ├── DatadogProfiling/PROFILING_FEATURE.md
 ├── DatadogLogs/LOGS_FEATURE.md
+├── DatadogCrashReporting/CRASH_REPORTING_FEATURE.md
 └── DatadogCore/CORE_FEATURE.md
 ```
 
@@ -60,6 +61,7 @@ Feature-specific docs (in each module directory):
 | Work on Trace (APM) specifically | `DatadogTrace/TRACE_FEATURE.md` |
 | Work on Profiling specifically | `DatadogProfiling/PROFILING_FEATURE.md` |
 | Work on Logs specifically | `DatadogLogs/LOGS_FEATURE.md` |
+| Work on Crash Reporting specifically | `DatadogCrashReporting/CRASH_REPORTING_FEATURE.md` |
 | Work on Core (initialization, consent, batching, upload) specifically | `DatadogCore/CORE_FEATURE.md` |
 | Update a `*_FEATURE.md` file | `docs/LLM_FEATURE_DOCS_GUIDELINES.md` |
 
