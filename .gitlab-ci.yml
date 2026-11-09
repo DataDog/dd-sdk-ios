@@ -124,6 +124,7 @@ Build Dependencies:
   stage: pre
   rules:
     - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
     - !reference [.tag-pipeline-job, rules]
   artifacts:
     paths:
