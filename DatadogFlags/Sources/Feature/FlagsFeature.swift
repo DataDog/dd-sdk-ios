@@ -22,6 +22,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry
     let makeExposureLogger: (any FeatureScope) -> any ExposureLogging
+    let exposureHook: ExposureHook?
     let makeEvaluationLogger: (any FeatureScope) -> any EvaluationLogging
     let makeRUMFlagEvaluationReporter: (any FeatureScope) -> any RUMFlagEvaluationReporting
     let performanceOverride: PerformancePresetOverride?
@@ -48,13 +49,12 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         )
         messageReceiver = NOPFeatureMessageReceiver()
         clientRegistry = FlagsClientRegistry()
+        exposureHook = configuration.exposureHook
         makeExposureLogger = { featureScope in
-            guard configuration.trackExposures else {
-                return NOPExposureLogger()
-            }
-            return ExposureLogger(
+            ExposureLogger(
                 dateProvider: SystemDateProvider(),
-                featureScope: featureScope
+                featureScope: featureScope,
+                sendsExposures: configuration.trackExposures
             )
         }
 

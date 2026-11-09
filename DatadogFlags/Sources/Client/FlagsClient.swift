@@ -112,6 +112,7 @@ public final class FlagsClient {
     private let exposureLogger: any ExposureLogging
     private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
+    private let exposureHook: ExposureHook?
     private let configuration: Configuration
 
     private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
@@ -128,12 +129,14 @@ public final class FlagsClient {
         exposureLogger: any ExposureLogging,
         evaluationLogger: any EvaluationLogging,
         rumFlagEvaluationReporter: any RUMFlagEvaluationReporting,
+        exposureHook: ExposureHook? = nil,
         configuration: Configuration = .init()
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
         self.evaluationLogger = evaluationLogger
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
+        self.exposureHook = exposureHook
         self.configuration = configuration
     }
 
@@ -299,6 +302,7 @@ public final class FlagsClient {
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
             rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope),
+            exposureHook: feature.exposureHook,
             configuration: configuration
         )
 
@@ -332,24 +336,26 @@ extension FlagsClient: FlagsClientProtocol {
         defaultAssignment.observeFullEvaluationData = snapshot.observeFullEvaluationData
 
         if snapshot.error == .invalidContext {
+            let evaluationContext = snapshot.requestedContext ?? .empty
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: defaultAssignment,
-                evaluationContext: snapshot.requestedContext ?? .empty,
+                evaluationContext: evaluationContext,
                 flagError: EvaluationError.invalidContext
             )
-            return FlagDetails(key: key, value: defaultValue, error: .invalidContext)
+            return notifyingExposureHook(FlagDetails(key: key, value: defaultValue, error: .invalidContext), context: evaluationContext)
         }
         guard let context else {
+            let evaluationContext = snapshot.requestedContext ?? .empty
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: defaultAssignment,
-                evaluationContext: snapshot.requestedContext ?? .empty,
+                evaluationContext: evaluationContext,
                 flagError: EvaluationError.providerNotReady
             )
-            return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
+            return notifyingExposureHook(FlagDetails(key: key, value: defaultValue, error: .providerNotReady), context: evaluationContext)
         }
 
         guard let flagAssignment = snapshot.assignment else {
@@ -362,7 +368,7 @@ extension FlagsClient: FlagsClientProtocol {
             )
             var details = FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
             details.observeFullEvaluationData = snapshot.observeFullEvaluationData
-            return details
+            return notifyingExposureHook(details, context: context)
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
@@ -375,7 +381,7 @@ extension FlagsClient: FlagsClientProtocol {
             )
             var details = FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
             details.observeFullEvaluationData = snapshot.observeFullEvaluationData
-            return details
+            return notifyingExposureHook(details, context: context)
         }
 
         var details = FlagDetails(
@@ -385,18 +391,20 @@ extension FlagsClient: FlagsClientProtocol {
             reason: flagAssignment.reason,
             allocationKey: flagAssignment.allocationKey.isEmpty ? nil : flagAssignment.allocationKey
         )
+        details.flagMetadata = flagAssignment.features.hookMetadata()
 
         details.observeFullEvaluationData = snapshot.observeFullEvaluationData
-        trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
+        let decision = trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
 
-        return details
+        return notifyingExposureHook(details, context: context, features: flagAssignment.features, decision: decision)
     }
 
-    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
-        sendFlagExposure(key: key, assignment: assignment, context: context)
+    @discardableResult
+    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) -> ExposureDecision {
+        let decision = exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
 
         guard trackEvaluationTelemetry else {
-            return
+            return decision
         }
 
         // Log directly instead of calling sendFlagEvaluationEvent, which would check context again.
@@ -412,6 +420,30 @@ extension FlagsClient: FlagsClientProtocol {
             flagKey: key,
             value: assignment.variationKey
         )
+        return decision
+    }
+
+    private func notifyingExposureHook<T>(
+        _ details: FlagDetails<T>,
+        context: FlagsEvaluationContext,
+        features: [SplitFeature] = [],
+        decision: ExposureDecision = .notAnExposure
+    ) -> FlagDetails<T> {
+        guard let exposureHook else {
+            return details
+        }
+        exposureHook.notify(
+            ExposureEvaluation(
+                flagKey: details.key,
+                variant: details.variant,
+                allocationKey: details.allocationKey,
+                evaluationContext: context,
+                features: features.values(for: .hook),
+                isExposure: decision.isExposure,
+                isCacheHit: decision.isCacheHit
+            )
+        )
+        return details
     }
 
     private func logEvaluation(

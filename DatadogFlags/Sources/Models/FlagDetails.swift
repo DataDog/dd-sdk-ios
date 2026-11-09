@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// An error that occurs during feature flag evaluation.
 ///
@@ -85,6 +86,13 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     @_spi(Internal)
     public var observeFullEvaluationData: Bool = false
 
+    /// Metadata of the split that served the value.
+    ///
+    /// Features that the split sends to customer code appear as `__dd_feature.<key>` entries, for example
+    /// `__dd_feature.holdout.key`. Values are `.string`, `.double` or `.bool`. Only the `__dd_feature.` prefix
+    /// is a stable contract. Empty when evaluation failed or the split has no such features.
+    public var flagMetadata: [String: AnyValue] = [:]
+
     /// Creates detailed flag evaluation information.
     ///
     /// - Parameters:
@@ -108,6 +116,101 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
         self.reason = reason
         self.error = error
         self.allocationKey = allocationKey
+    }
+}
+
+/// Receives every flag evaluation, with the exposure verdict that the SDK uses for Datadog.
+///
+/// Use it to record exposures in your own data store, with the same deduplication as Datadog:
+///
+/// ```swift
+/// var configuration = Flags.Configuration(trackExposures: false)
+/// configuration.exposureHook = ExposureHook { evaluation in
+///     guard evaluation.shouldSend else { return }
+///     warehouse.enqueue(evaluation.flagKey, evaluation.variant, evaluation.features)
+/// }
+/// Flags.enable(with: configuration)
+/// ```
+///
+/// The callback runs synchronously on the thread that evaluated the flag, including the main thread.
+/// Keep it short and do not perform I/O on that thread. An error thrown by the callback is logged and
+/// never changes the evaluation result. The hook observes evaluations; it never records exposures itself.
+public final class ExposureHook {
+    private let callback: (ExposureEvaluation) throws -> Void
+    @ReadWriteLock
+    private var hasLoggedError = false
+
+    /// Creates a hook that calls `callback` after each flag evaluation.
+    public init(_ callback: @escaping (ExposureEvaluation) throws -> Void) {
+        self.callback = callback
+    }
+
+    internal func notify(_ evaluation: ExposureEvaluation) {
+        do {
+            try callback(evaluation)
+        } catch {
+            var isFirstError = false
+            _hasLoggedError.mutate { hasLoggedError in
+                isFirstError = !hasLoggedError
+                hasLoggedError = true
+            }
+            if isFirstError {
+                DD.logger.warn("`ExposureHook` callback failed. Later failures are logged at debug level.", error: error)
+            } else {
+                DD.logger.debug("`ExposureHook` callback failed.", error: error)
+            }
+        }
+    }
+}
+
+/// A completed flag evaluation, as seen by ``ExposureHook``.
+public struct ExposureEvaluation {
+    /// The evaluated flag key.
+    public let flagKey: String
+
+    /// The served variant, or `nil` when evaluation failed.
+    public let variant: String?
+
+    /// The allocation that served the value, or `nil` when evaluation failed.
+    public let allocationKey: String?
+
+    /// The targeting key of ``evaluationContext``.
+    public let targetingKey: String
+
+    /// The evaluation context used for the evaluation.
+    public let evaluationContext: FlagsEvaluationContext
+
+    /// Features that the split sends to customer code, keyed by feature key (for example `holdout.key`).
+    /// Values are `.string`, `.double` or `.bool`.
+    public let features: [String: AnyValue]
+
+    /// `true` for a successful evaluation of an allocation that logs exposures, repeats included.
+    public let isExposure: Bool
+
+    /// `true` when the subject was already exposed to the same flag, allocation, variant and split.
+    public let isCacheHit: Bool
+
+    /// `true` for an exposure that is not a repeat: exactly what the SDK sends to Datadog
+    /// when `Flags.Configuration.trackExposures` is enabled.
+    public var shouldSend: Bool { isExposure && !isCacheHit }
+
+    internal init(
+        flagKey: String,
+        variant: String?,
+        allocationKey: String?,
+        evaluationContext: FlagsEvaluationContext,
+        features: [String: AnyValue],
+        isExposure: Bool,
+        isCacheHit: Bool
+    ) {
+        self.flagKey = flagKey
+        self.variant = variant
+        self.allocationKey = allocationKey
+        self.targetingKey = evaluationContext.targetingKey
+        self.evaluationContext = evaluationContext
+        self.features = features
+        self.isExposure = isExposure
+        self.isCacheHit = isCacheHit
     }
 }
 

@@ -114,3 +114,44 @@ The raw targeting key and the evaluation context are sent only when the flags co
 Evaluation errors are reported only as `PROVIDER_NOT_READY`, `PROVIDER_FATAL`, `FLAG_NOT_FOUND`, `PARSE_ERROR`, `TYPE_MISMATCH`, `TARGETING_KEY_MISSING`, `INVALID_CONTEXT`, or `GENERAL`. Any other error is reported as `GENERAL`.
 
 These rules apply to evaluation telemetry only. They do not change assignment requests, targeting, or exposure events. The [evaluation telemetry control](#evaluation-telemetry-control) still suppresses evaluation telemetry for opted-out subjects.
+
+## Exposures in your own data store
+
+Set `Flags.Configuration.exposureHook` to receive every flag evaluation, with the same exposure deduplication the SDK uses for Datadog. Set `trackExposures` to `false` to stop sending exposures to Datadog at the same time.
+
+```swift
+import DatadogFlags
+
+var configuration = Flags.Configuration(trackExposures: false)
+configuration.exposureHook = ExposureHook { evaluation in
+    guard evaluation.shouldSend else {
+        return
+    }
+    exposureQueue.enqueue(
+        flag: evaluation.flagKey,
+        variant: evaluation.variant,
+        allocation: evaluation.allocationKey,
+        subject: evaluation.targetingKey,
+        holdoutKey: evaluation.features["holdout.key"]
+    )
+}
+Flags.enable(with: configuration)
+```
+
+`ExposureEvaluation` has these members:
+
+| Member | Meaning |
+| --- | --- |
+| `isExposure` | A successful evaluation of an allocation that logs exposures, repeats included. |
+| `isCacheHit` | The subject was already exposed to the same flag, allocation, variant and split. |
+| `shouldSend` | `isExposure` and not a repeat: exactly what the SDK sends to Datadog when `trackExposures` is `true`. |
+| `features` | Features of the selected split for customer code, for example `holdout.key`, `holdout.assignment_group` and `holdout.should_include_in_holdout_analysis`. |
+| `flagKey`, `variant`, `allocationKey`, `targetingKey`, `evaluationContext` | The evaluation. `variant` and `allocationKey` are `nil` when evaluation failed. |
+
+- The hook receives evaluations from every `FlagsClient` created after `Flags.enable(with:)`, including failed ones, with `isExposure == false`. It also receives evaluations made through the OpenFeature provider, because the provider evaluates with a `FlagsClient`.
+- The callback runs synchronously on the thread that evaluated the flag, including the main thread. Keep it short and do not perform I/O on that thread.
+- A callback error never changes the evaluation. The SDK logs the first error as a warning and later errors at debug level.
+- Each client deduplicates exposures in memory, for up to 5,000 subject and flag pairs. After the app restarts, the first evaluation of a flag is a new exposure.
+- With `trackExposures` set to `false`, the SDK sends no exposures to Datadog, but it still deduplicates them, so `isCacheHit` and `shouldSend` stay correct. Evaluation counts are not affected.
+
+`FlagDetails.flagMetadata` carries the same features as `__dd_feature.<key>` entries, for example `__dd_feature.holdout.key`. Only this prefix is a stable contract.
