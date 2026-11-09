@@ -269,4 +269,60 @@ extension EvaluationAggregatorTests {
         XCTAssertFalse(String(decoding: try JSONEncoder().encode(missing), as: UTF8.self).contains("targeting_key"))
         XCTAssertEqual(events.first { $0.flag.key == "full" }?.context?.evaluation, context.attributes)
     }
+
+    func testMalformedTargetingKeyIsOmittedInBothModesWithoutLosingEvaluations() throws {
+        var units: [unichar] = [0x61, 0xD800, 0x62]
+        let unpaired = NSString(characters: &units, length: units.count) as String
+        for consent in [false, true] {
+            let scope = FeatureScopeMock()
+            let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+            var assignment = FlagAssignment.mockAnyBoolean(doLog: false)
+            assignment.observeFullEvaluationData = consent
+            for targetingKey in ["a\u{FFFD}b", unpaired, unpaired] {
+                aggregator.recordEvaluation(for: "flag", assignment: assignment, evaluationContext: .init(targetingKey: targetingKey, attributes: [:]), flagError: nil)
+            }
+            aggregator.sendEvaluations()
+            let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+            XCTAssertEqual(events.count, 2)
+            XCTAssertEqual(events.first { $0.targetingKey == nil }?.evaluationCount, 2)
+            let replacement = consent ? "a\u{FFFD}b" : "sha256_05087813392efc16fe8ff448920c6328e53af865df39419436659d9ffda90f7b"
+            XCTAssertEqual(events.first { $0.targetingKey != nil }?.targetingKey, replacement)
+        }
+    }
+
+    func testTargetingKeyCacheSeparatesCanonicallyEquivalentKeysAndConsent() throws {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        var assignment = FlagAssignment.mockAnyBoolean(doLog: false)
+        for (targetingKey, consent) in [("é", false), ("e\u{301}", false), ("e\u{301}", true)] {
+            assignment.observeFullEvaluationData = consent
+            aggregator.recordEvaluation(for: "flag", assignment: assignment, evaluationContext: .init(targetingKey: targetingKey, attributes: [:]), flagError: nil)
+        }
+        aggregator.sendEvaluations()
+        let keys: [[UInt8]] = scope.eventsWritten(ofType: FlagEvaluationEvent.self).compactMap { $0.targetingKey.map { Array($0.utf8) } }
+        let expected: [String] = [
+            "sha256_4a99557e4033c3539de2eb65472017cad5f9557f7a0625a09f1c3f6e2ba69c4c",
+            "sha256_bf12767b0f2a56b2190075bae8169f656e3ce8d6357d4aff184bc6c7ea48f9f6",
+            "e\u{301}"
+        ]
+        XCTAssertEqual(Set(keys), Set(expected.map { Array($0.utf8) }))
+    }
+
+    func testFullDataKeepsRawTargetingKeyAndContextAndErrorReasonIsGeneral() throws {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        var assignment = FlagAssignment.mockAnyBoolean(doLog: false)
+        assignment.observeFullEvaluationData = true
+        let context = FlagsEvaluationContext(targetingKey: "jane.doe@datadoghq.com", attributes: ["tier": .string("premium")])
+        aggregator.recordEvaluation(for: "full", assignment: assignment, evaluationContext: context, flagError: nil)
+        var errorAssignment = FlagAssignment.mockAnyBoolean(doLog: false)
+        errorAssignment.reason = "ERROR"
+        aggregator.recordEvaluation(for: "error", assignment: errorAssignment, evaluationContext: context, flagError: nil)
+        aggregator.sendEvaluations()
+        let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        let full = try XCTUnwrap(events.first { $0.flag.key == "full" })
+        XCTAssertEqual(full.targetingKey, "jane.doe@datadoghq.com")
+        XCTAssertEqual(full.context?.evaluation, context.attributes)
+        XCTAssertEqual(events.first { $0.flag.key == "error" }?.error?.message, "GENERAL")
+    }
 }
