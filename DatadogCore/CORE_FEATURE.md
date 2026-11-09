@@ -284,5 +284,5 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 - `Datadog.flushAndDeinitialize()` exists only in test builds (`DD_SDK_COMPILED_FOR_TESTING`). `Datadog.flush()` is `@_spi(Internal)`.
 - `stopInstance` stops every feature in the instance and unregisters it; a new `initialize` with the same name is then allowed. `clearAllData` deletes unsent data but keeps the instance running.
 - App extensions use shorter batches (1 s) and faster first uploads, since extensions are short-lived.
-- `RemoteConfiguration` documents a `requireRemoteConfiguration` option that is not implemented.
+- There is no option to block SDK startup until a remote configuration is cached. It's planned (the `remoteConfiguration` doc comment mentions a `requireRemoteConfiguration` flag) but doesn't exist yet.
 - At init, Core deletes data folders left by SDK v1 (`com.datadoghq.logs`, `.traces`, `.rum`).
