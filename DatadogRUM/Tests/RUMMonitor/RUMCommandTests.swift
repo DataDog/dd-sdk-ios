@@ -173,7 +173,7 @@ class RUMCommandTests: XCTestCase {
         #endif
     }
 
-    private func trimmedDuration(time: Date, duration: TimeInterval, threshold: TimeInterval? = 0.5, history: AppStateHistory) -> TimeInterval? {
+    private func trimmedDuration(time: Date, duration: TimeInterval, history: AppStateHistory, threshold: TimeInterval? = 0.5) -> TimeInterval? {
         RUMAddLongTaskCommand(time: time, attributes: [:], duration: duration, mainRunLoopThreshold: threshold)
             .trimmingAppSuspension(given: history)?
             .duration
@@ -252,7 +252,7 @@ class RUMCommandTests: XCTestCase {
         )
 
         // measured by the caller (e.g. a cross-platform SDK) and reported through the API
-        XCTAssertEqual(trimmedDuration(time: t0 + 61.5, duration: 60, threshold: nil, history: history), 60)
+        XCTAssertEqual(trimmedDuration(time: t0 + 61.5, duration: 60, history: history, threshold: nil), 60)
         XCTAssertEqual(
             RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60).trimmingAppSuspension(given: history)?.duration,
             60
