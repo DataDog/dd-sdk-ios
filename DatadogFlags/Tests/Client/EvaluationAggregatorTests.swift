@@ -86,10 +86,11 @@ class EvaluationAggregatorTests: XCTestCase {
                 }
                 aggregator.sendEvaluations()
                 let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
-                XCTAssertEqual(events.count, projected ? 1 : 2)
-                XCTAssertEqual(events.reduce(0) { $0 + $1.evaluationCount }, 2)
-                XCTAssertEqual(events.filter { $0.runtimeDefaultUsed == true }.count, projected ? 0 : 1)
-                XCTAssertEqual(events.filter { $0.variant?.key == "variant" }.count, 1)
+                XCTAssertEqual(events.count, 1)
+                XCTAssertEqual(events.first?.evaluationCount, 2)
+                XCTAssertEqual(events.first?.runtimeDefaultUsed, (defaultFirst && !projected) ? true : nil)
+                XCTAssertEqual(events.first?.variant?.key, (defaultFirst && !projected) ? nil : "variant")
+                XCTAssertEqual(events.first?.allocation?.key, (defaultFirst && !projected) ? nil : "allocation")
             }
         }
     }
