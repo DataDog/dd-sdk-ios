@@ -1609,19 +1609,17 @@ public final class FlagsClient
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    public func sendFlagEvaluationEvent(key: String,assignment: FlagAssignment?,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,errorCode: String?)
     public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 [?] extension FlagsClient
     public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
-    public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,observeFullEvaluationData: Bool,flagError: String?)
-    public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,flagError: String?)
 public protocol FlagsClientInternal: AnyObject
     func getFlagAssignments() -> [String: FlagAssignment]?
     func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
-    func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,observeFullEvaluationData: Bool,flagError: String?)
-    func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,flagError: String?)
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+    func sendFlagEvaluationEvent(key: String,assignment: FlagAssignment?,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,errorCode: String?)
     func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 [?] extension FlagsClientInternal
     public func getFlagAssignments() -> [String: FlagAssignment]?
@@ -1631,8 +1629,7 @@ public protocol FlagsClientInternal: AnyObject
     public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 [?] extension FlagsClientInternal
     public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
-    public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,observeFullEvaluationData: Bool,flagError: String?)
-    public func sendFlagEvaluation(key: String,assignment: FlagAssignment,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,flagError: String?)
+    public func sendFlagEvaluationEvent(key: String,assignment: FlagAssignment?,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,errorCode: String?)
 public protocol FlagsClientProtocol: AnyObject
     var state: FlagsStateObservable
     func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
