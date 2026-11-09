@@ -24,7 +24,7 @@ tracked_files:
 
 Flags evaluates Datadog feature flags in the app. A `FlagsClient` sends the evaluation context (targeting key and attributes) to the Datadog flags service, which returns **precomputed assignments** for every flag. All evaluations are then local and synchronous. The client caches assignments on disk per client name, logs exposures for experiments, aggregates evaluation counts, and annotates the active RUM view with the variant served.
 
-Flags requires initialization via `Datadog.initialize()` before `Flags.enable()`, and `Flags.enable()` before `FlagsClient.create()`. RUM is optional: without it, the RUM integration is a no-op.
+Call `Datadog.initialize()` before `Flags.enable()`, and `Flags.enable()` before `FlagsClient.create()`. RUM is optional: without it, the RUM integration is a no-op.
 
 **Platform**: iOS, tvOS, watchOS, visionOS. Flags has no Objective-C API.
 
@@ -129,7 +129,7 @@ flowchart LR
 ```
 
 - `Flags.enable()` registers `FlagsFeature` and, when `trackEvaluations` is `true`, a separate `FlagsEvaluationFeature` for evaluation uploads. Both run on the main thread synchronously.
-- `setEvaluationContext` sends one request with the targeting key, attributes, `env`, SDK version, the optional flag selection and opt-out policy. When RUM is enabled, the RUM application ID is sent as the `dd-application-id` header.
+- `setEvaluationContext` sends one request with the targeting key, attributes, `env`, SDK version, the optional flag selection, and the opt-out policy. When RUM is enabled, the RUM application ID is sent as the `dd-application-id` header.
 - `getDetails` reads the in-memory assignment for the key. On first use it waits up to 100 ms for the disk cache read to finish.
 
 ## Key Files
@@ -219,7 +219,7 @@ Listeners are held weakly and called with the current state when added. A state 
 ## Common Troubleshooting Patterns
 
 ### "Every flag returns its default value"
-**Causes:** Check `details.error` and `client.state.currentState`.
+**Causes:** Check `details.error` and `client.state.currentState` to find which of these applies:
 - `.providerNotReady`: no context set yet and no cache, the fetch is still running, or the client is in `.error`.
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
 - `.typeMismatch`: the getter type differs from the flag's type, for example `getIntegerValue` on a flag served as a double. `getDoubleValue` accepts whole numbers from a "number" flag, but not from an "integer" flag.
@@ -276,7 +276,7 @@ Listeners are held weakly and called with the current state when added. A state 
 
 - `FlagsClient.Configuration` has a second initializer, `init(enableEvaluationTelemetryOptOutParameter:)`, kept for binary compatibility. `Flags.Configuration` also keeps an initializer without `flagSelection`.
 - `FlagsSnapshot`, `FlagSnapshot` and `snapshot()` are marked as preview and may change.
-- `FlagEvaluationError` documentation has a typo ("tha"). `FlagsClientState` documentation mentions `reset()`, but reset is internal and not available to apps.
+- `FlagsClientState` documentation mentions `reset()`, but reset is internal and not available to apps.
 - `onFirstFlags` listeners run on a background queue, or on the calling thread if the first configuration was already published. `flagsChanged` lists configuration keys, which may be obfuscated rather than plaintext names. The no-op fallback client calls the listener immediately with an empty list.
 - Exposure deduplication is in memory, per client, for up to 5,000 subject and flag pairs, so a new process logs exposures again.
 - Disk caches filtered by flag selection or an opt-out policy use cache version 3, which SDK versions without these features skip.
