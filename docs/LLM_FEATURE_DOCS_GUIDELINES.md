@@ -24,6 +24,7 @@ DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
 DatadogTrace/TRACE_FEATURE.md
 DatadogProfiling/PROFILING_FEATURE.md
 DatadogLogs/LOGS_FEATURE.md
+DatadogCore/CORE_FEATURE.md
 DatadogWebViewTracking/WEBVIEW_FEATURE.md  # (future)
 ```
 
