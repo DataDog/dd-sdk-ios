@@ -7,50 +7,71 @@
 import Foundation
 import DatadogInternal
 
+/// The one exposure verdict of an evaluation, shared by the Datadog send and the customer hook.
+internal struct ExposureDecision: Equatable {
+    /// A successful evaluation of an allocation that logs exposures, repeats included.
+    let isExposure: Bool
+    /// The subject was already exposed to the same flag, allocation, variant and serial ID.
+    let isCacheHit: Bool
+
+    /// What the SDK sends to Datadog when exposure tracking is enabled.
+    var shouldSend: Bool { isExposure && !isCacheHit }
+
+    static let notAnExposure = ExposureDecision(isExposure: false, isCacheHit: false)
+}
+
 internal protocol ExposureLogging {
+    /// Records the exposure in the cache and returns the verdict. Call only for successful evaluations.
+    @discardableResult
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
         evaluationContext: FlagsEvaluationContext
-    )
+    ) -> ExposureDecision
 }
 
 internal final class ExposureLogger: ExposureLogging {
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let sendsExposures: Bool
     private let loggedExposures = ExposureTracker()
 
-    init(dateProvider: any DateProvider, featureScope: any FeatureScope) {
+    /// - Parameter sendsExposures: When `false`, the cache still records so verdicts stay correct, but nothing is sent.
+    init(dateProvider: any DateProvider, featureScope: any FeatureScope, sendsExposures: Bool = true) {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.sendsExposures = sendsExposures
     }
 
+    @discardableResult
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
         evaluationContext: FlagsEvaluationContext
-    ) {
+    ) -> ExposureDecision {
         guard assignment.doLog else {
-            return
+            return .notAnExposure
         }
 
-        featureScope.eventWriteContext { [weak self] context, writer in
-            guard let self else {
-                return
-            }
+        let exposure = ExposureTracker.Exposure(
+            targetingKey: evaluationContext.targetingKey,
+            flagKey: flagKey,
+            allocationKey: assignment.allocationKey,
+            variationKey: assignment.variationKey,
+            serialID: assignment.serialID
+        )
 
-            let exposure = ExposureTracker.Exposure(
-                targetingKey: evaluationContext.targetingKey,
-                flagKey: flagKey,
-                allocationKey: assignment.allocationKey,
-                variationKey: assignment.variationKey,
-                serialID: assignment.serialID
-            )
+        guard loggedExposures.track(exposure) else {
+            return ExposureDecision(isExposure: true, isCacheHit: true)
+        }
 
-            guard loggedExposures.track(exposure) else {
-                return
-            }
+        let decision = ExposureDecision(isExposure: true, isCacheHit: false)
+        guard sendsExposures else {
+            return decision
+        }
 
+        let features = assignment.features.values(for: .exposure)
+        featureScope.eventWriteContext { [dateProvider] context, writer in
             let date = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
             let exposureEvent = ExposureEvent(
                 timestamp: date.timeIntervalSince1970.dd.toInt64Milliseconds,
@@ -61,22 +82,12 @@ internal final class ExposureLogger: ExposureLogging {
                 subject: .init(
                     id: evaluationContext.targetingKey,
                     attributes: evaluationContext.attributes
-                )
+                ),
+                features: features.isEmpty ? nil : features
             )
 
             writer.write(value: exposureEvent)
         }
-    }
-}
-
-// MARK: - NOPExposureLogger
-
-internal final class NOPExposureLogger: ExposureLogging {
-    func logExposure(
-        for flagKey: String,
-        assignment: FlagAssignment,
-        evaluationContext: FlagsEvaluationContext
-    ) {
-        // No-op: exposure logging is disabled
+        return decision
     }
 }

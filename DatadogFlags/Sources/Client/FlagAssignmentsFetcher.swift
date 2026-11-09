@@ -40,6 +40,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private let featureScope: any FeatureScope
     private let assignmentFetchQueue: DispatchQueue
     private let fetch: (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
+    private let unknownDestinationWarnings = UnknownFeatureDestinationWarnings()
 
     private static let decoder = JSONDecoder()
     private static let flagSelectionIgnoredHeader = "DD-Flag-Selection-Ignored"
@@ -152,7 +153,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 diagnostics: diagnostics,
                 assignmentToken: assignmentToken
             )
-            fetch(request) { [assignmentFetchQueue, featureScope, flagSelection] result in
+            fetch(request) { [assignmentFetchQueue, featureScope, flagSelection, unknownDestinationWarnings] result in
                 assignmentFetchQueue.async {
                     Self.handleFetchResult(
                         result,
@@ -161,6 +162,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         requestCarriedFlagSelection: flagSelection != nil,
                         requestCarriedAssignmentToken: assignmentToken != nil,
                         featureScope: featureScope,
+                        unknownDestinationWarnings: unknownDestinationWarnings,
                         completion: completion
                     )
                 }
@@ -195,6 +197,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         requestCarriedFlagSelection: Bool,
         requestCarriedAssignmentToken: Bool,
         featureScope: any FeatureScope,
+        unknownDestinationWarnings: UnknownFeatureDestinationWarnings,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         switch result {
@@ -260,6 +263,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         }
                     }
                 }
+
+                unknownDestinationWarnings.warn(about: response.flags)
 
                 completion(.success(response))
             } catch {
@@ -351,5 +356,36 @@ extension URLSession {
             completion(.success((data, httpResponse)))
         }
         task.resume()
+    }
+}
+
+/// Warns once for each distinct unknown feature destination, for a bounded number of names.
+internal final class UnknownFeatureDestinationWarnings {
+    static let maxWarnedNames = 64
+
+    @ReadWriteLock
+    private var warnedNames: Set<String> = []
+
+    func warn(about flags: [String: FlagAssignment]) {
+        for assignment in flags.values {
+            for feature in assignment.features {
+                for name in feature.destinations where SplitFeature.Destination(rawValue: name) == nil {
+                    warnOnce(about: name)
+                }
+            }
+        }
+    }
+
+    private func warnOnce(about name: String) {
+        var isNew = false
+        _warnedNames.mutate { names in
+            guard names.count < Self.maxWarnedNames else {
+                return
+            }
+            isNew = names.insert(name).inserted
+        }
+        if isNew {
+            DD.logger.warn("Ignoring unknown feature destination '\(name)' in flag assignments.")
+        }
     }
 }

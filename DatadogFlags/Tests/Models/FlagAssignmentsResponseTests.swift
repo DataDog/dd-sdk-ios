@@ -616,3 +616,158 @@ extension FlagAssignmentsResponseTests {
         }
     }
 }
+
+final class SplitFeatureParsingTests: XCTestCase {
+    private func decodeFlag(features: String?) throws -> FlagAssignment {
+        let field = features.map { #","features":\#($0)"# } ?? ""
+        let json = """
+            {"data":{"attributes":{"flags":{"flag":{
+                "allocationKey":"allocation","variationKey":"on","variationType":"boolean",
+                "variationValue":true,"reason":"TARGETING_MATCH","doLog":true\(field)
+            }}}}}
+            """
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(json.utf8))
+        return try XCTUnwrap(response.flags["flag"], "the flag must survive any `features` value")
+    }
+
+    func testFeaturesWithMixedValueTypesParse() throws {
+        let assignment = try decodeFlag(features: """
+            [
+                {"key":"holdout.key","value":"h-1","destinations":["HOOK"]},
+                {"key":"holdout.should_include_in_holdout_analysis","value":false,"destinations":["HOOK","EXPOSURE"]},
+                {"key":"weight","value":2,"destinations":["EVALUATION"]},
+                {"key":"ratio","value":0.25,"destinations":["FUTURE","HOOK"]}
+            ]
+            """)
+
+        XCTAssertEqual(assignment.features, [
+            SplitFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"]),
+            SplitFeature(key: "holdout.should_include_in_holdout_analysis", value: .bool(false), destinations: ["HOOK", "EXPOSURE"]),
+            SplitFeature(key: "weight", value: .double(2), destinations: ["EVALUATION"]),
+            SplitFeature(key: "ratio", value: .double(0.25), destinations: ["FUTURE", "HOOK"]),
+        ])
+    }
+
+    func testMalformedOrMissingFeaturesNeverFailTheFlag() throws {
+        for features in [nil, "null", "{}", #""HOOK""#, "1", "true", "[]", #"{"key":"k","value":"v","destinations":["HOOK"]}"#] {
+            XCTAssertEqual(try decodeFlag(features: features).features, [], features ?? "missing")
+        }
+    }
+
+    func testInvalidEntriesAreSkippedAndValidOnesKept() throws {
+        let invalid = [
+            "null", "1", #""text""#, "[]",
+            #"{"value":"v","destinations":["HOOK"]}"#,
+            #"{"key":"","value":"v","destinations":["HOOK"]}"#,
+            #"{"key":7,"value":"v","destinations":["HOOK"]}"#,
+            #"{"key":"k","destinations":["HOOK"]}"#,
+            #"{"key":"k","value":null,"destinations":["HOOK"]}"#,
+            #"{"key":"k","value":{"a":1},"destinations":["HOOK"]}"#,
+            #"{"key":"k","value":["a"],"destinations":["HOOK"]}"#,
+            #"{"key":"k","value":"v"}"#,
+            #"{"key":"k","value":"v","destinations":"HOOK"}"#,
+            #"{"key":"k","value":"v","destinations":[]}"#,
+            #"{"key":"k","value":"v","destinations":[1,null,"",{}]}"#,
+        ]
+        for entry in invalid {
+            let assignment = try decodeFlag(features: """
+                [\(entry),{"key":"valid","value":"v","destinations":["HOOK"]}]
+                """)
+            XCTAssertEqual(assignment.features, [SplitFeature(key: "valid", value: .string("v"), destinations: ["HOOK"])], entry)
+        }
+    }
+
+    func testInvalidDestinationNamesAreDroppedFromAValidFeature() throws {
+        let assignment = try decodeFlag(features: #"[{"key":"k","value":"v","destinations":[null,"HOOK",3,"","EXPOSURE"]}]"#)
+        XCTAssertEqual(assignment.features, [SplitFeature(key: "k", value: .string("v"), destinations: ["HOOK", "EXPOSURE"])])
+    }
+
+    func testFirstValidFeatureWinsOnARepeatedKey() throws {
+        let assignment = try decodeFlag(features: """
+            [
+                {"key":"holdout.key","value":null,"destinations":["HOOK"]},
+                {"key":"holdout.key","value":"first","destinations":["HOOK"]},
+                {"key":"holdout.key","value":"second","destinations":["HOOK","EXPOSURE","EVALUATION"]}
+            ]
+            """)
+        XCTAssertEqual(assignment.features, [SplitFeature(key: "holdout.key", value: .string("first"), destinations: ["HOOK"])])
+        XCTAssertEqual(assignment.features.values(for: .exposure), [:])
+        XCTAssertEqual(assignment.features.values(for: .evaluation), [:])
+    }
+
+    func testFeaturesArePersistedWithCachedAssignments() throws {
+        var assignment = FlagAssignment.mockAnyBoolean()
+        assignment.features = [
+            SplitFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"]),
+            SplitFeature(key: "weight", value: .double(1.5), destinations: ["EVALUATION", "FUTURE"]),
+            SplitFeature(key: "flag", value: .bool(true), destinations: ["EXPOSURE"]),
+        ]
+        let data = FlagsData(flags: ["flag": assignment], context: .mockAny(), date: .mockAny())
+
+        let decoded = try JSONDecoder().decode(FlagsData.self, from: JSONEncoder().encode(data))
+
+        XCTAssertEqual(decoded.flags["flag"]?.features, assignment.features)
+        XCTAssertNotEqual(FlagAssignment.mockAnyBoolean(), assignment, "features are part of the cached assignment")
+    }
+
+    func testRoutingUsesOnlyKnownDestinations() {
+        let features = [
+            SplitFeature(key: "hook", value: .string("h"), destinations: ["HOOK"]),
+            SplitFeature(key: "exposure", value: .double(1), destinations: ["EXPOSURE"]),
+            SplitFeature(key: "evaluation", value: .bool(true), destinations: ["EVALUATION"]),
+            SplitFeature(key: "nowhere", value: .string("n"), destinations: ["FUTURE", "hook"]),
+        ]
+        XCTAssertEqual(features.values(for: .hook), ["hook": .string("h")])
+        XCTAssertEqual(features.values(for: .exposure), ["exposure": .double(1)])
+        XCTAssertEqual(features.values(for: .evaluation), ["evaluation": .bool(true)])
+        XCTAssertEqual(features.hookMetadata(), ["__dd_feature.hook": .string("h")])
+        XCTAssertEqual([SplitFeature]().hookMetadata(), [:])
+    }
+
+    func testUnknownDestinationsAreWarnedOncePerNameUpToTheCap() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let warnings = UnknownFeatureDestinationWarnings()
+        func flags(_ names: [String]) -> [String: FlagAssignment] {
+            var assignment = FlagAssignment.mockAnyBoolean()
+            assignment.features = [SplitFeature(key: "k", value: .string("v"), destinations: names)]
+            return ["flag": assignment]
+        }
+
+        warnings.warn(about: flags(["HOOK", "EXPOSURE", "EVALUATION"]))
+        XCTAssertEqual(dd.logger.warnMessages.count, 0)
+
+        warnings.warn(about: flags(["FUTURE", "HOOK"]))
+        warnings.warn(about: flags(["FUTURE"]))
+        XCTAssertEqual(dd.logger.warnMessages.count, 1)
+        XCTAssertTrue(dd.logger.warnMessages[0].contains("FUTURE"))
+
+        warnings.warn(about: flags((0..<100).map { "UNKNOWN_\($0)" }))
+        XCTAssertEqual(dd.logger.warnMessages.count, UnknownFeatureDestinationWarnings.maxWarnedNames)
+    }
+
+    func testFetcherWarnsAboutUnknownDestinations() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let bytes = Data("""
+            {"data":{"attributes":{"flags":{"flag":{
+                "allocationKey":"a","variationKey":"on","variationType":"boolean","variationValue":true,
+                "reason":"TARGETING_MATCH","doLog":true,
+                "features":[{"key":"k","value":"v","destinations":["FUTURE"]}]
+            }}}}}
+            """.utf8)
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(),
+            fetch: { _, complete in complete(.success((bytes, .mockAny()))) }
+        )
+        for _ in 0..<2 {
+            let completed = expectation(description: "fetched")
+            fetcher.flagAssignments(for: .mockAny()) { _ in completed.fulfill() }
+            wait(for: [completed], timeout: 1)
+        }
+        XCTAssertEqual(dd.logger.warnMessages.filter { $0.contains("FUTURE") }.count, 1)
+    }
+}
