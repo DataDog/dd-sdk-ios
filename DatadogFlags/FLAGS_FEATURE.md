@@ -14,6 +14,8 @@ tracked_files:
   - DatadogFlags/Sources/Models/FlagsClientEvent.swift
   - DatadogFlags/Sources/Models/FlagValue.swift
   - DatadogFlags/Sources/Models/AnyValue.swift
+  - DatadogFlags/Sources/Client/FlagsClientInternal.swift
+  - DatadogFlags/Sources/Models/FlagAssignment.swift
 ---
 
 # Flags Feature
@@ -29,6 +31,7 @@ Flags requires initialization via `Datadog.initialize()` before `Flags.enable()`
 ## Quick Start Example
 
 ```swift
+import Foundation
 import DatadogCore
 import DatadogFlags
 
@@ -45,7 +48,7 @@ Flags.enable(
         gracefulModeEnabled: true,
         // Custom URL for fetching assignments, e.g. a proxy. Default: nil (Datadog endpoint for the configured site).
         customFlagsEndpoint: URL(string: "https://flags-proxy.example.com/precompute-assignments"),
-        // Extra headers sent only to `customFlagsEndpoint`. Default: nil.
+        // Extra headers added to every assignments request, including to the Datadog endpoint. Default: nil.
         customFlagsHeaders: ["Authorization": "Bearer <token>"],
         // Max seconds the first `setEvaluationContext` waits before failing with `.initializationTimedOut`. Default: 5.
         // nil, zero, negative or non-finite disables it.
@@ -106,7 +109,7 @@ All methods are on `FlagsClientProtocol`:
 | `setEvaluationContext(_:)` / `setEvaluationContext(_:completion:)` / `try await setEvaluationContext(_:)` | Fire-and-forget, callback, or async throwing |
 | `state` | `FlagsStateObservable`: `currentState`, `addListener(_:)`, `removeListener(_:)` |
 | `onFirstFlags(_:)` | One-shot listener for the first accepted configuration; returns a `FlagsSubscription` to `cancel()` |
-| `snapshot()` | **Preview API**: side-effect-free `FlagsSnapshot` of cached assignments; records no exposure, evaluation or RUM annotation |
+| `snapshot()` | **Preview API**: side-effect-free `FlagsSnapshot` of cached assignments; records no exposure, evaluation or RUM annotation. Returns `nil` when no assignments are readable (no context or cache, `.error` state, fallback client) or when assignments use obfuscated flag keys |
 
 Object flags use `AnyValue` (`.string`, `.bool`, `.int`, `.double`, `.dictionary`, `.array`, `.null`). Context attributes use the same type.
 
@@ -144,6 +147,8 @@ flowchart LR
 - `DatadogFlags/Sources/Models/FlagsError.swift` — Errors returned by `setEvaluationContext`.
 - `DatadogFlags/Sources/Models/FlagsClientEvent.swift` — `onFirstFlags` event, listener and subscription types.
 - `DatadogFlags/Sources/Models/FlagValue.swift`, `DatadogFlags/Sources/Models/AnyValue.swift` — Supported value types.
+- `DatadogFlags/Sources/Client/FlagsClientInternal.swift` — `@_spi(Internal)` methods for cross-platform bridges.
+- `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods.
 
 ### Implementation
 - `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, cache restore, state transitions, initialization timeout.
@@ -163,7 +168,8 @@ flowchart LR
 
 ### Endpoints
 - Assignments are fetched from `https://preview.ff-cdn.<site domain>/precompute-assignments` (for example `preview.ff-cdn.datadoghq.eu` for EU1). Government sites (`us1_fed`, `us2_fed`) are not supported: the SDK logs a warning and uses the US1 endpoint.
-- `customFlagsEndpoint` replaces the full assignments URL. `customFlagsHeaders` are sent only with it.
+- `customFlagsEndpoint` replaces the full assignments URL.
+- `customFlagsHeaders` are added to every assignments request, even without `customFlagsEndpoint`. Despite its doc comment, the SDK does not limit them to a custom endpoint, so don't put proxy credentials in them unless `customFlagsEndpoint` is set.
 - `customExposureEndpoint` and `customEvaluationEndpoint` replace the intake URLs for exposures and evaluations.
 
 ### Startup and Caching
