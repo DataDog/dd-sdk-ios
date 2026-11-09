@@ -23,6 +23,7 @@ public struct FlagAssignment: Equatable {
     public var doLog: Bool
     public var serialID: Int?
     /// Consent captured with this assignment, including when bridged or restored from disk.
+    @_spi(Internal)
     public var observeFullEvaluationData: Bool = false
 
     /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
