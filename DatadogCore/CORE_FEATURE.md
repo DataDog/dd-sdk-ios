@@ -15,6 +15,9 @@ tracked_files:
   - DatadogCore/Sources/Extensions/ContextSharing/SharedContext.swift
   - DatadogInternal/Sources/Context/TrackingConsent.swift
   - DatadogInternal/Sources/Context/DatadogSite.swift
+  - DatadogInternal/Sources/CoreRegistry.swift
+  - DatadogInternal/Sources/Telemetry/CoreLogger.swift
+  - DatadogCore/Sources/Datadog+Internal.swift
 ---
 
 # Core Feature
@@ -62,7 +65,8 @@ Datadog.initialize(
         serverDateProvider: nil,
         // Max batches uploaded back to back per cycle: .low (5), .medium (20), .high (100). Default: .medium.
         batchProcessingLevel: .medium,
-        // Use UIApplication background tasks to finish uploads (up to ~30 s). Default: false. Not available on macOS.
+        // Keep uploading in the background: UIApplication background tasks in apps (up to ~30 s),
+        // ProcessInfo activities in app extensions and on watchOS. Default: false. Not available on macOS.
         backgroundTasksEnabled: false,
         // Fetch SDK settings from the Datadog CDN. Default: nil (no fetch).
         remoteConfiguration: Datadog.Configuration.RemoteConfiguration(id: "<remote_config_id>", customURL: nil)
@@ -86,7 +90,8 @@ Datadog.addAccountExtraInfo(["region": "eu"])
 Datadog.clearUserInfo()
 Datadog.clearAccountInfo()
 
-// Delete unsent data for the instance; the instance keeps running.
+// Delete unsent data of the products enabled in this instance; the instance keeps running.
+// Call it after enabling products: data of products not enabled yet in this launch is kept.
 Datadog.clearAllData()
 
 // Optional: a second, independent SDK instance. `initialize` returns it; pass it to products
@@ -141,6 +146,9 @@ flowchart LR
 - `DatadogCore/Sources/Extensions/CrossPlatformExtension.swift`, `DatadogCore/Sources/Extensions/ContextSharing/SharedContext.swift` — `@_spi(Internal)` shared context for cross-platform SDKs.
 - `DatadogInternal/Sources/Context/TrackingConsent.swift` — `TrackingConsent`.
 - `DatadogInternal/Sources/Context/DatadogSite.swift` — `DatadogSite`, intake hosts and the remote configuration CDN host.
+- `DatadogInternal/Sources/CoreRegistry.swift` — `CoreRegistry`, the registry of named instances (`defaultInstanceName`).
+- `DatadogInternal/Sources/Telemetry/CoreLogger.swift` — `CoreLoggerLevel`, the values of `Datadog.verbosityLevel`.
+- `DatadogCore/Sources/Datadog+Internal.swift` — `@_spi(Internal)` APIs used by cross-platform SDKs.
 
 ### Implementation
 - `DatadogCore/Sources/PerformancePreset.swift` — Batch sizes, file ages, upload delays, storage limits.
@@ -175,12 +183,12 @@ flowchart LR
 
 ### Batching and Upload
 - `batchSize` sets how long a batch file stays open: about 3 s (`.small`), 10 s (`.medium`) or 35 s (`.large`). App extensions always use 1 s.
-- `uploadFrequency` sets the base delay between upload checks: 0.5 s (`.frequent`), 2 s (`.average`) or 5 s (`.rare`). The first check runs after 5x that delay. Afterwards, the delay grows by 10% after each check with nothing to send, a blocked upload or a retry, up to 10x, and goes back to 1x once all batches are sent.
+- `uploadFrequency` sets the base delay between upload checks: 0.5 s (`.frequent`), 2 s (`.average`) or 5 s (`.rare`). The first check runs within about 1 s of `initialize` (random jitter), so mature batches from a previous launch upload right away. If it finds nothing, the next check waits 5x the base delay. Afterwards, the delay grows by 10% after each check with nothing to send, a blocked upload or a retry, up to 10x, and goes back to 1x once all batches are sent.
 - `batchProcessingLevel` caps the batches uploaded back to back in one cycle.
-- Storage limits: 5 MB per batch file, 1,000 events per file, 1 MB per event (larger events are dropped), 512 MB per feature folder (oldest files deleted first). Files older than 18 hours are deleted without upload.
+- Storage limits: 5 MB per batch file, 1,000 events per file, 1 MB per event (larger events are dropped), 512 MB per consent folder (`v2` and `intermediate-v2` each, so up to about 1 GB per feature; oldest files deleted first). Files older than 18 hours are deleted without upload.
 - Uploads are skipped while the network is unreachable (not checked on watchOS), when battery is at 10% or below and not charging, or in Low Power Mode.
 - Responses 408, 429, 500, 502, 503, 504, 507 and network errors keep the batch for retry. 202, 400, 401, 403 and 413 delete it. 401 and 403 also log "Make sure that the provided token still exists and you're targeting the relevant Datadog site."
-- `backgroundTasksEnabled` lets uploads continue in the background with `beginBackgroundTask`. Tasks end when nothing is left to upload or an upload is blocked.
+- `backgroundTasksEnabled` lets uploads continue in the background, with `UIApplication.beginBackgroundTask` in apps and `ProcessInfo.beginActivity` in app extensions and on watchOS. Tasks end when nothing is left to upload or an upload is blocked.
 
 ### Encryption
 `encryption` encrypts each event before it is written to disk and decrypts it before upload. Decryption must work across launches: events that fail to decrypt are not uploaded, and the SDK logs "Failed to decrypt data".
@@ -190,8 +198,8 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 
 ### Remote Configuration
 - With `remoteConfiguration`, Core loads the cached document from `Library/Application Support` at init, then fetches it from `https://sdk-configuration.<site host>/` (or `customURL`) in the background. On UIKit platforms it fetches again when the app returns to the foreground. Unchanged documents return 304 via ETag.
-- RUM, Trace and Session Replay apply the document once, at their `enable` call, on top of the in-code configuration. Values fetched after `enable` apply on the next launch.
-- RUM reads the `rum` and `trace` namespaces (sample rates, tracking flags, thresholds, traced hosts), Trace reads the trace sample rate, and Session Replay reads its sample rate and privacy levels.
+- RUM, Trace, Session Replay and Profiling apply the document once, at their `enable` call, on top of the in-code configuration. Values fetched after `enable` apply on the next launch.
+- RUM reads the `rum` and `trace` namespaces (sample rates, tracking flags, thresholds, traced hosts), Trace reads the trace sample rate, Session Replay reads its sample rate and privacy levels, and Profiling reads the `profiling` namespace (app launch and continuous sample rates).
 
 ### Debugging
 - `Datadog.verbosityLevel` (`.debug`, `.warn`, `.error`, `.critical`) prints SDK messages to the console. Errors such as a failed `initialize` always print.
@@ -201,9 +209,9 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 
 ### Startup Order
 1. `Datadog.initialize()` validates the configuration, creates the instance folder and context, deletes SDK v1 folders, and loads the cached remote configuration document if `remoteConfiguration` is set. The fresh document is fetched in the background.
-2. Each product's `enable` registers its feature and reads its configuration once, including the remote configuration available at that moment. Enabling a product before `initialize`, or twice, does not work: `enable` before `initialize` does nothing, and Session Replay keeps the first instance.
+2. Each product's `enable` registers its feature and reads its configuration once, including the remote configuration available at that moment. Enabling a product before `initialize`, or twice, does not work: `enable` before `initialize` does nothing, and Session Replay and Profiling keep the first instance.
 3. Events go to disk according to the current consent. User and account info, consent and other context changes apply to events written after the call, so set them as early as possible.
-4. The first upload check runs after 5x the `uploadFrequency` delay. Batches become uploadable once they mature (`batchSize`).
+4. The first upload check runs within about 1 s, and uploads batches left from a previous launch. New batches become uploadable once they mature (`batchSize`); if the first check found nothing, the next one waits 5x the `uploadFrequency` delay.
 5. When the app goes to the background, uploads continue only if `backgroundTasksEnabled` is `true`. Otherwise they resume on the next foreground or launch.
 
 ### On-Disk Layout
@@ -217,13 +225,13 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 - `<feature>` is the feature name, for example `rum`, `logging`, `tracing`, `session-replay`, `session-replay-resources`.
 - Batch file names are their creation time in milliseconds since the reference date (2001-01-01). Files are TLV-encoded, and encrypted per event when `encryption` is set.
 - On macOS the path starts with the app's own folder: `Library/Caches/<bundle id>/com.datadoghq/...`.
-- Debugging: download the app container from Xcode (Devices and Simulators) or open the simulator's data folder. Files in `intermediate-v2` mean consent is still pending; files piling up in `v2` mean uploads are blocked or failing; no files at all mean nothing is being written.
+- Debugging: download the app container from Xcode (Devices and Simulators) or open the simulator's data folder. Files in `intermediate-v2` mean consent is still pending; files piling up in `v2` mean uploads are blocked or failing. An empty folder is normal once uploads succeed, since uploaded batches are deleted; to check that events are written, look while the device is offline, or set `Datadog.verbosityLevel = .debug` and watch for "Uploading batches..." in the console.
 - Changing the instance name or site changes `<hash>`. Data in the old folder is not uploaded.
 
 ### Multiple Instances
 - Each instance has its own folder, consent, context (user, account, service, env), products and uploads. Instances can use different client tokens and sites.
 - Every `Datadog` method and product `enable` defaults to the default instance. A product enabled in one instance does not see events or context from another.
-- Session Replay supports only one instance: a second `enable` logs an error and the first one keeps running.
+- Session Replay and Profiling support only one instance: enabling them in a second instance logs an error and the first one keeps running.
 - Objective-C APIs take an `instanceName:` string instead of the instance object.
 
 ## Common Troubleshooting Patterns
@@ -254,7 +262,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 **Solutions:** Set `service`, `env` and `version` explicitly.
 
 ### "Some events are missing in high-volume apps"
-**Causes:** Events over 1 MB are dropped; a feature folder over 512 MB deletes its oldest files; offline periods longer than 18 hours expire files.
+**Causes:** Events over 1 MB are dropped; a consent folder (`v2` or `intermediate-v2`) over 512 MB deletes its oldest files; offline periods longer than 18 hours expire files.
 
 **Solutions:** Reduce event size (large attributes), and check how long devices stay offline.
 
@@ -264,7 +272,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 **Solutions:** Keep the default provider, and allow NTP traffic on restricted networks.
 
 ### "Remote configuration changes don't apply"
-**Causes:** Products read remote configuration only at `enable`. A document fetched after that applies on the next launch. Only RUM, Trace and Session Replay read it.
+**Causes:** Products read remote configuration only at `enable`. A document fetched after that applies on the next launch. Only RUM, Trace, Session Replay and Profiling read it.
 
 **Solutions:** Relaunch the app after the change, and check the configuration ID and `customURL`.
 
@@ -282,7 +290,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 - **Objective-C**: `DDDatadog` mirrors the Swift API. `DDConfiguration(clientToken:env:)` exposes options as properties, with `setEncryption`, `setServerDateProvider` and `setRemoteConfiguration` setters. `additionalConfiguration` is public there for cross-platform SDKs and is not a supported customer API.
 - **Deprecated**: Objective-C `DDURLSessionInstrumentation` `enable(configuration:)` and `enable(configuration:instanceName:)`. Use `enableDurationBreakdown(with:)` and `enableDurationBreakdown(with:instanceName:)`.
 - `Datadog.flushAndDeinitialize()` exists only in test builds (`DD_SDK_COMPILED_FOR_TESTING`). `Datadog.flush()` is `@_spi(Internal)`.
-- `stopInstance` stops every feature in the instance and unregisters it; a new `initialize` with the same name is then allowed. `clearAllData` deletes unsent data but keeps the instance running.
+- `stopInstance` stops every feature in the instance and unregisters it; a new `initialize` with the same name is then allowed. `clearAllData` deletes unsent data of the products currently enabled in the instance and keeps it running. Batches of a product not yet enabled in this launch stay on disk and upload once it is enabled.
 - App extensions use shorter batches (1 s) and faster first uploads, since extensions are short-lived.
 - There is no option to block SDK startup until a remote configuration is cached. It's planned (the `remoteConfiguration` doc comment mentions a `requireRemoteConfiguration` flag) but doesn't exist yet.
 - At init, Core deletes data folders left by SDK v1 (`com.datadoghq.logs`, `.traces`, `.rum`).
