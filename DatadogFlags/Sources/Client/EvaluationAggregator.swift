@@ -61,7 +61,6 @@ internal final class EvaluationAggregator {
         let context = observeFullEvaluationData ? evaluationContext.attributes : [:]
         let now = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
 
-        let runtimeDefaultUsed = assignment.reason == "DEFAULT" || errorMessage != nil
         let key = AggregationKey(
             flagKey: flagKey,
             variantKey: assignment.variationKey,
@@ -69,8 +68,7 @@ internal final class EvaluationAggregator {
             targetingKey: targetingKey,
             errorMessage: errorMessage,
             context: context,
-            observeFullEvaluationData: observeFullEvaluationData,
-            runtimeDefaultUsed: runtimeDefaultUsed
+            observeFullEvaluationData: observeFullEvaluationData
         )
 
         var shouldFlush = false
@@ -81,6 +79,8 @@ internal final class EvaluationAggregator {
                 existing.lastEvaluation = now
                 aggregations[key] = existing
             } else {
+                let runtimeDefaultUsed = assignment.reason == "DEFAULT" || errorMessage != nil
+
                 let aggregated = AggregatedEvaluation(
                     flagKey: flagKey,
                     variantKey: assignment.variationKey,
@@ -144,7 +144,6 @@ private struct AggregationKey: Hashable {
     let errorMessage: String?
     let context: [String: AnyValue]
     let observeFullEvaluationData: Bool
-    let runtimeDefaultUsed: Bool
 
     init(
         flagKey: String,
@@ -153,8 +152,7 @@ private struct AggregationKey: Hashable {
         targetingKey: String?,
         errorMessage: String?,
         context: [String: AnyValue],
-        observeFullEvaluationData: Bool,
-        runtimeDefaultUsed: Bool
+        observeFullEvaluationData: Bool
     ) {
         self.flagKey = flagKey
         self.variantKey = variantKey
@@ -163,7 +161,6 @@ private struct AggregationKey: Hashable {
         self.errorMessage = errorMessage
         self.context = context
         self.observeFullEvaluationData = observeFullEvaluationData
-        self.runtimeDefaultUsed = runtimeDefaultUsed
     }
 }
 
