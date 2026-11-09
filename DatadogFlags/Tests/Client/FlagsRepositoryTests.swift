@@ -4078,7 +4078,7 @@ extension FlagsRepositoryTests {
             let refreshed = expectation(description: "refresh")
             client.setEvaluationContext(context) { _ in refreshed.fulfill() }
             waitForExpectations(timeout: 1)
-            client.sendFlagEvaluation(key: "bridge", assignment: assignment, context: context, observeFullEvaluationData: captured.observeFullEvaluationData, flagError: "HOSTILE_ERROR")
+            client.sendFlagEvaluationEvent(key: "bridge", assignment: assignment, context: context, telemetryTargetingKey: context.targetingKey, observeFullEvaluationData: captured.observeFullEvaluationData, errorCode: "HOSTILE_ERROR")
             aggregator.sendEvaluations()
             let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
             XCTAssertEqual(events.count, 4)

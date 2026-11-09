@@ -44,15 +44,7 @@ internal final class EvaluationAggregator {
         evaluationContext: FlagsEvaluationContext,
         flagError: String?
     ) {
-        let errorMessage = (flagError ?? (assignment.reason == "ERROR" ? "GENERAL" : nil)).map { error in
-            switch error {
-            case "PROVIDER_NOT_READY", "PROVIDER_FATAL", "FLAG_NOT_FOUND", "PARSE_ERROR",
-                 "TYPE_MISMATCH", "TARGETING_KEY_MISSING", "INVALID_CONTEXT", "GENERAL":
-                return error
-            default:
-                return "GENERAL"
-            }
-        }
+        let errorMessage = EvaluationErrorCode.sanitized(flagError ?? (assignment.reason == "ERROR" ? EvaluationErrorCode.general : nil))
         let observeFullEvaluationData = assignment.observeFullEvaluationData
         let targetingKey = evaluationContext.hasTargetingKey
             ? telemetryTargetingKey(for: evaluationContext.targetingKey, observeFullEvaluationData: observeFullEvaluationData)
@@ -145,6 +137,19 @@ internal final class EvaluationAggregator {
         ) { [weak self] _ in
             self?.sendEvaluations()
         }
+    }
+}
+
+internal enum EvaluationErrorCode {
+    static let general = "GENERAL"
+    private static let stable: Set<String> = [
+        "PROVIDER_NOT_READY", "PROVIDER_FATAL", "FLAG_NOT_FOUND", "PARSE_ERROR",
+        "TYPE_MISMATCH", "TARGETING_KEY_MISSING", "INVALID_CONTEXT", general
+    ]
+
+    /// Error text can contain customer data, so anything but a stable OpenFeature code becomes `GENERAL`.
+    static func sanitized(_ code: String?) -> String? {
+        code.map { stable.contains($0) ? $0 : general }
     }
 }
 

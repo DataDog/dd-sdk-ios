@@ -125,7 +125,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         )
     }
 
-    func testNullableTelemetryReplayOnFallbackClientIsNoOp() {
+    func testCapturedConsentEvaluationEventOnFallbackClientLogsError() {
         let core = SingleFeatureCoreMock<FlagsFeature>()
         Flags.enable(in: core)
         let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
@@ -133,17 +133,17 @@ final class FallbackFlagsClientTests: XCTestCase {
         defer { dd.reset() }
 
         for targetingKey in [nil, ""] as [String?] {
-            client.sendFlagEvaluation(
+            client.sendFlagEvaluationEvent(
                 key: "flag",
                 assignment: .mockAny(),
                 context: .mockAny(),
                 telemetryTargetingKey: targetingKey,
                 observeFullEvaluationData: true,
-                flagError: "FLAG_NOT_FOUND"
+                errorCode: "FLAG_NOT_FOUND"
             )
         }
 
-        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
+        XCTAssertEqual(dd.logger.errorMessages.count, 2)
     }
 
     func testSendFlagEvaluation() {

@@ -348,12 +348,13 @@ final class FlagsClientTests: XCTestCase {
 
                     // When
                     for optOut in [AnyValue.bool(true), .string("true")] {
-                        fixture.client.sendFlagEvaluation(
+                        fixture.client.sendFlagEvaluationEvent(
                             key: "flag",
                             assignment: assignment,
                             context: telemetryContext(optOut),
+                            telemetryTargetingKey: "user",
                             observeFullEvaluationData: consent,
-                            flagError: error
+                            errorCode: error
                         )
                     }
 
@@ -361,14 +362,14 @@ final class FlagsClientTests: XCTestCase {
                     XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, enabled ? 1 : 2)
                     XCTAssertTrue(fixture.evaluations.logEvaluationCalls.allSatisfy { $0.assignment.observeFullEvaluationData == consent })
                     XCTAssertTrue(fixture.evaluations.logEvaluationCalls.allSatisfy { $0.error == error })
-                    XCTAssertEqual(fixture.exposures.logExposureCalls.count, error == nil ? 2 : 0)
-                    XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, error == nil ? (enabled ? 1 : 2) : 0)
+                    XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+                    XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
                 }
             }
         }
     }
 
-    func testNullableTelemetryKeySPIEncodesOmissionEmptyAndUnicodeWithoutChangingExposures() throws {
+    func testNullableTelemetryKeySPIEncodesOmissionEmptyAndUnicodeWithoutExposuresOrRUM() throws {
         let vectors: [(key: String?, protectedKey: String?)] = [
             (nil, nil),
             ("", ""),
@@ -399,13 +400,13 @@ final class FlagsClientTests: XCTestCase {
                 // When
                 for vector in vectors {
                     for _ in 0..<2 {
-                        client.sendFlagEvaluation(
+                        client.sendFlagEvaluationEvent(
                             key: "flag",
                             assignment: assignment,
                             context: context,
                             telemetryTargetingKey: vector.key,
                             observeFullEvaluationData: consent,
-                            flagError: scenario.error
+                            errorCode: scenario.error
                         )
                     }
                 }
@@ -430,14 +431,13 @@ final class FlagsClientTests: XCTestCase {
                     }
                     XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("ASSIGNMENT_SUBJECT"))
                 }
-                XCTAssertEqual(fixture.exposures.logExposureCalls.count, scenario.error == nil ? 8 : 0)
-                XCTAssertTrue(fixture.exposures.logExposureCalls.allSatisfy { $0.context == context })
-                XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, scenario.error == nil ? 8 : 0)
+                XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+                XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
             }
         }
     }
 
-    func testNullableTelemetryKeySPIKeepsSubjectOptOutAndExposures() throws {
+    func testNullableTelemetryKeySPIKeepsSubjectOptOut() throws {
         for consent in [false, true] {
             for telemetryKey in [nil, "", "different-subject"] as [String?] {
                 for error in [nil, "TYPE_MISMATCH"] as [String?] {
@@ -445,18 +445,15 @@ final class FlagsClientTests: XCTestCase {
                     let client: FlagsClientInternal = fixture.client
                     let assignment = try XCTUnwrap(fixture.repository.flagAssignment(for: "flag"))
                     let context = telemetryContext(.bool(true), subject: "original-subject")
-                    client.sendFlagEvaluation(
+                    client.sendFlagEvaluationEvent(
                         key: "flag",
                         assignment: assignment,
                         context: context,
                         telemetryTargetingKey: telemetryKey,
                         observeFullEvaluationData: consent,
-                        flagError: error
+                        errorCode: error
                     )
                     XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
-                    XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
-                    XCTAssertEqual(fixture.exposures.logExposureCalls.count, error == nil ? 1 : 0)
-                    XCTAssertTrue(fixture.exposures.logExposureCalls.allSatisfy { $0.context == context })
                 }
             }
         }
@@ -1497,6 +1494,30 @@ final class FlagsClientTests: XCTestCase {
         }
         XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
         XCTAssertTrue(rumReporter.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testIndependentEvaluationTrackingUsesConsentCarriedByTheAssignment() throws {
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(now: .mockAny()), featureScope: featureScope, flushInterval: 60)
+        let client: FlagsClientInternal = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLogger(aggregator: aggregator),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+        let context = FlagsEvaluationContext(targetingKey: "captured-user", attributes: ["tier": .string("premium")])
+        var assignment = FlagAssignment(
+            allocationKey: "allocation", variationKey: "variant", variation: .boolean(true), reason: "MATCH", doLog: false
+        )
+        assignment.observeFullEvaluationData = true
+
+        client.sendFlagEvaluationEvent(key: "flag", assignment: assignment, context: context, errorCode: "customer-error")
+        aggregator.sendEvaluations()
+
+        let event = try XCTUnwrap(featureScope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
+        XCTAssertEqual(event.targetingKey, "captured-user")
+        XCTAssertEqual(event.context?.evaluation?["tier"], .string("premium"))
+        XCTAssertEqual(event.error?.message, "GENERAL")
     }
 
     func testIndependentExposureTrackingPreservesDeduplicationAndDoLog() throws {
