@@ -232,6 +232,23 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
         attributes: [AttributeKey: AttributeValue]
     )
 
+    /// Stops RUM resource with reporting an error.
+    /// - Parameters:
+    ///   - resourceKey: the key representing the resource. It must match the one used to start the resource.
+    ///   - message: the message explaining the Resource failure.
+    ///   - type: the type of the error.
+    ///   - stack: stack trace of the error. No specific format is required.
+    ///   - response: an optional `URLResponse` received for the resource.
+    ///   - attributes: custom attributes to attach to this resource.
+    func stopResourceWithError(
+        resourceKey: String,
+        message: String,
+        type: String?,
+        stack: String?,
+        response: URLResponse?,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
     // MARK: - actions
 
     /// Adds RUM action that has no duration.
@@ -542,6 +559,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func stopResource(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopResourceWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopResourceWithError(resourceKey: String, message: String, type: String?, stack: String?, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
