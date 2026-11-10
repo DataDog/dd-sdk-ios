@@ -91,18 +91,6 @@ workflow:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
 
-.tag-pipeline-20m-delayed-job:
-  rules: 
-    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
-      when: delayed
-      start_in: 20 minutes
-
-.tag-pipeline-40m-delayed-job:
-  rules: 
-    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
-      when: delayed
-      start_in: 40 minutes
-
 .dd-octo-sts-id-token: &dd-octo-sts-id-token
   DDOCTOSTS_ID_TOKEN:
     aud: dd-octo-sts
