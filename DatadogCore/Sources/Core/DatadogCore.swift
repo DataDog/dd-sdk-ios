@@ -104,8 +104,58 @@ internal final class DatadogCore: RUMContextHandoffActivating {
     /// Allocated only for On. Releasing the Core's guard invalidates owners
     /// retained by downstream work without performing an Off deinit lookup.
     private final class ActivatedHandoff {
+        private struct WeakFeature {
+            weak var value: (any RUMOperationFeatureRetiring)?
+        }
+        private struct State {
+            var isRetired = false
+            var features: [ObjectIdentifier: WeakFeature] = [:]
+        }
+
         let owner = RUMContextHandoff.Owner()
-        deinit { owner.invalidate() }
+        @ReadWriteLock
+        private var state = State()
+
+        func attach(_ feature: any RUMOperationFeatureRetiring) {
+            var accepted = false
+            _state.mutate {
+                guard !$0.isRetired else {
+                    return
+                }
+                $0.features = $0.features.filter { $0.value.value != nil }
+                $0.features[ObjectIdentifier(feature)] = WeakFeature(value: feature)
+                accepted = true
+            }
+            if !accepted {
+                feature.retireOperationOrigin()
+            }
+        }
+
+        func detach(_ feature: any RUMOperationFeatureRetiring) {
+            _state.mutate {
+                let identity = ObjectIdentifier(feature)
+                guard $0.features[identity]?.value === feature else {
+                    return
+                }
+                $0.features.removeValue(forKey: identity)
+            }
+        }
+
+        func retire() {
+            owner.invalidate()
+            var detached: [WeakFeature] = []
+            _state.mutate {
+                guard !$0.isRetired else {
+                    return
+                }
+                $0.isRetired = true
+                detached = Array($0.features.values)
+                $0.features.removeAll()
+            }
+            detached.forEach { $0.value?.retireOperationOrigin() }
+        }
+
+        deinit { retire() }
     }
 
     private enum HandoffState {
@@ -143,16 +193,19 @@ internal final class DatadogCore: RUMContextHandoffActivating {
         }
         bus.publishFlagEvaluationOwner(owner, active: true)
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true) }
+        bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: true)
         return owner
     }
 
     func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner) {
         var receivers: [FeatureMessageReceiver] = []
+        var retiredHandoff: ActivatedHandoff?
         _registry.mutate { registry in
             guard case let .active(activation) = registry.handoff, activation.owner === owner else {
                 return
             }
             owner.invalidate()
+            retiredHandoff = activation
             registry.handoff = .inactive
             _featureStores.mutate { stores in
                 if stores.handoffOwner === owner {
@@ -163,6 +216,8 @@ internal final class DatadogCore: RUMContextHandoffActivating {
         }
         bus.publishFlagEvaluationOwner(owner, active: false)
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
+        bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: false)
+        retiredHandoff?.retire()
     }
 
     /// The core context provider.
@@ -436,6 +491,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        var retiredHandoff: ActivatedHandoff?
         var owner: RUMContextHandoff.Owner?
         var receivers: [FeatureMessageReceiver] = []
         var stoppedFeatures: [String: RegisteredFeature] = [:]
@@ -444,6 +500,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             registry.isStopped = true
             if case let .active(activation) = registry.handoff {
                 activation.owner.invalidate()
+                retiredHandoff = activation
                 owner = activation.owner
                 receivers = registry.features.values.map { $0.messageReceiver }
                 registry.handoff = .stopped
@@ -453,8 +510,10 @@ internal final class DatadogCore: RUMContextHandoffActivating {
         if let owner {
             bus.publishFlagEvaluationOwner(owner, active: false)
             receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
-            stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
+            bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: false)
         }
+        stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
+        retiredHandoff?.retire()
         remoteConfigurationProvider?.stop()
         _featureStores.mutate { stores in
             stores.entries = [:]
@@ -537,6 +596,7 @@ extension DatadogCore: DatadogCoreProtocol {
         let messageReceiver = feature.messageReceiver
         let registration = RegisteredFeature(feature: feature, messageReceiver: messageReceiver)
         var owner: RUMContextHandoff.Owner?
+        var registeredHandoff: ActivatedHandoff?
         var replacedFeature: RegisteredFeature?
         var replacedStore: (storage: FeatureStorage, upload: FeatureUpload)?
         do {
@@ -546,6 +606,7 @@ extension DatadogCore: DatadogCoreProtocol {
                     break
                 case let .active(activation):
                     owner = activation.owner
+                    registeredHandoff = activation
                 case .stopped:
                     throw ProgrammerError(description: "Cannot register a feature in a stopped scene-tracking SDK.")
                 }
@@ -581,10 +642,18 @@ extension DatadogCore: DatadogCoreProtocol {
             createdStore?.storage.clearUnauthorizedData()
         }
         if let owner {
+            if let displaced = replacedFeature?.feature as? RUMOperationFeatureRetiring,
+               (feature as AnyObject) !== displaced {
+                displaced.retireOperationOrigin()
+                registeredHandoff?.detach(displaced)
+            }
+            if let participant = feature as? RUMOperationFeatureRetiring {
+                registeredHandoff?.attach(participant)
+            }
             (messageReceiver as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true)
             // Registration survives a nonterminal activation rollback. Only stop or
             // replacement may suppress its queued connection and initial context.
-            bus.connect(messageReceiver, forKey: T.name, while: { [weak self, weak registration] in
+            bus.connect(messageReceiver, forKey: T.name, operationOwner: owner, while: { [weak self, weak registration] in
                 guard let self, let registration else {
                     return false
                 }
@@ -665,8 +734,17 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMFlagEvaluationSending, RUMContextHandoffContextUpdating, RUMContextHandoffEventWriting where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMFlagEvaluationSending, RUMContextHandoffContextUpdating, RUMContextHandoffEventWriting, RUMOperationScopeProviding where Feature: DatadogFeature {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
+    func operationOrigin(for monitor: AnyObject) -> RUMOperationOrigin? {
+        guard let core, let provider = core.feature(named: DatadogInternal.Feature.rum, type: RUMOperationOriginProviding.self),
+              provider.isOperationMonitor(monitor),
+              let origin = provider.operationOrigin, origin.isCurrent else {
+                  return nil
+              }
+        return origin
+    }
+
     func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
         core?.bus.sendFlagEvaluation(evaluation)
     }

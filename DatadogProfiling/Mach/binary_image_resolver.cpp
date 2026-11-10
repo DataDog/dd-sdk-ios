@@ -65,7 +65,8 @@ static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
  * dyld callback and the destructor do not race on the pointer itself.
  * The instance mutex (binary_image_cache::mutex) protects the cache map.
  */
-static std::mutex g_cacheptr_mutex;
+// The dyld callback remains registered during process teardown.
+[[clang::no_destroy]] static std::mutex g_cacheptr_mutex;
 static dd::profiler::binary_image_cache* g_binary_image_cache = nullptr;
 
 // ============================================================================
