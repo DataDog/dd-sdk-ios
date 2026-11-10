@@ -21,9 +21,10 @@ internal enum RUMNavigationHostInput {
 }
 
 /// Tracks one admitted semantic container without changing its content identity.
+/// Proposed public navigation integration, subject to review before release.
 @available(iOS 27.0, *)
 @MainActor
-internal struct RUMNavigationHost<Content: View>: View {
+public struct RUMNavigationHost<Content: View>: View {
     private weak var core: DatadogCoreProtocol?
     private let input: RUMNavigationHostInput
     private let content: Content
@@ -43,7 +44,7 @@ internal struct RUMNavigationHost<Content: View>: View {
         self.content = content()
     }
 
-    init(
+    public init(
         in core: DatadogCoreProtocol = CoreRegistry.default,
         @ViewBuilder content: () -> Content
     ) {
@@ -52,7 +53,7 @@ internal struct RUMNavigationHost<Content: View>: View {
         self.content = content()
     }
 
-    init<State, Updates: Publisher>(
+    public init<State, Updates: Publisher>(
         observing updates: Updates,
         destination: @MainActor @escaping (State) -> RUMNavigationDestination,
         metadata: RUMNavigationMetadata = .automatic,
@@ -72,7 +73,7 @@ internal struct RUMNavigationHost<Content: View>: View {
     }
 
     #if compiler(>=6.4) && canImport(Observation)
-    init(
+    public init(
         observingCurrentDestination: @MainActor @escaping () -> RUMNavigationDestination,
         metadata: RUMNavigationMetadata = .automatic,
         in core: DatadogCoreProtocol = CoreRegistry.default,
@@ -120,7 +121,7 @@ internal struct RUMNavigationHost<Content: View>: View {
     }
     #endif
 
-    var body: some View {
+    public var body: some View {
         let binding: RUMSwiftUIViewFoundationBinding?
         if let feature = core?.get(feature: RUMFeature.self),
            feature.isMultiSceneTrackingEnabled {
