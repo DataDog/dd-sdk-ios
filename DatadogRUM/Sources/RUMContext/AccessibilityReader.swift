@@ -19,7 +19,7 @@ internal protocol AccessibilityReading {
 
 #if os(macOS)
 /// The accessibility settings that macOS exposes through `NSWorkspace`.
-internal protocol MacOSAccessibilitySettings: AnyObject {
+internal protocol MacOSAccessibilitySettings {
     var accessibilityDisplayShouldIncreaseContrast: Bool { get }
     var accessibilityDisplayShouldDifferentiateWithoutColor: Bool { get }
     var accessibilityDisplayShouldReduceTransparency: Bool { get }
@@ -29,11 +29,11 @@ internal protocol MacOSAccessibilitySettings: AnyObject {
     var isSwitchControlEnabled: Bool { get }
 
     /// Calls `onChange` when VoiceOver or Switch Control is turned on or off, until the returned observations are released.
-    func observeAssistiveTechnologies(_ onChange: @escaping () -> Void) -> [NSObjectProtocol]
+    func observeAssistiveTechnologies(_ onChange: @escaping @Sendable () -> Void) -> [NSObjectProtocol]
 }
 
 extension NSWorkspace: MacOSAccessibilitySettings {
-    func observeAssistiveTechnologies(_ onChange: @escaping () -> Void) -> [NSObjectProtocol] {
+    func observeAssistiveTechnologies(_ onChange: @escaping @Sendable () -> Void) -> [NSObjectProtocol] {
         // Both properties are key-value observable. Display options are posted as a notification instead.
         [
             observe(\.isVoiceOverEnabled) { _, _ in onChange() },
@@ -328,7 +328,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
         state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
         #elseif os(macOS)
-        // macOS has no public API for the other settings, so they stay unknown.
+        // The other settings are not collected on macOS, so they stay unknown.
         state.increaseContrastEnabled = settings.accessibilityDisplayShouldIncreaseContrast
         state.shouldDifferentiateWithoutColor = settings.accessibilityDisplayShouldDifferentiateWithoutColor
         state.reduceTransparencyEnabled = settings.accessibilityDisplayShouldReduceTransparency

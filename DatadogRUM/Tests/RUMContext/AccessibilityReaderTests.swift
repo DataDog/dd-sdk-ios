@@ -262,6 +262,35 @@ final class AccessibilityReaderTests: XCTestCase {
     }
 
     @MainActor
+    func testWhenOneSettingIsOn_itIsReportedInItsOwnField() {
+        let settings: [(name: String, enable: (MacOSAccessibilitySettingsMock) -> Void, field: KeyPath<AccessibilityInfo, Bool?>)] = [
+            ("increase contrast", { $0.accessibilityDisplayShouldIncreaseContrast = true }, \.increaseContrastEnabled),
+            ("differentiate without color", { $0.accessibilityDisplayShouldDifferentiateWithoutColor = true }, \.shouldDifferentiateWithoutColor),
+            ("reduce transparency", { $0.accessibilityDisplayShouldReduceTransparency = true }, \.reduceTransparencyEnabled),
+            ("reduce motion", { $0.accessibilityDisplayShouldReduceMotion = true }, \.reduceMotionEnabled),
+            ("invert colors", { $0.accessibilityDisplayShouldInvertColors = true }, \.invertColorsEnabled),
+            ("VoiceOver", { $0.isVoiceOverEnabled = true }, \.screenReaderEnabled),
+            ("Switch Control", { $0.isSwitchControlEnabled = true }, \.assistiveSwitchEnabled),
+        ]
+        let allFields = settings.map(\.field)
+
+        for setting in settings {
+            // Given
+            let mock = MacOSAccessibilitySettingsMock(allEnabled: false)
+            setting.enable(mock)
+
+            // When
+            let reader = AccessibilityReader(notificationCenter: MockNotificationCenter(), settings: mock, layoutDirection: { nil })
+            let state = waitForState(of: reader) { $0.hasAccessibilityData }
+
+            // Then
+            for field in allFields {
+                XCTAssertEqual(state[keyPath: field], field == setting.field, "Only the field for \(setting.name) must be on")
+            }
+        }
+    }
+
+    @MainActor
     func testWhenTheLayoutDirectionIsUnknown_rightToLeftStaysUnknown() {
         // Given
         let settings = MacOSAccessibilitySettingsMock(allEnabled: false)
@@ -307,7 +336,37 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertEqual(state.screenReaderEnabled, true)
     }
 
-    func testItObservesDisplayOptionsOnTheGivenNotificationCenter() {
+    @MainActor
+    func testWhenSwitchControlIsTurnedOn_itReadsTheSettingsAgain() {
+        // Given
+        let settings = MacOSAccessibilitySettingsMock(allEnabled: false)
+        let reader = AccessibilityReader(notificationCenter: MockNotificationCenter(), settings: settings, layoutDirection: { nil })
+        _ = waitForState(of: reader) { $0.hasAccessibilityData }
+
+        // When
+        settings.isSwitchControlEnabled = true
+        settings.notifyAssistiveTechnologiesChange()
+
+        // Then
+        let state = waitForState(of: reader) { $0.assistiveSwitchEnabled == true }
+        XCTAssertEqual(state.assistiveSwitchEnabled, true)
+    }
+
+    @MainActor
+    func testWhileReaderIsAlive_itKeepsTheAssistiveTechnologiesObservations() {
+        // Given
+        let settings = MacOSAccessibilitySettingsMock(allEnabled: false)
+
+        // When
+        let reader = AccessibilityReader(notificationCenter: MockNotificationCenter(), settings: settings, layoutDirection: { nil })
+        _ = waitForState(of: reader) { $0.hasAccessibilityData }
+
+        // Then
+        XCTAssertTrue(settings.isObserved)
+        withExtendedLifetime(reader) {}
+    }
+
+    func testWhenCreated_itObservesDisplayOptionsOnTheGivenNotificationCenter() {
         // Given
         let notificationCenter = MockNotificationCenter()
 
@@ -331,6 +390,8 @@ final class AccessibilityReaderTests: XCTestCase {
 
 #if os(macOS)
 private final class MacOSAccessibilitySettingsMock: MacOSAccessibilitySettings {
+    /// Notifies only while the observation returned to the reader is retained, like key-value observation.
+    private weak var observation: NSObject?
     var accessibilityDisplayShouldIncreaseContrast: Bool
     var accessibilityDisplayShouldDifferentiateWithoutColor: Bool
     var accessibilityDisplayShouldReduceTransparency: Bool
@@ -338,7 +399,9 @@ private final class MacOSAccessibilitySettingsMock: MacOSAccessibilitySettings {
     var accessibilityDisplayShouldInvertColors: Bool
     var isVoiceOverEnabled: Bool
     var isSwitchControlEnabled: Bool
-    private var onAssistiveTechnologiesChange: (() -> Void)?
+    private var onAssistiveTechnologiesChange: (@Sendable () -> Void)?
+
+    var isObserved: Bool { observation != nil }
 
     init(allEnabled: Bool) {
         accessibilityDisplayShouldIncreaseContrast = allEnabled
@@ -350,12 +413,17 @@ private final class MacOSAccessibilitySettingsMock: MacOSAccessibilitySettings {
         isSwitchControlEnabled = allEnabled
     }
 
-    func observeAssistiveTechnologies(_ onChange: @escaping () -> Void) -> [NSObjectProtocol] {
+    func observeAssistiveTechnologies(_ onChange: @escaping @Sendable () -> Void) -> [NSObjectProtocol] {
+        let observation = NSObject()
+        self.observation = observation
         onAssistiveTechnologiesChange = onChange
-        return []
+        return [observation]
     }
 
     func notifyAssistiveTechnologiesChange() {
+        guard isObserved else {
+            return
+        }
         onAssistiveTechnologiesChange?()
     }
 }

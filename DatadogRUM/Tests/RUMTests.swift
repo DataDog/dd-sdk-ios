@@ -5,6 +5,9 @@
  */
 
 import XCTest
+#if os(macOS)
+import AppKit
+#endif
 import TestUtilities
 @testable import DatadogInternal
 @_spi(Experimental)
@@ -129,6 +132,23 @@ class RUMTests: XCTestCase {
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         XCTAssertTrue(monitor.applicationScope.dependencies.accessibilityReader is AccessibilityReader)
     }
+
+    #if os(macOS)
+    func testWhenAccessibilityCollectionIsEnabled_itObservesDisplayOptionsOnTheWorkspaceNotificationCenter() throws {
+        // Given
+        let applicationCenter = MockNotificationCenter()
+        let workspaceCenter = MockNotificationCenter()
+        config.notificationCenterProvider = NotificationCenterProvider(applicationCenter: applicationCenter, workspaceCenter: workspaceCenter)
+        config.collectAccessibility = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        XCTAssertTrue(workspaceCenter.getObserverNames().contains(NSWorkspace.accessibilityDisplayOptionsDidChangeNotification))
+        XCTAssertFalse(applicationCenter.getObserverNames().contains(NSWorkspace.accessibilityDisplayOptionsDidChangeNotification))
+    }
+    #endif
 
     func testWhenAccessibilityCollectionIsDisabled_itDoesNotReadAccessibilitySettings() throws {
         // Given
