@@ -82,12 +82,6 @@ public class ServerMock {
         return ServerSession(server: self)
     }
 
-    public func clearAllRequests() {
-        var request = URLRequest(url: baseURL.appendingPathComponent("/requests"))
-        request.httpMethod = "DELETE"
-        URLSession.shared.dataTask(with: request).resume()
-    }
-
     /// Removes the requests recorded in the session with given identifier and returns once the server has removed them.
     internal func clearRecordedRequests(sessionIdentifier: String) {
         var request = URLRequest(url: baseURL.appendingPathComponent("/requests/\(sessionIdentifier)"))
