@@ -38,28 +38,19 @@ Every Pull Request goes through two review stages: AI code review first, then hu
 
 1. **Open your PR as a draft** while you are still working on it.
 2. **Review your own changes, then mark the PR as "Ready for review"** once it is complete and CI is green. Only approval-dependent gates, such as MergeGate waiting for human approvals, may remain pending. This triggers AI code reviews.
-3. **Address the AI code review comments.** Fix the valid findings, and reply to (and resolve) the ones you disagree with, so the human reviewer can see what was considered. A push may trigger another automatic review: wait for active runs and address any new feedback. Do not manually request automated re-reviews from any reviewer. If no new run or feedback arrives, assume that reviewer has no further feedback and continue. Existing findings still require resolution; an unavailable run is not a passed review.
+3. **Address the AI code review comments.** Fix the valid findings, and reply to (and resolve) the ones you disagree with, so the human reviewer can see what was considered. Reviews run automatically after pushes; do not request automated re-reviews. Wait for active reviews and address received feedback before human handoff. If a reviewer does not run again or leave new feedback, continue once its existing findings are resolved; this does not count as a passed review.
 4. **Hand the PR over to human review:**
    - **Datadog team members:** add the `ready-for-human-review` label. Every morning, a bot assigns a project member as reviewer to PRs carrying this label.
    - **External contributors:** wait for a member of the team to pick up your PR and take it through human review.
-5. **Iterate with the human reviewer** until the PR is approved and merged. Re-request review only from a human after fixing their findings, with a brief note about the change and relevant local result.
+5. **Iterate with the human reviewer** until the PR is approved and merged. After addressing their feedback, re-request their review with a brief note about the changes and validation.
 
-After each review fix, build the affected targets and run the relevant tests locally
-before committing or pushing. Include test runners and callers outside the edited
-directory; syntax parsing and lint alone do not prove a code change works. For
-documentation-only edits, check the documents and links instead.
+Run the affected builds and tests locally after making changes; documentation-only
+edits need document and link checks. If a suggestion causes problems, discuss
+alternatives with the reviewer before resolving the thread. Keep replies focused
+on the question or change.
 
-Understand the reviewer's intent and look for alternatives before reversing a
-suggestion that causes problems. If an agent cannot identify a clearly best option,
-it asks the human running the PR loop first. If that person cannot choose either,
-it asks the reviewer for their preference. Keep the item open while that choice
-is pending.
-
-Keep replies brief and specific: what changed and the relevant check result are
-usually enough. Explain tradeoffs when needed, and keep detailed logs and validation
-inventories in the PR description or execution record.
-
-Do not hand the PR over before the last round of AI code reviews is addressed. Human reviewers expect the PR to be in its final shape.
+Before human handoff, CI must be green apart from gates waiting for human approval,
+active automated reviews must finish, and all received feedback must be addressed.
 
 AI code review findings on later pushes are addressed the same way alongside the human review; there is no need to remove the label. The exception is when the human review leads to a significant rework of your solution: remove the `ready-for-human-review` label, go back to step 3, and add the label again once the reworked PR has been through AI code review.
 

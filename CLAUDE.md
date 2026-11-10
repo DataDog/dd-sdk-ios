@@ -18,6 +18,7 @@ Use these skills (via `/skill-name`) for common workflows:
 | `dd-sdk-ios:setting-up-worktree` | Creating a git worktree ready to build and test |
 | `dd-sdk-ios:git-commit` | Committing changes (signed commits, message format) |
 | `dd-sdk-ios:open-pr` | Opening development PRs |
+| `dd-sdk-ios:follow-up-pr` | Following CI, addressing PR feedback and arranging human review |
 | `dd-sdk-ios:generate-changelog` | Generating release notes from author-provided PR metadata |
 | `dd-sdk-ios:prepare-release` | Preparing a release through opening PRs to `master` and `develop` |
 | `dd-sdk-ios:running-tests` | Running unit, module, or integration tests |
