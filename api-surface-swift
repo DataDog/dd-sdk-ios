@@ -386,6 +386,21 @@ public struct RUMView
     public var attributes: [AttributeKey: AttributeValue]
     public var isUntrackedModal: Bool
     public init(name: String, attributes: [AttributeKey: AttributeValue] = [:], isUntrackedModal: Bool = false)
+public struct RUMNavigationHost<Content: View>: View
+    public init(in core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: () -> Content)
+    public init<State, Updates: Publisher>(observing updates: Updates,destination: @MainActor @escaping (State) -> RUMNavigationDestination,metadata: RUMNavigationMetadata = .automatic,in core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: () -> Content) where Updates.Output == State, Updates.Failure == Never
+    public init(observingCurrentDestination: @MainActor @escaping () -> RUMNavigationDestination,metadata: RUMNavigationMetadata = .automatic,in core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: () -> Content)
+    public var body: some View
+public struct RUMNavigationDestination
+    public static func root<Value: Hashable>(_ value: Value,attributes: [String: Encodable] = [:]) -> Self
+    public static func route<Value: Hashable>(_ value: Value,attributes: [String: Encodable] = [:]) -> Self
+    public static func route<Value: Hashable, Occurrence: Hashable>(_ value: Value,occurrence: Occurrence,attributes: [String: Encodable] = [:]) -> Self
+    public static func presentation<Value: Hashable>(_ value: Value,attributes: [String: Encodable] = [:]) -> Self
+public struct RUMNavigationMetadata
+    public static let automatic = Self()
+    public init()
+    public static func automatic(in namespace: String) -> Self
+    public func overriding<Value: Hashable>(_ value: Value,name: String,path: String? = nil) -> Self
 public protocol SwiftUIRUMViewsPredicate
     func rumView(for extractedViewName: String) -> RUMView?
 public struct DefaultSwiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate
@@ -533,6 +548,32 @@ public extension RUMMonitorProtocol
     func succeedFeatureOperation(name: String,operationKey: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     func failOperation(name: String,operationKey: String? = nil,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue] = [:])
     func failFeatureOperation(name: String,operationKey: String? = nil,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue] = [:])
+public struct RUMViewTarget
+    public static func current(in scene: UIWindowScene) -> Self
+public typealias RUMOperationViewTarget = RUMViewTarget
+public extension RUMMonitorProtocol
+    func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget)
+    func startView(key: String,name: String? = nil,in scene: UIWindowScene,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopView(key: String,in scene: UIWindowScene,attributes: [AttributeKey: AttributeValue] = [:])
+    func addError(message: String,type: String? = nil,stack: String? = nil,source: RUMErrorSource = .custom,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #fileID,line: UInt? = #line)
+    func addError(error: Error,source: RUMErrorSource = .custom,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func addError(error: Error,source: RUMErrorSource = .custom,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:],completionHandler: @escaping CompletionHandler)
+    func startResource(resourceKey: String,request: URLRequest,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func startResource(resourceKey: String,url: URL,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func addAction(type: RUMActionType,name: String,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func startAction(type: RUMActionType,name: String,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopAction(type: RUMActionType,name: String? = nil,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func startOperation(name: String,operationKey: String? = nil,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:],options: OperationOptions? = nil)
+    func succeedOperation(name: String,operationKey: String? = nil,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+    func failOperation(name: String,operationKey: String? = nil,reason: RUMFeatureOperationFailureReason,view: RUMViewTarget,attributes: [AttributeKey: AttributeValue] = [:])
+public extension RUMMonitorViewProtocol
+    func addTiming(name: String, view: RUMViewTarget)
+    func addViewLoadingTime(overwrite: Bool, view: RUMViewTarget)
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, view: RUMViewTarget)
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], view: RUMViewTarget)
+    func removeViewAttribute(forKey key: AttributeKey, view: RUMViewTarget)
+    func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget)
 public extension RUMMonitorProtocol
     var _internal: DatadogInternalInterface?
 public struct DatadogInternalInterface
