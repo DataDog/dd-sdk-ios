@@ -25,7 +25,7 @@ class URLSessionBaseScenario: NSObject {
 
     /// The `URLRequest` to custom POST resource,  observed by Tracing auto instrumentation.
     @objc
-    let customPOSTRequest: URLRequest
+    var customPOSTRequest: URLRequest
 
     /// An unresolvable URL to fake resource DNS resolution error,  observed by Tracing auto instrumentation.
     @objc
