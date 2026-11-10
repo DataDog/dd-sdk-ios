@@ -25,7 +25,7 @@ class URLSessionBaseScenario: NSObject {
 
     /// The `URLRequest` to custom POST resource,  observed by Tracing auto instrumentation.
     @objc
-    var customPOSTRequest: URLRequest
+    let customPOSTRequest: URLRequest
 
     /// An unresolvable URL to fake resource DNS resolution error,  observed by Tracing auto instrumentation.
     @objc
@@ -58,11 +58,7 @@ class URLSessionBaseScenario: NSObject {
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
             let serverMockConfiguration = Environment.serverMockConfiguration()!
             customGETResourceURL = serverMockConfiguration.instrumentedEndpoints[0]
-            customPOSTRequest = {
-                var request = URLRequest(url: serverMockConfiguration.instrumentedEndpoints[1])
-                request.httpMethod = "POST"
-                return request
-            }()
+            customPOSTRequest = Self.makeCustomPOSTRequest(url: serverMockConfiguration.instrumentedEndpoints[1])
             badResourceURL = serverMockConfiguration.instrumentedEndpoints[2]
             thirdPartyURL = serverMockConfiguration.instrumentedEndpoints[3]
             thirdPartyRequest = {
@@ -73,8 +69,7 @@ class URLSessionBaseScenario: NSObject {
         } else {
             customGETResourceURL = URL(string: "https://status.datadoghq.com")!
             customPOSTRequest = {
-                var request = URLRequest(url: URL(string: "https://status.datadoghq.com/bad/path")!)
-                request.httpMethod = "POST"
+                var request = Self.makeCustomPOSTRequest(url: URL(string: "https://status.datadoghq.com/bad/path")!)
                 request.addValue("dataTaskWithRequest", forHTTPHeaderField: "creation-method")
                 return request
             }()
@@ -94,6 +89,12 @@ class URLSessionBaseScenario: NSObject {
         case .afterSDK:
             self.session = nil // it will be created later, on first access from VC
         }
+    }
+
+    class func makeCustomPOSTRequest(url: URL) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        return request
     }
 
     private var session: URLSession!
