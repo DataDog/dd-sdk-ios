@@ -179,13 +179,14 @@ flowchart LR
 | `.notGranted` | Events are dropped without being written. |
 
 - Changing from `.pending` to `.granted` moves pending data to the upload folder. Changing to `.notGranted` deletes pending data.
+- Pending data does not survive a relaunch: enabling a product deletes its `intermediate-v2` batches, whatever the initial consent.
 - Consent does not affect data already in the upload folder.
 
 ### Batching and Upload
 - `batchSize` sets how long a batch file stays open: about 3 s (`.small`), 10 s (`.medium`) or 35 s (`.large`). App extensions always use 1 s.
 - `uploadFrequency` sets the base delay between upload checks: 0.5 s (`.frequent`), 2 s (`.average`) or 5 s (`.rare`). The first check runs within about 1 s of `initialize` (random jitter), so mature batches from a previous launch upload right away. If it finds nothing, the next check waits 5x the base delay. Afterwards, the delay grows by 10% after each check with nothing to send, a blocked upload or a retry, up to 10x, and goes back to 1x once all batches are sent.
 - `batchProcessingLevel` caps the batches uploaded back to back in one cycle.
-- Storage limits: 5 MB per batch file, 1,000 events per file, 1 MB per event (larger events are dropped), 512 MB per consent folder (`v2` and `intermediate-v2` each, so up to about 1 GB per feature; oldest files deleted first). Files older than 18 hours are deleted without upload.
+- Storage limits: 5 MB per batch file, 1,000 events per file, 1 MB per event (larger events are dropped), 512 MB per consent folder (`v2` and `intermediate-v2` each, so up to about 1 GB per feature; oldest files deleted first). Files older than 18 hours are deleted without upload. These are defaults; some products override them: RUM keeps files 24 hours, Session Replay 12 hours (resources 48 hours) with 10 MB per event, and Profiling allows 15 MB per event.
 - Uploads are skipped while the network is unreachable (not checked on watchOS), when battery is at 10% or below and not charging, or in Low Power Mode.
 - Responses 408, 429, 500, 502, 503, 504, 507 and network errors keep the batch for retry. 202, 400, 401, 403 and 413 delete it. 401 and 403 also log "Make sure that the provided token still exists and you're targeting the relevant Datadog site."
 - `backgroundTasksEnabled` lets uploads continue in the background, with `UIApplication.beginBackgroundTask` in apps and `ProcessInfo.beginActivity` in app extensions and on watchOS. Tasks end when nothing is left to upload or an upload is blocked.
@@ -197,7 +198,7 @@ flowchart LR
 By default the SDK computes a server time offset with Datadog NTP pools (`0-3.datadog.pool.ntp.org`, via Kronos) and applies it to event dates. A custom `serverDateProvider` replaces this; a no-op provider leaves device time uncorrected, which can shift RUM sessions and traces.
 
 ### Remote Configuration
-- With `remoteConfiguration`, Core loads the cached document from `Library/Application Support` at init, then fetches it from `https://sdk-configuration.<site host>/` (or `customURL`) in the background. On UIKit platforms it fetches again when the app returns to the foreground. Unchanged documents return 304 via ETag.
+- With `remoteConfiguration`, Core loads the cached document from `Library/Application Support` at init, then fetches it from `https://sdk-configuration.<site host>/` (or `customURL`) in the background. On UIKit platforms it fetches again when the app returns to the foreground, at most once every 5 minutes (an earlier foreground is ignored). Unchanged documents return 304 via ETag.
 - RUM, Trace, Session Replay and Profiling apply the document once, at their `enable` call, on top of the in-code configuration. Values fetched after `enable` apply on the next launch.
 - RUM reads the `rum` and `trace` namespaces (sample rates, tracking flags, thresholds, traced hosts), Trace reads the trace sample rate, Session Replay reads its sample rate and privacy levels, and Profiling reads the `profiling` namespace (app launch and continuous sample rates).
 
@@ -212,7 +213,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 2. Each product's `enable` registers its feature and reads its configuration once, including the remote configuration available at that moment. Enabling a product before `initialize`, or twice, does not work: `enable` before `initialize` does nothing, and Session Replay and Profiling keep the first instance.
 3. Events go to disk according to the current consent. User and account info, consent and other context changes apply to events written after the call, so set them as early as possible.
 4. The first upload check runs within about 1 s, and uploads batches left from a previous launch. New batches become uploadable once they mature (`batchSize`); if the first check found nothing, the next one waits 5x the `uploadFrequency` delay.
-5. When the app goes to the background, uploads continue only if `backgroundTasksEnabled` is `true`. Otherwise they resume on the next foreground or launch.
+5. When the app goes to the background, `backgroundTasksEnabled: true` only lets an upload that is already in progress finish. It does not keep upload checks running while the app is suspended; they resume on the next foreground or launch.
 
 ### On-Disk Layout
 | Path | Content |
@@ -252,7 +253,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 **Solutions:** Use `.small` and `.frequent` for testing, enable background tasks, or keep the app in the foreground for a few seconds before closing it.
 
 ### "Data collected before consent was granted is missing"
-**Causes:** Consent was `.notGranted` at that time (events dropped), or changed to `.notGranted` before `.granted` (pending data deleted).
+**Causes:** Consent was `.notGranted` at that time (events dropped), or changed to `.notGranted` before `.granted` (pending data deleted), or the app was relaunched while consent was `.pending` (pending data is deleted when each product is enabled).
 
 **Solutions:** Use `.pending` until the user decides, then set `.granted`.
 
@@ -262,7 +263,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 **Solutions:** Set `service`, `env` and `version` explicitly.
 
 ### "Some events are missing in high-volume apps"
-**Causes:** Events over 1 MB are dropped; a consent folder (`v2` or `intermediate-v2`) over 512 MB deletes its oldest files; offline periods longer than 18 hours expire files.
+**Causes:** Events over the size limit (1 MB by default) are dropped; a consent folder (`v2` or `intermediate-v2`) over 512 MB deletes its oldest files; offline periods longer than the retention window (18 hours by default, 24 hours for RUM, 12 hours for Session Replay) expire files.
 
 **Solutions:** Reduce event size (large attributes), and check how long devices stay offline.
 
@@ -279,7 +280,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 ## Feature Interactions
 
 - **All products**: register into a Core instance and use its context (service, env, version, user, account, consent, network, battery). User and account info are added to logs, traces and RUM events.
-- **RUM**: `clearUserInfo()` and `clearAccountInfo()` also empty the user or account on the active RUM session and view. Stop the session or view first to keep it.
+- **RUM**: `clearUserInfo()` and `clearAccountInfo()` also empty the user or account on the active RUM session and view. `clearUserInfo()` keeps the anonymous ID, so with `trackAnonymousUser` (on by default) events still carry `usr.anonymous_id`. Stop the session or view first to keep it.
 - **Multiple instances**: see [Multiple Instances](#multiple-instances).
 - **Shared APIs owned by Core**: user and account info, tracking consent and the configuration options above are documented here. When they change, also check the docs that describe their effect on events: `DatadogRUM/RUM_FEATURE.md`, `DatadogLogs/LOGS_FEATURE.md`, `DatadogTrace/TRACE_FEATURE.md`.
 - **Cross-platform SDKs**: bridges such as React Native and Kotlin Multiplatform set source, version and SDK version through `additionalConfiguration`, and read user and account IDs with `@_spi(Internal)` `CrossPlatformExtension.subscribe(toSharedContext:)`.
@@ -290,7 +291,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 - **Objective-C**: `DDDatadog` mirrors the Swift API. `DDConfiguration(clientToken:env:)` exposes options as properties, with `setEncryption`, `setServerDateProvider` and `setRemoteConfiguration` setters. `additionalConfiguration` is public there for cross-platform SDKs and is not a supported customer API.
 - **Deprecated**: Objective-C `DDURLSessionInstrumentation` `enable(configuration:)` and `enable(configuration:instanceName:)`. Use `enableDurationBreakdown(with:)` and `enableDurationBreakdown(with:instanceName:)`.
 - `Datadog.flushAndDeinitialize()` exists only in test builds (`DD_SDK_COMPILED_FOR_TESTING`). `Datadog.flush()` is `@_spi(Internal)`.
-- `stopInstance` stops every feature in the instance and unregisters it; a new `initialize` with the same name is then allowed. `clearAllData` deletes unsent data of the products currently enabled in the instance and keeps it running. Batches of a product not yet enabled in this launch stay on disk and upload once it is enabled.
+- `stopInstance` stops every feature in the instance and unregisters it; a new `initialize` with the same name is then allowed. `clearAllData` deletes unsent data of the products currently enabled in the instance and keeps it running. Batches of a product not yet enabled in this launch stay on disk; once it is enabled, granted batches upload and pending batches (`intermediate-v2`) are deleted.
 - App extensions use shorter batches (1 s) and faster first uploads, since extensions are short-lived.
 - There is no option to block SDK startup until a remote configuration is cached. It's planned (the `remoteConfiguration` doc comment mentions a `requireRemoteConfiguration` flag) but doesn't exist yet.
 - At init, Core deletes data folders left by SDK v1 (`com.datadoghq.logs`, `.traces`, `.rum`).
