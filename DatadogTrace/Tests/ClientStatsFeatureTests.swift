@@ -272,6 +272,29 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(suddenTermination.disableCount, 0)
     }
 
+    func testWhenASpanFinishesAfterTheAppStartsTerminating_itsStatsAreStoredRightAway() throws {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let stats = ClientStatsFeature(
+            core: core,
+            configuration: config,
+            dateProvider: RelativeDateProvider(using: Date(timeIntervalSince1970: 0)),
+            suddenTermination: suddenTermination
+        )
+        try core.register(feature: stats)
+        stats.writeBufferedData()
+
+        // When
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        // Then
+        waitUntil { !core.exportedBuckets.isEmpty }
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [1])
+        waitUntil { suddenTermination.disableCount == 0 }
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
     func testWhenStatsAreFlushed_suddenTerminationStaysDisabledUntilTheWriteContextIsRequested() throws {
         // Given
         let suddenTermination = SuddenTerminationControlMock()

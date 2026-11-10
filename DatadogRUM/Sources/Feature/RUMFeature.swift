@@ -558,7 +558,7 @@ extension RUMFeature {
 
 extension RUMFeature: BufferedDataWritable {
     func writeBufferedData() {
-        timeseriesCollector?.flush()
+        timeseriesCollector?.stopForTermination()
     }
 }
 

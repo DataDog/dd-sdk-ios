@@ -1097,6 +1097,43 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(suddenTermination.disableCount, 0)
     }
 
+    func testWhenAnEventIsWrittenAfterItsWriteContextReturns_suddenTerminationStaysDisabledUntilItIsStored() throws {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny(),
+            suddenTermination: suddenTermination
+        )
+        defer { core.stop() }
+        try core.register(feature: FeatureMock())
+        let capturedWriter = ReadWriteLock<Writer?>(wrappedValue: nil)
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            capturedWriter.mutate { $0 = writer }
+        }
+        core.flush()
+        let queueBlocked = DispatchSemaphore(value: 0)
+        core.readWriteQueue.async { queueBlocked.wait() }
+
+        // When
+        try XCTUnwrap(capturedWriter.wrappedValue).write(value: FeatureMock.Event(event: "late"))
+        let isDisabledBeforeStorage = suddenTermination.isDisabled
+        queueBlocked.signal()
+        core.flush()
+
+        // Then
+        XCTAssertTrue(isDisabledBeforeStorage)
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
     func testWhenAppTerminates_itWritesBufferedDataWithoutFlushingFeatures() throws {
         // Given
         let notificationCenter = NotificationCenter()

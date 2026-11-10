@@ -135,15 +135,9 @@ internal final class MessageBus {
             return save(configuration: configuration)
         }
 
-        #if os(macOS)
         // A receiver that writes the message opens its event write context while handling it,
         // which keeps sudden termination disabled until the write.
-        suddenTermination.disableSuddenTermination()
-        #endif
-        queue.async {
-            #if os(macOS)
-            defer { self.suddenTermination.enableSuddenTermination() }
-            #endif
+        suddenTermination.async(on: queue) {
             guard !self.isDisconnected, let core = self.core else {
                 return fallback() // no feature can process the message
             }

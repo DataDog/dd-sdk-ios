@@ -2166,6 +2166,8 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
         flushCallCount += 1
     }
 
+    func stopForTermination() {}
+
     func hasCollectedData(sessionID: String) -> Bool {
         return false
     }

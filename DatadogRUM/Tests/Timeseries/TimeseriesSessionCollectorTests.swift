@@ -688,6 +688,40 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(isDisabledAtWrite, [true])
     }
 
+    func testWhenTheAppTerminates_itWritesBufferedSamplesAndStopsSampling() {
+        // Given
+        memoryReader.vitalData = nil
+        let suddenTermination = SuddenTerminationControlMock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100,
+            samplingInterval: 0.01,
+            cpuUsageProvider: { 10.0 },
+            suddenTermination: suddenTermination
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-xyz", applicationID: "app-456", sessionType: .user)
+        let samplesBuffered = expectation(description: "samples buffered")
+        wait(until: { suddenTermination.isDisabled }, andThenFulfill: samplesBuffered)
+        waitForExpectations(timeout: 2)
+
+        // When
+        collector.stopForTermination()
+        collector.start(sessionID: "session-new", applicationID: "app-456", sessionType: .user)
+        collector.noteActivity(sessionID: "session-xyz")
+        collector.pause(sessionID: "session-xyz")
+        collector.resume(sessionID: "session-xyz")
+        let writtenAtTermination = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).count
+        wait(during: 0.1) { collector.flush() }
+
+        // Then
+        XCTAssertEqual(writtenAtTermination, 1)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).count, 1, "No sample is taken after termination")
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
     /// Buffers samples, then pauses the collector, and returns whether sudden termination was disabled
     /// when each write context was requested.
     private func writeContextsAfterBufferingSamples(cpuUsageProvider: @escaping () -> Double?) -> [Bool] {

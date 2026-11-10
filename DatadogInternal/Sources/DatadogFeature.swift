@@ -37,6 +37,9 @@ public protocol BufferedDataWritable {
     ///
     /// **Blocks the caller thread** until the event write context for that data is open. The core calls it on the
     /// main thread, so it must not wait for the main thread.
+    ///
+    /// The app is terminating: the process exits once nothing holds sudden termination. After this call, the
+    /// feature must stop collecting, or write new data right away, so that new data does not delay the exit.
     func writeBufferedData()
 }
 

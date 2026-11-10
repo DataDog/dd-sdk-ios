@@ -274,7 +274,8 @@ internal final class DatadogCore {
             // has the previous consent, and its events are written before the migration runs. A write
             // context read after it has the new consent.
             consentPublisher.consent = trackingConsent
-            contextProvider.queue.async { [allStorages] in
+            // Each migration holds sudden termination on the read-write queue before this hold is released.
+            suddenTermination.async(on: contextProvider.queue) { [allStorages] in
                 // RUM-3175: To prevent race conditions with ongoing "event write" operations,
                 // data migration must be synchronized on the context queue. This guarantees that
                 // all latest events have been written before migration occurs.
@@ -422,7 +423,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 performance: performancePreset,
                 encryption: encryption,
                 backgroundTasksEnabled: backgroundTasksEnabled,
-                telemetry: telemetry
+                telemetry: telemetry,
+                suddenTermination: suddenTermination
             )
 
             let upload = FeatureUpload(
@@ -493,7 +495,8 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
             feature: Feature.name,
             directory: core.directory,
             queue: core.readWriteQueue,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            suddenTermination: core.suddenTermination
         )
     }
 

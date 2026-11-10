@@ -23,6 +23,9 @@ internal protocol TimeseriesCollecting: AnyObject {
     func noteActivity(sessionID: String)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
+    /// Synchronously flushes buffered samples and stops sampling for good, because the app terminates.
+    /// **Blocks the caller thread.**
+    func stopForTermination()
     /// Whether at least one sample was collected for the session identified by `sessionID`.
     /// Safe to call from any thread.
     func hasCollectedData(sessionID: String) -> Bool
@@ -67,12 +70,16 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         didSet { updateSuddenTerminationHold() }
     }
     /// Keeps sudden termination disabled while samples are buffered, so they are written when the app terminates.
+    // The hold does not depend on tracking consent: with `.notGranted`, samples are buffered and then dropped by
+    // the writer, so the app terminates through AppKit instead of suddenly. No data is kept or lost because of it.
     private let suddenTerminationHold: SuddenTerminationHold
     private var sessionID: String = ""
     private var applicationID: String = ""
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
+    /// Set when the app terminates. No sample is taken after it, so no new data delays the app exit.
+    private var isTerminated = false
     private let now: () -> Date
     private let mediaTimeProvider: CACurrentMediaTimeProvider
     /// The wall-clock date and monotonic media time captured together at the start of the current session,
@@ -175,7 +182,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Resets state, flips the compression coin, and starts the sampling timer for the new session.
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
         queue.async { [weak self] in
-            guard let self = self else {
+            guard let self = self, !self.isTerminated else {
                 return
             }
             self.flushMemory()
@@ -218,7 +225,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// No-ops if `sessionID` no longer matches the currently active session.
     func resume(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID, self.isPaused else {
+            guard let self = self, self.sessionID == sessionID, self.isPaused, !self.isTerminated else {
                 return
             }
             self.isPaused = false
@@ -256,11 +263,21 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
+    func stopForTermination() {
+        queue.sync {
+            isTerminated = true
+            timer?.cancel()
+            timer = nil
+            flushMemory()
+            flushCPU()
+        }
+    }
+
     /// Restarts a self-stopped timer after a delayed foreground interaction keeps the session alive.
     /// Background pauses and sessions still expired according to the monitor remain stopped.
     func noteActivity(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID, !self.isPaused, self.timer == nil,
+            guard let self = self, self.sessionID == sessionID, !self.isPaused, !self.isTerminated, self.timer == nil,
                   self.activeContextReader?.isSessionExpired(sessionID: sessionID) == false else {
                 return
             }

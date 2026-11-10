@@ -59,3 +59,25 @@ final class SuddenTerminationHoldTests: XCTestCase {
         XCTAssertEqual(control.disableCount, 0)
     }
 }
+
+#if os(macOS)
+final class SuddenTerminationControlTests: XCTestCase {
+    func testWhenWorkIsQueued_suddenTerminationStaysDisabledUntilItRuns() {
+        // Given
+        let control = SuddenTerminationControlMock()
+        let queue = DispatchQueue(label: "sudden-termination-tests")
+        let queueBlocked = DispatchSemaphore(value: 0)
+        queue.async { queueBlocked.wait() }
+
+        // When
+        control.async(on: queue) {}
+        let isDisabledWhileQueued = control.isDisabled
+        queueBlocked.signal()
+        queue.sync {}
+
+        // Then
+        XCTAssertTrue(isDisabledWhileQueued)
+        XCTAssertEqual(control.disableCount, 0)
+    }
+}
+#endif

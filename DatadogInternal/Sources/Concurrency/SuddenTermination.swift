@@ -19,6 +19,24 @@ public protocol SuddenTerminationControl {
     func enableSuddenTermination()
 }
 
+extension SuddenTerminationControl {
+    /// Runs `work` asynchronously on `queue` and keeps sudden termination disabled until it completes.
+    ///
+    /// Use it for work that writes to disk, so that the app is not killed while the write is queued or running.
+    /// The control is only called on macOS, the only platform with sudden termination.
+    public func async(on queue: DispatchQueue, execute work: @escaping () -> Void) {
+        #if os(macOS)
+        disableSuddenTermination()
+        queue.async {
+            defer { self.enableSuddenTermination() }
+            work()
+        }
+        #else
+        queue.async(execute: work)
+        #endif
+    }
+}
+
 /// Controls sudden termination of the current process. Sudden termination only exists on macOS,
 /// so this does nothing on other platforms.
 public struct ProcessSuddenTerminationControl: SuddenTerminationControl {
