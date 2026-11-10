@@ -268,6 +268,7 @@ Requires configuration to be set, otherwise disabled by default:
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
 - **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
+- **Accessibility**: `collectAccessibility` (default: false) — adds the device accessibility settings to view events. On macOS, only increase contrast, differentiate without color, reduce transparency, reduce motion, invert colors, VoiceOver, Switch Control and right-to-left layout are collected; the other settings have no public macOS API and stay unknown. Unavailable on watchOS
 - **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view. Unavailable on macOS, where rendering is not measured yet
 
 ### Sampling

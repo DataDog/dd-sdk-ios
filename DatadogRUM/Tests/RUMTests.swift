@@ -117,6 +117,32 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
 
+    #if !os(watchOS)
+    func testWhenAccessibilityCollectionIsEnabled_itReadsAccessibilitySettings() throws {
+        // Given
+        config.collectAccessibility = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.accessibilityReader is AccessibilityReader)
+    }
+
+    func testWhenAccessibilityCollectionIsDisabled_itDoesNotReadAccessibilitySettings() throws {
+        // Given
+        config.collectAccessibility = false
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertNil(monitor.applicationScope.dependencies.accessibilityReader)
+    }
+    #endif
+
     func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
         // Given
         #if !os(macOS)
