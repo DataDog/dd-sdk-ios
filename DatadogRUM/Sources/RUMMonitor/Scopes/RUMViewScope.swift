@@ -90,6 +90,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         didSet {
             if oldValue && !isActiveView {
                 networkSettledMetric.trackViewWasStopped()
+                if dependencies.isMultiSceneTrackingEnabled {
+                    dependencies.viewCache.markInactive(id: viewUUID.toRUMDataFormat)
+                }
             }
         }
     }
@@ -398,6 +401,28 @@ extension RUMViewScope {
         }
 
         return !shouldComplete
+    }
+
+    /// Advance only expiration for a nonrecipient; never propagate foreign local attributes.
+    func expireActionIfNeeded(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled, let action = userActionScope else {
+            return
+        }
+        needsViewUpdate = false
+        let tick = RUMKeepSessionAliveCommand(time: command.time, globalAttributes: command.globalAttributes, attributes: [:])
+        if action.expireIfNeeded(on: tick, context: context, writer: writer) {
+            userActionScope = nil
+            if needsViewUpdate {
+                sendViewUpdateEvent(on: tick, context: context, writer: writer)
+            }
+        }
+    }
+
+    func emitRestoredBaseline(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled else {
+            return
+        }
+        sendViewUpdateEvent(on: command, context: context, writer: writer)
     }
 
     private func addViewLoadingTime(on command: RUMAddViewLoadingTime) {
