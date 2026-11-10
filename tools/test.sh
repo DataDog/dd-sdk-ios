@@ -142,13 +142,9 @@ SCHEME_TEST_PLANS=($(xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -showT
 if (( ${#SCHEME_TEST_PLANS} == 0 )); then
     run_tests ""
 else
-    if [ -n "$test_plans" ]; then
-        TEST_PLANS=(${=test_plans})
-    else
-        SKIPPED_TEST_PLANS=(${=skip_test_plans})
-        TEST_PLANS=(${SCHEME_TEST_PLANS:|SKIPPED_TEST_PLANS})
-    fi
-    for test_plan in "${TEST_PLANS[@]}"; do
+    TEST_PLANS=(${=test_plans:-${SCHEME_TEST_PLANS[*]}})
+    SKIP_TEST_PLANS=(${=skip_test_plans})
+    for test_plan in ${TEST_PLANS:|SKIP_TEST_PLANS}; do
         run_tests "$test_plan"
     done
 fi
