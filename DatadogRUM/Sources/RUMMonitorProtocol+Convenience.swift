@@ -546,11 +546,6 @@ public struct RUMViewTarget {
         )
     }
 }
-
-/// Compatibility spelling retained while the experimental API is under review.
-@_spi(Experimental)
-@available(iOS 15.0, *)
-public typealias RUMOperationViewTarget = RUMViewTarget
 #endif
 
 #if os(iOS)
