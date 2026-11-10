@@ -173,6 +173,28 @@ internal final class WatchdogTerminationMonitor {
         feature.rumDataStore.setValue(Optional<RUMViewEvent>.none, forKey: .watchdogRUMViewEvent)
     }
 
+    /// Stores the accepted representative without reviving a stopped session or deleting a persisted stop.
+    /// The scene session calls this after its command propagation completes.
+    @discardableResult
+    func updateRepresentativeView(viewEvent: RUMViewEvent?) -> Bool {
+        var accepted = false
+        _tracking.mutate { tracking in
+            guard currentState == .started else {
+                return
+            }
+            if let viewEvent {
+                guard !tracking.stoppedSessionIDs.contains(viewEvent.session.id) else {
+                    return
+                }
+                save(viewEvent: viewEvent)
+            } else {
+                saveSessionStop()
+            }
+            accepted = true
+        }
+        return accepted
+    }
+
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
     /// - Parameter launch: The launch report containing information about the app launch.
     private func sendWatchTerminationIfFound(launch: LaunchReport, completion: @escaping () -> Void) {
