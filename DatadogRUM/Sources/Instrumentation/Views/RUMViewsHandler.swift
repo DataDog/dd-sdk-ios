@@ -12,6 +12,26 @@ import AppKit
 #endif
 import DatadogInternal
 
+#if os(iOS)
+/// Internal entry point for manual views that have an explicit scene owner.
+/// Existing source-less monitor APIs retain their process-representative behavior.
+@MainActor
+internal protocol RUMSceneTargetedManualViewHandling: AnyObject {
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    )
+
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    )
+}
+#endif
+
 // MARK: - RUMViewsHandler
 internal final class RUMViewsHandler {
     /// RUM representation of a View.

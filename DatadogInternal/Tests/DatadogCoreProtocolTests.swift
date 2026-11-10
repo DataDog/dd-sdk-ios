@@ -7,9 +7,28 @@
 import XCTest
 import TestUtilities
 
+@_spi(Internal)
 @testable import DatadogInternal
 
 class DatadogCoreProtocolTests: XCTestCase {
+    func testCustomAndNOPScopesDoNotRequireHandoffCapability() {
+        XCTAssertNil(RUMContextHandoff.owner(in: FeatureScopeMock()))
+        XCTAssertNil(RUMContextHandoff.owner(in: NOPFeatureScope()))
+        XCTAssertNil(RUMContextHandoff.owner(in: PassthroughCoreMock()))
+        XCTAssertNil(RUMContextHandoff.owner(in: NOPDatadogCore()))
+    }
+
+    func testInvalidatingAnOwnerPreservesAnotherLifetime() {
+        let first = RUMContextHandoff.Owner()
+        let second = RUMContextHandoff.Owner()
+
+        first.invalidate()
+        first.invalidate()
+
+        XCTAssertFalse(first.isValid)
+        XCTAssertTrue(second.isValid)
+    }
+
     func testSendMessageExtension() {
         // Given
         let receiver = FeatureMessageReceiverMock()
