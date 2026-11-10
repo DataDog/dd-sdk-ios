@@ -123,6 +123,31 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
+            if command is RUMStartUserActionCommand {
+                guard ownership.beginStart() else {
+                    return
+                }
+            } else if command is RUMStopUserActionCommand {
+                // A terminal cannot create/refresh a session or adopt a later action.
+                guard let session = activeSession,
+                      session.ownsContinuousAction(ownership, monotonicTime: monotonicTime) else {
+                    ownership.close()
+                    return
+                }
+            } else {
+                return
+            }
+        }
+        defer {
+            if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
+                if command is RUMStartUserActionCommand {
+                    ownership.finishStart()
+                } else if command is RUMStopUserActionCommand {
+                    ownership.close()
+                }
+            }
+        }
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).

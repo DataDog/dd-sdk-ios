@@ -5,7 +5,11 @@
  */
 
 import XCTest
+#if os(iOS)
+import UIKit
+#endif
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogInternal
 @_spi(Experimental)
 @testable import DatadogRUM
@@ -345,6 +349,66 @@ class RUMTests: XCTestCase {
         XCTAssertNotNil(receivers.firstElement(of: WatchdogTerminationMonitor.self))
     }
     #endif
+
+    @MainActor
+    func testResolvedOnActivatesBeforeFeatureScopeAndInstrumentationInitialization() throws {
+        let activationCore = HandoffActivationCoreMock()
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: config, in: activationCore)
+        let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+        if rum.isMultiSceneTrackingEnabled {
+            XCTAssertEqual(activationCore.activations, 1)
+            XCTAssertTrue(activationCore.rumScopeObservedActiveOwner)
+            XCTAssertTrue(rum.rumContextHandoffOwner === activationCore.issuedOwners.first)
+            XCTAssertEqual(activationCore.ownerBoundRegistrations, 1)
+        } else {
+            XCTAssertEqual(activationCore.activations, 0)
+            XCTAssertNil(rum.rumContextHandoffOwner)
+            XCTAssertEqual(activationCore.ownerBoundRegistrations, 0)
+        }
+    }
+
+    @MainActor
+    func testInitializationFailureRollsBackOnlyIssuedHandoff() throws {
+        let activationCore = HandoffActivationCoreMock()
+        activationCore.rejectedFeatureName = HeatmapIdentifierRegistryFeature.name
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        XCTAssertThrowsError(try RUM.enableOrThrow(with: config, in: activationCore))
+        XCTAssertNil(activationCore.rumContextHandoffOwner)
+        XCTAssertTrue(activationCore.issuedOwners.allSatisfy { !$0.isValid })
+        XCTAssertEqual(activationCore.rollbacks, activationCore.activations)
+        XCTAssertNil(activationCore.get(feature: RUMFeature.self))
+    }
+
+    @MainActor
+    func testRegistrationFailureRollsBackOnlyIssuedHandoff() throws {
+        let activationCore = HandoffActivationCoreMock()
+        activationCore.rejectedFeatureName = RUMFeature.name
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        XCTAssertThrowsError(try RUM.enableOrThrow(with: config, in: activationCore))
+        XCTAssertNil(activationCore.rumContextHandoffOwner)
+        XCTAssertTrue(activationCore.issuedOwners.allSatisfy { !$0.isValid })
+        XCTAssertEqual(activationCore.rollbacks, activationCore.activations)
+        XCTAssertNil(activationCore.get(feature: RUMFeature.self))
+    }
+
+    @MainActor
+    func testDefaultAndExplicitOffNeverCallActivationOrOwnerBoundRegistration() throws {
+        for flags: RUM.Configuration.FeatureFlags in [[:], [.multiSceneTracking: false]] {
+            let activationCore = HandoffActivationCoreMock()
+            config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+            config.featureFlags = flags
+            try RUM.enableOrThrow(with: config, in: activationCore)
+            XCTAssertEqual(activationCore.activations, 0)
+            XCTAssertEqual(activationCore.rollbacks, 0)
+            XCTAssertEqual(activationCore.ownerBoundRegistrations, 0)
+            XCTAssertEqual(activationCore.ownerReads, 0)
+            XCTAssertNil(try XCTUnwrap(activationCore.get(feature: RUMFeature.self)).rumContextHandoffOwner)
+        }
+    }
 
     func testWhenEnabledWithDefaultConfiguration() throws {
         // Given
@@ -909,3 +973,156 @@ private final class MutableSceneManifestBundle: Bundle, @unchecked Sendable {
         return sceneManifest
     }
 }
+
+private final class HandoffActivationCoreMock: DatadogCoreProtocol, RUMContextHandoffActivating {
+    private let registry = FeatureRegistrationCoreMock()
+    private var activeOwner: RUMContextHandoff.Owner?
+    var issuedOwners: [RUMContextHandoff.Owner] = []
+    var activations = 0
+    var rollbacks = 0
+    var ownerBoundRegistrations = 0
+    var ownerReads = 0
+    var rumScopeObservedActiveOwner = false
+    var rejectedFeatureName: String?
+    var remoteConfiguration: RemoteConfiguration? { nil }
+
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        ownerReads += 1
+        return activeOwner
+    }
+
+    func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner {
+        guard activeOwner == nil else {
+            throw ProgrammerError(description: "Already active")
+        }
+        activations += 1
+        let owner = RUMContextHandoff.Owner()
+        issuedOwners.append(owner)
+        activeOwner = owner
+        return owner
+    }
+
+    func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner) {
+        guard activeOwner === owner else {
+            return
+        }
+        rollbacks += 1
+        owner.invalidate()
+        activeOwner = nil
+    }
+
+    func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature {
+        ownerBoundRegistrations += 1
+        guard activeOwner === owner, owner.isValid else {
+            throw ProgrammerError(description: "Expired owner")
+        }
+        try register(feature: feature)
+    }
+
+    func register<T>(feature: T) throws where T: DatadogFeature {
+        if T.name == rejectedFeatureName {
+            throw ProgrammerError(description: "Registration rejected")
+        }
+        try registry.register(feature: feature)
+    }
+
+    func feature<T>(named name: String, type: T.Type) -> T? { registry.feature(named: name, type: type) }
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
+        if T.name == RUMFeature.name {
+            rumScopeObservedActiveOwner = activeOwner?.isValid == true
+            return HandoffFeatureScope { [weak self] in self?.rumContextHandoffOwner }
+        }
+        return NOPFeatureScope()
+    }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
+}
+
+private final class HandoffFeatureScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    private let base = NOPFeatureScope()
+    private let ownerProvider: () -> RUMContextHandoff.Owner?
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { ownerProvider() }
+    init(ownerProvider: @escaping () -> RUMContextHandoff.Owner?) { self.ownerProvider = ownerProvider }
+    var dataStore: DataStore { base.dataStore }
+    var telemetry: Telemetry { base.telemetry }
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { base.eventWriteContext(bypassConsent: bypassConsent, block) }
+    func context(_ block: @escaping (DatadogContext) -> Void) { base.context(block) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func set(anonymousId: String?) { base.set(anonymousId: anonymousId) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
+}
+
+#if os(iOS)
+@MainActor
+extension RUMTests {
+    func testAutomaticInput_resolvedOnWiresExactMonitorExecutionOwner() throws {
+        let activationCore = HandoffActivationCoreMock()
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: config, in: activationCore)
+        let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+        if #available(iOS 27.0, *) {
+            let owner = try XCTUnwrap(rum.rumContextHandoffOwner)
+            XCTAssertTrue(rum.instrumentation.actionsHandler is RUMSceneActionsHandler)
+            let value = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "owned", hasPendingUserAction: true, excludedUserActionID: "prior")
+            let beforeReads = activationCore.ownerReads
+            RUMContextHandoff.withValue(value, for: owner) {
+                XCTAssertEqual(rum.monitor.currentExecutionContext?.sceneIdentifier, "owned")
+                XCTAssertEqual(rum.monitor.currentExecutionContext?.excludedUserActionID, "prior")
+                XCTAssertEqual(rum.monitor.currentExecutionContext?.hasPendingUserAction, true)
+            }
+            XCTAssertGreaterThan(activationCore.ownerReads, beforeReads)
+            RUMContextHandoff.withValue(value, for: RUMContextHandoff.Owner()) {
+                XCTAssertNil(rum.monitor.currentExecutionContext)
+            }
+            owner.invalidate()
+            RUMContextHandoff.withValue(value, for: owner) { XCTAssertNil(rum.monitor.currentExecutionContext) }
+        } else {
+            XCTAssertTrue(rum.instrumentation.actionsHandler is RUMActionsHandler)
+            XCTAssertNil(rum.monitor.currentExecutionContext)
+            XCTAssertEqual(activationCore.activations, 0)
+        }
+    }
+
+    func testAutomaticInput_defaultAndExplicitOffNeverReadHandoffOwnerDuringDispatch() throws {
+        for flags: RUM.Configuration.FeatureFlags in [[:], [.multiSceneTracking: false]] {
+            let activationCore = HandoffActivationCoreMock()
+            config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+            config.featureFlags = flags
+            let predicate = CountingAutomaticInputPredicate()
+            config.uiKitActionsPredicate = predicate
+            try RUM.enableOrThrow(with: config, in: activationCore)
+            let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+            XCTAssertTrue(rum.instrumentation.actionsHandler is RUMActionsHandler)
+            let window = UIWindow(frame: .zero)
+            let view = UIButton()
+            window.addSubview(view)
+            let event = UIEvent.mockWith(touch: UITouchMock(phase: .ended, view: view))
+            let beforeReads = activationCore.ownerReads
+            rum.instrumentation.actionsHandler.notify_sendEvent(application: .shared, event: event)
+            XCTAssertEqual(predicate.calls, 1)
+            XCTAssertNil(rum.monitor.currentExecutionContext)
+            XCTAssertEqual(activationCore.ownerReads, beforeReads)
+            XCTAssertEqual(activationCore.activations, 0)
+        }
+    }
+
+    func testAutomaticInput_customCoreWithoutOwnerKeepsLegacyHandler() throws {
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: config, in: core)
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        XCTAssertNil(rum.rumContextHandoffOwner)
+        XCTAssertTrue(rum.instrumentation.actionsHandler is RUMActionsHandler)
+        XCTAssertNil(rum.monitor.currentExecutionContext)
+    }
+}
+private final class CountingAutomaticInputPredicate: UITouchRUMActionsPredicate {
+    var calls = 0
+    func rumAction(targetView: UIView) -> RUMAction? {
+        calls += 1
+        return RUMAction(name: "selected")
+    }
+}
+#endif
