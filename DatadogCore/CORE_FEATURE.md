@@ -127,7 +127,7 @@ flowchart LR
 ```
 
 - `Datadog.initialize()` runs synchronously on the main thread, validates the token and `env`, creates the instance and registers it in `CoreRegistry` under its name.
-- Each product registers a feature with its own storage and upload units, and writes events as batch files on disk (see [On-Disk Layout](#on-disk-layout)).
+- Each product registers a feature. Products that send data (RUM, Logs, Trace, Session Replay, Profiling, ...) get their own storage and upload units and write events as batch files on disk (see [On-Disk Layout](#on-disk-layout)). Message-bus-only features, such as WebView Tracking, have neither.
 - Upload workers read mature batches, check upload conditions, and send them to the site's intake. Features communicate with each other through Core's message bus (for example RUM context for Logs and Trace).
 - Internals for SDK contributors (storage pipeline, context, message bus, thread-safety rules) are in [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md). SDK overhead measurements are in [`docs/sdk_performance.md`](../docs/sdk_performance.md).
 
@@ -184,11 +184,11 @@ flowchart LR
 
 ### Batching and Upload
 - `batchSize` sets how long a batch file stays open: about 3 s (`.small`), 10 s (`.medium`) or 35 s (`.large`). App extensions always use 1 s.
-- `uploadFrequency` sets the base delay between upload checks: 0.5 s (`.frequent`), 2 s (`.average`) or 5 s (`.rare`). The first check runs within about 1 s of `initialize` (random jitter), so mature batches from a previous launch upload right away. If it finds nothing, the next check waits 5x the base delay. Afterwards, the delay grows by 10% after each check with nothing to send, a blocked upload or a retry, up to 10x, and goes back to 1x once all batches are sent.
+- `uploadFrequency` sets the base delay between upload checks: 0.5 s (`.frequent`), 2 s (`.average`) or 5 s (`.rare`). The first check runs within about 1 s of `initialize` (random jitter), so mature batches from a previous launch upload right away. If it finds nothing, the next check waits 5x the base delay. Afterwards, the delay grows by 10% after each check with nothing to send, a blocked upload or a retry, up to 10x, and goes back to 1x once all batches are sent. Session Replay's main stream ignores `batchSize` and `uploadFrequency` (2 s file age, upload delay from 0.6 s to 6 s); its resources follow them.
 - `batchProcessingLevel` caps the batches uploaded back to back in one cycle.
 - Storage limits: 5 MB per batch file, 1,000 events per file, 1 MB per event (larger events are dropped), 512 MB per consent folder (`v2` and `intermediate-v2` each, so up to about 1 GB per feature; oldest files deleted first). Files older than 18 hours are deleted without upload. These are defaults; some products override them: RUM keeps files 24 hours, Session Replay 12 hours (resources 48 hours) with 10 MB per event, and Profiling allows 15 MB per event.
 - Uploads are skipped while the network is unreachable (not checked on watchOS), when battery is at 10% or below and not charging, or in Low Power Mode.
-- Responses 408, 429, 500, 502, 503, 504, 507 and network errors keep the batch for retry. 202, 400, 401, 403 and 413 delete it. 401 and 403 also log "Make sure that the provided token still exists and you're targeting the relevant Datadog site."
+- Responses 408, 429, 500, 502, 503, 504, 507 and network errors keep the batch for retry. 202, 400, 401, 403, 413 and any other status (for example 404 from a proxy) delete it. 401 and 403 also log "Make sure that the provided token still exists and you're targeting the relevant Datadog site."
 - `backgroundTasksEnabled` lets uploads continue in the background, with `UIApplication.beginBackgroundTask` in apps and `ProcessInfo.beginActivity` in app extensions and on watchOS. Tasks end when nothing is left to upload or an upload is blocked.
 
 ### Encryption
@@ -210,7 +210,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 
 ### Startup Order
 1. `Datadog.initialize()` validates the configuration, creates the instance folder and context, deletes SDK v1 folders, and loads the cached remote configuration document if `remoteConfiguration` is set. The fresh document is fetched in the background.
-2. Each product's `enable` registers its feature and reads its configuration once, including the remote configuration available at that moment. Enabling a product before `initialize`, or twice, does not work: `enable` before `initialize` does nothing, and Session Replay and Profiling keep the first instance.
+2. Each product's `enable` registers its feature and reads its configuration once, including the remote configuration available at that moment. `enable` before `initialize` does nothing. Calling `enable` twice in the same instance replaces the first registration for most products (RUM, Logs, Trace); Session Replay and Profiling reject the second call and keep the first.
 3. Events go to disk according to the current consent. User and account info, consent and other context changes apply to events written after the call, so set them as early as possible.
 4. The first upload check runs within about 1 s, and uploads batches left from a previous launch. New batches become uploadable once they mature (`batchSize`); if the first check found nothing, the next one waits 5x the `uploadFrequency` delay.
 5. When the app goes to the background, `backgroundTasksEnabled: true` only lets an upload that is already in progress finish. It does not keep upload checks running while the app is suspended; they resume on the next foreground or launch.
