@@ -884,12 +884,10 @@ public class objc_RUM: NSObject {
     }
 }
 
-#if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
-/// Objective-C companion for the experimental RUM view target.
+#if os(iOS)
+/// Objective-C companion for the proposed RUM view target.
 ///
-/// Objective-C has no Swift SPI import boundary, so this type remains Debug-only
-/// until normal API review approves its release. Internal Release validation
-/// can compile it with DD_SCENE_API_VALIDATION without changing default exposure.
+/// This proposed public API is subject to review and may change before release.
 @available(iOS 15.0, *)
 @objc(DDRUMViewTarget)
 @objcMembers
@@ -929,7 +927,7 @@ public class objc_RUMMonitor: NSObject {
 
     // MARK: - Public
 
-    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    #if os(iOS)
     /// Adds an attribute to the selected current view. This API is experimental.
     @available(iOS 15.0, *)
     @objc(addViewAttributeForKey:value:view:)
@@ -1003,7 +1001,7 @@ public class objc_RUMMonitor: NSObject {
     }
     #endif
 
-    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    #if os(iOS)
     /// Starts a RUM view in a specific window scene.
     ///
     /// This API is experimental and may change before becoming generally available.
@@ -1053,7 +1051,7 @@ public class objc_RUMMonitor: NSObject {
     }
     #endif
 
-    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    #if os(iOS)
     /// Adds an error to the selected scene's current tracked view.
     /// This API is experimental; unavailable targets keep existing inference.
     @available(iOS 15.0, *)
@@ -1094,7 +1092,7 @@ public class objc_RUMMonitor: NSObject {
     }
     #endif
 
-    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    #if os(iOS)
     /// Starts a Resource on the selected scene's current tracked view.
     @available(iOS 15.0, *)
     @objc(startResourceWithResourceKey:request:view:attributes:)
@@ -1164,7 +1162,7 @@ public class objc_RUMMonitor: NSObject {
     }
     #endif
 
-    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    #if os(iOS)
     /// Adds a RUM action to the current tracked view in an explicitly selected
     /// window scene.
     @available(iOS 15.0, *)
@@ -1231,7 +1229,7 @@ public class objc_RUMMonitor: NSObject {
     }
     #endif
 
-    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    #if os(iOS)
     /// Records a flag evaluation on the selected current view. This API is experimental.
     @available(iOS 15.0, *)
     @objc(addFeatureFlagEvaluationWithName:value:view:)
@@ -1245,7 +1243,7 @@ public class objc_RUMMonitor: NSObject {
     }
     #endif
 
-    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    #if os(iOS)
     /// Starts a RUM Operation on the current tracked view in an explicitly
     /// selected window scene.
     @available(iOS 15.0, *)
