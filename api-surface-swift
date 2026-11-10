@@ -482,6 +482,7 @@ public enum RUM
         case none
         case trackScrollAndSwipeActions
         case viewUpdates
+        case multiSceneTracking
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
