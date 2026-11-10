@@ -550,7 +550,6 @@ public extension RUMMonitorProtocol
     func failFeatureOperation(name: String,operationKey: String? = nil,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue] = [:])
 public struct RUMViewTarget
     public static func current(in scene: UIWindowScene) -> Self
-public typealias RUMOperationViewTarget = RUMViewTarget
 public extension RUMMonitorProtocol
     func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget)
     func startView(key: String,name: String? = nil,in scene: UIWindowScene,attributes: [AttributeKey: AttributeValue] = [:])
