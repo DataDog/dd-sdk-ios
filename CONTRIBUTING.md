@@ -42,7 +42,22 @@ Every Pull Request goes through two review stages: AI code review first, then hu
 4. **Hand the PR over to human review:**
    - **Datadog team members:** add the `ready-for-human-review` label. Every morning, a bot assigns a project member as reviewer to PRs carrying this label.
    - **External contributors:** wait for a member of the team to pick up your PR and take it through human review.
-5. **Iterate with the human reviewer** until the PR is approved and merged. Re-request review only from a human after fixing their findings, with the changes and validation evidence in your reply.
+5. **Iterate with the human reviewer** until the PR is approved and merged. Re-request review only from a human after fixing their findings, with a brief note about the change and relevant local result.
+
+After each review fix, build the affected targets and run the relevant tests locally
+before committing or pushing. Include test runners and callers outside the edited
+directory; syntax parsing and lint alone do not prove a code change works. For
+documentation-only edits, check the documents and links instead.
+
+Understand the reviewer's intent and look for alternatives before reversing a
+suggestion that causes problems. If an agent cannot identify a clearly best option,
+it asks the human running the PR loop first. If that person cannot choose either,
+it asks the reviewer for their preference. Keep the item open while that choice
+is pending.
+
+Keep replies brief and specific: what changed and the relevant check result are
+usually enough. Explain tradeoffs when needed, and keep detailed logs and validation
+inventories in the PR description or execution record.
 
 Do not hand the PR over before the last round of AI code reviews is addressed. Human reviewers expect the PR to be in its final shape.
 

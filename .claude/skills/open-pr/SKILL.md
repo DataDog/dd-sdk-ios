@@ -1,6 +1,6 @@
 ---
 name: dd-sdk-ios:open-pr
-description: Use when creating a pull request in dd-sdk-ios. Use when writing PR titles, PR body, or choosing the target branch.
+description: Use when creating or updating a pull request in dd-sdk-ios, addressing review feedback, or handing it off for human review.
 ---
 
 # Pull Requests in dd-sdk-ios
@@ -68,8 +68,9 @@ Marking the PR ready starts automated review; it is not the human-assignment sig
 1. Wait for active automated reviews to finish. Read review submissions,
    conversation comments, inline feedback and open threads; a completed review
    can still have unresolved findings.
-2. Fix each accepted finding, run the relevant validation, commit and push, then
-   reply with the change and evidence and resolve the addressed feedback. Explain
+2. Handle each finding using the guidance below. Pass the affected local builds
+   and tests before committing or pushing, then reply briefly with the change and
+   relevant result and resolve the addressed feedback. Explain
    stale or inapplicable findings before resolving them. Do not delete feedback
    to clear the queue.
 3. Monitor reviews triggered automatically by the new push and repeat this loop
@@ -102,8 +103,36 @@ Marking the PR ready starts automated review; it is not the human-assignment sig
    label only when human feedback requires significant rework, and reapply it
    after the reworked head clears automated review.
 
-   Re-request review only from a human after fixing their findings. Reply with
-   the changes and validation evidence, then ask that human to review again.
+   Re-request review only from a human after fixing their findings. Reply briefly
+   with the change and relevant local result, then ask that human to review again.
+
+## Working through feedback
+
+Understand the reviewer's intent first. Inspect affected callers, tests and existing
+patterns before editing. If a direct edit breaks something, research alternatives
+that preserve the suggestion's intent before reversing it. For example, keep a
+request immutable by adding its headers during construction.
+
+If no option is clearly best, present the viable options and tradeoffs to the human
+running the review loop, usually the PR author. If they cannot choose either, ask
+the reviewer which option they prefer.
+Keep the disputed item open while the decision is pending; silence is not a choice.
+Proceed with clear fixes without adding an approval round.
+
+After each feedback fix, run the relevant tests locally and build the affected
+targets before committing or pushing, even for a one-line edit. Include test
+runners and callers outside the edited directory. Syntax parsing and lint alone
+do not prove code compiles or tests pass. Fix failures before publishing. For
+Markdown-only changes, validate the documents, links and skill instructions and
+record that no executable code changed.
+
+Keep replies short and natural, usually one or two sentences. Answer the specific
+point, say what changed and mention the relevant check. Expand when a tradeoff or
+question needs explanation. Keep full logs, command lists and validation inventories
+in the PR description or execution record; avoid report-style thread replies.
+
+For example: "Moved baggage setup into request construction and kept `let`.
+Runner build and all eight network tests pass."
 
 ## Common Mistakes
 
