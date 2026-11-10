@@ -186,7 +186,9 @@ Flags.enable(with: configuration)
 - The hook receives evaluations from every `FlagsClient` created after `Flags.enable(with:)`, including failed ones, with `isExposure == false`. It also receives evaluations made through the OpenFeature provider, because the provider evaluates with a `FlagsClient`.
 - The callback runs synchronously on the thread that evaluated the flag, including the main thread. Keep it short and do not perform I/O on that thread.
 - A callback error never changes the evaluation. The SDK logs the first error as a warning and later errors at debug level.
+- The hook is set once for the `Flags` feature, but each client keeps its own exposure cache. Two clients that evaluate the same flag for the same subject each report one exposure, to Datadog and to the hook.
 - Each client deduplicates exposures in memory, for up to 5,000 subject and flag pairs. After the app restarts, the first evaluation of a flag is a new exposure.
+- The SDK records an exposure when the flag resolves in the native client. OpenFeature Swift hooks cannot throw, so a result the provider returns cannot fail later. Inside an OpenFeature `MultiProvider`, the SDK still records exposures for every evaluation of the Datadog provider. The built-in first-match and first-successful strategies use the Datadog result whenever it succeeds. A strategy that evaluates every provider and picks one, such as a comparison strategy, can make the SDK record an exposure for a result the app did not use.
 - With `trackExposures` set to `false`, the SDK sends no exposures to Datadog, but it still deduplicates them, so `isCacheHit` and `shouldSend` stay correct. Evaluation counts are not affected.
 
 `FlagDetails.flagMetadata` carries the same features as `__dd_feature.<key>` entries, for example `__dd_feature.holdout.key`. Only this prefix is a stable contract.
