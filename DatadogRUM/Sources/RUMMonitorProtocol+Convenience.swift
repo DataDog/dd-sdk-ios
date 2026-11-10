@@ -525,9 +525,8 @@ public extension RUMMonitorProtocol {
 /// Selects the RUM view used to attribute explicitly targeted telemetry.
 /// Unsupported scene targeting preserves the receiving monitor’s legacy behavior.
 ///
-/// This API is experimental and may change before becoming generally available.
+/// This proposed public API is subject to review and may change before release.
 /// It does not expose or retain an internal RUM view identifier.
-@_spi(Experimental)
 @available(iOS 15.0, *)
 public struct RUMViewTarget {
     fileprivate let sceneIdentifier: RUMSceneIdentifier
@@ -579,8 +578,8 @@ internal protocol RUMOperationViewTargetHandling: AnyObject {
     )
 }
 
+/// Proposed scene-targeted APIs, subject to review before release.
 public extension RUMMonitorProtocol {
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget) {
@@ -591,7 +590,6 @@ public extension RUMMonitorProtocol {
         monitor.addFeatureFlagEvaluation(name: name, value: value, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func startView(
@@ -612,7 +610,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func stopView(
@@ -631,7 +628,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addError(
@@ -660,7 +656,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addError(
@@ -676,7 +671,6 @@ public extension RUMMonitorProtocol {
         monitor.addError(error: error, source: source, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addError(
@@ -699,7 +693,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func startResource(
@@ -720,7 +713,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func startResource(
@@ -741,7 +733,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func startResource(
@@ -764,7 +755,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addAction(
@@ -780,7 +770,6 @@ public extension RUMMonitorProtocol {
         monitor.addAction(type: type, name: name, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func startAction(
@@ -796,7 +785,6 @@ public extension RUMMonitorProtocol {
         monitor.startAction(type: type, name: name, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func stopAction(
@@ -812,7 +800,6 @@ public extension RUMMonitorProtocol {
         monitor.stopAction(type: type, name: name, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func startOperation(
@@ -835,7 +822,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func succeedOperation(
@@ -856,7 +842,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func failOperation(
@@ -881,7 +866,6 @@ public extension RUMMonitorProtocol {
 }
 
 public extension RUMMonitorViewProtocol {
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addTiming(name: String, view: RUMViewTarget) {
@@ -892,7 +876,6 @@ public extension RUMMonitorViewProtocol {
         monitor.addTiming(name: name, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addViewLoadingTime(overwrite: Bool, view: RUMViewTarget) {
@@ -903,7 +886,6 @@ public extension RUMMonitorViewProtocol {
         monitor.addViewLoadingTime(overwrite: overwrite, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, view: RUMViewTarget) {
@@ -914,7 +896,6 @@ public extension RUMMonitorViewProtocol {
         monitor.addViewAttribute(forKey: key, value: value, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], view: RUMViewTarget) {
@@ -925,7 +906,6 @@ public extension RUMMonitorViewProtocol {
         monitor.addViewAttributes(attributes, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func removeViewAttribute(forKey key: AttributeKey, view: RUMViewTarget) {
@@ -936,7 +916,6 @@ public extension RUMMonitorViewProtocol {
         monitor.removeViewAttribute(forKey: key, explicitTarget: .scene(view.sceneIdentifier))
     }
 
-    @_spi(Experimental)
     @available(iOS 15.0, *)
     @MainActor
     func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget) {
