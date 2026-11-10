@@ -289,8 +289,10 @@ internal final class DatadogCore {
     /// Unlike `flush()`, it does not wait for the features' own operations, some of which wait for the main thread.
     func writeBufferedData() {
         // Deliver the context changes and messages posted so far, like the `.terminating` state, before features write.
+        // The configuration telemetry is delivered too, in case its dispatch delay has not ended yet.
         contextProvider.flush()
         bus.flush()
+        bus.dispatchPendingConfiguration()
         features.values.compactMap { $0 as? BufferedDataWritable }.forEach { $0.writeBufferedData() }
         // Then run the event write contexts opened so far, deliver the messages they send, like telemetry,
         // and store the events written for them.

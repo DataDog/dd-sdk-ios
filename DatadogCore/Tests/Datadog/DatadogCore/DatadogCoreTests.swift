@@ -1202,6 +1202,40 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(payloads, ["before termination"])
     }
 
+    func testWhenAppTerminatesBeforeTheConfigurationTelemetryDelay_theConfigurationIsDelivered() throws {
+        // Given
+        let notificationCenter = NotificationCenter()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        try core.register(feature: FeatureMock(messageReceiver: receiver))
+        core.writeBufferedDataOnTermination(observing: notificationCenter)
+        core.telemetry.configuration(batchSize: 1)
+
+        // When
+        notificationCenter.post(name: ApplicationNotifications.willTerminate, object: nil)
+
+        // Then
+        let configurations = receiver.messages.compactMap { message -> ConfigurationTelemetry? in
+            guard case .telemetry(.configuration(let configuration)) = message else {
+                return nil
+            }
+            return configuration
+        }
+        XCTAssertEqual(configurations.map(\.batchSize), [1])
+    }
+
     func testWhenAppTerminates_bufferedDataIsStoredBeforeTheObserverReturns() throws {
         // Given
         let notificationCenter = NotificationCenter()
