@@ -90,7 +90,7 @@ public enum WebViewTracking {
         logsSampleRate: Float,
         in core: DatadogCoreProtocol
     ) throws {
-        guard try prepareWebView(webView, logsSampleRate: logsSampleRate, callerName: "WebViewTracking.enable(webView:hosts:)", in: core) else {
+        guard let messageHandler = try prepareWebView(webView, logsSampleRate: logsSampleRate, callerName: "WebViewTracking.enable(webView:hosts:)", in: core) else {
             return
         }
 
@@ -108,7 +108,7 @@ public enum WebViewTracking {
         let elements = WebViewTrackingElements(allowedWebViewHostsString: allowedWebViewHostsString)
         let isTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
 
-        try WebViewSessionRolloverHandler.register(webView: webView, in: core, using: elements)
+        messageHandler.sessionRolloverHandler = try WebViewSessionRolloverHandler.register(webView: webView, in: core, using: elements)
 
         injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
 
@@ -121,7 +121,7 @@ public enum WebViewTracking {
         logsSampleRate: Float,
         callerName: String,
         in core: DatadogCoreProtocol
-    ) throws -> Bool {
+    ) throws -> DDScriptMessageHandler? {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
                 description: "Datadog SDK must be initialized before calling `WebViewTracking.enable(webView:)`."
@@ -132,7 +132,7 @@ public enum WebViewTracking {
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
         guard !isTracking else {
             DD.logger.warn("`\(callerName)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
-            return false
+            return nil
         }
 
         let bridgeName = DDScriptMessageHandler.name
@@ -146,7 +146,7 @@ public enum WebViewTracking {
         controller.removeScriptMessageHandler(forName: bridgeName)
         controller.add(messageHandler, name: bridgeName)
 
-        return true
+        return messageHandler
     }
 
     /// Injects the Javascript bridge code in the WebView user scripts.

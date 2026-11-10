@@ -10,6 +10,95 @@ import TestUtilities
 @testable import DatadogInternal
 
 class NetworkInstrumentationFeatureTests: XCTestCase {
+    func testRequestCapturePreservesInvalidRetainedOwnership() throws {
+        #if os(iOS)
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Request capture requires iOS 27") }
+        #else
+        throw XCTSkip("Request capture requires iOS 27")
+        #endif
+        let provider = NetworkContextCoreProvider()
+        let owner = RUMContextHandoff.Owner()
+        provider.receiveRUMContextHandoff(owner: owner, active: true)
+        owner.invalidate()
+
+        XCTAssertNil(provider.rumContextHandoffOwner)
+        let captured = try XCTUnwrap(provider.captureRUMContext())
+        XCTAssertTrue(captured.owner === owner)
+        XCTAssertNil(captured.rumContext)
+        let delivered = NetworkContext(rumContext: .mockWith(viewID: "later-view"))
+        XCTAssertNil(captured.projecting(delivered).rumContext)
+        XCTAssertTrue(captured.projecting(delivered).rumURLSessionContext?.owner === owner)
+    }
+
+    func testUnboundRequestCapturePreservesLegacyFallback() {
+        let provider = NetworkContextCoreProvider()
+        XCTAssertNil(provider.captureRUMContext())
+        let owner = RUMContextHandoff.Owner()
+        provider.receiveRUMContextHandoff(owner: owner, active: true)
+        XCTAssertNil(provider.captureRUMContext())
+        provider.receiveRUMContextHandoff(owner: owner, active: false)
+        XCTAssertNil(provider.captureRUMContext())
+    }
+
+    func testAutomaticRequestCaptureReachesFirstAndThirdPartyStarts() throws {
+        #if os(iOS)
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Request capture requires iOS 27") }
+        #else
+        throw XCTSkip("Request capture requires iOS 27")
+        #endif
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let provider = try XCTUnwrap(feature.networkContextProvider as? NetworkContextCoreProvider)
+        let owner = RUMContextHandoff.Owner()
+        provider.receiveRUMContextHandoff(owner: owner, active: true)
+        let original: RUMCoreContext = .mockWith(viewID: "caller-view", userActionID: "caller-action")
+        let delivered: RUMCoreContext = .mockWith(viewID: "delivered-view", userActionID: "delivered-action")
+        provider.currentNetworkContext = NetworkContext(rumContext: delivered)
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        for firstParty in [false, true] {
+            for context in [Optional(original), nil] {
+                let (server, started, completed) = setupInterceptionTest()
+                let session = server.getInterceptedURLSession()
+                defer { session.invalidateAndCancel() }
+                let url = try XCTUnwrap(URL(string: "https://example.com/request-capture"))
+                handler.firstPartyHosts = firstParty
+                    ? .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]]) : .init()
+                let recorder = RequestOwnershipRecorder(shouldInterceptRequest: { [weak server] in
+                    server?.isMyRequest($0) ?? false
+                }) { states in
+                    let captured = states.compactMap { $0 as? RUMURLSessionContext }
+                    XCTAssertEqual(captured.count, 1)
+                    XCTAssertTrue(captured.first?.owner === owner)
+                    XCTAssertEqual(captured.first?.rumContext?.viewID, context?.viewID)
+                    XCTAssertEqual(captured.first?.rumContext?.userActionID, context?.userActionID)
+                }
+                feature.handlers.append(recorder)
+                handler.onRequestMutation = { _, _, network in
+                    XCTAssertTrue(firstParty, "Third-party requests must not run header mutation")
+                    XCTAssertEqual(network?.rumContext?.viewID, context?.viewID)
+                    XCTAssertEqual(network?.rumContext?.userActionID, context?.userActionID)
+                    XCTAssertTrue(network?.rumURLSessionContext?.owner === owner)
+                }
+                let value = RUMContextHandoff.CurrentValue(
+                    rumContext: context,
+                    sceneIdentifier: "caller-scene",
+                    hasPendingUserAction: false,
+                    excludedUserActionID: nil
+                )
+                let previousInterceptions = handler.interceptions.count
+                let task = session.dataTask(with: url) { _, _, _ in }
+                RUMContextHandoff.withValue(value, for: owner) { task.resume() }
+                wait(for: [started, completed], timeout: 5, enforceOrder: true)
+                _ = server.waitAndReturnRequests(count: 1)
+                feature.flush()
+                XCTAssertEqual(recorder.starts, 1)
+                XCTAssertEqual(handler.interceptions.count, previousInterceptions + 1)
+                handler.onRequestMutation = nil
+                feature.handlers.removeAll { $0 is RequestOwnershipRecorder }
+            }
+        }
+    }
+
     // swiftlint:disable implicitly_unwrapped_optional
     private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>!
     private var handler: URLSessionHandlerMock!
@@ -2806,4 +2895,258 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     class DelegateSubClass: DelegateBaseClass {
     }
+}
+
+private final class RequestOwnershipRecorder: DatadogURLSessionHandler {
+    let firstPartyHosts = FirstPartyHosts()
+    private let shouldInterceptRequest: (URLRequest) -> Bool
+    private let onStart: ([any URLSessionHandlerCapturedState]) -> Void
+    private(set) var starts = 0
+
+    init(
+        shouldInterceptRequest: @escaping (URLRequest) -> Bool,
+        onStart: @escaping ([any URLSessionHandlerCapturedState]) -> Void
+    ) {
+        self.shouldInterceptRequest = shouldInterceptRequest
+        self.onStart = onStart
+    }
+
+    func modify(
+        request: URLRequest,
+        headerTypes: Set<TracingHeaderType>,
+        networkContext: NetworkContext?
+    ) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        (request, nil, nil)
+    }
+
+    func interceptionDidStart(
+        interception: URLSessionTaskInterception,
+        capturedStates: [any URLSessionHandlerCapturedState]
+    ) {
+        guard shouldInterceptRequest(interception.request.unsafeOriginal) else {
+            return
+        }
+        starts += 1
+        onStart(capturedStates)
+    }
+
+    func interceptionDidComplete(interception: URLSessionTaskInterception) {}
+}
+
+extension NetworkInstrumentationFeatureTests {
+    /// Uses the existing pending URLProtocol; completion callbacks are injected explicitly.
+    private func withPreparedRequest(
+        mode: TrackingMode = .automatic,
+        traces: Bool = true,
+        _ body: (NetworkInstrumentationFeature, URLSessionTask, PreparedRequestHandler, RUMURLSessionContext) throws -> Void
+    ) throws {
+        #if os(iOS)
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Captured preparation requires iOS 27") }
+        #else
+        throw XCTSkip("Captured preparation requires iOS 27")
+        #endif
+        let local = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+        let probe = PreparedRequestHandler()
+        probe.firstPartyHosts = traces ? .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]]) : .init()
+        try local.register(urlSessionHandler: probe)
+        let feature = try XCTUnwrap(local.get(feature: NetworkInstrumentationFeature.self))
+        let owner = RUMContextHandoff.Owner()
+        let provider = try XCTUnwrap(feature.networkContextProvider as? NetworkContextCoreProvider)
+        provider.receiveRUMContextHandoff(owner: owner, active: true)
+        let value = RUMContextHandoff.CurrentValue(
+            rumContext: .mockWith(sessionID: UUID(), viewID: UUID().uuidString),
+            sceneIdentifier: "original",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        let capture = RUMURLSessionContext(owner: owner, value: value)
+        let delegate = SessionDataDelegateMock()
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PendingRequestURLProtocol.self]
+        let session = URLSession(configuration: configuration, delegate: mode == .registeredDelegate ? delegate : nil, delegateQueue: nil)
+        let task = session.dataTask(with: try XCTUnwrap(URL(string: "https://example.com/prepared-request")))
+        defer {
+            probe.onModify = nil
+            probe.onPrepare = nil
+            probe.onStart = nil
+            probe.onComplete = nil
+            feature.flush()
+            session.invalidateAndCancel()
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: local)
+        if mode == .registeredDelegate {
+            try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: local)
+        }
+        try RUMContextHandoff.withValue(value, for: owner) {
+            try body(feature, task, probe, capture)
+        }
+    }
+
+    func testRequestPreparation_reservesOriginalViewBeforeRequestModifier() throws {
+        for mode in [TrackingMode.automatic, .registeredDelegate] {
+            for traces in [false, true] {
+                try withPreparedRequest(mode: mode, traces: traces) { feature, task, probe, capture in
+                    let order = ReadWriteLock(wrappedValue: [String]())
+                    let initialView = capture.rumContext?.viewID
+                    let stateID = UUID()
+                    weak var released: PreparedRequestState?
+                    probe.onPrepare = { context, _ in
+                        XCTAssertEqual(context.rumContext?.viewID, initialView)
+                        order.mutate { $0.append("prepare") }
+                        let state = PreparedRequestState(viewID: context.rumContext?.viewID)
+                        released = state
+                        return RUMURLSessionPreparation(identifier: stateID, capturedState: state)
+                    }
+                    probe.onModify = { request, _ in
+                        XCTAssertEqual(order.wrappedValue, ["prepare"])
+                        order.mutate { $0.append("modify") }
+                        var final = request
+                        final.url = URL(string: "https://example.com/final-request")
+                        return final
+                    }
+                    probe.onStart = { interception in
+                        order.mutate { $0.append("start") }
+                        let captured = interception as? RUMURLSessionTaskInterception
+                        XCTAssertTrue(captured?.rumContext.owner === capture.owner)
+                        XCTAssertEqual(captured?.rumContext.rumContext?.viewID, initialView)
+                        XCTAssertEqual((captured?.preparedState(for: probe) as? PreparedRequestState)?.viewID, initialView)
+                        XCTAssertEqual(interception.identifier, stateID)
+                        XCTAssertEqual(interception.request.url?.path, traces ? "/final-request" : "/prepared-request")
+                    }
+                    task.resume()
+                    feature.flush()
+                    XCTAssertEqual(order.wrappedValue, traces ? ["prepare", "modify", "start"] : ["prepare", "start"])
+                    XCTAssertNotNil(released)
+                    if mode == .registeredDelegate { feature.task(task, didFinishCollecting: .mockWith()) }
+                    feature.task(task, didCompleteWithError: nil)
+                    feature.flush()
+                    XCTAssertNil(released, "Completed interception releases preparation state while task stays alive")
+                }
+            }
+        }
+    }
+
+    func testRequestPreparation_skippedTaskGuardCreatesNoReservation() throws {
+        try withPreparedRequest { feature, task, probe, _ in
+            let calls = ReadWriteLock(wrappedValue: 0)
+            probe.onPrepare = { _, _ in calls.mutate { $0 += 1 }; return .init(identifier: UUID(), capturedState: PreparedRequestState(viewID: nil)) }
+            let preparationID = try XCTUnwrap(Mirror(reflecting: feature).children.first { $0.label == "preparationID" }?.value as? UUID)
+            task.dd.prepareOnce(for: preparationID) { }
+            task.resume()
+            feature.flush()
+            XCTAssertEqual(calls.wrappedValue, 0)
+            XCTAssertEqual(probe.starts, 0)
+        }
+    }
+
+    func testRequestPreparation_reentrantResumeSettlesOnceBeforeCompletion() throws {
+        try withPreparedRequest(mode: .registeredDelegate) { feature, task, probe, _ in
+            let order = ReadWriteLock(wrappedValue: [String]())
+            let prepares = ReadWriteLock(wrappedValue: 0)
+            let modifies = ReadWriteLock(wrappedValue: 0)
+            probe.onPrepare = { _, _ in prepares.mutate { $0 += 1 }; return .init(identifier: UUID(), capturedState: PreparedRequestState(viewID: "original")) }
+            probe.onModify = { [weak feature, weak task] request, _ in
+                modifies.mutate { $0 += 1 }
+                guard let feature, let task else {
+                    return request
+                }
+                task.resume()
+                feature.flush()
+                XCTAssertTrue(order.wrappedValue.isEmpty, "Reentrant resume cannot commit a second preparation")
+                return request
+            }
+            probe.onStart = { _ in order.mutate { $0.append("start") } }
+            probe.onComplete = { interception in
+                order.mutate { $0.append("complete") }
+                XCTAssertEqual(interception.data, Data([1, 2]))
+                XCTAssertNotNil(interception.metrics)
+                XCTAssertNotNil(interception.completion)
+                XCTAssertNotNil((interception as? RUMURLSessionTaskInterception)?.preparedState(for: probe))
+            }
+            task.resume()
+            feature.flush()
+            XCTAssertEqual(order.wrappedValue, ["start"])
+            feature.task(task, didReceive: Data([1, 2]))
+            feature.task(task, didFinishCollecting: .mockWith())
+            feature.task(task, didCompleteWithError: nil)
+            feature.flush()
+            XCTAssertEqual(prepares.wrappedValue, 1)
+            XCTAssertEqual(modifies.wrappedValue, 1)
+            XCTAssertEqual(order.wrappedValue, ["start", "complete"])
+            XCTAssertEqual(probe.completions, 1)
+        }
+    }
+
+    func testRequestPreparation_conflictingReceiptsAbandonOnlyTheirPendingKeys() throws {
+        for sameUUID in [false, true] {
+            try withPreparedRequest { feature, task, first, capture in
+                let second = PreparedRequestHandler()
+                second.firstPartyHosts = first.firstPartyHosts
+                feature.handlers.append(second)
+                let identifier = UUID()
+                let releases = ReadWriteLock(wrappedValue: 0)
+                weak var firstState: PreparedRequestState?
+                weak var secondState: PreparedRequestState?
+                first.onPrepare = { _, _ in
+                    let state = PreparedRequestState(viewID: "original", onRelease: { releases.mutate { $0 += 1 } })
+                    firstState = state
+                    return .init(identifier: identifier, capturedState: state)
+                }
+                second.onPrepare = { _, shared in
+                    XCTAssertEqual(shared?.identifier, identifier)
+                    let state = PreparedRequestState(viewID: "original", onRelease: { releases.mutate { $0 += 1 } })
+                    secondState = state
+                    return .init(identifier: sameUUID ? identifier : UUID(), capturedState: state)
+                }
+                let starts = ReadWriteLock(wrappedValue: 0)
+                first.onStart = { interception in
+                    starts.mutate { $0 += 1 }
+                    let captured = interception as? RUMURLSessionTaskInterception
+                    XCTAssertTrue(captured?.rumContext.owner === capture.owner)
+                    XCTAssertNil(captured?.preparedState(for: first))
+                    XCTAssertNil(captured?.preparedState(for: second))
+                }
+                task.resume()
+                feature.flush()
+                XCTAssertEqual(starts.wrappedValue, 1)
+                XCTAssertNil(firstState)
+                XCTAssertNil(secondState)
+                XCTAssertEqual(releases.wrappedValue, 2, "Each conflicting pending receipt is released once")
+                feature.task(task, didCompleteWithError: nil)
+                feature.flush()
+                second.onPrepare = nil
+            }
+        }
+    }
+}
+
+private final class PreparedRequestHandler: DatadogURLSessionHandler, DatadogURLSessionHandlerPreparingRUM {
+    var firstPartyHosts = FirstPartyHosts()
+    private(set) var starts = 0
+    private(set) var completions = 0
+    var onPrepare: ((RUMURLSessionContext, RUMURLSessionPreparation?) -> RUMURLSessionPreparation)?
+    var onModify: ((URLRequest, NetworkContext?) -> URLRequest)?
+    var onStart: ((URLSessionTaskInterception) -> Void)?
+    var onComplete: ((URLSessionTaskInterception) -> Void)?
+    func prepareRUMResource(capturing context: RUMURLSessionContext, reusing preparation: RUMURLSessionPreparation?) -> RUMURLSessionPreparation {
+        onPrepare?(context, preparation) ?? .init(identifier: nil, capturedState: PreparedRequestState(viewID: nil))
+    }
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        (onModify?(request, networkContext) ?? request, nil, nil)
+    }
+    func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+        starts += 1
+        onStart?(interception)
+    }
+    func interceptionDidComplete(interception: URLSessionTaskInterception) {
+        completions += 1
+        onComplete?(interception)
+    }
+}
+
+private final class PreparedRequestState: URLSessionHandlerCapturedState {
+    let viewID: String?
+    private let onRelease: () -> Void
+    init(viewID: String?, onRelease: @escaping () -> Void = {}) { self.viewID = viewID; self.onRelease = onRelease }
+    deinit { onRelease() }
 }

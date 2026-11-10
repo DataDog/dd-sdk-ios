@@ -14,7 +14,7 @@ import UIKit
 import AppKit
 #endif
 
-internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
+internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMContext {
     static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
@@ -607,6 +607,45 @@ extension RUMFeature {
 
     func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
         sessionSamplingStore.decision(for: policy, rate: rate)
+    }
+
+    func decisionWithRUMContext(for policy: SamplingRatePolicy, rate: SampleRate) -> RUMSessionSamplingContext {
+        let decision = sessionSamplingStore.decision(for: policy, rate: rate)
+        let capture: RUMContextHandoff.Capture?
+        if let owner = rumContextHandoffOwner, let value = RUMContextHandoff.captureValue(for: owner) {
+            capture = RUMContextHandoff.Capture(owner: owner, value: value)
+        } else {
+            capture = nil
+        }
+        return RUMSessionSamplingContext(decision: decision, capture: capture)
+    }
+}
+
+extension RUMFeature: RUMContextHandoffWebViewProviding {
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
+        guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
+            return nil
+        }
+        let context = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneIdentifier)))
+        return RUMContextHandoff.Capture(
+            owner: owner,
+            value: .init(
+                rumContext: context,
+                sceneIdentifier: sceneIdentifier,
+                hasPendingUserAction: false,
+                excludedUserActionID: nil
+            )
+        )
+    }
+}
+
+extension RUMFeature: RUMContextHandoffSessionValidating {
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool {
+        guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
+            return false
+        }
+        // This checks the live session at the current SDK elapsed time without requiring an active view.
+        return monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID == sessionID
     }
 }
 

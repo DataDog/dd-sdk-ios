@@ -41,6 +41,35 @@ public protocol DatadogURLSessionHandler {
 /// passed to the asynchronous process of setting up the interception that can run on a different thread.
 public protocol URLSessionHandlerCapturedState { }
 
+/// Original RUM ownership captured when this request wins preparation.
+@_spi(Internal)
+public struct RUMURLSessionContext: URLSessionHandlerCapturedState {
+    public let owner: RUMContextHandoff.Owner
+    public let value: RUMContextHandoff.CurrentValue
+
+    public init(owner: RUMContextHandoff.Owner, value: RUMContextHandoff.CurrentValue) {
+        self.owner = owner
+        self.value = value
+    }
+
+    public var rumContext: RUMCoreContext? {
+        value.resolvedRUMContext(for: owner)
+    }
+
+    /// Captured absence stays authoritative; unrelated delivered values are preserved.
+    public func projecting(_ delivered: NetworkContext?) -> NetworkContext {
+        var context = delivered ?? NetworkContext(
+            rumContext: nil,
+            activeSpanProvider: nil,
+            userConfigurationContext: nil,
+            accountConfigurationContext: nil
+        )
+        context.rumContext = rumContext
+        context.rumURLSessionContext = self
+        return context
+    }
+}
+
 extension DatadogCoreProtocol {
     /// Core extension for registering `URLSession` handlers.
     ///
@@ -57,4 +86,22 @@ extension DatadogCoreProtocol {
 public protocol DatadogURLSessionHandlerSupportingDistributedTracing: DatadogURLSessionHandler {
     /// The currently configured distributed tracing sample rate. `nil` if distributed tracing (first part hosts tracing) is not configured.
     var distributedTracingSampleRate: SampleRate? { get }
+}
+
+/// Prepares captured RUM ownership before request modifiers execute.
+@_spi(Internal)
+public protocol DatadogURLSessionHandlerPreparingRUM: AnyObject {
+    func prepareRUMResource(capturing context: RUMURLSessionContext, reusing preparation: RUMURLSessionPreparation?) -> RUMURLSessionPreparation
+}
+
+/// Immutable preparation shared by compatible handlers.
+@_spi(Internal)
+public final class RUMURLSessionPreparation {
+    public let identifier: UUID?
+    public let capturedState: any URLSessionHandlerCapturedState
+
+    public init(identifier: UUID?, capturedState: any URLSessionHandlerCapturedState) {
+        self.identifier = identifier
+        self.capturedState = capturedState
+    }
 }

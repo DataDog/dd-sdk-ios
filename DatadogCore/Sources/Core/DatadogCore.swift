@@ -61,7 +61,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message-bus instance.
-    let bus = MessageBus()
+    let bus = MessageBus.make()
 
     /// The remote configuration provider, if configured.
     let remoteConfigurationProvider: RemoteConfigurationProvider?
@@ -70,9 +70,25 @@ internal final class DatadogCore: RUMContextHandoffActivating {
     @ReadWriteLock
     var remoteConfiguration: RemoteConfiguration?
 
-    /// Registry for Features.
+    /// Storage and On-only ownership share the original storage lock.
+    private struct FeatureStores {
+        var entries: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
+        var handoffOwner: RUMContextHandoff.Owner?
+    }
+
     @ReadWriteLock
-    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
+    private var featureStores = FeatureStores()
+
+    /// Preserve dictionary access while every write retains current owner metadata.
+    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] {
+        get { featureStores.entries }
+        set { _featureStores.mutate { $0.entries = newValue } }
+    }
+
+    fileprivate func storeSnapshot(for name: String) -> (storage: FeatureStorage?, owner: RUMContextHandoff.Owner?) {
+        let snapshot = featureStores
+        return (snapshot.entries[name]?.storage, snapshot.handoffOwner)
+    }
 
     /// Registry for Features.
     private final class RegisteredFeature {
@@ -117,6 +133,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             }
             let activation = ActivatedHandoff()
             registry.handoff = .active(activation)
+            _featureStores.mutate { $0.handoffOwner = activation.owner }
             owner = activation.owner
             receivers = registry.features.values.map { $0.messageReceiver }
         }
@@ -124,6 +141,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
         guard let owner else {
             throw ProgrammerError(description: "RUM context ownership could not be activated.")
         }
+        bus.publishFlagEvaluationOwner(owner, active: true)
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true) }
         return owner
     }
@@ -136,8 +154,14 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             }
             owner.invalidate()
             registry.handoff = .inactive
+            _featureStores.mutate { stores in
+                if stores.handoffOwner === owner {
+                    stores.handoffOwner = nil
+                }
+            }
             receivers = registry.features.values.map { $0.messageReceiver }
         }
+        bus.publishFlagEvaluationOwner(owner, active: false)
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
     }
 
@@ -427,11 +451,15 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             registry.features = [:]
         }
         if let owner {
+            bus.publishFlagEvaluationOwner(owner, active: false)
             receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
             stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
         }
         remoteConfigurationProvider?.stop()
-        stores = [:]
+        _featureStores.mutate { stores in
+            stores.entries = [:]
+            stores.handoffOwner = nil
+        }
         withExtendedLifetime(stoppedFeatures) {}
     }
 }
@@ -529,8 +557,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 if expectedOwner != nil, let createdStore {
                     // The On transaction keeps its store private until this commit.
                     // Retain the displaced store so destruction occurs after unlock.
-                    _stores.mutate { stores in
-                        replacedStore = stores.updateValue(createdStore, forKey: T.name)
+                    _featureStores.mutate { stores in
+                        replacedStore = stores.entries.updateValue(createdStore, forKey: T.name)
                     }
                 }
                 replacedFeature = registry.features.updateValue(
@@ -539,9 +567,9 @@ extension DatadogCore: DatadogCoreProtocol {
             }
         } catch {
             if let createdStore {
-                _stores.mutate { stores in
-                    if stores[T.name]?.storage.authorizedFilesOrchestrator === createdStore.storage.authorizedFilesOrchestrator {
-                        stores[T.name] = nil
+                _featureStores.mutate { stores in
+                    if stores.entries[T.name]?.storage.authorizedFilesOrchestrator === createdStore.storage.authorizedFilesOrchestrator {
+                        stores.entries[T.name] = nil
                     }
                 }
             }
@@ -603,6 +631,31 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.set(additionalContext: context()) }
     }
 
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate) {
+        contextProvider.writeIfAccepted { [weak self] current in
+            guard let self, owner.isValid, self.rumContextHandoffOwner === owner else {
+                return false
+            }
+            // The supplier can reenter Core, including retiring this owner.
+            guard case let .set(rumContext) = context() else {
+                return false
+            }
+            var candidate = current
+            candidate.set(additionalContext: rumContext)
+            var accepted = false
+            self._registry.mutate { registry in
+                guard !registry.isStopped, case let .active(activation) = registry.handoff,
+                      activation.owner === owner, owner.isValid else { return }
+                // Revalidate and mutate together with Core ownership retirement.
+                // The displaced value remains retained until after unlocking.
+                swap(&current, &candidate)
+                accepted = true
+            }
+            withExtendedLifetime(candidate) {}
+            return accepted
+        }
+    }
+
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
@@ -612,8 +665,11 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMFlagEvaluationSending, RUMContextHandoffContextUpdating, RUMContextHandoffEventWriting where Feature: DatadogFeature {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        core?.bus.sendFlagEvaluation(evaluation)
+    }
 
     private weak var core: DatadogCore?
     private let store: FeatureDataStore
@@ -654,6 +710,53 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
         }
     }
 
+    func eventWriteContextWithRUMCapture(
+        bypassConsent: Bool,
+        _ block: @escaping (DatadogContext, Writer, RUMContextHandoff.Capture?) -> Void
+    ) {
+        guard let core else {
+            return
+        }
+        let snapshot = core.storeSnapshot(for: Feature.name)
+        guard let storage = snapshot.storage else {
+            if core.get(feature: Feature.self) != nil {
+                DD.logger.error(
+                    "Failed to obtain Event Write Context for '\(Feature.name)' because it is not a `DatadogRemoteFeature`."
+                )
+                #if DEBUG
+                assertionFailure("Obtaining Event Write Context for '\(Feature.name)' but it is not a `DatadogRemoteFeature`.")
+                #endif
+            }
+            return
+        }
+        // Storage publication and owner were read together; capture after unlocking.
+        let capture: RUMContextHandoff.Capture?
+        if let owner = snapshot.owner {
+            if let value = RUMContextHandoff.current(for: owner) {
+                capture = RUMContextHandoff.Capture(owner: owner, value: value)
+            } else if !owner.isValid {
+                // Owner validity is monotonic; a raced invalidation cannot select legacy context.
+                capture = RUMContextHandoff.Capture(
+                    owner: owner,
+                    value: RUMContextHandoff.CurrentValue(
+                        rumContext: nil,
+                        sceneIdentifier: nil,
+                        hasPendingUserAction: false,
+                        excludedUserActionID: nil
+                    )
+                )
+            } else {
+                capture = nil
+            }
+        } else {
+            capture = nil
+        }
+        context { context in
+            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
+            block(context, writer, capture)
+        }
+    }
+
     func context(_ block: @escaping (DatadogContext) -> Void) {
         // (on user thread) request SDK context
         core?.contextProvider.read { context in
@@ -672,6 +775,10 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
         core?.set(context: context)
+    }
+
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate) {
+        core?.setRUMContext(for: owner, context: context)
     }
 
     func set(anonymousId: String?) {

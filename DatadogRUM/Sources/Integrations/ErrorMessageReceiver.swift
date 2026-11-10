@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal struct ErrorMessageReceiver: FeatureMessageReceiver {
@@ -14,10 +15,28 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
 
     /// Adds RUM Error with given message and stack to current RUM View.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(error as RUMErrorMessage) = message else {
+        if case let .payload(error as RUMErrorMessage) = message {
+            monitor._internal?.addError(
+                at: error.time,
+                message: error.message,
+                type: error.type,
+                stack: error.stack,
+                source: .init(rawValue: error.source) ?? .custom,
+                globalAttributes: [:],
+                attributes: error.attributes,
+                binaryImages: error.binaryImages
+            )
+            return true
+        }
+        guard case let .payload(captured as RUMCapturedErrorMessage) = message else {
             return false
         }
-
+        guard monitor.isMultiSceneTrackingEnabled,
+              let ownership = RUMCapturedErrorOwnership(capture: captured.capture),
+              monitor.rumContextHandoffOwner === ownership.owner else {
+            return true
+        }
+        let error = captured.error
         monitor._internal?.addError(
             at: error.time,
             message: error.message,
@@ -26,9 +45,9 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
             source: .init(rawValue: error.source) ?? .custom,
             globalAttributes: [:],
             attributes: error.attributes,
-            binaryImages: error.binaryImages
+            binaryImages: error.binaryImages,
+            capturedOwnership: ownership
         )
-
         return true
     }
 }

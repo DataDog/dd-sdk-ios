@@ -5,12 +5,31 @@
  */
 
 import Foundation
+#if os(iOS)
+import Synchronization
+#endif
+@_spi(Internal)
 import DatadogInternal
 
 /// The message-bus sends messages to a set of registered receivers.
 ///
 /// The bus dispatches messages on a serial queue.
-internal final class MessageBus {
+internal class MessageBus {
+    static func make(configurationDispatchTime: DispatchTimeInterval = .seconds(5)) -> MessageBus {
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            return RUMFlagEvaluationMessageBus(configurationDispatchTime: configurationDispatchTime)
+        }
+        #endif
+        return MessageBus(configurationDispatchTime: configurationDispatchTime)
+    }
+
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        send(message: .payload(evaluation))
+    }
+
+    func publishFlagEvaluationOwner(_ owner: RUMContextHandoff.Owner, active: Bool) {}
+
     /// The message bus GDC queue.
     let queue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-message-bus",
@@ -143,3 +162,54 @@ extension MessageBus: Flushable {
         queue.sync { }
     }
 }
+
+#if os(iOS)
+/// Captures Flags ownership synchronously without a default-Off registry read.
+@available(iOS 27.0, *)
+private final class RUMFlagEvaluationMessageBus: MessageBus {
+    private let isActive = Atomic<Bool>(false)
+    private let owner = Mutex<RUMContextHandoff.Owner?>(nil)
+
+    override func publishFlagEvaluationOwner(_ owner: RUMContextHandoff.Owner, active: Bool) {
+        if active {
+            guard owner.isValid else {
+                return
+            }
+            self.owner.withLock { stored in
+                guard owner.isValid else {
+                    return
+                }
+                stored = owner
+                isActive.store(true, ordering: .releasing)
+            }
+        } else {
+            self.owner.withLock { stored in
+                guard stored === owner else {
+                    return
+                }
+                stored = nil
+                isActive.store(false, ordering: .releasing)
+            }
+        }
+    }
+
+    override func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        guard isActive.load(ordering: .acquiring) else {
+            super.sendFlagEvaluation(evaluation)
+            return
+        }
+        guard let owner = self.owner.withLock({ $0 }) else {
+            send(message: .payload(RUMCapturedFlagEvaluationMessage(evaluation: evaluation, capture: nil)))
+            return
+        }
+        // Freeze scalar ownership after leaving the state lock and before queueing.
+        if let value = RUMContextHandoff.captureValue(for: owner) {
+            let capture = RUMContextHandoff.Capture(owner: owner, value: value)
+            send(message: .payload(RUMCapturedFlagEvaluationMessage(evaluation: evaluation, capture: capture)))
+        } else {
+            // A valid On owner without a caller binding retains the ordinary path.
+            super.sendFlagEvaluation(evaluation)
+        }
+    }
+}
+#endif

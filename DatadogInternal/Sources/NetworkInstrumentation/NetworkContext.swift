@@ -27,9 +27,62 @@ public protocol RUMContextHandoffReceiving: AnyObject {
     func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool)
 }
 
+/// Optional owner-conditional RUM context publication; ordinary scopes are unchanged.
+@_spi(Internal)
+public protocol RUMContextHandoffContextUpdating {
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate)
+}
+
+/// Optional built-in delivery capability; custom scopes retain ordinary Flags delivery.
+@_spi(Internal)
+public protocol RUMFlagEvaluationSending {
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage)
+}
+
+@_spi(Internal)
+public extension FeatureScope {
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        if let scope = self as? RUMFlagEvaluationSending {
+            scope.sendFlagEvaluation(evaluation)
+        } else {
+            send(message: .payload(evaluation))
+        }
+    }
+}
+
+/// Optional built-in write capability; custom and NOP scopes keep their original method.
+@_spi(Internal)
+public protocol RUMContextHandoffEventWriting {
+    func eventWriteContextWithRUMCapture(
+        bypassConsent: Bool,
+        _ block: @escaping (DatadogContext, Writer, RUMContextHandoff.Capture?) -> Void
+    )
+}
+
+@_spi(Internal)
+public extension FeatureScope {
+    func eventWriteContextWithRUMCapture(
+        _ block: @escaping (DatadogContext, Writer, RUMContextHandoff.Capture?) -> Void
+    ) {
+        if let scope = self as? RUMContextHandoffEventWriting {
+            scope.eventWriteContextWithRUMCapture(bypassConsent: false, block)
+        } else {
+            eventWriteContext { context, writer in
+                block(context, writer, nil)
+            }
+        }
+    }
+}
+
 /// Declares request-local ownership; activation is supplied by the scene input layer.
 @_spi(Internal)
 public enum RUMContextHandoff {
+    /// Rejection is distinct from an accepted update that clears RUM context.
+    public enum ContextUpdate {
+        case skip
+        case set(RUMCoreContext?)
+    }
+
     /// A lifetime token that retains no core, feature or UI object.
     public final class Owner: @unchecked Sendable {
         @ReadWriteLock
@@ -44,27 +97,107 @@ public enum RUMContextHandoff {
         public var isValid: Bool { isActive }
     }
 
+    /// Acceptance of one submitted action; no Core, feature or UI object is retained.
+    public final class ActionReceipt: @unchecked Sendable {
+        private enum State {
+            case pending
+            case accepted(String)
+            case rejected
+        }
+
+        public let owner: Owner
+        private let sessionID: String?
+        private let viewID: String?
+        @ReadWriteLock
+        private var state = State.pending
+
+        public init(owner: Owner, context: RUMCoreContext?) {
+            self.owner = owner
+            self.sessionID = context?.sessionID
+            self.viewID = context?.viewID
+        }
+
+        /// Called only when processing creates this command's action scope.
+        public func accept(sessionID: String, viewID: String, actionID: String) {
+            _state.mutate { state in
+                guard case .pending = state else {
+                    return
+                }
+                guard owner.isValid, self.sessionID == sessionID, self.viewID == viewID else {
+                    state = .rejected
+                    return
+                }
+                state = .accepted(actionID)
+            }
+        }
+
+        /// Known drops or completed resolved processing settle only an unclaimed command.
+        public func reject() {
+            _state.mutate { state in
+                if case .pending = state { state = .rejected }
+            }
+        }
+
+        /// An unresolved command cannot borrow an action from subsequent delivery context.
+        public func actionID(for owner: Owner, sessionID: String, viewID: String?) -> String? {
+            guard self.owner === owner, owner.isValid,
+                  self.sessionID == sessionID, self.viewID == viewID else { return nil }
+            guard case let .accepted(actionID) = state else {
+                return nil
+            }
+            return actionID
+        }
+    }
+
     public struct CurrentValue {
         public let rumContext: RUMCoreContext?
         public let sceneIdentifier: String?
         public let hasPendingUserAction: Bool
         public let excludedUserActionID: String?
+        public let actionReceipt: ActionReceipt?
 
         public init(
             rumContext: RUMCoreContext?,
             sceneIdentifier: String?,
             hasPendingUserAction: Bool,
-            excludedUserActionID: String?
+            excludedUserActionID: String?,
+            actionReceipt: ActionReceipt? = nil
         ) {
             self.rumContext = rumContext
             self.sceneIdentifier = sceneIdentifier
             self.hasPendingUserAction = hasPendingUserAction
             self.excludedUserActionID = excludedUserActionID
+            self.actionReceipt = actionReceipt
+        }
+
+        /// Resolves only this captured action while preserving the captured RUM view.
+        public func resolvedRUMContext(for owner: Owner) -> RUMCoreContext? {
+            guard owner.isValid, let context = rumContext else {
+                return nil
+            }
+            let actionID: String?
+            if let actionReceipt {
+                actionID = actionReceipt.actionID(for: owner, sessionID: context.sessionID, viewID: context.viewID)
+            } else if hasPendingUserAction {
+                actionID = nil
+            } else {
+                actionID = context.userActionID
+            }
+            return RUMCoreContext(
+                applicationID: context.applicationID,
+                sessionID: context.sessionID,
+                sessionSampler: context.sessionSampler,
+                viewID: context.viewID,
+                userActionID: actionID,
+                viewServerTimeOffset: context.viewServerTimeOffset,
+                viewPath: context.viewPath,
+                viewName: context.viewName
+            )
         }
     }
 
-    // All stored values are immutable. RUMCoreContext contains only scalar/string
-    // values and an immutable Sendable sampler, but does not declare Sendable.
+    // The binding stores scalar context and a separately synchronized action receipt.
+    // RUMCoreContext has an immutable Sendable sampler, but does not declare Sendable.
     private struct Binding: @unchecked Sendable {
         let owner: Owner
         let value: CurrentValue
@@ -89,6 +222,26 @@ public enum RUMContextHandoff {
             return nil
         }
         return binding.value
+    }
+
+    /// Captures an On consumer without turning an invalid retained owner into legacy fallback.
+    /// A valid owner without a binding and unsupported systems retain the original path.
+    public static func captureValue(for owner: Owner?) -> CurrentValue? {
+        guard supportsExecutionScope, let owner else {
+            return nil
+        }
+        if let value = current(for: owner) {
+            return value
+        }
+        guard !owner.isValid else {
+            return nil
+        }
+        return CurrentValue(
+            rumContext: nil,
+            sceneIdentifier: nil,
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
     }
 
     /// Binds a synchronous operation and restores the prior binding on return or throw.
@@ -133,6 +286,8 @@ public struct NetworkContext {
     public var activeSpanProvider: TraceActiveSpanProvider?
     public var userConfigurationContext: UserConfigurationContext?
     public var accountConfigurationContext: AccountConfigurationContext?
+    @_spi(Internal)
+    public var rumURLSessionContext: RUMURLSessionContext? = nil
 }
 
 /// The User configuration context received from `Core`.
@@ -208,5 +363,42 @@ public struct AccountConfigurationContext: AdditionalContext, Equatable {
     public init(from accountInfo: AccountInfo) {
         self.id = accountInfo.id
         self.name = accountInfo.name
+    }
+}
+
+/// Provides a snapshot only after a caller independently proves the originating native scene.
+@_spi(Internal)
+public protocol RUMContextHandoffWebViewProviding {
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture?
+}
+
+/// Validates a captured native session against the current RUM lifetime.
+@_spi(Internal)
+public protocol RUMContextHandoffSessionValidating {
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool
+}
+
+/// Carries native ownership with a Browser message across asynchronous queues.
+@_spi(Internal)
+public struct WebViewMessageWithRUMContext {
+    public let message: WebViewMessage
+    public let capture: RUMContextHandoff.Capture
+
+    public init(message: WebViewMessage, capture: RUMContextHandoff.Capture) {
+        self.message = message
+        self.capture = capture
+    }
+
+    /// Resolves only its original owner and a native session that is still alive at delivery.
+    public func rumContext(in core: DatadogCoreProtocol, sessionID: String?) -> RUMCoreContext? {
+        guard let owner = RUMContextHandoff.owner(in: core),
+              owner === capture.owner, owner.isValid,
+              let context = capture.value.resolvedRUMContext(for: owner),
+              context.sessionID == sessionID,
+              let validator = core.feature(named: Feature.rum, type: RUMContextHandoffSessionValidating.self),
+              validator.isRUMContextHandoffSessionActive(sessionID: context.sessionID, owner: owner) else {
+            return nil
+        }
+        return context
     }
 }

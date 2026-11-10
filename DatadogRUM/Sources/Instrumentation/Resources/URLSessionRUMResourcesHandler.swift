@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal struct DistributedTracing {
@@ -40,7 +41,7 @@ internal struct DistributedTracing {
     }
 }
 
-internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupportingDistributedTracing, RUMCommandPublisher {
+internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupportingDistributedTracing, DatadogURLSessionHandlerPreparingRUM, RUMCommandPublisher {
     /// Captured state for RUM URL session handler
     struct RUMURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
         /// Whether GraphQL headers were detected in the request
@@ -92,6 +93,105 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         self.subscriber = subscriber
     }
 
+    /// Only the exact original unsupported subscriber may use legacy delivery.
+    private final class LegacySubscriber {
+        weak var value: RUMCommandSubscriber?
+
+        init(_ value: RUMCommandSubscriber) { self.value = value }
+    }
+
+    private enum ResourcePreparationState: URLSessionHandlerCapturedState {
+        case eligible(RUMResourcePreparationReceipt)
+        case legacy(LegacySubscriber)
+        case rejected
+    }
+
+    func prepareRUMResource(
+        capturing context: RUMURLSessionContext, reusing preparation: RUMURLSessionPreparation?
+    ) -> RUMURLSessionPreparation {
+        func rejected() -> RUMURLSessionPreparation {
+            RUMURLSessionPreparation(identifier: nil, capturedState: ResourcePreparationState.rejected)
+        }
+        guard let subscriber else {
+            return rejected()
+        }
+        guard let monitor = subscriber as? Monitor else {
+            return RUMURLSessionPreparation(
+                identifier: nil, capturedState: ResourcePreparationState.legacy(LegacySubscriber(subscriber))
+            )
+        }
+        guard monitor.isMultiSceneTrackingEnabled, context.owner.isValid,
+              monitor.rumContextHandoffOwner === context.owner,
+              let rumContext = context.rumContext, rumContext.sessionSampler.isSampled,
+              let sessionID = UUID(uuidString: rumContext.sessionID).map(RUMUUID.init(rawValue:)),
+              let viewID = rumContext.viewID.flatMap(UUID.init(uuidString:)).map(RUMUUID.init(rawValue:)) else {
+            return rejected()
+        }
+        if let preparation,
+           let state = preparation.capturedState as? ResourcePreparationState,
+           case let .eligible(receipt) = state,
+           receipt.publisher === monitor, receipt.identity.owner === context.owner,
+           receipt.identity.sessionID == sessionID, receipt.identity.viewID == viewID,
+           preparation.identifier == receipt.identity.resourceID {
+            // Share the same receipt lifetime; a second receipt could abandon the first.
+            return preparation
+        }
+        guard let receipt = monitor.prepareResource(capturing: context) else {
+            return rejected()
+        }
+        return RUMURLSessionPreparation(identifier: receipt.identity.resourceID, capturedState: ResourcePreparationState.eligible(receipt))
+    }
+
+    private func resourceSubscriber(for interception: URLSessionTaskInterception) -> RUMCommandSubscriber? {
+        guard let captured = interception as? RUMURLSessionTaskInterception else {
+            return subscriber
+        }
+        guard captured.rumContext.owner.isValid,
+              let state = captured.preparedState(for: self) as? ResourcePreparationState else { return nil }
+        switch state {
+        case let .eligible(receipt):
+            guard let original = receipt.publisher, subscriber === original,
+                  original.rumContextHandoffOwner === receipt.identity.owner,
+                  receipt.identity.owner === captured.rumContext.owner,
+                  receipt.identity.resourceID == interception.identifier else { return nil }
+            return original
+        case let .legacy(marker):
+            guard let original = marker.value, subscriber === original else {
+                return nil
+            }
+            return original
+        case .rejected:
+            return nil
+        }
+    }
+
+    private func publishResource(
+        command: RUMCommand, to original: RUMCommandSubscriber, interception: URLSessionTaskInterception
+    ) {
+        guard let captured = interception as? RUMURLSessionTaskInterception else {
+            original.process(command: command)
+            return
+        }
+        // Attribute providers and prior callbacks may have replaced the subscriber.
+        guard resourceSubscriber(for: interception) === original,
+              let state = captured.preparedState(for: self) as? ResourcePreparationState else { return }
+        switch state {
+        case let .eligible(receipt):
+            (original as? Monitor)?.processResource(command: command, preparation: receipt.identity)
+        case .legacy:
+            original.process(command: command)
+        case .rejected:
+            break
+        }
+    }
+
+    private func abandonResourcePreparation(for interception: URLSessionTaskInterception) {
+        guard let captured = interception as? RUMURLSessionTaskInterception,
+              let state = captured.preparedState(for: self) as? ResourcePreparationState,
+              case let .eligible(receipt) = state else { return }
+        receipt.publisher?.abandonResourcePreparation(receipt.identity)
+    }
+
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
@@ -114,6 +214,11 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
         guard !isDisallowed(url: interception.request.url) else {
+            abandonResourcePreparation(for: interception)
+            return
+        }
+        if interception is RUMURLSessionTaskInterception, resourceSubscriber(for: interception) == nil {
+            abandonResourcePreparation(for: interception)
             return
         }
 
@@ -126,7 +231,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             telemetry.usage(event: .addGraphQLRequest)
         }
 
-        subscriber?.process(
+        guard let original = resourceSubscriber(for: interception) else {
+            return
+        }
+        publishResource(
             command: RUMStartResourceCommand(
                 resourceKey: interception.identifier.uuidString,
                 time: dateProvider.now,
@@ -135,16 +243,23 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
                 kind: RUMResourceType(request: interception.request.unsafeOriginal),
                 spanContext: distributedTracing?.trace(from: interception)
-            )
+            ),
+            to: original,
+            interception: interception
         )
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
         guard !isDisallowed(url: interception.request.url) else {
+            abandonResourcePreparation(for: interception)
             return
         }
 
-        guard let subscriber = subscriber else {
+        guard let subscriber = resourceSubscriber(for: interception) else {
+            if interception is RUMURLSessionTaskInterception {
+                abandonResourcePreparation(for: interception)
+                return
+            }
             return DD.logger.warn(
                 """
                 RUM Resource was completed, but no `RUMMonitor` is initialized in the core. RUM auto instrumentation will not work.
@@ -202,13 +317,15 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         }
 
         if let resourceMetrics = interception.metrics {
-            subscriber.process(
+            publishResource(
                 command: RUMAddResourceMetricsCommand(
                     resourceKey: interception.identifier.uuidString,
                     time: dateProvider.now,
                     attributes: [:],
                     metrics: resourceMetrics
-                )
+                ),
+                to: subscriber,
+                interception: interception
             )
         }
 
@@ -222,7 +339,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
                 size: interception.mostAccurateResponseSize
             )
             command.isAutomatic = true
-            subscriber.process(command: command)
+            publishResource(command: command, to: subscriber, interception: interception)
         }
 
         if let error = interception.completion?.error {
@@ -237,7 +354,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
                 attributes: errorAttributes
             )
             command.isAutomatic = true
-            subscriber.process(command: command)
+            publishResource(command: command, to: subscriber, interception: interception)
         }
     }
 

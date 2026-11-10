@@ -212,6 +212,7 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         guard !isMultiSceneTrackingEnabled || command.target != .none else {
+            (command as? RUMUserActionCommand)?.actionReceipt?.reject()
             (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
             return
         }
@@ -225,14 +226,37 @@ internal class Monitor: RUMCommandSubscriber {
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
                 if completesDroppedErrors {
+                    (command as? RUMUserActionCommand)?.actionReceipt?.reject()
                     (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
                 }
                 return
             }
 
+            if self.isMultiSceneTrackingEnabled, let receipt = (command as? RUMUserActionCommand)?.actionReceipt {
+                guard receipt.owner.isValid, self.rumContextHandoffOwner === receipt.owner else {
+                    receipt.reject()
+                    return
+                }
+            }
+
             if self.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
                 guard ownership.owner.isValid, self.rumContextHandoffOwner === ownership.owner else {
                     ownership.close()
+                    return
+                }
+            }
+
+            if let flag = command as? RUMAddFeatureFlagEvaluationCommand,
+               let ownership = flag.capturedOwnership {
+                guard self.isMultiSceneTrackingEnabled, ownership.owner.isValid,
+                      self.rumContextHandoffOwner === ownership.owner else { return }
+            }
+
+            if let error = command as? RUMAddCurrentViewErrorCommand,
+               let ownership = error.capturedOwnership {
+                guard self.isMultiSceneTrackingEnabled, ownership.owner.isValid,
+                      self.rumContextHandoffOwner === ownership.owner else {
+                    error.completionHandler()
                     return
                 }
             }
@@ -307,6 +331,106 @@ internal class Monitor: RUMCommandSubscriber {
                 )
             }
         )
+    }
+
+    /// Enqueues only pending ownership before request modifiers can navigate.
+    func prepareResource(capturing context: RUMURLSessionContext) -> RUMResourcePreparationReceipt? {
+        guard isMultiSceneTrackingEnabled, featureScope is RUMContextHandoffContextUpdating,
+              context.owner.isValid, rumContextHandoffOwner === context.owner,
+              let rum = context.rumContext, rum.sessionSampler.isSampled,
+              let sessionID = UUID(uuidString: rum.sessionID).map(RUMUUID.init(rawValue:)),
+              let viewID = rum.viewID.flatMap(UUID.init(uuidString:)).map(RUMUUID.init(rawValue:)) else { return nil }
+        let identity = RUMResourcePreparationIdentity(owner: context.owner, resourceID: UUID(), sessionID: sessionID, viewID: viewID)
+        enqueueResourcePreparation(RUMResourcePreparationCommand(identity: identity, operation: .reserve, time: dateProvider.now))
+        return RUMResourcePreparationReceipt(identity: identity, publisher: self)
+    }
+
+    func processResource(command: RUMCommand, preparation: RUMResourcePreparationIdentity) {
+        let operation: RUMResourcePreparationCommand.Operation
+        if let start = command as? RUMStartResourceCommand {
+            operation = .commit(start)
+        } else if command is RUMAddResourceMetricsCommand || command is RUMResourceCompletionCommand {
+            operation = .resource(command)
+        } else {
+            return
+        }
+        enqueueResourcePreparation(RUMResourcePreparationCommand(identity: preparation, operation: operation, time: command.time))
+    }
+
+    func abandonResourcePreparation(_ identity: RUMResourcePreparationIdentity) {
+        enqueueResourcePreparation(RUMResourcePreparationCommand(identity: identity, operation: .abandon, time: dateProvider.now))
+    }
+
+    private func enqueueResourcePreparation(_ value: RUMResourcePreparationCommand) {
+        guard isMultiSceneTrackingEnabled else {
+            return
+        }
+        let monotonicTime = applicationScope.dependencies.monotonicClock.elapsedTime
+        var command = value
+        command.globalAttributes = attributes
+        featureScope.eventWriteContext { [weak self] context, writer in
+            guard let self, self.isMultiSceneTrackingEnabled else {
+                return
+            }
+            if case .abandon = command.operation {
+                // The original session's leaf owner and pending key still authenticate
+                // bookkeeping cleanup after Core invalidates this owner.
+            } else {
+                guard command.identity.owner.isValid, self.rumContextHandoffOwner === command.identity.owner,
+                      self.featureScope is RUMContextHandoffContextUpdating else { return }
+            }
+            switch command.operation {
+            case var .commit(start):
+                start.globalAttributes = command.globalAttributes
+                guard let transformed = self.transform(command: start) as? RUMStartResourceCommand else {
+                    return
+                }
+                command.operation = .commit(transformed)
+            case var .resource(resource):
+                resource.globalAttributes = command.globalAttributes
+                command.operation = .resource(self.transform(command: resource))
+            case .reserve, .abandon:
+                break
+            }
+            guard self.applicationScope.processResourcePreparation(
+                command, monotonicTime: monotonicTime, context: context, writer: writer
+            ) else { return }
+            self.refreshResourceContextSnapshots()
+            guard let publisher = self.featureScope as? RUMContextHandoffContextUpdating else {
+                return
+            }
+            let owner = command.identity.owner
+            publisher.setRUMContext(for: owner) { [weak self] in
+                guard let self, owner.isValid, self.rumContextHandoffOwner === owner else {
+                    return .skip
+                }
+                guard let session = self.applicationScope.activeSession else {
+                    return .set(nil)
+                }
+                return .set(self.makeCoreContext(session: session, view: self.representativeView(in: session)))
+            }
+        }
+    }
+
+    /// Resource controls publish snapshots without noting user activity or expiring peers.
+    private func refreshResourceContextSnapshots() {
+        guard let session = applicationScope.activeSession else {
+            sessionActivitySnapshot = (nil, nil, nil)
+            sceneContextSnapshots?.value = SceneContextSnapshots.Value()
+            return
+        }
+        let representative = representativeView(in: session)
+        sessionActivitySnapshot = (session.sessionUUID.toRUMDataFormat, session.sessionStart, session.lastInteraction)
+        var snapshot = SceneContextSnapshots.Value(
+            representative: makeCoreContext(session: session, view: representative),
+            sessionID: session.sessionUUID.toRUMDataFormat,
+            sessionStart: session.sessionStart,
+            lastInteraction: session.lastInteraction
+        )
+        for view in session.viewScopes where view.isActiveView {
+            if let scene = view.sceneIdentifier { snapshot.contextsByScene[scene] = makeCoreContext(session: session, view: view) }
+        }
+        sceneContextSnapshots?.value = snapshot
     }
 
     private func representativeView(in session: RUMSessionScope) -> RUMViewScope? {
@@ -762,6 +886,14 @@ extension Monitor: RUMMonitorProtocol {
         )
         command.target = isMultiSceneTrackingEnabled ? target : .processRepresentative
         command.explicitTarget = isMultiSceneTrackingEnabled ? explicitTarget : nil
+        process(command: command)
+    }
+
+    func addCapturedFeatureFlagEvaluation(
+        name: String, value: Encodable, ownership: RUMCapturedFlagEvaluationOwnership
+    ) {
+        var command = RUMAddFeatureFlagEvaluationCommand(time: dateProvider.now, name: name, value: value)
+        command.capturedOwnership = ownership
         process(command: command)
     }
 

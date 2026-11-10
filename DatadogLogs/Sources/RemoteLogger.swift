@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
@@ -128,9 +129,18 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        featureScope.eventWriteContext { [weak self] context, writer in
+        featureScope.eventWriteContextWithRUMCapture { [weak self] deliveryContext, writer, capture in
             guard let self else {
                 return
+            }
+
+            let context: DatadogContext
+            if let capture {
+                var capturedContext = deliveryContext
+                capturedContext.set(additionalContext: capture.value.resolvedRUMContext(for: capture.owner))
+                context = capturedContext
+            } else {
+                context = deliveryContext
             }
 
             var internalAttributes: [String: Encodable] = [:]
@@ -196,19 +206,22 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
                     busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
                 }
 
-                self.featureScope.send(
-                    message: .payload(
-                        RUMErrorMessage(
-                            time: date,
-                            message: log.error?.message ?? log.message,
-                            source: "logger",
-                            type: log.error?.kind,
-                            stack: log.error?.stack,
-                            attributes: busCombinedAttributes,
-                            binaryImages: binaryImages
-                        )
-                    )
+                let errorMessage = RUMErrorMessage(
+                    time: date,
+                    message: log.error?.message ?? log.message,
+                    source: "logger",
+                    type: log.error?.kind,
+                    stack: log.error?.stack,
+                    attributes: busCombinedAttributes,
+                    binaryImages: binaryImages
                 )
+                let payload: Any
+                if let capture {
+                    payload = RUMCapturedErrorMessage(error: errorMessage, capture: capture)
+                } else {
+                    payload = errorMessage
+                }
+                self.featureScope.send(message: .payload(payload))
             }
         }
     }

@@ -67,7 +67,7 @@ public protocol SessionSampler {
 }
 
 /// Resolves the session sampler registered on a core, per call.
-internal struct CoreSessionSampler: SessionSampler {
+internal struct CoreSessionSampler: SessionSamplerWithRUMContext {
     /// A weak core reference.
     private weak var core: DatadogCoreProtocol?
 
@@ -85,6 +85,14 @@ internal struct CoreSessionSampler: SessionSampler {
             .feature(named: Feature.rum, type: SessionSampler.self)?
             .decision(for: policy, rate: rate)
     }
+
+    func decisionWithRUMContext(for policy: SamplingRatePolicy, rate: SampleRate) -> RUMSessionSamplingContext {
+        let feature = core?.feature(named: Feature.rum, type: SessionSampler.self)
+        if let feature = feature as? SessionSamplerWithRUMContext {
+            return feature.decisionWithRUMContext(for: policy, rate: rate)
+        }
+        return RUMSessionSamplingContext(decision: feature?.decision(for: policy, rate: rate), capture: nil)
+    }
 }
 
 public extension DatadogCoreProtocol {
@@ -93,4 +101,35 @@ public extension DatadogCoreProtocol {
     /// Each core carries its own session, so a feature must read this from the core it was
     /// registered in. Returns decisions only while a session exists on that core.
     var sessionSampler: SessionSampler { CoreSessionSampler(core: self) }
+}
+
+/// An optional caller snapshot paired with the original session decision.
+@_spi(Internal)
+public struct RUMSessionSamplingContext {
+    public let decision: SessionSamplingDecision?
+    public let capture: RUMContextHandoff.Capture?
+
+    public init(decision: SessionSamplingDecision?, capture: RUMContextHandoff.Capture?) {
+        self.decision = decision
+        self.capture = capture
+    }
+}
+
+/// An internal capability; existing custom session samplers need not conform.
+@_spi(Internal)
+public protocol SessionSamplerWithRUMContext: SessionSampler {
+    func decisionWithRUMContext(for policy: SamplingRatePolicy, rate: SampleRate) -> RUMSessionSamplingContext
+}
+
+@_spi(Internal)
+public extension RUMContextHandoff {
+    struct Capture {
+        public let owner: Owner
+        public let value: CurrentValue
+
+        public init(owner: Owner, value: CurrentValue) {
+            self.owner = owner
+            self.value = value
+        }
+    }
 }

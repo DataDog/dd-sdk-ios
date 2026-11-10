@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -1083,7 +1084,7 @@ extension RUMApplicationScopeTests {
     private var routingSceneA: RUMSceneIdentifier { RUMSceneIdentifier(rawValue: "scene-a") }
     private var routingSceneB: RUMSceneIdentifier { RUMSceneIdentifier(rawValue: "scene-b") }
 
-    private func routingApplication(enabled: Bool = true, mapper: RUMEventsMapper = .mockNoOp()) -> (RUMApplicationScope, DatadogContext) {
+    private func routingApplication(enabled: Bool = true, mapper: RUMEventsMapper = .mockNoOp(), featureScope: FeatureScope = NOPFeatureScope()) -> (RUMApplicationScope, DatadogContext) {
         let context = DatadogContext.mockWith(
             sdkInitDate: routingDate,
             launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: routingDate),
@@ -1091,7 +1092,7 @@ extension RUMApplicationScopeTests {
         )
         let cache = ViewCache(dateProvider: DateProviderMock(now: routingDate), isMultiSceneTrackingEnabled: enabled)
         let app = createRUMApplicationScope(
-            dependencies: .mockWith(eventBuilder: RUMEventBuilder(eventsMapper: mapper), viewCache: cache, featureFlags: [.multiSceneTracking: enabled]),
+            dependencies: .mockWith(featureScope: featureScope, eventBuilder: RUMEventBuilder(eventsMapper: mapper), viewCache: cache, featureFlags: [.multiSceneTracking: enabled]),
             sdkContext: context
         )
         return (app, context)
@@ -1378,3 +1379,521 @@ extension RUMApplicationScopeTests {
         }
     }
 }
+
+#if os(iOS)
+extension RUMApplicationScopeTests {
+    func testCapturedActionReceiptKeepsTheOriginalActionAfterReplacement() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Requires iOS 27 action receipt routing")
+        }
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var original = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "original"
+        )
+        original.target = .scene(routingSceneA)
+        original.actionReceipt = receipt
+        _ = routeApplicationCommand(app: app, command: original, context: context, writer: writer)
+        let originalID = try XCTUnwrap(view.userActionScope).actionUUID.toRUMDataFormat
+        var replacement = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(4), instrumentation: .manual, name: "replacement")
+        replacement.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: replacement, context: context, writer: writer)
+        XCTAssertNotEqual(view.userActionScope?.actionUUID.toRUMDataFormat, originalID)
+        XCTAssertEqual(view.userActionScope?.name, "replacement")
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), originalID)
+        XCTAssertNil(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneB && $0.isActiveView }?.userActionScope)
+    }
+
+    func testPriorityDroppedReceiptDoesNotAdoptTheExistingOrLaterAction() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Requires iOS 27 action receipt routing")
+        }
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        var existing = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .manual,
+            actionType: .scroll,
+            name: "existing"
+        )
+        existing.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: existing, context: context, writer: writer)
+        let existingID = try XCTUnwrap(view.userActionScope).actionUUID
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var dropped = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(4), instrumentation: .swiftuiAutomatic, name: "dropped")
+        dropped.target = .scene(routingSceneA)
+        dropped.actionReceipt = receipt
+        _ = routeApplicationCommand(app: app, command: dropped, context: context, writer: writer)
+        XCTAssertEqual(view.userActionScope?.actionUUID, existingID)
+        XCTAssertEqual(view.userActionScope?.name, "existing")
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+        var later = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(5), instrumentation: .crossPlatform("later"), name: "later")
+        later.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: later, context: context, writer: writer)
+        let laterScope = try XCTUnwrap(view.userActionScope)
+        XCTAssertEqual(laterScope.name, "later")
+        XCTAssertNotEqual(laterScope.actionUUID.toRUMDataFormat, captured.userActionID)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+    }
+
+    func testImmediateCustomActionReceiptClaimsTheEmittedLocalScope() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Requires iOS 27 action receipt routing")
+        }
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var command = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(3), actionType: .custom, name: "custom")
+        command.target = .scene(routingSceneA)
+        command.actionReceipt = receipt
+        _ = routeApplicationCommand(app: app, command: command, context: context, writer: writer)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first { $0.action.target?.name == "custom" })
+        XCTAssertNil(view.userActionScope)
+        XCTAssertEqual(action.view.id, captured.viewID)
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), action.action.id)
+    }
+
+    func testUncertainLaunchReceiptRemainsUnclaimedUntilActualResolution() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Requires iOS 27 action receipt routing")
+        }
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        let uncertain = DatadogContext.mockWith(
+            sdkInitDate: routingDate,
+            launchInfo: .mockWith(launchReason: .uncertain, processLaunchDate: routingDate),
+            applicationStateHistory: .mockWith(initialState: .background, date: routingDate)
+        )
+        var command = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "deferred"
+        )
+        command.target = .scene(routingSceneA)
+        command.actionReceipt = receipt
+        _ = routeApplicationCommand(app: app, command: command, context: uncertain, writer: writer)
+        XCTAssertNil(view.userActionScope)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+        _ = routeApplicationCommand(
+            app: app,
+            command: RUMHandleAppLifecycleEventCommand(time: routingDate.addingTimeInterval(4), event: .willEnterForeground),
+            context: uncertain,
+            writer: writer
+        )
+        let accepted = try XCTUnwrap(view.userActionScope)
+        XCTAssertEqual(accepted.name, "deferred")
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), accepted.actionUUID.toRUMDataFormat)
+    }
+
+    func testContinuousActionReceiptKeepsTheClaimedActionAfterTerminalAndReplacement() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Requires iOS 27 action receipt routing")
+        }
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first {
+            $0.sceneIdentifier == routingSceneA && $0.isActiveView
+        })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let ownership = RUMContinuousActionOwnership(sceneIdentifier: routingSceneA, owner: owner)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var start = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "original-scroll"
+        )
+        start.target = .continuousAction(ownership)
+        start.actionReceipt = receipt
+        _ = routeApplicationCommand(app: app, command: start, context: context, writer: writer)
+        let original = try XCTUnwrap(ownership.claim)
+        XCTAssertEqual(original.actionID, try XCTUnwrap(view.userActionScope).actionUUID)
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), original.actionID.toRUMDataFormat)
+        var peer = RUMAddUserActionCommand.mockWith(
+            time: routingDate.addingTimeInterval(4), instrumentation: .manual, name: "peer-action"
+        )
+        peer.target = .scene(routingSceneB)
+        _ = routeApplicationCommand(app: app, command: peer, context: context, writer: writer)
+        var stop = RUMStopUserActionCommand(
+            time: routingDate.addingTimeInterval(5),
+            globalAttributes: [:],
+            attributes: [:],
+            actionType: .scroll,
+            name: nil
+        )
+        stop.target = .continuousAction(ownership)
+        _ = routeApplicationCommand(app: app, command: stop, context: context, writer: writer)
+        XCTAssertTrue(ownership.isClosed)
+        let emitted = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first {
+            $0.action.target?.name == "original-scroll"
+        })
+        XCTAssertEqual(emitted.view.id, captured.viewID)
+        XCTAssertEqual(emitted.action.id, original.actionID.toRUMDataFormat)
+        var later = RUMAddUserActionCommand.mockWith(
+            time: routingDate.addingTimeInterval(6), instrumentation: .manual, name: "later-action"
+        )
+        later.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: later, context: context, writer: writer)
+        XCTAssertNotEqual(view.userActionScope?.actionUUID, original.actionID)
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), original.actionID.toRUMDataFormat)
+        owner.invalidate()
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+    }
+
+    func testDroppedContinuousStartReceiptCannotClaimOnARepeatedStart() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Requires iOS 27 action receipt routing")
+        }
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first {
+            $0.sceneIdentifier == routingSceneA && $0.isActiveView
+        })
+        var manual = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .manual,
+            actionType: .scroll,
+            name: "existing"
+        )
+        manual.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: manual, context: context, writer: writer)
+        let existingID = try XCTUnwrap(view.userActionScope).actionUUID
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let ownership = RUMContinuousActionOwnership(sceneIdentifier: routingSceneA, owner: owner)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var start = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(4),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "dropped"
+        )
+        start.target = .continuousAction(ownership)
+        start.actionReceipt = receipt
+        _ = routeApplicationCommand(app: app, command: start, context: context, writer: writer)
+        XCTAssertNil(ownership.claim)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+        XCTAssertEqual(view.userActionScope?.actionUUID, existingID)
+        XCTAssertEqual(view.userActionScope?.name, "existing")
+        var stop = RUMStopUserActionCommand(
+            time: routingDate.addingTimeInterval(5),
+            globalAttributes: [:],
+            attributes: [:],
+            actionType: .scroll,
+            name: nil
+        )
+        stop.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: stop, context: context, writer: writer)
+        var replacement = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(6),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .manual,
+            actionType: .scroll,
+            name: "replacement"
+        )
+        replacement.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: replacement, context: context, writer: writer)
+        let replacementID = try XCTUnwrap(view.userActionScope).actionUUID
+        XCTAssertNotEqual(replacementID, existingID)
+        start.time = routingDate.addingTimeInterval(7)
+        _ = routeApplicationCommand(app: app, command: start, context: context, writer: writer)
+        XCTAssertEqual(view.userActionScope?.name, "replacement")
+        XCTAssertEqual(view.userActionScope?.actionUUID, replacementID)
+        XCTAssertNil(ownership.claim)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+    }
+
+    private func capturedReceiptContext(_ app: RUMApplicationScope, view: RUMViewScope) throws -> RUMCoreContext {
+        let session = try XCTUnwrap(app.activeSession)
+        return RUMCoreContext(
+            applicationID: view.context.rumApplicationID,
+            sessionID: session.sessionUUID.toRUMDataFormat,
+            sessionSampler: session.sampler,
+            viewID: view.viewUUID.toRUMDataFormat,
+            userActionID: view.userActionScope?.actionUUID.toRUMDataFormat,
+            viewServerTimeOffset: view.serverTimeOffset,
+            viewPath: view.viewPath,
+            viewName: view.viewName
+        )
+    }
+}
+extension RUMApplicationScopeTests {
+    private func webViewKeepAliveCapture(_ app: RUMApplicationScope, owner: RUMContextHandoff.Owner) throws -> RUMContextHandoff.Capture {
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        return .init(
+            owner: owner,
+            value: .init(
+                rumContext: try capturedReceiptContext(app, view: view),
+                sceneIdentifier: routingSceneA.rawValue,
+                hasPendingUserAction: false,
+                excludedUserActionID: nil
+            )
+        )
+    }
+
+    func testCapturedWebViewKeepAlive_rejectsSessionTransitionBeforeApplication() throws {
+        for restart in [false, true] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            let native = try XCTUnwrap(capture.value.resolvedRUMContext(for: scope.owner))
+            let receiverScope = FeatureScopeMock(context: .mockWith(additionalContext: [native]), deferEventWriteContext: true)
+            let subscriber = RUMCommandSubscriberMock()
+            let core = WebViewKeepAliveOwnerCore()
+            core.owner = scope.owner
+            core.sessionEligibility = { sessionID, owner in
+                guard owner === scope.owner, owner.isValid,
+                      let session = app.activeSession, session.sessionUUID.toRUMDataFormat == sessionID else {
+                    return false
+                }
+                let now = self.routingDate.addingTimeInterval(5)
+                return !RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: now.timeIntervalSince(self.routingDate))
+                    && !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: now.timeIntervalSince(self.routingDate))
+            }
+            let receiver = WebViewEventReceiver(
+                featureScope: receiverScope,
+                dateProvider: DateProviderMock(now: routingDate.addingTimeInterval(5)),
+                commandSubscriber: subscriber,
+                viewCache: ViewCache(dateProvider: DateProviderMock())
+            )
+            XCTAssertTrue(receiver.receive(
+                message: .payload(WebViewMessageWithRUMContext(message: .rum(["date": 1_600_000_003_000, "view": ["id": "browser"]]), capture: capture)),
+                from: core
+            ))
+            receiverScope.flushDeferredEventWriteContexts()
+            XCTAssertEqual(receiverScope.eventsWritten.count, 1)
+            let queued = try XCTUnwrap(subscriber.receivedCommands.firstElement(of: RUMKeepSessionAliveCommand.self))
+            XCTAssertTrue(queued.capture?.owner === scope.owner)
+            _ = routeApplicationCommand(app: app, command: RUMStopSessionCommand(time: routingDate.addingTimeInterval(4)), context: context, writer: writer)
+            if restart { navigate(app, context: context, scene: routingSceneB, name: "replacement", after: 4.5) }
+            let before = app.sessionScopes.map { $0.sessionUUID }
+            let active = app.activeSession
+            let interaction = active?.lastInteraction
+            let count = writer.events.count
+            _ = routeApplicationCommand(app: app, command: queued, context: context, writer: writer)
+            XCTAssertEqual(app.sessionScopes.map { $0.sessionUUID }, before)
+            XCTAssertTrue(app.activeSession === active)
+            XCTAssertEqual(app.activeSession?.lastInteraction, interaction)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
+
+    func testCapturedWebViewKeepAlive_rejectsInvalidOrReplacedOwnerAtApplication() throws {
+        for replacement in [false, true] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            if replacement { scope.owner = RUMContextHandoff.Owner() } else { scope.owner.invalidate() }
+            let count = writer.events.count
+            let session = app.activeSession
+            _ = routeApplicationCommand(
+                app: app,
+                command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(5), attributes: [:], capture: capture),
+                context: context,
+                writer: writer
+            )
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
+
+    func testCapturedWebViewKeepAlive_doesNotRestartExpiredSession() throws {
+        for elapsed in [RUMSessionScope.Constants.sessionTimeoutDuration + 3, RUMSessionScope.Constants.sessionMaxDuration + 3] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            let session = try XCTUnwrap(app.activeSession)
+            let interaction = session.lastInteraction
+            let count = writer.events.count
+            _ = routeApplicationCommand(
+                app: app,
+                command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(elapsed), attributes: [:], capture: capture),
+                context: context,
+                writer: writer
+            )
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertNil(session.endReason)
+            XCTAssertEqual(session.lastInteraction, interaction)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
+
+    func testCapturedWebViewKeepAlive_rejectsMaximumDurationWhileRecentlyActive() throws {
+        let scope = WebViewKeepAliveOwnerScope()
+        let (app, context) = routingApplication(featureScope: scope)
+        startRoutingPeers(app, context: context)
+        let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+        let session = try XCTUnwrap(app.activeSession)
+
+        for elapsed in stride(from: 600.0, to: RUMSessionScope.Constants.sessionMaxDuration, by: 600.0) {
+            let time = routingDate.addingTimeInterval(elapsed)
+            var interaction = RUMAddUserActionCommand.mockWith(time: time, actionType: .custom)
+            interaction.target = .scene(routingSceneA)
+            _ = routeApplicationCommand(app: app, command: interaction, context: context, writer: writer)
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertEqual(session.lastInteraction, time.timeIntervalSince(routingDate))
+        }
+
+        let expiredDate = routingDate.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration + 3)
+        XCTAssertFalse(RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: expiredDate.timeIntervalSince(routingDate)))
+        XCTAssertTrue(RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: expiredDate.timeIntervalSince(routingDate)))
+        let interaction = session.lastInteraction
+        let count = writer.events.count
+
+        _ = routeApplicationCommand(
+            app: app,
+            command: RUMKeepSessionAliveCommand(time: expiredDate, attributes: [:], capture: capture),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertTrue(app.activeSession === session)
+        XCTAssertNil(session.endReason)
+        XCTAssertEqual(session.lastInteraction, interaction)
+        XCTAssertEqual(writer.events.count, count)
+    }
+
+    func testCapturedWebViewKeepAlive_preservesLegacyAndOriginatingSceneTargets() throws {
+        let scope = WebViewKeepAliveOwnerScope()
+        let (app, context) = routingApplication(featureScope: scope)
+        startRoutingPeers(app, context: context)
+        let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+        let command = RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(5), attributes: [:], capture: capture)
+        if case .scene(let scene) = command.target { XCTAssertEqual(scene, routingSceneA) } else { XCTFail("Missing originating scene") }
+        let session = try XCTUnwrap(app.activeSession)
+        let interaction = session.lastInteraction
+        _ = routeApplicationCommand(app: app, command: command, context: context, writer: writer)
+        XCTAssertTrue(app.activeSession === session)
+        XCTAssertEqual(session.lastInteraction, interaction)
+        let legacy = RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(6), attributes: [:])
+        XCTAssertNil(legacy.capture)
+        if case .processRepresentative = legacy.target {} else { XCTFail("Legacy target changed") }
+    }
+}
+
+private final class WebViewKeepAliveOwnerScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    private let base = FeatureScopeMock()
+    var owner = RUMContextHandoff.Owner()
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    var dataStore: DataStore { base.dataStore }
+    var telemetry: Telemetry { base.telemetry }
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        base.eventWriteContext(bypassConsent: bypassConsent, block)
+    }
+    func context(_ block: @escaping (DatadogContext) -> Void) { base.context(block) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func set(anonymousId: String?) { base.set(anonymousId: anonymousId) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
+}
+
+private final class WebViewKeepAliveOwnerCore: DatadogCoreProtocol, RUMContextHandoffOwnerProviding, RUMContextHandoffSessionValidating {
+    var owner: RUMContextHandoff.Owner?
+    var sessionEligibility: (String, RUMContextHandoff.Owner) -> Bool = { _, _ in false }
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    var remoteConfiguration: RemoteConfiguration? { nil }
+
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool {
+        sessionEligibility(sessionID, owner)
+    }
+    func register<T>(feature: T) throws where T: DatadogFeature {}
+    func feature<T>(named name: String, type: T.Type) -> T? { name == Feature.rum ? self as? T : nil }
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature { NOPFeatureScope() }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
+}
+
+extension RUMApplicationScopeTests {
+    func testPreparedResource_stoppedAndExpiredSessionsKeepOriginalOwnership() throws {
+        for expires in [false, true] {
+            let featureScope = WebViewKeepAliveOwnerScope()
+            let time = Date(timeIntervalSince1970: 1_600_000_000)
+            let dependencies = RUMScopeDependencies.mockWith(
+                featureScope: featureScope,
+                trackBackgroundEvents: false,
+                featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
+            )
+            guard dependencies.isMultiSceneTrackingEnabled else { throw XCTSkip("Requires enabled scene tracking") }
+            monotonicClock.elapsedTime = 0
+            let context = DatadogContext.mockWith(sdkInitDate: time, launchInfo: .mockWith(launchReason: .userLaunch))
+            let app = createRUMApplicationScope(dependencies: dependencies, sdkContext: context)
+            var startA = RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("original"), name: "original")
+            startA.target = .scene(RUMSceneIdentifier(rawValue: "original-scene"))
+            _ = app.process(command: startA, monotonicTime: 0, context: context, writer: writer)
+            let original = try XCTUnwrap(app.activeSession)
+            let view = try XCTUnwrap(original.viewScopes.last { $0.isActiveView && $0.viewName == "original" })
+            let identity = RUMResourcePreparationIdentity(owner: featureScope.owner, resourceID: UUID(), sessionID: original.sessionUUID, viewID: view.viewUUID)
+            _ = app.processResourcePreparation(.init(identity: identity, operation: .reserve, time: time), monotonicTime: 0, context: context, writer: writer)
+            XCTAssertTrue(view.hasPendingResourcePreparations)
+            _ = app.process(command: RUMStopSessionCommand.mockWith(time: time.addingTimeInterval(1)), monotonicTime: 1, context: context, writer: writer)
+            var startB = RUMStartViewCommand.mockWith(time: time.addingTimeInterval(2), identity: ViewIdentifier("peer"), name: "peer")
+            startB.target = .scene(RUMSceneIdentifier(rawValue: "peer-scene"))
+            _ = app.process(command: startB, monotonicTime: 2, context: context, writer: writer)
+            let peer = try XCTUnwrap(app.activeSession)
+            XCTAssertFalse(peer === original)
+            let peerID = peer.context.activeViewID
+            let interaction = peer.lastInteraction
+            let before = writer.events(ofType: RUMViewEvent.self).count
+            let now = expires ? original.lastInteraction + RUMSessionScope.Constants.sessionTimeoutDuration + 1 : 3
+            let start = RUMStartResourceCommand.mockWith(resourceKey: identity.resourceKey, time: time.addingTimeInterval(3))
+            let accepted = app.processResourcePreparation(.init(identity: identity, operation: .commit(start), time: start.time), monotonicTime: now, context: context, writer: writer)
+            XCTAssertEqual(accepted, !expires)
+            if expires {
+                XCTAssertNil(view.resourceScopes[identity.resourceKey])
+                _ = app.processResourcePreparation(.init(identity: identity, operation: .abandon, time: start.time), monotonicTime: now, context: context, writer: writer)
+                XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, before)
+            } else {
+                XCTAssertNotNil(view.resourceScopes[identity.resourceKey])
+                var terminal = RUMStopResourceCommand.mockWith(resourceKey: identity.resourceKey, time: time.addingTimeInterval(4))
+                terminal.isAutomatic = true
+                XCTAssertTrue(app.processResourcePreparation(.init(identity: identity, operation: .resource(terminal), time: terminal.time), monotonicTime: 4, context: context, writer: writer))
+                let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+                XCTAssertEqual(event.session.id, original.sessionUUID.toRUMDataFormat)
+                XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+            }
+            XCTAssertTrue(app.activeSession === peer)
+            XCTAssertEqual(peer.context.activeViewID, peerID)
+            XCTAssertEqual(peer.lastInteraction, interaction)
+            XCTAssertNil(peer.endReason)
+            XCTAssertFalse(view.hasPendingResourcePreparations)
+            XCTAssertFalse(app.sessionScopes.contains { $0 === original })
+        }
+    }
+}
+
+#endif

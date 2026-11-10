@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -23,7 +24,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by .resourceKey.
-    private(set) var resourceScopes: [String: RUMResourceScope] = [:]
+    fileprivate(set) var resourceScopes: [String: RUMResourceScope] = [:]
     /// Active User Action scope. There can be only one active user action at a time.
     private(set) var userActionScope: RUMUserActionScope?
 
@@ -215,6 +216,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
+    var hasPendingResourcePreparations: Bool { false }
+
+    func containsResourcePreparation(_ key: String) -> Bool { false }
+
+    @discardableResult
+    func reserveResourcePreparation(_ key: String) -> Bool { false }
+
+    @discardableResult
+    func removeResourcePreparation(_ key: String) -> Bool { false }
+
     // MARK: - RUMContextProvider
 
     var context: RUMContext {
@@ -231,6 +242,37 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
 extension RUMViewScope {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        process(command: command, allowsInactiveResourceStart: false, completesPreparation: false, context: context, writer: writer)
+    }
+
+    /// Only an exact queued preparation can admit a Resource into an inactive view.
+    func commitResourcePreparation(
+        _ key: String, command: RUMStartResourceCommand, context: DatadogContext, writer: Writer
+    ) -> Bool? {
+        guard command.resourceKey == key, removeResourcePreparation(key) else {
+            return nil
+        }
+        return process(command: command, allowsInactiveResourceStart: true, completesPreparation: false, context: context, writer: writer)
+    }
+
+    /// An abandonment after commit has no authority over the normal Resource.
+    func abandonResourcePreparation(
+        _ key: String, on command: RUMCommand, writesEvents: Bool, context: DatadogContext, writer: Writer
+    ) -> Bool? {
+        guard removeResourcePreparation(key) else {
+            return nil
+        }
+        let completesPreparation = !isActiveView && resourceScopes.isEmpty && !hasPendingResourcePreparations
+        guard writesEvents, completesPreparation else {
+            // A rejected or still-pending request is bookkeeping, not Action activity.
+            return !completesPreparation
+        }
+        return process(command: command, allowsInactiveResourceStart: false, completesPreparation: true, context: context, writer: writer)
+    }
+
+    private func process(
+        command: RUMCommand, allowsInactiveResourceStart: Bool, completesPreparation: Bool, context: DatadogContext, writer: Writer
+    ) -> Bool {
         if dependencies.isMultiSceneTrackingEnabled,
            command is RUMStartUserActionCommand,
            case .continuousAction(let ownership) = command.target, !ownership.canClaim {
@@ -239,15 +281,24 @@ extension RUMViewScope {
         let wasActiveView = isActiveView
         let command = command.resolvingResourceOwners(in: [self])
 
-        // Tells if the View did change and an update event should be send.
-        needsViewUpdate = false
+        // A final pending-key settlement also needs the ordinary inactive update.
+        needsViewUpdate = completesPreparation
 
-        // Propagate to User Action scope
-        userActionScope = userActionScope?.scope(
-            byPropagating: command,
-            context: context,
-            writer: writer
-        )
+        // A captured error cannot refresh or count against a different action.
+        let propagatesToUserAction: Bool
+        if let error = command as? RUMAddCurrentViewErrorCommand,
+           case .captured(let actionID) = error.userActionTarget {
+            propagatesToUserAction = actionID != nil && actionID == userActionScope?.actionUUID
+        } else {
+            propagatesToUserAction = true
+        }
+        if propagatesToUserAction {
+            userActionScope = userActionScope?.scope(
+                byPropagating: command,
+                context: context,
+                writer: writer
+            )
+        }
 
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
@@ -324,7 +375,7 @@ extension RUMViewScope {
             needsViewUpdate = true
 
         // Resource commands
-        case let command as RUMStartResourceCommand where isActiveView:
+        case let command as RUMStartResourceCommand where isActiveView || allowsInactiveResourceStart:
             startResource(on: command)
 
         // User Action commands
@@ -334,6 +385,13 @@ extension RUMViewScope {
                 if dependencies.isMultiSceneTrackingEnabled,
                    case .continuousAction(let ownership) = command.target, let action = userActionScope {
                     ownership.claimAction(sessionID: self.context.sessionID, viewID: viewUUID, actionID: action.actionUUID)
+                }
+                if dependencies.isMultiSceneTrackingEnabled, let action = userActionScope {
+                    command.actionReceipt?.accept(
+                        sessionID: self.context.sessionID.toRUMDataFormat,
+                        viewID: viewUUID.toRUMDataFormat,
+                        actionID: action.actionUUID.toRUMDataFormat
+                    )
                 }
             } else {
                 reportActionDropped(type: command.actionType, name: command.name)
@@ -395,7 +453,7 @@ extension RUMViewScope {
             sendViewUpdateEvent(on: command, context: context, writer: writer)
         }
 
-        let hasNoPendingResources = resourceScopes.isEmpty
+        let hasNoPendingResources = resourceScopes.isEmpty && !hasPendingResourcePreparations
         let shouldComplete = !isActiveView && hasNoPendingResources
 
         if shouldComplete {
@@ -497,7 +555,7 @@ extension RUMViewScope {
     }
 
     private func createDiscreteUserActionScope(on command: RUMAddUserActionCommand) -> RUMUserActionScope {
-        return RUMUserActionScope(
+        let action = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
             name: command.name,
@@ -513,6 +571,14 @@ extension RUMViewScope {
                 self?.onActionEventSent(event)
             }
         )
+        if dependencies.isMultiSceneTrackingEnabled {
+            command.actionReceipt?.accept(
+                sessionID: self.context.sessionID.toRUMDataFormat,
+                viewID: viewUUID.toRUMDataFormat,
+                actionID: action.actionUUID.toRUMDataFormat
+            )
+        }
+        return action
     }
 
     private func onActionEventSent(_ event: RUMActionEvent) {
@@ -575,7 +641,7 @@ extension RUMViewScope {
         let completionHandler = errorCommand?.completionHandler ?? NOPCompletionHandler
 
         // RUMM-1779 Keep view active as long as we have ongoing resources
-        let isActive = isActiveView || !resourceScopes.isEmpty
+        let isActive = isActiveView || !resourceScopes.isEmpty || hasPendingResourcePreparations
         // RUMM-2079 `time_spent` can't be lower than 1ns
         let timeSpent = max(Constants.minimumTimeSpent, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler?.cpu
@@ -849,6 +915,14 @@ extension RUMViewScope {
 
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
+        let userActionID: RUMUUID?
+        if let error = command as? RUMAddCurrentViewErrorCommand,
+           case .captured(let capturedActionID) = error.userActionTarget {
+            userActionID = capturedActionID
+        } else {
+            userActionID = self.context.activeUserActionID
+        }
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -860,7 +934,7 @@ extension RUMViewScope {
                 )
             ),
             account: .init(context: context),
-            action: self.context.activeUserActionID.map { rumUUID in
+            action: userActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
@@ -1111,5 +1185,32 @@ private extension Result {
         case .success(let success): return success
         case .failure: return nil
         }
+    }
+}
+
+/// Pending request preparation storage exists only for resolved-On views.
+internal final class RUMPreparedResourceViewScope: RUMViewScope {
+    private var pendingResourceKeys: Set<String> = []
+
+    /// Breaks Resource-to-View retention when the original session is released.
+    func discardResourcesAfterSessionEnd() {
+        pendingResourceKeys.removeAll()
+        resourceScopes.removeAll()
+    }
+
+    override var hasPendingResourcePreparations: Bool { !pendingResourceKeys.isEmpty }
+
+    override func containsResourcePreparation(_ key: String) -> Bool {
+        pendingResourceKeys.contains(key)
+    }
+
+    @discardableResult
+    override func reserveResourcePreparation(_ key: String) -> Bool {
+        pendingResourceKeys.insert(key).inserted
+    }
+
+    @discardableResult
+    override func removeResourcePreparation(_ key: String) -> Bool {
+        pendingResourceKeys.remove(key) != nil
     }
 }

@@ -91,6 +91,53 @@ internal enum RUMErrorUserActionTarget: Equatable {
     case captured(RUMUUID?)
 }
 
+/// Original session/view for one captured Flags evaluation; retains no Core or UI.
+internal final class RUMCapturedFlagEvaluationOwnership {
+    let owner: RUMContextHandoff.Owner
+    let sessionID: RUMUUID
+    let viewID: RUMUUID
+
+    init?(capture: RUMContextHandoff.Capture) {
+        guard capture.owner.isValid, let context = capture.value.rumContext,
+              let sessionID = UUID(uuidString: context.sessionID),
+              let viewID = context.viewID.flatMap(UUID.init(uuidString:)) else { return nil }
+        owner = capture.owner
+        self.sessionID = RUMUUID(rawValue: sessionID)
+        self.viewID = RUMUUID(rawValue: viewID)
+    }
+}
+
+/// Exact ownership for a mirrored error; allocated only for a captured On payload.
+internal final class RUMCapturedErrorOwnership {
+    private let capture: RUMContextHandoff.Capture
+    let sessionID: RUMUUID
+    let viewID: RUMUUID
+    var owner: RUMContextHandoff.Owner { capture.owner }
+
+    init?(capture: RUMContextHandoff.Capture) {
+        guard capture.owner.isValid, let context = capture.value.rumContext,
+              let sessionID = UUID(uuidString: context.sessionID),
+              let viewID = context.viewID.flatMap(UUID.init(uuidString:)) else {
+            return nil
+        }
+        self.capture = capture
+        self.sessionID = RUMUUID(rawValue: sessionID)
+        self.viewID = RUMUUID(rawValue: viewID)
+    }
+
+    /// Resolves the original action receipt at application, never the current action.
+    func actionTarget(for owner: RUMContextHandoff.Owner?) -> RUMErrorUserActionTarget? {
+        guard owner === capture.owner,
+              let context = capture.value.resolvedRUMContext(for: capture.owner),
+              context.sessionID == sessionID.toRUMDataFormat,
+              context.viewID == viewID.toRUMDataFormat else {
+            return nil
+        }
+        let actionID = context.userActionID.flatMap(UUID.init(uuidString:)).map { RUMUUID(rawValue: $0) }
+        return .captured(actionID)
+    }
+}
+
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {
     /// The time of command issue.
@@ -353,6 +400,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand, RUMExplicitViewT
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
     var userActionTarget: RUMErrorUserActionTarget = .current
+    var capturedOwnership: RUMCapturedErrorOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -798,10 +846,16 @@ internal protocol RUMUserActionCommand: RUMCommand {
     var actionType: RUMActionType { get }
     var target: RUMCommandTarget { get set }
     var explicitTarget: RUMCommandTarget? { get }
+    var actionReceipt: RUMContextHandoff.ActionReceipt? { get }
+}
+
+extension RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? { nil }
 }
 
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
     var time: Date
@@ -842,6 +896,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 
 /// Adds discrete (discontinuous) User Action.
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
     var time: Date
@@ -867,6 +922,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 internal struct RUMAddFeatureFlagEvaluationCommand: RUMExplicitViewTargetCommand {
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
+    var capturedOwnership: RUMCapturedFlagEvaluationOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -911,6 +967,13 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
 
 /// RUM Events received from WebView should keep the active session alive, therefore they fire this command to do so. (ref: RUMM-1793)
 internal struct RUMKeepSessionAliveCommand: RUMCommand {
+    /// Ownership supplied by a captured WebView message; nil preserves legacy processing.
+    var target: RUMCommandTarget {
+        guard let capture else {
+            return .processRepresentative
+        }
+        return capture.value.sceneIdentifier.map { .scene(RUMSceneIdentifier(rawValue: $0)) } ?? .none
+    }
     var canStartApplicationLaunchView = false
     let canStartBackgroundView = false
     let shouldRestartLastViewAfterSessionExpiration = false
@@ -921,6 +984,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
+    var capture: RUMContextHandoff.Capture? = nil
 }
 
 // MARK: - Feature Operation Steps (Vital) commands
@@ -985,4 +1049,46 @@ internal struct RUMSetInternalViewAttributeCommand: RUMCommand {
 
     let key: AttributeKey
     let value: AttributeValue
+}
+
+/// Original owner and pending key for one captured request preparation.
+internal struct RUMResourcePreparationIdentity {
+    let owner: RUMContextHandoff.Owner
+    let resourceID: UUID
+    let sessionID: RUMUUID
+    let viewID: RUMUUID
+
+    var resourceKey: String { resourceID.uuidString }
+}
+
+/// Private queue control; it is never sent through generic session processing.
+internal struct RUMResourcePreparationCommand {
+    enum Operation {
+        case reserve
+        case commit(RUMStartResourceCommand)
+        case resource(RUMCommand)
+        case abandon
+    }
+
+    let identity: RUMResourcePreparationIdentity
+    var operation: Operation
+    let time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+}
+
+/// Destruction releases only a pending key through the weak original publisher.
+internal final class RUMResourcePreparationReceipt {
+    let identity: RUMResourcePreparationIdentity
+    private(set) weak var publisher: Monitor?
+
+    init(identity: RUMResourcePreparationIdentity, publisher: Monitor) {
+        self.identity = identity
+        self.publisher = publisher
+    }
+
+    deinit {
+        // Send the value, never the object being destroyed, to the original queue.
+        let identity = identity
+        publisher?.abandonResourcePreparation(identity)
+    }
 }

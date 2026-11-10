@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -123,6 +124,46 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        if let keepAlive = command as? RUMKeepSessionAliveCommand, let capture = keepAlive.capture {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  capture.owner.isValid,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner,
+                  let rum = capture.value.resolvedRUMContext(for: capture.owner),
+                  let session = activeSession,
+                  session.sessionUUID.toRUMDataFormat == rum.sessionID,
+                  !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: monotonicTime),
+                  !RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: monotonicTime) else {
+                return
+            }
+            // Validate after launch resolution, before any session creation, refresh or broadcast.
+            _ = session.process(command: keepAlive, monotonicTime: monotonicTime, context: context, writer: writer)
+            return
+        }
+        if let flag = command as? RUMAddFeatureFlagEvaluationCommand,
+           let ownership = flag.capturedOwnership {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  ownership.owner.isValid,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+                  let session = activeSession, session.sessionUUID == ownership.sessionID else { return }
+            // This also runs after deferred launch resolution, before creating/refreshing a session.
+            session.processCapturedFlagEvaluation(flag, monotonicTime: monotonicTime, context: context, writer: writer)
+            return
+        }
+        if let error = command as? RUMAddCurrentViewErrorCommand,
+           let ownership = error.capturedOwnership {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  ownership.owner.isValid,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+                  let session = activeSession, session.sessionUUID == ownership.sessionID else {
+                return
+            }
+            // A captured mirror cannot start, refresh or broadcast into another session.
+            session.processCapturedError(error, monotonicTime: monotonicTime, context: context, writer: writer)
+            return
+        }
+        let actionReceipt = dependencies.isMultiSceneTrackingEnabled
+            ? (command as? RUMUserActionCommand)?.actionReceipt : nil
+        defer { actionReceipt?.reject() }
         if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
             if command is RUMStartUserActionCommand {
                 guard ownership.beginStart() else {
@@ -283,6 +324,30 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // sessions were created.
             sessionScopeDidUpdate(nil)
         }
+    }
+
+    /// Routes a private request control without launch resolution or session fanout.
+    @discardableResult
+    func processResourcePreparation(
+        _ command: RUMResourcePreparationCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer
+    ) -> Bool {
+        guard dependencies.isMultiSceneTrackingEnabled,
+              let session = sessionScopes.first(where: { $0.sessionUUID == command.identity.sessionID }),
+              let result = session.processResourcePreparation(command, monotonicTime: monotonicTime, context: context, writer: writer) else {
+            return false
+        }
+        if !result.keepAlive {
+            // Settling a stopped A must not overwrite a newer active B's metadata.
+            if result.publishesContext, activeSession == nil, sessionScopes.last === session {
+                lastSessionEndReason = session.endReason
+                applicationState.wasPreviousSessionStopped = session.endReason == .stopAPI
+            }
+            sessionScopes.removeAll { $0 === session }
+            if result.publishesContext {
+                dependencies.sessionEndedMetric.endMetric(sessionID: session.sessionUUID, with: context)
+            }
+        }
+        return result.publishesContext
     }
 
     // MARK: - Private
