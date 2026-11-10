@@ -2,7 +2,7 @@
 
 This stack is held from merge pending API review, physical iPhone Duo acceptance, final CI and maintainer approval. The proposed API has no stability approval yet.
 
-The final candidate preserves the qualified SDK implementation. Its proposed exposure changes access levels and Release visibility without changing executable bodies. Signing and feature-document reference repairs preserve SDK and test content. Accepted behavioral evidence is reused after comparing source and affected dependencies.
+The final candidate preserves the qualified SDK implementation. Its proposed exposure changes access levels and Release visibility without changing executable bodies. A later cleanup removes the unused, unshipped prototype target alias; all retained API declarations and executable bodies are unchanged. Accepted behavioral and normal-client evidence is reused after comparing source and affected dependencies; this deletion does not claim a new full SDK build or runtime run.
 
 | Check | Scope and result |
 | --- | --- |
@@ -17,6 +17,6 @@ The first repository-framework Release product carried test/coverage flags and w
 
 Consumer compilation and linkage do not establish backend delivery or a real-app journey. The integration guide enables RUM and provides examples for that next step. Record the exact pinned revision, app integration changes, journeys and observed owners during app testing.
 
-The integration examples pass typechecking in Swift 5 and Swift 6 language modes. Normal imports reject the SPI compatibility alias and internal transition machinery, and deployment-target checks reject an unguarded iOS 27 host. Proposed API snapshots add 42 Swift lines and 22 Objective-C lines without removing existing declarations. They remain review diffs, not approved API contracts.
+The integration examples pass typechecking in Swift 5 and Swift 6 language modes. Normal-import controls established that the prototype spelling and internal transition machinery were not customer exports, and deployment-target checks reject an unguarded iOS 27 host. The unused prototype alias has since been removed entirely. Current proposed API snapshots add 41 Swift lines and 22 Objective-C lines relative to the pinned delivery base, without removing shipped declarations. They remain review diffs, not approved API contracts.
 
 The source-documentation extractor reports diagnostics in inactive AppKit code while producing the complete RUM source inventory. Its strict semantic-clean audit remains incomplete. Ordinary iOS compilation, generated headers and consumer checks pass independently. The snapshots include SPI declarations and omit availability annotations, so the normal-import and availability checks define the actual customer exposure. The tool limitation, original failed audits and outgoing PR CI remain open before final acceptance. An older eight-cell build-SDK/Duo matrix was unexecuted and is not counted as accepted current coverage. Existing split-view/tab-bar capture limits remain. Session Replay captured-content correctness, optional networking benchmarks and unavailable React Native SPM integration are outside the completed scope. Physical Duo acceptance is still required before merge.
