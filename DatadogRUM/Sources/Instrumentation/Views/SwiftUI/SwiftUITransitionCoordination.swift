@@ -911,18 +911,21 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         self.notificationCenter = notificationCenter
         self.coordinatorProvider = coordinatorProvider
         self.admitsCallbacks = admitsCallbacks
+        let discardDisconnectedScene: @MainActor @Sendable (@MainActor () -> UIWindowScene?) -> Void = { [weak self] sceneProvider in
+            guard let self, self.admitsCallbacks(), let scene = sceneProvider() else {
+                return
+            }
+            self.discard(sceneIdentifier: RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier))
+        }
         disconnectObserver = notificationCenter.addObserver(
             forName: UIScene.didDisconnectNotification,
             object: nil,
             queue: .main
-        ) { [weak self] notification in
+        ) { notification in
             // Notification delivery is not actor proof. UIKit inspection occurs in owned main delivery.
             weak var scene = notification.object as? UIWindowScene
-            DispatchQueue.main.async { [weak self, weak scene] in
-                guard let self, self.admitsCallbacks(), let scene else {
-                    return
-                }
-                self.discard(sceneIdentifier: RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier))
+            DispatchQueue.main.async { [weak scene] in
+                discardDisconnectedScene { scene }
             }
         }
     }
@@ -958,6 +961,58 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             state: state,
             navigationOccurrenceSource: navigationOccurrenceSource
         )
+    }
+
+    /// Uses current UIKit attachment, never a cached trait or scene identifier.
+    @MainActor
+    func sceneIdentifier(
+        for state: RUMViewTrackingState,
+        navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource,
+        admission: RUMSwiftUIViewCallbackAdmission
+    ) -> RUMSceneIdentifier? {
+        guard admitsCallbacks(), Thread.isMainThread, admission.isValid,
+              state.admission?.matches(admission) == true,
+              let foundation = admission.binding.foundation else {
+            return nil
+        }
+        var hasOwnRegistration = false
+        var ownScene: RUMSceneIdentifier?
+        var ownSceneIsAmbiguous = false
+        var sourceScene: RUMSceneIdentifier?
+        var sourceSceneIsAmbiguous = false
+        for registration in observerRegistrations.values {
+            guard let original = registration.admission, original.isValid,
+                  let registeredState = registration.state,
+                  registeredState.admission?.matches(original) == true,
+                  original.binding.epoch == admission.binding.epoch,
+                  original.binding.lifetime === admission.binding.lifetime,
+                  original.binding.foundation === foundation else {
+                continue
+            }
+            let isOwnReader = registeredState === state
+            guard isOwnReader || registration.navigationOccurrenceSource === navigationOccurrenceSource else {
+                continue
+            }
+            if isOwnReader {
+                hasOwnRegistration = true
+            }
+            guard let observer = registration.observer,
+                  let scene = observer.currentSceneIdentifier,
+                  original.admits(sceneIdentifier: scene) else {
+                continue
+            }
+            if isOwnReader {
+                if let ownScene, ownScene != scene { ownSceneIsAmbiguous = true }
+                ownScene = scene
+            } else {
+                if let sourceScene, sourceScene != scene { sourceSceneIsAmbiguous = true }
+                sourceScene = scene
+            }
+        }
+        if hasOwnRegistration {
+            return ownSceneIsAmbiguous ? nil : ownScene
+        }
+        return sourceSceneIsAmbiguous ? nil : sourceScene
     }
 
     @MainActor

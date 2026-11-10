@@ -4180,7 +4180,29 @@ public class objc_RUMConfiguration: NSObject
 public class objc_RUM: NSObject
     public static func enable(with configuration: objc_RUMConfiguration)
     public static func enable(with configuration: objc_RUMConfiguration, instanceName: String?)
+public final class objc_RUMViewTarget: NSObject
+    public static func current(in scene: UIWindowScene) -> objc_RUMViewTarget?
 public class objc_RUMMonitor: NSObject
+    public func addViewAttribute(forKey key: String, value: Any, view: objc_RUMViewTarget)
+    public func addViewAttributes(_ attributes: [String: Any], view: objc_RUMViewTarget)
+    public func removeViewAttribute(forKey key: String, view: objc_RUMViewTarget)
+    public func removeViewAttributes(forKeys keys: [String], view: objc_RUMViewTarget)
+    public func addTiming(name: String, view: objc_RUMViewTarget)
+    public func addViewLoadingTime(overwrite: Bool, view: objc_RUMViewTarget)
+    public func startView(key: String,name: String?,in scene: UIWindowScene,attributes: [String: Any])
+    public func stopView(key: String,in scene: UIWindowScene,attributes: [String: Any])
+    public func addError(message: String,stack: String?,source: objc_RUMErrorSource,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func addError(error: Error,source: objc_RUMErrorSource,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func startResource(resourceKey: String,request: URLRequest,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func startResource(resourceKey: String,url: URL,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func startResource(resourceKey: String,httpMethod: objc_RUMMethod,urlString: String,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func addAction(type: objc_RUMActionType,name: String,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func startAction(type: objc_RUMActionType,name: String,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func stopAction(type: objc_RUMActionType,name: String?,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func addFeatureFlagEvaluation(name: String, value: Any, view: objc_RUMViewTarget)
+    public func startOperation(name: String,operationKey: String?,view: objc_RUMViewTarget,attributes: [String: Any],options: objc_OperationOptions?)
+    public func succeedOperation(name: String,operationKey: String?,view: objc_RUMViewTarget,attributes: [String: Any])
+    public func failOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,view: objc_RUMViewTarget,attributes: [String: Any])
     public static func shared() -> objc_RUMMonitor
     public static func shared(instanceName: String?) -> objc_RUMMonitor
     public func currentSessionID(completion: @escaping (String?) -> Void)

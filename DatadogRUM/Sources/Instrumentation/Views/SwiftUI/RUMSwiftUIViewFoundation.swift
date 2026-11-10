@@ -213,6 +213,24 @@ internal final class RUMSwiftUIViewFoundation {
         transitionArbiter?.register(observer: observer, for: state, navigationOccurrenceSource: source)
     }
 
+    fileprivate func sceneIdentifier(
+        for state: RUMViewTrackingState,
+        navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource,
+        admission: RUMSwiftUIViewCallbackAdmission
+    ) -> RUMSceneIdentifier? {
+        guard admission.isValid, admits(admission.binding),
+              state.admission?.matches(admission) == true,
+              let scene = transitionArbiter?.sceneIdentifier(
+                for: state,
+                navigationOccurrenceSource: navigationOccurrenceSource,
+                admission: admission
+              ),
+              admitsConnectedScene(scene, binding: admission.binding) else {
+            return nil
+        }
+        return scene
+    }
+
     fileprivate func processTransition(
         _ intent: RUMSwiftUIInteractiveTransitionArbiter.Intent,
         state: RUMViewTrackingState,
@@ -340,6 +358,21 @@ internal final class RUMSwiftUIViewTransitionAdmission {
             observer: observer,
             state: state,
             source: navigationOccurrenceSource,
+            admission: admission
+        )
+    }
+
+    /// Resolves a boundary's scene from its live reader or mounted navigation source.
+    func sceneIdentifier(
+        for state: RUMViewTrackingState,
+        navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource
+    ) -> RUMSceneIdentifier? {
+        guard admission.isValid else {
+            return nil
+        }
+        return foundation?.sceneIdentifier(
+            for: state,
+            navigationOccurrenceSource: navigationOccurrenceSource,
             admission: admission
         )
     }

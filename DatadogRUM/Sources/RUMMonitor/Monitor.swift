@@ -1368,3 +1368,111 @@ internal extension Monitor {
         process(command: error)
     }
 }
+
+#if os(iOS)
+extension Monitor: RUMOperationViewTargetHandling {
+    func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?,
+        explicitTarget: RUMCommandTarget?
+    ) {
+        guard isMultiSceneTrackingEnabled, let explicitTarget else {
+            startOperation(
+                name: name,
+                operationKey: operationKey,
+                attributes: attributes,
+                options: options
+            )
+            return
+        }
+
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
+
+        telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
+
+        processOperationStep(
+            command: RUMOperationStepVitalCommand(
+                explicitTarget: explicitTarget,
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                stepType: .start,
+                failureReason: nil,
+                options: options,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        guard isMultiSceneTrackingEnabled, let explicitTarget else {
+            succeedOperation(
+                name: name,
+                operationKey: operationKey,
+                attributes: attributes
+            )
+            return
+        }
+
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) successfully ended")
+
+        telemetry.usage(event: .addOperationStepVital(.init(actionType: .succeed)))
+
+        processOperationStep(
+            command: RUMOperationStepVitalCommand(
+                explicitTarget: explicitTarget,
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                stepType: .end,
+                failureReason: nil,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        guard isMultiSceneTrackingEnabled, let explicitTarget else {
+            failOperation(
+                name: name,
+                operationKey: operationKey,
+                reason: reason,
+                attributes: attributes
+            )
+            return
+        }
+
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) unsuccessfully ended with the following failure reason: \(reason.rawValue)")
+
+        telemetry.usage(event: .addOperationStepVital(.init(actionType: .fail)))
+
+        processOperationStep(
+            command: RUMOperationStepVitalCommand(
+                explicitTarget: explicitTarget,
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                stepType: .end,
+                failureReason: reason,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+}
+#endif

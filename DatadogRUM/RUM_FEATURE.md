@@ -1,13 +1,17 @@
 ---
 last_updated: 2026-11-10
 sdk_version: 3.21.0
-verified_against_commit: 80f94b69af21748599299addf1204fcf050ef9f1
+verified_against_commit: afa85ab7da7740c1a30d5adeec50607a5672d2ce
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
   - DatadogRUM/Sources/RUMConfiguration+RemoteConfiguration.swift
   - DatadogRUM/Sources/RUMMonitor.swift
   - DatadogRUM/Sources/RUMMonitorProtocol.swift
+  - DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift
+  - DatadogRUM/Sources/RUM+objc.swift
+  - DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUINavigationHost.swift
+  - DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUINavigationSource.swift
 ---
 
 # RUM (Real User Monitoring) Feature
@@ -221,6 +225,27 @@ monitor.currentSessionID { sessionId in
 monitor.stopView(key: "ProductList")
 ```
 
+## Proposed multi-scene API
+
+The unmerged candidate exposes scene-aware APIs through normal imports and Release builds. These APIs are proposed and subject to review. See [integration examples and limits](../docs/multi-scene-integration.md).
+
+`RUM.Configuration.FeatureFlag.multiSceneTracking` is default-off. Automatic scene tracking additionally requires iOS 27 or later and Boolean `true` for `UIApplicationSupportsMultipleScenes` in the app's scene manifest. Existing instrumentation keeps working without additional tracking calls, modifiers, scene registration or context propagation when multi-scene tracking is unused.
+
+On iOS 15 and later, `RUMViewTarget.current(in:)` identifies the scene whose current tracked view will receive work when the SDK processes it. The proposed main-actor overloads cover:
+
+- `startView(key:name:in:attributes:)` and `stopView(key:in:attributes:)`.
+- Target-taking timing/loading-time methods and all four view-attribute methods.
+- Target-taking message, Error and Error-completion methods.
+- The three resource-start forms; resource completion keeps its existing key-based API.
+- Instant, start and stop action methods, plus feature-flag evaluation.
+- Operation start, succeed and fail methods. Targeting changes ownership; it does not create a separate operation namespace per scene.
+
+Earlier systems, disabled tracking and external monitor conformers use the existing fallback path. The Objective-C `DDRUMViewTarget.currentInScene:` factory is nullable and rejects invalid/off-main input; its target-taking monitor selectors are available in Release. The experimental `RUMOperationViewTarget` alias remains SPI.
+
+On iOS 27 and later, `RUMNavigationHost` supports content-only navigation, an existing Combine publisher, and, under Swift 6.4 or later, an Observation closure. `RUMNavigationDestination` supplies root, route, route-with-occurrence and presentation factories. `RUMNavigationMetadata` supports initialization, automatic metadata with an optional namespace and per-destination overrides. Keep older-system tracking behind availability checks. Transition machinery remains internal.
+
+Native completion callbacks follow the currently tracked RUM view. Detail can still own callback work before Home becomes the tracked view. Expanded split views and tab bars retain their existing capture limitations; identical event counts across layouts are not promised.
+
 ## Key Files
 
 ### Feature Entry Point
@@ -235,6 +260,10 @@ monitor.stopView(key: "ProductList")
 - **`DatadogRUM/Sources/RUMConfiguration+RemoteConfiguration.swift`** - Applies Datadog Remote Configuration on top of the in-code `RUM.Configuration`, once, at `RUM.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Public API
+- **`DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift`** - Proposed target type and scene-aware overloads, alongside existing convenience calls.
+- **`DatadogRUM/Sources/RUM+objc.swift`** - Objective-C configuration, monitor and nullable scene-target bridges.
+- **`DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUINavigationHost.swift`** - Proposed semantic navigation host and its availability guards.
+- **`DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUINavigationSource.swift`** - Proposed navigation destinations and metadata.
 - **`DatadogRUM/Sources/RUMMonitor.swift`** - Access point for manual RUM tracking via `RUMMonitor.shared()`. Both `RUM.enable(with:in:)` and `RUMMonitor.shared(in:)` accept an optional Core instance and use the default instance when omitted.
 - **`DatadogRUM/Sources/RUMMonitorProtocol.swift`** - Full API for manual RUM instrumentation
   - Views (inherited from `RUMMonitorViewProtocol`): `startView()`, `stopView()` by string key on all platforms, or by view controller except on watchOS; `addTiming(name:)`; experimental SPI `addViewLoadingTime(overwrite:)`

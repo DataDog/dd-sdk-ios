@@ -117,8 +117,9 @@ internal final class RUMNavigationTransitions {
 /// Its hashable value is retained only as an in-memory occurrence identity. RUM
 /// metadata is derived from the value's type and enum case without serializing
 /// associated values or invoking customer descriptions.
+/// Proposed public destination description, subject to review before release.
 @available(iOS 27.0, *)
-internal struct RUMNavigationDestination {
+public struct RUMNavigationDestination {
     internal enum Kind: String, Hashable {
         case root
         case route
@@ -138,7 +139,7 @@ internal struct RUMNavigationDestination {
     internal let attributes: [String: Encodable]
 
     /// Describes the root currently visible in an independent container.
-    internal static func root<Value: Hashable>(
+    public static func root<Value: Hashable>(
         _ value: Value,
         attributes: [String: Encodable] = [:]
     ) -> Self {
@@ -146,7 +147,7 @@ internal struct RUMNavigationDestination {
     }
 
     /// Describes the last committed route currently visible in a container.
-    internal static func route<Value: Hashable>(
+    public static func route<Value: Hashable>(
         _ value: Value,
         attributes: [String: Encodable] = [:]
     ) -> Self {
@@ -164,7 +165,7 @@ internal struct RUMNavigationDestination {
     /// in memory. It is not a RUM view UUID and is never serialized. A path depth
     /// or coordinator-owned transition identity is sufficient when equal route
     /// values can occupy multiple positions.
-    internal static func route<Value: Hashable, Occurrence: Hashable>(
+    public static func route<Value: Hashable, Occurrence: Hashable>(
         _ value: Value,
         occurrence: Occurrence,
         attributes: [String: Encodable] = [:]
@@ -178,7 +179,7 @@ internal struct RUMNavigationDestination {
     }
 
     /// Describes the sheet or full-screen cover replacing the underlying route.
-    internal static func presentation<Value: Hashable>(
+    public static func presentation<Value: Hashable>(
         _ value: Value,
         attributes: [String: Encodable] = [:]
     ) -> Self {
@@ -219,29 +220,30 @@ internal struct RUMNavigationDestination {
 ///
 /// Correct occurrence tracking never requires an override. Overrides only tune
 /// business-facing names or paths for exceptional destinations.
+/// Proposed public metadata configuration, subject to review before release.
 @available(iOS 27.0, *)
-internal struct RUMNavigationMetadata {
+public struct RUMNavigationMetadata {
     internal struct Override {
         let name: String
         let path: String?
     }
 
-    internal static let automatic = Self()
+    public static let automatic = Self()
 
     internal var namespace: String?
     internal var overrides: [AnyHashable: Override] = [:]
 
-    internal init() {}
+    public init() {}
 
     /// Creates automatic metadata beneath one stable container namespace.
-    internal static func automatic(in namespace: String) -> Self {
+    public static func automatic(in namespace: String) -> Self {
         var metadata = Self()
         metadata.namespace = namespace
         return metadata
     }
 
     /// Returns a copy with one optional business-facing metadata override.
-    internal func overriding<Value: Hashable>(
+    public func overriding<Value: Hashable>(
         _ value: Value,
         name: String,
         path: String? = nil
