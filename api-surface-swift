@@ -523,7 +523,6 @@ public extension RUMMonitorProtocol
     func stopResource(resourceKey: String,statusCode: Int? = nil,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     func stopResourceWithError(resourceKey: String,error: Error,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     func stopResourceWithError(resourceKey: String,message: String,type: String? = nil,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
-    func stopResourceWithError(resourceKey: String,message: String,type: String?,stack: String?,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
     func addAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
     func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
     func stopAction(type: RUMActionType,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])

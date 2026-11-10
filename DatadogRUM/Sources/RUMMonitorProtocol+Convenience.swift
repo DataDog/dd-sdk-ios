@@ -286,34 +286,6 @@ public extension RUMMonitorProtocol {
         )
     }
 
-    /// Stops RUM resource with reporting an error.
-    /// - Parameters:
-    ///   - resourceKey: the key representing the resource. It must match the one used to start the resource.
-    ///   - message: the message explaining the Resource failure.
-    ///   - type: the type of the error.
-    ///   - stack: stack trace of the error. No specific format is required.
-    ///   - response: an optional `URLResponse` received for the resource.
-    ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceWithError(
-        resourceKey: String,
-        message: String,
-        type: String?,
-        stack: String?,
-        response: URLResponse?,
-        attributes: [AttributeKey: AttributeValue]
-    ) {
-        // Default implementation for conformances that don't implement this requirement: it forwards to the
-        // variant without `stack` instead of calling itself, which would recurse. It intentionally takes no
-        // default arguments, so calls on types that implement the requirement always dispatch to their implementation.
-        stopResourceWithError(
-            resourceKey: resourceKey,
-            message: message,
-            type: type,
-            response: response,
-            attributes: attributes
-        )
-    }
-
     // MARK: - actions
 
     /// Adds RUM action.
