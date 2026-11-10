@@ -14,6 +14,99 @@ import DatadogInternal
 
 // swiftlint:disable function_default_parameter_at_end
 
+#if os(iOS)
+/// Manual scene methods are isolated individually so Monitor stays nonisolated.
+internal protocol RUMManualViewTargetHandling: AnyObject {
+    @MainActor
+    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue], sceneIdentifier: RUMSceneIdentifier)
+    @MainActor
+    func stopView(key: String, attributes: [AttributeKey: AttributeValue], sceneIdentifier: RUMSceneIdentifier)
+}
+
+internal protocol RUMFeatureFlagTargetHandling: AnyObject {
+    func addFeatureFlagEvaluation(name: String, value: Encodable, explicitTarget: RUMCommandTarget?)
+}
+
+internal protocol RUMViewTimingTargetHandling: AnyObject {
+    func addTiming(name: String, explicitTarget: RUMCommandTarget?)
+    func addViewLoadingTime(overwrite: Bool, explicitTarget: RUMCommandTarget?)
+}
+
+internal protocol RUMViewAttributeTargetHandling: AnyObject {
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget?)
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?)
+    func removeViewAttribute(forKey key: AttributeKey, explicitTarget: RUMCommandTarget?)
+    func removeViewAttributes(forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget?)
+}
+
+internal protocol RUMErrorViewTargetHandling: AnyObject {
+    func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?,
+        explicitTarget: RUMCommandTarget?
+    )
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?)
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler,
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+internal protocol RUMResourceViewTargetHandling: AnyObject {
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+internal protocol RUMActionViewTargetHandling: AnyObject {
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func stopAction(
+        type: RUMActionType,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+#endif
+
 /// Convenience extension for defining `RUMMonitorProtocol` methods with default parameter values.
 ///
 /// ⚠️ Be extra cautious when adding new methods here. Each method overloads (shadows) its original
