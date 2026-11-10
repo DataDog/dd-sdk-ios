@@ -1,7 +1,7 @@
 ---
 last_updated: 2026-11-10
 sdk_version: 3.21.0
-verified_against_commit: afa85ab7da7740c1a30d5adeec50607a5672d2ce
+verified_against_commit: 20cdac6d4b8d74acc2105b242ad1dc1b3d5d2a21
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -240,7 +240,7 @@ On iOS 15 and later, `RUMViewTarget.current(in:)` identifies the scene whose cur
 - Instant, start and stop action methods, plus feature-flag evaluation.
 - Operation start, succeed and fail methods. Targeting changes ownership; it does not create a separate operation namespace per scene.
 
-Earlier systems, disabled tracking and external monitor conformers use the existing fallback path. The Objective-C `DDRUMViewTarget.currentInScene:` factory is nullable and rejects invalid/off-main input; its target-taking monitor selectors are available in Release. The experimental `RUMOperationViewTarget` alias remains SPI.
+Earlier systems, disabled tracking and external monitor conformers use the existing fallback path. The Objective-C `DDRUMViewTarget.currentInScene:` factory is nullable and rejects invalid/off-main input; its target-taking monitor selectors are available in Release.
 
 On iOS 27 and later, `RUMNavigationHost` supports content-only navigation, an existing Combine publisher, and, under Swift 6.4 or later, an Observation closure. `RUMNavigationDestination` supplies root, route, route-with-occurrence and presentation factories. `RUMNavigationMetadata` supports initialization, automatic metadata with an optional namespace and per-destination overrides. Keep older-system tracking behind availability checks. Transition machinery remains internal.
 
