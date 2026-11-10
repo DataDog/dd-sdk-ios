@@ -24,7 +24,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
-    let viewsHandler: RUMViewsHandler
+    let viewsHandler: RUMViewsHandling
 
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
@@ -104,17 +104,32 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         memoryWarningMonitor: MemoryWarningMonitor?,
         uuidGenerator: RUMUUIDGenerator,
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
+        isMultiSceneTrackingEnabled: Bool = false,
         isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
-        let viewsHandler = RUMViewsHandler(
-            dateProvider: dateProvider,
-            uiKitPredicate: predicates.rumViewsPredicate,
-            swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
-            swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
-            notificationCenterProvider: notificationCenterProvider
-        )
+        let viewsHandler: RUMViewsHandling = {
+            #if os(iOS)
+            if isMultiSceneTrackingEnabled {
+                return RUMSceneViewsHandler(
+                    dateProvider: dateProvider,
+                    uiKitPredicate: predicates.rumViewsPredicate,
+                    swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
+                    swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
+                    notificationCenterProvider: notificationCenterProvider,
+                    isMultiSceneApplication: true
+                )
+            }
+            #endif
+            return RUMViewsHandler(
+                dateProvider: dateProvider,
+                uiKitPredicate: predicates.rumViewsPredicate,
+                swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
+                swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
+                notificationCenterProvider: notificationCenterProvider
+            )
+        }()
         let viewControllerSwizzler: DDViewControllerSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic view tracking is enabled
