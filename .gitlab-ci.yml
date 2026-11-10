@@ -278,12 +278,12 @@ Unit Tests (macOS):
   variables:
     PLATFORM: "macOS"
     DEVICE: "macOS"
-    ARCH: "arm64"
+    MACOS_ARCH: "arm64"
     RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARCH="$ARCH" USE_TEST_VISIBILITY=1
+    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" MACOS_ARCH="$MACOS_ARCH" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"
@@ -304,14 +304,14 @@ Unit Tests (macOS x86_64):
     PLATFORM: "macOS"
     DEVICE: "macOS"
     # The runners are Apple silicon, so the Intel build runs with Rosetta.
-    ARCH: "x86_64"
+    MACOS_ARCH: "x86_64"
     RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
     # Fail early with a clear error if Rosetta is not installed on the runner.
     - arch -x86_64 /usr/bin/true
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARCH="$ARCH" USE_TEST_VISIBILITY=1
+    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" MACOS_ARCH="$MACOS_ARCH" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"

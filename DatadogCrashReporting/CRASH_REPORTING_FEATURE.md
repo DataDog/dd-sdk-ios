@@ -24,7 +24,7 @@ Crash Reporting has no upload path of its own. Crash reports reach Datadog only 
 
 **Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only) — with platform-specific limitations:
 - **iOS / tvOS / visionOS**: Fatal signals (including Swift runtime traps such as `fatalError()` and force-unwrapping `nil`, and Mach exceptions such as `EXC_BAD_ACCESS`, which the kernel delivers as signals), uncaught `NSException`s, and uncaught C++ exceptions.
-- **macOS**: Fatal signals, Mach exceptions and uncaught C++ exceptions, as on iOS. AppKit catches `NSException`s raised on the main thread while it handles an event, logs them and keeps the app running, so they are not reported unless the app sets the `NSApplicationCrashOnExceptions` user default to `true`. Each app keeps its crash reports in its own `~/Library/Caches/<bundle identifier>` subdirectory, since apps that are not sandboxed share `~/Library/Caches`. Watchdog terminations are not reported.
+- **macOS**: Fatal signals, Mach exceptions and uncaught C++ exceptions, as on iOS. AppKit catches `NSException`s raised on the main thread while it handles an event, logs them and keeps the app running, so they are not reported. If the app sets the `NSApplicationCrashOnExceptions` user default to `true`, AppKit stops the app with a trap instead: the crash is reported as a `SIGTRAP` signal, without the exception's name, reason, or the stack where it was raised. Each app keeps its crash reports in its own `~/Library/Caches/<bundle identifier>` subdirectory, since apps that are not sandboxed share `~/Library/Caches`. Watchdog terminations are not reported.
 - **watchOS**: Only uncaught `NSException`s and C++ exceptions. KSCrash compiles out its signal monitor on watchOS (`KSCRASH_HAS_SIGNAL` is `0`), so signal-based crashes, including Swift runtime traps, are **not** captured. Stack traces of other threads and App Hang stack traces are unavailable (`KSCrashBacktrace` returns `nil`).
 
 ## Quick Start Example
@@ -192,7 +192,7 @@ On the next launch, `CrashReportReceiver` decides where the crash goes, based on
 3. **A session existed but no view was active**: The crash is sent in that session, following the RUM off-view rules:
    - It goes to a new "ApplicationLaunch" view if the app was in the foreground and no view had been tracked yet in this initial session.
    - It goes to a new "Background" view if the app was in the background and `trackBackgroundEvents` is `true`.
-   - On macOS, which has no background state, it goes to a new "NoActiveView" view once a view has been tracked.
+   - On macOS, which has no background state, it goes to a new "NoActiveView" view, unless no view has been tracked yet in the initial session (then it goes to "ApplicationLaunch", as above). A crash between views is not dropped on macOS.
    - Otherwise it is dropped. This includes a sampled-out session, and a foreground crash between views.
 4. **No RUM session existed yet**: A new session is sampled with `RUM.Configuration.sessionSampleRate`. If sampled in, the crash goes to an "ApplicationLaunch" (foreground) or "Background" (background, with `trackBackgroundEvents`) view.
 
