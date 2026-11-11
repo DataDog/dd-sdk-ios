@@ -2060,6 +2060,68 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testInitializationTimeoutKeepsSameSubjectAssignmentsDuringTokenRefresh() throws {
+        let cachedContext = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: ["plan": .string("downloaded")]
+        )
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAnyBoolean()],
+            context: cachedContext,
+            date: .mockAny()
+        )
+        let scope = FeatureScopeMock()
+        try scope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "client")
+        var fetchCompletion: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        var callbackResult: Result<Void, FlagsError>?
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: 1,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        defer { repository.flush() }
+        scope.dataStore.flush()
+
+        repository.setEvaluationContext(
+            .init(
+                targetingKey: "subject",
+                attributes: [
+                    "plan": .string("refreshed"),
+                    AssignmentAuthorization.contextAttribute: .string("opaque-token")
+                ]
+            )
+        ) { callbackResult = $0 }
+
+        XCTAssertNotNil(repository.flagAssignment(for: "cached"))
+        XCTAssertEqual(repository.context, cachedContext)
+
+        try XCTUnwrap(timeoutAction)()
+
+        guard case .failure(.initializationTimedOut)? = callbackResult else {
+            return XCTFail("Expected initialization timeout, got \(String(describing: callbackResult))")
+        }
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertNotNil(repository.flagAssignment(for: "cached"))
+        XCTAssertEqual(repository.context, cachedContext)
+        XCTAssertNil(repository.evaluationSnapshot(for: "cached").error)
+
+        try XCTUnwrap(fetchCompletion)(.failure(.networkError(URLError(.timedOut))))
+
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertNotNil(repository.flagAssignment(for: "cached"))
+        XCTAssertEqual(repository.context, cachedContext)
+    }
+
     func testInitializationTimeout_whenCacheReadIsBlocked_boundsFailedOrPendingFetch() throws {
         // Given initialization waiting on a blocked cache read and a failed or pending fetch
         let context = FlagsEvaluationContext(targetingKey: "cached-user")
@@ -3836,6 +3898,472 @@ final class FlagsRepositoryTests: XCTestCase {
             }
             XCTAssertEqual(repository.state.currentState, .reconciling, "Mode: \(mode)")
             repository.flush()
+        }
+    }
+
+    func testUsableAssignmentTokenEstablishesImmediateSubjectIsolationAndSurvivesFailure() {
+        let scope = FeatureScopeMock()
+        var requestedContexts: [FlagsEvaluationContext] = []
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock { context, completion in
+            requestedContexts.append(context)
+            responses.append(completion)
+        }
+        let repository = FlagsRepository(
+            clientName: "authorization",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+        let assignment = FlagAssignment.mockAnyBoolean()
+        let subjectA = FlagsEvaluationContext(targetingKey: "subject-a", attributes: ["plan": .string("old")])
+        let subjectB = FlagsEvaluationContext(
+            targetingKey: "subject-b",
+            attributes: ["plan": .string("new"), AssignmentAuthorization.contextAttribute: .string("opaque-token")]
+        )
+
+        repository.setEvaluationContext(subjectA) { _ in }
+        responses[0](.success(.init(flags: ["flag": assignment])))
+        XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+
+        repository.setEvaluationContext(subjectB) { result in
+            guard case .failure(.networkError) = result else {
+                return XCTFail("Expected network failure, got \(result)")
+            }
+        }
+
+        XCTAssertEqual(fetcher.assignmentTokens, [nil, "opaque-token"])
+        XCTAssertEqual(requestedContexts[1], .init(targetingKey: "subject-b", attributes: ["plan": .string("new")]))
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .general)
+        XCTAssertEqual(repository.state.currentState, .reconciling)
+
+        responses[1](.failure(.networkError(URLError(.notConnectedToInternet))))
+        XCTAssertEqual(repository.state.currentState, .error)
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .general)
+
+        repository.setEvaluationContext(
+            .init(targetingKey: "subject-b", attributes: ["plan": .string("retry")])
+        ) { _ in }
+        XCTAssertNil(repository.flagAssignment(for: "flag"), "Removing the token must not restore another subject")
+        XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .general)
+
+        responses[2](.success(.init(flags: ["new": assignment])))
+        XCTAssertEqual(repository.state.currentState, .ready)
+        XCTAssertEqual(repository.context, .init(targetingKey: "subject-b", attributes: ["plan": .string("retry")]))
+        XCTAssertNotNil(repository.flagAssignment(for: "new"))
+        XCTAssertNil(repository.evaluationSnapshot(for: "new").error)
+    }
+
+    func testSuccessfulTokenRequestPersistsOnlySanitizedContext() throws {
+        let scope = FeatureScopeMock()
+        let fetcher = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(.init(flags: ["flag": .mockAnyBoolean()])))
+        }
+        let repository = FlagsRepository(
+            clientName: "sanitized-token",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+        let completed = expectation(description: "token request")
+        repository.setEvaluationContext(
+            .init(
+                targetingKey: "subject",
+                attributes: [
+                    "plan": .string("premium"),
+                    AssignmentAuthorization.contextAttribute: .string("opaque-token")
+                ]
+            )
+        ) { result in
+            XCTAssertNoThrow(try result.get())
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+
+        XCTAssertEqual(fetcher.assignmentTokens, ["opaque-token"])
+        XCTAssertEqual(repository.context?.attributes, ["plan": .string("premium")])
+        repository.flush()
+        scope.dataStore.flush()
+        let persisted = try XCTUnwrap(scope.dataStoreMock.storage["sanitized-token"]?.data())
+        let persistedContext = try JSONDecoder().decode(FlagsData.self, from: persisted).context
+        XCTAssertEqual(persistedContext.attributes, ["plan": .string("premium")])
+        XCTAssertFalse(String(decoding: persisted, as: UTF8.self).contains("opaque-token"))
+    }
+
+    func testSuccessfulAuthorizationEndsBoundaryAndPreservesLaterNoTokenIOSBehavior() {
+        let scope = FeatureScopeMock()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let repository = makeRepository(
+            dataStore: scope.dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+        repository.setEvaluationContext(.init(
+            targetingKey: "subject-a",
+            attributes: [AssignmentAuthorization.contextAttribute: .string("opaque-token")]
+        )) { _ in }
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+        XCTAssertEqual(repository.state.currentState, .ready)
+
+        repository.setEvaluationContext(.init(targetingKey: "subject-b")) { _ in }
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"), "Recovery ends the temporary subject boundary")
+        XCTAssertNil(repository.evaluationSnapshot(for: "flag").error)
+
+        responses[1](.failure(.networkError(URLError(.notConnectedToInternet))))
+        XCTAssertEqual(repository.state.currentState, .error)
+        XCTAssertNil(repository.flagAssignment(for: "flag"), "iOS preserves its exact-context fallback rule")
+        XCTAssertNil(repository.evaluationSnapshot(for: "flag").error, "Ordinary failures do not become authorization errors")
+    }
+
+    func testTokenRefreshForSameSubjectKeepsOriginalDownloadedContextAndFallsBackStale() {
+        let scope = FeatureScopeMock()
+        var requestedContexts: [FlagsEvaluationContext] = []
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock { context, completion in
+            requestedContexts.append(context)
+            responses.append(completion)
+        }
+        let repository = FlagsRepository(
+            clientName: "same-subject-authorization",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+        let original = FlagsEvaluationContext(targetingKey: "subject", attributes: ["plan": .string("original")])
+        let refresh = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: ["plan": .string("updated"), AssignmentAuthorization.contextAttribute: .string("opaque-token")]
+        )
+
+        repository.setEvaluationContext(original) { _ in }
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+        repository.setEvaluationContext(refresh) { result in
+            guard case .failure(.networkError) = result else {
+                return XCTFail("Expected network failure, got \(result)")
+            }
+        }
+
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"), "Same-subject assignments remain usable while pending")
+        XCTAssertEqual(repository.context, original, "Pending assignments retain their downloaded context")
+        XCTAssertEqual(requestedContexts[1], .init(targetingKey: "subject", attributes: ["plan": .string("updated")]))
+        XCTAssertEqual(fetcher.assignmentTokens[1], "opaque-token")
+
+        responses[1](.failure(.networkError(URLError(.timedOut))))
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context, original, "Fallback must not relabel assignments with newer attributes")
+        XCTAssertNil(repository.evaluationSnapshot(for: "flag").error)
+
+        repository.setEvaluationContext(.init(targetingKey: "another-subject")) { _ in }
+        XCTAssertNotNil(
+            repository.flagAssignment(for: "flag"),
+            "An eligible fallback clears isolation and restores the SDK's ordinary no-token pending behavior"
+        )
+    }
+
+    func testTypedAuthorizationRejectionWithoutTokenEstablishesIsolationUntilEligibleFallback() {
+        let scope = FeatureScopeMock()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let repository = FlagsRepository(
+            clientName: "rejection-authorization",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+
+        repository.setEvaluationContext(.init(targetingKey: "subject-a")) { _ in }
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+        repository.setEvaluationContext(.init(targetingKey: "subject-b")) { result in
+            guard case .failure(.assignmentAuthorizationFailed) = result else {
+                return XCTFail("Expected typed rejection, got \(result)")
+            }
+        }
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"), "No-token behavior remains unchanged before a rejection")
+
+        responses[1](.failure(.assignmentAuthorizationFailed))
+        XCTAssertEqual(repository.state.currentState, .error)
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .general)
+
+        repository.setEvaluationContext(.init(targetingKey: "subject-a")) { result in
+            guard case .failure(.networkError) = result else {
+                return XCTFail("Expected the retry failure, got \(result)")
+            }
+        }
+        XCTAssertNotNil(
+            repository.flagAssignment(for: "flag"),
+            "Returning to retained assignments for the isolated subject recovers immediately"
+        )
+        XCTAssertEqual(repository.context?.targetingKey, "subject-a")
+        XCTAssertNil(repository.evaluationSnapshot(for: "flag").error)
+        responses[2](.failure(.networkError(URLError(.notConnectedToInternet))))
+
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context?.targetingKey, "subject-a")
+        XCTAssertNil(repository.evaluationSnapshot(for: "flag").error)
+    }
+
+    func testUnusableAssignmentTokenIsStrippedAndDoesNotEstablishIsolation() {
+        let logger = CoreLoggerMock()
+        let dd = DD.mockWith(logger: logger)
+        defer { dd.reset() }
+        let scope = FeatureScopeMock()
+        var requestedContexts: [FlagsEvaluationContext] = []
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock { context, completion in
+            requestedContexts.append(context)
+            responses.append(completion)
+        }
+        let repository = FlagsRepository(
+            clientName: "unusable-token",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+
+        repository.setEvaluationContext(.init(targetingKey: "subject-a")) { _ in }
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+        repository.setEvaluationContext(
+            .init(
+                targetingKey: "subject-b",
+                attributes: [AssignmentAuthorization.contextAttribute: .string("not usable")]
+            )
+        ) { _ in }
+
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"), "An unusable token preserves ordinary no-token behavior")
+        XCTAssertEqual(fetcher.assignmentTokens, [nil, nil])
+        XCTAssertEqual(requestedContexts.last, .init(targetingKey: "subject-b"))
+        XCTAssertEqual(
+            logger.warnMessages.last,
+            AssignmentAuthorization.unusableTokenWarning
+        )
+        XCTAssertFalse(logger.recordedLogs.description.contains("not usable"))
+    }
+
+    func testSupersededTokenResponsesCannotInstallAssignmentsForAnIdenticalTargetingContext() {
+        for responseOrder in [[0, 1], [1, 0]] {
+            for latestSucceeds in [false, true] {
+                let scope = FeatureScopeMock()
+                var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+                let repository = makeRepository(
+                    dataStore: scope.dataStore,
+                    fetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
+                    initializationTimeout: nil
+                )
+                scope.dataStore.flush()
+                defer { repository.flush() }
+                var callbackCount = 0
+                for token in ["old-token", "replacement-token"] {
+                    repository.setEvaluationContext(.init(
+                        targetingKey: "subject",
+                        attributes: [AssignmentAuthorization.contextAttribute: .string(token)]
+                    )) { _ in callbackCount += 1 }
+                }
+
+                for index in responseOrder {
+                    if index == 0 {
+                        responses[index](.success(.init(flags: ["superseded": .mockAnyBoolean()])))
+                        XCTAssertNil(repository.flagAssignment(for: "superseded"))
+                    } else if latestSucceeds {
+                        responses[index](.success(.init(flags: ["current": .mockAnyBoolean()])))
+                    } else {
+                        responses[index](.failure(.assignmentAuthorizationFailed))
+                    }
+                }
+
+                XCTAssertEqual(callbackCount, 2)
+                XCTAssertEqual(repository.state.currentState, latestSucceeds ? .ready : .error)
+                XCTAssertEqual(repository.flagAssignment(for: "current") != nil, latestSucceeds)
+                XCTAssertNil(repository.flagAssignment(for: "superseded"))
+                XCTAssertEqual(repository.evaluationSnapshot(for: "current").error, latestSucceeds ? nil : .general)
+            }
+        }
+    }
+
+    func testSupersededSubjectResponseCannotInstallAssignmentsWhileProtectedRequestIsPending() {
+        let scope = FeatureScopeMock()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let repository = makeRepository(
+            dataStore: scope.dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+        repository.setEvaluationContext(.init(targetingKey: "subject-a")) { _ in }
+        repository.setEvaluationContext(.init(
+            targetingKey: "subject-b",
+            attributes: [AssignmentAuthorization.contextAttribute: .string("token-b")]
+        )) { _ in }
+
+        responses[0](.success(.init(flags: ["superseded": .mockAnyBoolean()])))
+        XCTAssertEqual(repository.state.currentState, .reconciling)
+        XCTAssertNil(repository.flagAssignments())
+        XCTAssertEqual(repository.evaluationSnapshot(for: "superseded").error, .general)
+
+        responses[1](.success(.init(flags: ["current": .mockAnyBoolean()])))
+        XCTAssertEqual(repository.state.currentState, .ready)
+        XCTAssertEqual(repository.context?.targetingKey, "subject-b")
+        XCTAssertNotNil(repository.flagAssignment(for: "current"))
+        XCTAssertNil(repository.flagAssignment(for: "superseded"))
+    }
+
+    func testProtectedAssignmentsKeepUnicodeDistinctSubjectIdentitiesSeparate() {
+        for sendsToken in [false, true] {
+            let scope = FeatureScopeMock()
+            var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+            let repository = makeRepository(
+                dataStore: scope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
+                initializationTimeout: nil
+            )
+            scope.dataStore.flush()
+            defer { repository.flush() }
+            repository.setEvaluationContext(.init(targetingKey: "caf\u{00e9}")) { _ in }
+            responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+
+            repository.setEvaluationContext(.init(
+                targetingKey: "cafe\u{0301}",
+                attributes: sendsToken ? [AssignmentAuthorization.contextAttribute: .string("opaque-token")] : [:]
+            )) { _ in }
+            if sendsToken {
+                XCTAssertNil(repository.flagAssignment(for: "flag"))
+                XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .general)
+            }
+            responses[1](.failure(.assignmentAuthorizationFailed))
+            XCTAssertEqual(repository.state.currentState, .error)
+            XCTAssertNil(repository.flagAssignment(for: "flag"))
+            XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .general)
+        }
+    }
+
+    func testTypedRejectionAfterNoTokenSameSubjectAttributeChangeRetainsOriginalAssignments() {
+        let scope = FeatureScopeMock()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock { _, completion in responses.append(completion) }
+        let repository = makeRepository(dataStore: scope.dataStore, fetcher: fetcher, initializationTimeout: nil)
+        scope.dataStore.flush()
+        defer { repository.flush() }
+        let original = FlagsEvaluationContext(targetingKey: "subject", attributes: ["country": .string("US")])
+        repository.setEvaluationContext(original) { _ in }
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+        repository.setEvaluationContext(.init(targetingKey: "subject", attributes: ["country": .string("CA")])) { _ in }
+        responses[1](.failure(.assignmentAuthorizationFailed))
+
+        XCTAssertEqual(fetcher.assignmentTokens, [nil, nil])
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context, original)
+        XCTAssertEqual(repository.evaluationSnapshot(for: "flag").context, original)
+        XCTAssertNil(repository.evaluationSnapshot(for: "flag").error)
+    }
+
+    func testFirstTypedRejectionMarksAnOverlappingSameContextSuccessStale() {
+        let scope = FeatureScopeMock()
+        var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+        let repository = makeRepository(
+            dataStore: scope.dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
+            initializationTimeout: nil
+        )
+        scope.dataStore.flush()
+        defer { repository.flush() }
+        for _ in 0..<2 {
+            repository.setEvaluationContext(.init(targetingKey: "subject")) { _ in }
+        }
+        responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+        XCTAssertEqual(repository.state.currentState, .ready)
+
+        responses[1](.failure(.assignmentAuthorizationFailed))
+
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertNil(repository.evaluationSnapshot(for: "flag").error)
+    }
+
+    func testAuthorizationFallbackKeepsStricterExperimentationContextMatching() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let scope = FeatureScopeMock()
+            var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
+            let repository = makeRepository(
+                dataStore: scope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            scope.dataStore.flush()
+            defer { repository.flush() }
+            repository.setEvaluationContext(.init(targetingKey: "subject", attributes: ["plan": .string("old")])) { _ in }
+            responses[0](.success(.init(flags: ["flag": .mockAnyBoolean()])))
+            repository.setEvaluationContext(.init(targetingKey: "subject", attributes: [
+                "plan": .string("new"), AssignmentAuthorization.contextAttribute: .string("opaque-token")
+            ])) { _ in }
+
+            XCTAssertNil(repository.flagAssignments())
+            responses[1](.failure(.assignmentAuthorizationFailed))
+            XCTAssertEqual(repository.state.currentState, .error)
+            XCTAssertNil(repository.flagAssignment(for: "flag"))
+            XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, .general)
+        }
+    }
+
+    func testDelayedCacheReadCannotRestoreAnotherSubjectAfterTypedRejection() throws {
+        for sameSubject in [false, true] {
+            let cached = FlagsData(
+                flags: ["flag": .mockAnyBoolean()],
+                context: .init(targetingKey: "subject-a", attributes: ["plan": .string("old")]),
+                date: .mockAny()
+            )
+            let store = DelayedReadDataStore(storage: [
+                "client": .value(try JSONEncoder().encode(cached), dataStoreDefaultKeyVersion)
+            ])
+            let repository = makeRepository(
+                dataStore: store,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in completion(.failure(.assignmentAuthorizationFailed)) },
+                initializationTimeout: nil
+            )
+            defer { store.resumeRead(); store.flush(); repository.flush() }
+            wait(for: [store.readStarted], timeout: 1)
+            let completed = expectation(description: "fallback after disk read")
+            repository.setEvaluationContext(.init(
+                targetingKey: sameSubject ? "subject-a" : "subject-b",
+                attributes: ["plan": .string("new")]
+            )) { _ in completed.fulfill() }
+            store.resumeRead()
+            store.flush()
+            wait(for: [completed], timeout: 1)
+
+            XCTAssertEqual(repository.state.currentState, sameSubject ? .stale : .error)
+            XCTAssertEqual(repository.flagAssignment(for: "flag") != nil, sameSubject)
+            XCTAssertEqual(repository.evaluationSnapshot(for: "flag").error, sameSubject ? nil : .general)
+            if sameSubject {
+                XCTAssertEqual(repository.context, cached.context)
+            }
         }
     }
 

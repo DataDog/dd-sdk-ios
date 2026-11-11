@@ -13,6 +13,99 @@ import DatadogInternal
 final class FlagAssignmentsRequestTests: XCTestCase {
     private let testURL = URL(string: "https://test.example.com/precompute-assignments")!
 
+    func testAssignmentTokenHeaderComesOnlyFromExtractedContextCredential() throws {
+        for customHeaderName in ["DD-Assignment-Token", "dd-assignment-token", "Dd-AsSiGnMeNt-ToKeN"] {
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: testURL,
+                evaluationContext: .init(targetingKey: "subject", attributes: ["plan": .string("premium")]),
+                context: .mockAny(),
+                customHeaders: [customHeaderName: "custom-secret"],
+                flagSelection: nil,
+                assignmentToken: "context-secret"
+            )
+
+            XCTAssertEqual(request.value(forHTTPHeaderField: AssignmentAuthorization.header), "context-secret")
+            let body = try XCTUnwrap(request.httpBody.flatMap { String(data: $0, encoding: .utf8) })
+            XCTAssertFalse(body.contains("context-secret"))
+            XCTAssertFalse(body.contains("dd_assignment_token"))
+        }
+    }
+
+    func testMissingAssignmentTokenRemovesReservedCustomHeader() throws {
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: testURL,
+            evaluationContext: .init(targetingKey: "subject"),
+            context: .mockAny(),
+            customHeaders: ["dd-assignment-token": "custom-secret"],
+            flagSelection: nil,
+            assignmentToken: nil
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: AssignmentAuthorization.header))
+    }
+
+    func testRequestDefensivelyExtractsAssignmentTokenFromEvaluationContext() throws {
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: testURL,
+            evaluationContext: .init(
+                targetingKey: "subject",
+                attributes: [
+                    "plan": .string("premium"),
+                    AssignmentAuthorization.contextAttribute: .string("opaque-token")
+                ]
+            ),
+            context: .mockAny(),
+            customHeaders: nil,
+            flagSelection: nil
+        )
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: AssignmentAuthorization.header), "opaque-token")
+        let body = try XCTUnwrap(request.httpBody.flatMap { String(data: $0, encoding: .utf8) })
+        XCTAssertFalse(body.contains("opaque-token"))
+        XCTAssertFalse(body.contains(AssignmentAuthorization.contextAttribute))
+        XCTAssertTrue(body.contains("premium"))
+    }
+
+    func testTokenRefreshRemovalAndUnusableReplacementDoNotReuseAHeader() throws {
+        let tokens: [AnyValue?] = [
+            .string("first-token"), .string("replacement-token"), nil, .null, .string(""),
+            .string("unsafe\r\nheader"), .string("non-ascii-é"), .bool(true)
+        ]
+        for (index, token) in tokens.enumerated() {
+            var attributes = ["plan": AnyValue.string("premium")]
+            attributes[AssignmentAuthorization.contextAttribute] = token
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: testURL,
+                evaluationContext: .init(targetingKey: "subject", attributes: attributes),
+                context: .mockAny(),
+                customHeaders: ["Dd-AsSiGnMeNt-ToKeN": "old-custom-token"],
+                flagSelection: nil
+            )
+            XCTAssertEqual(
+                request.value(forHTTPHeaderField: AssignmentAuthorization.header),
+                index == 0 ? "first-token" : (index == 1 ? "replacement-token" : nil)
+            )
+            let body = String(decoding: try XCTUnwrap(request.httpBody), as: UTF8.self)
+            XCTAssertFalse(body.contains(AssignmentAuthorization.contextAttribute))
+            XCTAssertFalse(body.contains("token"))
+            XCTAssertTrue(body.contains("premium"))
+        }
+    }
+
+    func testRequestDefensivelyOmitsUnusableExplicitTokenValues() throws {
+        for token in ["", " ", "contains\twhitespace", "unsafe\r\nheader", "non-ascii-é", "\u{0000}"] {
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: testURL,
+                evaluationContext: .init(targetingKey: "subject"),
+                context: .mockAny(),
+                customHeaders: [AssignmentAuthorization.header: "old-token"],
+                flagSelection: nil,
+                assignmentToken: token
+            )
+            XCTAssertNil(request.value(forHTTPHeaderField: AssignmentAuthorization.header))
+        }
+    }
+
     func testExperimentationOptOutUsesEvaluationOptions() throws {
         let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
         for policy in policies {

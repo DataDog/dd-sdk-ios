@@ -12,6 +12,7 @@ internal protocol FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
         diagnostics: FlagsRequestDiagnostics.Snapshot?,
+        assignmentToken: String?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
 }
@@ -21,7 +22,13 @@ extension FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
-        flagAssignments(for: evaluationContext, experimentationOptOut: nil, diagnostics: nil, completion: completion)
+        flagAssignments(
+            for: evaluationContext,
+            experimentationOptOut: nil,
+            diagnostics: nil,
+            assignmentToken: nil,
+            completion: completion
+        )
     }
 }
 
@@ -42,6 +49,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         "malformed_selection", "too_many_values", "invalid_key_pattern", "invalid_tag", "tag_load_failed"
     ]
     private static let unknownFlagSelectionIgnoredReason = "unknown"
+    private static let redactedFlagSelectionIgnoredReason = "redacted"
     // The longest known reason is 19 bytes, so a longer value is reported as `unknown` without a lookup.
     private static let maxFlagSelectionIgnoredReasonBytes = 32
 
@@ -89,8 +97,16 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
         diagnostics: FlagsRequestDiagnostics.Snapshot? = nil,
+        assignmentToken: String? = nil,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
+        let authorization = evaluationContext.extractingAssignmentAuthorization()
+        let evaluationContext = authorization.context
+        let suppliedToken = assignmentToken ?? authorization.token
+        let assignmentToken = AssignmentAuthorization.usableToken(suppliedToken)
+        if authorization.shouldWarn || (suppliedToken?.isEmpty == false && assignmentToken == nil) {
+            DD.logger.warn(AssignmentAuthorization.unusableTokenWarning)
+        }
         // Repository callbacks can invoke application code; keep them off shared SDK work queues.
         let completion: (Result<FlagAssignmentsResponse, FlagsError>) -> Void = { result in
             DispatchQueue.global(qos: .utility).async {
@@ -108,6 +124,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     for: evaluationContext,
                     experimentationOptOut: experimentationOptOut,
                     diagnostics: diagnostics,
+                    assignmentToken: assignmentToken,
                     context: context,
                     completion: completion
                 )
@@ -119,6 +136,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
         diagnostics: FlagsRequestDiagnostics.Snapshot?,
+        assignmentToken: String?,
         context: DatadogContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
@@ -131,7 +149,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 customHeaders: customEndpoint != nil ? customHeaders : nil,
                 flagSelection: flagSelection,
                 experimentationOptOut: experimentationOptOut,
-                diagnostics: diagnostics
+                diagnostics: diagnostics,
+                assignmentToken: assignmentToken
             )
             fetch(request) { [assignmentFetchQueue, featureScope, flagSelection] result in
                 assignmentFetchQueue.async {
@@ -140,6 +159,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         experimentationOptOut: experimentationOptOut,
                         supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
                         requestCarriedFlagSelection: flagSelection != nil,
+                        requestCarriedAssignmentToken: assignmentToken != nil,
                         featureScope: featureScope,
                         completion: completion
                     )
@@ -154,9 +174,12 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     /// Returns the reason to report for a `DD-Flag-Selection-Ignored` value, or `nil` when the header is absent or empty.
     /// Values are compared on bytes, case-sensitively and without trimming.
-    private static func reportedFlagSelectionIgnoredReason(_ value: String?) -> String? {
+    private static func reportedFlagSelectionIgnoredReason(_ value: String?, redact: Bool) -> String? {
         guard let value, !value.isEmpty else {
             return nil
+        }
+        guard !redact else {
+            return redactedFlagSelectionIgnoredReason
         }
         guard value.utf8.count <= maxFlagSelectionIgnoredReasonBytes,
               let reason = flagSelectionIgnoredReasons.first(where: { $0.utf8.elementsEqual(value.utf8) }) else {
@@ -170,14 +193,33 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         experimentationOptOut: ExperimentationOptOut?,
         supportsObfuscation: Bool,
         requestCarriedFlagSelection: Bool,
+        requestCarriedAssignmentToken: Bool,
         featureScope: any FeatureScope,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         switch result {
         case let .success((data, httpResponse)):
             let ignoredReason = requestCarriedFlagSelection
-                ? reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader))
+                ? reportedFlagSelectionIgnoredReason(
+                    httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader),
+                    redact: requestCarriedAssignmentToken
+                )
                 : nil
+            if httpResponse.statusCode == 401, isAssignmentAuthorizationRejection(data) {
+                DD.logger.warn("Assignment download failed: \(AssignmentAuthorization.rejectionCode)")
+                completion(.failure(.assignmentAuthorizationFailed))
+                return
+            }
+            guard 200..<300 ~= httpResponse.statusCode else {
+                let error = URLError(.badServerResponse)
+                if requestCarriedAssignmentToken {
+                    DD.logger.warn("Failed to fetch flag assignments from the server.")
+                } else {
+                    DD.logger.warn("Failed to fetch flag assignments from the server.", error: error)
+                }
+                completion(.failure(.networkError(error)))
+                return
+            }
             do {
                 let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
                 guard response.obfuscation == nil || supportsObfuscation else {
@@ -202,34 +244,63 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 // Log any flags that failed to decode to telemetry
                 if !response.failedFlags.isEmpty {
                     for (flagKey, errorDescription) in response.failedFlags {
-                        let error = InternalError(description: errorDescription)
-                        DD.logger.warn(
-                            "Failed to decode flag '\(flagKey)' from flag assignments response. Flag will be dropped from configuration.",
-                            error: error
-                        )
-                        featureScope.telemetry.debug(
-                            "Failed to decode flag '\(flagKey)' from flag assignments response",
-                            attributes: [
-                                "flagKey": flagKey,
-                                "errorDescription": errorDescription
-                            ]
-                        )
+                        if requestCarriedAssignmentToken {
+                            // Do not reflect server-controlled response details when a credential was sent.
+                            let message = "Failed to decode a flag from flag assignments response"
+                            DD.logger.warn("\(message). Flag will be dropped from configuration.")
+                            featureScope.telemetry.debug(message)
+                        } else {
+                            let message = "Failed to decode flag '\(flagKey)' from flag assignments response"
+                            let error = InternalError(description: errorDescription)
+                            DD.logger.warn("\(message). Flag will be dropped from configuration.", error: error)
+                            featureScope.telemetry.debug(
+                                message,
+                                attributes: ["flagKey": flagKey, "errorDescription": errorDescription]
+                            )
+                        }
                     }
                 }
 
                 completion(.success(response))
             } catch {
-                featureScope.telemetry.error(
-                    "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response",
-                    error: error
-                )
+                let message = "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response"
+                if requestCarriedAssignmentToken {
+                    DD.logger.error(message)
+                    featureScope.telemetry.error(message)
+                } else {
+                    featureScope.telemetry.error(message, error: error)
+                }
                 completion(.failure(.invalidResponse))
             }
         case .failure(let error):
             // The repository handles fetch failures through its error or stale state.
-            DD.logger.warn("Failed to fetch flag assignments from the server.", error: error)
-            completion(.failure(.networkError(error)))
+            if requestCarriedAssignmentToken {
+                DD.logger.warn("Failed to fetch flag assignments from the server.")
+                completion(.failure(.networkError(sanitizedTransportError(error))))
+            } else {
+                DD.logger.warn("Failed to fetch flag assignments from the server.", error: error)
+                completion(.failure(.networkError(error)))
+            }
         }
+    }
+
+    private static func isAssignmentAuthorizationRejection(_ data: Data) -> Bool {
+        guard let document = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+              let errors = document["errors"] as? [Any] else {
+            return false
+        }
+        // An unrelated or malformed sibling must not hide a typed rejection.
+        return errors.contains { error in
+            (error as? [String: Any])?["code"] as? String == AssignmentAuthorization.rejectionCode
+        }
+    }
+
+    private static func sanitizedTransportError(_ error: Error) -> Error {
+        guard let urlError = error as? URLError else {
+            return URLError(.unknown)
+        }
+        // Keep the platform classification, but discard request/response details in userInfo.
+        return URLError(urlError.code)
     }
 
     private func url(with context: DatadogContext) -> URL {
@@ -272,11 +343,7 @@ extension URLSession {
                 return
             }
 
-            guard
-                let data,
-                let httpResponse = response as? HTTPURLResponse,
-                200..<300 ~= httpResponse.statusCode
-            else {
+            guard let data, let httpResponse = response as? HTTPURLResponse else {
                 completion(.failure(URLError(.badServerResponse)))
                 return
             }

@@ -333,6 +333,17 @@ extension FlagsClient: FlagsClientProtocol {
         let context = snapshot.context
         let trackEvaluationTelemetry = !configuration.enableEvaluationTelemetryOptOutParameter || !snapshot.telemetryOptedOut
 
+        if snapshot.error == .general {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
+                for: key,
+                assignment: Self.defaultAssignment,
+                evaluationContext: snapshot.requestedContext ?? .empty,
+                flagError: EvaluationError.general
+            )
+            return FlagDetails(key: key, value: defaultValue, error: .general)
+        }
+
         if snapshot.error == .invalidContext {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
@@ -440,6 +451,7 @@ extension FlagsClient: FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        let context = context.extractingAssignmentAuthorization().context
         trackEvaluation(
             key: key,
             assignment: assignment,
@@ -450,11 +462,13 @@ extension FlagsClient: FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        let context = context.extractingAssignmentAuthorization().context
         exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
     }
 
     @_spi(Internal)
     public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        let context = context.extractingAssignmentAuthorization().context
         guard !isEvaluationTelemetryOptedOut(in: context) else {
             return
         }
@@ -482,6 +496,7 @@ extension FlagsClient: FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
+        let context = context.extractingAssignmentAuthorization().context
         guard !isEvaluationTelemetryOptedOut(in: context) else {
             return
         }

@@ -12,6 +12,34 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
+    func testSubjectAuthorizationIsolationReturnsGeneralDefaultAndUsesSanitizedRequestedContext() {
+        let requestedContext = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: [
+                "plan": .string("premium"),
+                AssignmentAuthorization.contextAttribute: .string("must-not-be-reported")
+            ]
+        )
+        let repository = FlagsRepositoryMock()
+        repository.evaluationError = .general
+        repository.requestedContext = requestedContext.extractingAssignmentAuthorization().context
+        let evaluations = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: evaluations,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        let details = client.getBooleanDetails(key: "flag", defaultValue: false)
+
+        XCTAssertEqual(details, .init(key: "flag", value: false, error: .general))
+        XCTAssertEqual(evaluations.logEvaluationCalls.count, 1)
+        XCTAssertEqual(evaluations.logEvaluationCalls.first?.error, "GENERAL")
+        XCTAssertEqual(evaluations.logEvaluationCalls.first?.context.targetingKey, "subject")
+        XCTAssertEqual(evaluations.logEvaluationCalls.first?.context.attributes, ["plan": .string("premium")])
+    }
+
     func testDifferentSubjectCannotReenableInstalledSubjectsTelemetryDuringRefresh() throws {
         let fixture = makeSubjectTransitionFixture()
         fixture.client.setEvaluationContext(telemetryContext(.bool(true), subject: "A")) { _ in }
@@ -302,6 +330,30 @@ final class FlagsClientTests: XCTestCase {
             XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, enabled ? 1 : 2)
             XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, enabled ? 1 : 2)
         }
+    }
+
+    func testSPIStripsAssignmentTokenFromAllTrackingPaths() throws {
+        let fixture = makeTelemetryFixture(enabled: true)
+        let assignment = try XCTUnwrap(fixture.repository.flagAssignment(for: "flag"))
+        let context = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: [
+                "plan": .string("premium"),
+                AssignmentAuthorization.contextAttribute: .string("opaque-token")
+            ]
+        )
+
+        fixture.client.sendFlagEvaluation(key: "flag", assignment: assignment, context: context)
+        fixture.client.sendFlagExposure(key: "flag", assignment: assignment, context: context)
+        fixture.client.sendFlagEvaluationEvent(key: "flag", assignment: assignment, context: context, errorCode: nil)
+        fixture.client.sendFlagRUMEvaluation(key: "flag", variant: "variant", context: context)
+
+        XCTAssertTrue(fixture.exposures.logExposureCalls.allSatisfy {
+            $0.context.attributes[AssignmentAuthorization.contextAttribute] == nil
+        })
+        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.allSatisfy {
+            $0.context.attributes[AssignmentAuthorization.contextAttribute] == nil
+        })
     }
 
     func testCachedContextControlsTelemetryUntilTheFirstContextUpdate() {

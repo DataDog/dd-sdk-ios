@@ -581,6 +581,235 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
 
+    func testExactAuthorizationRejectionReturnsTypedSafeError() throws {
+        let logger = CoreLoggerMock()
+        let dd = DD.mockWith(logger: logger)
+        defer { dd.reset() }
+        let response = try XCTUnwrap(
+            HTTPURLResponse(url: .mockAny(), statusCode: 401, httpVersion: nil, headerFields: nil)
+        )
+        let body = Data(#"{"errors":[{"status":"401","code":"ASSIGNMENT_AUTHORIZATION_FAILED","detail":"secret"}]}"#.utf8)
+        var capturedRequest: URLRequest?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: ["dd-assignment-token": "custom-secret"],
+            flagSelection: nil,
+            featureScope: featureScope,
+            fetch: { request, completion in
+                capturedRequest = request
+                completion(.success((body, response)))
+            }
+        )
+        let completed = expectation(description: "authorization rejected")
+
+        fetcher.flagAssignments(
+            for: .init(targetingKey: "subject"),
+            experimentationOptOut: nil,
+            diagnostics: nil,
+            assignmentToken: "opaque-token"
+        ) { result in
+            guard case .failure(.assignmentAuthorizationFailed) = result else {
+                return XCTFail("Expected assignmentAuthorizationFailed, got \(result)")
+            }
+            completed.fulfill()
+        }
+
+        wait(for: [completed], timeout: 1)
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: AssignmentAuthorization.header), "opaque-token")
+        XCTAssertEqual(logger.warnMessages, ["Assignment download failed: ASSIGNMENT_AUTHORIZATION_FAILED"])
+        XCTAssertTrue(logger.recordedLogs.allSatisfy { $0.error == nil })
+        XCTAssertFalse(logger.recordedLogs.description.contains("opaque-token"))
+        XCTAssertFalse(logger.recordedLogs.description.contains("secret"))
+    }
+
+    func testAuthorizationRejectionRequiresExactStatusAndJSONAPIErrorCode() throws {
+        let cases: [(status: Int, body: String)] = [
+            (400, #"{"errors":[{"code":"ASSIGNMENT_AUTHORIZATION_FAILED"}]}"#),
+            (403, #"{"errors":[{"code":"ASSIGNMENT_AUTHORIZATION_FAILED"}]}"#),
+            (500, #"{"errors":[{"code":"ASSIGNMENT_AUTHORIZATION_FAILED"}]}"#),
+            (401, #"{"errors":[{"code":"assignment_authorization_failed"}]}"#),
+            (401, #"{"errors":[null,42,"ASSIGNMENT_AUTHORIZATION_FAILED",{}, {"code":true}]}"#),
+            (401, #"{"errors":[{"code":"OTHER_ERROR"}]}"#),
+            (401, #"{"errors":[]}"#),
+            (401, #"{"errors":null}"#),
+            (401, "null"),
+            (401, "[]"),
+            (401, #"{"code":"ASSIGNMENT_AUTHORIZATION_FAILED"}"#),
+            (401, #"{"errors":"ASSIGNMENT_AUTHORIZATION_FAILED"}"#),
+            (401, "not-json")
+        ]
+
+        for testCase in cases {
+            let response = try XCTUnwrap(
+                HTTPURLResponse(url: .mockAny(), statusCode: testCase.status, httpVersion: nil, headerFields: nil)
+            )
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: featureScope,
+                fetch: { _, completion in
+                    completion(.success((Data(testCase.body.utf8), response)))
+                }
+            )
+            let completed = expectation(description: "ordinary HTTP failure \(testCase)")
+            fetcher.flagAssignments(for: .mockAny()) { result in
+                guard case .failure(.networkError(let error)) = result,
+                      (error as? URLError)?.code == .badServerResponse else {
+                    return XCTFail("Expected ordinary bad-server-response, got \(result)")
+                }
+                completed.fulfill()
+            }
+            wait(for: [completed], timeout: 1)
+        }
+    }
+
+    func testAuthorizationRejectionIsRecognizedAmongUnrelatedOrMalformedErrorsWithoutAToken() throws {
+        let response = try XCTUnwrap(
+            HTTPURLResponse(url: .mockAny(), statusCode: 401, httpVersion: nil, headerFields: nil)
+        )
+        let body = Data(#"{"errors":[null,42,"untyped",{}, {"code":false},{"code":"OTHER_ERROR"},{"code":"ASSIGNMENT_AUTHORIZATION_FAILED"}]}"#.utf8)
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: featureScope,
+            fetch: { request, completion in
+                XCTAssertNil(request.value(forHTTPHeaderField: AssignmentAuthorization.header))
+                completion(.success((body, response)))
+            }
+        )
+        let completed = expectation(description: "mixed typed rejection")
+        fetcher.flagAssignments(for: .init(targetingKey: "subject")) { result in
+            guard case .failure(.assignmentAuthorizationFailed) = result else {
+                XCTFail("Expected typed authorization rejection")
+                completed.fulfill()
+                return
+            }
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+    }
+
+    func testTokenBearingResponseDiagnosticsNeverReflectCredentials() throws {
+        let secret = "too_many_values"
+        let bodies: [(String, Bool)] = [
+            ("invalid-json-\(secret)", false),
+            (#"{"data":{"attributes":{"flags":{"too_many_values":{"allocationKey":"allocation","variationKey":"variant","variationType":"secret-too_many_values","variationValue":true,"reason":"TARGETING_MATCH","doLog":true}}}}}"#, true)
+        ]
+        for (body, succeeds) in bodies {
+            let logger = CoreLoggerMock()
+            let dd = DD.mockWith(logger: logger)
+            defer { dd.reset() }
+            let scope = FeatureScopeMock()
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: .mockAny(),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["DD-Flag-Selection-Ignored": secret]
+            ))
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+                featureScope: scope,
+                fetch: { _, completion in completion(.success((Data(body.utf8), response))) }
+            )
+            let completed = expectation(description: "redacted response")
+            fetcher.flagAssignments(
+                for: .init(targetingKey: "subject"),
+                experimentationOptOut: nil,
+                assignmentToken: secret
+            ) { result in
+                switch result {
+                case .success(let response):
+                    XCTAssertTrue(succeeds)
+                    XCTAssertTrue(response.flags.isEmpty)
+                    XCTAssertEqual(response.failedFlags.count, 1)
+                case .failure(let error):
+                    XCTAssertFalse(succeeds)
+                    XCTAssertFalse(String(describing: error).contains(secret))
+                }
+                completed.fulfill()
+            }
+            wait(for: [completed], timeout: 1)
+            XCTAssertFalse(logger.recordedLogs.description.contains(secret))
+            XCTAssertFalse(String(describing: scope.telemetryMock.messages).contains(secret))
+        }
+    }
+
+    func testTokenBearingTransportErrorsRetainOnlyPlatformErrorCodes() {
+        let errors: [Error] = [
+            URLError(.notConnectedToInternet, userInfo: [NSLocalizedDescriptionKey: "opaque-token"]),
+            URLError(.cancelled, userInfo: [NSUnderlyingErrorKey: NSError(domain: "opaque-token", code: 1)]),
+            NSError(domain: "opaque-token", code: 1, userInfo: [NSLocalizedDescriptionKey: "opaque-token"])
+        ]
+        for error in errors {
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: featureScope,
+                fetch: { _, completion in completion(.failure(error)) }
+            )
+            let completed = expectation(description: "sanitized transport failure")
+            fetcher.flagAssignments(
+                for: .init(targetingKey: "subject"),
+                experimentationOptOut: nil,
+                assignmentToken: "opaque-token"
+            ) { result in
+                guard case .failure(.networkError(let sanitized)) = result else {
+                    XCTFail("Expected a network failure")
+                    completed.fulfill()
+                    return
+                }
+                XCTAssertEqual((sanitized as? URLError)?.code, (error as? URLError)?.code ?? .unknown)
+                XCTAssertFalse(String(describing: sanitized).contains("opaque-token"))
+                XCTAssertFalse((sanitized as NSError).userInfo.description.contains("opaque-token"))
+                completed.fulfill()
+            }
+            wait(for: [completed], timeout: 1)
+        }
+    }
+
+    func testTokenBearingTransportFailureDoesNotExposeOriginalErrorAndPreservesTimeoutClassification() {
+        let secret = "opaque-token"
+        let logger = CoreLoggerMock()
+        let dd = DD.mockWith(logger: logger)
+        defer { dd.reset() }
+        let original = URLError(
+            .timedOut,
+            userInfo: [NSLocalizedDescriptionKey: "request failed with \(secret)"]
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: featureScope,
+            fetch: { _, completion in completion(.failure(original)) }
+        )
+        let completed = expectation(description: "safe timeout")
+
+        fetcher.flagAssignments(
+            for: .mockAny(),
+            experimentationOptOut: nil,
+            diagnostics: nil,
+            assignmentToken: secret
+        ) { result in
+            guard case .failure(.networkError(let error)) = result,
+                  let urlError = error as? URLError else {
+                return XCTFail("Expected network error, got \(result)")
+            }
+            XCTAssertEqual(urlError.code, .timedOut)
+            XCTAssertFalse((error as NSError).userInfo.description.contains(secret))
+            completed.fulfill()
+        }
+
+        wait(for: [completed], timeout: 1)
+        XCTAssertTrue(logger.recordedLogs.allSatisfy { $0.error == nil })
+        XCTAssertFalse(logger.recordedLogs.description.contains(secret))
+    }
+
     func testFlagsEndpointForAllSites() {
         let flagsEndpoints: [(DatadogSite, String)] = [
             (.us1, "https://preview.ff-cdn.datadoghq.com"),

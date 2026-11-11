@@ -30,6 +30,34 @@ Each client keeps its own configuration and current policy. If a client name alr
 
 This option controls evaluation telemetry only. Exposure events can still contain subject data. It does not replace the SDK tracking-consent API.
 
+## Subject authorization for assignment downloads
+
+For an environment configured to require subject authorization, obtain a JWT from your backend and include it in the complete evaluation context update:
+
+```swift
+client.setEvaluationContext(
+    FlagsEvaluationContext(
+        targetingKey: "user-123",
+        attributes: [
+            "country": .string("US"),
+            "dd_assignment_token": .string(jwtFromYourBackend)
+        ]
+    )
+)
+```
+
+Your backend signs the token for the requested subject and environment. Keep the private key on your backend and replace the token before it expires. The SDK treats the JWT as opaque and sends it in the `DD-Assignment-Token` request header; the assignment endpoint validates its signature, expiration, and claims. The reserved `dd_assignment_token` field is removed from targeting attributes, disk snapshots, evaluation and exposure telemetry, RUM annotations, and SDK diagnostics. A custom flags header with the reserved name, in any letter case, is ignored so that the evaluation context remains the only credential source.
+
+Missing, `null`, and empty-string token values send no header. Other types, or strings containing whitespace or non-ASCII characters, also send no header and produce a fixed warning that does not contain the supplied value. The assignment request still proceeds so that the endpoint can decide whether authorization is required. An unusable replacement never restores a previous token or a custom reserved header.
+
+A usable token creates a subject boundary as soon as the context update begins. Assignments for a different targeting key are withheld while the request is pending and after failure. Existing assignments for the same targeting key can remain available; after a failed refresh they are reported as stale and retain the original downloaded context for evaluation and telemetry. Experimentation opt-out modes continue to require their stricter full-context and policy match.
+
+The same boundary is established when the endpoint returns HTTP 401 with a JSON:API `errors` entry whose `code` is exactly `ASSIGNMENT_AUTHORIZATION_FAILED`, even if no token was sent. Without eligible assignments, evaluations return the application default with `general`. Removing the token or retrying does not restore another subject's retained assignments while this failure remains unresolved.
+
+A successful download or eligible same-subject stale fallback recovers the client and ends this boundary, matching the browser provider. A later context update without a usable token follows the existing iOS behavior: with experimentation opt-out disabled, previous assignments may remain available while the download is pending; if the download fails, only an exact-context fallback is eligible. Applications using subject authorization should include the appropriate token in each complete context update that requires it. Overlapping requests still cannot install superseded authorization results after recovery.
+
+Customer proxies must forward `DD-Assignment-Token`. This release does not verify signed assignment response payloads.
+
 ## Per-subject experimentation opt-out
 
 Select an opt-out mode in `FlagsClient.Configuration` when creating the client. The default is disabled.

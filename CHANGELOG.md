@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Flags: Add subject authorization for assignment downloads through the reserved `dd_assignment_token` evaluation-context attribute. The token is sent only in the `DD-Assignment-Token` header and is excluded from targeting, persistence, and Datadog telemetry. Adds `FlagsError.assignmentAuthorizationFailed` and `FlagEvaluationError.general`; exhaustive switches need the new cases.
+
 # 3.22.0 / 12-11-2026
 
 - [FEATURE] Flags: Add `Flags.Configuration.flagSelection` to load only the flags that match the given tags or key patterns. See [#3344][]
