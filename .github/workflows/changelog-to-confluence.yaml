@@ -47,6 +47,7 @@ jobs:
 
                   cp DatadogFlags/FLAGS_FEATURE.md publish_folder/dd-sdk-ios-flags-feature.md
                   echo "Publishing FLAGS_FEATURE.md"
+
                   cp DatadogCrashReporting/CRASH_REPORTING_FEATURE.md publish_folder/dd-sdk-ios-crash-reporting-feature.md
                   echo "Publishing CRASH_REPORTING_FEATURE.md"
 

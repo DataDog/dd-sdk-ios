@@ -130,7 +130,7 @@ flowchart LR
 
 - `Flags.enable()` registers `FlagsFeature` and, when `trackEvaluations` is `true`, a separate `FlagsEvaluationFeature` for evaluation uploads. Both run on the main thread synchronously.
 - `setEvaluationContext` sends one request with the targeting key, attributes, `env`, SDK version, the optional flag selection, and the opt-out policy. When RUM is enabled, the RUM application ID is sent as the `dd-application-id` header.
-- `getDetails` reads the in-memory assignment for the key. On first use it waits up to 100 ms for the disk cache read to finish.
+- `getDetails` reads the in-memory assignment for the key. Until the initial disk cache read finishes, each call waits up to 100 ms for it.
 
 ## Key Files
 
@@ -186,7 +186,7 @@ flowchart LR
 | `.reconciling` | Fetch in progress; previous assignments may still be served |
 | `.ready` | Assignments for the latest context are loaded |
 | `.stale` | Fetch failed, cached assignments for the same context are served |
-| `.error` | Fetch failed or context invalid, and no matching cache: every evaluation returns the default with `.providerNotReady` (or `.invalidContext`) |
+| `.error` | Context invalid (even with a matching cache), or fetch failed with no matching cache: every evaluation returns the default with `.invalidContext` or `.providerNotReady` respectively |
 
 Listeners are held weakly and called with the current state when added. A state can be skipped if a newer one supersedes it.
 
@@ -211,7 +211,7 @@ Listeners are held weakly and called with the current state when added. A state 
 ### Graceful Mode
 `gracefulModeEnabled` controls what happens on API misuse: creating a client before `Flags.enable()`, creating an existing client name, or calling `shared(named:)` for a name never created. Misuse returns the existing client or a no-op `FallbackFlagsClient`.
 - Debug build of the SDK, `true`: console message `🔥 Datadog SDK usage error: ...`.
-- Debug build of the SDK, `false`: `fatalError`.
+- Debug build of the SDK, `false`: `fatalError`. Misuse before `Flags.enable()` always behaves as `true`, because the configuration isn't known yet.
 - Release build of the SDK: `DD.logger.error`, visible only with `Datadog.verbosityLevel` set.
 
 "Debug build" refers to how the SDK module itself was compiled (`DEBUG` flag), not the app.

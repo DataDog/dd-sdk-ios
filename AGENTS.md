@@ -41,7 +41,7 @@ Feature-specific docs (in each module directory):
 ├── DatadogTrace/TRACE_FEATURE.md
 ├── DatadogProfiling/PROFILING_FEATURE.md
 ├── DatadogLogs/LOGS_FEATURE.md
-└── DatadogFlags/FLAGS_FEATURE.md
+├── DatadogFlags/FLAGS_FEATURE.md
 └── DatadogCrashReporting/CRASH_REPORTING_FEATURE.md
 ```
 
