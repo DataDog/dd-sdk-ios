@@ -14,7 +14,7 @@ tracked_files:
 
 WebView Tracking connects a `WKWebView` running the Datadog Browser SDK to the native SDK. It injects a JavaScript bridge (`window.DatadogEventBridge`) into the WebView. Browser SDK sends its RUM events, logs, telemetry, and Session Replay records through that bridge, and the native SDK writes them in the native RUM session, with native IDs, tags, and server time offset.
 
-WebView Tracking has no upload path of its own. Each event type needs its native feature: RUM events and telemetry need RUM, logs need Logs, and records need Session Replay and RUM. RUM events, telemetry, and records are dropped when the native RUM session is sampled out. Call `Datadog.initialize()` before `WebViewTracking.enable()`. The web page must be instrumented with Browser SDK `v4.2.0+`.
+WebView Tracking has no upload path of its own. Each event type needs its native feature: RUM events and telemetry need RUM, logs need Logs, and records need Session Replay and RUM. RUM events, telemetry, and records are dropped when the native RUM session is sampled out. Call `Datadog.initialize()` before `WebViewTracking.enable()`. The web page must be instrumented with Browser SDK (see [Browser SDK Versions](#browser-sdk-versions)).
 
 **Platform**: iOS, visionOS. Through SPM, the module also builds on tvOS, macOS, and watchOS:
 - **visionOS**: Session Replay is not available, so no web records are captured.
@@ -123,7 +123,7 @@ flowchart TD
    - `getCapabilities()`: `["records"]` when Session Replay is enabled, `[]` otherwise.
    - `getPrivacyLevel()`: `allow`, `mask`, or `mask-user-input` (see [Session Replay Privacy](#session-replay-privacy)).
    - `getIsTraceSampled()`: `true`, `false`, or `null` (see [Trace Sampling](#trace-sampling)).
-2. **Host check**: Browser SDK reads the bridge and decides whether the page uses it. The native SDK only passes the host list. Matching rules, including wildcards and an empty list, are Browser SDK behavior.
+2. **Bridge mode**: Browser SDK uses the bridge only when the page host matches an entry of `getAllowedWebViewHosts()` (see [Hosts](#hosts)). In bridge mode, it sends everything to `send` instead of uploading, forces its `sessionSampleRate` to `100` (native sampling decides), and defaults `service` to the web application ID. Otherwise it runs as a standalone Browser SDK, with its own sampling and uploads.
 3. **Receive**: `DDScriptMessageHandler` reads the message body on the main thread, then hands it to `MessageEmitter` on a serial background queue (one per WebView), with the WebView's `hash` as the `slotId` (`nil` when the message has no WebView).
 4. **Decode**: `MessageEmitter` decodes the body as a `WebViewMessage` with `eventType` and `event` fields (`view` too for records). It sends the message on the message bus:
    - `log` → Logs, after the `logsSampleRate` sampler.
@@ -153,7 +153,10 @@ flowchart TD
 ## Configuration Categories
 
 ### Hosts
-- `hosts` (default: `[]`) is passed to Browser SDK through `getAllowedWebViewHosts()`. Browser SDK decides which pages use the bridge.
+- `hosts` (default: `[]`) is passed to Browser SDK through `getAllowedWebViewHosts()`. Browser SDK does the matching against `location.hostname`:
+  - A plain entry matches the host itself and its subdomains (`example.com` matches `shop.example.com`).
+  - A wildcard entry matches a host that starts with the part before `*`, ends with the part after it, and has at least one character in between (`preview-*.example.com` matches `preview-1.example.com`, not `preview-.example.com`).
+  - With an empty list, no page uses the bridge.
 - Each entry is validated with `HostsSanitizer`:
   - A plain host name or an IPv4 address is kept as is.
   - A URL is replaced by its host, with a warning (`https://example.com/path` → `example.com`).
@@ -175,16 +178,25 @@ The bridge passes one global privacy level for web content, so the native fine-g
 | `.maskAllInputs` | `.maskNone` | `.show` | `mask-user-input` |
 | Any other combination | | | `mask` |
 
-- Without Session Replay, the level is `mask` and `getCapabilities()` returns `[]`. This includes `replaySampleRate: 0`, in code or from Remote Configuration, which leaves Session Replay unregistered.
+- The page's own `defaultPrivacyLevel` in its Browser SDK init configuration takes precedence over `getPrivacyLevel()`.
+- Without Session Replay, the level is `mask` and `getCapabilities()` returns `[]`, so Browser SDK turns its recording off. This includes `replaySampleRate: 0`, in code or from Remote Configuration, which leaves Session Replay unregistered.
 - Levels are read from the Session Replay feature when `enable` runs, and again on each trace sampling update. With `Datadog.Configuration.remoteConfiguration`, they include the remote overrides that Session Replay applied at its own `enable`.
 - Enabling Session Replay after `WebViewTracking.enable()` does not update `getCapabilities()` or `getPrivacyLevel()` until the bridge script is rewritten on a trace sampling change, and then only for pages loaded after the rewrite.
 
 ### Trace Sampling
 `getIsTraceSampled()` shares the native trace sampling decision with Browser SDK:
-- `'null'`: RUM is not enabled, RUM `urlSessionTracking.firstPartyHostsTracing` is not configured, or no RUM session is active (for example, after `stopSession()`). Browser SDK then makes its own sampling decision.
+- `'null'`: RUM is not enabled, RUM `urlSessionTracking.firstPartyHostsTracing` is not configured, or no RUM session is active (for example, after `stopSession()`). Browser SDK then uses its own decision, from its session and `traceSampleRate`.
 - `'true'` or `'false'`: the RUM session decision combined with the `firstPartyHostsTracing` sample rate. The decision is read from RUM's sampling store, so it is available right after `RUM.enable()` returns.
 - The `firstPartyHostsTracing` hosts do not need to match the WebView `hosts`.
 - When a web RUM event has `_dd.rule_psr` and `firstPartyHostsTracing` is configured, RUM replaces it with the native `firstPartyHostsTracing` sample rate, as a proportion (`0...1`).
+
+### Browser SDK Versions
+The source doc comments require Browser SDK `v4.2.0+`. From the Browser SDK changelog, bridge features need these versions:
+- WebView tracking enabled: `v4.5.0`.
+- Subdomain matching of plain hosts: `v4.8.0`.
+- Session Replay records (`records` capability): `v5.11.0`.
+- Trace sampling decision (`getIsTraceSampled`): `v7.1.0`.
+- Wildcard host patterns: `v7.3.0`, with the "at least one character" rule from `v7.4.0`.
 
 ### Cross-Platform Message Emitter (`_internal`)
 `WebViewTracking._internal.messageEmitter(in:logsSampleRate:)` returns an `AbstractMessageEmitter` whose `send(body:slotId:)` accepts the bridge message JSON string. Cross-platform SDKs use it when they own the WebView bridge. It applies the same decoding, logs sampling, and routing as `enable`, but injects no script and does not register the WebView for trace sampling updates. It is compiled on every platform, including tvOS and watchOS. `_internal` is not a supported customer API.
@@ -193,7 +205,7 @@ The bridge passes one global privacy level for web content, so the native fine-g
 
 ### "No web events in the native session"
 **Causes:**
-- The page does not run Browser SDK `v4.2.0+`, or its host does not match `hosts` (empty by default).
+- The page does not run Browser SDK, or its host does not match `hosts` (empty by default). Wildcard entries need Browser SDK `v7.3.0+`.
 - `enable` was called before `Datadog.initialize()`. The console shows an SDK usage error (`Datadog SDK must be initialized before calling ...`), and the WebView is not tracked. The same happens with the Objective-C `instanceName` overload when no instance has that name.
 - RUM is not enabled. The SDK logger warns `A WebView RUM event is lost because RUM is disabled in the SDK` (visible only with `Datadog.verbosityLevel` set).
 - The native RUM session is sampled out. RUM events, telemetry, and records are dropped without a warning, and logs get no RUM IDs.
@@ -211,7 +223,8 @@ The bridge passes one global privacy level for web content, so the native fine-g
 **Causes:**
 - Session Replay was not enabled when `WebViewTracking.enable()` ran, so the bridge reports no `records` capability.
 - Session Replay is disabled. The SDK logger warns `A WebView Replay record is lost because Session Replay is disabled in the SDK`.
-- The native privacy levels convert to `mask`, so web content is masked. See [Session Replay Privacy](#session-replay-privacy).
+- The native privacy levels convert to `mask`, or the page sets its own `defaultPrivacyLevel`. See [Session Replay Privacy](#session-replay-privacy).
+- The page runs Browser SDK older than `v5.11.0`.
 - The app runs on macOS or visionOS, where Session Replay is not available.
 
 **Solutions:** Enable Session Replay before `WebViewTracking.enable()`, and check the privacy table.
@@ -237,5 +250,5 @@ The bridge passes one global privacy level for web content, so the native fine-g
 - `WebViewTracking` has no configuration object or `Feature.enable()` call. `WebViewTrackingFeature` is registered on the first `enable` call for a core.
 - `disable` removes the `DatadogEventBridge` handler and the bridge user script, keeps other user scripts, and stops trace sampling updates for the WebView. Call it before the WebView is deinitialized. The registry holds WebViews weakly.
 - `enable` and `disable` can be called from any thread. Off the main thread, they block on `DispatchQueue.main.sync`, so calling them from a thread the main thread waits on deadlocks.
-- The bridge never sends the session ID or other native context to the page. It only exposes the four getters and `send`.
+- The bridge never sends the session ID or other native context to the page. It only exposes the four getters and `send`. It does not advertise the `profiles` capability, so Browser SDK profiling does not run in tracked WebViews.
 - Tracked WebViews are updated on the first context message after the feature is registered, then only when the decision string changes.
