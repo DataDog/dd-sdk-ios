@@ -1,7 +1,7 @@
 ---
 last_updated: 2026-11-11
 sdk_version: 3.21.0
-verified_against_commit: c03d01e37
+verified_against_commit: ed283dd28
 tracked_files:
   - DatadogWebViewTracking/Sources/WebViewTracking.swift
   - DatadogWebViewTracking/Sources/ObjC/WebViewTracking+objc.swift
@@ -191,7 +191,7 @@ The bridge passes one global privacy level for web content, so the native fine-g
 - When a web RUM event has `_dd.rule_psr` and `firstPartyHostsTracing` is configured, RUM replaces it with the native `firstPartyHostsTracing` sample rate, as a proportion (`0...1`).
 
 ### Browser SDK Versions
-WebView tracking needs Browser SDK `v4.5.0+`. From the Browser SDK changelog, other bridge features need these versions:
+WebView tracking needs Browser SDK `v4.2.0+`. From the Browser SDK changelog, later bridge features need these versions:
 - Subdomain matching of plain hosts: `v4.8.0`.
 - Session Replay records (`records` capability): `v5.11.0`.
 - Trace sampling decision (`getIsTraceSampled`): `v7.1.0`.
