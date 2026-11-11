@@ -25,7 +25,7 @@ public enum WebViewTracking {
 #if canImport(WebKit)
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     ///
-    /// If the content loaded in WebView uses Datadog Browser SDK (`v4.5.0+`) and matches specified
+    /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
     /// `hosts`, web events will be correlated with the RUM session from native SDK.
     ///
     /// Each entry in `hosts` can be a plain hostname (`"example.com"`) or a wildcard pattern with a
