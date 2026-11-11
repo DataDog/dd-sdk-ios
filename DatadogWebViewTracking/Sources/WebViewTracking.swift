@@ -14,7 +14,7 @@ import WebKit
 /// Real User Monitoring allows you to monitor web views and eliminate blind spots in your hybrid iOS applications.
 ///
 /// # Prerequisites:
-/// Set up the web page you want rendered on your mobile iOS and tvOS application with the RUM Browser SDK
+/// Set up the web page you want rendered on your mobile iOS application with the RUM Browser SDK
 /// first. For more information, see [RUM Browser Monitoring](https://docs.datadoghq.com/real_user_monitoring/browser/#npm).
 ///
 /// You can perform the following:
@@ -25,7 +25,7 @@ public enum WebViewTracking {
 #if canImport(WebKit)
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     ///
-    /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
+    /// If the content loaded in WebView uses Datadog Browser SDK (`v4.5.0+`) and matches specified
     /// `hosts`, web events will be correlated with the RUM session from native SDK.
     ///
     /// Each entry in `hosts` can be a plain hostname (`"example.com"`) or a wildcard pattern with a
@@ -152,7 +152,7 @@ public enum WebViewTracking {
     /// Injects the Javascript bridge code in the WebView user scripts.
     ///
     /// - Important: This function does not check if the script is already there and should be called *only* when
-    /// we know it's not. Make sure to test for this situation, or guarantee it wont happen, before calling this function.
+    /// we know it's not. Make sure to test for this situation, or guarantee it won't happen, before calling this function.
     ///
     /// - Parameters:
     ///   - webView: The WebView where the script will be injected into.
@@ -234,7 +234,7 @@ public enum WebViewTracking {
     /// Note that if the view was instrumented before, this function always returns `true`, it cannot fail instrumentation in
     /// that situation. Therefore, `false` guarantees the view wasn't instrumented. It's possible views are registered in
     /// `WebViewSessionRolloverHandler` and not instrumented in the rare situation where
-    ///  ``WebViewTracking/disable(webView:in:)`` was called on the wrong core.
+    ///  ``WebViewTracking/disable(webView:)`` was called on the wrong core.
     @MainActor
     static func update(_ webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) -> Bool {
         let controller = webView.configuration.userContentController
@@ -326,10 +326,10 @@ public enum WebViewTracking {
         return decision.isSampled ? "true" : "false"
     }
 
-    /// Conversion matrix from global privacy level to fine-grained privaly levels.
+    /// Conversion matrix from fine-grained privacy levels to the global privacy level.
     /// Although `SessionReplayPrivacyLevel` is deprecated on mobile,
     /// it is still needed to configure the browser SDK for the web integration,
-    /// which currently doesn't support fine-grained priavcy options.
+    /// which currently doesn't support fine-grained privacy options.
     internal static func determineWebViewPrivacyLevel(
             textPrivacy: TextAndInputPrivacyLevel,
             imagePrivacy: ImagePrivacyLevel,
@@ -367,7 +367,9 @@ extension InternalExtension where ExtendedType == WebViewTracking {
     public class AbstractMessageEmitter {
         /// Sends a web-view message.
         ///
-        /// - Parameter message: The message to send
+        /// - Parameters:
+        ///   - body: The message to send, a JSON string parsable to `WebViewMessage`.
+        ///   - slotId: The Session Replay slot ID of the web view, if any.
         public func send(body: Any, slotId: String? = nil) {}
     }
 

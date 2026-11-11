@@ -8,7 +8,7 @@ import Foundation
 
 /// Provides the sample rate of distributed tracing, if configured.
 public protocol DistributedTracingSampleRateProvider {
-    /// The distributed tracing (first party host tracing) sample rate, if configured. `nil` if first party hosting
+    /// The distributed tracing (first party host tracing) sample rate, if configured. `nil` if first party host tracing
     /// was not configured in RUM.
     var distributedTracingSampleRate: SampleRate? { get }
 }

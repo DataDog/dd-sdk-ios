@@ -13,7 +13,7 @@ internal enum WebViewMessageError: Error, Equatable {
     case invalidMessage(description: String)
 }
 
-/// A type forwarding type-less messages received from Datadog Browser SDK to either `DatadogRUM` or `DatadogLogs`.
+/// A type forwarding type-less messages received from Datadog Browser SDK to `DatadogRUM`, `DatadogLogs`, or `DatadogSessionReplay`.
 internal final class MessageEmitter: InternalExtension<WebViewTracking>.AbstractMessageEmitter {
     /// The core for events forwarding.
     private weak var core: DatadogCoreProtocol?

@@ -42,7 +42,7 @@ internal class WebViewSessionRolloverHandler {
         self.core = core
     }
 
-    /// Keeps track of the currently instrumented WebViews that are tracked by the core than owns this handler.
+    /// Keeps track of the currently instrumented WebViews that are tracked by the core that owns this handler.
     ///
     /// A `NSMapTable` is used since we need to keep an instance of ``WebViewTrackingElements``
     /// per WebView, but don't want to hold a strong reference to the `WKWebView` instances.
@@ -61,7 +61,7 @@ internal class WebViewSessionRolloverHandler {
          A note on the implementation: because the NSMapTable is kind of ancient,
          this code is a bit grotesque. Two important notes for future maintainers:
 
-         - The collection cannot me mutated while enumerating (an exception is thrown
+         - The collection cannot be mutated while enumerating (an exception is thrown
          if that happens). Therefore, it's necessary to collect the WebViews that should
          be unregistered, if any, in a set, and delete them after the fact.
 
@@ -72,7 +72,7 @@ internal class WebViewSessionRolloverHandler {
 
          Using weak boxes on modern Swift collections was considered, but due to the
          manual work required to remove the boxes containing deallocated objects from
-         the collection, it would be even grotesquier.
+         the collection, it would be even more grotesque.
 
          A note: do not trust NSMapTable.count. It includes the internal NSMapTable
          weak boxes with objects that were already deallocated, but not yet cleaned
@@ -139,7 +139,7 @@ internal class WebViewSessionRolloverHandler {
     static func register(webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements) throws {
         // In some situations, like users manually removing the injected user scripts and enabling tracking on the
         // WebView again, we cannot detect the view is already instrumented. So, just in case, try to unregister
-        // the given WebView it before registering it.
+        // the given WebView before registering it.
         unregister(webView: webView)
         let feature = try WebViewTrackingFeature.obtainOrRegisterFeature(in: core)
         handlerPerView.setObject(feature.sessionRolloverHandler, forKey: webView)
@@ -148,7 +148,7 @@ internal class WebViewSessionRolloverHandler {
 
     /// Unregisters a WebView from this handler.
     ///
-    /// Call this from ``WebViewTracking/disable(webView:in:)`` so the WebView stops being updated
+    /// Call this from ``WebViewTracking/disable(webView:)`` so the WebView stops being updated
     /// on RUM session rollovers.
     ///
     /// - Parameters:
