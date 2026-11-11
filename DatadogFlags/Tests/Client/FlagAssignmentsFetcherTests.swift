@@ -235,7 +235,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         waitForExpectations(timeout: 1)
         XCTAssertEqual(capturedRequest?.url?.host, "preview.ff-cdn.datadoghq.com")
         XCTAssertNil(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"])
-        XCTAssertNotEqual(capturedRequest?.value(forHTTPHeaderField: "dd-client-token"), "overridden")
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "dd-client-token"), featureScope.contextMock.clientToken)
     }
 
     func testFlagAssignmentsSendsFlagSelection() throws {
