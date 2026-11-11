@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-11
 sdk_version: 3.21.0
-verified_against_commit: ad5ed83d9
+verified_against_commit: 37f6fb561
 tracked_files:
   - DatadogFlags/Sources/Flags.swift
   - DatadogFlags/Sources/Client/FlagsClient.swift
