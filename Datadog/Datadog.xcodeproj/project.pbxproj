@@ -875,6 +875,8 @@
 		61F930CB2BA213AC005F0EE2 /* AppHang.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F930CA2BA213AC005F0EE2 /* AppHang.swift */; };
 		61FC5F3525CC1898006BB4DE /* CrashContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */; };
 		62FAD0013000000000000001 /* FlagKeyObfuscation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62FAD0013000000000000002 /* FlagKeyObfuscation.swift */; };
+		FF3700000000000000000001 /* PortableFlagsConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF3700000000000000000002 /* PortableFlagsConfiguration.swift */; };
+		FF3700000000000000000003 /* PortableFlagsConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF3700000000000000000004 /* PortableFlagsConfigurationTests.swift */; };
 		62FAD0013000000000000005 /* FlagKeyObfuscationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62FAD0013000000000000006 /* FlagKeyObfuscationTests.swift */; };
 		6482FB0E2EE885C60042234B /* FlagsClientInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */; };
 		65BD3573CA443F7594C3513C /* token_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F2A41BE821B131A3DA7DA4D /* token_enc.c */; };
@@ -3052,6 +3054,8 @@
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
 		624846C4FD66A3B6616146B6 /* quant.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = quant.h; sourceTree = "<group>"; };
 		62FAD0013000000000000002 /* FlagKeyObfuscation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagKeyObfuscation.swift; sourceTree = "<group>"; };
+		FF3700000000000000000002 /* PortableFlagsConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortableFlagsConfiguration.swift; sourceTree = "<group>"; };
+		FF3700000000000000000004 /* PortableFlagsConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortableFlagsConfigurationTests.swift; sourceTree = "<group>"; };
 		62FAD0013000000000000006 /* FlagKeyObfuscationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagKeyObfuscationTests.swift; sourceTree = "<group>"; };
 		6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientInternal.swift; sourceTree = "<group>"; };
 		65E33CD3F87D3955EAF5C884 /* sharpyuv_dsp.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = sharpyuv_dsp.c; sourceTree = "<group>"; };
@@ -4629,6 +4633,7 @@
 				5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */,
 				A33380013000000000000002 /* FlagsEvaluationContextTests.swift */,
 				62FAD0013000000000000006 /* FlagKeyObfuscationTests.swift */,
+				FF3700000000000000000004 /* PortableFlagsConfigurationTests.swift */,
 				5B1D02902E8ED10500AB2391 /* ExposureEventTests.swift */,
 				5B16A3692E83E46F0046A863 /* AnyValueTests.swift */,
 			);
@@ -4735,6 +4740,7 @@
 				5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */,
 				5B16A36F2E83EE2B0046A863 /* FlagAssignmentsResponse.swift */,
 				62FAD0013000000000000002 /* FlagKeyObfuscation.swift */,
+				FF3700000000000000000002 /* PortableFlagsConfiguration.swift */,
 				5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */,
 				5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */,
 				F1A600000000000000000001 /* FlagsClientEvent.swift */,
@@ -9203,6 +9209,7 @@
 				5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */,
 				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				62FAD0013000000000000001 /* FlagKeyObfuscation.swift in Sources */,
+				FF3700000000000000000001 /* PortableFlagsConfiguration.swift in Sources */,
 				5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
 				5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
 				D1A600001000000000000002 /* FlagsRequestDiagnostics.swift in Sources */,
@@ -9229,6 +9236,7 @@
 				5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */,
 				A33380013000000000000001 /* FlagsEvaluationContextTests.swift in Sources */,
 				62FAD0013000000000000005 /* FlagKeyObfuscationTests.swift in Sources */,
+				FF3700000000000000000003 /* PortableFlagsConfigurationTests.swift in Sources */,
 				5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */,
 				5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,
 				5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
