@@ -49,7 +49,7 @@ public enum SessionReplay {
 
     /// Stops the recording manually.
     /// - Parameters:
-    ///   - core: The instance of Datadog SDK to start Session Replay in (global instance by default).
+    ///   - core: The instance of Datadog SDK to stop Session Replay in (global instance by default).
     public static func stopRecording(
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
