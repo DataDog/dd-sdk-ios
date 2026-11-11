@@ -3985,7 +3985,9 @@ final class FlagsRepositoryTests: XCTestCase {
                 ]
             )
         ) { result in
-            XCTAssertNoThrow(try result.get())
+            if case .failure(let error) = result {
+                XCTFail("Expected successful context update, got \(error)")
+            }
             completed.fulfill()
         }
         wait(for: [completed], timeout: 1)

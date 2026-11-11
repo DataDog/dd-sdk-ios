@@ -50,6 +50,8 @@ Your backend signs the token for the requested subject and environment. Keep the
 
 Missing, `null`, and empty-string token values send no header. Other types, or strings containing whitespace or non-ASCII characters, also send no header and produce a fixed warning that does not contain the supplied value. The assignment request still proceeds so that the endpoint can decide whether authorization is required. An unusable replacement never restores a previous token or a custom reserved header.
 
+Assignment requests carrying a token refuse all HTTP redirects, including redirects within the same origin. The redirect destination receives no request or token. A refused redirect is handled as an ordinary download failure and can use an eligible stale fallback. Requests without a usable token retain their existing redirect behavior.
+
 A usable token creates a subject boundary as soon as the context update begins. Assignments for a different targeting key are withheld while the request is pending and after failure. Existing assignments for the same targeting key can remain available; after a failed refresh they are reported as stale and retain the original downloaded context for evaluation and telemetry. Experimentation opt-out modes continue to require their stricter full-context and policy match.
 
 The same boundary is established when the endpoint returns HTTP 401 with a JSON:API `errors` entry whose `code` is exactly `ASSIGNMENT_AUTHORIZATION_FAILED`, even if no token was sent. Without eligible assignments, evaluations return the application default with `general`. Removing the token or retrying does not restore another subject's retained assignments while this failure remains unresolved.

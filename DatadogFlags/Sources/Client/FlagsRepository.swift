@@ -537,7 +537,9 @@ internal final class FlagsRepository {
             if state.flagsDataVersion != versionAtStart {
                 // A no-token success for the same context can precede the first typed rejection.
                 // That rejection still needs to select a stale fallback and publish its state.
-                guard case .assignmentAuthorizationFailed = error else { return }
+                guard case .assignmentAuthorizationFailed = error else {
+                    return
+                }
             }
 
             if case .assignmentAuthorizationFailed = error {

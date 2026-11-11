@@ -333,7 +333,7 @@ extension DatadogSite {
 }
 
 extension URLSession {
-    fileprivate func fetch(
+    internal func fetch(
         _ request: URLRequest,
         completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void
     ) {
@@ -350,6 +350,25 @@ extension URLSession {
 
             completion(.success((data, httpResponse)))
         }
+        if request.value(forHTTPHeaderField: AssignmentAuthorization.header) != nil {
+            // Bind this policy to the original request, before URLSession can rewrite a POST
+            // or remove headers while redirecting. Tokenless tasks retain URLSession's defaults.
+            task.delegate = AssignmentTokenRedirectDelegate()
+        }
         task.resume()
+    }
+}
+
+private final class AssignmentTokenRedirectDelegate: NSObject, URLSessionTaskDelegate {
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        // Return the original 3xx response to the existing download-failure/fallback path.
+        // Refuse every destination, including another path, hostname, port, or scheme.
+        completionHandler(nil)
     }
 }
