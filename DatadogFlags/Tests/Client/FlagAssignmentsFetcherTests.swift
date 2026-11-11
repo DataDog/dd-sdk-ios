@@ -210,6 +210,34 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
     }
 
+    func testFlagAssignmentsDefaultEndpointDoesNotSendCustomHeaders() {
+        // Given
+        var capturedRequest: URLRequest?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: ["X-Custom-Header": "custom-value", "dd-client-token": "overridden"],
+            flagSelection: nil,
+            featureScope: featureScope,
+            fetch: { request, completion in
+                capturedRequest = request
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+            }
+        )
+
+        let completed = expectation(description: "completed")
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(capturedRequest?.url?.host, "preview.ff-cdn.datadoghq.com")
+        XCTAssertNil(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"])
+        XCTAssertNotEqual(capturedRequest?.value(forHTTPHeaderField: "dd-client-token"), "overridden")
+    }
+
     func testFlagAssignmentsSendsFlagSelection() throws {
         // Given
         var capturedRequest: URLRequest?
