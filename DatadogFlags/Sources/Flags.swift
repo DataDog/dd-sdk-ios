@@ -131,7 +131,7 @@ public enum Flags {
         ///   - trackEvaluations: Enables evaluation logging to the evaluations intake endpoint. Default: `true`.
         ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
-        ///   - responseSigning: Optional verification using explicitly configured roots. Default: off.
+        ///   - responseSigning: Optional verification with endpoint-specific or explicit roots. Default: off.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,

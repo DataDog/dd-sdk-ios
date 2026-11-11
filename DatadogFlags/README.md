@@ -36,25 +36,29 @@ Both observe and required modes apply this override. Signing-off requests keep t
 
 The first public response-signing protocol is v1. The SDK advertises `response-signing-v1`, sends signature version `1`, and verifies the `datadog.feature-flags.precomputed-assignments.v1` transcript. Earlier POC v1/v2 and draft v3 labels are not supported public versions; public v1 does not accept their proofs. X.509 v3 certificate encoding is unchanged.
 
-Response signing is disabled by default. The browser pilot leads rollout; this native draft must pass Apple CryptoKit and simulator conformance before a protected mobile release. Signing protects accepted assignment responses against modification. It does not change subject authorization.
+Response signing is disabled by default. This draft enables a staging-only mobile pilot using the same public root as the browser SDK. Production endpoints have no bundled root. Signing protects response integrity; subject authorization remains separate.
 
 ```swift
-// publicRootDER is a locally provisioned public certificate, never response-supplied trust.
-Flags.enable(with: .init(responseSigning: .init(
-    mode: .observe,
-    trustedRootCertificates: [publicRootDER]
-)))
+Flags.enable(with: .init(
+    customFlagsEndpoint: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"),
+    responseSigning: .init(mode: .required)
+))
 ```
+
+The bundled root applies only to `https://preview.ff-cdn.datad0g.com` on port 443.
+The effective request endpoint selects trust, including a custom endpoint. The application's `env` value does not select a root.
+A nonempty `trustedRootCertificates` list replaces bundled trust. No roots are downloaded.
+Use required mode for the staging pilot; keep production signing off. Fresh sessions provide observations across rotations without adding polling.
 
 `observe` attempts verification and records a bounded outcome, then accepts otherwise-valid responses when proof is absent, invalid or expired. Authentication, HTTP, redirect and JSON errors retain their ordinary failure behavior. Observation data uses a separate cache namespace hashed from the effective token, endpoint/query, environment, app ID, custom headers, mode and root pins; it never becomes a verified cache entry. The SDK waits for the current core scope before reading that namespace and never promotes client-name-only legacy data. A separately retained verified response remains available for same-context failure fallback until its original expiry.
 
-`required` accepts only a complete, valid public v1 response with a leaf/intermediate chain under an explicitly configured root. It never retries an unsigned request. Verified fallback is memory-only, tied to this feature instance, the complete current request configuration scope and the exact evaluation context, and expires at the original signed deadline (at most five minutes). No disk entry is trusted or written in this mode; evaluation returns defaults after expiry, a context change without a fresh response, or restart. Core context messages invalidate the old scope before further reads; reset, scope changes and superseded requests cannot restore old assignments. Stopping the SDK releases a feature-owned lifetime guard, permanently invalidating signing on retained clients and fetchers. Pending responses and later context messages cannot reactivate that instance. Configure the mode and roots when enabling Flags; replace the feature instance through the ordinary SDK lifecycle to change trust configuration.
+`required` accepts only a complete, valid public v1 response with a leaf/intermediate chain under the endpoint-specific or explicitly configured root. It never retries an unsigned request. Verified fallback is memory-only, tied to this feature instance, the complete current request configuration scope and the exact evaluation context, and expires at the original signed deadline (at most five minutes). No disk entry is trusted or written in this mode; evaluation returns defaults after expiry, a context change without a fresh response, or restart. Core context messages invalidate the old scope before further reads; reset, scope changes and superseded requests cannot restore old assignments. Stopping the SDK releases a feature-owned lifetime guard, permanently invalidating signing on retained clients and fetchers. Pending responses and later context messages cannot reactivate that instance. Configure the mode and roots when enabling Flags; replace the feature instance through the ordinary SDK lifecycle to change trust configuration.
 
-No production root is bundled. Provision the approved public anchor before enabling verification; recovered POC roots and synthetic fixture certificates are test material only. Root trust never updates from the network. Each response carries one leaf and one intermediate so an unchanged SDK can validate later rotations without observing earlier rotations. The root is an explicit anchor outside the two-certificate path: direct CryptoKit signature checks intentionally avoid platform path-building interpretation of the recovered anchor's `pathLen=0`. The restricted DER parser enforces the shared certificate profile and never fetches issuer certificates, system roots, AIA or OCSP.
+The staging root remains fixed while responses carry the current leaf and intermediate certificates. Routine certificate rotation does not require an SDK update or a record of earlier rotations. Root validity still bounds support for unchanged SDKs. The restricted DER parser enforces the certificate profile and does not fetch issuer certificates, system roots, AIA or OCSP.
 
 Signing-enabled requests reject redirects, use a fresh 16-byte nonce and bind the exact emitted URL/query, request body, effective client token, semantic headers, response bytes and complete public chain. Verification runs before JSON decoding and cache admission, with expiry checked again at admission and evaluation. Response verification is bounded to 2 MiB and request signing to 1 MiB. Responses are buffered application bytes after HTTP decompression; this draft does not add a signed streaming or critical-flags protocol.
 
-For rollback during the initial pilot, keep clients in `observe` while operators disable backend signing selection, edge signing and the independent rotation controller. Those server controls stop optional proof work; they cannot remotely weaken `required` in an installed SDK. A required client falls back only within its already-verified expiry and then returns defaults. Do not start required rollout until the application owner accepts that behavior and live rotation/disable drills pass.
+Disabling edge signing cannot weaken `required` in an installed SDK. A required client uses verified memory only until its signed expiry, then returns defaults. Restore valid signed delivery to recover. Mobile rotation and application lifecycle validation remain required before rollout beyond staging.
 
 ## Validation and shared fixtures
 

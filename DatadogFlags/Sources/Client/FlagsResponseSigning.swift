@@ -19,17 +19,39 @@ extension Flags {
         case required
     }
 
-    /// Explicit trust configuration for the response-signing draft.
+    /// Trust configuration for optional response signing.
     public struct ResponseSigningConfiguration {
         public var mode: ResponseSigningMode
         /// Locally provisioned public root certificates in DER form. Never populate from a response.
-        /// No production root is bundled. Changing intermediates does not require changing these roots.
+        /// An empty list uses the bundled root only for the exact staging endpoint.
+        /// Explicit roots replace bundled trust. No production root is bundled.
         public var trustedRootCertificates: [Data]
 
         public init(mode: ResponseSigningMode = .off, trustedRootCertificates: [Data] = []) {
             self.mode = mode
             self.trustedRootCertificates = trustedRootCertificates
         }
+
+        internal func roots(for endpoint: URL?) -> [Data] {
+            if !trustedRootCertificates.isEmpty { return trustedRootCertificates }
+            guard let endpoint = endpoint,
+                let parts = URLComponents(url: endpoint, resolvingAgainstBaseURL: false),
+                parts.scheme?.lowercased() == "https", parts.host?.lowercased() == "preview.ff-cdn.datad0g.com",
+                parts.port == nil || parts.port == 443, parts.user == nil, parts.password == nil
+            else { return [] }
+            return Self.stagingRoot.map { [$0] } ?? []
+        }
+
+        // Public staging root shared with browser SDK 493572e24936303cb60b5963c70a8425e3b681fb.
+        // Trust follows the effective endpoint, never the application's environment label.
+        private static let stagingRoot = Data(base64Encoded:
+            "MIIBpTCCAUugAwIBAgIQKsPLOMisev8X0XQFpshjkTAKBggqhkjOPQQDAjAxMS8wLQYDVQQDEyZTVEFHSU5HIE9OTFkgRkZFIHJl" +
+            "c3BvbnNlIHNpZ25pbmcgcm9vdDAeFw0yNjExMDQxOTQ5NTlaFw0zNjEwMzEwMDAwMDBaMDExLzAtBgNVBAMTJlNUQUdJTkcgT05M" +
+            "WSBGRkUgcmVzcG9uc2Ugc2lnbmluZyByb290MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5WCwmxXE/POEOIwmzAPNWA+p9Tj8" +
+            "5d0vGWgUBKZ2n2ahzacUTa1MNAJqhFbErodKBOUxZL91ce0hNd3CREXO+qNFMEMwDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQI" +
+            "MAYBAf8CAQEwHQYDVR0OBBYEFGwi5EY0Qjo1O4IeocR1YFDZ6saYMAoGCCqGSM49BAMCA0gAMEUCIECTtDqZk0HqFTTPGsGXCkzG" +
+            "CHFQkBh6CD6HUc7H1u+pAiEA67aMjoptLka70k0EIGc5cg3ShIUs48JwJ4z8qilqEHY="
+        )
     }
 }
 
@@ -79,7 +101,7 @@ internal final class FlagsResponseVerifier {
                 data.append(0)
             }
         }
-        for root in configuration.trustedRootCertificates {
+        for root in configuration.roots(for: request.url) {
             append(root)
         }
         return Self.hex(Self.digest(data))
@@ -93,11 +115,12 @@ internal final class FlagsResponseVerifier {
     }
 
     func prepare(_ original: URLRequest) throws -> URLRequest {
-        if configuration.mode == .required && configuration.trustedRootCertificates.isEmpty {
+        let roots = configuration.roots(for: original.url)
+        if configuration.mode == .required && roots.isEmpty {
             throw FlagsSigningError.missingAnchor
         }
-        guard configuration.trustedRootCertificates.count <= 4,
-            configuration.trustedRootCertificates.allSatisfy({ !$0.isEmpty && $0.count <= 4_096 })
+        guard roots.count <= 4,
+            roots.allSatisfy({ !$0.isEmpty && $0.count <= 4_096 })
         else {
             throw FlagsSigningError.invalidCertificate
         }
@@ -143,7 +166,8 @@ internal final class FlagsResponseVerifier {
         guard body.count <= Self.maximumResponseBytes else {
             throw FlagsSigningError.responseTooLarge
         }
-        guard !configuration.trustedRootCertificates.isEmpty else {
+        let roots = configuration.roots(for: request.url)
+        guard !roots.isEmpty else {
             throw FlagsSigningError.missingAnchor
         }
         guard response.statusCode == 200, try Self.header(response, "signature-version") == "1" else {
@@ -167,7 +191,7 @@ internal final class FlagsResponseVerifier {
         let intermediate = try FlagsSigningCertificate(der: intermediateDER, role: .intermediate)
         try Self.verifyChild(leaf, parent: intermediate)
         var anchored = false
-        for data in configuration.trustedRootCertificates {
+        for data in roots {
             guard let root = try? FlagsSigningCertificate(der: data, role: .anchor),
                 (try? Self.verifyChild(intermediate, parent: root)) != nil,
                 root.notBefore <= seconds, seconds < root.notAfter,

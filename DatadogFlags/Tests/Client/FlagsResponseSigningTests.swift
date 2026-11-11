@@ -13,6 +13,54 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsResponseSigningTests: XCTestCase {
+    func testBundledStagingTrustIsBoundToExactHTTPSOrigin() throws {
+        let configuration = Flags.ResponseSigningConfiguration(mode: .required)
+        let accepted = [
+            "https://preview.ff-cdn.datad0g.com/precompute-assignments",
+            "https://PREVIEW.FF-CDN.DATAD0G.COM:443/precompute-assignments?dd_env=production"
+        ]
+        for endpoint in accepted {
+            let roots = configuration.roots(for: URL(string: endpoint))
+            XCTAssertEqual(roots.count, 1)
+            XCTAssertEqual(
+                SHA256.hash(data: try XCTUnwrap(roots.first)).map { String(format: "%02x", $0) }.joined(),
+                "6e83e91905e966b37a4eaf30961143cba6027ead0affc207ae6edc012390171e"
+            )
+            var request = URLRequest(url: try XCTUnwrap(URL(string: endpoint)))
+            request.httpMethod = "POST"
+            request.httpBody = Data("{}".utf8)
+            request.setValue("test", forHTTPHeaderField: "dd-client-token")
+            XCTAssertNoThrow(try FlagsResponseVerifier(configuration: configuration).prepare(request))
+        }
+        let rejected = [
+            "https://preview.ff-cdn.datadoghq.com/precompute-assignments?dd_env=staging",
+            "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments",
+            "https://preview.ff-cdn.datad0g.com.attacker.test/precompute-assignments",
+            "https://attacker-preview.ff-cdn.datad0g.com/precompute-assignments",
+            "https://preview.ff-cdn.datad0g.com:444/precompute-assignments",
+            "http://preview.ff-cdn.datad0g.com/precompute-assignments",
+            "https://user@preview.ff-cdn.datad0g.com/precompute-assignments"
+        ]
+        for endpoint in rejected {
+            XCTAssertTrue(configuration.roots(for: URL(string: endpoint)).isEmpty, endpoint)
+            var request = URLRequest(url: try XCTUnwrap(URL(string: endpoint)))
+            request.httpMethod = "POST"
+            request.httpBody = Data("{}".utf8)
+            request.setValue("test", forHTTPHeaderField: "dd-client-token")
+            XCTAssertThrowsError(try FlagsResponseVerifier(configuration: configuration).prepare(request), endpoint)
+        }
+    }
+
+    func testExplicitRootsReplaceBundledStagingTrust() throws {
+        let root = try XCTUnwrap(Data(base64Encoded: corpus().anchor))
+        let configuration = Flags.ResponseSigningConfiguration(mode: .required, trustedRootCertificates: [root])
+        XCTAssertEqual(
+            configuration.roots(for: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments")),
+            [root]
+        )
+        XCTAssertEqual(Flags.ResponseSigningConfiguration().mode, .off)
+    }
+
     private struct Corpus: Decodable {
         let anchor: String
         let cases: [Vector]
