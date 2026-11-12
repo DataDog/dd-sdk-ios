@@ -4206,6 +4206,7 @@ public class objc_RUMMonitor: NSObject
     public func stopResource(resourceKey: String,statusCode: NSNumber?,kind: objc_ResourceType,size: NSNumber?,attributes: [String: Any])
     public func stopResourceWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
     public func stopResourceWithError(resourceKey: String,message: String,response: URLResponse?,attributes: [String: Any])
+    public func stopResourceWithError(resourceKey: String,message: String,type: String?,stack: String?,response: URLResponse?,attributes: [String: Any])
     public func startAction(type: objc_RUMActionType,name: String,attributes: [String: Any])
     public func stopAction(type: objc_RUMActionType,name: String?,attributes: [String: Any])
     public func addAction(type: objc_RUMActionType,name: String,attributes: [String: Any])

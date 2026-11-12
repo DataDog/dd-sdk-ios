@@ -1083,6 +1083,24 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.stopResourceWithError(resourceKey: resourceKey, message: message, response: response, attributes: attributes.dd.swiftAttributes)
     }
 
+    public func stopResourceWithError(
+        resourceKey: String,
+        message: String,
+        type: String?,
+        stack: String?,
+        response: URLResponse?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.stopResourceWithError(
+            resourceKey: resourceKey,
+            message: message,
+            type: type,
+            stack: stack,
+            response: response,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+
     public func startAction(
         type: objc_RUMActionType,
         name: String,

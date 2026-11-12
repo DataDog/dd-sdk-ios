@@ -84,6 +84,7 @@
     [monitor stopResourceWithErrorWithResourceKey:@""
                                                    error:[NSError errorWithDomain:NSURLErrorDomain code:-99 userInfo:nil] response:nil attributes:@{}];
     [monitor stopResourceWithErrorWithResourceKey:@"" message:@"" response:nil attributes:@{}];
+    [monitor stopResourceWithErrorWithResourceKey:@"" message:@"" type:nil stack:nil response:nil attributes:@{}];
     [monitor startActionWithType:DDRUMActionTypeSwipe name:@"" attributes:@{}];
     [monitor stopActionWithType:DDRUMActionTypeSwipe name:nil attributes:@{}];
     [monitor addActionWithType:DDRUMActionTypeTap name:@"" attributes:@{}];
