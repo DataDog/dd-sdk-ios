@@ -1,7 +1,7 @@
 ---
 last_updated: 2026-11-11
 sdk_version: 3.21.0
-verified_against_commit: 37f6fb561
+verified_against_commit: c5961cab1
 tracked_files:
   - DatadogFlags/Sources/Flags.swift
   - DatadogFlags/Sources/Client/FlagsClient.swift
@@ -48,7 +48,7 @@ Flags.enable(
         gracefulModeEnabled: true,
         // Custom URL for fetching assignments, e.g. a proxy. Default: nil (Datadog endpoint for the configured site).
         customFlagsEndpoint: URL(string: "https://flags-proxy.example.com/precompute-assignments"),
-        // Extra headers added to every assignments request, including to the Datadog endpoint. Default: nil.
+        // Extra headers for requests to `customFlagsEndpoint`; ignored on the Datadog endpoint. Default: nil.
         customFlagsHeaders: ["Authorization": "Bearer <token>"],
         // Max seconds the first `setEvaluationContext` waits before failing with `.initializationTimedOut`. Default: 5.
         // nil, zero, negative or non-finite disables it.
@@ -169,7 +169,7 @@ flowchart LR
 ### Endpoints
 - Assignments are fetched from `https://preview.ff-cdn.<site domain>/precompute-assignments` (for example `preview.ff-cdn.datadoghq.eu` for EU1). Government sites (`us1_fed`, `us2_fed`) are not supported: the SDK logs a warning and uses the US1 endpoint.
 - `customFlagsEndpoint` replaces the full assignments URL.
-- `customFlagsHeaders` are added to every assignments request, even without `customFlagsEndpoint`. Despite its doc comment, the SDK does not limit them to a custom endpoint, so don't put proxy credentials in them unless `customFlagsEndpoint` is set.
+- `customFlagsHeaders` are sent only with requests to `customFlagsEndpoint`. They are ignored when using the default Datadog endpoint, so proxy credentials never reach the Datadog CDN.
 - `customExposureEndpoint` and `customEvaluationEndpoint` replace the intake URLs for exposures and evaluations.
 
 ### Startup and Caching
