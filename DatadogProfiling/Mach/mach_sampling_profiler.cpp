@@ -726,8 +726,9 @@ bool mach_sampling_profiler::request_flush(flush_action_t action) {
     return false;
 }
 
-void mach_sampling_profiler::request_stop() {
+void mach_sampling_profiler::request_stop(bool discard_pending_work) {
     should_sample.store(false, std::memory_order_relaxed);
+    if (discard_pending_work && worker) worker->cancel();
 }
 
 void mach_sampling_profiler::consume_diagnostics(dd_profiler_diagnostics_t& out) {

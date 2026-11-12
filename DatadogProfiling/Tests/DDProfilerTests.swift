@@ -37,6 +37,55 @@ final class DDProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Profiler should exist but not be running until started")
     }
 
+    func testDDProfiler_allocationFailureOnWorkerReleasesConcurrentFlushes() {
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let callbackStopCompleted = DispatchSemaphore(value: 0)
+        let callbackOwner = Unmanaged.passUnretained(callbackStopCompleted).toOpaque()
+        dd_profiler_set_allocation_failure_callback(callbackOwner) {
+            DispatchQueue.global().async {
+                dd_profiler_stop()
+                callbackStopCompleted.signal()
+            }
+        }
+        defer {
+            withExtendedLifetime(callbackStopCompleted) {
+                dd_profiler_set_allocation_failure_callback(callbackOwner, nil)
+            }
+        }
+        dd_profiler_fail_next_aggregation_for_testing()
+        let flushesCompleted = expectation(description: "Flush callers complete after allocation failure")
+        flushesCompleted.expectedFulfillmentCount = 4
+
+        for _ in 0..<4 {
+            DispatchQueue.global().async {
+                for _ in 0..<100 {
+                    if let profile = dd_profiler_flush_and_get_profile() {
+                        dd_pprof_destroy(profile)
+                    }
+                    if dd_profiler_get_status() == DD_PROFILER_STATUS_ALLOCATION_FAILED {
+                        break
+                    }
+                }
+                flushesCompleted.fulfill()
+            }
+        }
+
+        wait(for: [flushesCompleted], timeout: 5)
+        XCTAssertEqual(callbackStopCompleted.wait(timeout: .now() + 5), .success)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_ALLOCATION_FAILED)
+        XCTAssertFalse(dd_profiler_is_running())
+        XCTAssertEqual(dd_profiler_start(), 0)
+        XCTAssertNil(dd_profiler_flush_and_get_profile())
+
+        dd_profiler_stop()
+        let diagnostics = dd_profiler_diagnostics()
+        XCTAssertGreaterThan(diagnostics.max_pending_bytes, 0)
+        let clearedDiagnostics = dd_profiler_diagnostics()
+        XCTAssertEqual(clearedDiagnostics.dropped_batch_count, 0)
+        XCTAssertEqual(clearedDiagnostics.dropped_sample_count, 0)
+        XCTAssertEqual(clearedDiagnostics.max_pending_bytes, 0)
+    }
+
     func testDDProfiler_startTesting_withValidSampleRate_startsSuccessfully() {
         XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should be running after starting with valid sample rate")
