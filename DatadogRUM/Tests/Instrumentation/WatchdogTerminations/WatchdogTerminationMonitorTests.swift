@@ -543,12 +543,13 @@ extension WatchdogTerminationMonitorTests {
 
 extension WatchdogTerminationMonitorTests {
     func testRepresentativeUpdate_afterSessionStop_ignoresStoppedSessionAndAcceptsNewSession() throws {
+        let reporter = WatchdogTerminationReporterMock(didSend: XCTestExpectation(description: "No launch report is sent"))
         let monitor = WatchdogTerminationMonitor(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
             storage: NOPDatadogCore().storage,
             feature: featureScope,
-            reporter: WatchdogTerminationReporter.mockRandom()
+            reporter: reporter
         )
         monitor.currentState = .started
         let stoppedID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
@@ -568,15 +569,17 @@ extension WatchdogTerminationMonitorTests {
         let persisted = try XCTUnwrap(try XCTUnwrap(stored))
         XCTAssertEqual(persisted.session.id, nextView.session.id)
         XCTAssertEqual(persisted.view.id, nextView.view.id)
+        XCTAssertNil(reporter.sendParams)
     }
 
     func testRepresentativeUpdate_withoutView_preservesPersistedStop() throws {
+        let reporter = WatchdogTerminationReporterMock(didSend: XCTestExpectation(description: "No launch report is sent"))
         let monitor = WatchdogTerminationMonitor(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
             storage: NOPDatadogCore().storage,
             feature: featureScope,
-            reporter: WatchdogTerminationReporter.mockRandom()
+            reporter: reporter
         )
         monitor.currentState = .started
         let sessionID = UUID(uuidString: "33333333-3333-3333-3333-333333333333")!
@@ -588,5 +591,6 @@ extension WatchdogTerminationMonitorTests {
         var stored: RUMViewEvent??
         featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (value: RUMViewEvent??) in stored = value }
         XCTAssertNil(try XCTUnwrap(stored))
+        XCTAssertNil(reporter.sendParams)
     }
 }
