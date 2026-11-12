@@ -82,10 +82,13 @@ public class ServerMock {
         return ServerSession(server: self)
     }
 
-    public func clearAllRequests() {
-        var request = URLRequest(url: baseURL.appendingPathComponent("/requests"))
+    /// Removes the requests recorded in the session with given identifier and returns once the server has removed them.
+    internal func clearRecordedRequests(sessionIdentifier: String) {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/requests/\(sessionIdentifier)"))
         request.httpMethod = "DELETE"
-        URLSession.shared.dataTask(with: request).resume()
+        let semaphore = DispatchSemaphore(value: 0)
+        URLSession.shared.dataTask(with: request) { _, _, _ in semaphore.signal() }.resume()
+        semaphore.wait()
     }
 
     // MARK: - Endpoints
