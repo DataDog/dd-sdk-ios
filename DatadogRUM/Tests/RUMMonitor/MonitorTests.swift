@@ -2220,7 +2220,13 @@ extension MonitorTests {
             XCTAssertNil(coreContext.userActionID, "Core must not retain the completed Action")
             withExtendedLifetime(receipt) {}
         }
-        try assertQueuedModifierNavigationPreservesResource()
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            try assertQueuedModifierNavigationPreservesResource()
+            return
+        }
+        #endif
+        assertUnsupportedExecutionScopeRetainsLegacyDelivery()
     }
 
     func testCapturedResourceControl_rejectionHasNoLifecycleOrPeerEffects() throws {
@@ -2307,6 +2313,20 @@ extension MonitorTests {
         }
     }
 
+    private func assertUnsupportedExecutionScopeRetainsLegacyDelivery() {
+        let owner = RUMContextHandoff.Owner()
+        let value = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "unsupported", hasPendingUserAction: true, excludedUserActionID: nil)
+        var deliveries = 0
+        RUMContextHandoff.withValue(value, for: owner) {
+            deliveries += 1
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+            XCTAssertNil(RUMContextHandoff.captureValue(for: owner))
+        }
+        XCTAssertEqual(deliveries, 1)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    @available(iOS 27.0, *)
     private func assertQueuedModifierNavigationPreservesResource() throws {
         try withPreparedResourceCore { core, scope, owner, provider in
             let time = Date()
