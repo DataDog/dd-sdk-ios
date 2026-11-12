@@ -81,7 +81,10 @@ case "$mode" in
         disable_apple_crash_reporter
         trap enable_apple_crash_reporter EXIT INT
 
-        run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN"
+        # Failing tests end the script through `exit`, which runs the trap, rather than through `set -e`.
+        TEST_STATUS=0
+        run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" || TEST_STATUS=$?
+        exit $TEST_STATUS
         ;;
 
     build-for-testing)
@@ -100,14 +103,24 @@ case "$mode" in
         XCTESTRUN_PATH=$(ls "$products_path"/Build/Products/${SCHEME}_${TEST_PLAN}_*.xctestrun)
 
         # `-xctestrun` runs no scheme pre-action, so the mock server is started here, on the localhost
-        # address built into the products by 'build-for-testing'.
-        ./tools/http-server-mock/python/start_mock_server.py --prefer-localhost &
+        # address built into the products by 'build-for-testing'. It logs to a file: a background process
+        # writing to the job output keeps a CI job open until it exits.
+        if [ "$CI" = "true" ]; then
+            mkdir -p ResultBundles
+            MOCK_SERVER_LOG="ResultBundles/${SCHEME}-${TEST_PLAN}-mock-server.log"
+        else
+            MOCK_SERVER_LOG="$products_path/mock-server.log"
+        fi
+        ./tools/http-server-mock/python/start_mock_server.py --prefer-localhost > "$MOCK_SERVER_LOG" 2>&1 &
         MOCK_SERVER_PID=$!
 
         disable_apple_crash_reporter
-        trap "kill $MOCK_SERVER_PID; enable_apple_crash_reporter" EXIT INT
+        trap "kill $MOCK_SERVER_PID 2> /dev/null; enable_apple_crash_reporter" EXIT INT
 
-        run_tests test-without-building -xctestrun "$XCTESTRUN_PATH" -destination "$DESTINATION"
+        # Failing tests end the script through `exit`, which runs the trap, rather than through `set -e`.
+        TEST_STATUS=0
+        run_tests test-without-building -xctestrun "$XCTESTRUN_PATH" -destination "$DESTINATION" || TEST_STATUS=$?
+        exit $TEST_STATUS
         ;;
 
     *)
