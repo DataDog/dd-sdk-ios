@@ -631,6 +631,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
         time: Date,
         message: String,
         type: String?,
+        stack: String?,
         source: RUMInternalErrorSource,
         httpStatusCode: Int?,
         globalAttributes: [AttributeKey: AttributeValue],
@@ -640,13 +641,12 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
         self.time = time
         self.errorMessage = message
         self.errorType = type
+        self.stack = stack
         self.errorSource = source
         self.isNetworkError = false
         self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.httpStatusCode = httpStatusCode
-        // The stack will be meaningless in most cases as it will go down to the networking code:
-        self.stack = nil
 
         self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes) ?? .ios
     }

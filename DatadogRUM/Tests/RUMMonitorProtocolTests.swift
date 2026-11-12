@@ -81,7 +81,7 @@ class NOPMonitorTests: XCTestCase {
             "stopResource(resourceKey:response:size:attributes:)",
             "stopResource(resourceKey:statusCode:kind:size:attributes:)",
             "stopResourceWithError(resourceKey:error:response:attributes:)",
-            "stopResourceWithError(resourceKey:message:type:response:attributes:)",
+            "stopResourceWithError(resourceKey:message:type:stack:response:attributes:)",
             "addAction(type:name:attributes:)",
             "startAction(type:name:attributes:)",
             "stopAction(type:name:attributes:)",

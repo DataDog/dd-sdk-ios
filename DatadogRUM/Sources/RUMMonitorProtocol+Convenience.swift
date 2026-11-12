@@ -268,12 +268,14 @@ public extension RUMMonitorProtocol {
     ///   - resourceKey: the key representing the resource. It must match the one used to start the resource.
     ///   - message: the message explaining the Resource failure.
     ///   - type: the type of the error.
+    ///   - stack: stack trace of the error. No specific format is required.
     ///   - response: an optional `URLResponse` received for the resource.
     ///   - attributes: custom attributes to attach to this resource.
     func stopResourceWithError(
         resourceKey: String,
         message: String,
         type: String? = nil,
+        stack: String? = nil,
         response: URLResponse? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
@@ -281,6 +283,7 @@ public extension RUMMonitorProtocol {
             resourceKey: resourceKey,
             message: message,
             type: type,
+            stack: stack,
             response: response,
             attributes: attributes
         )
