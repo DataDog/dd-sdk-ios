@@ -163,4 +163,39 @@ extension DatadogExtension where ExtendedType == Bundle {
         isUIKit
         #endif
     }
+
+    #if os(macOS)
+    /// The name of the subdirectory that keeps the SDK files of this app apart from other apps.
+    ///
+    /// Apps that are not sandboxed share `~/Library/Caches` and `~/Library/Application Support`, so macOS recommends
+    /// keeping files in a subdirectory named after the bundle identifier. Executables without one, like command-line tools,
+    /// use their name and the first 16 hexadecimal characters of the SHA-1 of their path, so two executables with the same
+    /// name do not share a directory.
+    ///
+    /// Examples:
+    /// - An app with the bundle identifier `com.example.app`: `com.example.app`
+    /// - The executable `/usr/local/bin/my-tool`: `my-tool-1580418da936ba67`
+    @_spi(Internal)
+    public var appDirectoryName: String {
+        // Foundation returns the bundle identifier from the Info.plist without validating it. An empty one would share
+        // the parent directory with other apps, one with `/`, `.` or `..` would point to another directory, and one
+        // longer than 255 bytes cannot be a directory name.
+        if let bundleIdentifier = type.bundleIdentifier,
+           !bundleIdentifier.isEmpty, bundleIdentifier != ".", bundleIdentifier != "..", !bundleIdentifier.contains("/"),
+           bundleIdentifier.utf8.count <= 255 {
+            return bundleIdentifier
+        }
+        // Without an executable URL, the executable is assumed to be in the bundle directory, so its path still tells it apart.
+        // Symlinks are not resolved: a tool launched through a stable link, like a Homebrew link, keeps its directory
+        // when an upgrade changes the link target.
+        let executableURL = type.executableURL ?? URL(fileURLWithPath: type.bundlePath).appendingPathComponent(ProcessInfo.processInfo.processName)
+        let pathHash = Data(executableURL.path.utf8).sha1().prefix(16)
+        // A directory name can have up to 255 bytes, so a long executable name is shortened to leave room for the hash.
+        var name = executableURL.lastPathComponent
+        while name.utf8.count > 255 - 1 - pathHash.count {
+            name.removeLast()
+        }
+        return "\(name)-\(pathHash)"
+    }
+    #endif
 }

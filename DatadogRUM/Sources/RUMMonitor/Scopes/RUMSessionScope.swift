@@ -76,7 +76,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         RUMFeatureOperationManager(parent: self, dependencies: dependencies, sessionSampler: sampler)
     }()
 
-    #if !os(macOS) && !os(watchOS)
+    #if !os(watchOS)
     /// App launch manager to process TTID and TTFD commands.
     private lazy var appLaunchManager: RUMAppLaunchManager = {
         RUMAppLaunchManager(
@@ -322,6 +322,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
                 dependencies.fatalErrorContext.sessionDidStop()
+                dependencies.watchdogTermination?.sessionDidStop(sessionID: sessionUUID.toRUMDataFormat)
                 return false // end this session (no longer keep the session scope)
             }
 
@@ -352,6 +353,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 endReason = .stopAPI
                 deactivating = true
                 dependencies.fatalErrorContext.sessionDidStop()
+                dependencies.watchdogTermination?.sessionDidStop(sessionID: sessionUUID.toRUMDataFormat)
 
             case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
@@ -378,14 +380,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     activeView: activeView
                 )
             case let command as RUMTimeToInitialDisplayCommand:
-                #if !os(macOS) && !os(watchOS)
+                #if !os(watchOS)
                 appLaunchManager.process(command, context: context, writer: writer, activeView: activeView)
                 #endif
-                dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
+                if let firstFrameReader = dependencies.firstFrameReader {
+                    dependencies.renderLoopObserver?.unregister(firstFrameReader)
+                }
                 // command doesn't need to be propagated to other scopes
                 return true
             case let command as RUMTimeToFullDisplayCommand:
-                #if !os(macOS) && !os(watchOS)
+                #if !os(watchOS)
                 appLaunchManager.process(command, context: context, writer: writer, activeView: activeView)
                 #endif
                 // command doesn't need to be propagated to other scopes
@@ -483,6 +487,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     deinit {
+        dependencies.watchdogTermination?.sessionDidComplete(sessionID: sessionUUID.toRUMDataFormat)
         deactivateActiveView()
     }
 

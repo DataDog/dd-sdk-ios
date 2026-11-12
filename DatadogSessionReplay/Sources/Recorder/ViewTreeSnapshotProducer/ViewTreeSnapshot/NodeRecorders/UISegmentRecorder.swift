@@ -27,6 +27,7 @@ internal struct UISegmentRecorder: NodeRecorder {
         }
 
         let ids = context.ids.nodeIDs(1 + segment.numberOfSegments, view: segment, nodeRecorder: self)
+        let isMasked = attributes.resolveTextAndInputPrivacyLevel(in: context).shouldMaskInputElements
 
         let builder = UISegmentWireframesBuilder(
             wireframeRect: attributes.frame,
@@ -35,7 +36,7 @@ internal struct UISegmentRecorder: NodeRecorder {
             backgroundWireframeID: ids[0],
             segmentWireframeIDs: Array(ids[1..<ids.count]),
             segmentTitles: (0..<segment.numberOfSegments).map { segment.titleForSegment(at: $0) },
-            selectedSegmentIndex: context.recorder.textAndInputPrivacy.shouldMaskInputElements ? nil : segment.selectedSegmentIndex,
+            selectedSegmentIndex: isMasked ? nil : segment.selectedSegmentIndex,
             selectedSegmentTintColor: segment.selectedSegmentTintColor
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)

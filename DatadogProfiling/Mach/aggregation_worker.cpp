@@ -6,7 +6,7 @@
 
 #include "aggregation_worker.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <algorithm>
 #include <new>
@@ -43,7 +43,7 @@ void* aggregation_worker::worker_thread_entry(void* arg) {
 bool aggregation_worker::start() {
     std::lock_guard<std::mutex> lock(work_mutex);
 
-    if (has_worker_thread) {
+    if (has_worker_thread || cancelled) {
         return false;
     }
 
@@ -105,7 +105,7 @@ void aggregation_worker::stop() {
 bool aggregation_worker::request_flush(flush_action_t action) {
     std::unique_lock<std::mutex> lock(work_mutex);
 
-    if (worker_finished) {
+    if (worker_finished || cancelled) {
         return false;
     }
 
@@ -140,6 +140,11 @@ void aggregation_worker::enqueue_active_buffer(std::vector<stack_trace_t>& activ
 
     {
         std::lock_guard<std::mutex> lock(work_mutex);
+        if (cancelled) {
+            free_batch_payloads(active_buffer);
+            std::vector<stack_trace_t>().swap(active_buffer);
+            return;
+        }
         std::vector<stack_trace_t> batch;
 
         // Transfer ownership of captured traces to the worker queue. The
@@ -225,6 +230,13 @@ void aggregation_worker::finish_producer(std::vector<stack_trace_t>& active_buff
     flush_cv.notify_all();
 }
 
+void aggregation_worker::cancel() {
+    std::lock_guard<std::mutex> lock(work_mutex);
+    cancelled = true;
+    clear_pending_work_locked();
+    work_cv.notify_all();
+}
+
 bool aggregation_worker::is_worker_thread() {
     std::lock_guard<std::mutex> lock(work_mutex);
     return has_worker_thread && pthread_equal(pthread_self(), worker_thread);
@@ -248,17 +260,13 @@ void aggregation_worker::worker_main() {
         {
             std::unique_lock<std::mutex> lock(work_mutex);
             work_cv.wait(lock, [this] {
-                return !pending_work.empty() || producer_finished;
+                return !pending_work.empty() || producer_finished || cancelled;
             });
 
             if (pending_work.empty()) {
-                if (producer_finished) {
-                    worker_finished = true;
-                    flush_cv.notify_all();
-                    return;
-                }
-
-                continue;
+                worker_finished = true;
+                flush_cv.notify_all();
+                return;
             }
 
             item = std::move(pending_work.front());
@@ -328,4 +336,4 @@ uint64_t aggregation_worker::batch_footprint_bytes(const std::vector<stack_trace
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

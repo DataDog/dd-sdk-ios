@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-27
-sdk_version: 3.20.0
-verified_against_commit: cdfd2474c
+last_updated: 2026-11-11
+sdk_version: 3.21.0
+verified_against_commit: f4dfe5acb
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -264,6 +264,7 @@ Re-exported from `DatadogInternal` so they are available with `import DatadogTra
 ### Automatic Network Instrumentation
 Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` network instrumentation layer. The URLSession layer observes requests broadly; Trace uses the configured first-party hosts to decide where distributed tracing applies:
 - **First-party hosts**: `.trace(hosts:sampleRate:traceControlInjection:)` injects Datadog AND W3C `tracecontext` headers. Use `.traceWithHeaders(hostsWithHeaders:...)` to pick header types per host (Datadog, B3, B3 multi, W3C).
+- **Existing headers**: Trace does not overwrite trace propagation headers already set on the request. An existing `baggage` header is merged instead: its entries are kept, and the SDK's values (`session.id`, `user.id`, and `account.id`) win for matching keys. RUM `urlSessionTracking` merges `baggage` the same way.
 - **Trace spans**: Trace records URLSession spans only for first-party requests when Trace owns automatic URLSession tracking. Avoid enabling Trace `urlSessionTracking` and RUM `urlSessionTracking` for the same requests; the overlap is a current limitation and can produce undefined or incorrect behavior. If RUM owns resource tracking, configure RUM `urlSessionTracking.firstPartyHostsTracing` so RUM resources carry trace context for APM correlation.
 - **Sampling**: `firstPartyHostsTracing.sampleRate` is the URLSession distributed tracing propagation rate. If a RUM session is active, propagation and RUM resources use the composed RUM session and first-party tracing decision; for example, `sessionSampleRate: 50` and `firstPartyHostsTracing.sampleRate: 80` produce a 40% propagated trace context rate. The injected context also carries that session's ID, and both come from one snapshot unless an active parent span supplies the trace's decision.
 - **RUM ownership**: automatic URLSession spans use the request-time RUM context when it is captured by network instrumentation. A captured absence of RUM context stays absent when the request finishes; it does not attach the request to a later view. If the captured RUM context belongs to a different session than the one injected in the request, which can briefly happen right after a session starts or stops, the span gets no RUM tags rather than a session that disagrees with its request. Manual spans retain their existing start-time behavior.

@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import XCTest
 import DatadogInternal
@@ -2078,7 +2078,7 @@ extension DatadogProfilerTests {
         XCTAssertEqual(Set(vitalIDs), Set(["start-id", "ttid-id"]))
         XCTAssertFalse(vitalIDs.contains("orphan-id"))
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertTrue(event.tags.contains("operation:custom"))
+        XCTAssertTrue(event.tags.contains("operation:application_launch"))
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         withExtendedLifetime(profiler) {}
     }
@@ -2460,7 +2460,7 @@ extension DatadogProfilerTests {
 
         // Then
         let metric = try lastProfilingSessionMetric(from: telemetry)
-        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
         XCTAssertNil(metric.cycleIndex)
         XCTAssertNotNil(metric.duration)
         XCTAssertNotNil(metric.fileSize)
@@ -3280,9 +3280,219 @@ extension DatadogProfilerTests {
     }
 }
 
+// MARK: - Allocation failure
+
+extension DatadogProfilerTests {
+    func testAllocationFailure_discardsProfilesAndReportsOnceAcrossProfilingModes() {
+        for (mode, isSampled) in [
+            (ProfilingOperation.continuousProfiling, true),
+            (.continuousProfiling, false),
+            (.appLaunch, true)
+        ] {
+            // Given
+            core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
+            dd_profiler_start_testing(100, false, Int64.max, 0)
+            addSampleToCurrentProfile()
+            let quotaChecker = ProfilingQuotaCheckerMock()
+            let telemetry = TelemetryMock()
+            let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
+            let profiler = mode == .continuousProfiling
+                ? continuousProfiler(continuousProfilingSampled: isSampled, telemetryController: telemetryController, quotaChecker: quotaChecker)
+                : customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: telemetryController, quotaChecker: quotaChecker)
+            XCTAssertEqual(profiler.operation, mode)
+            if mode == .continuousProfiling && isSampled {
+                _ = profiler.receive(
+                    message: .payload(OperationMessage(attributes: ["existing": true], operation: .mockWith(stepType: .start, date: Date()))),
+                    from: core
+                )
+            }
+            flushQueue()
+
+            // When
+            Self.failNativeAggregation()
+            _ = profiler.receive(message: .payload(TTIDMessage(attributes: ["late": true], ttid: appLaunchVital)), from: core)
+            flushQueue()
+            quotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+            quotaChecker.onQuotaResultUpdate?(quotaChecker.quotaResult)
+            quotaChecker.quotaResult = nil
+            quotaChecker.onQuotaResultUpdate?(nil)
+            dd_profiler_stop()
+            core.context.set(additionalContext: RUMCoreContext.mockWith(sessionID: .mockRandom()))
+            shareCurrentContext(with: profiler)
+            _ = profiler.receive(message: .payload(OperationMessage(attributes: ["late": true], operation: .mockWith(stepType: .start))), from: core)
+            shareCurrentContext(with: profiler)
+
+            // Then
+            XCTAssertTrue(core.events.isEmpty)
+            XCTAssertTrue(core.metadata.isEmpty)
+            XCTAssertTrue(profiler.attributes.isEmpty)
+            XCTAssertNil(dd_profiler_get_profile())
+            XCTAssertNil(dd_profiler_flush_and_get_profile())
+            XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_ALLOCATION_FAILED)
+            XCTAssertEqual(dd_profiler_start(), 0)
+            XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+            let failures = allocationFailureMetrics(from: telemetry)
+            XCTAssertEqual(failures.count, 1)
+            XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+            XCTAssertEqual(telemetry.messages.filter { $0.asMetric?.name == ProfilingSessionMetric.Constants.name }.count, 1)
+            XCTAssertEqual(
+                failures.first?.startReason,
+                mode == .continuousProfiling
+                    ? ProfilingSessionMetric.StartReason.continuous.rawValue
+                    : ProfilingSessionMetric.StartReason.applicationLaunch.rawValue
+            )
+        }
+    }
+
+    func testAllocationFailure_withQueuedFlush_reportsOneMetricForFailedCapture() throws {
+        for mode in [ProfilingOperation.continuousProfiling, .appLaunch] {
+            // Given
+            let dateProvider = DateProviderMock()
+            core = PassthroughCoreMock(context: .mockWith(
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: dateProvider.now.addingTimeInterval(-2)),
+                applicationStateHistory: .mockAppInForeground()
+            ))
+            dd_profiler_start_testing(100, false, Int64.max, 0)
+            addSampleToCurrentProfile()
+            let telemetry = TelemetryMock()
+            let controller = ProfilingTelemetryController(telemetry: telemetry)
+            controller.register(context: core.context)
+            let profiler = mode == .continuousProfiling
+                ? continuousProfiler(continuousProfilingSampled: true, telemetryController: controller, dateProvider: dateProvider)
+                : customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: controller, dateProvider: dateProvider)
+
+            // When - the flush reaches the profiler queue before failure cleanup.
+            do {
+                profilerQueue.suspend()
+                defer { profilerQueue.resume() }
+                if mode == .continuousProfiling {
+                    core.context = .mockWith(
+                        launchInfo: core.context.launchInfo,
+                        applicationStateHistory: .mockWith(
+                            initialState: .active,
+                            date: dateProvider.now.addingTimeInterval(-1),
+                            transitions: [(state: .background, date: dateProvider.now)]
+                        )
+                    )
+                    _ = profiler.receive(message: .context(core.context), from: core)
+                } else {
+                    _ = profiler.receive(message: .payload(TTIDMessage(attributes: [:], ttid: appLaunchVital)), from: core)
+                }
+                Self.failNativeAggregation()
+            }
+            flushQueue()
+
+            // Then
+            XCTAssertEqual(telemetry.messages.filter { $0.asMetric?.name == ProfilingSessionMetric.Constants.name }.count, 1)
+            let metric = try lastProfilingSessionMetric(from: telemetry)
+            XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+            XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.allocationFailureErrorMessage)
+            XCTAssertEqual(
+                metric.startReason,
+                mode == .continuousProfiling
+                    ? ProfilingSessionMetric.StartReason.continuous.rawValue
+                    : ProfilingSessionMetric.StartReason.applicationLaunch.rawValue
+            )
+            XCTAssertEqual(metric.cycleIndex, mode == .continuousProfiling ? 0 : nil)
+            XCTAssertEqual(metric.appStartInfo, mode == .appLaunch ? "user_launch" : nil)
+            withExtendedLifetime(profiler) {}
+        }
+    }
+
+    func testAllocationFailure_cleansUpAndReportsWithoutTimerOrAnotherMessage() {
+        // Given
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        addSampleToCurrentProfile()
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: telemetry))
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: ["existing": true], operation: .mockWith(stepType: nil))),
+            from: core
+        )
+        flushQueue()
+        XCTAssertFalse(profiler.attributes.isEmpty)
+
+        // When - only the native callback can schedule cleanup.
+        Self.failNativeAggregation()
+        flushQueue()
+
+        // Then - no message or context update has been sent since the failure.
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertNil(dd_profiler_get_profile())
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_ALLOCATION_FAILED)
+        XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+        let failures = allocationFailureMetrics(from: telemetry)
+        XCTAssertEqual(failures.count, 1)
+        XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+        XCTAssertEqual(dd_profiler_start(), 0)
+    }
+
+    func testAllocationFailure_beforeProfilerRegistration_reportsOnce() {
+        // Given
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        Self.failNativeAggregation()
+        let telemetry = TelemetryMock()
+
+        // When
+        let profiler = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: telemetry))
+        flushQueue()
+
+        // Then
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+        let failures = allocationFailureMetrics(from: telemetry)
+        XCTAssertEqual(failures.count, 1)
+        XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+        XCTAssertEqual(failures.first?.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
+        XCTAssertNil(failures.first?.appStartInfo)
+    }
+
+    func testAllocationFailureCallback_doesNotRetainProfiler() {
+        // Given
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        let telemetry = TelemetryMock()
+        var profiler: DatadogProfiler? = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: telemetry))
+        weak var weakProfiler = profiler
+        let replacementTelemetry = TelemetryMock()
+        let replacement = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: replacementTelemetry))
+
+        // When
+        profiler = nil
+        XCTAssertNil(weakProfiler)
+        Self.failNativeAggregation()
+        flushQueue()
+
+        // Then
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        let failures = allocationFailureMetrics(from: replacementTelemetry)
+        XCTAssertEqual(failures.count, 1)
+        XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+        XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+        withExtendedLifetime(replacement) {}
+    }
+}
+
 // MARK: - Private
 
 private extension DatadogProfilerTests {
+    static func failNativeAggregation(file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertEqual(dd_profiler_start(), 1, file: file, line: line)
+        dd_profiler_fail_next_aggregation_for_testing()
+        for _ in 0..<4 {
+            if let profile = dd_profiler_flush_and_get_profile() {
+                dd_pprof_destroy(profile)
+            }
+            if dd_profiler_get_status() == DD_PROFILER_STATUS_ALLOCATION_FAILED {
+                break
+            }
+        }
+        dd_profiler_stop()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_ALLOCATION_FAILED, file: file, line: line)
+    }
+
     func waitForProfileWrite(
         on targetCore: PassthroughCoreMock? = nil,
         expectingWrite: Bool = true,
@@ -3486,6 +3696,16 @@ private extension DatadogProfilerTests {
         return try XCTUnwrap(metricTelemetry.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes)
     }
 
+    func allocationFailureMetrics(from telemetry: TelemetryMock) -> [ProfilingSessionMetric.Attributes] {
+        telemetry.messages
+            .compactMap {
+                $0.asMetric?.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes
+            }
+            .filter {
+                $0.errorMessage == ProfilingSessionMetric.Constants.allocationFailureErrorMessage
+            }
+    }
+
     func connectMessageReceiver(
         to profiler: DatadogProfiler,
         profilingSamplerProvider: ProfilingSamplerProvider,
@@ -3525,4 +3745,4 @@ private extension DatadogProfilerTests {
         XCTFail("Condition was not met within \(timeout) seconds.", file: file, line: line)
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

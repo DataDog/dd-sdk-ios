@@ -8,7 +8,7 @@
 #include "aggregation_worker.h"
 #include "dd_profiler_testing.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <dlfcn.h>
 #include <algorithm>
@@ -726,8 +726,9 @@ bool mach_sampling_profiler::request_flush(flush_action_t action) {
     return false;
 }
 
-void mach_sampling_profiler::request_stop() {
+void mach_sampling_profiler::request_stop(bool discard_pending_work) {
     should_sample.store(false, std::memory_order_relaxed);
+    if (discard_pending_work && worker) worker->cancel();
 }
 
 void mach_sampling_profiler::consume_diagnostics(dd_profiler_diagnostics_t& out) {
@@ -934,4 +935,4 @@ size_t read_stack_region_for_testing(void* sp, void* buf, size_t buf_size) {
 
 } // extern "C"
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

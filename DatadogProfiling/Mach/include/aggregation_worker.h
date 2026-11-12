@@ -9,7 +9,7 @@
 
 #include "dd_profiler.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <atomic>
 #include <condition_variable>
@@ -104,6 +104,9 @@ public:
      */
     void finish_producer(std::vector<stack_trace_t>& active_buffer);
 
+    /// Discards queued work and stops the worker after its current callback.
+    void cancel();
+
     /**
      * @brief Returns true when called from the worker thread itself.
      */
@@ -167,6 +170,7 @@ private:
     bool producer_finished = true;
     /// Set once the worker has drained all queued work and exited.
     bool worker_finished = true;
+    bool cancelled = false;
 
     static constexpr size_t sampled_thread_name_capacity = 64;
 
@@ -180,5 +184,5 @@ private:
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // DD_PROFILER_AGGREGATION_WORKER_H_

@@ -216,7 +216,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     previousUploadStatus = nil
                 }
                 do {
-                    // Try uploading the batch and do one more retry on failure.
+                    // Try uploading the batch, and try once more if the request could not be created. A returned
+                    // status that needs retry is not retried.
                     previousUploadStatus = try self.dataUploader.upload(
                         events: nextBatch.events,
                         context: self.contextProvider.read(),
@@ -334,7 +335,7 @@ fileprivate extension Array where Element == DataUploadConditions.Blocker {
 /// These list should evolve and we may want to add more codes in there.
 ///
 /// Ref.: https://developer.apple.com/documentation/foundation/1508628-url_loading_system_error_codes
-private let telemetryIgnoredNSURLErrorCodes: Set<Int> = [
+internal let telemetryIgnoredNSURLErrorCodes: Set<Int> = [
     NSURLErrorNetworkConnectionLost, // -1005
     NSURLErrorTimedOut, // -1001
     NSURLErrorCannotParseResponse, // - 1017

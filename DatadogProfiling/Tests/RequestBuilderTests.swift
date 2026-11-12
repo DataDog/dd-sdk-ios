@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import XCTest
 import DatadogInternal
 import TestUtilities
@@ -252,4 +252,4 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(request.url!.query, "ddtags=retry_count:1") // no retry_after without response code
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)
