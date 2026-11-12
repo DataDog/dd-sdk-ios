@@ -268,8 +268,11 @@ final class WebViewSessionRolloverHandlerTests: XCTestCase {
         XCTAssertNil(core.messages.firstPayload as? WebViewMessageWithRUMContext)
     }
 
-    @available(iOS 27.0, *)
     func testScriptReceiptDetachedViewCarriesEmptyCapturedOwnership() throws {
+        guard #available(iOS 27.0, *) else {
+            try assertScriptReceiptKeepsLegacyDeliveryWithPublishedOwner()
+            return
+        }
         let core = WebViewContextCoreMock()
         let rollover = WebViewSessionRolloverHandler(core: core)
         let owner = RUMContextHandoff.Owner()
@@ -292,8 +295,11 @@ final class WebViewSessionRolloverHandlerTests: XCTestCase {
         XCTAssertNil(core.messages.firstWebViewMessage)
     }
 
-    @available(iOS 27.0, *)
     func testScriptReceiptFreezesOriginalAbsenceBeforeBridgeQueueDelivery() throws {
+        guard #available(iOS 27.0, *) else {
+            try assertScriptReceiptKeepsLegacyDeliveryWithPublishedOwner()
+            return
+        }
         let webView = ReceiptCountingWebView(frame: .zero, configuration: WKWebViewConfiguration())
         let core = WebViewContextCoreMock()
         let provider = WebViewContextProviderMock()
@@ -353,6 +359,29 @@ final class WebViewSessionRolloverHandlerTests: XCTestCase {
         let capture = try XCTUnwrap(try XCTUnwrap(bridge.sessionRolloverHandler).captureRUMContext(forSceneIdentifier: { "scene-a" }))
         XCTAssertTrue(capture.owner === original)
         XCTAssertNil(capture.value.rumContext)
+    }
+
+    private func assertScriptReceiptKeepsLegacyDeliveryWithPublishedOwner() throws {
+        let core = WebViewContextCoreMock()
+        let provider = WebViewContextProviderMock()
+        core.provider = provider
+        let rollover = WebViewSessionRolloverHandler(core: core)
+        rollover.receiveRUMContextHandoff(owner: RUMContextHandoff.Owner(), active: true)
+        let bridge = DDScriptMessageHandler(emitter: MessageEmitter(logsSampler: .mockKeepAll(), core: core))
+        bridge.sessionRolloverHandler = rollover
+        let webView = ReceiptCountingWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        let controller = WKUserContentController()
+        let message = MockScriptMessage(body: receiptBody, webView: webView)
+        let before = webView.windowReads
+        bridge.userContentController(controller, didReceive: message)
+        let after = webView.windowReads
+        bridge.flush()
+        XCTAssertEqual(after - before, 0)
+        XCTAssertEqual(core.lookups, 0)
+        XCTAssertEqual(provider.calls, 0)
+        XCTAssertEqual(core.messages.count, 1)
+        XCTAssertNotNil(core.messages.firstWebViewMessage)
+        XCTAssertNil(core.messages.firstPayload as? WebViewMessageWithRUMContext)
     }
 
     private var receiptBody: String {
