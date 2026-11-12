@@ -1246,18 +1246,29 @@ extension RUMApplicationScopeTests {
         }
     }
 
-    func testMultiSceneBackgroundRollover_doesNotRestoreForegroundViews() throws {
-        let (app, context) = routingApplication()
-        startRoutingPeers(app, context: context)
-        let background = DatadogContext.mockWith(
-            sdkInitDate: routingDate,
-            launchInfo: context.launchInfo,
-            applicationStateHistory: AppStateHistory(initialState: .background, date: routingDate.addingTimeInterval(3))
-        )
-        _ = routeApplicationCommand(app: app, command: RUMStopSessionCommand(time: routingDate.addingTimeInterval(3)), context: background, writer: writer)
-        _ = routeApplicationCommand(app: app, command: RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(4), actionType: .custom), context: background, writer: writer)
-        let current = try XCTUnwrap(app.activeSession)
-        XCTAssertTrue(current.viewScopes.allSatisfy { $0.viewName != "a" && $0.viewName != "b" })
+    func testMultiSceneRollover_restoresViewsOnlyWhenApplicationIsInForeground() throws {
+        #if os(macOS)
+        let states: [AppState] = [.active, .inactive, .hidden, .lockScreen, .sleeping, .terminating]
+        #else
+        let states: [AppState] = [.active, .inactive, .background, .terminated]
+        #endif
+        for state in states {
+            let (app, context) = routingApplication()
+            startRoutingPeers(app, context: context)
+            let rolloverContext = DatadogContext.mockWith(
+                sdkInitDate: routingDate,
+                launchInfo: context.launchInfo,
+                applicationStateHistory: AppStateHistory(initialState: state, date: routingDate.addingTimeInterval(3))
+            )
+            _ = routeApplicationCommand(app: app, command: RUMStopSessionCommand(time: routingDate.addingTimeInterval(3)), context: rolloverContext, writer: writer)
+            _ = routeApplicationCommand(app: app, command: RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(4), actionType: .custom), context: rolloverContext, writer: writer)
+            let current = try XCTUnwrap(app.activeSession)
+            if state.isRunningInForeground {
+                XCTAssertEqual(Set(current.viewScopes.filter { $0.isActiveView }.map { $0.viewName }), Set(["a", "b"]), "State: \(state)")
+            } else {
+                XCTAssertTrue(current.viewScopes.allSatisfy { $0.viewName != "a" && $0.viewName != "b" }, "State: \(state)")
+            }
+        }
     }
 
     func testMultiSceneStoppedResource_retainsOriginalSessionAndViewOwner() throws {
