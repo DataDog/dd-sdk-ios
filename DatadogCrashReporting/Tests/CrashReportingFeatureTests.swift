@@ -279,14 +279,14 @@ class CrashReportingFeatureTests: XCTestCase {
         plugin.pendingCrashReport = crashReport
 
         let sender = CrashReportSenderMock()
-        let expectation = self.expectation(description: "didSendCrashReport")
+        let expectation = self.expectation(description: "didReadPendingCrashReport")
 
         let feature = CrashReportingFeature.mockWith(
             integration: sender,
             crashReportingPlugin: plugin
         )
 
-        sender.didSendCrashReport = {
+        plugin.didReadPendingCrashReport = {
             expectation.fulfill()
         }
 

@@ -40,12 +40,12 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             // Then
             XCTAssertEqual(configuration.telemetrySampleRate, SampleRate(try XCTUnwrap(rum.telemetrySampleRate)))
             XCTAssertEqual(configuration.trackAnonymousUser, rum.trackAnonymousUser)
-            XCTAssertEqual(configuration.trackBackgroundEvents, rum.trackBackgroundEvents)
             XCTAssertEqual(configuration.trackFrustrations, rum.trackFrustrations)
             XCTAssertEqual(configuration.longTaskThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.longTask?.threshold))))
             XCTAssertEqual(configuration.appHangThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.appHang?.threshold))))
-            XCTAssertEqual(configuration.trackSlowFrames, rum.trackSlowFrames)
             #if !os(macOS)
+            XCTAssertEqual(configuration.trackBackgroundEvents, rum.trackBackgroundEvents)
+            XCTAssertEqual(configuration.trackSlowFrames, rum.trackSlowFrames)
             XCTAssertEqual(configuration.trackWatchdogTerminations, rum.trackWatchdogTerminations)
             #endif
             XCTAssertEqual(configuration.vitalsUpdateFrequency, expectedVitalsFrequency(try XCTUnwrap(rum.vitalsUpdateFrequency)))
@@ -55,10 +55,10 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             // way, `presence == remote flag`.
             XCTAssertEqual(configuration.urlSessionTracking != nil, try XCTUnwrap(rum.trackResources))
             #if !os(watchOS)
-            XCTAssertEqual(configuration.trackMemoryWarnings, try XCTUnwrap(rum.trackMemoryWarnings))
             #if os(macOS)
             XCTAssertEqual(configuration.macOSActionsPredicate != nil, try XCTUnwrap(rum.trackUserInteractions))
             #else
+            XCTAssertEqual(configuration.trackMemoryWarnings, try XCTUnwrap(rum.trackMemoryWarnings))
             XCTAssertEqual(configuration.uiKitActionsPredicate != nil, try XCTUnwrap(rum.trackUserInteractions))
             #endif
             #endif

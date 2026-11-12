@@ -60,10 +60,19 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         )
 
         let featureScope = core.scope(for: RUMFeature.self)
+
+        #if os(macOS)
+        // macOS apps have no background state. Events with no active view are tracked there without this option,
+        // see `RUMOffViewEventsHandlingRule`.
+        let trackBackgroundEvents = false
+        #else
+        let trackBackgroundEvents = configuration.trackBackgroundEvents
+        #endif
+
         let sessionEndedMetric = SessionEndedMetricController(
             telemetry: core.telemetry,
             sampleRate: configuration.debugSDK ? 100 : configuration.sessionEndedSampleRate,
-            tracksBackgroundEvents: configuration.trackBackgroundEvents,
+            tracksBackgroundEvents: trackBackgroundEvents,
             isUsingSceneLifecycle: configuration.bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") != nil
         )
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
@@ -103,7 +112,13 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         var renderLoopObserver: RenderLoopObserver? = nil
         var accessibilityReader: AccessibilityReading? = nil
 
-        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        let firstFrameReader: (RenderLoopReader & RUMCommandPublisher)?
+        #if os(macOS)
+        // macOS has no render loop to read the first frame from: `RUMInstrumentation` reads the first window instead.
+        firstFrameReader = nil
+        #else
+        firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        #endif
 
         #if !os(watchOS) && !os(macOS)
         if configuration.collectAccessibility {
@@ -118,7 +133,11 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         // Slow frames are measured on the render loop. Without an observer (macOS and watchOS for now),
         // tracking them would report an empty, perfectly smooth view instead of no data.
+        #if os(macOS)
+        let tracksSlowFrames = false
+        #else
         let tracksSlowFrames = configuration.trackSlowFrames && renderLoopObserver != nil
+        #endif
 
         let distributedTracing: (FirstPartyHosts, SampleRate)? = {
             switch configuration.urlSessionTracking?.firstPartyHostsTracing {
@@ -177,6 +196,11 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         var replayState: HasReplayMessageReceiver?
         let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
+            // App extensions don't receive app lifecycle notifications, so the SDK can't tell foreground from
+            // background there and the collector would never pause nor write its buffered samples.
+            guard bundleType == .iOSApp else {
+                return nil
+            }
             let effectiveCollectTypes = timeseries.effectiveCollectTypes
             // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
             // `collectTypes: [.cpu]` on watchOS) would run the sampling timer for the whole session
@@ -203,7 +227,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
             samplingRate: sessionSampleRate,
-            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackBackgroundEvents: trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
             firstPartyHosts: distributedTracing?.0,
@@ -285,8 +309,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             dependencies.renderLoopObserver?.register(refreshRateVital)
         }
 
-        firstFrameReader.publish(to: monitor)
-        dependencies.renderLoopObserver?.register(firstFrameReader)
+        if let firstFrameReader {
+            firstFrameReader.publish(to: monitor)
+            dependencies.renderLoopObserver?.register(firstFrameReader)
+        }
 
         // Resolved on each hang rather than captured here, as Crash Reporting - which owns this setting - can be
         // enabled after RUM. A missing Crash Reporting Feature means backtrace generation is *unavailable* rather
@@ -410,7 +436,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
                 applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
                 sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-                trackBackgroundEvents: configuration.trackBackgroundEvents,
+                trackBackgroundEvents: trackBackgroundEvents,
                 uuidGenerator: configuration.uuidGenerator,
                 ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
                 syntheticsTest: {
@@ -478,7 +504,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64.ddWithNoOverflow($0.sampleRate) },
             swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
             swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
-            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackBackgroundEvents: trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             trackLongTask: configuration.longTaskThreshold != nil,
             trackNativeLongTasks: configuration.longTaskThreshold != nil,

@@ -8,7 +8,7 @@ import Foundation
 @_spi(Internal)
 @preconcurrency import DatadogInternal
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 // Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
 // transitive module dependency, but it is not distributed as an XCFramework.
@@ -30,7 +30,6 @@ public enum Profiling {
     /// - Parameters:
     ///   - configuration: The profiling configuration to use.
     ///   - core: The Datadog core instance to register with. Defaults to the default core.
-    @available(*, message: "This API is experimental and may change in future releases")
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
             // To ensure the correct registration order between Core and Features,

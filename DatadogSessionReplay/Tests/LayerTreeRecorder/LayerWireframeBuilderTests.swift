@@ -483,8 +483,24 @@ struct LayerWireframeBuilderTests {
         #expect(hiddenWireframe.isVisible == false)
     }
 
-    @Test("Build creates image resource for content snapshot")
-    func buildCreatesImageResourceForContentSnapshot() throws {
+    @Test(
+        "Build creates image resource with the format appropriate for its content",
+        arguments: [
+            ("CALayer", nil, "image/png"),
+            ("CATextLayer", nil, "image/png"),
+            (NSStringFromClass(TestCGDrawingLayer.self), nil, "image/png"),
+            (NSStringFromClass(TestRBDrawingLayer.self), nil, "image/png"),
+            ("CALayer", "UILabel", "image/png"),
+            ("CALayer", "UIImageView", "image/webp"),
+            ("CALayer", NSStringFromClass(TestImageView.self), "image/webp"),
+            ("SwiftUI.ImageLayer", nil, "image/webp")
+        ]
+    )
+    func buildCreatesImageResourceForContentSnapshot(
+        layerClassName: String,
+        delegateClassName: String?,
+        expectedMIMEType: String
+    ) throws {
         // Given
         let frame = CGRect(x: 10, y: 20, width: 100, height: 40)
         let snapshot = CALayerSnapshot.mockWith(
@@ -494,6 +510,8 @@ struct LayerWireframeBuilderTests {
         let contentSnapshot = ContentSnapshot.mockAny(
             image: UIImage.mockWith(color: .red),
             frame: frame,
+            layerClass: try #require(NSClassFromString(layerClassName)),
+            delegateClass: try delegateClassName.map { try #require(NSClassFromString($0)) },
             hasLayerSemantics: true,
             textAndInputPrivacyLevel: .maskSensitiveInputs,
             imagePrivacyLevel: .maskNone
@@ -521,6 +539,7 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.id == Int64(namespace: .image, replayID: snapshot.replayID))
         #expect(wireframe.resourceId == resource.calculateIdentifier())
         #expect(resource.calculateData().isEmpty == false)
+        #expect(resource.mimeType == expectedMIMEType)
     }
 
     @Test("Build creates shape wireframe when content redacts to placeholder")
@@ -642,6 +661,10 @@ struct LayerWireframeBuilderTests {
         return wireframe.shapeStyle?.cornerRadius
     }
 }
+
+private final class TestCGDrawingLayer: CALayer {}
+private final class TestRBDrawingLayer: CALayer {}
+private final class TestImageView: UIImageView {}
 
 private func imageLayerClass() throws -> AnyClass {
     try #require(NSClassFromString("SwiftUI.ImageLayer"))

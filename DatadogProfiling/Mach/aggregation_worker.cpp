@@ -6,7 +6,7 @@
 
 #include "aggregation_worker.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <algorithm>
 #include <new>
@@ -328,4 +328,4 @@ uint64_t aggregation_worker::batch_footprint_bytes(const std::vector<stack_trace
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

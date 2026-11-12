@@ -35,18 +35,35 @@ extension CALayerSnapshot {
         }
     }
 
-    var requiresCompositionLayer: Bool {
-        masksToBounds
+    enum CompositionTreeRepresentation: Equatable {
+        case wireframe
+        case layer
+        case passthrough
+    }
+
+    /// How this snapshot contributes to its parent's composition tree.
+    var compositionTreeRepresentation: CompositionTreeRepresentation {
+        if observation.semantics == .visualEffect(.scrollPocketGroup) {
+            // Pockets must composite with the scroll content in the same parent layer.
+            return .passthrough
+        }
+
+        if !sublayers.isEmpty
+            || masksToBounds
             || opacity < 1
             || hasShadow
             || requiresGlassApproximation
-            || filters.contains {
-                SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil
-            }
+            || filters.contains(
+                where: { SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil }
+            )
             || SRCompositionLayer.CompositeOperation(
                 compositingFilter: compositingFilter,
                 semantics: observation.semantics
-            ) != nil
+            ) != nil {
+            return .layer
+        }
+
+        return .wireframe
     }
 
     func modifiers(maskImageResourceID: String? = nil) -> [SRCompositionLayerModifier] {

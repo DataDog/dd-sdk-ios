@@ -8,25 +8,41 @@
 import UIKit
 
 internal struct ImageSnapshotResource: Resource {
+    enum Format: String {
+        case png
+        case webP = "webp"
+    }
+
     let image: UIImage
+    let format: Format
+
+    init(image: UIImage, format: Format) {
+        self.image = image
+        self.format = format
+    }
 
     var mimeType: String {
-        "image/webp"
+        "image/\(format.rawValue)"
     }
 
     func calculateIdentifier() -> String {
         guard
             let hash = image.contentHash,
-            let size = image.webPPixelSize()
+            let size = image.encodingPixelSize()
         else {
             return ""
         }
 
-        return "\(hash)-\(size.width)x\(size.height).webp"
+        return "\(hash)-\(size.width)x\(size.height).\(format.rawValue)"
     }
 
     func calculateData() -> Data {
-        image.webPData() ?? Data()
+        switch format {
+        case .png:
+            return image.resizedPNGData() ?? Data()
+        case .webP:
+            return image.resizedWebPData() ?? Data()
+        }
     }
 }
 #endif

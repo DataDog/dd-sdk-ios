@@ -6,7 +6,8 @@
 
 import XCTest
 import TestUtilities
-@testable import DatadogRUM
+@_spi(Internal)
+import DatadogInternal
 
 class BaggageHeaderMergerTests: XCTestCase {
     // MARK: - Basic Functionality Tests

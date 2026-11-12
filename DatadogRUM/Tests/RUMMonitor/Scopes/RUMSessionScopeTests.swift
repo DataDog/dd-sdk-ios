@@ -881,6 +881,64 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertFalse(keep, "The scope should be closed")
     }
 
+    #if !os(watchOS)
+    func testWhenSampledSessionIsStopped_itStopsSavingItsViewsForWatchdogTerminations() throws {
+        let featureScope = FeatureScopeMock()
+        let watchdogTermination = WatchdogTerminationMonitor(
+            appStateManager: .mockRandom(),
+            checker: .mockRandom(),
+            storage: NOPDatadogCore().storage,
+            feature: featureScope,
+            reporter: WatchdogTerminationReporter.mockRandom()
+        )
+        watchdogTermination.currentState = .started
+
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            dependencies: .mockWith(samplingRate: 100, watchdogTermination: watchdogTermination)
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime, identity: ViewIdentifier("view")), context: context, writer: writer)
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: sessionStartTime + 1), context: context, writer: writer)
+
+        // Then
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
+    }
+
+    func testWhenNotSampledSessionIsStopped_itSavesTheStopForWatchdogTerminations() throws {
+        let featureScope = FeatureScopeMock()
+        let watchdogTermination = WatchdogTerminationMonitor(
+            appStateManager: .mockRandom(),
+            checker: .mockRandom(),
+            storage: NOPDatadogCore().storage,
+            feature: featureScope,
+            reporter: WatchdogTerminationReporter.mockRandom()
+        )
+        watchdogTermination.currentState = .started
+
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(samplingRate: 0, watchdogTermination: watchdogTermination)
+        )
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+
+        // Then
+        var savedView: RUMViewEvent??
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { savedView = $0 }
+        XCTAssertNil(try XCTUnwrap(savedView))
+    }
+    #endif
+
     func testWhenScopeEnded_itDoesNotStartNewViews() throws {
         // Given
         let scope: RUMSessionScope = .mockWith(
@@ -1009,6 +1067,26 @@ class RUMSessionScopeTests: XCTestCase {
         // Then
         XCTAssertTrue(result)
     }
+
+    #if !os(watchOS)
+    func testWhenSessionScopeReceivesTTIDCommand_itWritesAppLaunchVital() throws {
+        // Given
+        let processLaunchDate = Date()
+        let context: DatadogContext = .mockWith(
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: processLaunchDate)
+        )
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(time: processLaunchDate.addingTimeInterval(1))
+        let scope: RUMSessionScope = .mockWith(parent: parent, context: context)
+
+        // When
+        _ = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        let vital = try XCTUnwrap(writer.events(ofType: RUMVitalAppLaunchEvent.self).first?.vital)
+        XCTAssertEqual(vital.appLaunchMetric, .ttid)
+        XCTAssertEqual(vital.duration, Double(1.0.dd.toInt64Nanoseconds))
+    }
+    #endif
 
     func testWhenSessionScopeReceivesTTFDCommand_itIsProcessedAccordingly() {
         // Given

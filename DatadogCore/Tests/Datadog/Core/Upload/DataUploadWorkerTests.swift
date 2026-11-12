@@ -1069,17 +1069,19 @@ class DataUploadWorkerTests: XCTestCase {
         var mockPerformance = UploadPerformanceMock.veryQuick
         mockPerformance.maxUploadJitter = .mockRandom(min: 0.1, max: 0.5)
 
+        // Create data to upload
+        writer.write(value: ["key": "value"])
+
+        // `asyncAfter` may fire up to 10% of the delay late (default timer leeway), plus queue scheduling latency on loaded CI
+        let maxExpectedDelay = mockPerformance.maxUploadJitter * 1.1 + 0.25
         let uploadStartTime = Date()
         let dataUploader = DataUploaderMock(uploadStatus: .mockWith()) { _ in
             let elapsedTime = Date().timeIntervalSince(uploadStartTime)
             // Verify that some jitter delay was applied (should be > 0 and <= jitterValue)
             XCTAssertGreaterThan(elapsedTime, 0.0, "Upload should be delayed by jitter")
-            XCTAssertLessThanOrEqual(elapsedTime, mockPerformance.maxUploadJitter + 0.1, "Upload delay should not exceed jitter + small buffer")
+            XCTAssertLessThanOrEqual(elapsedTime, maxExpectedDelay, "Upload delay should not exceed jitter + timer leeway + scheduling buffer")
             expectUploadDelayed.fulfill()
         }
-
-        // Create data to upload
-        writer.write(value: ["key": "value"])
 
         // When
         let worker = DataUploadWorker(

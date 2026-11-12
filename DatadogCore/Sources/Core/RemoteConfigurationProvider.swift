@@ -196,10 +196,12 @@ internal final class RemoteConfigurationProvider {
 
     /// Stops the provider.
     ///
-    /// Unsubscribes from foreground notifications so that in-flight or future syncs
-    /// no longer invoke the completion handler passed to `start(_:)`. Any network
-    /// request already in flight may still complete, but its result is discarded
-    /// because the `[weak self]` capture in the HTTP callback resolves to `nil`.
+    /// Removes the foreground notification observer, so later notifications don't start a sync.
+    /// A notification callback that is already running can still start one.
+    ///
+    /// A request already in flight is not cancelled. If it returns a new configuration while the
+    /// provider is alive, the configuration is cached and passed to the `start(_:)` handler. It is
+    /// dropped only if the provider is deallocated first.
     ///
     /// Safe to call multiple times and from any thread.
     func stop() {
@@ -223,8 +225,7 @@ internal final class RemoteConfigurationProvider {
 
         do {
             let decoder = JSONDecoder()
-            let data = try directory.file(named: cacheFilename).read()
-            let cache = try decoder.decode(RemoteConfigurationCache.self, from: data)
+            let cache = try decode(file: directory.file(named: cacheFilename))
 
             // Decode fresh from `configurationData` on every read rather than persisting an
             // already-decoded payload — see its doc comment.
@@ -239,6 +240,18 @@ internal final class RemoteConfigurationProvider {
         } catch {
             telemetry.error("[RemoteConfig] Failed to read cached remote configuration", error: error)
             return nil
+        }
+    }
+
+    /// Reads and decodes the cache document from `file`, deleting the file if its content cannot
+    /// be decoded.
+    private func decode(file: File) throws -> RemoteConfigurationCache {
+        let data = try file.read()
+        do {
+            return try JSONDecoder().decode(RemoteConfigurationCache.self, from: data)
+        } catch {
+            try? file.delete()
+            throw error
         }
     }
 
@@ -265,7 +278,7 @@ internal final class RemoteConfigurationProvider {
         var cache: RemoteConfigurationCache?
         if let file = try? directory.file(named: cacheFilename) {
             do {
-                cache = try decoder.decode(RemoteConfigurationCache.self, from: file.read())
+                cache = try decode(file: file)
                 cache?.etag.map { request.setValue($0, forHTTPHeaderField: "If-None-Match") }
             } catch {
                 telemetry.error("[RemoteConfig] Failed to read cached metadata etag", error: error)
@@ -319,6 +332,9 @@ internal final class RemoteConfigurationProvider {
                 self.lastSyncDate = self.dateProvider.now
 
                 handler(remoteConfiguration)
+            } catch let error as NSError where error.domain == NSURLErrorDomain && telemetryIgnoredNSURLErrorCodes.contains(error.code) {
+                // Do not report network transport errors: they come from the device's connectivity,
+                // not from an SDK issue, and a later sync will retry.
             } catch {
                 telemetry.error("[RemoteConfig] Failed to sync remote configuration", error: error)
             }
@@ -423,11 +439,10 @@ internal final class RemoteConfigurationProvider {
         try write(JSONEncoder().encode(cache), to: "\(id).json")
     }
 
+    /// Writes `data` to `filename` in a single atomic write, creating the file if needed.
     private func write(_ data: Data, to filename: String) throws {
-        let file = directory.hasFile(named: filename)
-            ? try directory.file(named: filename)
-            : try directory.createFile(named: filename)
-        try file.write(data: data)
+        let url = directory.url.appendingPathComponent(filename, isDirectory: false)
+        try File(url: url).write(data: data)
     }
 }
 

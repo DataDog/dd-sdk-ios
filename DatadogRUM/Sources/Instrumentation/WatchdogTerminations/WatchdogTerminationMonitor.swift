@@ -11,9 +11,11 @@ import DatadogInternal
 internal final class WatchdogTerminationMonitor {
     /// The state of the Watchdog Termination Monitor.
     enum State {
+        /// The monitor is waiting for the first launch report. RUM updates are buffered.
+        case initialized
         /// The monitor has started and is listening to the changes.
         case started
-        /// The monitor is starting. It is still not listening to the changes.
+        /// The monitor is checking the previous launch. RUM updates are buffered.
         case starting
         /// The monitor has stopped and is not listening to the changes.
         case stopped
@@ -24,6 +26,7 @@ internal final class WatchdogTerminationMonitor {
         static let detectedWatchdogTermination = "Based on heuristics, previous app session was terminated by Watchdog"
         static let failedToReadViewEvent = "Failed to read the view event from the data store"
         static let rumViewEventUpdated = "RUM View event updated"
+        static let sessionWasStopped = "Watchdog Termination is not reported because the RUM session was stopped"
         static let failedToSendWatchdogTermination = "Failed to send Watchdog Termination event"
     }
 
@@ -38,6 +41,19 @@ internal final class WatchdogTerminationMonitor {
     @ReadWriteLock
     internal var currentState: State
 
+    /// What the monitor knows about RUM sessions and views. Updated from the RUM queue and when the monitor starts.
+    private struct Tracking {
+        /// Stopped sessions whose scopes can still emit view updates.
+        var stoppedSessionIDs: Set<String> = []
+        /// The last view update received before startup completes. It is saved once the monitor has started.
+        var pendingViewEvent: RUMViewEvent?
+        /// If the RUM session was stopped before startup completes. The stop is saved once the monitor has started.
+        var hasPendingSessionStop = false
+    }
+
+    @ReadWriteLock
+    private var tracking = Tracking()
+
     init(
         appStateManager: AppStateManager,
         checker: WatchdogTerminationChecker,
@@ -50,19 +66,43 @@ internal final class WatchdogTerminationMonitor {
         self.feature = feature
         self.reporter = reporter
         self.storage = storage
-        self.currentState = .stopped
+        self.currentState = .initialized
     }
 
     /// Starts the Watchdog Termination Monitor.
     /// - Parameter launchReport: The launch report containing information about the app launch (if available).
     func start(launchReport: LaunchReport) {
-        guard currentState == .stopped else {
+        var shouldStart = false
+        _tracking.mutate { _ in
+            guard currentState == .initialized else {
+                return
+            }
+            currentState = .starting
+            shouldStart = true
+        }
+        guard shouldStart else {
             return
         }
-
-        currentState = .starting
         sendWatchTerminationIfFound(launch: launchReport) { [weak self] in
-            self?.currentState = .started
+            self?.didStart()
+        }
+    }
+
+    /// Marks the monitor as started and saves the stop and the view update received while it was starting.
+    private func didStart() {
+        _tracking.mutate { tracking in
+            guard currentState == .starting else {
+                return
+            }
+            currentState = .started
+            if tracking.hasPendingSessionStop {
+                tracking.hasPendingSessionStop = false
+                saveSessionStop()
+            }
+            if let viewEvent = tracking.pendingViewEvent {
+                tracking.pendingViewEvent = nil
+                save(viewEvent: viewEvent)
+            }
         }
     }
 
@@ -75,14 +115,62 @@ internal final class WatchdogTerminationMonitor {
     ///
     /// - Parameter viewEvent: The view event which is used to report the Watchdog Termination event.
     func update(viewEvent: RUMViewEvent) {
-        // The monitor state must be started to update the view event,
-        // because saved view event might be currently used to report the Watchdog Termination event.
-        guard currentState == .started else {
-            return
-        }
+        _tracking.mutate { tracking in
+            guard !tracking.stoppedSessionIDs.contains(viewEvent.session.id) else {
+                return
+            }
 
+            switch currentState {
+            case .started:
+                save(viewEvent: viewEvent)
+            case .initialized, .starting:
+                // The saved view event might be currently used to report the Watchdog Termination event,
+                // so the update is saved once the monitor has started.
+                tracking.pendingViewEvent = viewEvent
+            case .stopped:
+                break
+            }
+        }
+    }
+
+    /// Notifies that the RUM session was stopped with `stopSession()`. A Watchdog Termination is not reported
+    /// until a view of another session is tracked.
+    ///
+    /// - Parameter sessionID: The ID of the stopped session.
+    func sessionDidStop(sessionID: String) {
+        _tracking.mutate { tracking in
+            tracking.stoppedSessionIDs.insert(sessionID)
+            tracking.pendingViewEvent = nil
+
+            switch currentState {
+            case .started:
+                saveSessionStop()
+            case .initialized, .starting:
+                // The saved stop might be currently used to report the Watchdog Termination event,
+                // so it is saved once the monitor has started.
+                tracking.hasPendingSessionStop = true
+            case .stopped:
+                break
+            }
+        }
+    }
+
+    /// Releases bookkeeping once a session scope can no longer emit view updates. The persisted stop is kept.
+    func sessionDidComplete(sessionID: String) {
+        _tracking.mutate { tracking in
+            tracking.stoppedSessionIDs.remove(sessionID)
+        }
+    }
+
+    private func save(viewEvent: RUMViewEvent) {
         DD.logger.debug(ErrorMessages.rumViewEventUpdated)
         feature.rumDataStore.setValue(viewEvent, forKey: .watchdogRUMViewEvent)
+    }
+
+    private func saveSessionStop() {
+        // Store the stop in the view record itself. A failed replacement write cannot expose an older view
+        // by independently clearing a stop marker. Existing saved views remain readable as optional values.
+        feature.rumDataStore.setValue(Optional<RUMViewEvent>.none, forKey: .watchdogRUMViewEvent)
     }
 
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
@@ -98,22 +186,24 @@ internal final class WatchdogTerminationMonitor {
         }
     }
 
-    /// Sends the Watchdog Termination event to Datadog with the given state.
-    /// Because Watchdog Termination are reported in the next app session, it uses the saved `RUMViewEvent`
-    /// to report the event.
+    /// Sends the Watchdog Termination event to Datadog with the given state, unless the RUM session was stopped
+    /// with `stopSession()` and no view was tracked since.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
     private func sendWatchTermination(state: AppStateInfo, completion: @escaping () -> Void) {
         feature.context { [weak self] context in
             do {
                 let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)
-                self?.feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (viewEvent: RUMViewEvent?) in
-                    guard let viewEvent = viewEvent else {
+                self?.feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (savedView: RUMViewEvent??) in
+                    // A stored null means tracking stopped; outer nil means missing or unreadable data.
+                    switch savedView {
+                    case .some(.some(let viewEvent)):
+                        self?.reporter.send(date: likelyCrashedAt, state: state, viewEvent: viewEvent)
+                    case .some(.none):
+                        DD.logger.debug(ErrorMessages.sessionWasStopped)
+                    case .none:
                         DD.logger.error(ErrorMessages.failedToReadViewEvent)
                         self?.feature.telemetry.error(ErrorMessages.failedToReadViewEvent)
-                        completion()
-                        return
                     }
-                    self?.reporter.send(date: likelyCrashedAt, state: state, viewEvent: viewEvent)
                     completion()
                 }
             } catch {
@@ -126,7 +216,11 @@ internal final class WatchdogTerminationMonitor {
 
     /// Stops the Watchdog Termination Monitor.
     func stop() {
-        currentState = .stopped
+        _tracking.mutate { tracking in
+            currentState = .stopped
+            tracking.pendingViewEvent = nil
+            tracking.hasPendingSessionStop = false
+        }
     }
 }
 
@@ -152,7 +246,7 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
             return false
         }
 
-        if currentState == .stopped {
+        if currentState == .initialized {
             guard let launchReport = context.additionalContext(ofType: LaunchReport.self) else {
                 return false
             }

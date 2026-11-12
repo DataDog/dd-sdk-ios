@@ -22,6 +22,8 @@ public struct FlagAssignment: Equatable {
     public var reason: String
     public var doLog: Bool
     public var serialID: Int?
+    /// `true` when a `"variationType": "number"` value decodes as Int. The cache keeps this type.
+    internal var isNumberType = false
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {
@@ -30,6 +32,12 @@ public struct FlagAssignment: Equatable {
         case .string(let value):
             return value as? T
         case .integer(let value):
+            // A whole number served as "number" decodes as `.integer`, so a Double
+            // read must accept it. A Double read of an assignment served as
+            // "integer" is a type mismatch.
+            if T.self == Double.self {
+                return isNumberType ? Double(value) as? T : nil
+            }
             return value as? T
         case .double(let value):
             return value as? T
@@ -79,10 +87,11 @@ extension FlagAssignment: Codable {
         case "string":
             self.variation = try .string(container.decode(String.self, forKey: .variationValue))
         case "number":
-            // Backwards compatibility for legacy "number" type
-            // Check integer first, then double
+            // "number" can carry an integer or a decimal flag. Check integer first, then
+            // double; `variation(as:)` lets a Double read accept the resulting `.integer`.
             if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 self.variation = .integer(number)
+                self.isNumberType = true
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
@@ -117,7 +126,7 @@ extension FlagAssignment: Codable {
             try container.encode("float", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .integer(let value):
-            try container.encode("integer", forKey: .variationType)
+            try container.encode(isNumberType ? "number" : "integer", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .object(let value):
             try container.encode("object", forKey: .variationType)
