@@ -10,4 +10,6 @@
 
 ## Feature Flags
 
-/DatadogFlags/ @DataDog/rum-mobile @DataDog/rum-mobile-ios @DataDog/feature-flagging-and-experimentation-sdk
+# FFE owns implementation changes. Public API changes also update api-surface-swift,
+# which retains the global mobile ownership above.
+/DatadogFlags/ @DataDog/feature-flagging-and-experimentation-sdk
