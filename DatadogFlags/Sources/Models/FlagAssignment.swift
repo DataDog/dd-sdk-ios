@@ -72,7 +72,7 @@ internal extension CodingUserInfoKey {
     )
 }
 
-internal extension Decoder {
+private extension Decoder {
     /// Whether this decoder reads variations that the flags cache wrote.
     var decodesStoredVariations: Bool {
         guard let key = CodingUserInfoKey.decodesStoredVariations else {
