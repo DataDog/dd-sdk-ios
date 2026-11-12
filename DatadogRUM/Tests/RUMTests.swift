@@ -370,16 +370,24 @@ class RUMTests: XCTestCase {
     }
 
     @MainActor
-    func testInitializationFailureRollsBackOnlyIssuedHandoff() throws {
+    func testHeatmapRegistrationFailure_rollsBackOnlyWhenRegistryIsInitialized() throws {
         let activationCore = HandoffActivationCoreMock()
         activationCore.rejectedFeatureName = HeatmapIdentifierRegistryFeature.name
         config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
         config.featureFlags = [.multiSceneTracking: true]
+        #if os(macOS) || os(watchOS)
+        try RUM.enableOrThrow(with: config, in: activationCore)
+        XCTAssertNotNil(activationCore.get(feature: RUMFeature.self))
+        XCTAssertEqual(activationCore.activations, 0)
+        XCTAssertEqual(activationCore.rollbacks, 0)
+        XCTAssertTrue(activationCore.issuedOwners.isEmpty)
+        #else
         XCTAssertThrowsError(try RUM.enableOrThrow(with: config, in: activationCore))
+        XCTAssertNil(activationCore.get(feature: RUMFeature.self))
+        #endif
         XCTAssertNil(activationCore.rumContextHandoffOwner)
         XCTAssertTrue(activationCore.issuedOwners.allSatisfy { !$0.isValid })
         XCTAssertEqual(activationCore.rollbacks, activationCore.activations)
-        XCTAssertNil(activationCore.get(feature: RUMFeature.self))
     }
 
     @MainActor

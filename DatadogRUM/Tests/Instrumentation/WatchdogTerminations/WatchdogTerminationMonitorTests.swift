@@ -476,7 +476,14 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
 }
 
 extension WatchdogTerminationMonitorTests {
-    func testLegacyWatchdog_preservesReportedSnapshotUntilNextStartedUpdateAndIgnoresStoppedUpdates() throws {
+    func testLegacyWatchdog_reportsPreviousSnapshotBeforeSavingBufferedViewAndIgnoresStoppedUpdates() throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        func assertSnapshotEqual(_ actual: RUMViewEvent?, _ expected: RUMViewEvent, file: StaticString = #filePath, line: UInt = #line) throws {
+            let actualData = try encoder.encode(XCTUnwrap(actual))
+            let expectedData = try encoder.encode(expected)
+            XCTAssertEqual(actualData, expectedData, "Actual JSON: \(String(decoding: actualData, as: UTF8.self))\nExpected JSON: \(String(decoding: expectedData, as: UTF8.self))", file: file, line: line)
+        }
         let didSend = expectation(description: "previous view reported once")
         didSend.assertForOverFulfill = true
         let firstQueue = DispatchQueue(label: "com.datadoghq.tests.legacy-watchdog-first")
@@ -516,39 +523,42 @@ extension WatchdogTerminationMonitorTests {
             didSend: didSend,
             queue: nextQueue
         )
-        sut.update(viewEvent: .mockRandom())
+        let buffered: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: buffered)
+        XCTAssertEqual(sut.currentState, .initialized)
+        featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
+        try assertSnapshotEqual(stored, previous)
         _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 1)
         nextQueue.sync {}
         XCTAssertEqual(sut.currentState, .started)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys
-        XCTAssertEqual(try encoder.encode(XCTUnwrap(reporter.sendParams?.viewEvent)), try encoder.encode(previous))
+        try assertSnapshotEqual(reporter.sendParams?.viewEvent, previous)
         featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
-        XCTAssertEqual(try encoder.encode(XCTUnwrap(stored)), try encoder.encode(previous))
+        try assertSnapshotEqual(stored, buffered)
         sut.start(launchReport: LaunchReport(didCrash: false))
         nextQueue.sync {}
         XCTAssertEqual(sut.currentState, .started)
         let current: RUMViewEvent = .mockRandom()
         sut.update(viewEvent: current)
         featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
-        XCTAssertEqual(try encoder.encode(XCTUnwrap(stored)), try encoder.encode(current))
+        try assertSnapshotEqual(stored, current)
         sut.stop()
         sut.update(viewEvent: .mockRandom())
         featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
         XCTAssertEqual(sut.currentState, .stopped)
-        XCTAssertEqual(try encoder.encode(XCTUnwrap(stored)), try encoder.encode(current))
+        try assertSnapshotEqual(stored, current)
     }
 }
 
 extension WatchdogTerminationMonitorTests {
     func testRepresentativeUpdate_afterSessionStop_ignoresStoppedSessionAndAcceptsNewSession() throws {
+        let reporter = WatchdogTerminationReporterMock(didSend: XCTestExpectation(description: "No launch report is sent"))
         let monitor = WatchdogTerminationMonitor(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
             storage: NOPDatadogCore().storage,
             feature: featureScope,
-            reporter: WatchdogTerminationReporter.mockRandom()
+            reporter: reporter
         )
         monitor.currentState = .started
         let stoppedID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
@@ -568,15 +578,17 @@ extension WatchdogTerminationMonitorTests {
         let persisted = try XCTUnwrap(try XCTUnwrap(stored))
         XCTAssertEqual(persisted.session.id, nextView.session.id)
         XCTAssertEqual(persisted.view.id, nextView.view.id)
+        XCTAssertNil(reporter.sendParams)
     }
 
     func testRepresentativeUpdate_withoutView_preservesPersistedStop() throws {
+        let reporter = WatchdogTerminationReporterMock(didSend: XCTestExpectation(description: "No launch report is sent"))
         let monitor = WatchdogTerminationMonitor(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
             storage: NOPDatadogCore().storage,
             feature: featureScope,
-            reporter: WatchdogTerminationReporter.mockRandom()
+            reporter: reporter
         )
         monitor.currentState = .started
         let sessionID = UUID(uuidString: "33333333-3333-3333-3333-333333333333")!
@@ -588,5 +600,6 @@ extension WatchdogTerminationMonitorTests {
         var stored: RUMViewEvent??
         featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (value: RUMViewEvent??) in stored = value }
         XCTAssertNil(try XCTUnwrap(stored))
+        XCTAssertNil(reporter.sendParams)
     }
 }
