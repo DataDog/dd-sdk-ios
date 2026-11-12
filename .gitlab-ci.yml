@@ -168,7 +168,7 @@ Feature Docs Verify:
   script:
     - make feature-docs-verify
 
-Unit Tests (iOS):
+.unit-tests-ios:
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -187,12 +187,23 @@ Unit Tests (iOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1 TEST_PLANS="$TEST_PLANS" SKIP_TEST_PLANS="$SKIP_TEST_PLANS"
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"
       - "ResultBundles/*.log"
     when: always
+
+# The Thread Sanitizer plan rebuilds the SDK with Thread Sanitizer, so it runs in its own job, in parallel.
+Unit Tests (iOS):
+  extends: .unit-tests-ios
+  variables:
+    SKIP_TEST_PLANS: "UnitTestsThreadSanitizer"
+
+Unit Tests (iOS, Thread Sanitizer):
+  extends: .unit-tests-ios
+  variables:
+    TEST_PLANS: "UnitTestsThreadSanitizer"
 
 Unit Tests (tvOS):
   stage: test
@@ -201,7 +212,7 @@ Unit Tests (tvOS):
     - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
@@ -225,7 +236,7 @@ Unit Tests (watchOS):
     - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
@@ -249,7 +260,7 @@ Unit Tests (visionOS):
     - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
@@ -314,7 +325,7 @@ UI Tests:
     - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "UI Tests (build)"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
