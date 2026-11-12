@@ -727,6 +727,7 @@ private final class SigningLifecycleFetcher: FlagAssignmentsFetching {
     }
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: ExperimentationOptOut?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         completions.append(completion)

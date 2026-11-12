@@ -15,12 +15,21 @@ internal struct FlagsData: Equatable, Codable {
     var verification: FlagsResponseVerification? = nil
     var responseSigningCacheScope: String? = nil
 
-    private enum CodingKeys: String, CodingKey { case flags, context, date, obfuscation, responseSigningCacheScope }
+    private enum CodingKeys: String, CodingKey { case flags, context, date, obfuscation, responseSigningCacheScope, experimentationOptOutPolicy }
+    // Optional so snapshots written before opt-out support remain readable.
+    let experimentationOptOutPolicy: ExperimentationOptOut?
 
-    init(flags: [String: FlagAssignment], context: FlagsEvaluationContext, date: Date, obfuscation: FlagKeyObfuscation? = nil) {
+    init(
+        flags: [String: FlagAssignment],
+        context: FlagsEvaluationContext,
+        date: Date,
+        obfuscation: FlagKeyObfuscation? = nil,
+        experimentationOptOutPolicy: ExperimentationOptOut? = nil
+    ) {
         self.flags = flags
         self.context = context
         self.date = date
         self.obfuscation = obfuscation
+        self.experimentationOptOutPolicy = experimentationOptOutPolicy
     }
 }

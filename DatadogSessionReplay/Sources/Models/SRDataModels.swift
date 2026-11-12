@@ -2270,6 +2270,7 @@ public struct SRSegment: SRDataModel {
         case reactNative = "react-native"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// View properties
@@ -3134,4 +3135,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/7cd262a46caa5a3927eda082757eb30673f2b5aa
+// Generated from https://github.com/DataDog/rum-events-format/tree/e56d61f0016c507091c8093befa9e73c42037c70

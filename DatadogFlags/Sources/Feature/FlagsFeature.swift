@@ -31,7 +31,8 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     init(
         configuration: Flags.Configuration,
         featureScope: FeatureScope,
-        core: DatadogCoreProtocol
+        core: DatadogCoreProtocol,
+        flagAssignmentsFetcher: (any FlagAssignmentsFetching)? = nil
     ) {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
@@ -40,7 +41,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             responseSigning: configuration.responseSigning
         )
         signingLifetime = configuration.responseSigning.mode == .off ? nil : FlagsSigningLifetime(fetcher: fetcher)
-        flagAssignmentsFetcher = fetcher
+        self.flagAssignmentsFetcher = flagAssignmentsFetcher ?? fetcher
         initializationTimeout = configuration.initializationTimeout
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,

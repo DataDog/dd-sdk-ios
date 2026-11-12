@@ -256,8 +256,14 @@ final class DisplayLinkerTests: XCTestCase {
         XCTAssertGreaterThan(expectedHighFPS, expectedLowFPS, "It must measure higher FPS for lower main thread overhead (high overhead run count: \(highOverheadRunCount))")
     }
 
-    func testAppStateHandlingForRefreshRateReader() {
-        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter)
+    @MainActor
+    func testAppStateHandlingForRefreshRateReader() async throws {
+        var frameInfoProvider: FrameInfoProviderMock?
+        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter) { target, selector in
+            let provider = FrameInfoProviderMock(target: target, selector: selector)
+            frameInfoProvider = provider
+            return provider
+        }
         let reader = VitalRefreshRateReader()
         displayLinker.register(reader)
         let registrar = VitalPublisher(initialValue: VitalInfo())
@@ -266,71 +272,89 @@ final class DisplayLinkerTests: XCTestCase {
         mockNotificationCenter.post(name: DDApplication.willResignActiveNotification, object: nil)
         reader.register(registrar)
 
+        // Registration is enqueued on the main queue; finish it before delivering frames.
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.main.async { continuation.resume() }
+        }
+
         XCTAssertFalse(reader.isActive)
         XCTAssertEqual(registrar.currentValue.sampleCount, 0)
 
         mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
 
-        wait(during: 0.1) {
-            XCTAssertTrue(reader.isActive)
-            XCTAssertGreaterThan(registrar.currentValue.sampleCount, 0)
-        }
+        let activeProvider = try XCTUnwrap(frameInfoProvider)
+        activeProvider.triggerCallback(interval: 0)
+        XCTAssertTrue(reader.isActive)
+        XCTAssertEqual(registrar.currentValue.sampleCount, 0)
+
+        activeProvider.triggerCallback(interval: 0.016)
+        XCTAssertEqual(registrar.currentValue.sampleCount, 1)
     }
 
-    func testAppStateHandlingForViewHitchesReader() {
-        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter)
+    @MainActor
+    func testAppStateHandlingForViewHitchesReader() throws {
+        var frameInfoProvider: FrameInfoProviderMock?
+        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter) { target, selector in
+            let provider = FrameInfoProviderMock(target: target, selector: selector)
+            frameInfoProvider = provider
+            return provider
+        }
         let reader = ViewHitchesReader()
         displayLinker.register(reader)
 
         mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
-        wait(during: 0.1) {
-            XCTAssertTrue(displayLinker.isActive)
-            XCTAssertTrue(reader.isActive)
-        }
+        try XCTUnwrap(frameInfoProvider).triggerCallback(interval: 0)
+        XCTAssertTrue(displayLinker.isActive)
+        XCTAssertTrue(reader.isActive)
 
         mockNotificationCenter.post(name: DDApplication.willResignActiveNotification, object: nil)
-        wait(during: 0.1) {
-            XCTAssertFalse(displayLinker.isActive)
-            XCTAssertFalse(reader.isActive)
-        }
+        XCTAssertFalse(displayLinker.isActive)
+        XCTAssertFalse(reader.isActive)
 
         mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
-        wait(during: 0.1) {
-            XCTAssertTrue(displayLinker.isActive)
-            XCTAssertTrue(reader.isActive)
-        }
+        try XCTUnwrap(frameInfoProvider).triggerCallback(interval: 0.016)
+        XCTAssertTrue(displayLinker.isActive)
+        XCTAssertTrue(reader.isActive)
     }
 
-    func testAppStateHandlingWithSeveralReaders() {
-        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter)
+    @MainActor
+    func testAppStateHandlingWithSeveralReaders() throws {
+        var frameInfoProvider: FrameInfoProviderMock?
+        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter) { target, selector in
+            let provider = FrameInfoProviderMock(target: target, selector: selector)
+            frameInfoProvider = provider
+            return provider
+        }
         let refreshRateReader = VitalRefreshRateReader()
         let viewHitchesReader = ViewHitchesReader()
 
         displayLinker.register(refreshRateReader)
         displayLinker.register(viewHitchesReader)
 
-        wait(during: 0.1) {
-            XCTAssertTrue(refreshRateReader.isActive)
-            XCTAssertTrue(viewHitchesReader.isActive)
-        }
+        try XCTUnwrap(frameInfoProvider).triggerCallback(interval: 0)
+        XCTAssertTrue(refreshRateReader.isActive)
+        XCTAssertTrue(viewHitchesReader.isActive)
 
         mockNotificationCenter.post(name: DDApplication.willResignActiveNotification, object: nil)
 
-        wait(during: 0.1) {
-            XCTAssertFalse(refreshRateReader.isActive)
-            XCTAssertFalse(viewHitchesReader.isActive)
-        }
+        XCTAssertFalse(refreshRateReader.isActive)
+        XCTAssertFalse(viewHitchesReader.isActive)
 
         mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
 
-        wait(during: 0.1) {
-            XCTAssertTrue(refreshRateReader.isActive)
-            XCTAssertTrue(viewHitchesReader.isActive)
-        }
+        try XCTUnwrap(frameInfoProvider).triggerCallback(interval: 0.016)
+        XCTAssertTrue(refreshRateReader.isActive)
+        XCTAssertTrue(viewHitchesReader.isActive)
     }
 
-    func testDisplayLinkerRegistrationWithSeveralReaders() {
-        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter)
+    @MainActor
+    func testDisplayLinkerRegistrationWithSeveralReaders() throws {
+        var frameInfoProvider: FrameInfoProviderMock?
+        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter) { target, selector in
+            let provider = FrameInfoProviderMock(target: target, selector: selector)
+            frameInfoProvider = provider
+            return provider
+        }
         let refreshRateReader = VitalRefreshRateReader()
         let viewHitchesReader = ViewHitchesReader()
         let mockReader = ViewHitchesMock()
@@ -344,21 +368,20 @@ final class DisplayLinkerTests: XCTestCase {
         displayLinker.register(viewHitchesReader)
         displayLinker.register(mockReader)
 
-        wait(during: 0.1) {
-            XCTAssertTrue(refreshRateReader.isActive)
-            XCTAssertTrue(viewHitchesReader.isActive)
-            XCTAssertTrue(mockReader.isActive)
-        }
+        let activeProvider = try XCTUnwrap(frameInfoProvider)
+        activeProvider.triggerCallback(interval: 0)
+        XCTAssertTrue(refreshRateReader.isActive)
+        XCTAssertTrue(viewHitchesReader.isActive)
+        XCTAssertTrue(mockReader.isActive)
 
         displayLinker.unregister(refreshRateReader)
         displayLinker.unregister(viewHitchesReader)
         displayLinker.unregister(mockReader)
 
-        wait(during: 0.1) {
-            XCTAssertFalse(refreshRateReader.isActive)
-            XCTAssertFalse(viewHitchesReader.isActive)
-            XCTAssertFalse(mockReader.isActive)
-        }
+        activeProvider.triggerCallback(interval: 0.016)
+        XCTAssertFalse(refreshRateReader.isActive)
+        XCTAssertFalse(viewHitchesReader.isActive)
+        XCTAssertFalse(mockReader.isActive)
     }
 }
 

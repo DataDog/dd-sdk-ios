@@ -1,0 +1,43 @@
+{
+    "data": {
+      "attributes": {
+        "flags": {
+          "serial.id.flag": {
+            "allocationKey": "holdout-allocation",
+            "variationKey": "on",
+            "variationType": "boolean",
+            "variationValue": true,
+            "reason": "TARGETING_MATCH",
+            "doLog": true,
+            "serialId": 340132
+          },
+          "no.serial.id.flag": {
+            "allocationKey": "regular-allocation",
+            "variationKey": "off",
+            "variationType": "boolean",
+            "variationValue": false,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "zero.serial.id.flag": {
+            "allocationKey": "zero-allocation",
+            "variationKey": "on",
+            "variationType": "boolean",
+            "variationValue": true,
+            "reason": "TARGETING_MATCH",
+            "doLog": true,
+            "serialId": 0
+          },
+          "null.serial.id.flag": {
+            "allocationKey": "null-allocation",
+            "variationKey": "off",
+            "variationType": "boolean",
+            "variationValue": false,
+            "reason": "TARGETING_MATCH",
+            "doLog": true,
+            "serialId": null
+          }
+        }
+      }
+    }
+  }

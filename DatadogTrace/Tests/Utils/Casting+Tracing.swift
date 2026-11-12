@@ -5,6 +5,7 @@
  */
 
 @testable import DatadogTrace
+import DatadogInternal
 
 /*
  NOTE: The casting methods defined here do shadow the ones defined in `Datadog.Casting`.
@@ -24,4 +25,15 @@ internal extension OTSpan {
 
 internal extension OTSpanContext {
     var dd: DDSpanContext { self as! DDSpanContext }
+}
+
+final class SpanSnapshotCapture: @unchecked Sendable {
+    @ReadWriteLock
+    private(set) var snapshots: [SpanSnapshot] = []
+
+    var snapshot: SpanSnapshot? { snapshots.last }
+
+    func capture(_ snapshot: SpanSnapshot) {
+        _snapshots.mutate { $0.append(snapshot) }
+    }
 }

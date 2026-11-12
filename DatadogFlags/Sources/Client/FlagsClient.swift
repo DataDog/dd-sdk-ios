@@ -36,8 +36,25 @@ import DatadogInternal
 /// let themeColor = client.getStringValue(key: "theme-color", defaultValue: "blue")
 /// ```
 public final class FlagsClient {
+    /// Controls how the client applies each subject's `dd_experimentation_opt_out_at` timestamp.
+    public enum ExperimentationOptOutMode {
+        /// Ignore the `dd_experimentation_opt_out_at` context attribute.
+        case disabled
+        /// Exclude subjects with a valid opt-out timestamp from experiment allocations immediately.
+        /// This includes future timestamps. Ordinary feature allocations remain available.
+        case immediate
+        /// Exclude experiment allocations activated at or after the subject's opt-out timestamp.
+        /// Experiment allocations with unknown activation times are also excluded.
+        /// Ordinary allocations and older experiments remain available.
+        case futureExperimentsOnly
+    }
+
     /// Configuration for an individual Flags client.
     public struct Configuration {
+        /// Controls how the client applies the subject's `dd_experimentation_opt_out_at` timestamp.
+        /// The default is `.disabled`. This does not change evaluation telemetry settings.
+        public var experimentationOptOutMode: ExperimentationOptOutMode
+
         /// Enables per-subject opt-out from customer-facing feature flag evaluation reporting.
         ///
         /// This controls flag evaluation reporting, not Datadog SDK internal telemetry.
@@ -54,12 +71,28 @@ public final class FlagsClient {
         public var enableEvaluationTelemetryOptOutParameter: Bool
 
         /// Creates configuration for an individual Flags client.
-        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
+        /// - Parameters:
+        ///   - enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
         ///   not SDK internal telemetry. Suppresses while the initial cached policy is unknown, then requires
         ///   `dd_evaluation_telemetry_opt_out` to be boolean `true`.
         ///   Default: `false`.
-        public init(enableEvaluationTelemetryOptOutParameter: Bool = false) {
+        ///   - experimentationOptOutMode: How to apply the subject's `dd_experimentation_opt_out_at` timestamp. Default: `.disabled`.
+        public init(
+            enableEvaluationTelemetryOptOutParameter: Bool = false,
+            experimentationOptOutMode: ExperimentationOptOutMode = .disabled
+        ) {
             self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
+            self.experimentationOptOutMode = experimentationOptOutMode
+        }
+
+        /// Creates configuration for an individual Flags client.
+        ///
+        /// Preserves the initializer exported by earlier releases for binary compatibility.
+        public init(enableEvaluationTelemetryOptOutParameter: Bool) {
+            self.init(
+                enableEvaluationTelemetryOptOutParameter: enableEvaluationTelemetryOptOutParameter,
+                experimentationOptOutMode: .disabled
+            )
         }
     }
 
@@ -70,8 +103,13 @@ public final class FlagsClient {
 
     private enum EvaluationError {
         static let providerNotReady = "PROVIDER_NOT_READY"
+        static let providerFatal = "PROVIDER_FATAL"
         static let flagNotFound = "FLAG_NOT_FOUND"
+        static let parseError = "PARSE_ERROR"
         static let typeMismatch = "TYPE_MISMATCH"
+        static let targetingKeyMissing = "TARGETING_KEY_MISSING"
+        static let invalidContext = "INVALID_CONTEXT"
+        static let general = "GENERAL"
     }
 
     private let repository: any FlagsRepositoryProtocol
@@ -81,6 +119,13 @@ public final class FlagsClient {
     private let configuration: Configuration
 
     private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
+    private static let defaultAssignment = FlagAssignment(
+        allocationKey: "",
+        variationKey: "",
+        variation: .unknown(""),
+        reason: "DEFAULT",
+        doLog: false
+    )
 
     internal init(
         repository: any FlagsRepositoryProtocol,
@@ -221,6 +266,19 @@ public final class FlagsClient {
         }
 
         if let client = feature.clientRegistry.client(named: name) {
+            if let existing = client as? FlagsClient,
+               existing.configuration.experimentationOptOutMode != configuration.experimentationOptOutMode {
+                reportIssue(
+                    """
+                    Attempted to create a `FlagsClient` named '\(name)' with experimentation opt-out mode \
+                    `.\(configuration.experimentationOptOutMode)`, but one already exists with mode \
+                    `.\(existing.configuration.experimentationOptOutMode)`. \
+                    The existing client will be used, and new configuration will be ignored.
+                    """,
+                    in: core
+                )
+                return client
+            }
             reportIssue(
                 """
                 Attempted to create a `FlagsClient` named '\(name)', but one already exists. \
@@ -238,7 +296,8 @@ public final class FlagsClient {
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
-                initializationTimeout: feature.initializationTimeout
+                initializationTimeout: feature.initializationTimeout,
+                experimentationOptOutMode: configuration.experimentationOptOutMode
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
@@ -272,20 +331,24 @@ extension FlagsClient: FlagsClientProtocol {
         let snapshot = repository.evaluationSnapshot(for: key)
         let context = snapshot.context
         let trackEvaluationTelemetry = !configuration.enableEvaluationTelemetryOptOutParameter || !snapshot.telemetryOptedOut
-        let defaultAssignment = FlagAssignment(
-            allocationKey: "",
-            variationKey: "",
-            variation: .unknown(""),
-            reason: "DEFAULT",
-            doLog: false
-        )
+
+        if snapshot.error == .invalidContext {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
+                for: key,
+                assignment: Self.defaultAssignment,
+                evaluationContext: snapshot.requestedContext ?? .empty,
+                flagError: EvaluationError.invalidContext
+            )
+            return FlagDetails(key: key, value: defaultValue, error: .invalidContext)
+        }
 
         guard let context else {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
-                assignment: defaultAssignment,
-                evaluationContext: .empty,
+                assignment: Self.defaultAssignment,
+                evaluationContext: snapshot.requestedContext ?? .empty,
                 flagError: EvaluationError.providerNotReady
             )
             return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
@@ -295,7 +358,7 @@ extension FlagsClient: FlagsClientProtocol {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
-                assignment: defaultAssignment,
+                assignment: Self.defaultAssignment,
                 evaluationContext: context,
                 flagError: EvaluationError.flagNotFound
             )
@@ -327,16 +390,14 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
-        exposureLogger.logExposure(
-            for: key,
-            assignment: assignment,
-            evaluationContext: context
-        )
+        sendFlagExposure(key: key, assignment: assignment, context: context)
 
         guard trackEvaluationTelemetry else {
             return
         }
 
+        // Log directly instead of calling sendFlagEvaluationEvent, which would check context again.
+        // During a refresh, that context can be stale; use the snapshot's opt-out policy above.
         evaluationLogger.logEvaluation(
             for: key,
             assignment: assignment,
@@ -384,6 +445,46 @@ extension FlagsClient: FlagsClientInternal {
             context: context,
             trackEvaluationTelemetry: !isEvaluationTelemetryOptedOut(in: context)
         )
+    }
+
+    @_spi(Internal)
+    public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        guard !isEvaluationTelemetryOptedOut(in: context) else {
+            return
+        }
+
+        // Hook errors can contain arbitrary customer data. Only forward standard OpenFeature codes.
+        let sanitizedErrorCode: String?
+        switch errorCode {
+        case nil:
+            sanitizedErrorCode = nil
+        case EvaluationError.providerNotReady, EvaluationError.providerFatal, EvaluationError.flagNotFound,
+             EvaluationError.parseError, EvaluationError.typeMismatch, EvaluationError.targetingKeyMissing,
+             EvaluationError.invalidContext, EvaluationError.general:
+            sanitizedErrorCode = errorCode
+        default:
+            sanitizedErrorCode = EvaluationError.general
+        }
+
+        evaluationLogger.logEvaluation(
+            for: key,
+            assignment: assignment ?? Self.defaultAssignment,
+            evaluationContext: context,
+            flagError: sanitizedErrorCode
+        )
+    }
+
+    @_spi(Internal)
+    public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
+        guard !isEvaluationTelemetryOptedOut(in: context) else {
+            return
+        }
+        rumFlagEvaluationReporter.sendFlagEvaluation(flagKey: key, value: variant)
     }
 }
 

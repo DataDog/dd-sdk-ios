@@ -11,7 +11,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <atomic>
 #include <functional>
@@ -206,6 +206,6 @@ private:
 
 } // namespace dd::profiler
 
-#endif // !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // __APPLE__
 #endif // DD_PROFILER_MACH_SAMPLING_PROFILER_H_ 

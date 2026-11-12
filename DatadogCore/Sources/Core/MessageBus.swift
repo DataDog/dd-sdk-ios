@@ -36,6 +36,12 @@ internal final class MessageBus {
     /// The configuration **must** be accessed within the queue.
     private var configuration: ConfigurationTelemetry?
 
+    /// Whether the bus was disconnected.
+    ///
+    /// It is set synchronously by `disconnect()`, so messages already queued are not delivered.
+    @ReadWriteLock
+    private var isDisconnected = false
+
     /// Creates a bus for the given core.
     ///
     /// The message-bus keeps a weak reference to the core.
@@ -43,7 +49,7 @@ internal final class MessageBus {
     /// configuration telemetry
     init(configurationDispatchTime: DispatchTimeInterval = .seconds(5)) {
         queue.asyncAfter(deadline: .now() + configurationDispatchTime) {
-            guard let core = self.core, let configuration = self.configuration else {
+            guard !self.isDisconnected, let core = self.core, let configuration = self.configuration else {
                 return
             }
 
@@ -78,6 +84,33 @@ internal final class MessageBus {
         queue.async { self.bus.removeValue(forKey: key) }
     }
 
+    /// Delivers a message to a single receiver, unless the bus is disconnected by then.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    ///   - receiver: The receiver to deliver the message to.
+    func deliver(_ message: FeatureMessage, to receiver: FeatureMessageReceiver) {
+        queue.async {
+            guard !self.isDisconnected, let core = self.core else {
+                return
+            }
+            _ = receiver.receive(message: message, from: core)
+        }
+    }
+
+    /// Disconnects the core and all receivers from the bus.
+    ///
+    /// Messages that are queued or sent after disconnection are not delivered: their fallback is invoked instead.
+    /// The pending configuration telemetry is not dispatched. A delivery already in progress completes.
+    func disconnect() {
+        isDisconnected = true
+        queue.async {
+            self.core = nil
+            self.bus = [:]
+            self.configuration = nil
+        }
+    }
+
     /// Sends a message to receivers registered in this bus.
     ///
     /// If the message could not be processed by any registered feature, the fallback closure
@@ -95,8 +128,8 @@ internal final class MessageBus {
         }
 
         queue.async {
-            guard let core = self.core else {
-                return
+            guard !self.isDisconnected, let core = self.core else {
+                return fallback() // no feature can process the message
             }
 
             let receivers = self.bus.values.filter {

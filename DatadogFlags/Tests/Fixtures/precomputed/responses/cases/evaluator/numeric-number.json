@@ -1,0 +1,105 @@
+{
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "numeric-number-0": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 0,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-1": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 0,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-2": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 5.0,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-3": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 5,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-4": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -5,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-5": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -5,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-6": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 1.25,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-7": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 1.25,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-8": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -0.5,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-9": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": -0.5,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-10": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 1.2,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          },
+          "numeric-number-11": {
+            "allocationKey": "allocation",
+            "variationKey": "variant",
+            "variationType": "number",
+            "variationValue": 1.2,
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          }
+        }
+      }
+    }
+  }

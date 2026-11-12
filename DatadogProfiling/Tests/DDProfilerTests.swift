@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import XCTest
 import DatadogInternal
 import TestUtilities
@@ -195,7 +195,7 @@ final class DDProfilerTests: XCTestCase {
         trace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), trace, 1)
         dd_free(trace)
@@ -282,7 +282,7 @@ final class DDProfilerTests: XCTestCase {
         trace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), trace, 1)
         dd_free(trace)
@@ -547,4 +547,4 @@ final class DDProfilerTests: XCTestCase {
         wait(for: [expectation], timeout: 0.1)
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

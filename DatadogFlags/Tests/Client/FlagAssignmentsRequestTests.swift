@@ -13,6 +13,30 @@ import DatadogInternal
 final class FlagAssignmentsRequestTests: XCTestCase {
     private let testURL = URL(string: "https://test.example.com/precompute-assignments")!
 
+    func testExperimentationOptOutUsesEvaluationOptions() throws {
+        let policies: [ExperimentationOptOut?] = [nil, .immediate, .futureExperimentsOnly(cutoff: try OptOutInstant(rfc3339: "2026-10-21T12:00:00Z"))]
+        for policy in policies {
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: testURL,
+                evaluationContext: .init(targetingKey: "subject"),
+                context: .mockAny(),
+                customHeaders: nil,
+                experimentationOptOut: policy
+            )
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
+            let data = try XCTUnwrap(body["data"] as? [String: Any])
+            let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
+            let options = attributes["evaluation_options"] as? [String: Any]
+            if policy != nil {
+                let expected = policy == .immediate ? "immediate" : "future_experiments_only"
+                XCTAssertEqual(options?["experimentation_opt_out_mode"] as? String, expected)
+                XCTAssertNil(options?["experimentation_opt_out"])
+            } else {
+                XCTAssertNil(options, "Legacy requests remain unchanged")
+            }
+        }
+    }
+
     func testFlagAssignmentsRequest() throws {
         // Given
         let evaluationContext = FlagsEvaluationContext(

@@ -89,6 +89,9 @@ public struct CrashContext: Codable, Equatable {
     /// Last global RUM attributes. It gets updated with adding or removing attributes on `RUMMonitor`.
     public var lastRUMAttributes: RUMEventAttributes?
 
+    /// If the RUM session was stopped with `stopSession()` and no RUM view has been tracked since.
+    public var isRUMSessionStopped: Bool
+
     // MARK: - Initialization
 
     public init(
@@ -113,7 +116,8 @@ public struct CrashContext: Codable, Equatable {
         lastRUMAttributes: RUMEventAttributes?,
         lastLogAttributes: LogEventAttributes?,
         remoteConfigurationId: String? = nil,
-        applicationBundleType: BundleType = .iOSApp
+        applicationBundleType: BundleType = .iOSApp,
+        isRUMSessionStopped: Bool = false
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service.sanitizedToDDTags()
@@ -137,6 +141,7 @@ public struct CrashContext: Codable, Equatable {
         self.lastRUMSessionState = lastRUMSessionState
         self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
+        self.isRUMSessionStopped = isRUMSessionStopped
     }
 
     public init(
@@ -144,7 +149,8 @@ public struct CrashContext: Codable, Equatable {
         lastRUMViewEvent: RUMViewEvent?,
         lastRUMSessionState: RUMSessionState?,
         lastRUMAttributes: RUMEventAttributes?,
-        lastLogAttributes: LogEventAttributes?
+        lastLogAttributes: LogEventAttributes?,
+        isRUMSessionStopped: Bool = false
     ) {
         self.serverTimeOffset = context.serverTimeOffset
         self.service = context.service
@@ -168,6 +174,7 @@ public struct CrashContext: Codable, Equatable {
         self.lastRUMSessionState = lastRUMSessionState
         self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
+        self.isRUMSessionStopped = isRUMSessionStopped
 
         self.appLaunchDate = context.launchInfo.launchPhaseDates[.processLaunch]
     }
@@ -198,6 +205,8 @@ public struct CrashContext: Codable, Equatable {
         lastRUMSessionState = try container.decodeIfPresent(RUMSessionState.self, forKey: .lastRUMSessionState)
         lastLogAttributes = try container.decodeIfPresent(LogEventAttributes.self, forKey: .lastLogAttributes)
         lastRUMAttributes = try container.decodeIfPresent(RUMEventAttributes.self, forKey: .lastRUMAttributes)
+        // Contexts persisted by older SDK versions have no stop information.
+        isRUMSessionStopped = try container.decodeIfPresent(Bool.self, forKey: .isRUMSessionStopped) ?? false
     }
 
     public static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {

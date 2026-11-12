@@ -52,7 +52,8 @@ class WebViewTrackingTests: XCTestCase {
                     }
                     jsExpectation.fulfill()
                 }
-                wait(for: [loaded, jsExpectation], timeout: 60.0)
+                // The first WebContent process launch can exceed 60s on a cold, loaded CI simulator.
+                wait(for: [loaded, jsExpectation], timeout: 180.0)
                 if let warmUpError {
                     throw warmUpError
                 }

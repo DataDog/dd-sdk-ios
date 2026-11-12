@@ -18,6 +18,16 @@ public protocol DatadogFeature {
     var messageReceiver: FeatureMessageReceiver { get }
 }
 
+/// A Datadog Feature that holds data in memory before writing it to storage.
+///
+/// When the core clears all data, it asks conforming features to drop what they hold in memory, then
+/// clears every feature's storage and data store. Otherwise, data collected before the request could
+/// still be written and uploaded after it.
+public protocol DataClearable {
+    /// Drops the data held in memory that has not been written to storage yet.
+    func clearAllData()
+}
+
 /// A Datadog Feature with remote data store.
 public protocol DatadogRemoteFeature: DatadogFeature {
     /// The URL request builder for uploading data.

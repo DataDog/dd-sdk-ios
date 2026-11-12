@@ -14,6 +14,10 @@ import Foundation
 /// - `Int` for integer flags
 /// - `Double` for numeric flags
 /// - ``AnyValue`` for object/JSON flags
+///
+/// Numeric getters validate the original JSON number. `Int` reads require a whole value within `Int` range.
+/// `Double` reads round fractional values to the nearest finite value and require whole values to remain exact.
+/// Overflow and nonzero underflow return the default with ``FlagEvaluationError/typeMismatch``.
 public protocol FlagValue: Encodable {}
 
 extension Bool: FlagValue {}

@@ -46,8 +46,32 @@ public enum Trace {
         var configuration = configuration
         configuration.apply(remoteConfiguration: core.remoteConfiguration)
 
+        // Register Client-Side Stats feature first if enabled, so the Trace feature (which stamps
+        // `meta._dd.compute_stats=0` on every span) is only registered once the stats pipeline is
+        // known to be installed. If stats registration fails, we return before any span is stamped,
+        // which prevents suppressing the backend's own stats while no client stats are uploaded.
+        var stats: ClientStatsFeature?
+        if configuration.featureFlags[.clientSideStats] {
+            let statsFeature = ClientStatsFeature(core: core, configuration: configuration, dateProvider: configuration.dateProvider)
+            try core.register(feature: statsFeature)
+            stats = statsFeature
+        }
+
+        let onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
+        if let stats {
+            onSpanFinished = { [weak stats] snapshot in
+                stats?.record(snapshot)
+            }
+        } else {
+            onSpanFinished = nil
+        }
+
         // Register Trace feature:
-        let trace = TraceFeature(in: core, configuration: configuration)
+        let trace = TraceFeature(
+            in: core,
+            configuration: configuration,
+            onSpanFinished: onSpanFinished
+        )
         try core.register(feature: trace)
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
