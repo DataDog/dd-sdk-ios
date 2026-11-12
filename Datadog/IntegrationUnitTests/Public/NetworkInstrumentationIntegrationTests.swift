@@ -336,9 +336,59 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         )
         try assertTraceHeaders(
             for: coordinator.request(for: "B"),
-            expectedBaggage: "custom=keep-b",
+            expectedBaggage: "account.id=account-b,custom=keep-b,session.id=\(contextB.sessionID),user.id=user-b",
             callerHeader: "caller-b"
         )
+    }
+
+    func testAutomaticTraceMergesBaggageWithoutRUMAndCleansUpCancelledRequest() throws {
+        core.setUserInfo(id: "sdk-user")
+        core.setAccountInfo(id: "sdk-account")
+        core.flush()
+
+        let coordinator = HeldURLProtocolCoordinator()
+        let session = coordinator.makeSession()
+        defer {
+            coordinator.deactivate()
+            session.invalidateAndCancel()
+        }
+        let started = expectation(description: "Both requests reached the transport")
+        started.expectedFulfillmentCount = 2
+        coordinator.setOnStart { _ in started.fulfill() }
+        let completed = expectation(description: "Successful and cancelled requests completed")
+        completed.expectedFulfillmentCount = 2
+        let tasks = ["success", "cancelled"].map { marker in
+            session.dataTask(with: makeHeldRequest(path: marker, marker: marker, callerHeader: marker, baggage: "app.key=value")) { data, response, error in
+                coordinator.recordURLSessionCompletion(marker: marker, response: response, data: data, error: error)
+                completed.fulfill()
+            }
+        }
+        defer { tasks.forEach { $0.cancel() } }
+        tasks.forEach { $0.resume() }
+        wait(for: [started], timeout: 5)
+
+        for marker in ["success", "cancelled"] {
+            XCTAssertEqual(
+                coordinator.request(for: marker)?.value(forHTTPHeaderField: "baggage"),
+                "account.id=sdk-account,app.key=value,user.id=sdk-user"
+            )
+        }
+        coordinator.release(marker: "success")
+        tasks[1].cancel()
+        wait(for: [completed], timeout: 5)
+        core.flush()
+
+        try assertURLSessionCompletion(for: coordinator, marker: "success")
+        let cancelled = try XCTUnwrap(coordinator.completionReceipt(for: "cancelled"))
+        XCTAssertEqual(cancelled.count, 1)
+        XCTAssertTrue(cancelled.hasError)
+        XCTAssertEqual(coordinator.activeProtocolCount, 0)
+        let spans = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spans.count, 2)
+        for marker in ["success", "cancelled"] {
+            let span = try XCTUnwrap(spans.first { (try? $0.resource()) == "https://www.example.com/request-ownership/\(marker)" })
+            try assertSpanTraceIdentity(span, request: coordinator.request(for: marker))
+        }
     }
 
     func testAutomaticTraceRequestBeforeRUMDoesNotAdoptLaterOwnership() throws {
@@ -514,7 +564,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         )
         try assertTraceHeaders(
             for: coordinator.request(for: "B"),
-            expectedBaggage: "custom=keep-b",
+            expectedBaggage: "account.id=account-b,custom=keep-b,session.id=\(contextB.sessionID),user.id=user-b",
             callerHeader: "caller-b"
         )
     }
@@ -834,6 +884,7 @@ private final class HeldURLProtocolCoordinator {
     var startedMarkers: [String] { snapshot { started } }
     var releasedMarkers: [String] { snapshot { released } }
     var completedMarkers: [String] { snapshot { completed } }
+    var activeProtocolCount: Int { snapshot { protocols.count } }
 
     func makeSession() -> URLSession {
         HeldURLProtocol.setActiveCoordinator(self)
