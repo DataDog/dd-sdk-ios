@@ -4197,6 +4197,7 @@ public class objc_RUMMonitor: NSObject
     public func addViewLoadingTime(overwrite: Bool)
     public func addTiming(name: String)
     public func addError(message: String,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
+    public func addError(message: String,type: String?,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
     public func addError(error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
     public func startResource(resourceKey: String,request: URLRequest,attributes: [String: Any])
     public func startResource(resourceKey: String,url: URL,attributes: [String: Any])

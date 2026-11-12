@@ -72,6 +72,7 @@
     [monitor addViewLoadingTimeWithOverwrite:YES];
 
     [monitor addErrorWithMessage:@"" stack:nil source:DDRUMErrorSourceCustom attributes:@{}];
+    [monitor addErrorWithMessage:@"" type:nil stack:nil source:DDRUMErrorSourceCustom attributes:@{}];
     [monitor addErrorWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                         source:DDRUMErrorSourceNetwork attributes:@{}];
 
