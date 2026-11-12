@@ -389,7 +389,6 @@ public struct RUMView
 public struct RUMNavigationHost<Content: View>: View
     public init(in core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: () -> Content)
     public init<State, Updates: Publisher>(observing updates: Updates,destination: @MainActor @escaping (State) -> RUMNavigationDestination,metadata: RUMNavigationMetadata = .automatic,in core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: () -> Content) where Updates.Output == State, Updates.Failure == Never
-    public init(observingCurrentDestination: @MainActor @escaping () -> RUMNavigationDestination,metadata: RUMNavigationMetadata = .automatic,in core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: () -> Content)
     public var body: some View
 public struct RUMNavigationDestination
     public static func root<Value: Hashable>(_ value: Value,attributes: [String: Encodable] = [:]) -> Self
