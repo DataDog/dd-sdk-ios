@@ -88,8 +88,11 @@ final class CanonicalPrecomputedTests: XCTestCase {
                     var fields = Dictionary(uniqueKeysWithValues: headers.map { ($0[0].lowercased(), $0[1]) })
                     let prefix = FlagsResponseVerifier.prefix
                     let transcript = try FlagsResponseVerifier.transcript(
-                        request: request, status: 200, body: body,
-                        issuedAt: UInt64(now), expiresAt: UInt64(now + 300),
+                        request: request,
+                        status: 200,
+                        body: body,
+                        issuedAt: UInt64(now),
+                        expiresAt: UInt64(now + 300),
                         leaf: XCTUnwrap(Data(base64Encoded: XCTUnwrap(fields[prefix + "signing-certificate"]))),
                         intermediate: XCTUnwrap(Data(base64Encoded: XCTUnwrap(fields[prefix + "signing-intermediate"])))
                     )

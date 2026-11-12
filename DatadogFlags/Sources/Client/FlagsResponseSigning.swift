@@ -33,18 +33,23 @@ extension Flags {
         }
 
         internal func roots(for endpoint: URL?) -> [Data] {
-            if !trustedRootCertificates.isEmpty { return trustedRootCertificates }
+            if !trustedRootCertificates.isEmpty {
+                return trustedRootCertificates
+            }
             guard let endpoint = endpoint,
                 let parts = URLComponents(url: endpoint, resolvingAgainstBaseURL: false),
                 parts.scheme?.lowercased() == "https", parts.host?.lowercased() == "preview.ff-cdn.datad0g.com",
                 parts.port == nil || parts.port == 443, parts.user == nil, parts.password == nil
-            else { return [] }
+            else {
+                return []
+            }
             return Self.stagingRoot.map { [$0] } ?? []
         }
 
         // Public staging root shared with browser SDK 493572e24936303cb60b5963c70a8425e3b681fb.
         // Trust follows the effective endpoint, never the application's environment label.
-        private static let stagingRoot = Data(base64Encoded:
+        private static let stagingRoot = Data(
+            base64Encoded:
             "MIIBpTCCAUugAwIBAgIQKsPLOMisev8X0XQFpshjkTAKBggqhkjOPQQDAjAxMS8wLQYDVQQDEyZTVEFHSU5HIE9OTFkgRkZFIHJl" +
             "c3BvbnNlIHNpZ25pbmcgcm9vdDAeFw0yNjExMDQxOTQ5NTlaFw0zNjEwMzEwMDAwMDBaMDExLzAtBgNVBAMTJlNUQUdJTkcgT05M" +
             "WSBGRkUgcmVzcG9uc2Ugc2lnbmluZyByb290MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5WCwmxXE/POEOIwmzAPNWA+p9Tj8" +
