@@ -12,6 +12,13 @@ internal struct FlagsData: Equatable, Codable {
     var date: Date
     let obfuscation: FlagKeyObfuscation?
     let flagSelection: CanonicalFlagSelection?
+    // Proofs are process-local and cannot be restored by decoding an ordinary disk cache.
+    var verification: FlagsResponseVerification? = nil
+    var responseSigningCacheScope: String? = nil
+
+    private enum CodingKeys: String, CodingKey {
+        case flagSelection, flags, context, date, obfuscation, responseSigningCacheScope, experimentationOptOutPolicy
+    }
     // Optional so snapshots written before opt-out support remain readable.
     let experimentationOptOutPolicy: ExperimentationOptOut?
 

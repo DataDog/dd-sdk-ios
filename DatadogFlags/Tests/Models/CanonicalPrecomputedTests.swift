@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import CryptoKit
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -41,13 +42,19 @@ final class CanonicalPrecomputedTests: XCTestCase {
                     if fixture["expectedResponseError"] != nil {
                         XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
                         try runRejected(fixture, responseData: responseData)
+                        if case .failure(.invalidResponse) = try signedResponse(responseData) {} else {
+                            XCTFail("A valid signature must not admit an invalid canonical response")
+                        }
                         return
                     }
                     let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: responseData)
                     let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
                     let initial = FlagsData(flags: response.flags, context: context, date: Date(), obfuscation: response.obfuscation)
                     let restored = try FlagsNumericJSON.decode(FlagsData.self, from: JSONEncoder().encode(initial), cached: true)
-                    for (label, state) in [("network-decoded", initial), ("serialized-state", restored)] {
+                    let verified = try signedResponse(responseData).get()
+                    XCTAssertNotNil(verified.verification)
+                    let signed = FlagsData(flags: verified.flags, context: context, date: Date(), obfuscation: verified.obfuscation)
+                    for (label, state) in [("network-decoded", initial), ("serialized-state", restored), ("required-verified", signed)] {
                         try XCTContext.runActivity(named: label) { _ in try run(fixture, state: state) }
                     }
                 }
@@ -57,6 +64,52 @@ final class CanonicalPrecomputedTests: XCTestCase {
         }
         XCTAssertGreaterThan(executed, 0, "All canonical fixtures were excluded (\(excluded))")
         print("Canonical precompute: \(executed) fixtures executed, \(excluded) excluded")
+    }
+
+    private func signedResponse(_ body: Data) throws -> Result<FlagAssignmentsResponse, FlagsError> {
+        let bundle = Bundle(for: Self.self)
+        let corpus = try object(Data(contentsOf: XCTUnwrap(bundle.url(forResource: "corpus", withExtension: "json", subdirectory: "response-signing"))))
+        let vector = try XCTUnwrap((corpus["cases"] as? [[String: Any]])?.first)
+        let now = try XCTUnwrap(vector["now"] as? TimeInterval)
+        let anchor = try XCTUnwrap(Data(base64Encoded: XCTUnwrap(corpus["anchor_der_base64"] as? String)))
+        let credential = try XCTUnwrap(vector["credential"] as? [String: Any])
+        let key = try P256.Signing.PrivateKey(derRepresentation: XCTUnwrap(Data(base64Encoded: XCTUnwrap(credential["private_key_pkcs8_der_base64"] as? String))))
+        let response = try XCTUnwrap(vector["response"] as? [String: Any])
+        let headers = try XCTUnwrap(response["headers"] as? [[String]])
+        let completed = expectation(description: "Verify canonical response bytes")
+        var result: Result<FlagAssignmentsResponse, FlagsError>?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+            responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
+            dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
+            signingFetch: { request, completion in
+                do {
+                    var fields = Dictionary(uniqueKeysWithValues: headers.map { ($0[0].lowercased(), $0[1]) })
+                    let prefix = FlagsResponseVerifier.prefix
+                    let transcript = try FlagsResponseVerifier.transcript(
+                        request: request,
+                        status: 200,
+                        body: body,
+                        issuedAt: UInt64(now),
+                        expiresAt: UInt64(now + 300),
+                        leaf: XCTUnwrap(Data(base64Encoded: XCTUnwrap(fields[prefix + "signing-certificate"]))),
+                        intermediate: XCTUnwrap(Data(base64Encoded: XCTUnwrap(fields[prefix + "signing-intermediate"])))
+                    )
+                    fields[prefix + "signature"] = try key.signature(for: transcript).derRepresentation.base64EncodedString()
+                    completion(.success((body, try XCTUnwrap(HTTPURLResponse(url: XCTUnwrap(request.url), statusCode: 200, httpVersion: nil, headerFields: fields)))))
+                } catch { completion(.failure(error)) }
+            },
+            fetch: { _, _ in XCTFail("Required verification must not retry unsigned") }
+        )
+        fetcher.flagAssignments(for: .init(targetingKey: "canonical")) {
+            result = $0
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        return try XCTUnwrap(result)
     }
 
     private struct FixtureMetadata: Codable {

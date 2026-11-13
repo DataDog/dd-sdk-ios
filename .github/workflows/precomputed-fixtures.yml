@@ -4,6 +4,7 @@ on:
     paths:
       - 'ci/*precomputed*'
       - 'DatadogFlags/Tests/Fixtures/precomputed/**'
+      - 'DatadogFlags/Tests/Fixtures/response-signing/**'
       - '.github/workflows/precomputed-fixtures.yml'
   schedule:
     - cron: '23 8 * * 1'
@@ -22,9 +23,13 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify the local snapshot
-        run: python3 ci/sync-precomputed-fixtures.py --verify
+        run: |
+          python3 ci/sync-precomputed-fixtures.py --verify
+          python3 ci/sync-precomputed-fixtures.py --signing --verify
       - name: Compare with the recorded upstream commit
-        run: python3 ci/sync-precomputed-fixtures.py --check
+        run: |
+          python3 ci/sync-precomputed-fixtures.py --check
+          python3 ci/sync-precomputed-fixtures.py --signing --check
   update:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
@@ -44,12 +49,16 @@ jobs:
       - name: Import upstream fixtures
         id: sync
         run: python3 ci/sync-precomputed-fixtures.py --ref main
+      - name: Import signing fixtures
+        id: signing
+        run: python3 ci/sync-precomputed-fixtures.py --signing --ref main
       - name: Prepare a draft update
         id: prepare
-        if: steps.sync.outputs.changed == 'true'
+        if: steps.sync.outputs.changed == 'true' || steps.signing.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           SOURCE_COMMIT: ${{ steps.sync.outputs.source_commit }}
+          SIGNING_COMMIT: ${{ steps.signing.outputs.source_commit }}
         run: |
           existing=$(gh pr list --state open --search '"Update precomputed flag fixtures" in:title' --json number --jq 'length')
           if [ "$existing" != 0 ]; then
@@ -57,14 +66,14 @@ jobs:
             exit 0
           fi
           branch="automation/precomputed-fixtures-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git add -- 'DatadogFlags/Tests/Fixtures/precomputed'
+          git add -- 'DatadogFlags/Tests/Fixtures/precomputed' 'DatadogFlags/Tests/Fixtures/response-signing'
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
           echo 'ready=true' >> "$GITHUB_OUTPUT"
           python3 - <<'BODY'
           import os
           from pathlib import Path
           template = Path('ci/precomputed-fixtures-pr.md').read_text()
-          Path('/tmp/precomputed-pr.md').write_text(template.replace('SOURCE_COMMIT', os.environ['SOURCE_COMMIT']))
+          Path('/tmp/precomputed-pr.md').write_text(template.replace('SOURCE_COMMIT', os.environ['SOURCE_COMMIT']).replace('SIGNING_COMMIT', os.environ['SIGNING_COMMIT']))
           BODY
       - name: Create a signed fixture commit
         if: steps.prepare.outputs.ready == 'true'

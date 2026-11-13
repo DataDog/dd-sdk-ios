@@ -27,6 +27,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let performanceOverride: PerformancePresetOverride?
     let issueReporter: IssueReporter
     private let evaluationAggregator: EvaluationAggregator?
+    private let signingLifetime: FlagsSigningLifetime?
 
     init(
         configuration: Flags.Configuration,
@@ -35,18 +36,25 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         flagAssignmentsFetcher: (any FlagAssignmentsFetching)? = nil
     ) {
         flagSelection = CanonicalFlagSelection.resolve(configuration.flagSelection, telemetry: featureScope.telemetry)
-        self.flagAssignmentsFetcher = flagAssignmentsFetcher ?? FlagAssignmentsFetcher(
+        let fetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
             flagSelection: flagSelection,
-            featureScope: featureScope
+            featureScope: featureScope,
+            responseSigning: configuration.responseSigning
         )
+        signingLifetime = configuration.responseSigning.mode == .off ? nil : FlagsSigningLifetime(fetcher: fetcher)
+        self.flagAssignmentsFetcher = flagAssignmentsFetcher ?? fetcher
         initializationTimeout = configuration.initializationTimeout
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry
         )
-        messageReceiver = NOPFeatureMessageReceiver()
+        if configuration.responseSigning.mode == .off {
+            messageReceiver = NOPFeatureMessageReceiver()
+        } else {
+            messageReceiver = FlagsSigningScopeReceiver(fetcher: fetcher)
+        }
         clientRegistry = FlagsClientRegistry()
         makeExposureLogger = { featureScope in
             guard configuration.trackExposures else {

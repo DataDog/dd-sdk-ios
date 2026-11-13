@@ -1653,6 +1653,15 @@ public enum FlagsClientState: Sendable
     case reconciling
     case stale
     case error
+[?] extension Flags
+    public enum ResponseSigningMode
+        case off
+        case observe
+        case required
+    public struct ResponseSigningConfiguration
+        public var mode: ResponseSigningMode
+        public var trustedRootCertificates: [Data]
+        public init(mode: ResponseSigningMode = .off, trustedRootCertificates: [Data] = [])
 public protocol FlagsStateListener: AnyObject
     func flagsStateDidChange(_ newState: FlagsClientState)
 public protocol FlagsStateObservable: AnyObject
@@ -1664,6 +1673,7 @@ public enum Flags
         public var gracefulModeEnabled: Bool
         public var customFlagsEndpoint: URL?
         public var customFlagsHeaders: [String: String]?
+        public var responseSigning: ResponseSigningConfiguration
         public var initializationTimeout: TimeInterval?
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
@@ -1672,7 +1682,8 @@ public enum Flags
         public var evaluationFlushInterval: TimeInterval
         public var rumIntegrationEnabled: Bool
         public var flagSelection: FlagSelection?
-        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,initializationTimeout: TimeInterval? = 5,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true,flagSelection: FlagSelection? = nil)
+        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,initializationTimeout: TimeInterval? = 5,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true,flagSelection: FlagSelection? = nil,responseSigning: ResponseSigningConfiguration = .init())
+        public init(gracefulModeEnabled: Bool,customFlagsEndpoint: URL?,customFlagsHeaders: [String: String]?,initializationTimeout: TimeInterval?,customExposureEndpoint: URL?,trackExposures: Bool,customEvaluationEndpoint: URL?,trackEvaluations: Bool,evaluationFlushInterval: TimeInterval,rumIntegrationEnabled: Bool,flagSelection: FlagSelection?)
         public init(gracefulModeEnabled: Bool,customFlagsEndpoint: URL?,customFlagsHeaders: [String: String]?,initializationTimeout: TimeInterval?,customExposureEndpoint: URL?,trackExposures: Bool,customEvaluationEndpoint: URL?,trackEvaluations: Bool,evaluationFlushInterval: TimeInterval,rumIntegrationEnabled: Bool)
     public struct FlagSelection: Sendable
         public var tags: [String]
