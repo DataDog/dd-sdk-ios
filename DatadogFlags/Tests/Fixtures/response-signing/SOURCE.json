@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/DataDog/ffe-system-test-data.git",
+  "commit": "29ba6bf2e7514cf1b75c046b8956a22565221ee8",
+  "files": {
+    "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "NOTICE": "a5245f10dbda39cc65bad11ab3a6022b9e5c05b259da3f7aa0302d932f31083e",
+    "README.md": "2101b29871d314d24b847d3e2c5bf101a255894d26f71aee8a8e73056b219f66",
+    "corpus.json": "393490bfefe382b9b75cf2964c131a910faa679888689457f99c2da2dc57fbbd",
+    "extension-profile.json": "e3ca10b6429d171126d81c50fe4d624ae24a3450cf3ee121f2b1e437d84a9439",
+    "index.json": "8e904e9b4d0cad9a9cacd52ac956e025df8154294fc7bc53b547af3b5b43e6f6",
+    "isolated-certificate-rules.json": "7304bb12f011688a39b53ebd5fb5d842febd0f5ae81e67126a7e24d1e79a225a",
+    "manifest.json": "e914226e510e778d9a5898e509fe41e1b1d8b8938fd2c875b95dbacc30846408",
+    "near-expiry.json": "f0de3afa5ed0083ddb9d687238431286fc025d9a72c29ba7eb0c4dc304d7914f",
+    "nested-der.json": "16a5de8b346087c4e4145e5c7bb43ac2dfd945a780fb56a75f38b1f7061302c4",
+    "subject-der.json": "c3cc9c3992ddb9b77892d0230212c9e6b383dbf7aeab705af6132125245afc59"
+  }
+}

@@ -143,10 +143,12 @@ internal final class FlagsRepository {
     let clientName: String
     private let stateManager = FlagsStateManager()
     private let firstFlags = FirstFlagsCallbacks()
+    private let requestDiagnostics = FlagsRequestDiagnostics()
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let flagSelection: CanonicalFlagSelection?
     private let readTimeout: TimeInterval
     private let cachePersistenceQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-flags-cache-persistence",
@@ -296,6 +298,7 @@ internal final class FlagsRepository {
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
+        flagSelection: CanonicalFlagSelection?,
         readTimeout: TimeInterval = 0.1,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil,
@@ -305,6 +308,7 @@ internal final class FlagsRepository {
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.flagSelection = flagSelection
         self.readTimeout = readTimeout
         self.initializationTimeout = initializationTimeout
         self.experimentationOptOutMode = experimentationOptOutMode
@@ -412,8 +416,8 @@ internal final class FlagsRepository {
         let store = featureScope.flagsDataStore
         let clientName = clientName
         // Retain the read lifecycle, not the repository, so the group is balanced after deallocation.
-        let finish: (FlagsData?) -> Void = { [_repositoryState, weak firstFlags] data in
-            var cachedData = data
+        let finish: (FlagsData?) -> Void = { [_repositoryState, weak firstFlags, flagSelection] data in
+            var cachedData = data?.flagSelection == flagSelection ? data : nil
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
                 cachedAssignment.reason = "CACHED"
@@ -676,6 +680,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         let parsedPolicy = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
         let policy = try? parsedPolicy.get()
         let invalidContext = if case .failure = parsedPolicy { true } else { false }
+        var diagnostics: FlagsRequestDiagnostics.Snapshot?
         var contextUpdateID: UInt64 = 0
         var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false
@@ -684,6 +689,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         // Request registration, assignments, and client state use the same synchronization boundary.
         // Listener delivery and public completions must remain outside this lock.
         _repositoryState.mutate { state in
+            diagnostics = requestDiagnostics.accept()
             state.telemetry.begin(context, installed: state.flagsData?.context)
             state.contextUpdateID += 1
             contextUpdateID = state.contextUpdateID
@@ -745,7 +751,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             }
         }
 
-        flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: policy) { [weak self] result in
+        flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: policy, diagnostics: diagnostics) { [weak self] result in
             guard let self else {
                 complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
                 return
@@ -780,6 +786,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     context: context,
                     date: self.dateProvider.now,
                     obfuscation: response.obfuscation,
+                    flagSelection: self.flagSelection,
                     experimentationOptOutPolicy: policy
                 )
                 flagsData.verification = response.verification

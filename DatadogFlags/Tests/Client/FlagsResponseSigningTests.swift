@@ -100,7 +100,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     private func corpus(
-        name: String = "ResponseSigningCorpus",
+        name: String = "corpus",
         hash: String = "393490bfefe382b9b75cf2964c131a910faa679888689457f99c2da2dc57fbbd"
     ) throws -> Corpus {
         #if SWIFT_PACKAGE
@@ -108,7 +108,8 @@ final class FlagsResponseSigningTests: XCTestCase {
         #else
         let bundle = Bundle(for: Self.self)
         #endif
-        let url = try XCTUnwrap(bundle.url(forResource: name, withExtension: "json"))
+        let directory = name == "ResponseSigningKeyUsage" ? nil : "response-signing"
+        let url = try XCTUnwrap(bundle.url(forResource: name, withExtension: "json", subdirectory: directory))
         let raw = try Data(contentsOf: url)
         XCTAssertEqual(
             SHA256.hash(data: raw).map { String(format: "%02x", $0) }.joined(),
@@ -124,11 +125,32 @@ final class FlagsResponseSigningTests: XCTestCase {
         }
     }
 
-    func testFrozenIndependentCorpusAndExactTranscripts() throws {
-        let corpus = try corpus()
-        XCTAssertEqual(corpus.cases.count, 46)
-        XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, 6)
-        try assertCorpus(corpus)
+    func testCentralManifestSuitesAndExactTranscripts() throws {
+        struct Manifest: Decodable {
+            struct Suite: Decodable {
+                let sha256: String
+                let response_cases: Int
+                let accepted: Int
+            }
+            let schema_version: Int
+            let files: [String: Suite]
+        }
+        #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+        #else
+        let bundle = Bundle(for: Self.self)
+        #endif
+        let url = try XCTUnwrap(bundle.url(forResource: "manifest", withExtension: "json", subdirectory: "response-signing"))
+        let manifest = try JSONDecoder().decode(Manifest.self, from: Data(contentsOf: url))
+        XCTAssertEqual(manifest.schema_version, 1)
+        XCTAssertFalse(manifest.files.isEmpty)
+        for name in manifest.files.keys.sorted() {
+            let suite = try XCTUnwrap(manifest.files[name])
+            let corpus = try corpus(name: String(name.dropLast(5)), hash: suite.sha256)
+            XCTAssertEqual(corpus.cases.count, suite.response_cases, name)
+            XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, suite.accepted, name)
+            try assertCorpus(corpus)
+        }
     }
 
     func testCanonicalKeyUsageSupplement() throws {
@@ -137,16 +159,6 @@ final class FlagsResponseSigningTests: XCTestCase {
             hash: "f7b55015240951b90596692c5edec4209660a842b6f5e82e9d39da2be7c83cd1"
         )
         XCTAssertEqual(corpus.cases.count, 2)
-        XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, 1)
-        try assertCorpus(corpus)
-    }
-
-    func testIsolatedCertificateRulesSupplement() throws {
-        let corpus = try corpus(
-            name: "ResponseSigningIsolatedCertificateRules",
-            hash: "7304bb12f011688a39b53ebd5fb5d842febd0f5ae81e67126a7e24d1e79a225a"
-        )
-        XCTAssertEqual(corpus.cases.count, 4)
         XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, 1)
         try assertCorpus(corpus)
     }
@@ -250,6 +262,7 @@ final class FlagsResponseSigningTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: URL(string: "https://flags.example.test/assign?dd_env=prod&x=a%2Fb"),
             customHeaders: ["dd-client-token": "effective-override"],
+            flagSelection: nil,
             featureScope: scope,
             responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
             dateProvider: clock,
@@ -300,6 +313,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 let fetcher = FlagAssignmentsFetcher(
                     customEndpoint: nil,
                     customHeaders: nil,
+                    flagSelection: nil,
                     featureScope: FeatureScopeMock(),
                     responseSigning: .init(mode: mode, trustedRootCertificates: [Data(base64Encoded: corpus.anchor)!]),
                     signingFetch: { request, completion in
@@ -321,7 +335,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                         XCTAssertNil(
                             request.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "signature-version")
                         )
-                        completion(.success(.mockAnyFlagAssignmentsResponse()))
+                        completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
                     }
                 )
                 fetcher.flagAssignments(for: .mockAny()) { result in
@@ -349,6 +363,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { repository.flush() }
@@ -369,6 +384,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { restarted.flush() }
@@ -384,6 +400,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { repository.flush() }
@@ -425,6 +442,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { repository.flush() }
@@ -455,6 +473,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             let fetcher = FlagAssignmentsFetcher(
                 customEndpoint: nil,
                 customHeaders: nil,
+                flagSelection: nil,
                 featureScope: FeatureScopeMock(),
                 responseSigning: .init(mode: mode, trustedRootCertificates: [anchor]),
                 dateProvider: clock,
@@ -496,6 +515,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 flagAssignmentsFetcher: fetcher,
                 dateProvider: clock,
                 featureScope: FeatureScopeMock(),
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             defer { repository.flush() }
@@ -543,8 +563,9 @@ final class FlagsResponseSigningTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
+            flagSelection: nil,
             featureScope: FeatureScopeMock(),
-            fetch: { _, completion in completion(.success(.mockAnyFlagAssignmentsResponse())) }
+            fetch: { _, completion in completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny()))) }
         )
         fetcher.invalidateResponseSigningLifetime()
         fetcher.flagAssignments(for: .mockAny()) { result in
@@ -589,10 +610,32 @@ final class FlagsResponseSigningTests: XCTestCase {
         }
     }
 
+    func testSigningCacheScopeIncludesFlagSelection() {
+        let context = DatadogContext.mockWith(clientToken: "token", env: "staging")
+        func scope(_ selection: CanonicalFlagSelection?) -> String? {
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: selection,
+                featureScope: FeatureScopeMock(),
+                responseSigning: .init(mode: .observe),
+                fetch: { _, _ in XCTFail("no network expected") }
+            )
+            return fetcher.updateResponseSigningCacheScope(context)
+        }
+        let unselected = scope(nil)
+        let selected = scope(CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []))
+        XCTAssertNotNil(unselected)
+        XCTAssertNotNil(selected)
+        XCTAssertNotEqual(unselected, selected)
+        XCTAssertNotEqual(selected, scope(CanonicalFlagSelection(tags: ["web"], keyPatterns: [])))
+    }
+
     func testCoreScopeMessagesUpdateNamespaceBeforeNextRequest() {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
+            flagSelection: nil,
             featureScope: FeatureScopeMock(),
             responseSigning: .init(mode: .observe),
             fetch: { _, _ in XCTFail("no network expected") }
@@ -630,6 +673,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { repository.flush() }
@@ -645,6 +689,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { same.flush() }
@@ -656,6 +701,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { changed.flush() }
@@ -673,6 +719,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 flagAssignmentsFetcher: fetcher,
                 dateProvider: clock,
                 featureScope: FeatureScopeMock(),
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             defer { repository.flush() }
@@ -699,6 +746,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: clock,
             featureScope: FeatureScopeMock(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         defer { repository.flush() }
@@ -728,6 +776,7 @@ private final class SigningLifecycleFetcher: FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
+        diagnostics: FlagsRequestDiagnostics.Snapshot?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         completions.append(completion)

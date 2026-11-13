@@ -1,6 +1,19 @@
 # Unreleased
 
+# 3.22.0 / 12-11-2026
+
+- [FEATURE] Flags: Add `Flags.Configuration.flagSelection` to load only the flags that match the given tags or key patterns. See [#3344][]
 - [FEATURE] Flags: Add per-subject experimentation opt-out through `FlagsClient.Configuration.experimentationOptOutMode`. The `dd_experimentation_opt_out_at` context attribute supports `.immediate` and `.futureExperimentsOnly` modes. Adds `FlagsError.invalidContext` and `FlagEvaluationError.invalidContext`; exhaustive switches need the new case. Timestamps use proleptic Gregorian dates with UTC year bounds. Filtered responses are rejected when no subject opt-out applies. See [#3338][]
+- [IMPROVEMENT] Send only new or grown slow frames in RUM view updates, and merge consecutive slow frames into one. See [#3290][]
+- [FIX] Fix profiler crashes during process-exit cleanup and when memory allocation fails during sample aggregation. See [#3419][]
+- [FIX] Flags: Send `Flags.Configuration.customFlagsHeaders` only to `customFlagsEndpoint`, not to the default Datadog endpoint. See [#3442][]
+- [FIX] Apply Session Replay `textAndInputPrivacy` overrides when masking `UISwitch`, `UISlider`, `UIStepper`, the selected segment of `UISegmentedControl`, and inline `UIDatePicker`. These controls previously used only the global privacy level. See [#3407][]
+- [FIX] Merge SDK baggage into existing first-party request headers during Trace URLSession tracking. See [#3410][]
+- [FIX] RUM operation step events now report the active view's name. See [#3406][]
+- [FIX] Avoid a Session Replay crash when Core Image cannot allocate an intermediate buffer. See [#3384][]
+- [FIX] Flags: Return the served value from Double reads, such as `getDoubleValue` and `getDoubleDetails`, of numeric flags with a whole-number value, for example `1`. Before, these reads returned the default value with a `.typeMismatch` error and logged no exposure. See [#3388][]
+- [FIX] Stop reporting watchdog terminations into a RUM session stopped with `stopSession()`. Before, a watchdog termination after the stop was reported in the stopped session's last view. See [#3352][]
+- [FIX] Flags: Stop reporting assignment fetch failures as SDK defects and log them as warnings. See [#3307][]
 
 # 3.21.0 / 29-10-2026
 
@@ -1328,6 +1341,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
+[#3344]: https://github.com/DataDog/dd-sdk-ios/pull/3344
 [#3351]: https://github.com/DataDog/dd-sdk-ios/pull/3351
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 [#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353
@@ -1335,6 +1349,16 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3317]: https://github.com/DataDog/dd-sdk-ios/pull/3317
 [#3269]: https://github.com/DataDog/dd-sdk-ios/pull/3269
 [#3342]: https://github.com/DataDog/dd-sdk-ios/pull/3342
+[#3407]: https://github.com/DataDog/dd-sdk-ios/pull/3407
+[#3410]: https://github.com/DataDog/dd-sdk-ios/pull/3410
+[#3406]: https://github.com/DataDog/dd-sdk-ios/pull/3406
+[#3384]: https://github.com/DataDog/dd-sdk-ios/pull/3384
+[#3388]: https://github.com/DataDog/dd-sdk-ios/pull/3388
+[#3352]: https://github.com/DataDog/dd-sdk-ios/pull/3352
+[#3307]: https://github.com/DataDog/dd-sdk-ios/pull/3307
+[#3290]: https://github.com/DataDog/dd-sdk-ios/pull/3290
+[#3419]: https://github.com/DataDog/dd-sdk-ios/pull/3419
+[#3442]: https://github.com/DataDog/dd-sdk-ios/pull/3442
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

@@ -6,6 +6,8 @@ Refresh precomputed response fixtures to `SOURCE_COMMIT` to keep mobile behavior
 
 Update the generated snapshot. The existing fixture loop runs new cases in normal SDK CI.
 
+Signing fixtures use central commit `SIGNING_COMMIT`. The native verifier runs every manifest-listed suite.
+
 ### Review checklist
 - [ ] Feature or bugfix MUST have appropriate tests (unit, integration)
 - [ ] Make sure each commit and the PR mention the Issue number or JIRA reference

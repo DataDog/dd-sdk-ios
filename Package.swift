@@ -267,7 +267,7 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogFlags/Tests",
-            resources: [.copy("Client/ResponseSigningCorpus.json"), .copy("Client/ResponseSigningKeyUsage.json"), .copy("Client/ResponseSigningIsolatedCertificateRules.json")]
+            resources: [.copy("Fixtures/response-signing"), .copy("Client/ResponseSigningKeyUsage.json")]
         ),
 
         .target(

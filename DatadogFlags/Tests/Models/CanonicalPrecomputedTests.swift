@@ -19,13 +19,14 @@ final class CanonicalPrecomputedTests: XCTestCase {
     func testCanonicalResponses() throws {
         let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "precomputed", withExtension: nil))
         let cases = root.appendingPathComponent("cases")
-        let enumerator = try XCTUnwrap(FileManager.default.enumerator(at: cases, includingPropertiesForKeys: nil))
-        let files = enumerator.allObjects.compactMap { $0 as? URL }.filter { $0.pathExtension == "json" }.sorted { $0.path < $1.path }
+        let enumerator = try XCTUnwrap(FileManager.default.enumerator(atPath: cases.path))
+        let files = enumerator.allObjects.compactMap { $0 as? String }.filter { $0.hasSuffix(".json") }.sorted()
         XCTAssertFalse(files.isEmpty, "The canonical corpus must not be empty")
         let source = try object(Data(contentsOf: root.appendingPathComponent("SOURCE.json")))
         var executed = 0
         var excluded = 0
-        for file in files {
+        for relativePath in files {
+            let file = cases.appendingPathComponent(relativePath)
             do {
                 // Decode only expectations here; raw response bytes may exceed Double range.
                 let metadata = try decoder.decode(FixtureMetadata.self, from: Data(contentsOf: file))
@@ -37,7 +38,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
                 }
                 executed += 1
                 try XCTContext.runActivity(named: "\(source["commit"]!) / \(file.lastPathComponent)") { _ in
-                    let responseData = try Data(contentsOf: root.appendingPathComponent("responses/cases").appendingPathComponent(String(file.path.dropFirst(cases.path.count + 1))))
+                    let responseData = try Data(contentsOf: root.appendingPathComponent("responses/cases").appendingPathComponent(relativePath))
                     if fixture["expectedResponseError"] != nil {
                         XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
                         try runRejected(fixture, responseData: responseData)
@@ -67,7 +68,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
 
     private func signedResponse(_ body: Data) throws -> Result<FlagAssignmentsResponse, FlagsError> {
         let bundle = Bundle(for: Self.self)
-        let corpus = try object(Data(contentsOf: XCTUnwrap(bundle.url(forResource: "ResponseSigningCorpus", withExtension: "json"))))
+        let corpus = try object(Data(contentsOf: XCTUnwrap(bundle.url(forResource: "corpus", withExtension: "json", subdirectory: "response-signing"))))
         let vector = try XCTUnwrap((corpus["cases"] as? [[String: Any]])?.first)
         let now = try XCTUnwrap(vector["now"] as? TimeInterval)
         let anchor = try XCTUnwrap(Data(base64Encoded: XCTUnwrap(corpus["anchor_der_base64"] as? String)))
@@ -80,6 +81,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
+            flagSelection: nil,
             featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
             responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
             dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
@@ -125,14 +127,16 @@ final class CanonicalPrecomputedTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
+            flagSelection: nil,
             featureScope: scope,
-            fetch: { _, complete in complete(.success(responseData)) }
+            fetch: { _, complete in complete(.success((responseData, .mockAny()))) }
         )
         let repository = FlagsRepository(
             clientName: UUID().uuidString,
             flagAssignmentsFetcher: fetcher,
             dateProvider: date,
             featureScope: scope,
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let aggregator = EvaluationAggregator(dateProvider: date, featureScope: scope, flushInterval: 100)

@@ -51,12 +51,39 @@ def response_bytes(content):
             return text[start:position].encode('utf-8') + b'\n'
 
 
-def snapshot(source, ref):
+def signing_snapshot(source, sha):
+    prefix = 'response-signing/v1/'
+    manifest = json.loads(git(source, 'show', sha + ':' + prefix + 'manifest.json'))
+    if manifest.get('schema_version') != 1 or not manifest.get('files'):
+        raise ValueError('Missing or unsupported signing manifest')
+    result = {}
+    for name, metadata in manifest['files'].items():
+        if not re.fullmatch(r'[a-z0-9-]+[.]json', name):
+            raise ValueError('Invalid signing suite filename')
+        raw = git(source, 'show', sha + ':' + prefix + name)
+        if hashlib.sha256(raw).hexdigest() != metadata['sha256']:
+            raise ValueError('Signing suite differs from the upstream manifest: ' + name)
+        result[name] = raw
+    for source_path, name in [('response-signing/README.md', 'README.md'),
+                              (prefix + 'manifest.json', 'manifest.json'),
+                              ('LICENSE', 'LICENSE'), ('NOTICE', 'NOTICE')]:
+        result[name] = git(source, 'show', sha + ':' + source_path)
+    result['index.json'] = (json.dumps(sorted(manifest['files']), indent=2) + '\n').encode()
+    result['SOURCE.json'] = (json.dumps({
+        'repository': REPOSITORY, 'commit': sha,
+        'files': {p: hashlib.sha256(v).hexdigest() for p, v in sorted(result.items())},
+    }, indent=2) + '\n').encode()
+    return result
+
+
+def snapshot(source, ref, signing=False):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', ref) or '..' in ref:
         raise ValueError('Invalid fixture revision')
     sha = git(source, 'rev-parse', '--verify', ref + '^{commit}').decode().strip()
     if not re.fullmatch(r'[0-9a-f]{40}', sha):
         raise ValueError('Expected a full source commit SHA')
+    if signing:
+        return signing_snapshot(source, sha)
     result = {}
     for entry in git(source, 'ls-tree', '-rz', '--full-tree', sha).split(b'\0'):
         if not entry:
@@ -103,7 +130,7 @@ def read_snapshot(destination):
     return result
 
 
-def verify(destination):
+def verify(destination, signing=False):
     content = read_snapshot(destination)
     metadata = json.loads(content.pop('SOURCE.json'))
     if metadata['repository'] != REPOSITORY or not re.fullmatch(r'[0-9a-f]{40}', metadata['commit']):
@@ -111,6 +138,18 @@ def verify(destination):
     hashes = {p: hashlib.sha256(v).hexdigest() for p, v in sorted(content.items())}
     if hashes != metadata['files']:
         raise ValueError('Snapshot content differs from its recorded checksums')
+    if signing:
+        manifest = json.loads(content['manifest.json'])
+        if manifest.get('schema_version') != 1 or not manifest.get('files'):
+            raise ValueError('Missing or unsupported signing manifest')
+        cases = sorted(manifest['files'])
+        if json.loads(content['index.json']) != cases:
+            raise ValueError('Stale signing suite index')
+        for name, entry in manifest['files'].items():
+            if hashes.get(name) != entry['sha256']:
+                raise ValueError('Signing manifest checksum mismatch: ' + name)
+        print(f"Verified {len(cases)} signing suites at {metadata['commit']}")
+        return
     cases = sorted(p for p in content if p.startswith('cases/') and p.endswith('.json'))
     if not cases or json.loads(content['index.json']) != cases:
         raise ValueError('Missing, empty, or stale fixture index')
@@ -131,6 +170,7 @@ def unity_metadata(destination):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--signing', action='store_true', help='Import or verify the response-signing snapshot')
     parser.add_argument('--ref', default='main')
     parser.add_argument('--source', type=Path, help='Read a local Git checkout at the requested committed revision')
     parser.add_argument('--verify', action='store_true', help='Verify local checksums and discovery index without network access')
@@ -138,7 +178,7 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     config = json.loads((root / 'ci/precomputed-fixtures.json').read_text())
-    relative = Path(config['destination'])
+    relative = Path(config['signing_destination' if args.signing else 'destination'])
     if relative.is_absolute() or '..' in relative.parts:
         raise ValueError('Destination must be inside the repository')
     destination = root / relative
@@ -165,7 +205,7 @@ def main():
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', args.ref) or '..' in args.ref:
         raise ValueError('Invalid fixture revision')
     if args.verify:
-        verify(destination)
+        verify(destination, args.signing)
         return
     before = read_snapshot(destination)
     ref = json.loads(before['SOURCE.json'])['commit'] if args.check else args.ref
@@ -176,7 +216,7 @@ def main():
             subprocess.run(['git', 'init', '-q', str(source)], check=True)
             subprocess.run(['git', '-C', str(source), 'fetch', '-q', '--depth=1', REPOSITORY, ref], check=True)
             ref = 'FETCH_HEAD'
-        after = snapshot(source, ref)
+        after = snapshot(source, ref, args.signing)
         changed = {p:v for p,v in before.items() if p != 'SOURCE.json'} != {p:v for p,v in after.items() if p != 'SOURCE.json'}
         if args.check:
             if before != after:

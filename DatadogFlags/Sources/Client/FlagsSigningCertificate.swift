@@ -209,7 +209,7 @@ internal struct FlagsSigningCertificate {
                 throw FlagsSigningError.invalidCertificate
             }
             _ = try FlagsSigningDER.parse(value.content)
-            guard ![Data([85, 29, 30]), Data([85, 29, 36]), Data([85, 29, 54])].contains(oid) else {
+            guard ![Data([85, 29, 30]), Data([85, 29, 33]), Data([85, 29, 36]), Data([85, 29, 54])].contains(oid) else {
                 throw FlagsSigningError.invalidCertificate
             }
             let understood = [19, 15, 37, 14, 35].map { Data([85, 29, UInt8($0)]) }
@@ -236,7 +236,7 @@ internal struct FlagsSigningCertificate {
         }
         if let ski = extensions[Data([85, 29, 14])] {
             let parsed = try FlagsSigningDER.parse(ski.value)
-            guard parsed.tag == 4 else {
+            guard parsed.tag == 4, !parsed.content.isEmpty else {
                 throw FlagsSigningError.invalidCertificate
             }
             subjectKeyID = parsed.content
@@ -245,8 +245,8 @@ internal struct FlagsSigningCertificate {
         }
         if let aki = extensions[Data([85, 29, 35])] {
             let parsed = try FlagsSigningDER.parse(aki.value)
-            guard parsed.tag == 48, parsed.children.count <= 1,
-                parsed.children.allSatisfy({ $0.tag == 128 })
+            guard parsed.tag == 48, parsed.children.count == 1,
+                parsed.children.allSatisfy({ $0.tag == 128 && !$0.content.isEmpty })
             else {
                 throw FlagsSigningError.invalidCertificate
             }

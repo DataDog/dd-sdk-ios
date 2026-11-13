@@ -82,7 +82,12 @@ internal final class FlagsResponseVerifier {
     init(configuration: Flags.ResponseSigningConfiguration) { self.configuration = configuration }
 
     /// Hash only configuration/identity, excluding nonce and subject. Subject matching is a separate repository gate.
-    func cacheScope(request: URLRequest, environment: String, customHeaderNames: [String]) -> String {
+    func cacheScope(
+        request: URLRequest,
+        environment: String,
+        customHeaderNames: [String],
+        flagSelection: CanonicalFlagSelection? = nil
+    ) -> String {
         var data = Data("datadog.flags.response-signing.cache.v1\0".utf8)
         func append(_ value: Data) {
             Self.appendInteger(UInt64(value.count), to: &data)
@@ -91,6 +96,13 @@ internal final class FlagsResponseVerifier {
         append(Data(String(describing: configuration.mode).utf8))
         append(Data((request.url?.absoluteString ?? "").utf8))
         append(Data(environment.utf8))
+        data.append(flagSelection == nil ? 0 : 1)
+        if let flagSelection {
+            for values in [flagSelection.tags, flagSelection.keyPatterns] {
+                Self.appendInteger(UInt64(values.count), to: &data)
+                for value in values { append(Data(value.utf8)) }
+            }
+        }
         let names = Set(
             customHeaderNames.map { $0.lowercased() } + [
                 "dd-client-token", "authorization", "content-type", "dd-application-id", "x-rkyv", "x-use-cache",

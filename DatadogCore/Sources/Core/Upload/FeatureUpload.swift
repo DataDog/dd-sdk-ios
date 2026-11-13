@@ -77,7 +77,8 @@ internal struct FeatureUpload {
     /// - It flushes all data stored in authorized files by performing their arbitrary upload (without retrying).
     ///
     /// This method is executed synchronously. After return, the upload feature has no more
-    /// pending asynchronous operations and all its authorized data should be considered uploaded.
+    /// pending asynchronous operations. Authorized batches were uploaded without retrying and then deleted, even if
+    /// the upload failed.
     internal func flushAndTearDown() {
         uploader.cancelSynchronously()
         uploader.flushSynchronously()
@@ -87,7 +88,8 @@ internal struct FeatureUpload {
     /// - It flushes all data stored in authorized files by performing their arbitrary upload (without retrying).
     /// - Unlike `flushAndTearDown()`, the upload scheduler is kept running after this call.
     ///
-    /// This method is executed synchronously. After return, all authorized data should be considered uploaded.
+    /// This method is executed synchronously. After return, authorized batches were uploaded without retrying and then
+    /// deleted, even if the upload failed.
     internal func flush() {
         uploader.flushSynchronously()
     }
