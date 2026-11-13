@@ -43,6 +43,7 @@ class NOPMonitorTests: XCTestCase {
         noop.stopResource(resourceKey: .mockAny(), kind: .mockAny())
         noop.stopResourceWithError(resourceKey: .mockAny(), error: ProgrammerError(description: .mockAny()))
         noop.stopResourceWithError(resourceKey: .mockAny(), message: .mockAny())
+        noop.stopResourceWithError(resourceKey: .mockAny(), message: .mockAny(), type: nil, stack: .mockAny(), response: nil, attributes: [:])
         noop.addAction(type: .click, name: .mockAny())
         noop.startAction(type: .click, name: .mockAny())
         noop.stopAction(type: .click)
@@ -55,7 +56,7 @@ class NOPMonitorTests: XCTestCase {
         _ = noop.debug
 
         // Then
-        XCTAssertEqual(dd.logger.criticalLogs.count, 33)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 34)
         let actualMessages = dd.logger.criticalLogs.map { $0.message }
         let expectedMessages = [
             "addAttribute(forKey:value:)",
@@ -82,6 +83,7 @@ class NOPMonitorTests: XCTestCase {
             "stopResource(resourceKey:statusCode:kind:size:attributes:)",
             "stopResourceWithError(resourceKey:error:response:attributes:)",
             "stopResourceWithError(resourceKey:message:type:response:attributes:)",
+            "stopResourceWithError(resourceKey:message:type:stack:response:attributes:)",
             "addAction(type:name:attributes:)",
             "startAction(type:name:attributes:)",
             "stopAction(type:name:attributes:)",

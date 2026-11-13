@@ -573,6 +573,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func stopResource(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64?,attributes: [AttributeKey: AttributeValue])
     func stopResourceWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
     func stopResourceWithError(resourceKey: String,message: String,type: String?,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    func stopResourceWithError(resourceKey: String,message: String,type: String?,stack: String?,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
     func addAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue])
     func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue])
     func stopAction(type: RUMActionType,name: String?,attributes: [AttributeKey: AttributeValue])
