@@ -103,15 +103,9 @@ case "$mode" in
         XCTESTRUN_PATH=$(ls "$products_path"/Build/Products/${SCHEME}_${TEST_PLAN}_*.xctestrun)
 
         # `-xctestrun` runs no scheme pre-action, so the mock server is started here, on the localhost
-        # address built into the products by 'build-for-testing'. It logs to a file: a background process
+        # address built into the products by 'build-for-testing'. Its output is discarded: a background process
         # writing to the job output keeps a CI job open until it exits.
-        if [ "$CI" = "true" ]; then
-            mkdir -p ResultBundles
-            MOCK_SERVER_LOG="ResultBundles/${SCHEME}-${TEST_PLAN}-mock-server.log"
-        else
-            MOCK_SERVER_LOG="$products_path/mock-server.log"
-        fi
-        ./tools/http-server-mock/python/start_mock_server.py --prefer-localhost > "$MOCK_SERVER_LOG" 2>&1 &
+        ./tools/http-server-mock/python/start_mock_server.py --prefer-localhost > /dev/null 2>&1 &
         MOCK_SERVER_PID=$!
 
         disable_apple_crash_reporter
