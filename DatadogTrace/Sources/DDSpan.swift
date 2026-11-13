@@ -93,7 +93,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             return
         }
 
-        if let nested = value as? [String: OTTagValue] {
+        if let nested = tagDictionary(from: value) {
             setTag(key: key, value: nested)
             return
         }

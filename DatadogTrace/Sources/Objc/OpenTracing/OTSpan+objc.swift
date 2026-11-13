@@ -18,6 +18,7 @@ public protocol objc_OTSpan {
     func setTag(_ key: String, value: NSString)
     func setTag(_ key: String, numberValue: NSNumber)
     func setTag(_ key: String, boolValue: Bool)
+    func setTag(_ key: String, dictionaryValue: NSDictionary)
 
     func log(_ fields: [String: NSObject])
     func log(_ fields: [String: NSObject], timestamp: Date?)
