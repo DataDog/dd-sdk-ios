@@ -36,13 +36,14 @@ docs/
 └── session_replay_performance.md   ← Session Replay performance benchmarks
 
 Feature-specific docs (in each module directory):
+├── DatadogCore/CORE_FEATURE.md
 ├── DatadogRUM/RUM_FEATURE.md
 ├── DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
 ├── DatadogTrace/TRACE_FEATURE.md
 ├── DatadogProfiling/PROFILING_FEATURE.md
 ├── DatadogLogs/LOGS_FEATURE.md
-├── DatadogCrashReporting/CRASH_REPORTING_FEATURE.md
-└── DatadogCore/CORE_FEATURE.md
+├── DatadogFlags/FLAGS_FEATURE.md
+└── DatadogCrashReporting/CRASH_REPORTING_FEATURE.md
 ```
 
 ## Where to Look First
@@ -61,6 +62,7 @@ Feature-specific docs (in each module directory):
 | Work on Trace (APM) specifically | `DatadogTrace/TRACE_FEATURE.md` |
 | Work on Profiling specifically | `DatadogProfiling/PROFILING_FEATURE.md` |
 | Work on Logs specifically | `DatadogLogs/LOGS_FEATURE.md` |
+| Work on Feature Flags specifically | `DatadogFlags/FLAGS_FEATURE.md` |
 | Work on Crash Reporting specifically | `DatadogCrashReporting/CRASH_REPORTING_FEATURE.md` |
 | Work on Core (initialization, consent, batching, upload) specifically | `DatadogCore/CORE_FEATURE.md` |
 | Update a `*_FEATURE.md` file | `docs/LLM_FEATURE_DOCS_GUIDELINES.md` |

@@ -7,7 +7,7 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
-import TestUtilities
+@testable import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
@@ -64,6 +64,36 @@ class UISegmentRecorderTests: XCTestCase {
         // Then
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISegmentWireframesBuilder)
         XCTAssertTrue(builder.textObfuscator is FixLengthMaskObfuscator)
+    }
+
+    func testWhenSegmentHasTextAndInputPrivacyOverrideThatUnmasksInputs() throws {
+        // Given
+        segment.selectedSegmentIndex = 1
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.textAndInputPrivacy = .maskSensitiveInputs
+        let context: ViewTreeRecordingContext = .mockWith(recorder: .mockWith(textAndInputPrivacy: .maskAllInputs))
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: context))
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISegmentWireframesBuilder)
+        XCTAssertEqual(builder.selectedSegmentIndex, 1, "Local override should take precedence over the global privacy level")
+    }
+
+    func testWhenSegmentHasTextAndInputPrivacyOverrideThatMasksInputs() throws {
+        // Given
+        segment.selectedSegmentIndex = 1
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.textAndInputPrivacy = .maskAll
+        let context: ViewTreeRecordingContext = .mockWith(recorder: .mockWith(textAndInputPrivacy: .maskSensitiveInputs))
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: context))
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISegmentWireframesBuilder)
+        XCTAssertNil(builder.selectedSegmentIndex, "Local override should take precedence over the global privacy level")
     }
 }
 #endif

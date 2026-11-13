@@ -497,6 +497,33 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(event5.error.message, #"Error Domain=abc Code=0 "(null)""#)
     }
 
+    func testSendingLongTaskEvents() throws {
+        // Disable automatic long task tracking so only the manually added long task is reported
+        config.longTaskThreshold = nil
+        RUM.enable(with: config)
+        let objcRUMMonitor = objc_RUMMonitor.shared()
+
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: [:])
+
+        objcRUMMonitor._internal_addLongTask(
+            at: Date(timeIntervalSince1970: 1_000_000),
+            duration: 0.25,
+            attributes: ["event-attribute1": "foo1"]
+        )
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let longTaskEvents = rumEventMatchers.filterRUMEvents(ofType: RUMLongTaskEvent.self)
+        XCTAssertEqual(longTaskEvents.count, 1)
+
+        let eventMatcher = try XCTUnwrap(longTaskEvents.first)
+        let event: RUMLongTaskEvent = try eventMatcher.model()
+        // The long task ends at the given time, so it starts `duration` earlier
+        XCTAssertEqual(event.date, 999_999_750)
+        XCTAssertEqual(event.longTask.duration, 250_000_000)
+        XCTAssertEqual(try eventMatcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+    }
+
     func testSendingActionEvents() throws {
         config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         RUM.enable(with: config)

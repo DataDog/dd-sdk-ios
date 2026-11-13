@@ -34,7 +34,15 @@ final class TracingManualInstrumentationScenario: TestScenario {
 
 /// Base scenario for Tracing instrumentation testing.
 class TracingURLSessionBaseScenario: URLSessionBaseScenario {
+    override class func makeCustomPOSTRequest(url: URL) -> URLRequest {
+        var request = super.makeCustomPOSTRequest(url: url)
+        request.setValue("app.key=app-value,user.id=old-user", forHTTPHeaderField: "baggage")
+        return request
+    }
+
     func configureFeatures() {
+        Datadog.setAccountInfo(id: "baggage-account")
+
         var config = Trace.Configuration(sampleRate: 100)
         config.networkInfoEnabled = true
         config.customEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint
