@@ -495,6 +495,10 @@ extension DatadogCore {
             remoteConfigurationProvider: remoteConfigurationProvider
         )
 
+        #if os(macOS)
+        writeBufferedDataOnTermination(observing: configuration.notificationCenterProvider.applicationCenter)
+        #endif
+
         telemetry.configuration(
             backgroundTasksEnabled: backgroundTasksEnabled,
             batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),

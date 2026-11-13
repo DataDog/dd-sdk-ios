@@ -28,6 +28,21 @@ public protocol DataClearable {
     func clearAllData()
 }
 
+/// A Datadog Feature that holds data in memory before writing it to storage.
+///
+/// When a macOS app terminates, the core asks conforming features to write what they hold in memory, then
+/// waits until it is stored. Otherwise, the data would be lost when the app exits.
+public protocol BufferedDataWritable {
+    /// Writes the data held in memory that has not been written to storage yet.
+    ///
+    /// **Blocks the caller thread** until the event write context for that data is open. The core calls it on the
+    /// main thread, so it must not wait for the main thread.
+    ///
+    /// The app is terminating: the process exits once nothing holds sudden termination. After this call, the
+    /// feature must stop collecting, or write new data right away, so that new data does not delay the exit.
+    func writeBufferedData()
+}
+
 /// A Datadog Feature with remote data store.
 public protocol DatadogRemoteFeature: DatadogFeature {
     /// The URL request builder for uploading data.

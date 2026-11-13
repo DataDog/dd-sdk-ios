@@ -24,6 +24,8 @@ internal struct FeatureStorage {
     private let jsonEncoder: JSONEncoder = .dd.default()
     /// Telemetry interface.
     let telemetry: Telemetry
+    /// Keeps sudden termination disabled while writes are queued or running.
+    var suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
 
     func writer(for trackingConsent: TrackingConsent) -> Writer {
         switch trackingConsent {
@@ -35,7 +37,8 @@ internal struct FeatureStorage {
                     telemetry: telemetry,
                     jsonEncoder: jsonEncoder
                 ),
-                on: queue
+                on: queue,
+                suddenTermination: suddenTermination
             )
         case .notGranted:
             return NOPWriter()
@@ -47,7 +50,8 @@ internal struct FeatureStorage {
                     telemetry: telemetry,
                     jsonEncoder: jsonEncoder
                 ),
-                on: queue
+                on: queue,
+                suddenTermination: suddenTermination
             )
         }
     }
@@ -64,7 +68,7 @@ internal struct FeatureStorage {
     }
 
     func migrateUnauthorizedData(toConsent consent: TrackingConsent) {
-        queue.async {
+        suddenTermination.async(on: queue) {
             do {
                 switch consent {
                 case .notGranted:
@@ -84,7 +88,7 @@ internal struct FeatureStorage {
     }
 
     func clearUnauthorizedData() {
-        queue.async {
+        suddenTermination.async(on: queue) {
             do {
                 try directories.unauthorized.deleteAllFiles()
             } catch {
@@ -94,7 +98,7 @@ internal struct FeatureStorage {
     }
 
     func clearAllData() {
-        queue.async {
+        suddenTermination.async(on: queue) {
             do {
                 try directories.unauthorized.deleteAllFiles()
                 try directories.authorized.deleteAllFiles()
@@ -121,7 +125,8 @@ extension FeatureStorage {
         performance: PerformancePreset,
         encryption: DataEncryption?,
         backgroundTasksEnabled: Bool,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
         let trackName = BatchMetric.trackValue(for: featureName)
 
@@ -165,7 +170,8 @@ extension FeatureStorage {
             authorizedFilesOrchestrator: authorizedFilesOrchestrator,
             unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator,
             encryption: encryption,
-            telemetry: telemetry
+            telemetry: telemetry,
+            suddenTermination: suddenTermination
         )
     }
 }

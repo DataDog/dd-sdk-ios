@@ -75,6 +75,25 @@ class MessageBusTests: XCTestCase {
         bus.flush()
     }
 
+    func testWhenConfigurationIsDispatchedBeforeTheDelay_itIsDeliveredOnce() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let receiver = FeatureMessageReceiverMock()
+        let bus = MessageBus(configurationDispatchTime: .milliseconds(100))
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "receiver")
+        bus.configuration(batchSize: 1)
+
+        // When
+        bus.dispatchPendingConfiguration()
+        let configurationsBeforeTheDelay = receiver.messages.count
+        wait(during: 0.3) { bus.flush() }
+
+        // Then
+        XCTAssertEqual(configurationsBeforeTheDelay, 1)
+        XCTAssertEqual(receiver.messages.count, 1, "The delayed dispatch must not deliver the configuration again")
+    }
+
     func testWhenDisconnected_itDoesNotDeliverMessages() throws {
         // Given
         let core = PassthroughCoreMock()
@@ -106,6 +125,31 @@ class MessageBusTests: XCTestCase {
         XCTAssertEqual(deliveredPayloads, ["sent before disconnect"])
         XCTAssertEqual(fallbacks.wrappedValue, ["queued before disconnect", "sent after disconnect"], "Dropped messages must invoke their fallback")
     }
+
+    #if os(macOS)
+    func testWhenMessageIsQueued_suddenTerminationStaysDisabledUntilItIsDelivered() throws {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = PassthroughCoreMock()
+        let receiver = FeatureMessageReceiverMock()
+        let bus = MessageBus(suddenTermination: suddenTermination)
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "receiver")
+        let queueBlocked = DispatchSemaphore(value: 0)
+        bus.queue.async { queueBlocked.wait() }
+
+        // When
+        bus.send(message: .payload("queued"))
+        let isDisabledWhileQueued = suddenTermination.isDisabled
+        queueBlocked.signal()
+        bus.flush()
+
+        // Then
+        XCTAssertTrue(isDisabledWhileQueued)
+        XCTAssertEqual(receiver.messages.count, 1)
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+    #endif
 }
 
 extension MessageBus: @retroactive Telemetry {

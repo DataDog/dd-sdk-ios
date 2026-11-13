@@ -183,6 +183,20 @@ See `docs/ERROR_HANDLING.md` for customer-facing error safety and internal telem
 - **NSLock exception**: `NSLock` is used in method swizzling code (`DatadogInternal/Sources/Swizzling/`, `DatadogInternal/Sources/NetworkInstrumentation/`) where low-level synchronization is required — do not refactor those.
 - **No thread spawning**: SDK uses system background queues (`qos: .utility`), never creates threads.
 
+## App Termination on macOS
+
+A macOS app exits as soon as its `NSApplication.willTerminateNotification` observers return, and an app that supports sudden termination (`NSSupportsSuddenTermination`) can be killed without that notification. The SDK writes pending data when the app terminates and keeps sudden termination disabled while it has data to write:
+
+- On `willTerminate`, `DatadogCore.writeBufferedData()` runs on the main thread. It asks features implementing `BufferedDataWritable` to write what they hold in memory, and blocks until the writes are stored. It does not call `Flushable.flush()`, because some features wait for the main thread there, such as the App Hangs watchdog.
+- `DatadogCore` disables sudden termination from the start of each event write context until its writes are stored. Work that writes data is queued with `SuddenTerminationControl.async(on:execute:)`, which keeps sudden termination disabled until it completes: event writes (`AsyncWriter`), data store writes and deletions (`FeatureDataStore`), consent migrations and storage clears (`FeatureStorage`), and messages on the `MessageBus`, whose receivers may write. Deleting batches after upload is not covered: an interrupted deletion only uploads the batch again.
+- A feature that buffers data in memory implements `BufferedDataWritable`, and sets a `SuddenTerminationHold` (`DatadogInternal/Sources/Concurrency/SuddenTermination.swift`) while the buffer is not empty. It releases the hold only after it opens the event write context for the data, so sudden termination stays disabled in between. When `writeBufferedData()` is called, it also stops collecting or writes new data right away, so new data does not delay the exit. Timeseries and client-side stats do this.
+
+When the app terminates through AppKit while sudden termination is disabled, the process exits as soon as the count of disabling calls returns to zero, even if `willTerminate` observers are still running. The SDK's last pending write therefore ends the process: observers added after `Datadog.initialize` and `atexit` handlers do not run in apps that support sudden termination. Without the SDK holding it, these apps are terminated before any observer runs.
+
+Data that a feature passes to its writer later, for example from an asynchronous `LogEventMapper` callback, is only covered from the moment it reaches the writer.
+
+`SuddenTerminationControl` does nothing on other platforms, and the core only calls it on macOS.
+
 ## HTTP Upload Details
 
 - **Auth**: Client token passed as `DD-API-KEY` header

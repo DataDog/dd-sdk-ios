@@ -53,7 +53,15 @@ internal final class DatadogCore {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message-bus instance.
-    let bus = MessageBus()
+    let bus: MessageBus
+
+    /// Disables sudden termination while events are on their way to storage.
+    let suddenTermination: SuddenTerminationControl
+
+    #if os(macOS)
+    /// Observes `NSApplication.willTerminateNotification` to write pending data before the app exits.
+    private var terminationObserver: (token: NSObjectProtocol, notificationCenter: NotificationCenter)?
+    #endif
 
     /// The remote configuration provider, if configured.
     let remoteConfigurationProvider: RemoteConfigurationProvider?
@@ -94,6 +102,7 @@ internal final class DatadogCore {
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
     ///   - remoteConfigurationProvider: The remote configuration provider, if configured.
+    ///   - suddenTermination: Disables sudden termination while events are on their way to storage.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -106,9 +115,12 @@ internal final class DatadogCore {
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
         isRunFromExtension: Bool = false,
-        remoteConfigurationProvider: RemoteConfigurationProvider? = nil
+        remoteConfigurationProvider: RemoteConfigurationProvider? = nil,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
         self.directory = directory
+        self.suddenTermination = suddenTermination
+        self.bus = MessageBus(suddenTermination: suddenTermination)
         self.dateProvider = dateProvider
         self.remoteConfigurationProvider = remoteConfigurationProvider
         self.performance = performance
@@ -262,13 +274,34 @@ internal final class DatadogCore {
             // has the previous consent, and its events are written before the migration runs. A write
             // context read after it has the new consent.
             consentPublisher.consent = trackingConsent
-            contextProvider.queue.async { [allStorages] in
+            // Each migration holds sudden termination on the read-write queue before this hold is released.
+            suddenTermination.async(on: contextProvider.queue) { [allStorages] in
                 // RUM-3175: To prevent race conditions with ongoing "event write" operations,
                 // data migration must be synchronized on the context queue. This guarantees that
                 // all latest events have been written before migration occurs.
                 allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
             }
         }
+    }
+
+    /// Writes the data features hold in memory and waits until it is stored. It **blocks the caller thread**.
+    ///
+    /// Unlike `flush()`, it does not wait for the features' own operations, some of which wait for the main thread.
+    func writeBufferedData() {
+        // Deliver the context changes and messages posted so far, like the `.terminating` state, before features write.
+        // The configuration telemetry is delivered too, in case its dispatch delay has not ended yet.
+        contextProvider.flush()
+        bus.flush()
+        bus.dispatchPendingConfiguration()
+        features.values.compactMap { $0 as? BufferedDataWritable }.forEach { $0.writeBufferedData() }
+        // Then run the event write contexts opened so far, deliver the messages they send, like telemetry,
+        // and store the events written for them.
+        contextProvider.flush()
+        bus.flush()
+        contextProvider.flush()
+        // Telemetry sent by these last writes, like a write error, is not drained: it is not app data,
+        // and draining until no work is left would delay termination.
+        readWriteQueue.sync { }
     }
 
     /// Clears all data that has not already yet been uploaded Datadog servers.
@@ -354,6 +387,10 @@ internal final class DatadogCore {
     ///
     /// Messages queued on the bus are dropped. A delivery already in progress may still complete after return.
     func stop() {
+        #if os(macOS)
+        terminationObserver.map { $0.notificationCenter.removeObserver($0.token) }
+        terminationObserver = nil
+        #endif
         remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
@@ -390,7 +427,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 performance: performancePreset,
                 encryption: encryption,
                 backgroundTasksEnabled: backgroundTasksEnabled,
-                telemetry: telemetry
+                telemetry: telemetry,
+                suddenTermination: suddenTermination
             )
 
             let upload = FeatureUpload(
@@ -461,7 +499,8 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
             feature: Feature.name,
             directory: core.directory,
             queue: core.readWriteQueue,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            suddenTermination: core.suddenTermination
         )
     }
 
@@ -483,11 +522,23 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
             return
         }
 
-        // (on user thread) request SDK context
-        context { context in
+        #if os(macOS)
+        // Sudden termination stays disabled until the events the block writes synchronously are stored. The
+        // writer stores them on the read-write queue, so they are stored before the queue runs what comes after them.
+        let suddenTermination = core.suddenTermination
+        let readWriteQueue = core.readWriteQueue
+        suddenTermination.disableSuddenTermination()
+        #endif
+
+        // (on user thread) request SDK context, from the provider rather than through the weak core
+        // reference, so the block always runs
+        core.contextProvider.read { context in
             // (on context thread) call the block
             let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
+            #if os(macOS)
+            readWriteQueue.async { suddenTermination.enableSuddenTermination() }
+            #endif
         }
     }
 
@@ -640,6 +691,29 @@ extension DatadogContextProvider {
         #endif
     }
 }
+
+#if os(macOS)
+extension DatadogCore {
+    /// Writes the data features hold in memory when the app terminates.
+    ///
+    /// The app exits as soon as the `NSApplication.willTerminateNotification` observers return, so this blocks
+    /// the main thread until the data is stored. Call it after the context provider is created: its application
+    /// state publisher then observes the notification first, and features receive the `.terminating` state before
+    /// they write.
+    ///
+    /// - Parameter notificationCenter: The notification center where `NSApplication` notifications are posted.
+    func writeBufferedDataOnTermination(observing notificationCenter: NotificationCenter) {
+        let token = notificationCenter.addObserver(
+            forName: ApplicationNotifications.willTerminate,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            self?.writeBufferedData()
+        }
+        terminationObserver = (token, notificationCenter)
+    }
+}
+#endif
 
 extension DatadogCore: Flushable {
     /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK

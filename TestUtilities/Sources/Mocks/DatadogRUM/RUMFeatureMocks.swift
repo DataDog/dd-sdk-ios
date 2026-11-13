@@ -1231,6 +1231,7 @@ public class TimeseriesCollectorMock: TimeseriesCollecting {
     public func stop(sessionID: String) {}
     public func noteActivity(sessionID: String) {}
     public func flush() {}
+    public func stopForTermination() {}
     public func hasCollectedData(sessionID: String) -> Bool { hasData }
 }
 

@@ -11,14 +11,22 @@ import DatadogInternal
 internal struct AsyncWriter: Writer {
     private let writer: Writer
     private let queue: DispatchQueue
+    /// Keeps sudden termination disabled until the write completes, including writes made after the event
+    /// write context returned.
+    private let suddenTermination: SuddenTerminationControl
 
-    init(execute otherWriter: Writer, on queue: DispatchQueue) {
+    init(
+        execute otherWriter: Writer,
+        on queue: DispatchQueue,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
+    ) {
         self.writer = otherWriter
         self.queue = queue
+        self.suddenTermination = suddenTermination
     }
 
     func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
-        queue.async { writer.write(value: value, metadata: metadata, completion: completion) }
+        suddenTermination.async(on: queue) { writer.write(value: value, metadata: metadata, completion: completion) }
     }
 }
 
