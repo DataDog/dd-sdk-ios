@@ -265,6 +265,137 @@ class MonitorTests: XCTestCase {
 
     // MARK: - Session lifetime
 
+    // MARK: - Long Tasks overlapping app suspension
+
+    /// An app state in which the OS may suspend the process.
+    private var suspendableAppState: AppState {
+        #if os(macOS)
+        return .sleeping
+        #else
+        return .background
+        #endif
+    }
+
+    func testWhenRunLoopLongTaskSpansAppSuspensionPastSessionTimeout_itIgnoresItWithoutRefreshingSession() throws {
+        // Given: an active view, then the app leaves the foreground and stays away past the session timeout
+        let dateProvider = DateProviderMock()
+        let clock = MonotonicClockMock(elapsedTime: 123)
+        let featureScope = FeatureScopeMock(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: dateProvider.now)))
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock),
+            dateProvider: dateProvider
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "view", name: "View", attributes: [:])
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID)
+        let viewID = try XCTUnwrap(monitor.applicationScope.activeSession?.viewScopes.last?.viewUUID)
+        let viewUpdatesCount = featureScope.eventsWritten(ofType: RUMViewEvent.self).count
+
+        let backgroundStart = dateProvider.now + 1
+        let awayDuration = RUMSessionScope.Constants.sessionTimeoutDuration + 10
+        featureScope.contextMock.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: dateProvider.now,
+            transitions: [
+                (state: suspendableAppState, date: backgroundStart),
+                (state: .active, date: backgroundStart + awayDuration)
+            ]
+        )
+        dateProvider.now.addTimeInterval(1 + awayDuration + 0.05)
+        clock.advance(by: 1 + awayDuration + 0.05)
+
+        // When: the run loop iteration interrupted by the suspension completes and measures the whole suspension
+        monitor.process(
+            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: awayDuration, mainRunLoopThreshold: 0.1)
+        )
+
+        // Then: no long task is sent and the expired session is neither refreshed nor its view restarted
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMLongTaskEvent.self).isEmpty)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, viewUpdatesCount)
+        XCTAssertEqual(monitor.applicationScope.sessionScopes.count, 1)
+        XCTAssertEqual(monitor.applicationScope.sessionScopes.first?.sessionUUID, sessionID)
+        XCTAssertEqual(monitor.applicationScope.sessionScopes.first?.viewScopes.last?.viewUUID, viewID)
+
+        // Then: the next interaction refreshes the session as usual
+        monitor.addAction(type: .tap, name: "tap", attributes: [:])
+        XCTAssertNotEqual(monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+    }
+
+    func testWhenRunLoopLongTaskSpansAppSuspension_itIsNotSentNorCountedInView() throws {
+        // Given: an active view, then the app leaves the foreground for a minute
+        let dateProvider = DateProviderMock()
+        let featureScope = FeatureScopeMock(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: dateProvider.now)))
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, featureFlags: [.viewUpdates: false]),
+            dateProvider: dateProvider
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "view", name: "View", attributes: [:])
+
+        let backgroundStart = dateProvider.now + 1
+        featureScope.contextMock.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: dateProvider.now,
+            transitions: [
+                (state: suspendableAppState, date: backgroundStart),
+                (state: .active, date: backgroundStart + 60)
+            ]
+        )
+        dateProvider.now.addTimeInterval(61.05)
+
+        // When: one long task measured on the run loop spans the suspension, another one is reported through the API
+        monitor.process(
+            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: 60, mainRunLoopThreshold: 0.1)
+        )
+        try XCTUnwrap(monitor._internal).addLongTask(at: dateProvider.now, duration: 60)
+        monitor.stopView(key: "view", attributes: [:])
+
+        // Then: only the API one is sent and counted
+        let longTasks = featureScope.eventsWritten(ofType: RUMLongTaskEvent.self)
+        XCTAssertEqual(longTasks.count, 1)
+        XCTAssertEqual(longTasks.first?.longTask.duration, (60.0).dd.toInt64Nanoseconds)
+        let lastViewUpdate = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.name == "View" })
+        XCTAssertEqual(lastViewUpdate.view.longTask?.count, 1)
+        XCTAssertEqual(lastViewUpdate.view.frozenFrame?.count, 1)
+    }
+
+    func testWhenRunLoopLongTaskSpansAppSuspensionAndResume_itIsSentWithOnlyTheHangDuration() throws {
+        // Given: an active view, then the app leaves the foreground for a minute and hangs while it resumes
+        let dateProvider = DateProviderMock()
+        let featureScope = FeatureScopeMock(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: dateProvider.now)))
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, featureFlags: [.viewUpdates: false]),
+            dateProvider: dateProvider
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "view", name: "View", attributes: [:])
+
+        let backgroundStart = dateProvider.now + 1
+        featureScope.contextMock.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: dateProvider.now,
+            transitions: [
+                (state: suspendableAppState, date: backgroundStart),
+                (state: .inactive, date: backgroundStart + 60),
+                (state: .active, date: backgroundStart + 60.2)
+            ]
+        )
+        dateProvider.now.addTimeInterval(63)
+
+        // When: one run loop iteration starts before the suspension and hangs for 2s after the app resumes
+        monitor.process(
+            command: RUMAddLongTaskCommand(time: dateProvider.now, attributes: [:], duration: 62.5, mainRunLoopThreshold: 0.1)
+        )
+        monitor.stopView(key: "view", attributes: [:])
+
+        // Then: the long task is sent with only the time not spent in background
+        let longTasks = featureScope.eventsWritten(ofType: RUMLongTaskEvent.self)
+        XCTAssertEqual(longTasks.count, 1)
+        XCTAssertEqual(try XCTUnwrap(longTasks.first?.longTask.duration), (2.5).dd.toInt64Nanoseconds, accuracy: 1_000)
+        let lastViewUpdate = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.name == "View" })
+        XCTAssertEqual(lastViewUpdate.view.longTask?.count, 1)
+    }
+
     func testWhenCrossPlatformClockLagsDeviceClock_itKeepsTheSameSession() throws {
         try assertSessionSurvivesCrossPlatformClockSkew(-2 * RUMSessionScope.Constants.sessionMaxDuration)
     }

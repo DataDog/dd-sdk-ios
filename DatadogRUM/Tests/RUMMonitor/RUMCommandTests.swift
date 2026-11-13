@@ -161,4 +161,103 @@ class RUMCommandTests: XCTestCase {
         XCTAssertEqual(command2.isNetworkError, true)
         XCTAssertEqual(command2.errorSource, .network)
     }
+
+    // MARK: - RUMAddLongTaskCommand
+
+    /// An app state in which the OS may suspend the process.
+    private var suspendableAppState: AppState {
+        #if os(macOS)
+        return .sleeping
+        #else
+        return .background
+        #endif
+    }
+
+    private func trimmedDuration(time: Date, duration: TimeInterval, history: AppStateHistory, threshold: TimeInterval? = 0.5) -> TimeInterval? {
+        RUMAddLongTaskCommand(time: time, attributes: [:], duration: duration, mainRunLoopThreshold: threshold)
+            .trimmingAppSuspension(given: history)?
+            .duration
+    }
+
+    func testWhenLongTaskMeasuredOnMainRunLoopOverlapsSuspendableAppState_itKeepsOnlyTheNotSuspendedDuration() throws {
+        let t0: Date = .mockDecember15th2019At10AMUTC()
+        let history: AppStateHistory = .mockWith(
+            initialState: .active,
+            date: t0,
+            transitions: [
+                (state: suspendableAppState, date: t0 + 1),
+                (state: .active, date: t0 + 61)
+            ]
+        )
+
+        // spanning the whole suspendable period only
+        XCTAssertNil(trimmedDuration(time: t0 + 61, duration: 60, history: history))
+        // spanning it with real work on both sides
+        XCTAssertEqual(try XCTUnwrap(trimmedDuration(time: t0 + 63, duration: 62.5, history: history)), 2.5, accuracy: 0.001)
+        // starting before it, with the not suspended part below threshold
+        XCTAssertNil(trimmedDuration(time: t0 + 2, duration: 1.3, history: history))
+        // ending after it, with the not suspended part at threshold
+        XCTAssertEqual(try XCTUnwrap(trimmedDuration(time: t0 + 61.5, duration: 1, history: history)), 0.5, accuracy: 0.001)
+        // entirely inside it
+        XCTAssertNil(trimmedDuration(time: t0 + 30, duration: 1, history: history))
+        // the trimmed command keeps its time
+        let command = RUMAddLongTaskCommand(time: t0 + 63, attributes: [:], duration: 62.5, mainRunLoopThreshold: 0.5)
+        XCTAssertEqual(command.trimmingAppSuspension(given: history)?.time, t0 + 63)
+    }
+
+    func testWhenLongTaskMeasuredOnMainRunLoopDoesNotOverlapSuspendableAppState_itIsUnchanged() {
+        let t0: Date = .mockDecember15th2019At10AMUTC()
+        let history: AppStateHistory = .mockWith(
+            initialState: .active,
+            date: t0,
+            transitions: [
+                (state: suspendableAppState, date: t0 + 2),
+                (state: .active, date: t0 + 5)
+            ]
+        )
+
+        // ending exactly when the app may start being suspended
+        XCTAssertEqual(trimmedDuration(time: t0 + 2, duration: 1, history: history), 1)
+        // starting exactly when the app resumes
+        XCTAssertEqual(trimmedDuration(time: t0 + 6, duration: 1, history: history), 1)
+        // no app state change at all
+        XCTAssertEqual(trimmedDuration(time: t0 + 61.5, duration: 60, history: .mockWith(initialState: .active, date: t0)), 60)
+    }
+
+    func testWhenLongTaskMeasuredOnMainRunLoopSpansAppResume_itKeepsTheHang() throws {
+        // Given: the app leaves the foreground, then the run loop iteration resuming it records `.inactive` before `.active`
+        let t0: Date = .mockDecember15th2019At10AMUTC()
+        let history: AppStateHistory = .mockWith(
+            initialState: .active,
+            date: t0,
+            transitions: [
+                (state: suspendableAppState, date: t0 + 1),
+                (state: .inactive, date: t0 + 61),
+                (state: .active, date: t0 + 61.2)
+            ]
+        )
+
+        // a hang in the resuming iteration starts while the app may still be suspended
+        XCTAssertEqual(try XCTUnwrap(trimmedDuration(time: t0 + 63, duration: 2.5, history: history)), 2, accuracy: 0.001)
+        // the suspension itself ends in the same iteration
+        XCTAssertNil(trimmedDuration(time: t0 + 61.1, duration: 60.3, history: history))
+    }
+
+    func testWhenLongTaskIsMeasuredByCallerOrHasNoDuration_itIsUnchanged() {
+        let t0: Date = .mockDecember15th2019At10AMUTC()
+        let history: AppStateHistory = .mockWith(
+            initialState: .active,
+            date: t0,
+            transitions: [(state: suspendableAppState, date: t0 + 1)]
+        )
+
+        // measured by the caller (e.g. a cross-platform SDK) and reported through the API
+        XCTAssertEqual(trimmedDuration(time: t0 + 61.5, duration: 60, history: history, threshold: nil), 60)
+        XCTAssertEqual(
+            RUMAddLongTaskCommand(time: t0 + 61.5, attributes: [:], duration: 60).trimmingAppSuspension(given: history)?.duration,
+            60
+        )
+        // no duration to trim
+        XCTAssertEqual(trimmedDuration(time: t0 + 2, duration: 0, history: history), 0)
+    }
 }

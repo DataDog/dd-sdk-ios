@@ -780,8 +780,34 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a long task is not an interactive event
 
-    let duration: TimeInterval
+    var duration: TimeInterval
+    /// Threshold of the `LongTaskObserver` that measured this long task on the main run loop with the wall clock,
+    /// `nil` when it was reported through the API.
+    var mainRunLoopThreshold: TimeInterval? = nil
     let missedEventType: SessionEndedMetric.MissedEventType? = .longTask
+}
+
+extension RUMAddLongTaskCommand {
+    /// Returns this long task without the time spent in a period in which the OS may have suspended the process, or `nil`
+    /// when the remaining duration is below the observer threshold.
+    ///
+    /// A run loop iteration interrupted by a suspension measures the whole suspension as main thread work. The part not
+    /// spent in a suspendable state is kept, so a real hang in the iteration resuming the app is still reported.
+    func trimmingAppSuspension(given appStateHistory: AppStateHistory) -> RUMAddLongTaskCommand? {
+        guard let threshold = mainRunLoopThreshold, duration > 0 else {
+            return self
+        }
+        let notSuspendedDuration = appStateHistory.applicationNotSuspendedDuration(during: (time - duration)...time)
+        guard notSuspendedDuration < duration else {
+            return self
+        }
+        guard notSuspendedDuration >= threshold else {
+            return nil
+        }
+        var trimmed = self
+        trimmed.duration = notSuspendedDuration
+        return trimmed
+    }
 }
 
 // MARK: - RUM Web Events related commands
