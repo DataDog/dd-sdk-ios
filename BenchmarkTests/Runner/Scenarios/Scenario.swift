@@ -21,4 +21,17 @@ protocol Scenario {
     /// - Parameter info: The application information to use during SDK
     /// initialisation.
     func instrument(with info: AppInfo)
+
+    /// Start instrumenting the application during the baseline run by enabling
+    /// the Features that the code under test is built on (e.g. RUM when measuring
+    /// a RUM configuration option), so that comparing both runs isolates its overhead.
+    ///
+    /// - Parameter info: The application information to use during SDK
+    /// initialisation.
+    func instrumentBaseline(with info: AppInfo)
+}
+
+extension Scenario {
+    /// By default, the baseline run does not initialize the SDK.
+    func instrumentBaseline(with info: AppInfo) {}
 }

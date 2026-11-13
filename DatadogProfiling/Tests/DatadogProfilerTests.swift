@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import XCTest
 import DatadogInternal
@@ -113,6 +113,7 @@ final class DatadogProfilerTests: XCTestCase {
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         let profiler = continuousProfiler(isAppLaunchProfilingEnabled: true, dateProvider: dateProvider)
         addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
         let completedOperationStart = Vital.mockWith(name: "completed-operation")
         let completedOperationEnd = Vital.mockWith(
             name: completedOperationStart.name,
@@ -120,8 +121,8 @@ final class DatadogProfilerTests: XCTestCase {
             stepType: .end
         )
         let ongoingOperationStart = Vital.mockWith(name: "ongoing-operation", stepType: .start, date: dateProvider.now)
-        let hang = DurationEvent(id: "hang-id", type: .error, start: 0, duration: 500)
-        let longTask = DurationEvent(id: "long-task-id", type: .longTask, start: 0, duration: 100)
+        let hang = durationEvent(id: "hang-id", type: .error, startingAt: sampleTime, duration: 500)
+        let longTask = durationEvent(id: "long-task-id", type: .longTask, startingAt: sampleTime)
         let launchVital: Vital = .mockWith(stepType: nil)
 
         _ = profiler.receive(
@@ -640,12 +641,13 @@ extension DatadogProfilerTests {
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
 
         let attributes: [AttributeKey: AttributeValue] = [
             RUMCoreContext.IDs.sessionID: "long-task-session-id",
             RUMCoreContext.IDs.viewID: ["long-task-view-id"]
         ]
-        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        let longTask = durationEvent(id: .mockRandom(), type: .longTask, startingAt: sampleTime)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: attributes, longTask: longTask)), from: core)
 
         // When
@@ -678,12 +680,13 @@ extension DatadogProfilerTests {
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
 
         let attributes: [AttributeKey: AttributeValue] = [
             RUMCoreContext.IDs.sessionID: "app-hang-session-id",
             RUMCoreContext.IDs.viewID: ["app-hang-view-id"]
         ]
-        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
+        let hang = durationEvent(id: .mockRandom(), type: .error, startingAt: sampleTime, duration: 500)
         XCTAssertTrue(profiler.receive(message: .payload(AppHangMessage(attributes: attributes, hang: hang)), from: core))
 
         // When
@@ -704,6 +707,139 @@ extension DatadogProfilerTests {
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "app-hang-session-id")
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["app-hang-view-id"])
         withExtendedLifetime(profiler) {}
+    }
+}
+
+// MARK: - Attachments bounded by the sampled range
+
+extension DatadogProfilerTests {
+    func testApplicationDidEnterBackground_dropsProfile_whenOnlyEventsOutsideSampledRangeRemain() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(
+            continuousProfilingSampled: true,
+            telemetryController: .init(telemetry: telemetry),
+            dateProvider: dateProvider
+        )
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        dd_profiler_stop()
+        addSampleToCurrentProfile()
+        let profile = try XCTUnwrap(dd_profiler_get_profile())
+        let beforeFirstSample = dd_pprof_get_start_timestamp_s(profile) - 60
+        let afterLastSample = dd_pprof_get_end_timestamp_s(profile) + 60
+        let hangs = [
+            durationEvent(id: "early-hang", type: .error, startingAt: beforeFirstSample),
+            durationEvent(id: "late-hang", type: .error, startingAt: afterLastSample)
+        ]
+        let longTasks = [
+            durationEvent(id: "early-long-task", type: .longTask, startingAt: beforeFirstSample),
+            durationEvent(id: "late-long-task", type: .longTask, startingAt: afterLastSample)
+        ]
+        for hang in hangs {
+            _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        }
+        for longTask in longTasks {
+            _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: longTask)), from: core)
+        }
+
+        // When
+        flushProfileOnBackground(profiler, at: dateProvider.now)
+
+        // Then
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        let metric = try firstProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.continuous.rawValue)
+        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.noProfiledEventsErrorMessage)
+        XCTAssertNil(metric.duration)
+        XCTAssertNil(metric.fileSize)
+    }
+
+    func testApplicationDidEnterBackground_filtersEventsAgainstCorrectedSampledRange() throws {
+        // Given
+        let serverTimeOffset: TimeInterval = 60
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(continuousProfilingSampled: true, dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        dd_profiler_stop()
+        addSampleToCurrentProfile()
+        let profile = try XCTUnwrap(dd_profiler_get_profile())
+        let originalStart = dd_pprof_get_start_timestamp_s(profile)
+        let originalEnd = dd_pprof_get_end_timestamp_s(profile)
+        dd_pprof_set_server_time_offset_ns(profile, serverTimeOffset.dd.toInt64Nanoseconds)
+        let firstSample = dd_pprof_get_start_timestamp_s(profile)
+        let lastSample = dd_pprof_get_end_timestamp_s(profile)
+        dd_pprof_set_server_time_offset_ns(profile, 0)
+        let beforeFirstSample = firstSample - 1
+        let durationToFirstSample = firstSample.dd.toInt64Nanoseconds - beforeFirstSample.dd.toInt64Nanoseconds
+        let hangs = [
+            durationEvent(id: "early-hang", type: .error, startingAt: beforeFirstSample),
+            durationEvent(id: "overlapping-hang", type: .error, startingAt: beforeFirstSample, duration: durationToFirstSample + 1),
+            durationEvent(id: "first-boundary-hang", type: .error, startingAt: beforeFirstSample, duration: durationToFirstSample),
+            durationEvent(id: "boundary-hang", type: .error, startingAt: lastSample),
+            durationEvent(id: "overflow-hang", type: .error, startingAt: beforeFirstSample, duration: .max),
+            durationEvent(id: "late-hang", type: .error, startingAt: lastSample + 60)
+        ]
+        let longTasks = [
+            durationEvent(id: "early-long-task", type: .longTask, startingAt: beforeFirstSample),
+            durationEvent(id: "overlapping-long-task", type: .longTask, startingAt: beforeFirstSample, duration: durationToFirstSample + 1),
+            durationEvent(id: "first-boundary-long-task", type: .longTask, startingAt: beforeFirstSample, duration: durationToFirstSample),
+            durationEvent(id: "boundary-long-task", type: .longTask, startingAt: lastSample),
+            durationEvent(id: "late-long-task", type: .longTask, startingAt: lastSample + 60)
+        ]
+        for hang in hangs {
+            _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        }
+        for longTask in longTasks {
+            _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: longTask)), from: core)
+        }
+
+        // When
+        flushProfileOnBackground(profiler, at: dateProvider.now, serverTimeOffset: serverTimeOffset)
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        let hangIDs = ["overlapping-hang", "first-boundary-hang", "boundary-hang", "overflow-hang"]
+        let longTaskIDs = ["overlapping-long-task", "first-boundary-long-task", "boundary-long-task"]
+        XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), hangIDs)
+        XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), longTaskIDs)
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(event.start.timeIntervalSince1970, originalStart + serverTimeOffset, accuracy: 0.001)
+        XCTAssertEqual(event.end.timeIntervalSince1970, originalEnd + serverTimeOffset, accuracy: 0.001)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], hangIDs)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], longTaskIDs)
+    }
+
+    func testApplicationDidEnterBackground_keepsVital_whenAllDurationEventsStartAfterLastSample() throws {
+        // Given
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(continuousProfilingSampled: true, dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        dd_profiler_stop()
+        addSampleToCurrentProfile()
+        let profile = try XCTUnwrap(dd_profiler_get_profile())
+        let afterLastSample = dd_pprof_get_end_timestamp_s(profile) + 60
+        let vital = Vital.mockWith(id: "vital-id", operationKey: nil, stepType: nil, date: dateProvider.now)
+        let hang = durationEvent(id: "late-hang", type: .error, startingAt: afterLastSample)
+        let longTask = durationEvent(id: "late-long-task", type: .longTask, startingAt: afterLastSample)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: vital)), from: core)
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: longTask)), from: core)
+
+        // When
+        flushProfileOnBackground(profiler, at: dateProvider.now)
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(rumEvents.count, 1)
+        XCTAssertEqual(eventIDs(ofType: "vital", in: rumEvents), [vital.id])
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], [vital.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], [])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [])
     }
 }
 
@@ -928,7 +1064,7 @@ extension DatadogProfilerTests {
         optimisticTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), optimisticTrace, 1)
         dd_free(optimisticTrace)
@@ -1177,7 +1313,7 @@ extension DatadogProfilerTests {
         partialTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), partialTrace, 1)
         dd_free(partialTrace)
@@ -1215,7 +1351,7 @@ extension DatadogProfilerTests {
         launchTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), launchTrace, 1)
         dd_free(launchTrace)
@@ -1271,7 +1407,7 @@ extension DatadogProfilerTests {
         launchTrace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(dd_profiler_get_profile(), launchTrace, 1)
         dd_free(launchTrace)
@@ -1577,12 +1713,14 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testDoesNotWriteProfile_whenOnlyLongTasksAccumulated() {
+    func testDoesNotWriteProfile_whenOnlyLongTasksAccumulated() throws {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
+        let longTask = durationEvent(id: .mockRandom(), type: .longTask, startingAt: sampleTime)
 
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
 
@@ -1601,12 +1739,14 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testDoesNotWriteProfile_whenOnlyAppHangsAccumulated() {
+    func testDoesNotWriteProfile_whenOnlyAppHangsAccumulated() throws {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
+        let hang = durationEvent(id: .mockRandom(), type: .error, startingAt: sampleTime, duration: 500)
 
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
 
@@ -1625,7 +1765,7 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testDoesNotWriteProfile_whenAppHangsAndLongTasksAccumulated_butContinuousProfilingIsSampledOut() {
+    func testDoesNotWriteProfile_whenAppHangsAndLongTasksAccumulated_butContinuousProfilingIsSampledOut() throws {
         // Given
         let dateProvider = DateProviderMock()
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
@@ -1633,9 +1773,11 @@ extension DatadogProfilerTests {
             deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: 0)
         )
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
-        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
-        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
+        let hang = durationEvent(id: .mockRandom(), type: .error, startingAt: sampleTime, duration: 500)
+        let longTask = durationEvent(id: .mockRandom(), type: .longTask, startingAt: sampleTime)
 
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
@@ -1936,7 +2078,7 @@ extension DatadogProfilerTests {
         XCTAssertEqual(Set(vitalIDs), Set(["start-id", "ttid-id"]))
         XCTAssertFalse(vitalIDs.contains("orphan-id"))
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertTrue(event.tags.contains("operation:custom"))
+        XCTAssertTrue(event.tags.contains("operation:application_launch"))
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         withExtendedLifetime(profiler) {}
     }
@@ -2051,6 +2193,7 @@ extension DatadogProfilerTests {
         let profiler = customProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
 
         let startOperation = Vital.mockWith(name: "operation", date: dateProvider.now)
         let endOperation = Vital.mockWith(
@@ -2058,7 +2201,7 @@ extension DatadogProfilerTests {
             operationKey: startOperation.operationKey,
             stepType: .end
         )
-        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        let longTask = durationEvent(id: .mockRandom(), type: .longTask, startingAt: sampleTime)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
@@ -2086,6 +2229,7 @@ extension DatadogProfilerTests {
         let profiler = customProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
 
         let startOperation = Vital.mockWith(name: "operation", date: dateProvider.now)
         let endOperation = Vital.mockWith(
@@ -2093,7 +2237,7 @@ extension DatadogProfilerTests {
             operationKey: startOperation.operationKey,
             stepType: .end
         )
-        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
+        let hang = durationEvent(id: .mockRandom(), type: .error, startingAt: sampleTime, duration: 500)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
@@ -2167,9 +2311,10 @@ extension DatadogProfilerTests {
             telemetryController: telemetryController,
             dateProvider: dateProvider
         )
-        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
+        let longTask = durationEvent(id: .mockRandom(), type: .longTask, startingAt: sampleTime)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
 
         // When
@@ -2315,7 +2460,7 @@ extension DatadogProfilerTests {
 
         // Then
         let metric = try lastProfilingSessionMetric(from: telemetry)
-        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
         XCTAssertNil(metric.cycleIndex)
         XCTAssertNotNil(metric.duration)
         XCTAssertNotNil(metric.fileSize)
@@ -2686,8 +2831,9 @@ extension DatadogProfilerTests {
         flushQueue()
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
+        let sampleTime = dd_pprof_get_end_timestamp_s(try XCTUnwrap(dd_profiler_get_profile()))
 
-        let admittedLongTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        let admittedLongTask = durationEvent(id: .mockRandom(), type: .longTask, startingAt: sampleTime)
         _ = profiler.receive(
             message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: admittedLongTask)),
             from: core
@@ -2884,6 +3030,12 @@ extension DatadogProfilerTests {
         _ = profiler.receive(message: .context(core.context), from: core)
         flushQueue()
         addSampleToCurrentProfile()
+        let nativeProfile = try XCTUnwrap(dd_profiler_get_profile())
+        let afterLastSample = dd_pprof_get_end_timestamp_s(nativeProfile) + 60
+        let hang = durationEvent(id: "late-hang", type: .error, startingAt: afterLastSample)
+        let longTask = durationEvent(id: "late-long-task", type: .longTask, startingAt: afterLastSample)
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: longTask)), from: core)
         Thread.sleep(forTimeInterval: 0.05)
         _ = profiler.receive(
             message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: ttfdVital)),
@@ -2913,6 +3065,10 @@ extension DatadogProfilerTests {
 
         XCTAssertTrue(metadata.rumEvents != nil)
         XCTAssertEqual(Set(try eventIDs(ofType: "vital", from: metadata)), Set(["ttid-id", "ttfd-id"]))
+        XCTAssertEqual(try eventIDs(ofType: "error", from: metadata), [])
+        XCTAssertEqual(try eventIDs(ofType: "long_task", from: metadata), [])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], [])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [])
         XCTAssertEqual(event.family, "ios")
         XCTAssertEqual(event.runtime, "ios")
         XCTAssertEqual(event.version, "4")
@@ -3124,9 +3280,219 @@ extension DatadogProfilerTests {
     }
 }
 
+// MARK: - Allocation failure
+
+extension DatadogProfilerTests {
+    func testAllocationFailure_discardsProfilesAndReportsOnceAcrossProfilingModes() {
+        for (mode, isSampled) in [
+            (ProfilingOperation.continuousProfiling, true),
+            (.continuousProfiling, false),
+            (.appLaunch, true)
+        ] {
+            // Given
+            core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
+            dd_profiler_start_testing(100, false, Int64.max, 0)
+            addSampleToCurrentProfile()
+            let quotaChecker = ProfilingQuotaCheckerMock()
+            let telemetry = TelemetryMock()
+            let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
+            let profiler = mode == .continuousProfiling
+                ? continuousProfiler(continuousProfilingSampled: isSampled, telemetryController: telemetryController, quotaChecker: quotaChecker)
+                : customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: telemetryController, quotaChecker: quotaChecker)
+            XCTAssertEqual(profiler.operation, mode)
+            if mode == .continuousProfiling && isSampled {
+                _ = profiler.receive(
+                    message: .payload(OperationMessage(attributes: ["existing": true], operation: .mockWith(stepType: .start, date: Date()))),
+                    from: core
+                )
+            }
+            flushQueue()
+
+            // When
+            Self.failNativeAggregation()
+            _ = profiler.receive(message: .payload(TTIDMessage(attributes: ["late": true], ttid: appLaunchVital)), from: core)
+            flushQueue()
+            quotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+            quotaChecker.onQuotaResultUpdate?(quotaChecker.quotaResult)
+            quotaChecker.quotaResult = nil
+            quotaChecker.onQuotaResultUpdate?(nil)
+            dd_profiler_stop()
+            core.context.set(additionalContext: RUMCoreContext.mockWith(sessionID: .mockRandom()))
+            shareCurrentContext(with: profiler)
+            _ = profiler.receive(message: .payload(OperationMessage(attributes: ["late": true], operation: .mockWith(stepType: .start))), from: core)
+            shareCurrentContext(with: profiler)
+
+            // Then
+            XCTAssertTrue(core.events.isEmpty)
+            XCTAssertTrue(core.metadata.isEmpty)
+            XCTAssertTrue(profiler.attributes.isEmpty)
+            XCTAssertNil(dd_profiler_get_profile())
+            XCTAssertNil(dd_profiler_flush_and_get_profile())
+            XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_ALLOCATION_FAILED)
+            XCTAssertEqual(dd_profiler_start(), 0)
+            XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+            let failures = allocationFailureMetrics(from: telemetry)
+            XCTAssertEqual(failures.count, 1)
+            XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+            XCTAssertEqual(telemetry.messages.filter { $0.asMetric?.name == ProfilingSessionMetric.Constants.name }.count, 1)
+            XCTAssertEqual(
+                failures.first?.startReason,
+                mode == .continuousProfiling
+                    ? ProfilingSessionMetric.StartReason.continuous.rawValue
+                    : ProfilingSessionMetric.StartReason.applicationLaunch.rawValue
+            )
+        }
+    }
+
+    func testAllocationFailure_withQueuedFlush_reportsOneMetricForFailedCapture() throws {
+        for mode in [ProfilingOperation.continuousProfiling, .appLaunch] {
+            // Given
+            let dateProvider = DateProviderMock()
+            core = PassthroughCoreMock(context: .mockWith(
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: dateProvider.now.addingTimeInterval(-2)),
+                applicationStateHistory: .mockAppInForeground()
+            ))
+            dd_profiler_start_testing(100, false, Int64.max, 0)
+            addSampleToCurrentProfile()
+            let telemetry = TelemetryMock()
+            let controller = ProfilingTelemetryController(telemetry: telemetry)
+            controller.register(context: core.context)
+            let profiler = mode == .continuousProfiling
+                ? continuousProfiler(continuousProfilingSampled: true, telemetryController: controller, dateProvider: dateProvider)
+                : customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: controller, dateProvider: dateProvider)
+
+            // When - the flush reaches the profiler queue before failure cleanup.
+            do {
+                profilerQueue.suspend()
+                defer { profilerQueue.resume() }
+                if mode == .continuousProfiling {
+                    core.context = .mockWith(
+                        launchInfo: core.context.launchInfo,
+                        applicationStateHistory: .mockWith(
+                            initialState: .active,
+                            date: dateProvider.now.addingTimeInterval(-1),
+                            transitions: [(state: .background, date: dateProvider.now)]
+                        )
+                    )
+                    _ = profiler.receive(message: .context(core.context), from: core)
+                } else {
+                    _ = profiler.receive(message: .payload(TTIDMessage(attributes: [:], ttid: appLaunchVital)), from: core)
+                }
+                Self.failNativeAggregation()
+            }
+            flushQueue()
+
+            // Then
+            XCTAssertEqual(telemetry.messages.filter { $0.asMetric?.name == ProfilingSessionMetric.Constants.name }.count, 1)
+            let metric = try lastProfilingSessionMetric(from: telemetry)
+            XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+            XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.allocationFailureErrorMessage)
+            XCTAssertEqual(
+                metric.startReason,
+                mode == .continuousProfiling
+                    ? ProfilingSessionMetric.StartReason.continuous.rawValue
+                    : ProfilingSessionMetric.StartReason.applicationLaunch.rawValue
+            )
+            XCTAssertEqual(metric.cycleIndex, mode == .continuousProfiling ? 0 : nil)
+            XCTAssertEqual(metric.appStartInfo, mode == .appLaunch ? "user_launch" : nil)
+            withExtendedLifetime(profiler) {}
+        }
+    }
+
+    func testAllocationFailure_cleansUpAndReportsWithoutTimerOrAnotherMessage() {
+        // Given
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        addSampleToCurrentProfile()
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: telemetry))
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: ["existing": true], operation: .mockWith(stepType: nil))),
+            from: core
+        )
+        flushQueue()
+        XCTAssertFalse(profiler.attributes.isEmpty)
+
+        // When - only the native callback can schedule cleanup.
+        Self.failNativeAggregation()
+        flushQueue()
+
+        // Then - no message or context update has been sent since the failure.
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertNil(dd_profiler_get_profile())
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_ALLOCATION_FAILED)
+        XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+        let failures = allocationFailureMetrics(from: telemetry)
+        XCTAssertEqual(failures.count, 1)
+        XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+        XCTAssertEqual(dd_profiler_start(), 0)
+    }
+
+    func testAllocationFailure_beforeProfilerRegistration_reportsOnce() {
+        // Given
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        Self.failNativeAggregation()
+        let telemetry = TelemetryMock()
+
+        // When
+        let profiler = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: telemetry))
+        flushQueue()
+
+        // Then
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+        let failures = allocationFailureMetrics(from: telemetry)
+        XCTAssertEqual(failures.count, 1)
+        XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+        XCTAssertEqual(failures.first?.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
+        XCTAssertNil(failures.first?.appStartInfo)
+    }
+
+    func testAllocationFailureCallback_doesNotRetainProfiler() {
+        // Given
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        let telemetry = TelemetryMock()
+        var profiler: DatadogProfiler? = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: telemetry))
+        weak var weakProfiler = profiler
+        let replacementTelemetry = TelemetryMock()
+        let replacement = customProfiler(isAppLaunchProfilingEnabled: true, telemetryController: .init(telemetry: replacementTelemetry))
+
+        // When
+        profiler = nil
+        XCTAssertNil(weakProfiler)
+        Self.failNativeAggregation()
+        flushQueue()
+
+        // Then
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        let failures = allocationFailureMetrics(from: replacementTelemetry)
+        XCTAssertEqual(failures.count, 1)
+        XCTAssertEqual(failures.first?.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+        XCTAssertEqual(core.context.additionalContext(ofType: ProfilingContext.self)?.status, .error(reason: .memoryAllocationFailed))
+        withExtendedLifetime(replacement) {}
+    }
+}
+
 // MARK: - Private
 
 private extension DatadogProfilerTests {
+    static func failNativeAggregation(file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertEqual(dd_profiler_start(), 1, file: file, line: line)
+        dd_profiler_fail_next_aggregation_for_testing()
+        for _ in 0..<4 {
+            if let profile = dd_profiler_flush_and_get_profile() {
+                dd_pprof_destroy(profile)
+            }
+            if dd_profiler_get_status() == DD_PROFILER_STATUS_ALLOCATION_FAILED {
+                break
+            }
+        }
+        dd_profiler_stop()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_ALLOCATION_FAILED, file: file, line: line)
+    }
+
     func waitForProfileWrite(
         on targetCore: PassthroughCoreMock? = nil,
         expectingWrite: Bool = true,
@@ -3147,6 +3513,32 @@ private extension DatadogProfilerTests {
 
     func flushQueue() {
         profilerQueue.sync {}
+    }
+
+    func flushProfileOnBackground(
+        _ profiler: DatadogProfiler,
+        at date: Date,
+        serverTimeOffset: TimeInterval = .zero
+    ) {
+        core.context = .mockWith(
+            serverTimeOffset: serverTimeOffset,
+            applicationStateHistory: .mockWith(
+                initialState: .active,
+                date: date.addingTimeInterval(-1),
+                transitions: [(state: .background, date: date)]
+            )
+        )
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
+    }
+
+    func durationEvent(
+        id: String,
+        type: DurationEvent.EventType,
+        startingAt start: TimeInterval,
+        duration: Int64 = 100
+    ) -> DurationEvent {
+        DurationEvent(id: id, type: type, start: start.dd.toInt64Nanoseconds, duration: duration)
     }
 
     func addSampleToCurrentProfile(
@@ -3172,7 +3564,7 @@ private extension DatadogProfilerTests {
         trace.pointee = .mockWith(
             tid: 1,
             addresses: [0x100001000],
-            timestamp: DispatchTime.now().uptimeNanoseconds
+            timestamp: clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
         )
         dd_pprof_add_samples(profile, trace, 1)
         dd_free(trace)
@@ -3304,6 +3696,16 @@ private extension DatadogProfilerTests {
         return try XCTUnwrap(metricTelemetry.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes)
     }
 
+    func allocationFailureMetrics(from telemetry: TelemetryMock) -> [ProfilingSessionMetric.Attributes] {
+        telemetry.messages
+            .compactMap {
+                $0.asMetric?.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes
+            }
+            .filter {
+                $0.errorMessage == ProfilingSessionMetric.Constants.allocationFailureErrorMessage
+            }
+    }
+
     func connectMessageReceiver(
         to profiler: DatadogProfiler,
         profilingSamplerProvider: ProfilingSamplerProvider,
@@ -3343,4 +3745,4 @@ private extension DatadogProfilerTests {
         XCTFail("Condition was not met within \(timeout) seconds.", file: file, line: line)
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

@@ -9,7 +9,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -17,6 +17,7 @@
 #include <mach/mach.h>
 #include <pthread.h>
 #include <pthread/qos.h>
+#include <dispatch/dispatch.h>
 
 /**
  * Structure representing a binary image loaded in memory.
@@ -159,6 +160,7 @@ typedef struct profiler profiler_t;
  * Starts the global Datadog profiler.
  *
  * If `g_dd_profiler` does not exist, it is created with a 100% sample rate.
+ * An allocation failure prevents restarting profiling in the same process.
  *
  * @return 1 if successfully started (or already running), 0 otherwise.
  */
@@ -233,6 +235,22 @@ typedef struct profile dd_profile_t;
 dd_profiler_status_t dd_profiler_get_status(void);
 
 /**
+ * Registers a one-shot callback invoked after terminal allocation failure.
+ * Registration persists even when the native profiler does not yet exist.
+ *
+ * The callback is copied until notification, replacement, or unregistration.
+ * It must enqueue its work and must not call profiler APIs synchronously.
+ * If profiling has already failed, registration invokes the callback immediately.
+ * The owner is used only as identity and is never dereferenced.
+ * Passing NULL as the callback unregisters only when owner matches the current
+ * registration. Work already enqueued by the callback may still run.
+ */
+void dd_profiler_set_allocation_failure_callback(
+    const void* owner,
+    dispatch_block_t callback
+);
+
+/**
  * @brief Returns and resets profiling diagnostics accumulated since the last call.
  *
  * @return Profiling diagnostics, or zeroed diagnostics if the profiler does not exist.
@@ -248,12 +266,13 @@ dd_profiler_diagnostics_t dd_profiler_diagnostics(void);
  * - Flush any remaining collected samples
  * - Set the profiler state to inactive
  *
- * After calling this function, `dd_profiler_get_status()` will return `DD_PROFILER_STATUS_STOPPED`.
+ * The status becomes `DD_PROFILER_STATUS_STOPPED`, except that allocation failures
+ * remain `DD_PROFILER_STATUS_ALLOCATION_FAILED`.
  *
  * @note Safe to call multiple times - subsequent calls are no-ops
  * @note Safe to call even if profiling was never started
  *
- * @warning Once stopped, profiling cannot be restarted in the same process
+ * @warning An allocation failure prevents restarting profiling in the same process.
  *
  * @see `dd_profiler_get_status()`
  */
@@ -275,6 +294,8 @@ dd_profile_t* dd_profiler_get_profile(void);
  * Requests a flush of pending samples, then atomically swaps the internal
  * profile with a fresh empty one in the aggregation stream. Sampling continues
  * uninterrupted into the new profile.
+ * After an allocation failure, releases profiling resources and returns NULL.
+ * The failed capture is discarded and the failure status is preserved.
  *
  * @return Typed handle to profile data, or NULL if:
  *         - Profiling was never started
@@ -311,7 +332,7 @@ void dd_profiler_destroy(void);
 }
 #endif
 
-#endif // !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // __APPLE__
 
 #endif // DD_PROFILER_PROFILER_H_

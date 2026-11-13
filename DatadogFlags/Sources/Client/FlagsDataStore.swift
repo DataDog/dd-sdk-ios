@@ -9,34 +9,57 @@ import DatadogInternal
 
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
-    private static let decoder = JSONDecoder()
-    // Older native SDKs and React Native bridges accept only version 1.
+    private static let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        if let key = CodingUserInfoKey.decodesStoredVariations {
+            decoder.userInfo[key] = true
+        }
+        return decoder
+    }()
+    // Version 2 readers support obfuscated keys but do not understand flag selection or experimentation opt-out.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
+    // Version 3 readers understand flag selection and experimentation opt-out. Earlier readers skip a cache
+    // filtered by either, because it does not hold the full flag configuration for its subject.
+    private static let filteredAssignmentsVersion: DataStoreKeyVersion = 3
+    private static let knownVersions: Set<DataStoreKeyVersion> = [
+        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion
+    ]
 
     let featureScope: FeatureScope
 
     func setFlagsData(_ flagsData: FlagsData, forClientNamed clientName: String) {
+        guard let encoded = encodeFlagsData(flagsData) else {
+            return
+        }
+
+        setEncodedFlagsData(encoded.data, forClientNamed: clientName, version: encoded.version)
+    }
+
+    func encodeFlagsData(_ flagsData: FlagsData) -> (data: Data, version: DataStoreKeyVersion)? {
         do {
             let data = try Self.encoder.encode(flagsData)
-            let version = flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : Self.encodedAssignmentsVersion
-            featureScope.dataStore.setValue(data, forKey: clientName, version: version)
+            return (data, Self.version(for: flagsData))
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: flagsData)) in Flags Data Store", error: error)
+            return nil
         }
+    }
+
+    func setEncodedFlagsData(_ data: Data, forClientNamed clientName: String, version: DataStoreKeyVersion) {
+        featureScope.dataStore.setValue(data, forKey: clientName, version: version)
     }
 
     func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {
         featureScope.dataStore.value(forKey: clientName) { result in
-            let encodedData = result.data(expectedVersion: Self.encodedAssignmentsVersion)
-            guard let data = encodedData ?? result.data() else {
+            guard case let .value(data, version) = result, Self.knownVersions.contains(version) else {
                 callback(nil)
                 return
             }
 
             do {
                 let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
-                guard (flagsData.obfuscation != nil) == (encodedData != nil) else {
+                guard Self.version(for: flagsData) == version else {
                     throw FlagsError.invalidResponse
                 }
                 callback(flagsData)
@@ -46,6 +69,14 @@ internal struct FlagsDataStore {
                 callback(nil)
             }
         }
+    }
+
+    private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
+        // Protect both key encodings from readers that would ignore the persisted selection or policy.
+        if flagsData.flagSelection != nil || flagsData.experimentationOptOutPolicy != nil {
+            return filteredAssignmentsVersion
+        }
+        return flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : encodedAssignmentsVersion
     }
 
     func removeFlagsData(forClientNamed clientName: String) {

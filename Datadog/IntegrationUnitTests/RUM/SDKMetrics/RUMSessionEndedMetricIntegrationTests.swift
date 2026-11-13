@@ -189,7 +189,10 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         monitor.stopSession()
 
         // Then
-        let events = core.waitAndReturnEventsData(ofFeature: RUMFeature.name, timeout: .now() + 0.5)
+        // Telemetry (e.g. API usage) is sampled independently of the RUM session, so it is excluded.
+        let events = try core.waitAndReturnEventsData(ofFeature: RUMFeature.name, timeout: .now() + 0.5)
+            .map { try RUMEventMatcher.fromJSONObjectData($0) }
+            .filter { try $0.eventType() != "telemetry" }
         XCTAssertTrue(events.isEmpty)
     }
 

@@ -17,6 +17,7 @@ internal enum BatchMetric {
         case "rum":             return "rum"
         case "logging":         return "logs"
         case "tracing":         return "trace"
+        case "tracing-client-stats": return "trace"
         case "session-replay":  return "sr"
         case "session-replay-resources":  return "sr-resources"
         case "flags":           return "flags"

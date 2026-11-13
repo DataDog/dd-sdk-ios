@@ -12,6 +12,7 @@ import DatadogInternal
 import TestUtilities
 import WebKit
 
+@_spi(Experimental)
 @testable import DatadogRUM
 @testable import DatadogWebViewTracking
 
@@ -142,7 +143,8 @@ class WebEventIntegrationTests: XCTestCase {
             "session": {
               "id": "\(expectedUUID)",
               "type": "user",
-              "is_main_process": true
+              "is_main_process": true,
+              "has_timeseries": false
             },
             "type": "view",
             "view": {
@@ -186,6 +188,51 @@ class WebEventIntegrationTests: XCTestCase {
         }
         """
         )
+    }
+
+    func testGivenTimeseriesCollected_whenWebEventIsReceived_itSetsSessionHasTimeseries() throws {
+        // Given
+        let randomUUID: RUMUUID = .mockRandom()
+        RUM.enable(with: .mockWith {
+            $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
+            $0.timeseries = .init(collectTypes: [.memory])
+        }, in: core)
+        RUMMonitor.shared(in: core).startView(key: "native-view")
+
+        // The collector samples on a real timer, so wait until it reports data for the active session
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let collector = try XCTUnwrap(rum.timeseriesCollector)
+        let sessionID = randomUUID.toRUMDataFormat
+        let collected = expectation(description: "Timeseries data is collected")
+        wait(until: { collector.hasCollectedData(sessionID: sessionID) }, andThenFulfill: collected)
+        wait(for: [collected], timeout: 5)
+
+        let webViewID = "64308fd4-83f9-48cb-b3e1-1e91f6721230"
+        let body = """
+        {
+          "eventType": "view",
+          "event": {
+            "application": { "id": "xxx" },
+            "date": \(1_635_932_927_012),
+            "session": { "id": "0110cab4-7471-480e-aa4e-7ce039ced355", "type": "user" },
+            "type": "view",
+            "view": { "id": "\(webViewID)", "url": "http://localhost:8080/test.html" },
+            "_dd": { "document_version": 1, "format_version": 2 }
+          }
+        }
+        """
+
+        // When
+        controller.send(body: body)
+        controller.flush()
+
+        // Then
+        let webViewEvent = try XCTUnwrap(
+            core.waitAndReturnRUMEventMatchers().first { (try? $0.attribute(forKeyPath: "view.id")) == webViewID }
+        )
+        XCTAssertEqual(try webViewEvent.attribute(forKeyPath: "session.id"), sessionID)
+        XCTAssertEqual(try webViewEvent.attribute(forKeyPath: "session.has_timeseries"), true)
+        XCTAssertEqual(try webViewEvent.attribute(forKeyPath: "session.is_main_process"), true)
     }
 
     func testWebTelemetryIntegration() throws {

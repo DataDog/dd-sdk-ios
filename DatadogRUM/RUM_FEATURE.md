@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-19
-sdk_version: 3.20.0
-verified_against_commit: 56ffa64c5
+last_updated: 2026-11-06
+sdk_version: 3.21.0
+verified_against_commit: 2329c69db
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -100,7 +100,7 @@ RUM.enable(
         // Default: true
         trackFrustrations: true,
         
-        // Track events when no view is active (creates background view)
+        // Track events when no view is active (creates background view, unavailable on macOS)
         // Default: false
         // Warning: May increase session count and billing
         trackBackgroundEvents: false,
@@ -116,7 +116,7 @@ RUM.enable(
         // Requires Crash Reporting for stack traces
         appHangThreshold: 2.0,
         
-        // Track watchdog terminations as RUM errors
+        // Track watchdog terminations as RUM errors (unavailable on macOS)
         // Default: false
         trackWatchdogTerminations: false,
         
@@ -170,11 +170,11 @@ RUM.enable(
         // Default: true
         trackAnonymousUser: true,
         
-        // Track memory warnings as RUM errors
+        // Track memory warnings as RUM errors (unavailable on watchOS and macOS)
         // Default: true
         trackMemoryWarnings: true,
         
-        // Track slow frames / view hitches
+        // Track slow frames / view hitches (unavailable on macOS)
         // Default: true
         trackSlowFrames: true,
         
@@ -243,7 +243,7 @@ monitor.stopView(key: "ProductList")
   - Resources: `startResource()` accepts a request, URL, or HTTP method and URL string; `addResourceMetrics()` adds URLSession timing; `stopResource()` accepts a response or status code and `RUMResourceType`; `stopResourceWithError()` accepts an `Error` or message
   - Actions: `addAction()`, `startAction()`, `stopAction()`; `RUMActionType` cases are `.tap`, `.click`, `.scroll`, `.swipe`, and `.custom`
   - Sessions: `currentSessionID(completion:)`; `stopSession()` ends the session, with the next `startView()` or `addAction()` starting a new one
-  - App launch: `reportAppFullyDisplayed()` records time to full display (TTFD)
+  - App launch: `reportAppFullyDisplayed()` records time to full display (TTFD). RUM also reports time to initial display (TTID) automatically: the first rendered frame on iOS, tvOS and visionOS, and the first window shown on macOS, of any kind, including a menu bar item. TTFD is written after TTID and is dropped when there is no TTID, for example when a macOS app never shows a window. Neither is reported on watchOS.
   - Feature flag evaluations: `addFeatureFlagEvaluation(name:value:)` records the result on the current view
   - Operations (preview): `startOperation(name:operationKey:attributes:options:)`, `succeedOperation(name:operationKey:attributes:)`, `failOperation(name:operationKey:reason:attributes:)`. `RUMFeatureOperationFailureReason` cases are `.error`, `.abandoned`, and `.other`; `options` can supply profiling options (see `DatadogProfiling/PROFILING_FEATURE.md`).
   - **Deprecated** operation aliases: `startFeatureOperation()`, `succeedFeatureOperation()`, and `failFeatureOperation()` remain available; use the corresponding operation methods above
@@ -268,7 +268,7 @@ Requires configuration to be set, otherwise disabled by default:
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
 - **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
-- **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
+- **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view. Unavailable on macOS, where rendering is not measured yet
 
 ### Sampling
 - **Sessions**: `sessionSampleRate` (default: 100%)
@@ -305,13 +305,14 @@ Event mappers allow modifying or dropping events before upload:
   ```
 - `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
 - `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
+- Timeseries are not collected in app extensions (e.g. widgets): `RUMFeature` creates no collector when the bundle type is not `.iOSApp`, because extensions receive no app lifecycle notifications to pause collection and write buffered samples.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 
 ## Remote Configuration
 
 When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `RUM.enable(with:)` runs, it is merged onto the in-code `RUM.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
 
-- **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackBackgroundEvents`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `trackSlowFrames`, `trackWatchdogTerminations`, `vitalsUpdateFrequency`, and (except on watchOS) `trackMemoryWarnings`/`trackUserInteractions`. `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
+- **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `vitalsUpdateFrequency`, `trackBackgroundEvents`/`trackSlowFrames`/`trackWatchdogTerminations` (except on macOS), `trackUserInteractions` (except on watchOS), and `trackMemoryWarnings` (except on watchOS and macOS). `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
 - **`trace` namespace** configures distributed tracing on RUM's own URLSession instrumentation (traced hosts, sample rate, header/propagator types, injection strategy), merged field by field onto any in-code `urlSessionTracking.firstPartyHostsTracing`. An explicit `rum.trackResources == false` disables that instrumentation and suppresses `trace` entirely, regardless of the hosts it declares.
 - A parameter the remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration fetched) leaves the configuration unchanged.
 - See `RUMConfiguration+RemoteConfiguration.swift` for the full merge rules, and `DatadogTrace/TRACE_FEATURE.md#remote-configuration` for how Trace's own remote `trace.sampleRate` differs from this one (RUM owns propagation enablement; Trace only owns its default tracer's span sample rate).
@@ -355,10 +356,11 @@ WebView RUM events are linked to the most recent native view with Session Replay
 ## Additional Context
 
 - RUM uses sampling decisions at session start - once a session is sampled out, no events from that session are sent
-- Background event tracking (`trackBackgroundEvents`) creates "fake" background views and may increase session count
+- Background event tracking (`trackBackgroundEvents`) creates "fake" background views and may increase session count. The option does not exist on macOS, where apps have no background state: once a view was tracked, events with no active view go to a "NoActiveView" view
 - View tracking involves method swizzling of UIViewController lifecycle methods
 - All automatic tracking can be disabled by not setting predicates; manual tracking always available via `RUMMonitor.shared()`
 - If an automatically tracked URLSession transfer fails after receiving HTTP headers, RUM reports one network Error with the received status and no completed Resource. Complete responses, including empty HEAD/204 and HTTP error-status responses without a transport error, keep the Resource path. Use `errorEventMapper` to modify or drop the failed-transfer Error.
 - A tracked Resource completion updates action counters only in its owning view. Within that view, it still updates the current eligible action; it does not bind the completion to the action that was active when the request started.
 - A manual Resource still pending when its session expires (timeout or max duration) is dropped: its later stop sends no event and doesn't update actions in the new session. After `stopSession()`, pending Resources still complete.
+- After `stopSession()`, a watchdog termination is not reported until a view of a new session is tracked.
 - For completed Resources, URLSession metrics populate `delivery_type` and `transfer_size` when available.

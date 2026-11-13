@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -12,6 +12,42 @@ import DatadogInternal
 
 final class ProfilingTelemetryControllerTests: XCTestCase {
     private let telemetry = TelemetryMock()
+
+    func testTrackingAllocationFailure_sendsExecutionFailedWithTelemetryMetadata() throws {
+        // Given
+        let configMetric = ConfigurationMetric(bufferSize: 123)
+        let controller = ProfilingTelemetryController(sampleRate: 37, telemetry: telemetry, configMetric: configMetric)
+
+        // When
+        controller.send(
+            .allocationFailure(
+                startReason: .applicationLaunch,
+                status: .error(reason: .memoryAllocationFailed),
+                appStartInfo: "user_launch"
+            )
+        )
+
+        // Then
+        XCTAssertEqual(telemetry.messages.count, 1)
+        let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
+        XCTAssertNil(metric.cycleIndex)
+        XCTAssertNil(metric.duration)
+        XCTAssertNil(metric.fileSize)
+        XCTAssertEqual(metric.errorCode, 4)
+        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.allocationFailureErrorMessage)
+        XCTAssertEqual(metric.appStartInfo, "user_launch")
+
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        XCTAssertEqual(metricTelemetry.sampleRate, 37.0)
+        let configuration = try XCTUnwrap(
+            metricTelemetry.attributes[ConfigurationMetric.Constants.configurationKey] as? ConfigurationMetric
+        )
+        XCTAssertEqual(configuration.bufferSize, 123)
+        XCTAssertNotNil(
+            metricTelemetry.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey] as? AggregationDiagnosticsMetric.Attributes
+        )
+    }
 
     func testTrackingProfilingSessionMetric_whileAppLaunchProfilingIsRunning() throws {
         // Given
@@ -327,4 +363,4 @@ private extension Array where Element == TelemetryMessage {
             .attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes
     }
 }
-#endif // !os(watchOS)
+#endif // !os(watchOS) && !os(macOS)

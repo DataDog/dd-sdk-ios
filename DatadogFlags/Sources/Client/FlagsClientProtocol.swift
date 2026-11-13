@@ -19,6 +19,43 @@ public protocol FlagsClientProtocol: AnyObject {
     /// ``FlagsClientState/stale``, or ``FlagsClientState/error``.
     var state: FlagsStateObservable { get }
 
+    /// Calls the handler once per registration with the complete keys of the first accepted disk or network configuration.
+    ///
+    /// Conformers that do not implement this method use a compatibility default that never invokes
+    /// or retains the listener and returns an inert subscription.
+    ///
+    /// Exception: a no-op fallback client immediately calls each registration on the registering thread
+    /// with a configuration-changed event and an empty key list. This completes the notification only:
+    /// the fallback remains in the error state, evaluations return defaults with providerNotReady,
+    /// and setting context still fails. It does not indicate an accepted configuration or initialization.
+    ///
+    /// This is one configuration notification, not one notification per flag or an inventory of all server flags.
+    /// Valid empty configurations complete it; missing, malformed or failed loads do not consume the signal.
+    /// Key ordering is unspecified. The first event is retained across subsequent updates and resets. Its keys do not pin a snapshot:
+    /// evaluations in the handler read current assignments, which may differ. This is not readiness.
+    /// A failed fetch retains matching-context assignments as stale; a mismatched-context failure clears
+    /// in-memory assignments unless a newer request has already succeeded. The first event remains retained.
+    ///
+    /// Once the first event is published, replay is synchronous before this method returns and performs
+    /// no SDK I/O itself. Work performed by the handler, including evaluation, has its usual behaviour.
+    /// Pending disk and network delivery run on a background queue, away from shared SDK storage
+    /// and network completion queues, outside SDK locks, after assignments and internal state are committed.
+    /// Delivery proceeds independently of customer context completions and state listeners; there is
+    /// no relative ordering guarantee between those callbacks and firstFlags.
+    /// Delivery order across registrations is not guaranteed: a later registration may be notified before
+    /// an earlier pending one. Handlers are nonthrowing. Dispatch UI work as needed.
+    ///
+    /// The returned subscription supports thread-safe, idempotent cancellation of only this registration.
+    /// It releases a pending handler and suppresses delivery until that handler is atomically claimed.
+    /// It neither interrupts nor waits for claimed delivery, clears the first event, nor cancels loading.
+    /// Discarding the subscription does not cancel. Pending captures are released on delivery, cancellation,
+    /// or destruction of the client repository. If no configuration is accepted, any captured object may
+    /// be retained indefinitely. Cancel when no longer needed and consider weak captures, especially
+    /// for the client, to avoid a retain cycle.
+    /// Synchronous replay may finish before the subscription is returned.
+    @discardableResult
+    func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
+
     /// Sets the evaluation context for flag targeting.
     ///
     /// The evaluation context includes user or session information used to determine which flag
@@ -81,6 +118,15 @@ public protocol FlagsClientProtocol: AnyObject {
 }
 
 extension FlagsClientProtocol {
+    /// Compatibility default for conformers without first-flags notifications.
+    ///
+    /// Never invokes or retains the listener. Returns an inert, thread-safe subscription.
+    /// SDK-owned clients implement their own delivery behaviour.
+    @discardableResult
+    public func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        NOPFlagsSubscription()
+    }
+
     /// Default state observable for backward compatibility with external conformers.
     ///
     /// External implementations of ``FlagsClientProtocol`` that don't provide their own

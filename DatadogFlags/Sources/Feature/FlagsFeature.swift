@@ -16,6 +16,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     }
 
     let flagAssignmentsFetcher: any FlagAssignmentsFetching
+    let flagSelection: CanonicalFlagSelection?
     let initializationTimeout: TimeInterval?
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
@@ -30,11 +31,14 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     init(
         configuration: Flags.Configuration,
         featureScope: FeatureScope,
-        core: DatadogCoreProtocol
+        core: DatadogCoreProtocol,
+        flagAssignmentsFetcher: (any FlagAssignmentsFetching)? = nil
     ) {
-        flagAssignmentsFetcher = FlagAssignmentsFetcher(
+        flagSelection = CanonicalFlagSelection.resolve(configuration.flagSelection, telemetry: featureScope.telemetry)
+        self.flagAssignmentsFetcher = flagAssignmentsFetcher ?? FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
+            flagSelection: flagSelection,
             featureScope: featureScope
         )
         initializationTimeout = configuration.initializationTimeout
@@ -93,5 +97,6 @@ internal struct FlagsFeature: DatadogRemoteFeature {
 extension FlagsFeature: Flushable {
     func flush() {
         evaluationAggregator?.sendEvaluations()
+        clientRegistry.flushClients()
     }
 }

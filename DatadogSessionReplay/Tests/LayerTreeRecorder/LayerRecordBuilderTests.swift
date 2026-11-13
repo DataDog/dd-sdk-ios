@@ -81,22 +81,25 @@ struct LayerRecordBuilderTests {
         #expect(fullSnapshotRecord.data.wireframes.map { $0.id } == [42])
     }
 
-    @Test("Wireframe mutation record is nil when wireframes are unchanged")
-    func wireframeMutationRecordIsNilWhenWireframesAreUnchanged() throws {
+    @Test("Mutation records are empty when wireframes and the composition tree are unchanged")
+    func mutationRecordsAreEmptyWhenNothingChanges() throws {
         // Given
         let builder = LayerRecordBuilder()
         let snapshot = LayerTreeSnapshot.mockWith()
         let wireframes: [SRWireframe] = [.shapeWireframe(value: .mockWith(id: 1))]
+        let compositionTree = SRCompositionTree(root: .mockWith(id: 2, children: []))
 
         // When
-        let record = try builder.wireframeMutationRecord(
+        let records = try builder.mutationRecords(
             from: snapshot,
             wireframes: wireframes,
-            previousWireframes: wireframes
+            previousWireframes: wireframes,
+            compositionTree: compositionTree,
+            previousCompositionTree: compositionTree
         )
 
         // Then
-        #expect(record == nil)
+        #expect(records.isEmpty)
     }
 
     @Test("Wireframe mutation record includes additions, removals, and updates")
@@ -113,18 +116,27 @@ struct LayerRecordBuilderTests {
             .shapeWireframe(value: .mockWith(id: 3))
         ]
 
+        let compositionTree = SRCompositionTree(root: .mockWith(id: 4, children: []))
+
         // When
-        let record = try #require(try builder.wireframeMutationRecord(
+        let records = try builder.mutationRecords(
             from: snapshot,
             wireframes: wireframes,
-            previousWireframes: previousWireframes
-        ))
+            previousWireframes: previousWireframes,
+            compositionTree: compositionTree,
+            previousCompositionTree: compositionTree
+        )
 
         // Then
-        let incrementalRecord = try #require(record.incrementalSnapshot)
-        let mutationData = try #require(incrementalRecord.mutationData)
+        try #require(records.count == 2)
+        #expect(records.map(\.timestamp) == [45_000, 45_000])
+        let emptyMutation = try #require(records[1].incrementalSnapshot?.compositionTreeMutationData)
+        #expect(emptyMutation.adds == nil)
+        #expect(emptyMutation.removes == nil)
+        #expect(emptyMutation.root == nil)
+        #expect(emptyMutation.updates == nil)
 
-        #expect(incrementalRecord.timestamp == 45_000)
+        let mutationData = try #require(records[0].incrementalSnapshot?.mutationData)
         #expect(mutationData.adds.count == 1)
         #expect(mutationData.adds.first?.previousId == 1)
         #expect(mutationData.adds.first?.wireframe.id == 3)
@@ -138,26 +150,6 @@ struct LayerRecordBuilderTests {
         #expect(shapeUpdate.id == 1)
         #expect(shapeUpdate.height == 120)
         #expect(shapeUpdate.width == nil)
-    }
-
-    @Test("Composition tree mutation record is nil when the composition tree is unchanged")
-    func compositionTreeMutationRecordIsNilWhenCompositionTreeIsUnchanged() throws {
-        // Given
-        let builder = LayerRecordBuilder()
-        let snapshot = LayerTreeSnapshot.mockWith()
-        let compositionTree = SRCompositionTree(
-            root: .mockWith(id: 1, children: [])
-        )
-
-        // When
-        let record = try builder.compositionTreeMutationRecord(
-            from: snapshot,
-            compositionTree: compositionTree,
-            previousCompositionTree: compositionTree
-        )
-
-        // Then
-        #expect(record == nil)
     }
 
     @Test("Composition tree mutation record includes composition tree mutation data")
@@ -182,17 +174,23 @@ struct LayerRecordBuilderTests {
         )
 
         // When
-        let record = try #require(try builder.compositionTreeMutationRecord(
+        let records = try builder.mutationRecords(
             from: snapshot,
+            wireframes: [],
+            previousWireframes: [],
             compositionTree: compositionTree,
             previousCompositionTree: previousCompositionTree
-        ))
+        )
 
         // Then
-        let incrementalRecord = try #require(record.incrementalSnapshot)
-        let mutationData = try #require(incrementalRecord.compositionTreeMutationData)
+        try #require(records.count == 2)
+        #expect(records.map(\.timestamp) == [46_000, 46_000])
+        let emptyMutation = try #require(records[0].incrementalSnapshot?.mutationData)
+        #expect(emptyMutation.adds.isEmpty)
+        #expect(emptyMutation.removes.isEmpty)
+        #expect(emptyMutation.updates.isEmpty)
 
-        #expect(incrementalRecord.timestamp == 46_000)
+        let mutationData = try #require(records[1].incrementalSnapshot?.compositionTreeMutationData)
         #expect(mutationData.root?.children.map { $0.id } == [2, 3])
         #expect(mutationData.adds?.map { $0.id } == [3])
         #expect(mutationData.removes == nil)

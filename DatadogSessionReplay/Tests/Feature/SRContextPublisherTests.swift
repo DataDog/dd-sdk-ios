@@ -16,10 +16,11 @@ class SRContextPublisherTests: XCTestCase {
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
 
-        srContextPublisher.setHasReplay(true)
+        srContextPublisher.setHasReplay(true, sessionID: "session-id")
 
-        let hasReplay = try XCTUnwrap(core.hasReplay)
-        XCTAssertTrue(hasReplay)
+        let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
+        XCTAssertTrue(hasReplay.value)
+        XCTAssertEqual(hasReplay.sessionID, "session-id")
     }
 
     func testItSetsRecordsCountAccordingly() {
@@ -57,14 +58,14 @@ class SRContextPublisherTests: XCTestCase {
         let srContextPublisher = SRContextPublisher(core: core)
         let recordsCountByViewID: [String: Int64] = ["view-id": 2]
 
-        srContextPublisher.setHasReplay(true)
+        srContextPublisher.setHasReplay(true, sessionID: nil)
         srContextPublisher.incrementRecordCount(by: 2, forViewID: "view-id")
 
         XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
         let hasReplay = try XCTUnwrap(core.hasReplay)
         XCTAssertTrue(hasReplay)
 
-        srContextPublisher.setHasReplay(false)
+        srContextPublisher.setHasReplay(false, sessionID: nil)
 
         let hasReplay2 = try XCTUnwrap(core.hasReplay)
         XCTAssertFalse(hasReplay2)

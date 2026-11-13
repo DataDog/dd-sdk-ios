@@ -6,15 +6,17 @@
 
 #include "dd_profiler.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include "profile.h"
 #include "mach_sampling_profiler.h"
 #include "binary_image_resolver.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <Block.h>
 #include <cstdlib>
 #include <cstring>
+#include <atomic>
 #include <mutex>
 #include <new>
 #include <random>
@@ -53,7 +55,40 @@ static dd_profiler_diagnostics_t empty_diagnostics() {
 namespace dd::profiler { class dd_profiler; }
 
 static dd::profiler::dd_profiler* g_dd_profiler = nullptr;
-static std::mutex g_dd_profiler_mutex;
+// SDK callbacks can still use this mutex while exit-time cleanup runs.
+[[clang::no_destroy]] static std::mutex g_dd_profiler_mutex;
+static std::atomic<bool> g_fail_next_aggregation{false};
+
+// Notification only takes this separate lock.
+[[clang::no_destroy]] static std::mutex g_allocation_failure_mutex;
+static const void* g_allocation_failure_owner = nullptr;
+static dispatch_block_t g_allocation_failure_callback = nullptr;
+
+/**
+ * Releases the copied callback and clears its slot.
+ */
+static void release_allocation_failure_callback_locked() {
+    if (g_allocation_failure_callback) Block_release(g_allocation_failure_callback);
+    g_allocation_failure_callback = nullptr;
+}
+
+/**
+ * Invokes and consumes the one-shot callback.
+ * The callback runs synchronously and must enqueue work without calling profiler APIs.
+ */
+static void notify_allocation_failure_locked() {
+    if (!g_allocation_failure_callback) return;
+    g_allocation_failure_callback();
+    release_allocation_failure_callback_locked();
+}
+
+/**
+ * Notifies allocation failure.
+ */
+static void notify_allocation_failure() {
+    std::lock_guard<std::mutex> lock(g_allocation_failure_mutex);
+    notify_allocation_failure_locked();
+}
 
 /**
  * Checks if ThreadSanitizer is enabled
@@ -181,7 +216,7 @@ namespace dd::profiler {
  */
 class dd_profiler {
 public:
-    dd_profiler_status_t status = DD_PROFILER_STATUS_NOT_STARTED;
+    std::atomic<dd_profiler_status_t> status{DD_PROFILER_STATUS_NOT_STARTED};
 
     explicit dd_profiler(
         double sample_rate = DD_PROFILER_MAX_SAMPLE_RATE,
@@ -233,22 +268,33 @@ public:
     }
 
     int start() {
+        if (status.load(std::memory_order_relaxed) == DD_PROFILER_STATUS_ALLOCATION_FAILED) return 0;
         if (!create_profile_and_profiler()) return 0;
         if (status == DD_PROFILER_STATUS_RUNNING) return 1;
 
         if (!profiler->start_sampling()) {
-            status = DD_PROFILER_STATUS_NOT_STARTED;
+            set_status(DD_PROFILER_STATUS_NOT_STARTED);
             return 0;
         }
 
-        status = DD_PROFILER_STATUS_RUNNING;
+        set_status(DD_PROFILER_STATUS_RUNNING);
         return 1;
     }
 
     void stop() {
-        if (!profiler) return;
-        status = DD_PROFILER_STATUS_STOPPED;
-        profiler->stop_sampling();
+        if (profiler) {
+            set_status(DD_PROFILER_STATUS_STOPPED);
+            profiler->stop_sampling();
+        }
+        if (status.load(std::memory_order_relaxed) == DD_PROFILER_STATUS_ALLOCATION_FAILED) {
+            if (profiler) profiler->consume_diagnostics(terminal_diagnostics);
+            delete profiler;
+            profiler = nullptr;
+            delete profile;
+            profile = nullptr;
+            delete image_cache;
+            image_cache = nullptr;
+        }
     }
 
     /**
@@ -278,13 +324,17 @@ public:
     }
 
     /**
-     * Flushes the sampling buffer and returns the profile, swapping in a fresh one.
+     * Flushes and rotates the profile, or discards it after allocation failure.
      * The swap runs in the aggregation worker's ordered stream, giving this
      * flush a deterministic profile boundary.
      *
      * @return The harvested profile, or nullptr if no profile exists or it has no samples.
      */
     profile* flush_and_get_profile() {
+        if (status.load(std::memory_order_relaxed) == DD_PROFILER_STATUS_ALLOCATION_FAILED) {
+            stop();
+            return nullptr;
+        }
         if (!profiler) {
             return nullptr;
         }
@@ -309,6 +359,11 @@ public:
             }
         }
 
+        if (status.load(std::memory_order_relaxed) == DD_PROFILER_STATUS_ALLOCATION_FAILED) {
+            delete flushed_profile;
+            stop();
+            return nullptr;
+        }
         if (flushed_profile && flushed_profile->samples().empty()) {
             delete flushed_profile;
             return nullptr;
@@ -322,12 +377,27 @@ public:
 
         if (profiler) {
             profiler->consume_diagnostics(result);
+        } else {
+            result = std::exchange(terminal_diagnostics, empty_diagnostics());
         }
 
         return result;
     }
 
 private:
+    void handle_allocation_failure() {
+        status.store(DD_PROFILER_STATUS_ALLOCATION_FAILED, std::memory_order_relaxed);
+        if (profiler) profiler->request_stop(true);
+        notify_allocation_failure();
+    }
+
+    // A concurrent start or stop must never clear the worker's terminal failure.
+    void set_status(dd_profiler_status_t next) {
+        auto current = status.load(std::memory_order_relaxed);
+        while (current != DD_PROFILER_STATUS_ALLOCATION_FAILED
+            && !status.compare_exchange_weak(current, next, std::memory_order_relaxed)) {}
+    }
+
     /**
      * @brief Swaps the active profile at a flush boundary.
      *
@@ -343,12 +413,15 @@ private:
     ) {
         std::lock_guard<std::mutex> lock(profile_mutex);
 
+        if (status.load(std::memory_order_relaxed) == DD_PROFILER_STATUS_ALLOCATION_FAILED) {
+            delete next_profile;
+            return;
+        }
+
         flushed_profile = profile;
         profile = next_profile;
-
         if (!profile) {
-            status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
-            if (profiler) profiler->request_stop();
+            handle_allocation_failure();
         }
     }
 
@@ -360,7 +433,7 @@ private:
     bool create_profile_and_profiler() {
         if (is_thread_sanitizer_enabled()) {
             printf("[DATADOG SDK] 🐶 → Profiling is disabled because ThreadSanitizer is active. Please disable ThreadSanitizer to enable profiling.\n");
-            status = DD_PROFILER_STATUS_NOT_STARTED;
+            set_status(DD_PROFILER_STATUS_NOT_STARTED);
             return false;
         }
 
@@ -371,7 +444,7 @@ private:
             DD_PROFILER_RECORD_CPU_TIME
         );
         if (!profile) {
-            status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
+            handle_allocation_failure();
             return false;
         }
         profile->set_server_time_offset_ns(server_time_offset_ns);
@@ -384,7 +457,7 @@ private:
         if (!profiler) {
             delete profile;
             profile = nullptr;
-            status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
+            handle_allocation_failure();
             return false;
         }
 
@@ -401,6 +474,7 @@ private:
     uint64_t sampling_interval_ns = SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS;
     int64_t server_time_offset_ns = 0;
     bool started_at_launch = false;
+    dd_profiler_diagnostics_t terminal_diagnostics = empty_diagnostics();
 
     /**
      * Mutex protecting the profile pointer.
@@ -428,13 +502,23 @@ private:
 
         if (!profile) return;
 
-        profile->add_samples(traces, count, profiler->image_cache);
+        try {
+            if (g_fail_next_aggregation.exchange(false, std::memory_order_relaxed)) {
+                throw std::bad_alloc();
+            }
+            profile->add_samples(traces, count, profiler->image_cache);
+        } catch (const std::bad_alloc&) {
+            profiler->handle_allocation_failure();
+            delete profiler->profile;
+            profiler->profile = nullptr;
+            return;
+        }
 
         // Check for timeout after adding samples
         int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
         if (duration_ns > profiler->timeout_ns) {
             profiler->profiler->request_stop();
-            profiler->status = DD_PROFILER_STATUS_TIMEOUT;
+            profiler->set_status(DD_PROFILER_STATUS_TIMEOUT);
         }
     }
 };
@@ -491,7 +575,29 @@ void dd_profiler_stop(void) {
 
 dd_profiler_status_t dd_profiler_get_status(void) {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
-    return g_dd_profiler ? g_dd_profiler->status : DD_PROFILER_STATUS_NOT_CREATED;
+    return g_dd_profiler ? g_dd_profiler->status.load(std::memory_order_relaxed) : DD_PROFILER_STATUS_NOT_CREATED;
+}
+
+void dd_profiler_set_allocation_failure_callback(const void* owner, dispatch_block_t callback) {
+    if (!callback) {
+        std::lock_guard<std::mutex> lock(g_allocation_failure_mutex);
+        if (g_allocation_failure_owner == owner) {
+            release_allocation_failure_callback_locked();
+            g_allocation_failure_owner = nullptr;
+        }
+        return;
+    }
+    dispatch_block_t copied_callback = Block_copy(callback);
+    if (!copied_callback) return;
+
+    std::lock_guard<std::mutex> profiler_lock(g_dd_profiler_mutex);
+    std::lock_guard<std::mutex> allocation_failure_lock(g_allocation_failure_mutex);
+    release_allocation_failure_callback_locked();
+    g_allocation_failure_owner = owner;
+    g_allocation_failure_callback = copied_callback;
+    if (g_dd_profiler && g_dd_profiler->status.load(std::memory_order_relaxed) == DD_PROFILER_STATUS_ALLOCATION_FAILED) {
+        notify_allocation_failure_locked();
+    }
 }
 
 dd_profiler_diagnostics_t dd_profiler_diagnostics(void) {
@@ -504,7 +610,7 @@ dd_profiler_diagnostics_t dd_profiler_diagnostics(void) {
 
 bool dd_profiler_is_running() {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
-    return g_dd_profiler ? g_dd_profiler->status == DD_PROFILER_STATUS_RUNNING : false;
+    return g_dd_profiler ? g_dd_profiler->status.load(std::memory_order_relaxed) == DD_PROFILER_STATUS_RUNNING : false;
 }
 
 bool dd_profiler_was_started_at_launch() {
@@ -537,6 +643,10 @@ void dd_profiler_destroy(void) {
 extern "C" {
 #endif
 
+void dd_profiler_fail_next_aggregation_for_testing(void) {
+    g_fail_next_aggregation.store(true, std::memory_order_relaxed);
+}
+
 void dd_profiler_start_testing(
     double sample_rate,
     bool is_prewarming,
@@ -544,6 +654,7 @@ void dd_profiler_start_testing(
     uint64_t hard_limit_bytes
 ) {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    g_fail_next_aggregation.store(false, std::memory_order_relaxed);
     delete g_dd_profiler;
     g_dd_profiler = new (std::nothrow) dd::profiler::dd_profiler(
         sample_rate,
@@ -560,4 +671,4 @@ void dd_profiler_start_testing(
 }
 #endif
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX

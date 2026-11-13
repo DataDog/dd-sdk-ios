@@ -123,7 +123,10 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
-        self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
+        self.contextProvider.subscribe(to: consentPublisher) { context, value in
+            context.trackingConsent = value.consent
+            context.trackingConsentRevision = value.revision
+        }
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
@@ -255,18 +258,23 @@ internal final class DatadogCore {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         if trackingConsent != consentPublisher.consent {
+            // Queues the context update before the migration. A write context read before the update
+            // has the previous consent, and its events are written before the migration runs. A write
+            // context read after it has the new consent.
+            consentPublisher.consent = trackingConsent
             contextProvider.queue.async { [allStorages] in
                 // RUM-3175: To prevent race conditions with ongoing "event write" operations,
                 // data migration must be synchronized on the context queue. This guarantees that
                 // all latest events have been written before migration occurs.
                 allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
             }
-            consentPublisher.consent = trackingConsent
         }
     }
 
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
+        // Features drop their in-memory data first, so it cannot be written after storages are cleared.
+        features.values.compactMap { $0 as? DataClearable }.forEach { $0.clearAllData() }
         allStorages.forEach { $0.clearAllData() }
         allDataStores.forEach { $0.clearAllData() }
     }
@@ -280,8 +288,8 @@ internal final class DatadogCore {
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
         bus.connect(messageReceiver, forKey: key)
-        contextProvider.read { context in
-            self.bus.queue.async { messageReceiver.receive(message: .context(context), from: self) }
+        contextProvider.read { [weak self] context in
+            self?.bus.deliver(.context(context), to: messageReceiver)
         }
     }
 
@@ -305,7 +313,9 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is non-functional.
+    /// Upon return, all events recorded before this call are stored. Authorized batches were uploaded without retrying
+    /// and then deleted, even if the upload failed. The SDK was deinitialised and its message bus disconnected, so this
+    /// instance of core is non-functional and no message is delivered after return.
     func flushAndTearDown() {
         flush()
 
@@ -316,13 +326,21 @@ internal final class DatadogCore {
         allUploads.forEach { $0.flushAndTearDown() }
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
+        // Deliver messages posted during the final upload, and complete the work they trigger (e.g. writing
+        // telemetry): `stop()` releases storages and disconnects the bus, which drops queued messages.
+        flush()
+
         stop()
+
+        // Wait for a delivery that may still be in progress, so that none runs upon return.
+        bus.flush()
     }
 
     /// Uploads all pending data immediately without tearing down the SDK.
     ///
     /// Unlike `flushAndTearDown()`, this method leaves the SDK fully operational after return.
-    /// Upon return, it is safe to assume that all events were stored and got uploaded.
+    /// Upon return, all events are stored. Authorized batches were uploaded without retrying and then deleted, even if
+    /// the upload failed.
     func flushAndUpload() {
         flush()
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
@@ -331,11 +349,15 @@ internal final class DatadogCore {
     }
 
     /// Stops all processes for this instance of the Datadog core by
-    /// deallocating all Features and their storage & upload units.
+    /// deallocating all Features and their storage & upload units,
+    /// and disconnecting the message bus.
+    ///
+    /// Messages queued on the bus are dropped. A delivery already in progress may still complete after return.
     func stop() {
         remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
+        bus.disconnect()
     }
 }
 

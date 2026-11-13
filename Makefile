@@ -323,6 +323,7 @@ spm-build-macos:
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogWebViewTracking"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogFlags"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogProfiling"
 
 # Builds a new version of the E2E app and publishes it to synthetics.
 e2e-upload:

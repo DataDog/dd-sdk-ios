@@ -70,7 +70,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             break
         }
 
-        if run != .baseline {
+        if run == .baseline {
+            // only instrument the Features shared with
+            // the instrumented run
+            scenario.instrumentBaseline(with: applicationInfo)
+        } else {
             // instrument the application with Datadog SDK
             // when not in baseline run
             scenario.instrument(with: applicationInfo)

@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// An error tha occurs during feature flag evaluation.
+/// An error that occurs during feature flag evaluation.
 ///
 /// Indicates why a flag evaluation may have failed or returned a default value.
 public enum FlagEvaluationError: Error {
@@ -18,6 +18,9 @@ public enum FlagEvaluationError: Error {
 
     /// The flag value type doesn't match the requested type.
     case typeMismatch
+
+    /// The evaluation context is invalid, for example an invalid experimentation opt-out timestamp.
+    case invalidContext
 }
 
 /// Detailed information about a feature flag evaluation.

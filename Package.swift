@@ -78,7 +78,11 @@ let package = Package(
 
         .target(
             name: "DatadogInternal",
-            path: "DatadogInternal/Sources",
+            path: "DatadogInternal",
+            sources: ["Sources"],
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy")
+            ],
             swiftSettings: internalSwiftSettings
         ),
         .testTarget(
@@ -195,8 +199,19 @@ let package = Package(
 
         .target(
             name: "DatadogSessionReplay",
-            dependencies: ["DatadogInternal"],
+            dependencies: [
+                .target(name: "DatadogInternal"),
+                .target(
+                    name: "DatadogWebP",
+                    condition: .when(platforms: [.iOS, .macCatalyst])
+                ),
+            ],
             path: "DatadogSessionReplay/Sources"
+        ),
+        .target(
+            name: "DatadogWebP",
+            path: "DatadogSessionReplay/WebP",
+            cSettings: [.headerSearchPath(".")]
         ),
         .testTarget(
             name: "DatadogSessionReplayTests",

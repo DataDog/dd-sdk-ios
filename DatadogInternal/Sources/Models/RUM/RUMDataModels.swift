@@ -1104,6 +1104,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -1276,6 +1277,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -2024,6 +2026,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -2587,6 +2590,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             case linux = "linux"
             case maui = "maui"
             case nodejs = "nodejs"
+            case unreal = "unreal"
         }
 
         /// Description of the thread in the process when error happened.
@@ -2809,6 +2813,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -3613,6 +3618,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -3972,6 +3978,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -4521,6 +4528,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -5234,6 +5242,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -6070,6 +6079,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -6743,6 +6753,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -7566,6 +7577,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -7842,6 +7854,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -9831,6 +9844,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -10107,6 +10121,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -11957,6 +11972,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -12129,6 +12145,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -12695,6 +12712,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -12867,6 +12885,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -13393,6 +13412,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
             case electron = "electron"
             case cpp = "cpp"
             case maui = "maui"
+            case unreal = "unreal"
         }
 
         /// Attributes of the view's container
@@ -13565,6 +13585,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// Stream properties
@@ -13915,6 +13936,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// The telemetry configuration information
@@ -14096,7 +14118,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             /// Whether initialization fails silently if the SDK is already initialized
             public let silentMultipleInit: Bool?
 
-            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui'.
+            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui', 'unreal'.
             public var source: String?
 
             /// Whether Session Replay should automatically start a recording when enabled
@@ -14209,6 +14231,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
 
             /// The version of Unity used in a Unity application
             public var unityVersion: String?
+
+            /// The version of Unreal Engine used in an Unreal Engine application
+            public var unrealVersion: String?
 
             /// Whether the allowed GraphQL urls list is used
             public let useAllowedGraphQlUrls: Bool?
@@ -14360,6 +14385,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case trackViewsManually = "track_views_manually"
                 case trackingConsent = "tracking_consent"
                 case unityVersion = "unity_version"
+                case unrealVersion = "unreal_version"
                 case useAllowedGraphQlUrls = "use_allowed_graph_ql_urls"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
@@ -14432,7 +14458,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - silentMultipleInit: Whether initialization fails silently if the SDK is already initialized
-            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui'.
+            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui', 'unreal'.
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
@@ -14470,6 +14496,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - trackViewsManually: Whether the RUM views creation is handled manually
             ///   - trackingConsent: The initial tracking consent value
             ///   - unityVersion: The version of Unity used in a Unity application
+            ///   - unrealVersion: The version of Unreal Engine used in an Unreal Engine application
             ///   - useAllowedGraphQlUrls: Whether the allowed GraphQL urls list is used
             ///   - useAllowedTracingOrigins: Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             ///   - useAllowedTracingUrls: Whether the allowed tracing urls list is used
@@ -14576,6 +14603,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 trackViewsManually: Bool? = nil,
                 trackingConsent: TrackingConsent? = nil,
                 unityVersion: String? = nil,
+                unrealVersion: String? = nil,
                 useAllowedGraphQlUrls: Bool? = nil,
                 useAllowedTracingOrigins: Bool? = nil,
                 useAllowedTracingUrls: Bool? = nil,
@@ -14682,6 +14710,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.trackViewsManually = trackViewsManually
                 self.trackingConsent = trackingConsent
                 self.unityVersion = unityVersion
+                self.unrealVersion = unrealVersion
                 self.useAllowedGraphQlUrls = useAllowedGraphQlUrls
                 self.useAllowedTracingOrigins = useAllowedTracingOrigins
                 self.useAllowedTracingUrls = useAllowedTracingUrls
@@ -15229,6 +15258,7 @@ public struct TelemetryDebugEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// The telemetry log information
@@ -15539,6 +15569,7 @@ public struct TelemetryErrorEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// The telemetry log information
@@ -15886,6 +15917,7 @@ public struct TelemetryUsageEvent: RUMDataModel, Equatable {
         case electron = "electron"
         case cpp = "cpp"
         case maui = "maui"
+        case unreal = "unreal"
     }
 
     /// The telemetry usage information
@@ -16738,4 +16770,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/97acbf94b6d9ddde18f1ef26ff9e7e4075e7e10a
+// Generated from https://github.com/DataDog/rum-events-format/tree/e56d61f0016c507091c8093befa9e73c42037c70

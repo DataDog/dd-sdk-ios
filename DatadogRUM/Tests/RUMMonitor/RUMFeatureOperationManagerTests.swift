@@ -63,6 +63,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         let event = try XCTUnwrap(vitalEvents.first)
         // View properties
         XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.name, view.viewName)
         XCTAssertEqual(event.view.url, view.viewPath)
 
         // Common properties
@@ -97,6 +98,45 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         // Profiling Status
         XCTAssertEqual(event.dd.profiling?.status, .running)
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
+    }
+
+    func testProcess_WhenViewIsStartedWithKeyAndName_ItReportsViewNameAndKeyAsURL() throws {
+        // Given
+        let viewKey = UUID().uuidString
+        let view: RUMViewScope = .mockWith(path: viewKey, name: "Home")
+
+        // When
+        manager.process(.mockWith(stepType: .start), context: mockContext, writer: mockWriter, activeView: view)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(event.view.name, "Home")
+        XCTAssertEqual(event.view.url, viewKey)
+    }
+
+    func testProcess_WhenOperationStepsRunInDifferentViews_EachStepReportsItsActiveView() throws {
+        // Given
+        let startView: RUMViewScope = .mockWith(path: UUID().uuidString, name: "Home")
+        let endView: RUMViewScope = .mockWith(path: UUID().uuidString, name: "Page")
+
+        // When
+        manager.process(.mockWith(stepType: .start), context: mockContext, writer: mockWriter, activeView: startView)
+        manager.process(.mockWith(stepType: .end), context: mockContext, writer: mockWriter, activeView: endView)
+
+        // Then
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map { $0.view.name }, ["Home", "Page"])
+        XCTAssertEqual(events.map { $0.view.url }, [startView.viewPath, endView.viewPath])
+    }
+
+    func testProcess_WithoutActiveView_ItReportsNoViewName() throws {
+        // When
+        manager.process(.mockWith(stepType: .end), context: mockContext, writer: mockWriter, activeView: nil)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertNil(event.view.name)
+        XCTAssertEqual(event.view.url, "")
     }
 
     func testFeatureOperationCommand_whenAppRunsAsAppExtension_createsVitalEventWithIsMainProcessFalse() throws {
@@ -190,6 +230,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         for (index, operation) in commands.enumerated() {
             let event = vitalEvents[index]
             XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(event.view.name, view.viewName)
             XCTAssertEqual(event.view.url, view.viewPath)
 
             let vital = event.vital

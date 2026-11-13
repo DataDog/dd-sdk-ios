@@ -17,9 +17,9 @@ internal class SRContextPublisher {
         self.core = core
     }
 
-    /// Notifies other Features if Session Replay is recording.
-    func setHasReplay(_ value: Bool) {
-        core?.set(context: SessionReplayCoreContext.HasReplay(value: value))
+    /// Notifies other Features if Session Replay is recording for the RUM session identified by `sessionID`.
+    func setHasReplay(_ value: Bool, sessionID: String?) {
+        core?.set(context: SessionReplayCoreContext.HasReplay(value: value, sessionID: sessionID))
     }
 
     /// Increments the Session Replay record count for a RUM view.

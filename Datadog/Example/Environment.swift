@@ -46,6 +46,11 @@ internal struct Environment {
         return !ProcessInfo.processInfo.arguments.contains(Argument.disableAppHangBacktraces)
     }
 
+    static func readFlagKey() -> String? {
+        let key = ProcessInfo.processInfo.environment["DD_FLAG_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return key?.isEmpty == false ? key : nil
+    }
+
     // MARK: - Info.plist
 
     static func readClientToken() -> String {

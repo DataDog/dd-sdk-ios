@@ -37,6 +37,9 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     /// Creates span events.
     let spanEventBuilder: SpanEventBuilder
 
+    /// Optional callback invoked when any span finishes, regardless of sampling.
+    let onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
+
     // MARK: - Initialization
 
     convenience init(
@@ -47,7 +50,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         spanIDGenerator: SpanIDGenerator,
         dateProvider: DateProvider,
         loggingIntegration: TracingWithLoggingIntegration,
-        spanEventBuilder: SpanEventBuilder
+        spanEventBuilder: SpanEventBuilder,
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) {
         self.init(
             featureScope: core.scope(for: TraceFeature.self),
@@ -57,7 +61,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
-            spanEventBuilder: spanEventBuilder
+            spanEventBuilder: spanEventBuilder,
+            onSpanFinished: onSpanFinished
         )
     }
 
@@ -69,7 +74,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         spanIDGenerator: SpanIDGenerator,
         dateProvider: DateProvider,
         loggingIntegration: TracingWithLoggingIntegration,
-        spanEventBuilder: SpanEventBuilder
+        spanEventBuilder: SpanEventBuilder,
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) {
         self.featureScope = featureScope
         self.tags = tags
@@ -80,6 +86,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         self.loggingIntegration = loggingIntegration
         self.samplerProvider = samplingProvider
         self.spanEventBuilder = spanEventBuilder
+        self.onSpanFinished = onSpanFinished
     }
 
     // MARK: - Open Tracing interface
@@ -125,7 +132,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             parentSpanID: context.parentSpanID,
             baggageItems: context.baggageItems,
             sampleRate: samplerProvider.sampler.samplingRate,
-            samplingDecision: context.samplingDecision
+            samplingDecision: context.samplingDecision,
+            isRemote: context.isRemote
         )
     }
 
@@ -142,7 +150,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             parentSpanID: parentSpanContext?.spanID,
             baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems),
             sampleRate: parentSpanContext?.sampleRate ?? sampler.samplingRate,
-            samplingDecision: parentSpanContext?.samplingDecision ?? SamplingDecision(sampling: sampler)
+            samplingDecision: parentSpanContext?.samplingDecision ?? SamplingDecision(sampling: sampler),
+            parentForStats: DDSpanContext.StatsParent(forChildOf: parentSpanContext)
         )
     }
 
@@ -201,6 +210,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             }
         )
     }
+
     // MARK: - OpenTelemetry
 
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {

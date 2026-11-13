@@ -34,6 +34,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let eventsMapper: RUMEventsMapper
     private let sanitizer = RUMEventSanitizer()
 
+    /// `is_slow_rendered` for views built from a crash. Platforms without a render loop observer never measure it.
+    #if os(macOS) || os(watchOS)
+    private static let defaultIsSlowRendered: Bool? = nil
+    #else
+    private static let defaultIsSlowRendered: Bool? = false
+    #endif
+
     // MARK: - Initialization
 
     init(
@@ -84,6 +91,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection),
             timeSinceAppStart: timeSinceAppStart
         )
+
+        // After `stopSession()`, a crash is not reported until a new view resumes tracking and clears the flag.
+        if context.isRUMSessionStopped {
+            DD.logger.debug("There was a crash after the RUM session was stopped, so it is not reported.")
+            return true // handled: dropped on purpose
+        }
 
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if var lastRUMViewEvent = context.lastRUMViewEvent {
@@ -409,7 +422,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 interactionToNextPaintTime: nil,
                 interactionToNextViewTime: nil,
                 isActive: false, // we know it won't receive updates
-                isSlowRendered: false,
+                isSlowRendered: Self.defaultIsSlowRendered,
                 jsRefreshRate: nil,
                 largestContentfulPaint: nil,
                 largestContentfulPaintTargetSelector: nil,
