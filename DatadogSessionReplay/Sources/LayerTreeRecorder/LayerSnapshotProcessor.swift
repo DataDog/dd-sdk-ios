@@ -146,21 +146,13 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
         var records: [SRRecord] = []
 
         do {
-            if let record = try recordBuilder.wireframeMutationRecord(
+            records = try recordBuilder.mutationRecords(
                 from: snapshot,
                 wireframes: wireframes,
-                previousWireframes: lastWireframes
-            ) {
-                records.append(record)
-            }
-
-            if let record = try recordBuilder.compositionTreeMutationRecord(
-                from: snapshot,
+                previousWireframes: lastWireframes,
                 compositionTree: compositionTree,
                 previousCompositionTree: lastCompositionTree
-            ) {
-                records.append(record)
-            }
+            )
         } catch {
             telemetry.error("[SR] Failed to build layer recording mutation records", error: error)
             records.append(

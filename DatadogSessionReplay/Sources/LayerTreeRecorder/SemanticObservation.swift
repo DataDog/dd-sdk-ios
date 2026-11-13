@@ -29,6 +29,7 @@ extension CALayerSnapshot.SemanticObservation {
         case backdrop
         case liquidLens
         case portal(PortalSemantics)
+        case scrollPocketGroup
         case scrollPocket(UIRectEdge)
         case background(UIColor?)
         case compositorSupport

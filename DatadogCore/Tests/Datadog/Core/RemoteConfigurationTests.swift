@@ -10,11 +10,16 @@ import DatadogInternal
 @testable import DatadogCore
 
 private final class NeverHTTPClient: HTTPClient {
+    @ReadWriteLock
+    private(set) var requestCount = 0
+
     func send(
         request: URLRequest,
         delegate: URLSessionTaskDelegate?,
         completion: @escaping (Result<(HTTPURLResponse, Data?), Error>) -> Void
-    ) {}
+    ) {
+        _requestCount.mutate { $0 += 1 }
+    }
 }
 
 // MARK: - Tests
@@ -191,21 +196,61 @@ class RemoteConfigurationTests: XCTestCase {
         rc.start({ _ in }, telemetry: telemetry)
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached remote configuration")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: coreDir.coreDirectory.url.appendingPathComponent("test-id.json").path))
         withExtendedLifetime(rc) {}
     }
 
     func testStartReportsTelemetryErrorWhenCachedFileCannotBeDecoded() throws {
-        try Data("this is not json".utf8).write(
-            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
-            options: .atomic
-        )
+        try assertStartDeletesUndecodableCachedFile(Data("this is not json".utf8))
+    }
+
+    func testStartDeletesCachedFileWhenItIsEmpty() throws {
+        try assertStartDeletesUndecodableCachedFile(Data())
+    }
+
+    func testStartDeletesCachedFileWhenConfigurationDataIsNotBase64() throws {
+        try assertStartDeletesUndecodableCachedFile(Data(#"{"etag":"abc123","configurationData":"not base64!"}"#.utf8))
+    }
+
+    private func assertStartDeletesUndecodableCachedFile(_ data: Data, file: StaticString = #filePath, line: UInt = #line) throws {
+        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
+        try data.write(to: fileURL, options: .atomic)
         let rc = makeProvider(httpClient: NeverHTTPClient(), start: false)
         let telemetry = TelemetryMock()
+        let completion = expectation(description: "no cached configuration is delivered")
+        completion.isInverted = true
 
-        rc.start({ _ in }, telemetry: telemetry)
+        rc.start({ _ in completion.fulfill() }, telemetry: telemetry)
+        waitForExpectations(timeout: 0.1)
 
-        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached remote configuration")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path), file: file, line: line)
+        let errors = telemetry.messages.compactMap { $0.asError }
+        XCTAssertEqual(errors.count, 1, file: file, line: line)
+        XCTAssertTrue(errors.first?.message.hasPrefix("[RemoteConfig] Failed to read cached remote configuration") == true, file: file, line: line)
         withExtendedLifetime(rc) {}
+    }
+
+    func testUndecodableCachedFileIsNotSentAsIfNoneMatchAndIsReplacedByNextSync() throws {
+        try Data(#"{"etag":"abc123","configurationData":"not base64!"}"#.utf8)
+            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
+        let payload = remoteConfigurationData(applicationID: "fetched-application-id")
+        let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload)
+
+        let rc = makeProvider(httpClient: httpClient)
+        waitForPersistedConfiguration(applicationID: "fetched-application-id")
+
+        XCTAssertNil(httpClient.requestsSent().first?.value(forHTTPHeaderField: "If-None-Match"))
+
+        let cachedProvider = makeProvider(httpClient: NeverHTTPClient(), start: false)
+        let expectation = expectation(description: "replaced cache is read back")
+        cachedProvider.start { remoteConfiguration in
+            if remoteConfiguration.rum?.applicationId == "fetched-application-id" {
+                expectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 2)
+        withExtendedLifetime(rc) {}
+        withExtendedLifetime(cachedProvider) {}
     }
 
     // MARK: Initial sync
@@ -238,7 +283,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func testInitSyncNetworkErrorReportsTelemetryAndLeavesNoPersistedConfiguration() {
         let telemetry = TelemetryMock()
-        let rc = makeProvider(httpClient: HTTPClientMock(error: URLError(.networkConnectionLost)), start: false)
+        let rc = makeProvider(httpClient: HTTPClientMock(error: URLError(.badServerResponse)), start: false)
 
         rc.start({ _ in }, telemetry: telemetry)
 
@@ -247,6 +292,27 @@ class RemoteConfigurationTests: XCTestCase {
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
         withExtendedLifetime(rc) {}
+    }
+
+    func testInitSyncTransportErrorDoesNotReportTelemetry() {
+        let errors: [URLError.Code] = [
+            .networkConnectionLost, .timedOut, .cannotParseResponse, .notConnectedToInternet,
+            .cannotFindHost, .secureConnectionFailed, .dataNotAllowed, .cannotConnectToHost
+        ]
+
+        for code in errors {
+            let telemetry = TelemetryMock()
+            let httpClient = HTTPClientMock(error: URLError(code))
+            let rc = makeProvider(httpClient: httpClient, start: false)
+            rc.start({ _ in }, telemetry: telemetry)
+
+            let expectation = expectation(description: "sync completes")
+            wait(until: { !httpClient.requestsSent().isEmpty }, andThenFulfill: expectation)
+            waitForExpectations(timeout: 2)
+
+            XCTAssertNil(telemetry.messages.firstError())
+            withExtendedLifetime(rc) {}
+        }
     }
 
     func testInitSyncNon2xxReportsTelemetryAndPreservesPersistedConfiguration() throws {
@@ -406,8 +472,9 @@ class RemoteConfigurationTests: XCTestCase {
             withIntermediateDirectories: false
         )
         let telemetry = TelemetryMock()
-        let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8))
-        let rc = makeProvider(httpClient: httpClient, start: false)
+        // The etag is read synchronously before the request is sent, so no response is needed. Delivering one would
+        // make the provider attempt to write `test-id.json` in the background, racing with `tearDown` deleting `coreDir`.
+        let rc = makeProvider(httpClient: NeverHTTPClient(), start: false)
         rc.start({ _ in }, telemetry: telemetry)
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached metadata etag")
@@ -459,7 +526,7 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
 #if os(macOS) || canImport(UIKit)
-    func testWillEnterForegroundSyncsRemoteConfiguration() {
+    func testDidBecomeActiveSyncsRemoteConfiguration() {
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
@@ -478,13 +545,13 @@ class RemoteConfigurationTests: XCTestCase {
 
         // Advance past TTL so the foreground sync is not suppressed
         dateProvider.advance(bySeconds: 360)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
         withExtendedLifetime(rc) {}
     }
 
-    func testWillEnterForegroundCallsCompletionAgain() {
+    func testDidBecomeActiveCallsCompletionAgain() {
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
@@ -509,15 +576,15 @@ class RemoteConfigurationTests: XCTestCase {
 
         // Advance past TTL so the foreground sync is not suppressed
         dateProvider.advance(bySeconds: 360)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
 
         wait(for: [completionExpectation], timeout: 2)
         withExtendedLifetime(rc) {}
     }
 
-    func testForegroundSyncsWhenLastSyncDateIsNil() {
-        // Given — init sync fails, lastSyncDate stays nil
+    func testForegroundSyncsAfterFailedSync() {
+        // Given — init sync fails, which resets lastSyncDate
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
         var didFailInitialSync = false
@@ -531,12 +598,29 @@ class RemoteConfigurationTests: XCTestCase {
             return .success((.mockResponseWith(statusCode: 200), foregroundPayload))
         }
         let rc = makeProvider(httpClient: httpClient, notificationCenterProvider: notificationCenterProvider)
+        let initExpectation = expectation(description: "init sync completes")
+        wait(until: { httpClient.requestsSent().count == 1 }, andThenFulfill: initExpectation)
+        waitForExpectations(timeout: 2)
 
-        // When — foreground fires immediately after a failed init sync
-        notificationCenterProvider.postEnterForeground()
+        // When — foreground fires right after the failed init sync
+        notificationCenterProvider.postDidBecomeActive()
 
-        // Then — sync fires because lastSyncDate is nil
+        // Then — sync fires without waiting for the TTL
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundDoesNotSyncWhileSyncIsInFlight() {
+        // Given — init sync never completes
+        let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
+        let httpClient = NeverHTTPClient()
+        let rc = makeProvider(httpClient: httpClient, notificationCenterProvider: notificationCenterProvider)
+
+        // When
+        notificationCenterProvider.postDidBecomeActive()
+
+        // Then
+        XCTAssertEqual(httpClient.requestCount, 1)
         withExtendedLifetime(rc) {}
     }
 
@@ -560,7 +644,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // When — TTL elapses and foreground fires
         dateProvider.advance(bySeconds: 360)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         // Then — sync fires
         waitForPersistedConfiguration(applicationID: "foreground-application-id")
@@ -582,7 +666,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // When — only 1 minute passes and foreground fires
         dateProvider.advance(bySeconds: 60)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         // Then — no additional sync fires within TTL
         let noSyncExpectation = expectation(description: "no foreground sync within TTL")
@@ -591,6 +675,32 @@ class RemoteConfigurationTests: XCTestCase {
             noSyncExpectation.fulfill()
         }
         waitForExpectations(timeout: 2)
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundSyncDeletesCachedFileThatCannotBeDecoded() throws {
+        let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
+        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
+        try cacheData(etag: "abc123", applicationID: "cached-application-id").write(to: fileURL, options: .atomic)
+        let httpClient = HTTPClientMock { _ in .success((.mockResponseWith(statusCode: 304), nil)) }
+        let telemetry = TelemetryMock()
+        let rc = makeProvider(httpClient: httpClient, notificationCenterProvider: notificationCenterProvider, dateProvider: dateProvider, start: false)
+        rc.start({ _ in }, telemetry: telemetry)
+
+        let initExpectation = expectation(description: "init sync completes")
+        wait(until: { httpClient.requestsSent().count == 1 }, andThenFulfill: initExpectation)
+        waitForExpectations(timeout: 2)
+
+        // When — the cached file is corrupted before the next foreground sync
+        try Data().write(to: fileURL, options: .atomic)
+        dateProvider.advance(bySeconds: 360)
+        notificationCenterProvider.postEnterForeground()
+
+        // Then
+        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached metadata etag")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertNil(httpClient.requestsSent().last?.value(forHTTPHeaderField: "If-None-Match"))
         withExtendedLifetime(rc) {}
     }
 
@@ -612,7 +722,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         // When — foreground fires within TTL
         dateProvider.advance(bySeconds: 60)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         // Then — no additional request fires
         let noSyncExpectation = expectation(description: "no foreground sync after 304 within TTL")
@@ -753,11 +863,11 @@ class RemoteConfigurationTests: XCTestCase {
 }
 
 fileprivate extension NotificationCenterProvider {
-    func postEnterForeground() {
+    func postDidBecomeActive() {
         #if os(macOS)
         workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
-        applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
     }
 }

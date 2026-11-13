@@ -238,6 +238,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         let format = UIGraphicsImageRendererFormat.default()
         format.opaque = opaque
 
+        // RUM-19081: Automatic preferred range can crash when rendering certain SwiftUI layers before iOS 18
+        if #unavailable(iOS 18.0) {
+            format.preferredRange = .standard
+        }
+
         if let scale {
             format.scale = scale
         }
@@ -256,6 +261,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
     private func renderMaskImage(for layer: CALayer, in bounds: CGRect, frame: CGRect) throws -> UIImage {
         let format = UIGraphicsImageRendererFormat.default()
         format.opaque = false
+
+        // RUM-19081: Automatic preferred range can crash when rendering certain SwiftUI layers before iOS 18
+        if #unavailable(iOS 18.0) {
+            format.preferredRange = .standard
+        }
 
         if let scale {
             format.scale = scale

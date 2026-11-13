@@ -19,16 +19,20 @@ struct RUMAutoScenario: Scenario {
             trackingConsent: .granted
         )
 
-        RUM.enable(
-            with: RUM.Configuration(
-                applicationID: info.applicationID,
-                uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-                uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
-                swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
-                swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
-            )
-        )
+        RUM.enable(with: .rumAuto(info: info))
 
         RUMMonitor.shared().addAttribute(forKey: "scenario", value: "RUMAuto")
+    }
+}
+
+extension RUM.Configuration {
+    static func rumAuto(info: AppInfo) -> Self {
+        .init(
+            applicationID: info.applicationID,
+            uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
+            uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
+            swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+            swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+        )
     }
 }

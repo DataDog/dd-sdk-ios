@@ -5,22 +5,44 @@
  */
 
 #if os(iOS)
-import DatadogInternal
 import UIKit
 
 internal struct ImageSnapshotResource: Resource {
+    enum Format: String {
+        case png
+        case webP = "webp"
+    }
+
     let image: UIImage
+    let format: Format
+
+    init(image: UIImage, format: Format) {
+        self.image = image
+        self.format = format
+    }
 
     var mimeType: String {
-        "image/png"
+        "image/\(format.rawValue)"
     }
 
     func calculateIdentifier() -> String {
-        image.dd.identifier
+        guard
+            let hash = image.contentHash,
+            let size = image.encodingPixelSize()
+        else {
+            return ""
+        }
+
+        return "\(hash)-\(size.width)x\(size.height).\(format.rawValue)"
     }
 
     func calculateData() -> Data {
-        image.dd.pngData() ?? Data()
+        switch format {
+        case .png:
+            return image.resizedPNGData() ?? Data()
+        case .webP:
+            return image.resizedWebPData() ?? Data()
+        }
     }
 }
 #endif

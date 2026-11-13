@@ -18,6 +18,8 @@ internal protocol FatalErrorContextNotifying: AnyObject {
     /// The current set of RUM attributes.
     /// It gets updated with global attributes being added or removed in `RUMMonitor`.
     var globalAttributes: [String: Encodable] { set get }
+    /// Notifies that the RUM session was stopped with `stopSession()`.
+    func sessionDidStop()
 }
 
 /// Manages RUM information necessary for building context of fatal errors such as Crashes or Fatal App Hangs.
@@ -59,5 +61,9 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
         didSet {
             messageBus.send(message: .payload(RUMEventAttributes(contextInfo: globalAttributes)))
         }
+    }
+
+    func sessionDidStop() {
+        messageBus.send(message: .payload(RUMPayloadMessages.sessionStop))
     }
 }

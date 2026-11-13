@@ -5,7 +5,7 @@ description: Use when creating a pull request in dd-sdk-ios. Use when writing PR
 
 # Pull Requests in dd-sdk-ios
 
-## PR Title Format
+## Development PR Title Format
 
 ```
 [PROJECT-XXXX] Short imperative description
@@ -16,21 +16,27 @@ description: Use when creating a pull request in dd-sdk-ios. Use when writing PR
 - `[FFL-213] Add Feature Flags support`
 - `[RUM-14655] Fix WebView log events attaching incomplete ddTags`
 
+For regular release PRs, use `dd-sdk-ios:prepare-release` for titles, descriptions, and target branches.
+
 ## Requirements
 
-- **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket
-- **Target branch**: `develop`
+- **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket for internal development PRs
+- **Target branch**: `develop` or the change's shared feature branch
 - **Always open as draft** — mark ready only when CI passes and the PR is ready for review
 - All commits on the branch must be signed
 
 ## Creating via gh
 
-The repo has a PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Read it and fill in all sections.
+For development PRs, read `.github/PULL_REQUEST_TEMPLATE.md` and complete its applicable sections. Changelog metadata applies to PRs targeting `develop`; a shared feature's integration PR must cover the whole feature.
+
+Use `gh` for all GitHub operations.
+
+When invoked from `dd-sdk-ios:prepare-release`, approval already given there for the same commits, push, title, and body satisfies the corresponding confirmations below.
 
 **Before pushing**, show the user the commits that will be pushed and ask for confirmation:
 
 ```bash
-git log origin/develop..HEAD --oneline
+git log origin/<target-branch>..HEAD --oneline
 ```
 
 Ask: "Shall I push these commits and open the PR?" Only proceed after the user confirms.
@@ -40,8 +46,8 @@ Ask: "Shall I push these commits and open the PR?" Only proceed after the user c
 ```bash
 gh pr create \
   --title "[RUM-9999] Your title here" \
-  --body "<filled-in PR body following .github/PULL_REQUEST_TEMPLATE.md>" \
-  --base develop \
+  --body-file "<PR body file>" \
+  --base "<target-branch>" \
   --draft
 ```
 
@@ -52,12 +58,12 @@ gh pr create \
 - [ ] `make lint` passes
 - [ ] `make test-ios-all` passes
 - [ ] `make api-surface-verify` passes (if public API changed)
-- [ ] CHANGELOG updated (if user-facing change)
+- [ ] Changelog metadata follows the PR template
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
-| Wrong base branch | Always `develop`, not `main` or `master` |
-| Missing `[PROJECT-XXXX]` title prefix | Required for internal work |
+| Wrong base branch | Use `develop` or the change's shared feature branch |
+| Missing `[PROJECT-XXXX]` title prefix | Required for internal development PRs |
 | Skipping review checklist items | Fill out checklist before marking PR ready |

@@ -9,7 +9,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <mach/mach_types.h>
 #include <stdint.h>
@@ -72,11 +72,14 @@ void dd_delete_profiling_defaults(void);
  */
 void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns, uint64_t hard_limit_bytes);
 
+/// Makes the next aggregated batch throw an allocation failure.
+void dd_profiler_fail_next_aggregation_for_testing(void);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // __APPLE__
 
 #endif // DD_PROFILER_TESTING_H_

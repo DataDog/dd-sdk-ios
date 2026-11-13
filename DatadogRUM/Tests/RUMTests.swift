@@ -117,6 +117,42 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
 
+    func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
+        // Given
+        #if !os(macOS)
+        config.trackSlowFrames = true
+        #endif
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let dependencies = monitor.applicationScope.dependencies
+        #if os(macOS) || os(watchOS)
+        XCTAssertNil(dependencies.renderLoopObserver)
+        XCTAssertNil(dependencies.viewHitchesReaderFactory(), "Without a render loop, slow frames must not be reported")
+        #else
+        XCTAssertNotNil(dependencies.renderLoopObserver)
+        XCTAssertNotNil(dependencies.viewHitchesReaderFactory())
+        #endif
+    }
+
+    #if !os(macOS)
+    func testWhenWatchdogTerminationsTrackingIsEnabled_itRegistersTheMonitor() throws {
+        // Given
+        config.trackWatchdogTerminations = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let receivers = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers
+        XCTAssertNotNil(receivers.firstElement(of: WatchdogTerminationMonitor.self))
+    }
+    #endif
+
     func testWhenEnabledWithDefaultConfiguration() throws {
         // Given
         let applicationID: String = .mockRandom()
@@ -165,8 +201,12 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
-        #if !os(macOS)
+        #if os(macOS)
+        XCTAssertIdentical(monitor, rum.instrumentation.firstWindowReader.subscriber)
+        XCTAssertNil(monitor.applicationScope.dependencies.firstFrameReader, "macOS reads the first window instead of the first frame")
+        #else
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
+        XCTAssertIdentical(monitor, (monitor.applicationScope.dependencies.firstFrameReader as? FirstFrameReader)?.subscriber)
         #endif
     }
 
@@ -202,7 +242,9 @@ class RUMTests: XCTestCase {
         #endif
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
+        #if !os(macOS)
         config.trackMemoryWarnings = false
+        #endif
 
         // When
         RUM.enable(with: config, in: core)
@@ -467,7 +509,39 @@ class RUMTests: XCTestCase {
     func testWhenEnabled_itAppliesRemoteConfigurationOnTopOfInCodeConfiguration() throws {
         // Given
         config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackFrustrations = false
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackFrustrations: true)
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackFrustrations)
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackFrustrations = false
+        core.remoteConfiguration = nil
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertFalse(monitor.applicationScope.dependencies.trackFrustrations)
+    }
+
+    func testWhenRemoteConfigurationEnablesBackgroundEvents_itTracksThemExceptOnMacOS() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        #if !os(macOS)
         config.trackBackgroundEvents = false
+        #endif
         core.remoteConfiguration = RemoteConfiguration(
             rum: .init(applicationId: .mockRandom(), trackBackgroundEvents: true)
         )
@@ -477,21 +551,37 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        #if os(macOS)
+        XCTAssertFalse(
+            monitor.applicationScope.dependencies.trackBackgroundEvents,
+            "Remote configuration must not turn background events on for macOS"
+        )
+        #else
         XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+        #endif
     }
 
-    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() throws {
+    func testWhenRemoteConfigurationEnablesWatchdogTerminations_itRegistersTheMonitorExceptOnMacOS() throws {
         // Given
-        config = RUM.Configuration(applicationID: .mockRandom())
-        config.trackBackgroundEvents = true
-        core.remoteConfiguration = nil
+        #if !os(macOS)
+        config.trackWatchdogTerminations = false
+        #endif
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackWatchdogTerminations: true)
+        )
 
         // When
         RUM.enable(with: config, in: core)
 
         // Then
-        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let receivers = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers
+        let monitor = receivers.firstElement(of: WatchdogTerminationMonitor.self)
+        #if os(macOS)
+        XCTAssertNil(monitor, "Remote configuration must not turn watchdog terminations on for macOS")
+        #else
+        XCTAssertNotNil(monitor)
+        #endif
     }
 
     func testWhenEnabledWithRemoteTrackResources_itEnablesNetworkInstrumentation() throws {

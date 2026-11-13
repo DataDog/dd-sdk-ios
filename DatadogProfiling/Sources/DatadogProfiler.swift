@@ -7,7 +7,7 @@
 import Foundation
 @preconcurrency import DatadogInternal
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 // Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
 // transitive module dependency, but it is not distributed as an XCFramework.
@@ -103,7 +103,7 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         self.encoder = encoder
         self.dateProvider = dateProvider
         self.profileStartDate = dateProvider.now
-        self.operation = profilingSamplerProvider.isContinuousProfilingConfigured ? .continuousProfiling : .customProfiling
+        self.operation = profilingSamplerProvider.isContinuousProfilingConfigured ? .continuousProfiling : .appLaunch
         self.isContinuousProfilingGraceAvailable = profilingSamplerProvider.isContinuousProfilingConfigured
             && profilingSamplerProvider.continuousProfilingSampled == nil
 
@@ -114,9 +114,16 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         if profilingSamplerProvider.isContinuousProfilingConfigured {
             startTimer()
         }
+
+        dd_profiler_set_allocation_failure_callback(Unmanaged.passUnretained(self).toOpaque()) { [weak self] in
+            queue.async(execute: DispatchWorkItem {
+                self?.stopAfterAllocationFailure()
+            })
+        }
     }
 
     deinit {
+        dd_profiler_set_allocation_failure_callback(Unmanaged.passUnretained(self).toOpaque(), nil)
         stopTimer()
     }
 }
@@ -191,7 +198,7 @@ private extension DatadogProfiler {
         currentServerTimeOffset = context.serverTimeOffset
         dd_profiler_set_server_time_offset_ns(context.serverTimeOffset.dd.toInt64Nanoseconds)
 
-        queue.async { [weak self] in
+        enqueue { [weak self] in
             guard let self else {
                 return
             }
@@ -279,7 +286,7 @@ private extension DatadogProfiler {
     }
 
     func handleOperation(message: OperationMessage) {
-        queue.async { [weak self] in
+        enqueue { [weak self] in
             guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
                 return
             }
@@ -311,7 +318,7 @@ private extension DatadogProfiler {
     }
 
     func handleAppHang(message: AppHangMessage) {
-        queue.async { [weak self] in
+        enqueue { [weak self] in
             guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
                 return
             }
@@ -321,7 +328,7 @@ private extension DatadogProfiler {
     }
 
     func handleLongTask(message: LongTaskMessage) {
-        queue.async { [weak self] in
+        enqueue { [weak self] in
             guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
                 return
             }
@@ -368,8 +375,7 @@ private extension DatadogProfiler {
         case .stopped, .unknown: // When `.unknown` status, mostly profiler NOT_CREATED, it will try to start the profiler
             if isCustomProfiling {
                 cleanUpState(preservingOngoingOperations: false)
-            } else if canProfile {
-                dd_profiler_start()
+            } else if canProfile, dd_profiler_start() == 1 {
                 profileStartDate = dateProvider.now
                 startTimer()
             }
@@ -392,6 +398,8 @@ private extension DatadogProfiler {
             cleanUpState()
             return
         }
+
+        prepareProfileForWriting(profile)
 
         if canWriteProfile {
             write(
@@ -438,7 +446,7 @@ private extension DatadogProfiler {
         currentServerTimeOffset = message.ttid.serverTimeOffset
         dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
-        queue.async { [weak self] in
+        enqueue { [weak self] in
             guard let self else {
                 return
             }
@@ -505,6 +513,8 @@ private extension DatadogProfiler {
             return
         }
 
+        prepareProfileForWriting(profile)
+
         write(
             profile: profile,
             operation: .appLaunch,
@@ -519,7 +529,7 @@ private extension DatadogProfiler {
 
 private extension DatadogProfiler {
     func handle(quotaResult: ProfilingQuotaResult?) {
-        queue.async { [weak self] in
+        enqueue { [weak self] in
             guard let self else {
                 return
             }
@@ -547,6 +557,35 @@ private extension DatadogProfiler {
 // MARK: - Helpers
 
 private extension DatadogProfiler {
+    func enqueue(_ work: @escaping @Sendable () -> Void) {
+        queue.async { [weak self] in
+            guard let self, lastProfilingContext?.status != .error(reason: .memoryAllocationFailed) else {
+                return
+            }
+            work()
+        }
+    }
+
+    func stopAfterAllocationFailure() {
+        stopTimer()
+        dd_profiler_stop()
+        cleanUpState(preservingOngoingOperations: false)
+        attributes = [:]
+        telemetryController.sendAllocationFailure(for: operation)
+        updateProfilingContext()
+    }
+
+    /// Applies server-time correction and retains events that could have been sampled by the profile.
+    func prepareProfileForWriting(_ profile: OpaquePointer) {
+        dd_pprof_set_server_time_offset_ns(profile, currentServerTimeOffset.dd.toInt64Nanoseconds)
+        let firstSample = dd_pprof_get_start_timestamp_s(profile).dd.toInt64Nanoseconds
+        let lastSample = dd_pprof_get_end_timestamp_s(profile).dd.toInt64Nanoseconds
+
+        // Events buffered while sampling was stopped may fall outside this profile's sampled range.
+        hangs.removeAll { !$0.couldBeSampled(byProfileStartingAt: firstSample, endingAt: lastSample) }
+        longTasks.removeAll { !$0.couldBeSampled(byProfileStartingAt: firstSample, endingAt: lastSample) }
+    }
+
     func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) {
         let context = ProfilingContext(status: .current, quotaReason: quotaReason)
         guard lastProfilingContext?.status != context.status || lastProfilingContext?.quotaReason != context.quotaReason else {
@@ -667,6 +706,19 @@ extension ProfilingContext.Status {
         default:
             self = .unknown
         }
+    }
+}
+
+// MARK: - DurationEvent
+
+private extension DurationEvent {
+    /// Whether this event overlaps the profile's sampled range, expressed in epoch nanoseconds.
+    ///
+    /// An event may start before the first sample as long as it ends at or after that sample.
+    func couldBeSampled(byProfileStartingAt profileStart: Int64, endingAt profileEnd: Int64) -> Bool {
+        let (end, overflow) = start.addingReportingOverflow(duration)
+        let endsAtOrAfterProfileStart = overflow ? duration > 0 : end >= profileStart
+        return start <= profileEnd && endsAtOrAfterProfileStart
     }
 }
 

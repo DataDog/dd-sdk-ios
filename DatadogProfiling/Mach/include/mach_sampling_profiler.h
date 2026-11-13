@@ -11,7 +11,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <atomic>
 #include <functional>
@@ -104,8 +104,9 @@ public:
      * @brief Requests that sampling stop at the next safe point.
      *
      * This does not join threads or reset internal state.
+     * @param discard_pending_work Discards queued work and prevents restart when true.
      */
-    void request_stop();
+    void request_stop(bool discard_pending_work = false);
 
     /**
      * @brief Returns and resets diagnostics accumulated since the last consume.
@@ -206,6 +207,6 @@ private:
 
 } // namespace dd::profiler
 
-#endif // !TARGET_OS_WATCH
+#endif // !TARGET_OS_WATCH && !TARGET_OS_OSX
 #endif // __APPLE__
 #endif // DD_PROFILER_MACH_SAMPLING_PROFILER_H_ 

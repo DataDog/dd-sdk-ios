@@ -59,7 +59,7 @@ internal class RecordingCoordinator {
         self.telemetry = telemetry
         self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
 
-        srContextPublisher.setHasReplay(false)
+        srContextPublisher.setHasReplay(false, sessionID: nil)
 
         scheduler.schedule { [weak self] in self?.captureNextRecord() }
 
@@ -122,7 +122,7 @@ internal class RecordingCoordinator {
         /// `has_replay` is set to `true` only when the session is sampled
         /// and  the user has enabled the recording.
         let hasReplay = isSampled == true && recordingEnabled == true
-        srContextPublisher.setHasReplay(hasReplay)
+        srContextPublisher.setHasReplay(hasReplay, sessionID: currentRUMContext?.sessionID)
     }
 
     /// Captures the next recording if conditions are met.

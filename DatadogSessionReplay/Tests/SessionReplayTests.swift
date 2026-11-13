@@ -297,7 +297,7 @@ class SessionReplayTests: XCTestCase {
 
     func testWhenEnabled_itSendsConfigurationTelemetry() throws {
         // Given
-        let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
+        let sampleRate: Int64 = .mockRandom(min: 1, max: 100) // 0 disables the feature, so no telemetry is sent
         let startRecordingImmediately: Bool = .mockRandom()
         let textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .mockRandom()
         let imagePrivacyLevel: ImagePrivacyLevel = .mockRandom()
@@ -329,7 +329,7 @@ class SessionReplayTests: XCTestCase {
 
     func testWhenEnabled_itSendsConfigurationTelemetry_withNewApi() throws {
         // Given
-        let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
+        let sampleRate: Int64 = .mockRandom(min: 1, max: 100) // 0 disables the feature, so no telemetry is sent
         let textAndInputLevel: TextAndInputPrivacyLevel = .mockRandom()
         let imageLevel: ImagePrivacyLevel = .mockRandom()
         let touchLevel: TouchPrivacyLevel = .mockRandom()

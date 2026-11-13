@@ -17,7 +17,8 @@ class ResourceProcessorTests: XCTestCase {
         let writer = ResourceWriterMock()
         let processor = ResourceProcessor(
             queue: NoQueue(),
-            resourcesWriter: writer
+            resourcesWriter: writer,
+            telemetry: TelemetryMock()
         )
 
         let resource1: MockResource = .mockRandom()
@@ -50,7 +51,8 @@ class ResourceProcessorTests: XCTestCase {
         let writer = ResourceWriterMock()
         let processor = ResourceProcessor(
             queue: NoQueue(),
-            resourcesWriter: writer
+            resourcesWriter: writer,
+            telemetry: TelemetryMock()
         )
 
         processor.process(resources: [], context: .mockRandom())
@@ -62,7 +64,8 @@ class ResourceProcessorTests: XCTestCase {
         let writer = ResourceWriterMock()
         let processor = ResourceProcessor(
             queue: NoQueue(),
-            resourcesWriter: writer
+            resourcesWriter: writer,
+            telemetry: TelemetryMock()
         )
 
         let resource1: MockResource = .mockRandom()

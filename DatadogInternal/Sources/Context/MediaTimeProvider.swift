@@ -33,7 +33,7 @@ public struct MediaTimeProvider: CACurrentMediaTimeProvider {
 #if !os(watchOS)
         return CACurrentMediaTime()
 #else
-        ProcessInfo.processInfo.systemUptime
+        ProcessInfo.processInfo.systemUptime // swiftlint:disable:this required_reason_api_name
 #endif
     }
 }

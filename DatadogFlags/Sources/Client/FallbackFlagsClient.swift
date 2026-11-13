@@ -18,6 +18,12 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
         self.core = core
     }
 
+    @discardableResult
+    func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        listener(FlagsClientEvent(type: .configurationChanged, flagsChanged: []))
+        return NOPFlagsSubscription()
+    }
+
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
@@ -57,6 +63,33 @@ extension FallbackFlagsClient: FlagsClientInternal {
     }
 
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        DD.logger.error(
+            """
+            Using fallback client to track '\(key)'. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+    }
+
+    func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        DD.logger.error(
+            """
+            Using fallback client to track '\(key)'. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+    }
+
+    func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?) {
+        DD.logger.error(
+            """
+            Using fallback client to track '\(key)'. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+    }
+
+    func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
         DD.logger.error(
             """
             Using fallback client to track '\(key)'. \

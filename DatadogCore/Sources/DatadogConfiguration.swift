@@ -115,6 +115,7 @@ extension Datadog {
         /// `.medium` by default.
         public var batchProcessingLevel: BatchProcessingLevel
 
+        #if !os(macOS)
         /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
         /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
         ///
@@ -122,6 +123,7 @@ extension Datadog {
         ///
         /// `false` by default.
         public var backgroundTasksEnabled: Bool
+        #endif
 
         /// Identifies and optionally overrides where the SDK fetches its remote configuration from.
         public struct RemoteConfiguration {
@@ -158,6 +160,7 @@ extension Datadog {
         /// exists, `Datadog.initialize` should return without starting the SDK. Not yet implemented.
         public var remoteConfiguration: RemoteConfiguration? = nil
 
+        #if os(macOS)
         /// Creates a Datadog SDK Configuration object.
         ///
         /// - Parameters:
@@ -197,6 +200,81 @@ extension Datadog {
         ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
         ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
         ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        ///
+        ///   - remoteConfiguration:        The remote configuration used to fetch SDK settings from the Datadog CDN.
+        ///                                 When non-nil, the SDK fetches the remote configuration document
+        ///                                 asynchronously at startup and caches the raw JSON for subsequent launches.
+        ///                                 Default is `nil` — no fetch is performed.
+        public init(
+            clientToken: String,
+            env: String,
+            site: DatadogSite = .us1,
+            service: String? = nil,
+            version: String? = nil,
+            bundle: Bundle = .main,
+            batchSize: BatchSize = .medium,
+            uploadFrequency: UploadFrequency = .average,
+            proxyConfiguration: [AnyHashable: Any]? = nil,
+            encryption: DataEncryption? = nil,
+            serverDateProvider: ServerDateProvider? = nil,
+            batchProcessingLevel: BatchProcessingLevel = .medium,
+            remoteConfiguration: RemoteConfiguration? = nil
+        ) {
+            self.clientToken = clientToken
+            self.env = env
+            self.site = site
+            self.service = service
+            self.version = version
+            self.bundle = bundle
+            self.batchSize = batchSize
+            self.uploadFrequency = uploadFrequency
+            self.proxyConfiguration = proxyConfiguration
+            self.encryption = encryption
+            self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.batchProcessingLevel = batchProcessingLevel
+            self.remoteConfiguration = remoteConfiguration
+        }
+        #else
+        /// Creates a Datadog SDK Configuration object.
+        ///
+        /// - Parameters:
+        ///   - clientToken:                Either the RUM client token (which supports RUM, Logging and APM) or regular client token,
+        ///                                 only for Logging and APM.
+        ///
+        ///   - env:                        The environment name which will be sent to Datadog. This can be used
+        ///                                 To filter events on different environments (e.g. "staging" or "production").
+        ///
+        ///   - site:                       Datadog site endpoint, default value is `.us1`.
+        ///
+        ///   - service:                    The service name associated with data send to Datadog.
+        ///                                 Default value is set to application bundle identifier.
+        ///
+        ///   - version:                    The application version used for Unified Service Tagging.
+        ///                                 If not provided, the SDK will use the version from the application's Info.plist
+        ///                                 (`CFBundleShortVersionString` or `CFBundleVersion`).
+        ///
+        ///   - bundle:                     The bundle object that contains the current executable.
+        ///
+        ///   - batchSize:                  The preferred size of batched data uploaded to Datadog servers.
+        ///                                 This value impacts the size and number of requests performed by the SDK.
+        ///                                 `.medium` by default.
+        ///
+        ///   - uploadFrequency:            The preferred frequency of uploading data to Datadog servers.
+        ///                                 This value impacts the frequency of performing network requests by the SDK.
+        ///                                 `.average` by default.
+        ///
+        ///   - proxyConfiguration:         A proxy configuration attributes.
+        ///                                 This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///
+        ///   - encryption:                 Data encryption to use for on-disk data persistency by providing an object
+        ///                                 complying with `DataEncryption` protocol.
+        ///
+        ///   - serverDateProvider:         A custom NTP synchronization interface.
+        ///                                 By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+        ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+        ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
+        ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        ///
         ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
         ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
         ///                                 are used to perform background uploads.
@@ -240,6 +318,7 @@ extension Datadog {
             self.backgroundTasksEnabled = backgroundTasksEnabled
             self.remoteConfiguration = remoteConfiguration
         }
+        #endif
 
         // MARK: - Internal
 

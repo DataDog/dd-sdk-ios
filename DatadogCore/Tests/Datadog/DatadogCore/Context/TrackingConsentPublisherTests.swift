@@ -10,7 +10,7 @@ import XCTest
 class TrackingConsentPublisherTests: XCTestCase {
     func testInitialValue() throws {
         let publisher = TrackingConsentPublisher(consent: .pending)
-        XCTAssertEqual(publisher.initialValue, .pending)
+        XCTAssertEqual(publisher.initialValue, .init(consent: .pending, revision: 0))
     }
 
     func testPublishTrackingConsent() throws {
@@ -22,7 +22,7 @@ class TrackingConsentPublisherTests: XCTestCase {
         // When
         publisher.publish {
             // Then
-            XCTAssertEqual($0, .notGranted)
+            XCTAssertEqual($0, .init(consent: .notGranted, revision: 1))
             expectation.fulfill()
         }
 
@@ -30,5 +30,19 @@ class TrackingConsentPublisherTests: XCTestCase {
 
         // TrackingConsentPublisher publishes in sync
         waitForExpectations(timeout: 0)
+    }
+
+    func testWhenConsentReturnsToAnEarlierValue_itPublishesANewRevision() {
+        // Given
+        let publisher = TrackingConsentPublisher(consent: .pending)
+        var published: [TrackingConsentPublisher.Value] = []
+        publisher.publish { published.append($0) }
+
+        // When
+        publisher.consent = .notGranted
+        publisher.consent = .pending
+
+        // Then
+        XCTAssertEqual(published, [.init(consent: .notGranted, revision: 1), .init(consent: .pending, revision: 2)])
     }
 }

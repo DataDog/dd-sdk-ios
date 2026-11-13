@@ -33,6 +33,21 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         rumConfig = nil
     }
 
+    #if os(watchOS) || os(macOS)
+    func testWhenRenderLoopIsNotObserved_itDoesNotSendViewHitchesTelemetry() throws {
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.startView(key: "key", name: "View1")
+        monitor.stopView(key: "key")
+
+        // Then
+        XCTAssertTrue(core.waitAndReturnViewHitchesMetricEvents().isEmpty, "Without a render loop, slow frames are not measured")
+    }
+    #else
     func testViewHitchesDefaultConfigForTelemetry() throws {
         RUM.enable(with: rumConfig, in: core)
 
@@ -82,7 +97,6 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(attributes[2].viewDuration, 2_000_000_000)
     }
 
-    #if !os(watchOS) && !os(macOS)
     func testViewHitchesCollectedForTelemetry() throws {
         RUM.enable(with: rumConfig, in: core)
 

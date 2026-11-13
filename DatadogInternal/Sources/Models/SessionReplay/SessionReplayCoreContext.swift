@@ -14,12 +14,17 @@ public enum SessionReplayCoreContext {
 
         /// The `has_replay` value
         public let value: Bool
+        /// The ID of the RUM session `value` was computed for, or `nil` if there was no RUM session.
+        public let sessionID: String?
 
         /// Creates a Context value.
         ///
-        /// - Parameter value: The `has_replay` value
-        public init(value: Bool) {
+        /// - Parameters:
+        ///   - value: The `has_replay` value
+        ///   - sessionID: The ID of the RUM session `value` was computed for, or `nil` if there was no RUM session.
+        public init(value: Bool, sessionID: String? = nil) {
             self.value = value
+            self.sessionID = sessionID
         }
     }
 

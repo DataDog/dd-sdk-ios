@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-10-20
-sdk_version: 3.20.0
-verified_against_commit: 0a4d229ac
+last_updated: 2026-11-11
+sdk_version: 3.21.0
+verified_against_commit: f4dfe5acb
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -140,7 +140,20 @@ Trace.enable(
 
         // Custom intake endpoint for spans
         // Default: nil (uses Datadog intake)
-        customEndpoint: nil
+        customEndpoint: nil,
+
+        // Custom intake endpoint for client-side stats.
+        // Has no effect unless the `clientSideStats` feature flag is enabled.
+        // Default: nil (uses Datadog intake)
+        customStatsEndpoint: nil,
+
+        // Compute APM stats (request hits, errors, latency distributions) on-device
+        // over eligible spans BEFORE sampling, then upload them to Datadog.
+        // Gives accurate RED metrics independent of the trace sample rate. When
+        // enabled, the SDK stamps `_dd.compute_stats=0` on spans so the backend does
+        // not also compute stats for the same traffic (avoiding double-counting).
+        // Default: false
+        featureFlags: [.clientSideStats: true]
     )
 )
 
@@ -205,6 +218,7 @@ requestSpan.finish()
   - Automatic `URLSession` instrumentation and distributed tracing (`urlSessionTracking`), including span customization (`spanCustomization`)
   - RUM and network-info enrichment
   - Span event mapper, custom endpoint
+  - Client-side APM stats (`featureFlags[.clientSideStats]`, `customStatsEndpoint`)
 - **`DatadogTrace/Sources/InterceptedRequest.swift`** — `Trace.Configuration.InterceptedRequest`, the immutable snapshot of a network request (`url`, `httpMethod`, `httpBody`) passed to `spanCustomization`.
 - **`DatadogTrace/Sources/TraceConfiguration+RemoteConfiguration.swift`** — Applies Datadog Remote Configuration on top of the in-code `Trace.Configuration`, once, at `Trace.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
@@ -250,6 +264,7 @@ Re-exported from `DatadogInternal` so they are available with `import DatadogTra
 ### Automatic Network Instrumentation
 Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` network instrumentation layer. The URLSession layer observes requests broadly; Trace uses the configured first-party hosts to decide where distributed tracing applies:
 - **First-party hosts**: `.trace(hosts:sampleRate:traceControlInjection:)` injects Datadog AND W3C `tracecontext` headers. Use `.traceWithHeaders(hostsWithHeaders:...)` to pick header types per host (Datadog, B3, B3 multi, W3C).
+- **Existing headers**: Trace does not overwrite trace propagation headers already set on the request. An existing `baggage` header is merged instead: its entries are kept, and the SDK's values (`session.id`, `user.id`, and `account.id`) win for matching keys. RUM `urlSessionTracking` merges `baggage` the same way.
 - **Trace spans**: Trace records URLSession spans only for first-party requests when Trace owns automatic URLSession tracking. Avoid enabling Trace `urlSessionTracking` and RUM `urlSessionTracking` for the same requests; the overlap is a current limitation and can produce undefined or incorrect behavior. If RUM owns resource tracking, configure RUM `urlSessionTracking.firstPartyHostsTracing` so RUM resources carry trace context for APM correlation.
 - **Sampling**: `firstPartyHostsTracing.sampleRate` is the URLSession distributed tracing propagation rate. If a RUM session is active, propagation and RUM resources use the composed RUM session and first-party tracing decision; for example, `sessionSampleRate: 50` and `firstPartyHostsTracing.sampleRate: 80` produce a 40% propagated trace context rate. The injected context also carries that session's ID, and both come from one snapshot unless an active parent span supplies the trace's decision.
 - **RUM ownership**: automatic URLSession spans use the request-time RUM context when it is captured by network instrumentation. A captured absence of RUM context stays absent when the request finishes; it does not attach the request to a later view. If the captured RUM context belongs to a different session than the one injected in the request, which can briefly happen right after a session starts or stops, the span gets no RUM tags rather than a session that disagrees with its request. Manual spans retain their existing start-time behavior.
@@ -286,6 +301,12 @@ Automatically instrumented `URLSession` spans have no call site to tag. Do **not
 
 ### Event Modification
 - **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
+
+### Client-Side Stats (APM)
+- **`featureFlags[.clientSideStats]`** (default: `false`, experimental) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device from eligible finished spans, including sampled-out ones, and uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans, and spans of kind `client`, `server`, `producer` or `consumer`. Uploaded spans are stamped with `_dd.compute_stats=0` so the backend does not compute stats for the same traffic again; with the flag off, a `_dd.compute_stats` tag set by the app is uploaded unchanged. Enabling it does not change which spans are uploaded. Aggregation and upload respect tracking consent, and `Datadog.clearAllData()` also clears the stats still in memory. Stats are written to storage every 30 seconds, and on a best-effort basis while the app may be suspended. Requests tracked by RUM `urlSessionTracking` produce no Trace span, so they are not aggregated. From Objective-C, set `client_side_stats` in `DDTraceConfiguration.featureFlags`; unknown flag names are ignored.
+- **Cardinality limit**: each time bucket retains at most 100 regular groups across deployments, plus one overflow group per deployment. Extra keys are aggregated under service `tracer_blocked_value`, preserving counts and latency statistics by deployment but excluding that traffic from queries filtered to the original service. Overflow is exported with its bucket, never early. A bucket holds at most 10 overflow groups; spans of further deployments are dropped and counted in telemetry. Only the version can change at runtime, so this needs spans from more than 10 versions ending in the same bucket. This bounds retained groups per bucket, not total SDK memory. A bucket larger than 500 KB, under half the 1 MB storage event limit and possible with wide latency ranges, is stored in pieces that are merged again at upload; pieces in different requests set `SplitPayload`. A group too large to store even alone, only possible with very long strings in the group or its bucket metadata, is dropped, logged and counted in telemetry.
+- **Service entries**: root spans, children of explicitly remote contexts, and local children whose `service.name` differs from their parent's are top-level for stats. Service overrides are captured when the child finishes, before event mapping, including updates made after span creation. Automatic `URLSession` spans compare with the span that was active when the request was instrumented, when that span is their parent. This intentionally differs from Go's start-time classification; later parent changes do not reclassify finished children. The parent ID and uploaded span fields are unchanged. OpenTelemetry local-service comparisons require a parent span object (explicit or active); a bare local `SpanContext` has no service metadata and is not assumed to be remote, so its child is not a service entry. `SpanEvent.serviceName` is read-only: adding a `service.name` tag in an event mapper does not override that field or create a service boundary. No child stats are buffered waiting for a parent to finish.
+- **`customStatsEndpoint`** (default: `nil`) — overrides the client-side stats intake URL. Independent of `customEndpoint` (spans) and has no effect unless the `clientSideStats` feature flag is enabled. Also available on `DDTraceConfiguration` from Objective-C.
 
 ### Manual Header Propagation
 For non-`URLSession` HTTP clients, build headers yourself:

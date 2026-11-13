@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 extension Profiling {
     /// Configuration options for the profiling feature.

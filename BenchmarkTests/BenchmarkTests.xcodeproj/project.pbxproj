@@ -20,6 +20,7 @@
 		868DA2F72D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F62D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift */; };
 		868DA2F92D71E622007D20D5 /* LogsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F82D71E622007D20D5 /* LogsUtils.swift */; };
 		86FA742B2D89C49400F69130 /* RUMAutoScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FA742A2D89C49400F69130 /* RUMAutoScenario.swift */; };
+		3DB1E5C02EB8A10000F1A001 /* TimeseriesScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB1E5C12EB8A10000F1A001 /* TimeseriesScenario.swift */; };
 		86FA742D2D89C4B800F69130 /* RUMAutoContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FA742C2D89C4B800F69130 /* RUMAutoContentView.swift */; };
 		86FA742F2D89CBF100F69130 /* CharactersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FA742E2D89CBF100F69130 /* CharactersView.swift */; };
 		86FA74312D89CC0400F69130 /* LocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FA74302D89CC0400F69130 /* LocationsView.swift */; };
@@ -283,6 +284,7 @@
 		868DA2F62D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsHeavyTrafficContentView.swift; sourceTree = "<group>"; };
 		868DA2F82D71E622007D20D5 /* LogsUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsUtils.swift; sourceTree = "<group>"; };
 		86FA742A2D89C49400F69130 /* RUMAutoScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutoScenario.swift; sourceTree = "<group>"; };
+		3DB1E5C12EB8A10000F1A001 /* TimeseriesScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesScenario.swift; sourceTree = "<group>"; };
 		86FA742C2D89C4B800F69130 /* RUMAutoContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutoContentView.swift; sourceTree = "<group>"; };
 		86FA742E2D89CBF100F69130 /* CharactersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharactersView.swift; sourceTree = "<group>"; };
 		86FA74302D89CC0400F69130 /* LocationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsView.swift; sourceTree = "<group>"; };
@@ -623,6 +625,14 @@
 			path = RUMAuto;
 			sourceTree = "<group>";
 		};
+		3DB1E5C22EB8A10000F1A001 /* Timeseries */ = {
+			isa = PBXGroup;
+			children = (
+				3DB1E5C12EB8A10000F1A001 /* TimeseriesScenario.swift */,
+			);
+			path = Timeseries;
+			sourceTree = "<group>";
+		};
 		86FA74272D89C45800F69130 /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -641,6 +651,7 @@
 			children = (
 				864917792D88759A00761363 /* RUMManual */,
 				86FA74262D89C44700F69130 /* RUMAuto */,
+				3DB1E5C22EB8A10000F1A001 /* Timeseries */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1549,6 +1560,7 @@
 				86FA742D2D89C4B800F69130 /* RUMAutoContentView.swift in Sources */,
 				868DA2E62D706456007D20D5 /* LogsCustomScenario.swift in Sources */,
 				86FA742B2D89C49400F69130 /* RUMAutoScenario.swift in Sources */,
+				3DB1E5C02EB8A10000F1A001 /* TimeseriesScenario.swift in Sources */,
 				86FA74392D8AC2C700F69130 /* RickMortyService.swift in Sources */,
 				86FBEDDD2D8C491E005CFCC4 /* EpisodeDetailViewController.swift in Sources */,
 				86252B1D2D8190DA0098FAEF /* TraceContentView.swift in Sources */,

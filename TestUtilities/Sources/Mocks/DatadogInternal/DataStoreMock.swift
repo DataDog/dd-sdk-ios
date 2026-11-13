@@ -11,11 +11,17 @@ public class DataStoreMock: DataStore {
     @ReadWriteLock
     public var storage: [String: DataStoreValueResult]
 
+    @ReadWriteLock
+    public var failingWriteKeys: Set<String> = []
+
     public init(storage: [String: DataStoreValueResult] = [:]) {
         self.storage = storage
     }
 
     public func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        guard !failingWriteKeys.contains(key) else {
+            return
+        }
         storage[key] = .value(value, version)
     }
 

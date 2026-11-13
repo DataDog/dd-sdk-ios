@@ -6,7 +6,7 @@
 
 #include "binary_image_resolver.h"
 
-#if defined(__APPLE__) && !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH && !TARGET_OS_OSX
 
 #include <dlfcn.h>
 #include <string.h>
@@ -64,8 +64,9 @@ static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
  * g_cacheptr_mutex protects the g_binary_image_cache pointer so that the
  * dyld callback and the destructor do not race on the pointer itself.
  * The instance mutex (binary_image_cache::mutex) protects the cache map.
+ * Keep the global mutex alive during exit-time cleanup for late dyld callbacks.
  */
-static std::mutex g_cacheptr_mutex;
+[[clang::no_destroy]] static std::mutex g_cacheptr_mutex;
 static dd::profiler::binary_image_cache* g_binary_image_cache = nullptr;
 
 // ============================================================================
@@ -328,4 +329,4 @@ void resolve_stack_trace_frames(stack_trace_t* traces, size_t count, binary_imag
 
 } // namespace dd::profiler
 
-#endif // __APPLE__ && !TARGET_OS_WATCH
+#endif // __APPLE__ && !TARGET_OS_WATCH && !TARGET_OS_OSX
