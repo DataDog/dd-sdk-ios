@@ -16,15 +16,16 @@ final class CanonicalPrecomputedTests: XCTestCase {
     private let decoder = JSONDecoder()
 
     func testCanonicalResponses() throws {
-        let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "precomputed", withExtension: nil)).resolvingSymlinksInPath()
+        let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "precomputed", withExtension: nil))
         let cases = root.appendingPathComponent("cases")
-        let enumerator = try XCTUnwrap(FileManager.default.enumerator(at: cases, includingPropertiesForKeys: nil))
-        let files = enumerator.allObjects.compactMap { $0 as? URL }.filter { $0.pathExtension == "json" }.sorted { $0.path < $1.path }
+        let enumerator = try XCTUnwrap(FileManager.default.enumerator(atPath: cases.path))
+        let files = enumerator.allObjects.compactMap { $0 as? String }.filter { $0.hasSuffix(".json") }.sorted()
         XCTAssertFalse(files.isEmpty, "The canonical corpus must not be empty")
         let source = try object(Data(contentsOf: root.appendingPathComponent("SOURCE.json")))
         var executed = 0
         var excluded = 0
-        for file in files {
+        for relativePath in files {
+            let file = cases.appendingPathComponent(relativePath)
             do {
                 // Decode only expectations here; raw response bytes may exceed Double range.
                 let metadata = try decoder.decode(FixtureMetadata.self, from: Data(contentsOf: file))
@@ -36,7 +37,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
                 }
                 executed += 1
                 try XCTContext.runActivity(named: "\(source["commit"]!) / \(file.lastPathComponent)") { _ in
-                    let responseData = try Data(contentsOf: root.appendingPathComponent("responses/cases").appendingPathComponent(String(file.path.dropFirst(cases.path.count + 1))))
+                    let responseData = try Data(contentsOf: root.appendingPathComponent("responses/cases").appendingPathComponent(relativePath))
                     if fixture["expectedResponseError"] != nil {
                         XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
                         try runRejected(fixture, responseData: responseData)
