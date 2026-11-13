@@ -88,7 +88,8 @@ public enum WebViewTracking {
         hosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
         logsSampleRate: Float,
-        in core: DatadogCoreProtocol
+        in core: DatadogCoreProtocol,
+        usageSampleRate: SampleRate = UsageTelemetry.defaultSampleRate
     ) throws {
         guard try prepareWebView(webView, logsSampleRate: logsSampleRate, callerName: "WebViewTracking.enable(webView:hosts:)", in: core) else {
             return
@@ -112,7 +113,7 @@ public enum WebViewTracking {
 
         injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
 
-        core.telemetry.usage(event: .trackWebView)
+        core.telemetry.usage(event: .trackWebView, sampleRate: usageSampleRate)
     }
 
     @MainActor
