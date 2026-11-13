@@ -5,6 +5,9 @@
  */
 
 import XCTest
+#if os(macOS)
+import AppKit
+#endif
 import TestUtilities
 @testable import DatadogInternal
 @_spi(Experimental)
@@ -116,6 +119,49 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(snapshot.sessionID, RUMUUID(rawValue: sessionUUID).toRUMDataFormat)
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
+
+    #if !os(watchOS)
+    func testWhenAccessibilityCollectionIsEnabled_itReadsAccessibilitySettings() throws {
+        // Given
+        config.collectAccessibility = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.accessibilityReader is AccessibilityReader)
+    }
+
+    #if os(macOS)
+    func testWhenAccessibilityCollectionIsEnabled_itObservesDisplayOptionsOnTheWorkspaceNotificationCenter() throws {
+        // Given
+        let applicationCenter = MockNotificationCenter()
+        let workspaceCenter = MockNotificationCenter()
+        config.notificationCenterProvider = NotificationCenterProvider(applicationCenter: applicationCenter, workspaceCenter: workspaceCenter)
+        config.collectAccessibility = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        XCTAssertTrue(workspaceCenter.getObserverNames().contains(NSWorkspace.accessibilityDisplayOptionsDidChangeNotification))
+        XCTAssertFalse(applicationCenter.getObserverNames().contains(NSWorkspace.accessibilityDisplayOptionsDidChangeNotification))
+    }
+    #endif
+
+    func testWhenAccessibilityCollectionIsDisabled_itDoesNotReadAccessibilitySettings() throws {
+        // Given
+        config.collectAccessibility = false
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertNil(monitor.applicationScope.dependencies.accessibilityReader)
+    }
+    #endif
 
     func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
         // Given
