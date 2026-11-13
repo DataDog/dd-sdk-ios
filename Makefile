@@ -102,8 +102,8 @@ test:
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
 	@:$(eval USE_TEST_VISIBILITY ?= $(DEFAULT_USE_TEST_VISIBILITY))
-	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)'"
-	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' MACOS_ARCH='$(MACOS_ARCH)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)'"
+	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)" $(if $(MACOS_ARCH),--arch "$(MACOS_ARCH)")
 
 # Run unit tests for specified SCHEME using iOS Simulator
 test-ios:
@@ -187,7 +187,7 @@ test-visionos-all:
 	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
 	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
 
-# Run unit tests for specified SCHEME using macOS
+# Run unit tests for specified SCHEME using macOS. Pass MACOS_ARCH="x86_64" to test the Intel build (with Rosetta on Apple silicon).
 test-macos:
 	@$(call require_param,SCHEME)
 	@:$(eval OS ?= $(DEFAULT_MACOS_OS))
@@ -195,7 +195,7 @@ test-macos:
 	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all schemes ready for macOS so far
+# Run unit tests for all schemes available on macOS
 test-macos-all:
 	@$(MAKE) test-macos SCHEME="DatadogInternal"
 	@$(MAKE) test-macos SCHEME="DatadogCore"
@@ -315,15 +315,16 @@ spm-build-macos:
 	# Whole package for Mac Catalyst:
 	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
 	# Only macOS-compatible product schemes (DatadogInternal is built transitively as a
-	# dependency of these; it is not a package product, so it has no scheme of its own):
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogRUM"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogWebViewTracking"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogFlags"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogProfiling"
+	# dependency of these; it is not a package product, so it has no scheme of its own).
+	# The generic destination builds both arm64 and x86_64:
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogCore"
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogLogs"
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogRUM"
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogCrashReporting"
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogWebViewTracking"
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogFlags"
+	@$(MAKE) spm-build DESTINATION="generic/platform=macOS" SCHEME="DatadogProfiling"
 
 # Builds a new version of the E2E app and publishes it to synthetics.
 e2e-upload:

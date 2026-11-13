@@ -9,6 +9,7 @@
 #   --scheme: Identifies the test scheme to execute
 #   --platform: Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'
 #   --os: Sets the operating system version for the tests, e.g. '17.5'
+#   --arch: (macOS only, optional) Sets the architecture for the tests, e.g. 'x86_64'. Defaults to the host architecture.
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
@@ -21,14 +22,18 @@ define_arg "scheme" "" "Identifies the test scheme to execute" "string" "true"
 define_arg "os" "" "Sets the operating system version for the tests, e.g. '17.5'" "string" "true"
 define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'" "string" "true"
 define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "true"
+define_arg "arch" "" "(macOS only) Sets the architecture for the tests, e.g. 'x86_64'. Defaults to the host architecture." "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
 
 WORKSPACE="Datadog.xcworkspace"
-# macOS has no simulator, so the destination omits `name` and `OS`.
+# macOS has no simulator, so the destination omits `name` and `OS`. On Apple silicon, x86_64 tests run with Rosetta.
 if [ "$platform" = "macOS" ]; then
-    DESTINATION="platform=macOS"
+    DESTINATION="platform=macOS${arch:+,arch=$arch}"
+elif [ -n "$arch" ]; then
+    echo_err "Error:" "--arch is only supported for macOS."
+    exit 1
 else
     DESTINATION="platform=$platform,name=$device,OS=$os"
 fi

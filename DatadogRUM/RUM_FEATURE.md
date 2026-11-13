@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-06
+last_updated: 2026-11-10
 sdk_version: 3.21.0
 verified_against_commit: 2329c69db
 tracked_files:
@@ -14,11 +14,12 @@ tracked_files:
 
 ## Overview
 
-RUM tracks user interactions, views, resources, errors, and performance metrics in iOS applications. It requires initialization via `Datadog.initialize()` before enabling.
+RUM tracks user interactions, views, resources, errors, and performance metrics in applications on Apple platforms. It requires initialization via `Datadog.initialize()` before enabling.
 
-**Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
+**Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only) — with platform-specific limitations:
 - **iOS / visionOS**: Full feature set.
 - **tvOS**: UIKit and SwiftUI view tracking, press-based action tracking for both frameworks through `uiKitActionsPredicate`, app hangs, long tasks, vitals, slow frames, memory warnings, and watchdog terminations. `swiftUIActionsPredicate` is accepted in configuration but is not used by tvOS action instrumentation. Scroll and swipe tracking is not supported.
+- **macOS**: automatic `NSViewController` views through `appKitViewsPredicate`, and left-click, menu, and toolbar actions through `macOSActionsPredicate`; menu actions include keyboard shortcuts. SwiftUI views are tracked with `.trackRUMView()` (`swiftUIViewsPredicate` is experimental). `swiftUIActionsPredicate`, `trackBackgroundEvents`, `trackWatchdogTerminations`, `trackMemoryWarnings`, and `trackSlowFrames` are not available. Once a view was tracked, events with no active view go to a "NoActiveView" view. Views tracked through the views handler stop when the Mac sleeps and restart on wake; only sleep counts as suspension. Views are tracked in one application-level stack, not per window.
 - **watchOS**: No automatic view/action tracking predicates (UIKit and SwiftUI), no memory warnings. URLSession tracking, event mappers, manual RUM instrumentation, session callbacks, and CPU/memory vitals are available. Refresh-rate and slow-frame data are unavailable (no DisplayLink on watchOS).
 
 ## Quick Start Example

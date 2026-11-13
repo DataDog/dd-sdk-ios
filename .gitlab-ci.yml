@@ -272,13 +272,46 @@ Unit Tests (macOS):
     - !reference [.release-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
+  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
+  timeout: 55m
   variables:
     PLATFORM: "macOS"
     DEVICE: "macOS"
+    MACOS_ARCH: "arm64"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" MACOS_ARCH="$MACOS_ARCH" USE_TEST_VISIBILITY=1
+  artifacts:
+    paths:
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
+    when: always
+
+Unit Tests (macOS x86_64):
+  stage: test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
+  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
+  timeout: 55m
+  variables:
+    PLATFORM: "macOS"
+    DEVICE: "macOS"
+    # The runners are Apple silicon, so the Intel build runs with Rosetta.
+    MACOS_ARCH: "x86_64"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
+  script:
+    # Fail early with a clear error if Rosetta is not installed on the runner.
+    - arch -x86_64 /usr/bin/true
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" MACOS_ARCH="$MACOS_ARCH" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"

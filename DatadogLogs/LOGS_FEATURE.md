@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-10-19
+last_updated: 2026-11-10
 sdk_version: 3.20.0
 verified_against_commit: 56ffa64c5
 tracked_files:
@@ -17,7 +17,7 @@ tracked_files:
 
 Logs sends structured log events to Datadog. Loggers are created per-component and support log levels, tags, custom attributes, and optional console output. Logs requires initialization via `Datadog.initialize()` before enabling.
 
-**Platform**: iOS, tvOS, watchOS, visionOS
+**Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only)
 
 ## Quick Start Example
 
