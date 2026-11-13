@@ -178,6 +178,8 @@ internal final class MessageBus {
     ///
     /// - Parameter configuration: The SDK configuration.
     private func save(configuration: ConfigurationTelemetry) {
+        // It does not hold sudden termination: a hold would disable it for the first seconds of every launch,
+        // and only this telemetry is lost when the app terminates suddenly before the dispatch delay ends.
         queue.async {
             // merge with the current configuration if any
             self.configuration = self.configuration.map {

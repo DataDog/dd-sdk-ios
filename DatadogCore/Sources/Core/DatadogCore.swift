@@ -299,6 +299,8 @@ internal final class DatadogCore {
         contextProvider.flush()
         bus.flush()
         contextProvider.flush()
+        // Telemetry sent by these last writes, like a write error, is not drained: it is not app data,
+        // and draining until no work is left would delay termination.
         readWriteQueue.sync { }
     }
 
