@@ -14,9 +14,9 @@
 </p>
 
 
-# Datadog SDK for iOS, tvOS and macOS
+# Datadog SDK for iOS, tvOS, and macOS
 
-> Swift and Objective-C libraries to interact with Datadog on iOS, tvOS and macOS.
+> Swift and Objective-C libraries to interact with Datadog on iOS, tvOS, and macOS.
 
 ## Getting Started
 
@@ -44,7 +44,7 @@ RUM allows you to monitor web views and eliminate blind spots in your hybrid mob
 
 ### macOS
 
-Native AppKit and SwiftUI apps on macOS 12.0 and later, on Apple silicon and Intel, are supported through Swift Package Manager. RUM, Logs, Trace, Crash Reporting, WebView Tracking and Feature Flags are available. Session Replay and Profiling are not available on macOS, and Mac Catalyst apps are not supported.
+Native AppKit and SwiftUI apps on macOS 12.0 and later, on Apple silicon and Intel, are supported through Swift Package Manager. RUM, Logs, Trace, Crash Reporting, WebView Tracking, and Feature Flags are available. Session Replay and Profiling are not available on macOS, and Mac Catalyst apps are not supported.
 
 ## Integrations
 
