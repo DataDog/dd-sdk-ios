@@ -104,8 +104,9 @@ public:
      * @brief Requests that sampling stop at the next safe point.
      *
      * This does not join threads or reset internal state.
+     * @param discard_pending_work Discards queued work and prevents restart when true.
      */
-    void request_stop();
+    void request_stop(bool discard_pending_work = false);
 
     /**
      * @brief Returns and resets diagnostics accumulated since the last consume.

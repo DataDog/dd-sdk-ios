@@ -45,6 +45,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .platformGlass,
         .glassGroup,
         .scrollPocket,
+        .scrollPocketGroup,
         .captureOnlyBackdrop,
         .tabSelectionBackdrop,
         .visualEffectBackdrop,

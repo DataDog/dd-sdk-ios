@@ -223,7 +223,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                         variation: .integer(99),
                         reason: "TARGETING_MATCH",
                         doLog: true
-                    ).servedAsNumber(),
+                    ),
                     "json-flag": .init(
                         allocationKey: "allocation-127",
                         variationKey: "variation-127",
@@ -504,6 +504,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                 doLog: false
             )
         }
+        // Encodes and decodes like the flags cache
         func cached(_ assignment: FlagAssignment) throws -> FlagAssignment {
             try FlagsNumericJSON.decode(FlagAssignment.self, from: JSONEncoder().encode(assignment), cached: true)
         }
@@ -568,13 +569,26 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertNil(built(.integer(Int.max)).variation(as: Double.self))
         #endif
 
-        // A whole `.double` reads the same after a cache restore, which decodes it as `.integer`
+        // A stored `.double` keeps its representation through the cache, so its reads do not change
         let wholeDouble = built(.double(1e15))
+        XCTAssertEqual(try cached(wholeDouble), wholeDouble)
         #if _pointerBitWidth(_64)
         XCTAssertEqual(wholeDouble.variation(as: Int.self), 1_000_000_000_000_000)
-        XCTAssertEqual(try cached(wholeDouble).variation, .integer(1_000_000_000_000_000))
+        XCTAssertEqual(try cached(wholeDouble).variation(as: Int.self), 1_000_000_000_000_000)
         #endif
-        XCTAssertEqual(try cached(wholeDouble).variation(as: Double.self), 1e15)
+        for value in [9_007_199_254_740_994.0, 1_000_000_000_000_000_128.0, -9_007_199_254_740_994.0, 5.5] {
+            let stored = built(.double(value))
+            XCTAssertEqual(try cached(stored), stored, "\(value)")
+            XCTAssertNil(try cached(stored).variation(as: Int.self), "\(value)")
+            XCTAssertEqual(try cached(stored).variation(as: Double.self), value, "\(value)")
+        }
+        // Outside the cache, a whole value written as a number decodes as `.integer`
+        #if _pointerBitWidth(_64)
+        XCTAssertEqual(
+            try JSONDecoder().decode(FlagAssignment.self, from: JSONEncoder().encode(wholeDouble)).variation,
+            .integer(1_000_000_000_000_000)
+        )
+        #endif
         let rounded = try decoded(type: "number", value: "999999999999999.99")
         XCTAssertEqual(try cached(rounded), rounded)
 

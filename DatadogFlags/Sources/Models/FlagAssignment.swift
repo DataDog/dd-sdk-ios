@@ -24,6 +24,11 @@ public struct FlagAssignment: Equatable {
     public var serialID: Int?
     internal var numericConversion: FlagNumericConversion?
 
+    /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
+    private static let maxSafeInteger: Double = 9_007_199_254_740_991
+
+    /// Returns the variation as `T`. Original numeric tokens control decoded reads; values without tokens
+    /// use conservative conversion rules.
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         if let numericConversion {
             if T.self == Int.self {
@@ -45,7 +50,11 @@ public struct FlagAssignment: Equatable {
             return value as? T
         case .double(let value):
             if T.self == Int.self {
-                return Int(exactly: value) as? T
+                // Above 2^53 - 1, a `.double` can be the rounded form of a different number, so it does not
+                // convert. For example, `JSONDecoder` decodes `9007199254740993.0001` as `9007199254740994.0`.
+                // Below the limit, exactness applies to the decoded value, not to the JSON text: `JSONDecoder`
+                // rounds over-precise literals such as `999999999999999.99` to `1000000000000000`.
+                return abs(value) <= Self.maxSafeInteger ? Int(exactly: value) as? T : nil
             }
             return value.isFinite ? value as? T : nil
         case .object(let value):
@@ -101,7 +110,11 @@ extension FlagAssignment: Codable {
                 ? try container.decodeIfPresent(String.self, forKey: .numericLiteral) : nil
             let rawLiteral = FlagsNumericJSON.literal(in: decoder, key: "variationValue")
             // A string on the wire remains invalid, even if it contains digits.
-            if let literal = cachedLiteral ?? rawLiteral,
+            if FlagsNumericJSON.isCache(decoder), variationType == "float", cachedLiteral == nil {
+                // Older caches contain the rounded Double text, not the original response token.
+                // Preserve their representation and conservative Integer reads.
+                self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
+            } else if let literal = cachedLiteral ?? rawLiteral,
                (try? container.decode(String.self, forKey: .variationValue)) == nil {
                 let conversion = FlagNumericConversion(literal)
                 if let integer = conversion.integer {
