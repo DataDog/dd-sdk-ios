@@ -73,14 +73,16 @@ final class CanonicalPrecomputedTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
+            flagSelection: nil,
             featureScope: scope,
-            fetch: { _, complete in complete(.success(responseData)) }
+            fetch: { _, complete in complete(.success((responseData, .mockAny()))) }
         )
         let repository = FlagsRepository(
             clientName: UUID().uuidString,
             flagAssignmentsFetcher: fetcher,
             dateProvider: date,
             featureScope: scope,
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let aggregator = EvaluationAggregator(dateProvider: date, featureScope: scope, flushInterval: 100)
