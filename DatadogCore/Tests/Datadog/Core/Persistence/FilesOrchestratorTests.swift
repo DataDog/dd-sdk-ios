@@ -56,7 +56,14 @@ class FilesOrchestratorTests: XCTestCase {
 
     func testWhenSameWritableFileWasUsedMaxNumberOfTimes_itCreatesNewFile() throws {
         let dateProvider = DateProviderMock()
-        let orchestrator = configureOrchestrator(using: dateProvider)
+        var performance = StoragePerformanceMock(other: self.performance)
+        performance.maxObjectsInFile = 10
+        let orchestrator = FilesOrchestrator(
+            directory: .init(url: temporaryDirectory),
+            performance: performance,
+            dateProvider: dateProvider,
+            telemetry: NOPTelemetry()
+        )
         var previousFile: WritableFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
         var nextFile: WritableFile
 

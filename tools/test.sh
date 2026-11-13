@@ -9,18 +9,23 @@
 #   --scheme: Identifies the test scheme to execute
 #   --platform: Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'
 #   --os: Sets the operating system version for the tests, e.g. '17.5'
+#   --test-plans: Runs only these test plans of the scheme, separated by spaces, e.g. 'UnitTestsThreadSanitizer'
+#   --skip-test-plans: Runs every test plan of the scheme except these, separated by spaces
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
 source ./tools/utils/echo-color.sh
 source ./tools/utils/current-git.sh
 source ./tools/secrets/get-secret.sh
+source ./tools/utils/boot-simulator.sh
 
 set_description "Executes unit tests for a specified --scheme, using the provided --os, --platform, and --device."
 define_arg "scheme" "" "Identifies the test scheme to execute" "string" "true"
 define_arg "os" "" "Sets the operating system version for the tests, e.g. '17.5'" "string" "true"
 define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'" "string" "true"
 define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "true"
+define_arg "test-plans" "" "Runs only these test plans of the scheme, separated by spaces" "string" "false"
+define_arg "skip-test-plans" "" "Runs every test plan of the scheme except these, separated by spaces" "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -102,19 +107,48 @@ fi
 # Suppress lint Build Phase during xcodebuild test runs. CI runs `make lint` standalone
 export SKIP_LINT=1
 
+# Boots the simulator while xcodebuild builds the tests.
+boot_simulator_in_background "$platform" "$os" "$device"
+
 set -x
 
 xcodebuild -version
 
-if [ "$CI" = "true" ]; then
-    mkdir -p ResultBundles
-    RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}.xcresult"
-    rm -rf "$RESULT_BUNDLE_PATH"
-    # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
-    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
-    # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
-    # uploader already archives whatever paths match, zip or not.
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}.log" | xcbeautify
+# Runs `xcodebuild test` for the scheme, restricted to the given test plan when one is passed.
+run_tests() {
+    local test_plan="$1"
+    local test_plan_args=()
+    local result_name="$SCHEME"
+    if [ -n "$test_plan" ]; then
+        test_plan_args=(-testPlan "$test_plan")
+        result_name="${SCHEME}-${test_plan}"
+    fi
+
+    if [ "$CI" = "true" ]; then
+        mkdir -p ResultBundles
+        RESULT_BUNDLE_PATH="ResultBundles/${result_name}.xcresult"
+        rm -rf "$RESULT_BUNDLE_PATH"
+        # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
+        # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
+        # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
+        # uploader already archives whatever paths match, zip or not.
+        xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" "${test_plan_args[@]}" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${result_name}.log" | xcbeautify
+    else
+        xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" "${test_plan_args[@]}" test 2>&1 | xcbeautify
+    fi
+}
+
+# Schemes with test plans (e.g. `UnitTests-iOS`) run each plan in turn, so every test target
+# runs with its plan's options. Schemes without test plans run their own test action.
+# --test-plans and --skip-test-plans narrow the run to some of the scheme's plans.
+SCHEME_TEST_PLANS=($(xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -showTestPlans -json | sed -n 's/.*"name" : "\(.*\)".*/\1/p'))
+
+if (( ${#SCHEME_TEST_PLANS} == 0 )); then
+    run_tests ""
 else
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+    TEST_PLANS=(${=test_plans:-${SCHEME_TEST_PLANS[*]}})
+    SKIP_TEST_PLANS=(${=skip_test_plans})
+    for test_plan in ${TEST_PLANS:|SKIP_TEST_PLANS}; do
+        run_tests "$test_plan"
+    done
 fi

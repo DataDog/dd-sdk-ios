@@ -7,7 +7,7 @@
 import UIKit
 import DatadogCore
 import DatadogInternal
-@testable import DatadogTrace
+import DatadogTrace
 
 class RUMResourceActiveSpanAugmentationViewController: UIViewController {
     private var testScenario: URLSessionBaseScenario!
@@ -24,9 +24,7 @@ class RUMResourceActiveSpanAugmentationViewController: UIViewController {
     }
 
     @IBAction func sendRequestWithNonSampledSpan(_ sender: Any) {
-        guard let span = Tracer.shared().startRootSpan(operationName: "some-active-span", customSampleRate: 0).setActive() as? DDSpan else {
-            return
-        }
+        let span = Tracer.shared().startRootSpan(operationName: "some-active-span", customSampleRate: 0).setActive()
         sendRequest(with: span)
     }
 

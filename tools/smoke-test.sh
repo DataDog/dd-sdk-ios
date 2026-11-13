@@ -14,6 +14,7 @@ set -eo pipefail
 source ./tools/utils/argparse.sh
 source ./tools/utils/echo-color.sh
 source ./tools/utils/current-git.sh
+source ./tools/utils/boot-simulator.sh
 
 set_description "Executes smoke tests in the specified --test-directory, using the provided --os, --platform, and --device."
 define_arg "test-directory" "" "Specifies the directory where the smoke tests are located" "string" "true"
@@ -33,6 +34,9 @@ if [ "$CI" = "true" ]; then
     reports_path="$(pwd)/artifacts/smoke-test-reports/${test_directory:t}"
     mkdir -p "$reports_path"
 fi
+
+# Boots the simulator while the smoke test project builds.
+boot_simulator_in_background "$platform" "$os" "$device"
 
 echo_subtitle "Run 'make clean install test OS=\"$os\" PLATFORM=\"$platform\" DEVICE=\"$device\"' in '$test_directory'"
 echo_succ "Smoke testing for git ref: '$(current_git_ref)'"
