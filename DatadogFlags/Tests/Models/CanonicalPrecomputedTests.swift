@@ -16,7 +16,12 @@ final class CanonicalPrecomputedTests: XCTestCase {
     private let decoder = JSONDecoder()
 
     func testCanonicalResponses() throws {
-        let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "precomputed", withExtension: nil))
+        #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+        #else
+        let bundle = Bundle(for: Self.self)
+        #endif
+        let root = try XCTUnwrap(bundle.url(forResource: "precomputed", withExtension: nil))
         let cases = root.appendingPathComponent("cases")
         let enumerator = try XCTUnwrap(FileManager.default.enumerator(atPath: cases.path))
         let files = enumerator.allObjects.compactMap { $0 as? String }.filter { $0.hasSuffix(".json") }.sorted()

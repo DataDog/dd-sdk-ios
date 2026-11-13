@@ -117,6 +117,11 @@ Adding a case requires an upstream fixture change and snapshot refresh. It requi
 Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
 Do not add local exclusions to hide failures.
 
+Diagnostic snapshots and native bridge exports omit numeric assignments with no representable Integer or Double value.
+Native typed getters still report `TYPE_MISMATCH` for these assignments. Valid zero values remain present.
+Caches that require original numeric metadata use version 4. Older readers ignore these caches and must refetch assignments;
+getters use application defaults until assignments become available. Other caches keep their existing versions.
+
 Numeric behavior follows the [shared numeric contract](https://github.com/DataDog/ffe-system-test-data/blob/main/precomputed-assignments/README.md#mobile-conformance-and-numeric-types).
 The native context API requires a string targeting key. Fixtures with `targetingKey: null` must declare this platform in `_skip` upstream; the runner reports an actionable fixture error if an applicable case violates that requirement.
 

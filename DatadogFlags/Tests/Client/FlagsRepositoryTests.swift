@@ -3738,6 +3738,41 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testNumericMetadataUsesACacheVersionThatLegacyReadersReject() throws {
+        for literal in ["1e400", "1e-400", "100000000000000000001", "1.00000000000000001"] {
+            let json = #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}"#
+            let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+            let flagsData = FlagsData(flags: ["flag": assignment], context: .mockAny(), date: .mockAny())
+            let scope = FeatureScopeMock()
+            scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "numeric")
+            let stored = try XCTUnwrap(scope.dataStoreMock.storage["numeric"])
+            for version: DataStoreKeyVersion in [1, 2, 3] {
+                XCTAssertNil(stored.data(expectedVersion: version), literal)
+            }
+            XCTAssertNotNil(stored.data(expectedVersion: 4), literal)
+            let completed = expectation(description: "restored numeric metadata")
+            scope.flagsDataStore.flagsData(forClientNamed: "numeric") {
+                XCTAssertEqual($0, flagsData, literal)
+                XCTAssertNil($0?.flags["flag"]?.variation(as: Int.self), literal)
+                completed.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+    }
+
+    func testOrdinaryNumericCacheKeepsItsExistingVersion() throws {
+        for literal in ["0", "5", "1.5", "1e20"] {
+            let json = #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}"#
+            let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+            let flagsData = FlagsData(flags: ["flag": assignment], context: .mockAny(), date: .mockAny())
+            let scope = FeatureScopeMock()
+            scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "numeric")
+            let stored = try XCTUnwrap(scope.dataStoreMock.storage["numeric"]?.data())
+            let restored = try FlagsNumericJSON.decode(FlagsData.self, from: stored, cached: true)
+            XCTAssertEqual(restored, flagsData, literal)
+        }
+    }
+
     func testFlagsDataStoredAtAnUnknownVersionIsNotLoadedAndNotReported() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -3749,7 +3784,7 @@ final class FlagsRepositoryTests: XCTestCase {
             date: .mockAny(),
             flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
         )
-        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 4)
+        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 5)
         let completed = expectation(description: "unknown version skipped")
 
         // When

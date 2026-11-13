@@ -24,6 +24,14 @@ public struct FlagAssignment: Equatable {
     public var serialID: Int?
     internal var numericConversion: FlagNumericConversion?
 
+    /// Whether a decoded number has a value that snapshots and bridge consumers can represent.
+    internal var hasRepresentableValue: Bool {
+        guard let numericConversion else {
+            return true
+        }
+        return numericConversion.integer != nil || numericConversion.double != nil
+    }
+
     /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
     private static let maxSafeInteger: Double = 9_007_199_254_740_991
 
