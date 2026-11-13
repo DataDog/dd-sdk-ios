@@ -195,7 +195,7 @@ flowchart LR
 `encryption` encrypts each event before it is written to disk and decrypts it before upload. Decryption must work across launches: events that fail to decrypt are not uploaded, and the SDK logs "Failed to decrypt data".
 
 ### Time Synchronization
-By default the SDK computes a server time offset with Datadog NTP pools (`0-3.datadog.pool.ntp.org`, via Kronos) and applies it to event dates. If a sync fails, the SDK keeps the offset from earlier samples or the one stored from the previous session. A custom `serverDateProvider` replaces this; a no-op provider leaves device time uncorrected, which can shift RUM sessions and traces.
+By default the SDK computes a server time offset with Datadog NTP pools (`0-3.datadog.pool.ntp.org`, via Kronos) and applies it to event dates. If a sync fails, the SDK keeps the offset from earlier samples or the one stored by a previous session, as long as the device hasn't rebooted since. A custom `serverDateProvider` replaces this; a no-op provider leaves device time uncorrected, which can shift RUM sessions and traces.
 
 ### Remote Configuration
 - With `remoteConfiguration`, Core loads the cached document from `Library/Application Support` at init, then fetches it from `https://sdk-configuration.<site host>/v1/<id>.json` (or `customURL`) in the background. On UIKit platforms it fetches again when the app returns to the foreground, at most once every 5 minutes (an earlier foreground is ignored). Unchanged documents return 304 via ETag.
@@ -268,7 +268,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 **Solutions:** Reduce event size (large attributes), and check how long devices stay offline.
 
 ### "Event timestamps are shifted"
-**Causes:** A custom or no-op `serverDateProvider`. With the default provider, an unreachable NTP pool falls back to the offset from earlier samples or the previous session; the device clock is used uncorrected only if no offset was ever computed.
+**Causes:** A custom or no-op `serverDateProvider`, or NTP unreachable with no usable offset (none computed yet, or the stored one was discarded after a device reboot), so the device clock is used.
 
 **Solutions:** Keep the default provider, and allow NTP traffic on restricted networks.
 
