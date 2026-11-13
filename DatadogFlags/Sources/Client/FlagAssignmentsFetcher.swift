@@ -34,7 +34,6 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private let assignmentFetchQueue: DispatchQueue
     private let fetch: (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
 
-    private static let decoder = JSONDecoder()
     private static let flagSelectionIgnoredHeader = "DD-Flag-Selection-Ignored"
     // The reasons the server sends in `DD-Flag-Selection-Ignored`. Any other value, for example one set by a proxy
     // behind `customFlagsEndpoint`, is reported as `unknown`, so header content never reaches logs or telemetry.
@@ -179,7 +178,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 ? reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader))
                 : nil
             do {
-                let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
+                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data)
                 guard response.obfuscation == nil || supportsObfuscation else {
                     throw FlagsError.invalidResponse
                 }

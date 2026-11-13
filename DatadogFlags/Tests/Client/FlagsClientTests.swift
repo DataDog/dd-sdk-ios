@@ -644,6 +644,67 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNotNil(evaluationLogger.logEvaluationCalls[7].error, "typeMismatch should have error")
     }
 
+    func testLegacyClientIgnoresDependentResponseFields() throws {
+        // Given
+        let responseJSON = """
+        {
+          "data": {
+            "type": "precomputed-assignments",
+            "attributes": {
+              "flags": {
+                "root-flag": {
+                  "allocationKey": "root-allocation",
+                  "variationKey": "root-variant",
+                  "variationType": "boolean",
+                  "variationValue": true,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH",
+                  "dependencyEvaluations": [{
+                    "flagKey": "Eb_cST-0-FZKdvcpKLHbDDG_CX2hK4Xfrw7h5o-47Gp6GyFntOGTZO3wmLg",
+                    "isPresentInAssignment": true
+                  }]
+                }
+              },
+              "flagEvaluationErrors": {
+                "failed-flag": {
+                  "reason": "ERROR",
+                  "errorCode": "GENERAL",
+                  "dependencyEvaluations": [{
+                    "flagKey": "Eb_cST-0-FZKdvcpKLHbDDG_CX2hK4Xfrw7h5o-47Gp6GyFntOGTZO3wmLg",
+                    "isPresentInAssignment": true
+                  }]
+                }
+              }
+            }
+          }
+        }
+        """
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(responseJSON.utf8))
+        let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
+        let rumReporter = RUMFlagEvaluationReporterMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                flagsData: .init(flags: response.flags, context: .mockAny(), date: .mockAny())
+            ),
+            exposureLogger: exposureLogger,
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: rumReporter
+        )
+
+        // When
+        let details = client.getBooleanDetails(key: "root-flag", defaultValue: false)
+
+        // Then
+        XCTAssertTrue(details.value)
+        XCTAssertNil(details.error)
+        XCTAssertEqual(details.variant, "root-variant")
+        XCTAssertEqual(response.failedFlags, [:])
+        XCTAssertEqual(exposureLogger.logExposureCalls.map(\.flagKey), ["root-flag"])
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.flagKey), ["root-flag"])
+        XCTAssertEqual(rumReporter.sendFlagEvaluationCalls.map { $0.0 }, ["root-flag"])
+    }
+
     func testNumericEvaluationConvertsWithoutLoss() {
         // Given - whole and fractional numeric variations
         let exposureLogger = ExposureLoggerMock()
@@ -946,6 +1007,43 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 0)
         XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 0)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 0)
+    }
+
+    func testSnapshotOmitsUnrepresentableNumbersBeforeAndAfterCacheRestore() throws {
+        let cases: [(String, AnyValue?)] = [
+            ("100000000000000000001", nil), ("1e400", nil), ("1e-400", nil),
+            ("0", .int(0)), ("5.0", .int(5)), ("1.00000000000000001", .double(1)),
+            ("1.20000000000000001", .double(1.2))
+        ]
+        for (literal, expected) in cases {
+            let json = #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":true}"#
+            let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+            let sibling = FlagAssignment(allocationKey: "a", variationKey: "v", variation: .boolean(true), reason: "STATIC", doLog: false)
+            let initial = FlagsData(flags: ["flag": assignment, "sibling": sibling], context: .mockAny(), date: .mockAny())
+            let restored = try FlagsNumericJSON.decode(FlagsData.self, from: JSONEncoder().encode(initial), cached: true)
+            for state in [initial, restored] {
+                let exposureLogger = ExposureLoggerMock()
+                let evaluationLogger = EvaluationLoggerMock()
+                let rumReporter = RUMFlagEvaluationReporterMock()
+                let client = FlagsClient(
+                    repository: FlagsRepositoryMock(flagsData: state),
+                    exposureLogger: exposureLogger,
+                    evaluationLogger: evaluationLogger,
+                    rumFlagEvaluationReporter: rumReporter
+                )
+                let snapshot = try XCTUnwrap(client.snapshot())
+                XCTAssertEqual(snapshot.assignments["flag"]?.value, expected, literal)
+                XCTAssertEqual(client.getFlagAssignments()?["flag"] != nil, expected != nil, literal)
+                XCTAssertEqual(snapshot.assignments["sibling"]?.value, .bool(true), literal)
+                XCTAssertNoThrow(try JSONEncoder().encode(snapshot), literal)
+                XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
+                XCTAssertTrue(evaluationLogger.logEvaluationCalls.isEmpty)
+                XCTAssertTrue(rumReporter.sendFlagEvaluationCalls.isEmpty)
+                if expected == nil {
+                    XCTAssertEqual(client.getDoubleDetails(key: "flag", defaultValue: 123).error, .typeMismatch, literal)
+                }
+            }
+        }
     }
 
     func testSnapshotWhenNoCachedAssignments() {

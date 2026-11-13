@@ -8,6 +8,7 @@ import Foundation
 import DatadogInternal
 
 public protocol FlagsClientInternal: AnyObject {
+    /// Omits numeric assignments without a representable Integer or Double value.
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func getFlagAssignments() -> [String: FlagAssignment]?

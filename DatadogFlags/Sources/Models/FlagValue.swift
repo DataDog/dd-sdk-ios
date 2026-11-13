@@ -15,9 +15,9 @@ import Foundation
 /// - `Double` for numeric flags
 /// - ``AnyValue`` for object/JSON flags
 ///
-/// Numeric flags convert between `Int` and `Double` only when the conversion is exact. For example, a flag
-/// value of `5` reads as `Int` or `Double`, and `1.2` reads only as `Double`. Otherwise evaluation returns
-/// the default value with ``FlagEvaluationError/typeMismatch``.
+/// Numeric getters validate the original JSON number. `Int` reads require a whole value within `Int` range.
+/// `Double` reads round fractional values to the nearest finite value and require whole values to remain exact.
+/// Overflow and nonzero underflow return the default with ``FlagEvaluationError/typeMismatch``.
 public protocol FlagValue: Encodable {}
 
 extension Bool: FlagValue {}

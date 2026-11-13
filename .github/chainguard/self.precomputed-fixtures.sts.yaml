@@ -1,0 +1,9 @@
+issuer: https://token.actions.githubusercontent.com
+subject: repo:DataDog/dd-sdk-ios:ref:refs/heads/develop
+claim_pattern:
+  event_name: "(schedule|workflow_dispatch)"
+  workflow_ref: 'DataDog/dd-sdk-ios/\.github/workflows/precomputed-fixtures\.yml@refs/heads/develop'
+  repository: "DataDog/dd-sdk-ios"
+permissions:
+  contents: write
+  pull_requests: write

@@ -9,20 +9,15 @@ import DatadogInternal
 
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
-    private static let decoder: JSONDecoder = {
-        let decoder = JSONDecoder()
-        if let key = CodingUserInfoKey.decodesStoredVariations {
-            decoder.userInfo[key] = true
-        }
-        return decoder
-    }()
     // Version 2 readers support obfuscated keys but do not understand flag selection or experimentation opt-out.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
     // Version 3 readers understand flag selection and experimentation opt-out. Earlier readers skip a cache
     // filtered by either, because it does not hold the full flag configuration for its subject.
     private static let filteredAssignmentsVersion: DataStoreKeyVersion = 3
+    // Version 4 preserves numeric tokens. Earlier readers must not interpret rounded or placeholder values.
+    private static let numericAssignmentsVersion: DataStoreKeyVersion = 4
     private static let knownVersions: Set<DataStoreKeyVersion> = [
-        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion
+        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion, numericAssignmentsVersion
     ]
 
     let featureScope: FeatureScope
@@ -58,7 +53,7 @@ internal struct FlagsDataStore {
             }
 
             do {
-                let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
+                let flagsData = try FlagsNumericJSON.decode(FlagsData.self, from: data, cached: true)
                 guard Self.version(for: flagsData) == version else {
                     throw FlagsError.invalidResponse
                 }
@@ -72,6 +67,9 @@ internal struct FlagsDataStore {
     }
 
     private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
+        if flagsData.flags.values.contains(where: { $0.numericConversion != nil }) {
+            return numericAssignmentsVersion
+        }
         // Protect both key encodings from readers that would ignore the persisted selection or policy.
         if flagsData.flagSelection != nil || flagsData.experimentationOptOutPolicy != nil {
             return filteredAssignmentsVersion

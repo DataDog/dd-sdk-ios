@@ -1,0 +1,22 @@
+{
+    "data": {
+      "attributes": {
+        "createdAt": "2026-01-01T00:00:00Z",
+        "flags": {
+          "491646f7138ee482b2ace2d2834ff8ff34b20c8ba8cd329156857ab1be6154a6": {
+            "allocationKey": "alloc-dedup",
+            "variationKey": "variant-a",
+            "variationType": "string",
+            "variationValue": "alpha",
+            "reason": "TARGETING_MATCH",
+            "doLog": true
+          }
+        },
+        "obfuscated": true,
+        "obfuscation": {
+          "scheme": "flag-key-sha256-v1",
+          "salt": "000102030405060708090a0b0c0d0e0f"
+        }
+      }
+    }
+  }
