@@ -63,6 +63,9 @@ public protocol FlagsClientProtocol: AnyObject {
     ///
     /// This method fetches flag assignments from the server asynchronously. The completion handler
     /// is called when the operation completes or fails.
+    /// In an environment that requires subject authorization, include a current opaque JWT in the
+    /// reserved `dd_assignment_token` string attribute. The SDK sends it only in the
+    /// `DD-Assignment-Token` assignment-request header.
     /// For the first context, the configured initialization timeout bounds this wait. If it elapses,
     /// the completion handler receives ``FlagsError/initializationTimedOut`` while the operation
     /// continues and can update the client to ``FlagsClientState/ready`` later.
@@ -89,6 +92,7 @@ public protocol FlagsClientProtocol: AnyObject {
     /// - Parameters:
     ///   - context: The evaluation context containing targeting key and custom attributes.
     ///   - completion: A closure called when the operation completes, receiving a `Result` indicating success or failure.
+    ///     An exact subject-authorization rejection returns ``FlagsError/assignmentAuthorizationFailed``.
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
@@ -181,7 +185,8 @@ extension FlagsClientProtocol {
     ///
     /// - Throws: ``FlagsError`` if the operation fails. The first call throws
     ///   ``FlagsError/initializationTimedOut`` if the configured initialization timeout elapses;
-    ///   the underlying operation continues and can make the client ready later.
+    ///   the underlying operation continues and can make the client ready later. An exact
+    ///   subject-authorization rejection throws ``FlagsError/assignmentAuthorizationFailed``.
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws {
         try await withCheckedThrowingContinuation { continuation in
             setEvaluationContext(context) { result in

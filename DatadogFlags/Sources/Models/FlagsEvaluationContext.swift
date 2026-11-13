@@ -41,6 +41,9 @@ public struct FlagsEvaluationContext: Equatable, Codable {
     ///
     /// Attributes can include user properties, session data, or any other contextual information
     /// needed for flag evaluation rules. Use ``AnyValue`` to represent different data types.
+    /// For environments that require subject authorization, the reserved `dd_assignment_token`
+    /// string carries an opaque JWT for the assignment download. The SDK removes this field from
+    /// targeting, persistence, and Datadog telemetry and sends it only in `DD-Assignment-Token`.
     ///
     /// ```swift
     /// let context = FlagsEvaluationContext(
@@ -66,6 +69,24 @@ public struct FlagsEvaluationContext: Equatable, Codable {
 }
 
 extension FlagsEvaluationContext {
+    /// Removes the reserved assignment credential before the context enters targeting, storage, or telemetry.
+    internal func extractingAssignmentAuthorization() -> AssignmentAuthorization {
+        var targetingAttributes = attributes
+        let suppliedValue = targetingAttributes.removeValue(forKey: AssignmentAuthorization.contextAttribute)
+        let targetingContext = FlagsEvaluationContext(targetingKey: targetingKey, attributes: targetingAttributes)
+
+        switch suppliedValue {
+        case nil, .null, .string(""):
+            return AssignmentAuthorization(context: targetingContext, token: nil, shouldWarn: false)
+        case .string(let value) where AssignmentAuthorization.usableToken(value) != nil:
+            // JWT contents are intentionally opaque. The assignment endpoint validates all claims,
+            // including expiration, without relying on the customer's device clock.
+            return AssignmentAuthorization(context: targetingContext, token: value, shouldWarn: false)
+        default:
+            return AssignmentAuthorization(context: targetingContext, token: nil, shouldWarn: true)
+        }
+    }
+
     /// Parse the customer-owned timestamp without coercing other context value types.
     internal func experimentationOptOut(mode: FlagsClient.ExperimentationOptOutMode) throws -> ExperimentationOptOut? {
         guard mode != .disabled else {
@@ -77,6 +98,26 @@ extension FlagsEvaluationContext {
         guard case .string(let timestamp) = value else { throw FlagsError.invalidContext }
         let cutoff = try OptOutInstant(rfc3339: timestamp)
         return mode == .immediate ? .immediate : .futureExperimentsOnly(cutoff: cutoff)
+    }
+}
+
+internal struct AssignmentAuthorization {
+    static let contextAttribute = "dd_assignment_token"
+    static let header = "DD-Assignment-Token"
+    static let rejectionCode = "ASSIGNMENT_AUTHORIZATION_FAILED"
+    static let unusableTokenWarning = "Assignment token omitted: expected a string containing only printable ASCII characters without whitespace. Continuing without an assignment token."
+
+    let context: FlagsEvaluationContext
+    let token: String?
+    let shouldWarn: Bool
+
+    /// Matches the browser's transport-safe input subset without interpreting the credential.
+    static func usableToken(_ value: String?) -> String? {
+        guard let value, !value.isEmpty,
+              value.utf8.allSatisfy({ (0x21...0x7e).contains($0) }) else {
+            return nil
+        }
+        return value
     }
 }
 

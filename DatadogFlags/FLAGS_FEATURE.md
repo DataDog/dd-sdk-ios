@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-11
-sdk_version: 3.21.0
-verified_against_commit: c5961cab1
+last_updated: 2026-11-12
+sdk_version: 3.22.0
+verified_against_commit: 63bfcd9fb
 tracked_files:
   - DatadogFlags/Sources/Flags.swift
   - DatadogFlags/Sources/Client/FlagsClient.swift
@@ -130,6 +130,7 @@ flowchart LR
 
 - `Flags.enable()` registers `FlagsFeature` and, when `trackEvaluations` is `true`, a separate `FlagsEvaluationFeature` for evaluation uploads. Both run on the main thread synchronously.
 - `setEvaluationContext` sends one request with the targeting key, attributes, `env`, SDK version, the optional flag selection, and the opt-out policy. When RUM is enabled, the RUM application ID is sent as the `dd-application-id` header.
+- The reserved `dd_assignment_token` attribute is removed before the context enters targeting, storage, or telemetry. A usable token is sent only in the `DD-Assignment-Token` request header.
 - `getDetails` reads the in-memory assignment for the key. Until the initial disk cache read finishes, each call waits up to 100 ms for it.
 
 ## Key Files
@@ -142,7 +143,7 @@ flowchart LR
 - `DatadogFlags/Sources/Client/FlagsClientProtocol.swift` — Protocol plus typed convenience getters, async `setEvaluationContext`, `snapshot()`.
 - `DatadogFlags/Sources/Client/FlagsClientState.swift` — `FlagsClientState`.
 - `DatadogFlags/Sources/Client/FlagsStateManager.swift` — `FlagsStateObservable`, `FlagsStateListener`.
-- `DatadogFlags/Sources/Models/FlagsEvaluationContext.swift` — Context type and opt-out timestamp parsing.
+- `DatadogFlags/Sources/Models/FlagsEvaluationContext.swift` — Context type, assignment token extraction, and opt-out timestamp parsing.
 - `DatadogFlags/Sources/Models/FlagDetails.swift` — `FlagDetails`, `FlagEvaluationError`, `FlagsSnapshot`, `FlagSnapshot`.
 - `DatadogFlags/Sources/Models/FlagsError.swift` — Errors returned by `setEvaluationContext`.
 - `DatadogFlags/Sources/Models/FlagsClientEvent.swift` — `onFirstFlags` event, listener and subscription types.
@@ -151,8 +152,8 @@ flowchart LR
 - `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods.
 
 ### Implementation
-- `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, cache restore, state transitions, initialization timeout.
-- `DatadogFlags/Sources/Client/FlagAssignmentsFetcher.swift` — Endpoint per site, response handling, flag selection fallbacks.
+- `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, subject isolation, cache restore, state transitions, initialization timeout.
+- `DatadogFlags/Sources/Client/FlagAssignmentsFetcher.swift` — Endpoint per site, authorization rejection detection, redirect policy, response handling, flag selection fallbacks.
 - `DatadogFlags/Sources/Client/FlagAssignmentsRequest.swift` — Request headers and body.
 - `DatadogFlags/Sources/Client/FlagsDataStore.swift` — Per-client disk cache and its versions.
 - `DatadogFlags/Sources/Client/FallbackFlagsClient.swift` — No-op client returned on misuse.
@@ -162,7 +163,7 @@ flowchart LR
 - `DatadogFlags/Sources/Feature/FlagsFeature.swift` — Feature wiring and flush interval clamping.
 - `DatadogFlags/Sources/Feature/IssueReporter.swift` — Graceful mode behavior.
 - `DatadogRUM/Sources/Integrations/FlagEvaluationReceiver.swift` — RUM side of the integration.
-- `DatadogFlags/README.md` — Detailed rules for the evaluation telemetry opt-out and experimentation opt-out.
+- `DatadogFlags/README.md` — Detailed rules for subject authorization, evaluation telemetry opt-out, and experimentation opt-out.
 
 ## Configuration Categories
 
@@ -170,13 +171,14 @@ flowchart LR
 - Assignments are fetched from `https://preview.ff-cdn.<site domain>/precompute-assignments` (for example `preview.ff-cdn.datadoghq.eu` for EU1). Government sites (`us1_fed`, `us2_fed`) are not supported: the SDK logs a warning and uses the US1 endpoint.
 - `customFlagsEndpoint` replaces the full assignments URL.
 - `customFlagsHeaders` are sent only with requests to `customFlagsEndpoint`. They are ignored when using the default Datadog endpoint, so proxy credentials never reach the Datadog CDN.
+- A custom `DD-Assignment-Token` header is ignored, in any letter case. Only `dd_assignment_token` supplies this credential, for both default and custom assignment endpoints. A custom proxy must forward the header.
 - `customExposureEndpoint` and `customEvaluationEndpoint` replace the intake URLs for exposures and evaluations.
 
 ### Startup and Caching
 - Assignments are saved per client name after each successful fetch. On the next launch, the cached assignments load at client creation and can be evaluated **before** `setEvaluationContext` is called. Their `reason` is `"CACHED"`. With an experimentation opt-out mode enabled, cached assignments are served only after `setEvaluationContext` with the same context.
-- After `setEvaluationContext`, cached assignments are used only if they were fetched for an identical context (same targeting key and attributes). Otherwise evaluations return defaults until the fetch completes.
-- When a later context replaces a context that already has fresh assignments, the previous assignments stay readable while the new fetch is in flight (state `.reconciling`), unless an experimentation opt-out mode is enabled.
-- `initializationTimeout` applies only to the first `setEvaluationContext` call. On timeout, the completion receives `.initializationTimedOut` and the state becomes `.stale` (cache for that context) or `.error`. The request continues and can still move the client to `.ready`.
+- Startup cache selection and failed-refresh fallback normally require an identical context (same targeting key and attributes). An active subject-authorization boundary permits eligible assignments for the same targeting key when other attributes differ. Experimentation opt-out modes still require the full context and policy to match.
+- When a later context replaces a context that already has fresh assignments, the previous assignments stay readable while the new fetch is in flight (state `.reconciling`). An experimentation opt-out mode or an active subject-authorization boundary can make them ineligible.
+- `initializationTimeout` applies only to the first `setEvaluationContext` call. On timeout, the completion receives `.initializationTimedOut`. If that request is still current, the state becomes `.stale` (eligible retained assignments) or `.error`. The request continues and can still move the client to `.ready`.
 
 ### Client State
 
@@ -185,10 +187,37 @@ flowchart LR
 | `.notReady` | No context set yet |
 | `.reconciling` | Fetch in progress; previous assignments may still be served |
 | `.ready` | Assignments for the latest context are loaded |
-| `.stale` | Fetch failed, cached assignments for the same context are served |
-| `.error` | Context invalid (even with a matching cache), or fetch failed with no matching cache: every evaluation returns the default with `.invalidContext` or `.providerNotReady` respectively |
+| `.stale` | A fetch failed or initialization timed out; eligible retained assignments are served |
+| `.error` | Evaluations return defaults: `.invalidContext` for invalid context, `.general` when an active subject-authorization boundary has no readable assignments, or `.providerNotReady` for other failures without eligible assignments |
 
 Listeners are held weakly and called with the current state when added. A state can be skipped if a newer one supersedes it.
+
+A failed download still completes with `.failure`, even when eligible assignments remain available in `.stale`. The async context method throws the same error.
+
+### Subject Authorization
+
+Obtain a JWT from your backend. Include it in each complete context update that requires authorization:
+
+```swift
+client.setEvaluationContext(
+    FlagsEvaluationContext(
+        targetingKey: "user-123",
+        attributes: [
+            "plan": .string("premium"),
+            "dd_assignment_token": .string("<assignment_token_from_backend>")
+        ]
+    )
+)
+```
+
+- A usable token is a nonempty string of printable ASCII characters without whitespace (`0x21...0x7e`). Missing, null, and empty values send no header. Other values send no header and produce a fixed warning without the value. An unusable replacement does not reuse an earlier token.
+- The SDK treats the token as opaque. The endpoint validates JWT claims. The SDK does not parse JWTs, use the device clock to check expiration, or refresh tokens. The reserved attribute is excluded from request bodies, persistence, exposure events, evaluation telemetry, RUM annotations, errors, and SDK diagnostics.
+- Requests with a token refuse all HTTP redirects, including redirects within the same origin. The destination receives no request or token. Refusal uses the normal download-failure and fallback path. Requests without a usable token keep their existing redirect behavior.
+- A usable token activates a subject boundary immediately. HTTP 401 also activates it if a JSON:API `errors` entry has the exact code `ASSIGNMENT_AUTHORIZATION_FAILED`. This rejection returns `FlagsError.assignmentAuthorizationFailed`. Untyped or malformed 401 responses remain ordinary download failures.
+- While the boundary is active, another subject's assignments are withheld. Subjects match only when their `targetingKey` UTF-8 bytes are identical. Without eligible assignments, evaluations return the application default with `FlagEvaluationError.general` and telemetry code `GENERAL`. Eligible same-subject assignments retain their original downloaded context for evaluation and telemetry. With these assignments, a failed refresh sets `.stale`. Experimentation opt-out modes keep their stricter context and policy checks.
+- Removing the token does not end an unresolved boundary. A successful download or eligible same-subject stale fallback ends it, as in the browser provider. Later updates without a usable token follow ordinary iOS behavior. After authorization is observed, only the latest request can install assignments, including after recovery.
+
+See [the README](README.md#subject-authorization-for-assignment-downloads) for the full contract and proxy requirements.
 
 ### Flag Selection
 - `Flags.FlagSelection` applies to every client and is fixed at `Flags.enable()`.
@@ -198,7 +227,7 @@ Listeners are held weakly and called with the current state when added. A state 
 - A cache saved under a different selection is not loaded.
 
 ### Exposures and Evaluation Telemetry
-- **Exposures** are written only for allocations whose assignment has `doLog` set (experiments). They are deduplicated in memory per client by targeting key and flag key, and logged again when the allocation, variant or serial ID changes. They include the targeting key and all context attributes.
+- **Exposures** are written only for allocations whose assignment has `doLog` set (experiments). They are deduplicated in memory per client by targeting key and flag key, and logged again when the allocation, variant or serial ID changes. They include the targeting key and context attributes after removal of `dd_assignment_token`.
 - **Evaluations** are aggregated and flushed every `evaluationFlushInterval` seconds, or when 1,000 aggregations accumulate. Failed evaluations are also counted, with an error code.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
@@ -220,7 +249,8 @@ Listeners are held weakly and called with the current state when added. A state 
 
 ### "Every flag returns its default value"
 **Causes:** Check `details.error` and `client.state.currentState` to find which of these applies:
-- `.providerNotReady`: no context set yet and no cache, the fetch is still running, or the client is in `.error`.
+- `.providerNotReady`: no context set yet and no cache, the fetch is still running without readable assignments, or an ordinary fetch failure has no eligible fallback.
+- `.general`: an active subject-authorization boundary has no readable assignments for the requested subject.
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
 - `.typeMismatch`: the getter type differs from the flag's type, for example `getIntegerValue` on a flag served as a double. `getDoubleValue` accepts whole numbers from a "number" flag, but not from an "integer" flag.
 - `.invalidContext`: `dd_experimentation_opt_out_at` is malformed while an opt-out mode is enabled.
@@ -239,9 +269,15 @@ Listeners are held weakly and called with the current state when added. A state 
 **Solutions:** Use a new client name, or set the configuration on the first `create` call.
 
 ### "Values from the previous user are served after switching users"
-**Causes:** While the new context's fetch is running (`.reconciling`), the previous context's assignments stay readable when no experimentation opt-out mode is set.
+**Causes:** While the new context's fetch is running (`.reconciling`), previous assignments can remain readable. This occurs when no experimentation opt-out mode or active subject-authorization boundary makes them ineligible. A successful download or eligible stale fallback ends the boundary; later updates without a usable token use ordinary behavior.
 
 **Solutions:** Wait for the `setEvaluationContext` completion (or `.ready`) before evaluating flags that must match the new user.
+
+### "Assignment downloads fail after adding a token"
+
+**Causes:** The endpoint can reject authorization, or a proxy can redirect a request that carries a token. Token-bearing requests refuse redirects.
+
+**Solutions:** Use the final assignments URL in `customFlagsEndpoint`. Configure the proxy to forward `DD-Assignment-Token` without a redirect. For `.assignmentAuthorizationFailed`, obtain a current token for the requested subject and environment from your backend.
 
 ### "RUM shows the variant key, not the flag value"
 **Expected.** The RUM integration records the **variant key** under the view's `feature_flags.<flag key>`, not the evaluated value. It is attached only to the view active at evaluation time; evaluations without an active RUM view are dropped from RUM. RUM errors on that view carry the same feature flags.

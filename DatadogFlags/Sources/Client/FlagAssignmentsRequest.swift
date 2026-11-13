@@ -15,8 +15,12 @@ extension URLRequest {
         customHeaders: [String: String]?,
         flagSelection: CanonicalFlagSelection?,
         experimentationOptOut: ExperimentationOptOut? = nil,
-        diagnostics: FlagsRequestDiagnostics.Snapshot? = nil
+        diagnostics: FlagsRequestDiagnostics.Snapshot? = nil,
+        assignmentToken: String? = nil
     ) throws -> URLRequest {
+        let authorization = evaluationContext.extractingAssignmentAuthorization()
+        let evaluationContext = authorization.context
+        let assignmentToken = AssignmentAuthorization.usableToken(assignmentToken ?? authorization.token)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
 
@@ -37,9 +41,13 @@ extension URLRequest {
 
         if let customHeaders {
             for (key, value) in customHeaders {
-                request.setValue(value, forHTTPHeaderField: key)
+                // The evaluation context is the sole source of the reserved credential.
+                if key.caseInsensitiveCompare(AssignmentAuthorization.header) != .orderedSame {
+                    request.setValue(value, forHTTPHeaderField: key)
+                }
             }
         }
+        request.setValue(assignmentToken, forHTTPHeaderField: AssignmentAuthorization.header)
 
         let requestBody = FlagAssignmentsRequestBody(
             environment: FlagAssignmentsRequestBody.Environment(

@@ -12,6 +12,84 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsEvaluationContextTests: XCTestCase {
+    func testAssignmentAuthorizationExtractsOpaquePrintableASCIITokenAndStripsReservedAttribute() {
+        let context = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: [
+                "dd_assignment_token": .string("opaque.JWT~token"),
+                "plan": .string("premium")
+            ]
+        )
+
+        let authorization = context.extractingAssignmentAuthorization()
+
+        XCTAssertEqual(authorization.token, "opaque.JWT~token")
+        XCTAssertFalse(authorization.shouldWarn)
+        XCTAssertEqual(
+            authorization.context,
+            .init(targetingKey: "subject", attributes: ["plan": .string("premium")])
+        )
+    }
+
+    func testAssignmentAuthorizationOmitsMissingNullAndEmptyTokenWithoutWarning() {
+        for value in [nil, .some(.null), .some(.string(""))] as [AnyValue?] {
+            var attributes = ["plan": AnyValue.string("premium")]
+            attributes[AssignmentAuthorization.contextAttribute] = value
+
+            let authorization = FlagsEvaluationContext(
+                targetingKey: "subject",
+                attributes: attributes
+            ).extractingAssignmentAuthorization()
+
+            XCTAssertNil(authorization.token)
+            XCTAssertFalse(authorization.shouldWarn)
+            XCTAssertNil(authorization.context.attributes[AssignmentAuthorization.contextAttribute])
+        }
+    }
+
+    func testAssignmentAuthorizationRejectsNonemptyUnusableValuesWithoutExposingThem() {
+        let values: [AnyValue] = [
+            .string("contains space"),
+            .string("contains\nnewline"),
+            .string("contains\rreturn"),
+            .string("contains\ttab"),
+            .string("contains\u{0000}null"),
+            .string("contains\u{007f}delete"),
+            .string("non-ascii-é"),
+            .bool(true),
+            .int(42),
+            .array([]),
+            .dictionary([:])
+        ]
+
+        for value in values {
+            let authorization = FlagsEvaluationContext(
+                targetingKey: "subject",
+                attributes: [AssignmentAuthorization.contextAttribute: value]
+            ).extractingAssignmentAuthorization()
+
+            XCTAssertNil(authorization.token, "\(value)")
+            XCTAssertTrue(authorization.shouldWarn, "\(value)")
+            XCTAssertTrue(authorization.context.attributes.isEmpty, "\(value)")
+        }
+    }
+
+    func testAssignmentAuthorizationForwardsExpiredAndMalformedJWTPayloadsUnchanged() {
+        for token in [
+            "eyJhbGciOiJQUzI1NiJ9.eyJleHAiOjB9.c2lnbmF0dXJl",
+            "not-a-jwt",
+            "header.not-base64.signature"
+        ] {
+            let authorization = FlagsEvaluationContext(
+                targetingKey: "subject",
+                attributes: [AssignmentAuthorization.contextAttribute: .string(token)]
+            ).extractingAssignmentAuthorization()
+            XCTAssertEqual(authorization.token, token)
+            XCTAssertFalse(authorization.shouldWarn)
+            XCTAssertTrue(authorization.context.attributes.isEmpty)
+        }
+    }
+
     func testOptOutTimestampNormalizesProlepticGregorianDates() throws {
         let cases: [(String, Int64, Int32)] = [
             ("0000-01-01T00:00:00Z", -62_167_219_200, 0),
