@@ -28,6 +28,11 @@ static_assert((kCapacity & (kCapacity - 1)) == 0, "capacity must be a power of t
 static_assert(kMaxProbe <= kCapacity, "probe bound must fit in the table");
 static_assert(sizeof(std::atomic<uintptr_t>) == sizeof(uintptr_t),
               "address index must have pointer-sized entries");
+static_assert(kMaxProbe <= UINT8_MAX, "home bucket counts must not overflow");
+static_assert(std::atomic<uint8_t>::is_always_lock_free,
+              "home bucket reads must not acquire an internal lock");
+static_assert(sizeof(std::atomic<uint8_t>) == sizeof(uint8_t),
+              "home bucket counts must have 8-bit entries");
 
 struct Slot {
     dd_memory_live_sample_t sample{};
@@ -122,6 +127,12 @@ private:
     // Compaction must quiesce probes and rebuild chains before making entries empty.
     os_unfair_lock state_lock = OS_UNFAIR_LOCK_INIT;
     std::array<std::atomic<uintptr_t>, kCapacity> addresses{};
+    // Counts admitted samples by their original hash bucket, including displaced
+    // slots. A bucket's samples fit in its kMaxProbe-slot window, bounding the
+    // count by kMaxProbe. Writers hold state_lock. As with the address index,
+    // object publication must order insertion before its removal observation;
+    // the relaxed read then cannot miss an admitted sample.
+    std::array<std::atomic<uint8_t>, kCapacity> home_counts{};
     std::atomic<bool> active{false};
     std::atomic<uint64_t> generation{0};
     // Counters remain atomic so diagnostics can read without state_lock.
@@ -188,6 +199,7 @@ uint64_t dd_memory_live_set::start() {
     }
     for (size_t i = 0; i < kCapacity; ++i) {
         addresses[i].store(kEmpty, std::memory_order_release);
+        home_counts[i].store(0, std::memory_order_relaxed);
         slots[i].sample = {};
     }
     occupancy.store(0, std::memory_order_relaxed);
@@ -288,6 +300,8 @@ dd_memory_live_insert_result_t dd_memory_live_set::insert(
     if (reused_tombstone) {
         tombstones.fetch_sub(1, std::memory_order_relaxed);
     }
+    const uint8_t home_count = home_counts[start].load(std::memory_order_relaxed);
+    home_counts[start].store(home_count + 1, std::memory_order_relaxed);
     addresses[available].store(address, std::memory_order_release);
     return DD_MEMORY_LIVE_SET_INSERTED;
 }
@@ -310,6 +324,9 @@ bool dd_memory_live_set::remove(uint64_t token, const void *pointer,
     }
 
     const size_t start = bucket_for(address);
+    if (home_counts[start].load(std::memory_order_relaxed) == 0) {
+        return false;
+    }
     for (size_t offset = 0; offset < kMaxProbe; ++offset) {
         const size_t index = (start + offset) & (kCapacity - 1);
         if constexpr (record_probe_length) {
@@ -331,6 +348,8 @@ bool dd_memory_live_set::remove(uint64_t token, const void *pointer,
             }
             if (addresses[index].load(std::memory_order_relaxed) == address) {
                 addresses[index].store(kTombstone, std::memory_order_release);
+                const uint8_t home_count = home_counts[start].load(std::memory_order_relaxed);
+                home_counts[start].store(home_count - 1, std::memory_order_relaxed);
                 occupancy.fetch_sub(1, std::memory_order_relaxed);
                 const uint64_t new_tombstones =
                     tombstones.fetch_add(1, std::memory_order_relaxed) + 1;
