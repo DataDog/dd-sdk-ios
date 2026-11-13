@@ -551,12 +551,12 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         // The `_pointerBitWidth(_64)` blocks need a 64-bit Int, because their values or results depend on
         // the width of Int.
 
-        // Already-constructed Double values convert when they are exact and within Int range.
+        // Values without original numeric tokens keep the conservative Double-to-Int limit.
         #if _pointerBitWidth(_64)
         XCTAssertEqual(built(.double(9_007_199_254_740_991)).variation(as: Int.self), 9_007_199_254_740_991)
         XCTAssertEqual(built(.double(-9_007_199_254_740_991)).variation(as: Int.self), -9_007_199_254_740_991)
-        XCTAssertEqual(built(.double(9_007_199_254_740_992)).variation(as: Int.self), 9_007_199_254_740_992)
-        XCTAssertEqual(built(.double(-9_007_199_254_740_992)).variation(as: Int.self), -9_007_199_254_740_992)
+        XCTAssertNil(built(.double(9_007_199_254_740_992)).variation(as: Int.self))
+        XCTAssertNil(built(.double(-9_007_199_254_740_992)).variation(as: Int.self))
         #endif
         XCTAssertNil(built(.double(1e20)).variation(as: Int.self))
         XCTAssertNil(built(.double(.infinity)).variation(as: Int.self))

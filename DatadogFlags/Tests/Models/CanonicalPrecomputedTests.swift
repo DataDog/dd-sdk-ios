@@ -16,7 +16,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
     private let decoder = JSONDecoder()
 
     func testCanonicalResponses() throws {
-        let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "precomputed", withExtension: nil))
+        let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "precomputed", withExtension: nil)).resolvingSymlinksInPath()
         let cases = root.appendingPathComponent("cases")
         let enumerator = try XCTUnwrap(FileManager.default.enumerator(at: cases, includingPropertiesForKeys: nil))
         let files = enumerator.allObjects.compactMap { $0 as? URL }.filter { $0.pathExtension == "json" }.sorted { $0.path < $1.path }
