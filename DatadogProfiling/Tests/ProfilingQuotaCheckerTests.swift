@@ -216,6 +216,28 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
         XCTAssertEqual(checker.quotaResult, .init(decision: .quotaKO, reason: .quotaExceeded))
     }
 
+    func testDoesNotCheckQuotaForMemoryOnlySession() {
+        let server = quotaServer()
+        let (checker, provider, receiver) = quotaReceiver(
+            for: server,
+            continuousSampleRate: 0,
+            memorySampleRate: 100
+        )
+        _ = receiver.receive(
+            message: .context(.mockWith(
+                trackingConsent: .granted,
+                additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+            )),
+            from: PassthroughCoreMock()
+        )
+
+        XCTAssertEqual(provider.continuousProfilingSampled, false)
+        XCTAssertEqual(provider.appLaunchProfilingSampled, false)
+        XCTAssertEqual(provider.memoryProfilingSampled, true)
+        XCTAssertEqual(server.waitAndReturnRequests(count: 0, timeout: 0.1).count, 0)
+        XCTAssertNil(checker.quotaResult)
+    }
+
     func testDoesNotCheckQuotaForAppLaunchWhenRUMSessionSamplesOut() {
         // Given
         let server = quotaServer()
@@ -506,11 +528,13 @@ private extension ProfilingQuotaCheckerTests {
     func quotaReceiver(
         for server: ServerMock,
         continuousSampleRate: SampleRate,
-        appLaunchSampleRate: SampleRate = 0
+        appLaunchSampleRate: SampleRate = 0,
+        memorySampleRate: SampleRate = 0
     ) -> (ProfilingQuotaChecker, ProfilingSamplerProvider, CombinedFeatureMessageReceiver) {
         let provider = ProfilingSamplerProvider(
             continuousSampleRate: continuousSampleRate,
-            appLaunchSampleRate: appLaunchSampleRate
+            appLaunchSampleRate: appLaunchSampleRate,
+            memorySampleRate: memorySampleRate
         )
         let checker = ProfilingQuotaChecker(
             profilingSamplerProvider: provider,
