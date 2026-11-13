@@ -268,7 +268,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         guard let service = ddSpan.ddContext.serviceForStats else {
             return
         }
-        service.serviceOverride = attributes.tags[SpanTags.service] ?? tracer.tags[SpanTags.service]?.dd.decode()
+        service.serviceOverride = attributes.tags[SpanTags.service] ?? tracer.flattenedTags[SpanTags.service]?.dd.decode()
     }
 
     func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) {
