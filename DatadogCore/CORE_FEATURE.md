@@ -36,7 +36,7 @@ Core must be initialized before enabling any product. Products enabled before `D
 import Foundation
 import DatadogCore
 
-// Optional: print SDK internal messages at this level or above. Default: nil (silent).
+// Optional: print SDK internal messages at this level or above. Default: nil (a few warnings and errors still print, such as a failed initialize).
 Datadog.verbosityLevel = .debug
 
 Datadog.initialize(
@@ -148,7 +148,7 @@ flowchart LR
 - `DatadogInternal/Sources/Context/DatadogSite.swift` — `DatadogSite`, intake hosts and the remote configuration CDN host.
 - `DatadogInternal/Sources/CoreRegistry.swift` — `CoreRegistry`, the registry of named instances (`defaultInstanceName`).
 - `DatadogInternal/Sources/Telemetry/CoreLogger.swift` — `CoreLoggerLevel`, the values of `Datadog.verbosityLevel`.
-- `DatadogCore/Sources/Datadog+Internal.swift` — `@_spi(Internal)` APIs used by cross-platform SDKs.
+- `DatadogCore/Sources/Datadog+Internal.swift` — APIs used by cross-platform SDKs.
 
 ### Implementation
 - `DatadogCore/Sources/PerformancePreset.swift` — Batch sizes, file ages, upload delays, storage limits.
@@ -195,12 +195,12 @@ flowchart LR
 `encryption` encrypts each event before it is written to disk and decrypts it before upload. Decryption must work across launches: events that fail to decrypt are not uploaded, and the SDK logs "Failed to decrypt data".
 
 ### Time Synchronization
-By default the SDK computes a server time offset with Datadog NTP pools (`0-3.datadog.pool.ntp.org`, via Kronos) and applies it to event dates. A custom `serverDateProvider` replaces this; a no-op provider leaves device time uncorrected, which can shift RUM sessions and traces.
+By default the SDK computes a server time offset with Datadog NTP pools (`0-3.datadog.pool.ntp.org`, via Kronos) and applies it to event dates. If a sync fails, the SDK keeps the offset from earlier samples or the one stored from the previous session. A custom `serverDateProvider` replaces this; a no-op provider leaves device time uncorrected, which can shift RUM sessions and traces.
 
 ### Remote Configuration
-- With `remoteConfiguration`, Core loads the cached document from `Library/Application Support` at init, then fetches it from `https://sdk-configuration.<site host>/` (or `customURL`) in the background. On UIKit platforms it fetches again when the app returns to the foreground, at most once every 5 minutes (an earlier foreground is ignored). Unchanged documents return 304 via ETag.
+- With `remoteConfiguration`, Core loads the cached document from `Library/Application Support` at init, then fetches it from `https://sdk-configuration.<site host>/v1/<id>.json` (or `customURL`) in the background. On UIKit platforms it fetches again when the app returns to the foreground, at most once every 5 minutes (an earlier foreground is ignored). Unchanged documents return 304 via ETag.
 - RUM, Trace, Session Replay and Profiling apply the document once, at their `enable` call, on top of the in-code configuration. Values fetched after `enable` apply on the next launch.
-- RUM reads the `rum` and `trace` namespaces (sample rates, tracking flags, thresholds, traced hosts), Trace reads the trace sample rate, Session Replay reads its sample rate and privacy levels, and Profiling reads the `profiling` namespace (app launch and continuous sample rates).
+- RUM reads the `rum` and `trace` namespaces (tracking flags, thresholds, traced hosts and the trace sample rate), Trace reads the trace sample rate, Session Replay reads its sample rate and privacy levels, and Profiling reads the `profiling` namespace (app launch and continuous sample rates).
 
 ### Debugging
 - `Datadog.verbosityLevel` (`.debug`, `.warn`, `.error`, `.critical`) prints SDK messages to the console. Errors such as a failed `initialize` always print.
@@ -213,7 +213,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 2. Each product's `enable` registers its feature and reads its configuration once, including the remote configuration available at that moment. `enable` before `initialize` does nothing. Calling `enable` twice in the same instance replaces the first registration for most products (RUM, Logs, Trace); Session Replay and Profiling reject the second call and keep the first.
 3. Events go to disk according to the current consent. User and account info, consent and other context changes apply to events written after the call, so set them as early as possible.
 4. The first upload check runs within about 1 s, and uploads batches left from a previous launch. New batches become uploadable once they mature (`batchSize`); if the first check found nothing, the next one waits 5x the `uploadFrequency` delay.
-5. When the app goes to the background, `backgroundTasksEnabled: true` only lets an upload that is already in progress finish. It does not keep upload checks running while the app is suspended; they resume on the next foreground or launch.
+5. With `backgroundTasksEnabled: true`, an upload check that finds mature batches starts a background task. The task ends at the first check that finds none or is blocked, or when the system expires it (about 30 s in apps). If the app goes to the background before then, uploads continue until no mature batch is left. Otherwise the app is suspended normally, and checks resume on the next foreground or launch.
 
 ### On-Disk Layout
 | Path | Content |
@@ -268,7 +268,7 @@ By default the SDK computes a server time offset with Datadog NTP pools (`0-3.da
 **Solutions:** Reduce event size (large attributes), and check how long devices stay offline.
 
 ### "Event timestamps are shifted"
-**Causes:** A custom or no-op `serverDateProvider`, or NTP unreachable, so no offset is applied and the device clock is used.
+**Causes:** A custom or no-op `serverDateProvider`. With the default provider, an unreachable NTP pool falls back to the offset from earlier samples or the previous session; the device clock is used uncorrected only if no offset was ever computed.
 
 **Solutions:** Keep the default provider, and allow NTP traffic on restricted networks.
 
