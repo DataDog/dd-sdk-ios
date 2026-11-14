@@ -313,10 +313,16 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, all events recorded before this call are stored. Authorized batches were uploaded without retrying
-    /// and then deleted, even if the upload failed. The SDK was deinitialised and its message bus disconnected, so this
-    /// instance of core is non-functional and no message is delivered after return.
+    /// Upon return, all events recorded before this call are stored, including telemetry reported by an upload in
+    /// progress. Authorized batches were uploaded without retrying and then deleted, even if the upload failed. The SDK
+    /// was deinitialised and its message bus disconnected, so this instance of core is non-functional and no message is
+    /// delivered after return.
     func flushAndTearDown() {
+        // Stop the periodic upload schedule first; pending batches stay on disk and are uploaded below.
+        // An upload in progress completes and reports its telemetry (e.g. upload quality) on the message bus,
+        // which `flush()` then delivers and stores, so that it is part of the final upload.
+        allUploads.forEach { $0.cancelSynchronously() }
+
         flush()
 
         // At this point we can assume that all write operations completed and resulted with writing events to
