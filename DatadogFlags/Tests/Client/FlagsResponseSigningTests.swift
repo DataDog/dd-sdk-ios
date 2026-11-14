@@ -13,6 +13,60 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsResponseSigningTests: XCTestCase {
+    func testObserveCacheRemainsBoundedAcrossContextsAndTrustScopes() throws {
+        let store = SigningDataStoreSpy()
+        let fetcher = SigningLifecycleFetcher(mode: .observe)
+        func repository() -> FlagsRepository {
+            FlagsRepository(
+                clientName: "signed",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: 100)),
+                featureScope: FeatureScopeMock(dataStore: store),
+                flagSelection: nil,
+                initializationTimeout: nil
+            )
+        }
+        let active = repository()
+        for index in 0..<3 {
+            fetcher.responseSigningCacheScope = "scope-\(index)"
+            active.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject-\(index)")) { _ in }
+            fetcher.completeVerified(index: index, expiry: 200)
+            active.flush()
+        }
+        XCTAssertEqual(store.keys.count, 1)
+        let restored = repository()
+        XCTAssertNotNil(restored.flagAssignment(for: "flag"))
+        restored.flush()
+        fetcher.responseSigningCacheScope = "scope-0"
+        let otherScope = repository()
+        XCTAssertNil(otherScope.flagAssignment(for: "flag"))
+        otherScope.flush()
+        fetcher.responseSigningCacheScope = "scope-2"
+        active.reset()
+        active.flush()
+        XCTAssertTrue(store.keys.isEmpty)
+    }
+
+    func testRequiredKeepsLatestContextWhenSignedCompletionsAreReordered() {
+        let fetcher = SigningLifecycleFetcher(mode: .required)
+        let repository = FlagsRepository(
+            clientName: "signed",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: 100)),
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            initializationTimeout: nil,
+            experimentationOptOutMode: .immediate
+        )
+        defer { repository.flush() }
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "a")) { _ in }
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "b")) { _ in }
+        fetcher.completeVerified(index: 1, expiry: 200)
+        fetcher.completeVerified(index: 0, expiry: 200)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context?.targetingKey, "b")
+    }
+
     func testBundledStagingTrustIsBoundToExactHTTPSOrigin() throws {
         let configuration = Flags.ResponseSigningConfiguration(mode: .required)
         let accepted = [
@@ -258,6 +312,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 XCTUnwrap(Data(base64Encoded: XCTUnwrap(vector.credential).private_key_pkcs8_der_base64))
         )
         let scope = FeatureScopeMock()
+        var validProof = true
         let done = expectation(description: "verified before fetch completion")
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: URL(string: "https://flags.example.test/assign?dd_env=prod&x=a%2Fb"),
@@ -286,7 +341,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                         url: request.url!,
                         statusCode: 200,
                         httpVersion: "HTTP/1.1",
-                        headerFields: headers
+                        headerFields: validProof ? headers : [:]
                     )!
                     completion(.success((responseBody, response)))
                 } catch { completion(.failure(error)) }
@@ -301,6 +356,23 @@ final class FlagsResponseSigningTests: XCTestCase {
             done.fulfill()
         }
         wait(for: [done], timeout: 2)
+        validProof = false
+        for _ in 0..<2 {
+            let rejected = expectation(description: "unsigned response rejected")
+            fetcher.flagAssignments(for: .mockAny()) { result in
+                if case .success = result { XCTFail("Required must reject missing proof") }
+                rejected.fulfill()
+            }
+            wait(for: [rejected], timeout: 2)
+        }
+        let reports = scope.telemetryMock.messages.compactMap { message -> String? in
+            guard case let .debug(id, text, _) = message, text == "Flags response signing" else {
+                return nil
+            }
+            return id
+        }
+        XCTAssertEqual(reports.count, 2)
+        XCTAssertEqual(Set(reports).count, 2, "Each bounded outcome must survive downstream ID deduplication")
     }
 
     func testFetcherModesAndRedirectFailures() throws {
@@ -681,7 +753,7 @@ final class FlagsResponseSigningTests: XCTestCase {
         repository.setEvaluationContext(context) { _ in }
         fetcher.completeVerified(index: 0, expiry: 200)
         repository.flush()
-        let key = FlagsResponseVerifier.cacheKey(clientName: "signed", scope: "scope-a")
+        let key = FlagsResponseVerifier.cacheKey(clientName: "signed")
         XCTAssertNotNil(store.value(forKey: key))
         XCTAssertEqual(store.value(forKey: "signed")?.data(), legacy)
         let same = FlagsRepository(
@@ -795,15 +867,25 @@ private final class SigningLifecycleFetcher: FlagAssignmentsFetching {
 }
 
 private final class SigningDataStoreSpy: DataStore {
+    private let store = DataStoreMock()
+    var keys = Set<String>()
     var reads = 0
     var writes = 0
     var removals = 0
     func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
         reads += 1
-        callback(.noValue)
+        store.value(forKey: key, callback: callback)
     }
-    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) { writes += 1 }
-    func removeValue(forKey key: String) { removals += 1 }
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        writes += 1
+        keys.insert(key)
+        store.setValue(value, forKey: key, version: version)
+    }
+    func removeValue(forKey key: String) {
+        removals += 1
+        keys.remove(key)
+        store.removeValue(forKey: key)
+    }
     func clearAllData() {}
     func flush() {}
 }

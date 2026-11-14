@@ -450,7 +450,7 @@ internal final class FlagsRepository {
                     finish(nil)
                     return
                 }
-                let key = FlagsResponseVerifier.cacheKey(clientName: clientName, scope: scope)
+                let key = FlagsResponseVerifier.cacheKey(clientName: clientName)
                 store.flagsData(forClientNamed: key) { data in
                     guard data?.responseSigningCacheScope == scope, scope == fetcher.responseSigningCacheScope else {
                         finish(nil)
@@ -522,7 +522,7 @@ internal final class FlagsRepository {
             else {
                 return
             }
-            clientName = FlagsResponseVerifier.cacheKey(clientName: self.clientName, scope: scope)
+            clientName = FlagsResponseVerifier.cacheKey(clientName: self.clientName)
         }
 
         cachePersistenceQueue.async { [weak self] in
@@ -869,8 +869,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         case .off: cacheKey = clientName
         case .required: cacheKey = nil
         case .observe:
-            cacheKey = flagAssignmentsFetcher.responseSigningCacheScope.map {
-                FlagsResponseVerifier.cacheKey(clientName: clientName, scope: $0)
+            cacheKey = flagAssignmentsFetcher.responseSigningCacheScope.map { _ in
+                FlagsResponseVerifier.cacheKey(clientName: clientName)
             }
         }
         var callbacks: [PendingCacheReadCallback] = []

@@ -124,11 +124,9 @@ internal final class FlagsResponseVerifier {
         return Self.hex(Self.digest(data))
     }
 
-    static func cacheKey(clientName: String, scope: String) -> String {
-        var data = Data(clientName.utf8)
-        data.append(0)
-        data.append(Data(scope.utf8))
-        return "response-signing-v1-" + hex(digest(data))
+    static func cacheKey(clientName: String) -> String {
+        // Keep one observe entry per client. The encoded entry carries its trust scope.
+        "response-signing-v1-observe-" + hex(digest(Data(clientName.utf8)))
     }
 
     func prepare(_ original: URLRequest) throws -> URLRequest {

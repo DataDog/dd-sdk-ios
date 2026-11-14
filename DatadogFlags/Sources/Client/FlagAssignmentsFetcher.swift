@@ -364,7 +364,11 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         guard reportedSigningOutcomes.insert(outcome).inserted else {
             return
         }
-        featureScope.telemetry.debug("Flags response signing", attributes: ["outcome": outcome])
+        featureScope.telemetry.debug(
+            id: "flags-response-signing-\(outcome)",
+            message: "Flags response signing",
+            attributes: ["outcome": outcome]
+        )
     }
 
     /// Returns the reason to report for a `DD-Flag-Selection-Ignored` value, or `nil` when the header is absent or empty.
