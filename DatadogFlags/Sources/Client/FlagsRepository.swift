@@ -869,9 +869,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         case .off: cacheKey = clientName
         case .required: cacheKey = nil
         case .observe:
-            cacheKey = flagAssignmentsFetcher.responseSigningCacheScope.map { _ in
-                FlagsResponseVerifier.cacheKey(clientName: clientName)
-            }
+            cacheKey = FlagsResponseVerifier.cacheKey(clientName: clientName)
         }
         var callbacks: [PendingCacheReadCallback] = []
         var notifyListeners: (() -> Void)?

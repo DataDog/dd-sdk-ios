@@ -41,7 +41,7 @@ final class FlagsResponseSigningTests: XCTestCase {
         let otherScope = repository()
         XCTAssertNil(otherScope.flagAssignment(for: "flag"))
         otherScope.flush()
-        fetcher.responseSigningCacheScope = "scope-2"
+        fetcher.responseSigningCacheScope = nil
         active.reset()
         active.flush()
         XCTAssertTrue(store.keys.isEmpty)
