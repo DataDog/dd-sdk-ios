@@ -9,7 +9,7 @@ import DatadogInternal
 
 #if !os(watchOS) && !os(macOS)
 
-/// Writes captured profiles and their shared RUM context as one profile event.
+/// Writes captured profiles together when they share a RUM context.
 internal final class ProfileWriter: @unchecked Sendable {
     private let featureScope: FeatureScope
     private let telemetryController: ProfilingTelemetryController
@@ -26,37 +26,51 @@ internal final class ProfileWriter: @unchecked Sendable {
     }
 
     func write(_ snapshots: [ProfileSnapshot], operation: ProfilingOperation) {
-        guard let first = snapshots.first,
-              let rumSnapshot = snapshots.first(where: { !$0.rumEvents.isEmpty }) else {
+        var filenames = Set<String>()
+        let snapshots = snapshots.filter { snapshot in
+            guard filenames.insert(snapshot.attachment.filename).inserted else {
+                DD.logger.debug("Dropping duplicated profile snapshot '\(snapshot.attachment.filename)'.")
+                return false
+            }
+            return true
+        }
+
+        // CPU's RUM timeline supports event-range selection; heap aggregates cannot be sliced.
+        // Keep CPU events and attributes regardless of completion order, without merging heap events.
+        // Another provider supplies RUM data when CPU has none, including memory-only captures.
+        let cpuSnapshot = snapshots.first {
+            $0.attachment.filename == ProfileAttachments.Constants.pprofFilename
+        }
+        let rumSnapshot = cpuSnapshot?.rumEvents.isEmpty == false
+            ? cpuSnapshot
+            : snapshots.first(where: { !$0.rumEvents.isEmpty })
+        guard let first = snapshots.first, let rumSnapshot else {
             return
         }
 
-        for key in [RUMCoreContext.IDs.applicationID, RUMCoreContext.IDs.sessionID] {
-            let identifiers = snapshots.compactMap { snapshot in
-                let fallback = key == RUMCoreContext.IDs.applicationID ? snapshot.rumContext?.applicationID : snapshot.rumContext?.sessionID
-                return snapshot.attributes[key] as? String ?? fallback
-            }
-            guard Set(identifiers).count <= 1 else {
-                DD.logger.debug("Dropping profile snapshots with incompatible RUM contexts.")
-                return
-            }
+        // This writer serves one RUM application; profiler queues can straddle a session change.
+        let sessionIDs = snapshots.compactMap { snapshot in
+            snapshot.attributes[RUMCoreContext.IDs.sessionID] as? String ?? snapshot.rumContext?.sessionID
+        }
+        guard Set(sessionIDs).count <= 1 else {
+            writeSeparately(snapshots, operation: operation)
+            return
         }
         let rumEvents = rumSnapshot.rumEvents
-        var attributes = self.attributes(for: rumSnapshot)
         var pprofs: [PprofAttachment] = []
-        var filenames = Set<String>()
         var profileSize = 0
+        // The event envelopes the attachment ranges; each pprof retains its own time bounds.
         var start = first.start
         var end = first.end
-        let includesCPUProfile = snapshots.contains { $0.attachment.filename == ProfileAttachments.Constants.pprofFilename }
+        let includesCPUProfile = cpuSnapshot != nil
 
         for snapshot in snapshots {
-            guard filenames.insert(snapshot.attachment.filename).inserted else {
-                DD.logger.debug("Dropping profile snapshots with duplicate attachment filenames.")
-                return
-            }
             guard snapshot.attachment.data.count <= Int(ProfilerFeature.Constants.maxObjectSize) - profileSize else {
-                telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge, includeCPUDiagnostics: includesCPUProfile)
+                if snapshots.count > 1 {
+                    writeSeparately(snapshots, operation: operation)
+                } else {
+                    telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge, includeCPUDiagnostics: includesCPUProfile)
+                }
                 return
             }
 
@@ -66,28 +80,7 @@ internal final class ProfileWriter: @unchecked Sendable {
             end = max(end, snapshot.end)
         }
 
-        var vitalIDs: [String] = []
-        var vitalLabels: [String] = []
-        var errorIDs: [String] = []
-        var longTaskIDs: [String] = []
-        for event in rumEvents {
-            switch event {
-            case .vital(let vital):
-                vitalIDs.append(vital.id)
-                vitalLabels.append(vital.name)
-            case .hang(let hang):
-                errorIDs.append(hang.id)
-            case .longTask(let longTask):
-                longTaskIDs.append(longTask.id)
-            }
-        }
-        if !vitalIDs.isEmpty {
-            attributes[RUMCoreContext.IDs.vitalID] = vitalIDs
-            attributes[RUMCoreContext.IDs.vitalLabel] = vitalLabels
-        }
-        attributes[RUMCoreContext.IDs.errorID] = errorIDs
-        attributes[RUMCoreContext.IDs.longTaskID] = longTaskIDs
-
+        let attributes = attributes(for: rumSnapshot)
         featureScope.eventWriteContext { [attributes, pprofs, start, end, profileSize] context, writer in
             guard let rumEventsData = try? self.encoder.encode(rumEvents) else {
                 return
@@ -100,19 +93,7 @@ internal final class ProfileWriter: @unchecked Sendable {
                 start: start,
                 end: end,
                 attachments: pprofs.map(\.filename) + [ProfileAttachments.Constants.rumEventsFilename],
-                tags: [
-                    self.tag(Tag.Key.service, context.service),
-                    self.tag(Tag.Key.version, context.version),
-                    self.tag(Tag.Key.sdkVersion, context.sdkVersion),
-                    self.tag(Tag.Key.profilerVersion, context.sdkVersion),
-                    self.tag(Tag.Key.runtimeVersion, context.os.version),
-                    self.tag(Tag.Key.env, context.env),
-                    self.tag(Tag.Key.source, context.source),
-                    self.tag(Tag.Key.language, Tag.Value.language),
-                    self.tag(Tag.Key.format, Tag.Value.format),
-                    self.tag(Tag.Key.remoteSymbols, Tag.Value.remoteSymbols),
-                    self.tag(Tag.Key.operation, operation.rawValue)
-                ].joined(separator: ","),
+                tags: self.tags(for: operation, in: context),
                 additionalAttributes: attributes
             )
 
@@ -123,6 +104,12 @@ internal final class ProfileWriter: @unchecked Sendable {
                 for: operation,
                 includeCPUDiagnostics: includesCPUProfile
             )
+        }
+    }
+
+    private func writeSeparately(_ snapshots: [ProfileSnapshot], operation: ProfilingOperation) {
+        for snapshot in snapshots {
+            write([snapshot], operation: operation)
         }
     }
 
@@ -142,7 +129,45 @@ internal final class ProfileWriter: @unchecked Sendable {
                 attributes[RUMCoreContext.IDs.viewName] = [viewName]
             }
         }
+
+        var vitalIDs: [String] = []
+        var vitalLabels: [String] = []
+        var errorIDs: [String] = []
+        var longTaskIDs: [String] = []
+        for event in snapshot.rumEvents {
+            switch event {
+            case .vital(let vital):
+                vitalIDs.append(vital.id)
+                vitalLabels.append(vital.name)
+            case .hang(let hang):
+                errorIDs.append(hang.id)
+            case .longTask(let longTask):
+                longTaskIDs.append(longTask.id)
+            }
+        }
+        if !vitalIDs.isEmpty {
+            attributes[RUMCoreContext.IDs.vitalID] = vitalIDs
+            attributes[RUMCoreContext.IDs.vitalLabel] = vitalLabels
+        }
+        attributes[RUMCoreContext.IDs.errorID] = errorIDs
+        attributes[RUMCoreContext.IDs.longTaskID] = longTaskIDs
         return attributes
+    }
+
+    private func tags(for operation: ProfilingOperation, in context: DatadogContext) -> String {
+        [
+            tag(Tag.Key.service, context.service),
+            tag(Tag.Key.version, context.version),
+            tag(Tag.Key.sdkVersion, context.sdkVersion),
+            tag(Tag.Key.profilerVersion, context.sdkVersion),
+            tag(Tag.Key.runtimeVersion, context.os.version),
+            tag(Tag.Key.env, context.env),
+            tag(Tag.Key.source, context.source),
+            tag(Tag.Key.language, Tag.Value.language),
+            tag(Tag.Key.format, Tag.Value.format),
+            tag(Tag.Key.remoteSymbols, Tag.Value.remoteSymbols),
+            tag(Tag.Key.operation, operation.rawValue)
+        ].joined(separator: ",")
     }
 
     private func tag(_ key: String, _ value: String) -> String {

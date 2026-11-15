@@ -107,7 +107,7 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name)?.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
     }
 
-    func testWrite_selectsOneProvidersRUMDataInEitherSnapshotOrder() throws {
+    func testWritePrefersCPURUMDataInEitherSnapshotOrder() throws {
         let vital = Vital.mockWith(id: "vital-1", name: "operation")
         let hang = DurationEvent(id: "hang", type: .error, start: 40, duration: 50)
         let longTask = DurationEvent(id: "long-task", type: .longTask, start: 20, duration: 30)
@@ -117,7 +117,7 @@ final class ProfileWriterTests: XCTestCase {
         )
         let heap = snapshot(
             filename: "heap.pprof",
-            rumEvents: [],
+            rumEvents: [.longTask(.init(id: "heap-task", type: .longTask, start: 20, duration: 30))],
             attributes: ["application.id": "app", "session.id": "session", "view.id": ["heap-view"], "view.name": ["Heap view"]]
         )
 
@@ -163,23 +163,54 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewName] as? [String], ["Event view"])
     }
 
-    func testWriteRejectsIncompatibleCapturedRUMContexts() {
-        let sessionID = UUID()
-        let first = RUMCoreContext.mockWith(applicationID: "app", sessionID: sessionID)
-        let incompatible = [
-            RUMCoreContext.mockWith(applicationID: "app", sessionID: UUID()),
-            RUMCoreContext.mockWith(applicationID: "other-app", sessionID: sessionID)
-        ]
+    func testWriteSeparatesIncompatibleCapturedSessions() throws {
+        let first = RUMCoreContext.mockWith(applicationID: "app", sessionID: UUID())
+        let second = RUMCoreContext.mockWith(applicationID: "app", sessionID: UUID())
+        let vital = Vital.mockWith(id: "cpu-vital", name: "operation")
+        let task = DurationEvent(id: "heap-task", type: .longTask, start: 20, duration: 30)
+        let cpu = snapshot(data: Data([1]), start: 10, end: 60, rumEvents: [.vital(vital)], rumContext: first)
+        let heap = snapshot(filename: "heap.pprof", data: Data([2]), start: 20, end: 70, rumEvents: [.longTask(task)], rumContext: second)
 
-        for context in incompatible {
-            writer.write([
-                snapshot(rumContext: first),
-                snapshot(filename: "heap.pprof", rumContext: context)
-            ], operation: .continuousProfiling)
+        writer.write([cpu, heap], operation: .continuousProfiling)
+
+        let events: [ProfileEvent] = core.events()
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(core.metadata.count, 2)
+        guard events.count == 2, core.metadata.count == 2 else {
+            return
         }
+        for (index, captured) in [cpu, heap].enumerated() {
+            let event = events[index]
+            let attachments = try XCTUnwrap(core.metadata[index] as? ProfileAttachments)
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.applicationID] as? String, captured.rumContext?.applicationID)
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, captured.rumContext?.sessionID)
+            XCTAssertEqual(event.start, captured.start)
+            XCTAssertEqual(event.end, captured.end)
+            XCTAssertEqual(event.attachments, [captured.attachment.filename, "rum-mobile-events.json"])
+            XCTAssertEqual(attachments.pprofs.map(\.filename), [captured.attachment.filename])
+            XCTAssertEqual(attachments.pprofs.map(\.data), [captured.attachment.data])
+            XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [index == 0 ? vital.id : task.id])
+        }
+    }
 
-        XCTAssertTrue(core.events.isEmpty)
-        XCTAssertTrue(core.metadata.isEmpty)
+    func testWriteUsesHeapRUMDataWhenCPUHasNoEvents() throws {
+        let task = DurationEvent(id: "heap-task", type: .longTask, start: 20, duration: 30)
+        let cpu = snapshot(rumEvents: [], attributes: ["view.id": ["cpu-view"]])
+        let heap = snapshot(filename: "heap.pprof", rumEvents: [.longTask(task)], attributes: ["view.id": ["heap-view"]])
+
+        for snapshots in [[cpu, heap], [heap, cpu]] {
+            writer.write(snapshots, operation: .continuousProfiling)
+
+            let event = try XCTUnwrap(core.events.last as? ProfileEvent)
+            let attachments = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            XCTAssertEqual(event.additionalAttributes?["view.id"] as? [String], ["heap-view"])
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [task.id])
+            XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [task.id])
+            XCTAssertEqual(Set(attachments.pprofs.map(\.filename)), ["profile.pprof", "heap.pprof"])
+            let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+            XCTAssertNotNil(metric.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
+        }
+        XCTAssertEqual(core.events.count, 2)
     }
 
     func testWrite_doesNotMergeRUMDataFromAnotherProvider() throws {
@@ -227,33 +258,60 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertTrue(telemetry.messages.isEmpty)
     }
 
-    func testWriteIncompatibleSessions_dropsWholeBatch() {
-        let cpu = snapshot(attributes: ["session.id": "session-1"])
-        let heap = snapshot(filename: "heap.pprof", attributes: ["session.id": "session-2"])
+    func testWriteSeparatesIncompatibleSessionsFromAttributes() throws {
+        let cpu = snapshot(attributes: [RUMCoreContext.IDs.sessionID: "first"])
+        let heap = snapshot(filename: "heap.pprof", attributes: [RUMCoreContext.IDs.sessionID: "second"])
 
         writer.write([cpu, heap], operation: .continuousProfiling)
 
-        XCTAssertTrue(core.events.isEmpty)
-        XCTAssertTrue(telemetry.messages.isEmpty)
+        let events: [ProfileEvent] = core.events()
+        XCTAssertEqual(events.count, 2)
+        let first = try XCTUnwrap(events.first)
+        let second = try XCTUnwrap(events.last)
+        XCTAssertEqual(first.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "first")
+        XCTAssertEqual(second.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "second")
+        XCTAssertEqual(first.attachments, ["profile.pprof", "rum-mobile-events.json"])
+        XCTAssertEqual(second.attachments, ["heap.pprof", "rum-mobile-events.json"])
+        XCTAssertEqual(telemetry.messages.count, 2)
     }
 
-    func testWriteIncompatibleSessionsAreRejectedWhenSelectedProviderHasNoSession() {
+    func testWriteSeparatesIncompatibleSessionsWhenSelectedProviderHasNoSession() throws {
         writer.write([
             snapshot(rumEvents: [.vital(.mockAny())]),
             snapshot(filename: "heap.pprof", attributes: [RUMCoreContext.IDs.sessionID: "session-1"]),
             snapshot(filename: "other.pprof", attributes: [RUMCoreContext.IDs.sessionID: "session-2"])
         ], operation: .continuousProfiling)
 
-        XCTAssertTrue(core.events.isEmpty)
+        let events: [ProfileEvent] = core.events()
+        XCTAssertEqual(events.count, 3)
+        guard events.count == 3 else {
+            return
+        }
+        XCTAssertNil(events[0].additionalAttributes?[RUMCoreContext.IDs.sessionID])
+        XCTAssertEqual(events[1].additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "session-1")
+        XCTAssertEqual(events[2].additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "session-2")
+        XCTAssertEqual(events.map(\.attachments), [
+            ["profile.pprof", "rum-mobile-events.json"],
+            ["heap.pprof", "rum-mobile-events.json"],
+            ["other.pprof", "rum-mobile-events.json"]
+        ])
     }
 
-    func testWriteIncompatibleApplications_dropsWholeBatch() {
-        let cpu = snapshot(attributes: ["application.id": "app-1"])
-        let heap = snapshot(filename: "heap.pprof", attributes: ["application.id": "app-2"])
+    func testWriteIncompatibleSessionsDoesNotUseAnotherSessionsRUMEvents() throws {
+        let vital = Vital.mockWith(id: "cpu-vital", name: "operation")
+        let cpu = snapshot(rumEvents: [.vital(vital)], attributes: [RUMCoreContext.IDs.sessionID: "session-1"])
+        let heap = snapshot(filename: "heap.pprof", rumEvents: [], attributes: [RUMCoreContext.IDs.sessionID: "session-2"])
 
-        writer.write([cpu, heap], operation: .continuousProfiling)
+        writer.write([heap, cpu], operation: .continuousProfiling)
 
-        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(telemetry.messages.count, 1)
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "session-1")
+        XCTAssertEqual(event.attachments, ["profile.pprof", "rum-mobile-events.json"])
+        XCTAssertEqual(attachments.pprofs.map(\.filename), ["profile.pprof"])
+        XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [vital.id])
     }
 
     func testWriteMissingContext_doesNotEraseContextCapturedByOtherProfiler() throws {
@@ -266,16 +324,82 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertEqual(event.additionalAttributes?["session.id"] as? String, "session")
     }
 
-    func testWriteCombinedProfilesAboveSizeLimit_dropsWholeBatch() {
+    func testWriteDuplicateFilenamesKeepsFirstSnapshotAndOtherAttachments() throws {
+        let task = DurationEvent(id: "heap-task", type: .longTask, start: 20, duration: 30)
+        let cpu = snapshot(data: Data([1]), start: 20, end: 60, rumEvents: [], attributes: ["session.id": "session"])
+        let duplicate = snapshot(
+            data: Data([9]),
+            start: 0,
+            end: 100,
+            rumEvents: [.vital(.mockWith(id: "duplicate-vital", name: "duplicate"))],
+            attributes: ["session.id": "other-session", "view.id": ["duplicate-view"]]
+        )
+        let heap = snapshot(
+            filename: "heap.pprof",
+            data: Data([2]),
+            start: 10,
+            end: 70,
+            rumEvents: [.longTask(task)],
+            attributes: ["session.id": "session", "view.id": ["heap-view"]]
+        )
+
+        writer.write([cpu, duplicate, heap], operation: .continuousProfiling)
+
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(core.metadata.count, 1)
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(event.start, heap.start)
+        XCTAssertEqual(event.end, heap.end)
+        XCTAssertEqual(event.additionalAttributes?["session.id"] as? String, "session")
+        XCTAssertEqual(event.additionalAttributes?["view.id"] as? [String], ["heap-view"])
+        XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.vitalID])
+        XCTAssertEqual(event.attachments, ["profile.pprof", "heap.pprof", "rum-mobile-events.json"])
+        XCTAssertEqual(attachments.pprofs.map(\.filename), ["profile.pprof", "heap.pprof"])
+        XCTAssertEqual(attachments.pprofs.map(\.data), [cpu.attachment.data, heap.attachment.data])
+        XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [task.id])
+    }
+
+    func testWriteCombinedProfilesAboveSizeLimit_writesEachProfileSeparately() throws {
         let halfLimit = Int(ProfilerFeature.Constants.maxObjectSize) / 2
-        let cpu = snapshot(data: Data(repeating: 1, count: halfLimit))
-        let heap = snapshot(filename: "heap.pprof", data: Data(repeating: 2, count: halfLimit + 1))
+        let vital = Vital.mockWith(id: "cpu-vital", name: "operation")
+        let task = DurationEvent(id: "heap-task", type: .longTask, start: 20, duration: 30)
+        let cpu = snapshot(data: Data(repeating: 1, count: halfLimit), rumEvents: [.vital(vital)])
+        let heap = snapshot(filename: "heap.pprof", data: Data(repeating: 2, count: halfLimit + 1), rumEvents: [.longTask(task)])
 
         writer.write([cpu, heap], operation: .continuousProfiling)
 
-        XCTAssertTrue(core.events.isEmpty)
-        XCTAssertEqual(telemetry.messages.count, 1)
-        XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name)?.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
+        let events: [ProfileEvent] = core.events()
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(core.metadata.count, 2)
+        XCTAssertEqual(telemetry.messages.count, 2)
+        guard events.count == 2, core.metadata.count == 2 else {
+            return
+        }
+        for (index, captured) in [cpu, heap].enumerated() {
+            let attachments = try XCTUnwrap(core.metadata[index] as? ProfileAttachments)
+            XCTAssertEqual(events[index].attachments, [captured.attachment.filename, "rum-mobile-events.json"])
+            XCTAssertEqual(attachments.pprofs.map(\.filename), [captured.attachment.filename])
+            XCTAssertEqual(attachments.pprofs.map(\.data), [captured.attachment.data])
+            XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [index == 0 ? vital.id : task.id])
+        }
+    }
+
+    func testWriteOversizedAttachmentDoesNotDiscardOtherProfiles() throws {
+        let cpu = snapshot()
+        let heap = snapshot(filename: "heap.pprof", data: Data(repeating: 2, count: Int(ProfilerFeature.Constants.maxObjectSize) + 1))
+
+        for snapshots in [[cpu, heap], [heap, cpu]] {
+            let previousCount = core.events.count
+
+            writer.write(snapshots, operation: .continuousProfiling)
+
+            XCTAssertEqual(core.events.count, previousCount + 1)
+            let event = try XCTUnwrap(core.events.last as? ProfileEvent)
+            let attachments = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            XCTAssertEqual(event.attachments, ["profile.pprof", "rum-mobile-events.json"])
+            XCTAssertEqual(attachments.pprofs.map(\.data), [cpu.attachment.data])
+        }
     }
 
     func testWriteCombinedProfilesAtSizeLimit_writesOneEvent() {

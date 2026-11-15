@@ -134,6 +134,8 @@
 		1152B73730AB987900694EC8 /* DDProfilingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73630AB987900694EC8 /* DDProfilingTests.swift */; };
 		1152B73930AB988600694EC8 /* DDProfiling+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73830AB988600694EC8 /* DDProfiling+apiTests.m */; };
 		1152B72D30AA196300694EC8 /* ProfileSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B72C30AA196300694EC8 /* ProfileSnapshot.swift */; };
+		1152B72F30AA614900694EC8 /* ProfilingScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */; };
+		1152B73130AA614D00694EC8 /* ProfilingSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */; };
 		115624BD3067CF10007FBEB2 /* ProfilingRequestBuilderError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115624BC3067CF0F007FBEB2 /* ProfilingRequestBuilderError.swift */; };
 		115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 115792E12F4504E900AEE829 /* binary_image_resolver.cpp */; };
 		115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 115792E42F4504F700AEE829 /* binary_image_resolver.h */; };
@@ -2259,6 +2261,8 @@
 		1152B73630AB987900694EC8 /* DDProfilingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDProfilingTests.swift; sourceTree = "<group>"; };
 		1152B73830AB988600694EC8 /* DDProfiling+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDProfiling+apiTests.m"; sourceTree = "<group>"; };
 		1152B72C30AA196300694EC8 /* ProfileSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSnapshot.swift; sourceTree = "<group>"; };
+		1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingScheduler.swift; sourceTree = "<group>"; };
+		1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */ = {isa = PBXFileReference; path = ProfilingSchedulerTests.swift; sourceTree = "<group>"; };
 		115624BC3067CF0F007FBEB2 /* ProfilingRequestBuilderError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingRequestBuilderError.swift; sourceTree = "<group>"; };
 		115792E12F4504E900AEE829 /* binary_image_resolver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = binary_image_resolver.cpp; sourceTree = "<group>"; };
 		115792E42F4504F700AEE829 /* binary_image_resolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_image_resolver.h; sourceTree = "<group>"; };
@@ -7936,6 +7940,7 @@
 				11C4E5912F571F86002196F4 /* Models */,
 				1121FCFA2EE305D900297156 /* SDKMetrics */,
 				1152B73230AB984300694EC8 /* Profiling+objc.swift */,
+				1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */,
 			);
 			name = DatadogProfiling;
 			path = ../DatadogProfiling/Sources;
@@ -7972,6 +7977,7 @@
 				1150CAF1308283DE007338C7 /* MemoryPprofTests.swift */,
 				1150CB01308BB856007338C7 /* MemoryProfilerNativeTests.swift */,
 				1150CB03308BB910007338C7 /* MemoryProfilerTests.swift */,
+				1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -10150,6 +10156,7 @@
 				1150CAFE308BB81B007338C7 /* MemoryProfiler.swift in Sources */,
 				11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */,
 				11D5190E306AA6A0008C003F /* swift_alloc_hook.cpp in Sources */,
+				1152B72F30AA614900694EC8 /* ProfilingScheduler.swift in Sources */,
 				1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */,
 				11D51908306AA5D2008C003F /* fishhook.c in Sources */,
 				11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */,
@@ -10836,6 +10843,7 @@
 				11D51918306AF4B4008C003F /* ObjCAllocHookTests.m in Sources */,
 				D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
 				D2D0E2082E3CEF1200BA4113 /* DDProfilerCAPITests.swift in Sources */,
+				1152B73130AA614D00694EC8 /* ProfilingSchedulerTests.swift in Sources */,
 				115792EC2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */,
 				D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */,
 				1150CB04308BB910007338C7 /* MemoryProfilerTests.swift in Sources */,

@@ -8,7 +8,13 @@ import Foundation
 import DatadogInternal
 
 /// Captured profile data and its RUM context, ready to be written independently of the profiler.
+///
+/// CPU samples have timestamps and can be selected within an event's time range.
+/// Heap `inuse_*` values describe sampled objects still live at capture end, including
+/// surviving allocations from earlier windows; `alloc_*` totals cover the collection interval.
+/// Heap aggregates have no individual timestamps, so neither metric can be sliced to an event.
 internal struct ProfileSnapshot: @unchecked Sendable {
+    /// This attachment's own bounds, which can differ from other snapshots on the same tick.
     let start: Date
     let end: Date
     let attachment: PprofAttachment
@@ -16,4 +22,10 @@ internal struct ProfileSnapshot: @unchecked Sendable {
     let attributes: [AttributeKey: AttributeValue]
     /// Captured with the profile, or resolved by the first session decision for a pending launch.
     var rumContext: RUMCoreContext? = nil
+}
+
+internal protocol ProfileSnapshotProvider: AnyObject, Sendable {
+    /// Enqueues a capture on the profiler's queue and completes exactly once with owned data,
+    /// or nil when unavailable. Reject ticks scheduled before the current profiling window.
+    func captureSnapshot(scheduledFor time: DispatchTime, completion: @escaping @Sendable (ProfileSnapshot?) -> Void)
 }

@@ -141,6 +141,24 @@ flowchart TD
 
 `ProfilingContext` is published into core context so RUM events can include whether profiling is running, stopped, or in an error state.
 
+## Capture Semantics and RUM Correlation
+
+Continuous CPU and heap captures share a 60-second cadence. Their collection intervals can differ, particularly when recording starts or resumes at different times. A shared upload preserves each profile's time semantics.
+
+Periodic CPU captures require a recording window of at least five seconds. If the next capture is due sooner, CPU recording continues until a later periodic capture. Heap snapshots continue independently and do not use this minimum.
+
+| Profile data | Time semantics | Event-range selection |
+|---|---|---|
+| CPU/wall-time samples | Individual timestamped samples across the collection interval | Samples can be selected within a RUM event's time range. |
+| Heap `inuse_objects` / `inuse_space` | Estimated live object counts and bytes from sampled allocations at capture end, including surviving allocations from earlier windows | Cannot reconstruct the live heap during an earlier event. |
+| Heap `alloc_objects` / `alloc_space` | Estimated allocation totals across the collection interval | Cannot select an event-sized subinterval because individual allocation timestamps are not exported. |
+
+One heap profile contains both allocation totals and live-memory estimates. The live-heap snapshot represents the end of its own collection interval.
+
+When CPU and heap data appear together, selecting a RUM event's time range applies to the CPU samples. The heap data remains a complete capture. Profiles require RUM correlation data even when only memory profiling is running.
+
+RUM association provides navigation and surrounding context for a heap snapshot. It does not establish the heap contents during an earlier event or attribute allocations to that event. For example, a snapshot at 60 seconds cannot reconstruct the live heap during a long task at 20 seconds. App-launch heap captures are triggered by TTID, providing context at that launch boundary.
+
 ## Key Files
 
 ### Feature Entry Point

@@ -13,7 +13,7 @@ import Foundation
 @_implementationOnly import DatadogMachProfiler
 
 /// Owns memory profiling windows independently of CPU profiling decisions.
-internal final class MemoryProfiler: @unchecked Sendable {
+internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendable {
     static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.datadog-memory-profiler",
         qos: .utility
@@ -25,7 +25,7 @@ internal final class MemoryProfiler: @unchecked Sendable {
         case waiting
         case running
         /// Emission is suspended; allocation and free observation keep the continuous live set current.
-        /// An admitted launch remains open until its final capture at TTID.
+        /// An admitted launch remains open until TTID or the launch fallback.
         case emissionSuspended
         case failed
         case shutDown
@@ -36,11 +36,15 @@ internal final class MemoryProfiler: @unchecked Sendable {
     private let profilingSamplerProvider: ProfilingSamplerProvider
     private let profilingConditions = ProfilingConditions()
     private let writer: ProfileWriter
+    private let scheduler: ProfilingScheduler
+    private var periodicStart: DispatchTime?
     private let dateProvider: DateProvider
+    private let monotonicClock: MonotonicClock
+    private let appLaunchDeadline: TimeInterval
     private var sessionSampler: DeterministicSampler?
     // Retain the last ID through missing RUM context so returning sessions start a fresh delta.
     private var lastSessionID: String?
-    /// Whether the native launch window is still open for TTID capture.
+    /// Whether the native launch window is still awaiting TTID or a fallback capture.
     private var isRecordingAppLaunch = false
     private var pendingAppLaunch: (
         snapshot: ProfileSnapshot,
@@ -64,14 +68,21 @@ internal final class MemoryProfiler: @unchecked Sendable {
     init(
         profilingSamplerProvider: ProfilingSamplerProvider,
         writer: ProfileWriter,
+        scheduler: ProfilingScheduler,
         queue: DispatchQueue = MemoryProfiler.defaultQueue,
         dateProvider: DateProvider = SystemDateProvider(),
+        monotonicClock: MonotonicClock = SystemMonotonicClock(),
         notificationCenter: NotificationCenter = .default
     ) {
         self.profilingSamplerProvider = profilingSamplerProvider
         self.queue = queue
         self.writer = writer
+        self.scheduler = scheduler
         self.dateProvider = dateProvider
+        self.monotonicClock = monotonicClock
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        let age = origin > 0 ? max(0, dateProvider.now.timeIntervalSince1970 - Double(origin) / 1_000_000_000) : 0
+        self.appLaunchDeadline = monotonicClock.elapsedTime + max(0, ProfilingScheduler.Constants.profilingInterval - age)
         queue.setSpecific(key: queueKey, value: ())
         // Native startup preserves launch coverage independently of emission sampling.
         if isEnabled, dd_memory_profiler_is_running() {
@@ -95,6 +106,7 @@ internal final class MemoryProfiler: @unchecked Sendable {
     }
 
     deinit {
+        scheduler.stopPeriodic(for: self)
         // RUM-18564 will coordinate SDK shutdown independently of receiver lifetime.
         if state != .shutDown {
             dd_memory_profiler_stop()
@@ -234,6 +246,9 @@ private extension MemoryProfiler {
                 // Serialize now so the pending snapshot owns its bytes until resolution.
                 var capture = dd_memory_capture_t()
                 let status = dd_memory_profiler_capture(&capture)
+                if periodicStart != nil {
+                    periodicStart = .now()
+                }
                 defer { clearDurationEvents() }
                 switch status {
                 case DD_MEMORY_CAPTURE_READY:
@@ -254,10 +269,30 @@ private extension MemoryProfiler {
 }
 
 extension MemoryProfiler {
+    func captureSnapshot(scheduledFor time: DispatchTime, completion: @escaping @Sendable (ProfileSnapshot?) -> Void) {
+        queue.async { [weak self] in
+            guard let self, state == .running, canEmit,
+                  let periodicStart, time >= periodicStart else {
+                completion(nil)
+                return
+            }
+            expireAppLaunchIfNeeded()
+            guard !isRecordingAppLaunch else {
+                completion(nil)
+                return
+            }
+            completion(closeWindow())
+        }
+    }
+
     /// Closes an eligible foreground window on the profiler queue.
     func captureWindow() {
         queue.async { [weak self] in
-            guard let self, state == .running, !isRecordingAppLaunch, canEmit else {
+            guard let self, state == .running, canEmit else {
+                return
+            }
+            expireAppLaunchIfNeeded()
+            guard !isRecordingAppLaunch else {
                 return
             }
             capture()
@@ -305,6 +340,13 @@ private extension MemoryProfiler {
             && hasForegroundTime
     }
 
+    /// Releases an expired TTID wait without stopping allocation and free tracking.
+    func expireAppLaunchIfNeeded() {
+        if isRecordingAppLaunch, monotonicClock.elapsedTime >= appLaunchDeadline {
+            isRecordingAppLaunch = false
+        }
+    }
+
     func updateState(context: DatadogContext) {
         guard state != .failed, state != .shutDown else {
             return
@@ -334,9 +376,18 @@ private extension MemoryProfiler {
                     state = .emissionSuspended
                 }
             }
+            stopPeriodicCapture()
             return
         }
         state = rumContext == nil ? .waiting : .running
+        if profilingSamplerProvider.memory.sampled(for: rumContext?.sessionSampler) == true {
+            if periodicStart == nil {
+                periodicStart = .now()
+            }
+            scheduler.startPeriodic(for: self)
+        } else {
+            stopPeriodicCapture()
+        }
     }
 
     func capture(shouldWrite: Bool = true, operation: ProfilingOperation = .continuousProfiling, message: TTIDMessage? = nil) {
@@ -349,6 +400,10 @@ private extension MemoryProfiler {
         defer { clearDurationEvents() }
         var capture = dd_memory_capture_t()
         let status = dd_memory_profiler_capture(&capture)
+        // Queued ticks from the preceding window must not close the new one.
+        if periodicStart != nil {
+            periodicStart = .now()
+        }
         switch status {
         case DD_MEMORY_CAPTURE_IDLE:
             return nil
@@ -375,12 +430,9 @@ private extension MemoryProfiler {
             return nil
         }
         let attributes = eventAttributes.merging(message?.attributes ?? [:]) { _, launchValue in launchValue }
+        // These events provide RUM context when CPU supplies none; they do not select a heap slice.
         let rumEvents = durationEvents
-            .filter { event in
-                let (eventEnd, overflow) = event.start.addingReportingOverflow(event.duration)
-                let overlapsStart = overflow ? event.duration > 0 : eventEnd >= start
-                return event.start <= end && overlapsStart
-            }
+            .filter { $0.couldBeSampled(byProfileStartingAt: start, endingAt: end) }
             .compactMap { event -> RUMEvent? in
                 switch event.type {
                 case .error: return .hang(event)
@@ -402,8 +454,14 @@ private extension MemoryProfiler {
         )
     }
 
+    func stopPeriodicCapture() {
+        periodicStart = nil
+        scheduler.stopPeriodic(for: self)
+    }
+
     func stopNative() {
         let didFail = state == .failed
+        stopPeriodicCapture()
         dd_memory_profiler_stop()
         state = didFail ? .failed : .stopped
         hasForegroundTime = false
