@@ -1521,6 +1521,474 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
+    func testCustomToContinuousSamplingChangeKeepsCurrentWindowDeadline() {
+        let writer = ProfileWriter(featureScope: core.scope(for: ProfilerFeature.self))
+        let scheduler = ProfilingScheduler(writer: writer, profilingInterval: 1)
+        let memory = EmptyProfileSnapshotProvider()
+        scheduler.startPeriodic(for: memory)
+        defer { scheduler.stopPeriodic(for: memory) }
+        let phase = expectation(description: "custom begins partway through shared interval")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.35) { phase.fulfill() }
+        wait(for: [phase], timeout: 2)
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 50)
+        let sampledOut = RUMCoreContext.mockWith(
+            sessionID: UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!,
+            sessionSampleRate: 100
+        )
+        provider.updateWith(deterministicSampler: sampledOut.sessionSampler)
+        XCTAssertEqual(provider.continuousProfilingSampled, false)
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: provider,
+            writer: writer,
+            scheduler: scheduler,
+            profilingInterval: 1,
+            dateProvider: SystemDateProvider()
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [sampledOut]
+        )
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let start = Vital.mockWith(stepType: .start, date: Date())
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: start)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
+        let switchMode = expectation(description: "shared tick passes before mode transition")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.7) { switchMode.fulfill() }
+        wait(for: [switchMode], timeout: 2)
+        XCTAssertTrue(core.metadata.isEmpty)
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 0, samplingRate: 100))
+        XCTAssertEqual(provider.continuousProfilingSampled, true)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+        waitForProfileWrite(timeout: 0.45) { shareCurrentContext(with: profiler) }
+        XCTAssertFalse(core.metadata.isEmpty, "The current native window must close by its existing maximum deadline")
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testSharedTickCancelsCPUDeadlineForClosedWindow() {
+        let writer = ProfileWriter(featureScope: core.scope(for: ProfilerFeature.self))
+        let scheduler = ProfilingScheduler(writer: writer, profilingInterval: 0.8)
+        let memory = EmptyProfileSnapshotProvider()
+        scheduler.startPeriodic(for: memory)
+        defer { scheduler.stopPeriodic(for: memory) }
+        let halfway = expectation(description: "custom CPU starts between shared ticks")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { halfway.fulfill() }
+        wait(for: [halfway], timeout: 2)
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 50)
+        let sampledOut = RUMCoreContext.mockWith(
+            sessionID: UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!,
+            sessionSampleRate: 100
+        )
+        provider.updateWith(deterministicSampler: sampledOut.sessionSampler)
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: provider,
+            writer: writer,
+            scheduler: scheduler,
+            profilingInterval: 1,
+            dateProvider: SystemDateProvider()
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [sampledOut]
+        )
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let start = Vital.mockWith(stepType: .start, date: Date())
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: start)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
+
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 0, samplingRate: 100))
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+        waitForProfileWrite(timeout: 1) { shareCurrentContext(with: profiler) }
+        addSampleToCurrentProfile()
+        waitForProfileWrite(expectingWrite: false, timeout: 0.7) {}
+        flushQueue()
+
+        XCTAssertEqual(core.metadata.count, 1, "The shared tick must cancel the closed window's CPU deadline")
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testPeriodicCaptureReturnsOwnedSnapshotWithoutWriting() throws {
+        let profiler = continuousProfiler(continuousProfilingSampled: true)
+        let rumContext = RUMCoreContext.mockWith(
+            applicationID: "captured-application",
+            sessionID: .mockRandom(),
+            viewID: "captured-view",
+            viewName: "Captured view"
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [rumContext]
+        )
+        shareCurrentContext(with: profiler)
+        let vital = Vital.mockWith(stepType: .start)
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: [RUMCoreContext.IDs.viewName: ["Event view"]], operation: vital)),
+            from: core
+        )
+        flushQueue()
+        addSampleToCurrentProfile()
+        let captured = ReadWriteLock<ProfileSnapshot?>(wrappedValue: nil)
+        let completed = expectation(description: "CPU snapshot captured")
+        completed.assertForOverFulfill = true
+
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            captured.wrappedValue = snapshot
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+        flushQueue()
+
+        let snapshot = try XCTUnwrap(captured.wrappedValue)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(snapshot.attachment.filename, ProfileAttachments.Constants.pprofFilename)
+        XCTAssertFalse(snapshot.attachment.data.isEmpty)
+        XCTAssertEqual(snapshot.rumEvents.count, 1)
+        XCTAssertEqual(snapshot.rumContext?.applicationID, rumContext.applicationID)
+        XCTAssertEqual(snapshot.rumContext?.sessionID, rumContext.sessionID)
+        XCTAssertEqual(snapshot.rumContext?.viewID, "captured-view")
+        XCTAssertEqual(snapshot.attributes[RUMCoreContext.IDs.viewName] as? [String], ["Event view"])
+
+        // Another capture and native destruction cannot invalidate the captured bytes or RUM context.
+        addSampleToCurrentProfile()
+        core.context.set(additionalContext: RUMCoreContext.mockWith(applicationID: "later-application"))
+        shareCurrentContext(with: profiler)
+        profiler.captureWindow(scheduledFor: .now())
+        flushQueue()
+        dd_profiler_stop()
+        dd_profiler_destroy()
+
+        let unpackedProfile = try XCTUnwrap(snapshot.attachment.data.withUnsafeBytes { bytes in
+            perftools__profiles__profile__unpack(nil, bytes.count, bytes.bindMemory(to: UInt8.self).baseAddress)
+        })
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+        XCTAssertGreaterThan(unpackedProfile.pointee.n_sample, 0)
+        XCTAssertEqual(snapshot.rumContext?.applicationID, rumContext.applicationID)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testPeriodicCaptureCompletesOnceWhenItsScheduleIsStale() {
+        let profiler = continuousProfiler(continuousProfilingSampled: true)
+        shareCurrentContext(with: profiler)
+        let completed = expectation(description: "stale CPU capture completed")
+        completed.assertForOverFulfill = true
+
+        profiler.captureSnapshot(scheduledFor: DispatchTime(uptimeNanoseconds: 0)) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+        flushQueue()
+
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testPeriodicCaptureCompletesOnceAfterQuotaRejection() {
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let profiler = continuousProfiler(continuousProfilingSampled: true, quotaChecker: quotaChecker)
+        shareCurrentContext(with: profiler)
+        quotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+        quotaChecker.onQuotaResultUpdate?(quotaChecker.quotaResult)
+        flushQueue()
+        let completed = expectation(description: "quota-rejected CPU capture completed")
+        completed.assertForOverFulfill = true
+
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+        flushQueue()
+
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testPeriodicCaptureCompletesOnceAfterAllocationFailure() {
+        let profiler = continuousProfiler(continuousProfilingSampled: true)
+        shareCurrentContext(with: profiler)
+        Self.failNativeAggregation()
+        flushQueue()
+        let completed = expectation(description: "failed CPU capture completed")
+        completed.assertForOverFulfill = true
+
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+        flushQueue()
+
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testPeriodicCaptureCompletesOnceAfterProfilerIsReleased() {
+        var profiler: DatadogProfiler? = continuousProfiler(continuousProfilingSampled: true)
+        weak var weakProfiler = profiler
+        flushQueue()
+        let completed = expectation(description: "released CPU capture completed")
+        completed.assertForOverFulfill = true
+
+        profilerQueue.suspend()
+        profiler?.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        profiler = nil
+        profilerQueue.resume()
+        wait(for: [completed], timeout: 1)
+        flushQueue()
+
+        XCTAssertNil(weakProfiler)
+        XCTAssertTrue(core.metadata.isEmpty)
+    }
+
+    func testQueuedCaptureDoesNotFlushRestartedCPUWindow() {
+        let profiler = continuousProfiler(
+            continuousProfilingSampled: true,
+            dateProvider: SystemDateProvider()
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+        shareCurrentContext(with: profiler)
+        let start = Vital.mockWith(stepType: .start, date: Date())
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: start)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
+
+        // Queue a stop and restart ahead of a capture from the original schedule.
+        profilerQueue.suspend()
+        let background: DatadogContext = .mockWith(
+            applicationStateHistory: .mockWith(
+                initialState: .active,
+                date: Date().addingTimeInterval(-1),
+                transitions: [(state: .background, date: Date())]
+            ),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+        _ = profiler.receive(message: .context(background), from: core)
+        _ = profiler.receive(message: .context(core.context), from: core)
+        profilerQueue.async { self.addSampleToCurrentProfile() }
+        profiler.captureWindow(scheduledFor: .now())
+        profilerQueue.resume()
+        flushQueue()
+
+        XCTAssertEqual(core.metadata.count, 1, "Only the background close should write")
+        XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQueuedPeriodicCaptureDoesNotCloseWindowAfterSwitchingToCustomProfiling() {
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 50)
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 0, samplingRate: 100))
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: provider,
+            dateProvider: SystemDateProvider()
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+        shareCurrentContext(with: profiler)
+        let start = Vital.mockWith(stepType: .start, date: Date())
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: start)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
+
+        profilerQueue.suspend()
+        let periodicDeadline = DispatchTime.now()
+        let sampledOut = RUMCoreContext.mockWith(
+            sessionID: UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!,
+            sessionSampleRate: 100
+        )
+        provider.updateWith(deterministicSampler: sampledOut.sessionSampler)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [sampledOut]
+        )
+        _ = profiler.receive(message: .context(core.context), from: core)
+        let end = Vital.mockWith(name: start.name, operationKey: start.operationKey, stepType: .end)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: end)), from: core)
+        profiler.captureWindow(scheduledFor: periodicDeadline)
+        profilerQueue.resume()
+        flushQueue()
+
+        XCTAssertEqual(profiler.operation, .customProfiling)
+        XCTAssertTrue(core.metadata.isEmpty, "The cancelled periodic tick must respect the custom minimum duration")
+        XCTAssertTrue(dd_profiler_is_running())
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testSharedTimerDoesNotCloseCustomProfileBeforeItsDeadline() {
+        // Given - memory keeps the shared cadence active while CPU collects a custom profile.
+        let writer = ProfileWriter(featureScope: core.scope(for: ProfilerFeature.self))
+        let scheduler = ProfilingScheduler(writer: writer, profilingInterval: 0.03)
+        let memory = EmptyProfileSnapshotProvider()
+        scheduler.startPeriodic(for: memory)
+        let profiler = customProfiler(writer: writer, scheduler: scheduler, profilingInterval: 1)
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let startOperation = Vital.mockWith(stepType: .start, date: Date())
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+            from: core
+        )
+        flushQueue()
+        addSampleToCurrentProfile()
+
+        // When - several shared ticks occur before the custom profile's own deadline.
+        waitForProfileWrite(expectingWrite: false, timeout: 0.15) {}
+
+        // Then
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+        scheduler.stopPeriodic(for: memory)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCustomProfileDeadlineRearmsWhileOperationIsOngoing() {
+        // Given
+        let profiler = customProfiler(profilingInterval: 0.1)
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let startOperation = Vital.mockWith(stepType: .start, date: Date())
+
+        // When - an unfinished operation spans two maximum-duration custom windows.
+        waitForProfileWrite(timeout: 1) {
+            _ = profiler.receive(
+                message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+                from: core
+            )
+            flushQueue()
+            addSampleToCurrentProfile()
+        }
+        flushQueue()
+        waitForProfileWrite(timeout: 1) {
+            addSampleToCurrentProfile()
+        }
+
+        // Then - the one-shot deadline is rearmed without subscribing custom CPU work to shared ticks.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testFirstCustomOperationAfterIdleWaitsForFullCaptureInterval() {
+        // Given - the native launch profiler is running before the first custom operation.
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let dateProvider = DateProviderMock()
+        let profiler = customProfiler(profilingInterval: 0.2, dateProvider: dateProvider)
+        addSampleToCurrentProfile()
+        dateProvider.now = dateProvider.now.addingTimeInterval(5)
+        let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
+
+        // When - custom scheduling starts after an idle period longer than its interval.
+        waitForProfileWrite(expectingWrite: false, timeout: 0.1) {
+            _ = profiler.receive(
+                message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+                from: core
+            )
+            flushQueue()
+        }
+
+        // Then - a fresh custom schedule waits its full interval instead of expiring immediately.
+        XCTAssertTrue(core.metadata.isEmpty)
+        waitForProfileWrite(timeout: 1) {}
+        XCTAssertFalse(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testContinuousSampleOutBeforeTTIDRetainsCPUDeadline() {
+        // Given - optimistic CPU profiling is still waiting for its launch vital.
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let profilingSamplerProvider = ProfilingSamplerProvider(
+            continuousSampleRate: 50,
+            appLaunchSampleRate: 100
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: 0.2
+        )
+        shareCurrentContext(with: profiler)
+
+        // When - RUM admits the launch profile but samples continuous CPU profiling out.
+        let rum = RUMCoreContext.mockWith(
+            sessionID: UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!,
+            sessionSampleRate: 100
+        )
+        profilingSamplerProvider.updateWith(deterministicSampler: rum.sessionSampler)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [rum]
+        )
+        shareCurrentContext(with: profiler)
+        XCTAssertEqual(profilingSamplerProvider.continuousProfilingSampled, false)
+        XCTAssertEqual(profilingSamplerProvider.appLaunchProfilingSampled, true)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // Then - switching away from shared ticks retains the original CPU-only cutoff.
+        waitUntil(timeout: 1) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED
+        }
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testContinuousToCustomSamplingChangeKeepsCurrentWindowDeadline() {
+        // Given - an ongoing operation has nearly filled its current CPU window.
+        let dateProvider = DateProviderMock()
+        let profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: 50)
+        profilingSamplerProvider.updateWith(deterministicSampler: DeterministicSampler(seed: 0, samplingRate: 100))
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: 60,
+            dateProvider: dateProvider
+        )
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+            from: core
+        )
+        flushQueue()
+        addSampleToCurrentProfile()
+        dateProvider.now = dateProvider.now.addingTimeInterval(59.95)
+
+        // When - CPU samples out while RUM and the operation remain eligible.
+        let rum = RUMCoreContext.mockWith(
+            sessionID: UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!,
+            sessionSampleRate: 100
+        )
+        profilingSamplerProvider.updateWith(deterministicSampler: rum.sessionSampler)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [rum]
+        )
+        waitForProfileWrite(timeout: 1) {
+            shareCurrentContext(with: profiler)
+        }
+
+        // Then - the old window closes after its remaining duration, rather than another full minute.
+        XCTAssertEqual(profilingSamplerProvider.continuousProfilingSampled, false)
+        XCTAssertFalse(core.metadata.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
     func testReceiveContext_restartsContinuousProfiler_afterNativeTimeout() {
         // Given
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
@@ -3602,6 +4070,7 @@ private extension DatadogProfilerTests {
         continuousProfilingSampled: Bool? = nil,
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         writer: ProfileWriter? = nil,
+        scheduler: ProfilingScheduler? = nil,
         profilingInterval: TimeInterval = .infinity,
         isAppLaunchProfilingEnabled: Bool = false,
         queue: DispatchQueue? = nil,
@@ -3629,6 +4098,7 @@ private extension DatadogProfilerTests {
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             writer: writer,
+            scheduler: scheduler ?? ProfilingScheduler(writer: writer, profilingInterval: profilingInterval),
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -3641,6 +4111,7 @@ private extension DatadogProfilerTests {
         core: PassthroughCoreMock? = nil,
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         writer: ProfileWriter? = nil,
+        scheduler: ProfilingScheduler? = nil,
         profilingInterval: TimeInterval = .infinity,
         isAppLaunchProfilingEnabled: Bool = false,
         queue: DispatchQueue? = nil,
@@ -3664,6 +4135,7 @@ private extension DatadogProfilerTests {
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             writer: writer,
+            scheduler: scheduler ?? ProfilingScheduler(writer: writer, profilingInterval: profilingInterval),
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -3752,6 +4224,11 @@ private extension DatadogProfilerTests {
         }
 
         XCTFail("Condition was not met within \(timeout) seconds.", file: file, line: line)
+    }
+}
+private final class EmptyProfileSnapshotProvider: ProfileSnapshotProvider {
+    func captureSnapshot(scheduledFor time: DispatchTime, completion: @escaping @Sendable (ProfileSnapshot?) -> Void) {
+        completion(nil)
     }
 }
 

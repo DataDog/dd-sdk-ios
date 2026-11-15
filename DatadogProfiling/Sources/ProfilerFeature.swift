@@ -24,6 +24,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     let profilingSamplerProvider: ProfilingSamplerProvider
     let telemetryController: ProfilingTelemetryController
     let memoryProfiler: MemoryProfiler
+    let profilingScheduler: ProfilingScheduler
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
 
@@ -59,9 +60,12 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         let quotaChecker = ProfilingQuotaChecker(profilingSamplerProvider: profilingSamplerProvider)
 
         let writer = ProfileWriter(featureScope: core.scope(for: Self.self), telemetryController: telemetryController)
+        let profilingScheduler = ProfilingScheduler(writer: writer)
+        self.profilingScheduler = profilingScheduler
         let memoryProfiler = MemoryProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
-            writer: writer
+            writer: writer,
+            scheduler: profilingScheduler
         )
         self.memoryProfiler = memoryProfiler
 
@@ -74,6 +78,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             writer: writer,
+            scheduler: profilingScheduler,
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration
         )

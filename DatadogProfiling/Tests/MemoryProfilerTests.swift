@@ -1015,6 +1015,71 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertTrue(dd_memory_profiler_is_running())
     }
 
+    func testBackgroundNoRUMGraceExpiresAtOriginalLaunchDeadline() {
+        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(59.9)))
+        receive(context: context(state: .background, hasRUM: false), on: profiler)
+        drain()
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        let stopped = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in !dd_memory_profiler_is_running() },
+            object: nil
+        )
+        wait(for: [stopped], timeout: 3)
+        drain()
+
+        XCTAssertEqual(profiler.state, .stopped)
+        XCTAssertEqual(diagnostics.captures_count, 0)
+    }
+
+    func testNoRUMGraceExpiryDoesNotRestartOnUnrelatedContext() {
+        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(59.98)))
+        receive(context: context(hasRUM: false), on: profiler)
+        let stopped = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in !dd_memory_profiler_is_running() },
+            object: nil
+        )
+        wait(for: [stopped], timeout: 3)
+        receive(context: context(hasRUM: false), on: profiler)
+        drain()
+
+        XCTAssertEqual(profiler.state, .stopped)
+        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 0)
+    }
+
+    func testQueuedSamplingExpiryDoesNotStopSampledSessionAfterConsentRecovery() {
+        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(59.8)))
+        queue.suspend()
+        receive(context: context(consent: .notGranted, hasRUM: false), on: profiler)
+        receive(context: context(consent: .pending), on: profiler)
+        let expired = expectation(description: "original cutoff reaches the suspended memory queue")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.3) { expired.fulfill() }
+        wait(for: [expired], timeout: 1)
+        queue.resume()
+        drain()
+
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 0)
+    }
+
+    func testTimerClosesPeriodicWindow() {
+        let profiler = makeProfiler(profilingInterval: 0.02)
+        receive(context: context(), on: profiler)
+        record()
+        let captured = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in dd_memory_profiler_capture_diagnostics_for_testing().ready_count > 0 },
+            object: nil
+        )
+        wait(for: [captured], timeout: 3)
+        profiler.flushAndStop()
+
+        XCTAssertEqual(profiler.state, .shutDown)
+        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertGreaterThanOrEqual(diagnostics.ready_count, 1)
+    }
+
     func testConcurrentContextAndWindowRequestsShareOneNativeQueue() {
         let profiler = makeProfiler()
         let sessionID = sessionID
@@ -1140,12 +1205,14 @@ final class MemoryProfilerTests: XCTestCase {
         let queue = queue
         let samplerProvider = profilingSamplerProvider
         let writer = ProfileWriter(featureScope: core)
+        let scheduler = ProfilingScheduler(writer: writer)
         let completed = expectation(description: "Profiler is released on its queue")
 
         queue.async {
             var profiler: MemoryProfiler? = MemoryProfiler(
                 profilingSamplerProvider: samplerProvider,
                 writer: writer,
+                scheduler: scheduler,
                 queue: queue
             )
             XCTAssertEqual(profiler?.state, .waiting)
@@ -1162,6 +1229,46 @@ final class MemoryProfilerTests: XCTestCase {
         }
 
         wait(for: [completed], timeout: 5)
+    }
+
+    func testPeriodicCaptureReturnsOwnedHeapSnapshotWithoutWriting() throws {
+        let profiler = makeProfiler()
+        var capturedContext = context(viewID: "captured-view")
+        capturedContext.serverTimeOffset = 2
+        receive(context: capturedContext, on: profiler)
+        drain()
+        record()
+        let captured = ReadWriteLock<ProfileSnapshot?>(wrappedValue: nil)
+        let completed = expectation(description: "Heap snapshot captured")
+        completed.assertForOverFulfill = true
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            captured.wrappedValue = snapshot
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        drain()
+
+        let snapshot = try XCTUnwrap(captured.wrappedValue)
+        let start = diagnostics.time_nanos
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertEqual(snapshot.attachment.filename, ProfileAttachments.Constants.heapPprofFilename)
+        XCTAssertEqual(snapshot.rumContext?.sessionID, sessionID.uuidString.lowercased())
+        XCTAssertEqual(snapshot.rumContext?.viewID, "captured-view")
+
+        record(address: 0x20000, size: 32)
+        profiler.captureWindow()
+        profiler.flushAndStop()
+
+        let decoded = try XCTUnwrap(snapshot.attachment.data.withUnsafeBytes { bytes in
+            perftools__profiles__profile__unpack(nil, bytes.count, bytes.bindMemory(to: UInt8.self).baseAddress)
+        })
+        defer { perftools__profiles__profile__free_unpacked(decoded, nil) }
+        XCTAssertGreaterThan(decoded.pointee.n_sample, 0)
+        XCTAssertEqual(decoded.pointee.n_sample_type, 4)
+        XCTAssertEqual(decoded.pointee.time_nanos, start + 2_000_000_000)
+        XCTAssertEqual(snapshot.start.timeIntervalSince1970, Double(decoded.pointee.time_nanos) / 1_000_000_000, accuracy: 0.000001)
+        XCTAssertEqual(snapshot.end.timeIntervalSince(snapshot.start), Double(decoded.pointee.duration_nanos) / 1_000_000_000, accuracy: 0.000001)
+        withExtendedLifetime(profiler) {}
     }
 
     func testIndependentCaptureCorrectsServerTimeAndOwnsSerializedBytes() throws {
@@ -1224,6 +1331,31 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 1)
         XCTAssertTrue(core.events.isEmpty)
         XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testOldPeriodicTickDoesNotCloseWindowAfterSessionChange() throws {
+        let profiler = makeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record()
+        let hang = DurationEvent(id: "old-session", type: .error, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        let previousTick = DispatchTime.now()
+        receive(context: context(sessionID: UUID()), on: profiler)
+        let completed = expectation(description: "Stale heap snapshot completed")
+        completed.assertForOverFulfill = true
+        profiler.captureSnapshot(scheduledFor: previousTick) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        drain()
+
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(core.events.count, 1)
+        let oldSessionEvent = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(oldSessionEvent.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, sessionID.uuidString.lowercased())
         withExtendedLifetime(profiler) {}
     }
 
@@ -1337,12 +1469,36 @@ final class MemoryProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    func testPeriodicCaptureCompletesAfterProducerIsReleased() {
+        var profiler: MemoryProfiler? = makeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        let blockerEntered = expectation(description: "Profiler queue blocked")
+        let releaseQueue = DispatchSemaphore(value: 0)
+        queue.async {
+            blockerEntered.fulfill()
+            releaseQueue.wait()
+        }
+        wait(for: [blockerEntered], timeout: 2)
+        let completed = expectation(description: "Released heap producer completes")
+        completed.assertForOverFulfill = true
+        profiler?.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        profiler = nil
+        releaseQueue.signal()
+        wait(for: [completed], timeout: 2)
+        drain()
+    }
+
     private var diagnostics: dd_memory_profiler_test_capture_diagnostics_t {
         dd_memory_profiler_capture_diagnostics_for_testing()
     }
 
     private func makeProfiler(
         memorySampleRate: SampleRate = 100,
+        profilingInterval: TimeInterval = 3_600,
         dateProvider: DateProvider = SystemDateProvider(),
         notificationCenter: NotificationCenter = NotificationCenter()
     ) -> MemoryProfiler {
@@ -1354,6 +1510,7 @@ final class MemoryProfilerTests: XCTestCase {
         return MemoryProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
             writer: writer,
+            scheduler: ProfilingScheduler(writer: writer, profilingInterval: profilingInterval),
             queue: queue,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter

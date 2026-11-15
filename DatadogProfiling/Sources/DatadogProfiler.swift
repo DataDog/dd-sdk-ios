@@ -13,10 +13,10 @@ import Foundation
 // transitive module dependency, but it is not distributed as an XCFramework.
 @_implementationOnly import DatadogMachProfiler
 
-internal final class DatadogProfiler: @unchecked Sendable {
+internal final class DatadogProfiler: ProfileSnapshotProvider, @unchecked Sendable {
     enum Constants {
         /// Default profile duration during continuous profiling.
-        static let maxProfileDuration: TimeInterval = 60 // 1 minute profiles
+        static let maxProfileDuration = ProfilingScheduler.Constants.profilingInterval
         /// Minimum profile duration during continuous profiling.
         static let minProfileDuration: TimeInterval = 5 // 5 seconds profiles
         /// Maximum time to keep profiling alive while waiting for RUM events.
@@ -36,7 +36,10 @@ internal final class DatadogProfiler: @unchecked Sendable {
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
     private let writer: ProfileWriter
-    private var timer: DispatchSourceTimer?
+    private let scheduler: ProfilingScheduler
+    private var isCaptureScheduled = false
+    private var captureScheduleStart = DispatchTime.now()
+    private var captureDeadline: DispatchWorkItem?
 
     let featureScope: FeatureScope
     let telemetryController: ProfilingTelemetryController
@@ -86,6 +89,7 @@ internal final class DatadogProfiler: @unchecked Sendable {
         profilingSamplerProvider: ProfilingSamplerProvider,
         quotaChecker: ProfilingQuotaChecking,
         writer: ProfileWriter,
+        scheduler: ProfilingScheduler,
         queue: DispatchQueue = DatadogProfiler.defaultQueue,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
@@ -100,6 +104,7 @@ internal final class DatadogProfiler: @unchecked Sendable {
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
         self.writer = writer
+        self.scheduler = scheduler
         self.profilingInterval = profilingInterval
         self.minProfileDuration = minProfileDuration
         self.dateProvider = dateProvider
@@ -113,7 +118,7 @@ internal final class DatadogProfiler: @unchecked Sendable {
         }
 
         if profilingSamplerProvider.isContinuousProfilingConfigured {
-            startTimer()
+            startScheduling()
         }
 
         dd_profiler_set_allocation_failure_callback(Unmanaged.passUnretained(self).toOpaque()) { [weak self] in
@@ -125,7 +130,7 @@ internal final class DatadogProfiler: @unchecked Sendable {
 
     deinit {
         dd_profiler_set_allocation_failure_callback(Unmanaged.passUnretained(self).toOpaque(), nil)
-        stopTimer()
+        stopScheduling()
     }
 }
 
@@ -161,33 +166,97 @@ extension DatadogProfiler: FeatureMessageReceiver {
     }
 }
 
-// MARK: - Timer
+// MARK: - Scheduling
+
+extension DatadogProfiler {
+    /// Captures the CPU window for composition with the other periodic profiles.
+    func captureSnapshot(scheduledFor time: DispatchTime, completion: @escaping @Sendable (ProfileSnapshot?) -> Void) {
+        queue.async { [weak self] in
+            guard let self,
+                  lastProfilingContext?.status != .error(reason: .memoryAllocationFailed),
+                  isCaptureScheduled,
+                  !isCustomProfiling,
+                  time >= captureScheduleStart else {
+                completion(nil)
+                return
+            }
+            captureDeadline?.cancel()
+            captureDeadline = nil
+            isContinuousProfilingGraceAvailable = false
+            var snapshot: ProfileSnapshot?
+            updateProfilerState(canProfile: shouldKeepProfilerRunning(), shouldSendProfile: true) {
+                snapshot = $0
+            }
+            completion(snapshot)
+        }
+    }
+
+    /// Closes an independently scheduled CPU window.
+    func captureWindow(scheduledFor deadline: DispatchTime) {
+        enqueue { [weak self] in
+            guard let self, isCaptureScheduled, deadline >= captureScheduleStart else {
+                return
+            }
+            captureDeadline?.cancel()
+            captureDeadline = nil
+            if isCustomProfiling {
+                // Ongoing operations may arm the next CPU-specific deadline.
+                isCaptureScheduled = false
+            }
+            updateProfilerAndSendProfile()
+        }
+    }
+}
 
 private extension DatadogProfiler {
-    func startTimer() {
-        guard self.timer == nil else {
-            // reset timer
-            fireTimer(after: profilingInterval)
+    func scheduleDeadline(after interval: TimeInterval) {
+        captureDeadline?.cancel()
+        captureDeadline = nil
+        guard interval.isFinite else {
             return
         }
-
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now() + profilingInterval, repeating: profilingInterval)
-        timer.setEventHandler { [weak self] in
-            self?.updateProfilerAndSendProfile()
+        let deadline = DispatchTime.now() + max(0, interval)
+        let work = DispatchWorkItem { [weak self] in
+            self?.captureWindow(scheduledFor: deadline)
         }
-        timer.resume()
-        self.timer = timer
+        captureDeadline = work
+        queue.asyncAfter(deadline: deadline, execute: work)
     }
 
-    func stopTimer() {
-        timer?.cancel()
-        timer = nil
+    func startScheduling() {
+        guard !isCaptureScheduled else {
+            return
+        }
+        isCaptureScheduled = true
+        captureScheduleStart = .now()
+        if isCustomProfiling {
+            scheduleDeadline(after: profilingInterval)
+        } else {
+            scheduler.startPeriodic(for: self)
+        }
     }
 
-    func fireTimer(after interval: TimeInterval) {
+    func scheduleCustomProfileDeadline() {
+        captureScheduleStart = .now()
+        let elapsed = dateProvider.now.timeIntervalSince(profileStartDate)
+        scheduleDeadline(after: max(0, profilingInterval - elapsed))
+    }
+
+    func stopScheduling() {
+        isCaptureScheduled = false
+        captureDeadline?.cancel()
+        captureDeadline = nil
+        scheduler.stopPeriodic(for: self)
+    }
+
+    func scheduleCapture(after interval: TimeInterval) {
+        guard isCaptureScheduled else {
+            return
+        }
+        captureScheduleStart = .now()
         let delay = dateProvider.now.addingTimeInterval(interval).timeIntervalSinceNow
-        timer?.schedule(deadline: .now() + max(0, delay), repeating: profilingInterval)
+        scheduler.stopPeriodic(for: self)
+        scheduleDeadline(after: max(0, delay))
     }
 }
 
@@ -235,9 +304,22 @@ private extension DatadogProfiler {
 
             switch profilingSamplerProvider.continuousProfilingSampled {
             case true?:
-                operation = .continuousProfiling
+                if operation != .continuousProfiling {
+                    operation = .continuousProfiling
+                    if isCaptureScheduled {
+                        // Keep the current window's maximum duration while joining the shared phase.
+                        scheduler.startPeriodic(for: self)
+                    }
+                }
             case false?:
-                operation = .customProfiling
+                if operation != .customProfiling {
+                    operation = .customProfiling
+                    if isCaptureScheduled {
+                        // Sampling changes do not extend the current native window or the TTID wait.
+                        scheduler.stopPeriodic(for: self)
+                        scheduleCustomProfileDeadline()
+                    }
+                }
 
                 if currentRUMVitals.isEmpty == false, shouldHarvestAppLaunchProfileOnTTID {
                     stopAndWriteAppLaunchProfile()
@@ -312,7 +394,7 @@ private extension DatadogProfiler {
                        hasProcessedAppLaunchVital || !shouldWaitForAppLaunchVital {
                         let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
                         let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
-                        fireTimer(after: fireInterval)
+                        scheduleCapture(after: fireInterval)
                     }
                 }
             }
@@ -347,9 +429,13 @@ private extension DatadogProfiler {
     /// Updates the native profiler lifecycle.
     /// `canProfile` must already account for tracking consent, quota, and runtime conditions.
     /// Profiles stopped without being sent are discarded.
-    func updateProfilerState(canProfile: Bool, shouldSendProfile: Bool = false) {
+    func updateProfilerState(
+        canProfile: Bool,
+        shouldSendProfile: Bool = false,
+        consumeSnapshot: ((ProfileSnapshot) -> Void)? = nil
+    ) {
         if !canProfile {
-            stopTimer()
+            stopScheduling()
         }
 
         var currentStatus = ProfilingContext.Status.current
@@ -362,7 +448,11 @@ private extension DatadogProfiler {
         let shouldSendCurrentProfile = shouldSendProfile || (hasTimedOut && canProfile && !isCustomProfiling)
         if shouldSendCurrentProfile {
             if let snapshot = captureProfileSnapshot() {
-                writer.write([snapshot], operation: operation)
+                if let consumeSnapshot {
+                    consumeSnapshot(snapshot)
+                } else {
+                    writer.write([snapshot], operation: operation)
+                }
             }
         } else if !canProfile && !shouldWaitForAppLaunchVital {
             discardCurrentProfile()
@@ -381,11 +471,11 @@ private extension DatadogProfiler {
                 cleanUpState(preservingOngoingOperations: false)
             } else if canProfile, dd_profiler_start() == 1 {
                 profileStartDate = dateProvider.now
-                startTimer()
+                startScheduling()
             }
         case .running:
-            if canProfile, timer == nil {
-                startTimer()
+            if canProfile, !isCaptureScheduled {
+                startScheduling()
             }
         default: break
         }
@@ -394,6 +484,7 @@ private extension DatadogProfiler {
     }
 
     func captureProfileSnapshot() -> ProfileSnapshot? {
+        captureScheduleStart = .now()
         profileStartDate = dateProvider.now
         guard let profile = dd_profiler_flush_and_get_profile() else {
             if shouldReportProfileAbsence {
@@ -480,14 +571,14 @@ private extension DatadogProfiler {
                 } else if currentRUMVitals.hasCompletedAllOperations(), isCustomProfiling {
                     let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
                     let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
-                    fireTimer(after: fireInterval)
+                    scheduleCapture(after: fireInterval)
                 }
             }
         }
     }
 
     func stopAndWriteAppLaunchProfile() {
-        stopTimer()
+        stopScheduling()
         dd_profiler_stop()
         updateProfilingContext()
 
@@ -543,8 +634,8 @@ private extension DatadogProfiler {
                 // Restart immediately when profiling is otherwise allowed, matching quota fail-open.
                 let canProfile = shouldKeepProfilerRunning()
                 updateProfilerState(canProfile: canProfile)
-                if canProfile && timer == nil {
-                    startTimer()
+                if canProfile && !isCaptureScheduled {
+                    startScheduling()
                 }
             }
         }
@@ -564,7 +655,7 @@ private extension DatadogProfiler {
     }
 
     func stopAfterAllocationFailure() {
-        stopTimer()
+        stopScheduling()
         dd_profiler_stop()
         cleanUpState(preservingOngoingOperations: false)
         attributes = [:]
