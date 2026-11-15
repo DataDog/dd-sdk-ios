@@ -13,7 +13,7 @@ import Foundation
 // transitive module dependency, but it is not distributed as an XCFramework.
 @_implementationOnly import DatadogMachProfiler
 
-internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
+internal final class DatadogProfiler: @unchecked Sendable {
     enum Constants {
         /// Default profile duration during continuous profiling.
         static let maxProfileDuration: TimeInterval = 60 // 1 minute profiles
@@ -35,11 +35,11 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
+    private let writer: ProfileWriter
     private var timer: DispatchSourceTimer?
 
     let featureScope: FeatureScope
     let telemetryController: ProfilingTelemetryController
-    let encoder: JSONEncoder
     let dateProvider: DateProvider
 
     private var lastProfilingContext: ProfilingContext?
@@ -69,6 +69,7 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     private var previousAppState: AppState?
     /// Current RUM session.
     private var currentRUMSessionID: String?
+    private var currentRUMContext: RUMCoreContext?
     // Current profiling mode
     private(set) var operation: ProfilingOperation
     /// Allows continuous profiling to temporarily run while waiting for the first
@@ -84,12 +85,12 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         core: DatadogCoreProtocol,
         profilingSamplerProvider: ProfilingSamplerProvider,
         quotaChecker: ProfilingQuotaChecking,
+        writer: ProfileWriter,
         queue: DispatchQueue = DatadogProfiler.defaultQueue,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
         profilingInterval: TimeInterval = Constants.maxProfileDuration,
         minProfileDuration: TimeInterval = Constants.minProfileDuration,
-        encoder: JSONEncoder = JSONEncoder(),
         dateProvider: DateProvider = SystemDateProvider()
     ) {
         self.featureScope = core.scope(for: ProfilerFeature.self)
@@ -98,9 +99,9 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         self.quotaChecker = quotaChecker
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
+        self.writer = writer
         self.profilingInterval = profilingInterval
         self.minProfileDuration = minProfileDuration
-        self.encoder = encoder
         self.dateProvider = dateProvider
         self.profileStartDate = dateProvider.now
         self.operation = profilingSamplerProvider.isContinuousProfilingConfigured ? .continuousProfiling : .appLaunch
@@ -203,6 +204,7 @@ private extension DatadogProfiler {
                 return
             }
 
+            currentRUMContext = context.additionalContext(ofType: RUMCoreContext.self)
             var didChangeRUMSession = false
             if let sessionID = context.additionalContext(ofType: RUMCoreContext.self)?.sessionID,
                sessionID != currentRUMSessionID {
@@ -359,7 +361,9 @@ private extension DatadogProfiler {
         let hasTimedOut = currentStatus == .stopped(reason: .timeout)
         let shouldSendCurrentProfile = shouldSendProfile || (hasTimedOut && canProfile && !isCustomProfiling)
         if shouldSendCurrentProfile {
-            sendProfile()
+            if let snapshot = captureProfileSnapshot() {
+                writer.write([snapshot], operation: operation)
+            }
         } else if !canProfile && !shouldWaitForAppLaunchVital {
             discardCurrentProfile()
             cleanUpState()
@@ -389,32 +393,29 @@ private extension DatadogProfiler {
         updateProfilingContext(quotaReason: quotaChecker.isRejectedByQuota ? quotaChecker.quotaResult?.reason : nil)
     }
 
-    func sendProfile() {
+    func captureProfileSnapshot() -> ProfileSnapshot? {
         profileStartDate = dateProvider.now
         guard let profile = dd_profiler_flush_and_get_profile() else {
             if shouldReportProfileAbsence {
                 telemetryController.sendNoProfile(for: operation)
             }
             cleanUpState()
-            return
+            return nil
+        }
+        defer {
+            cleanUpState()
+            dd_pprof_destroy(profile)
         }
 
         prepareProfileForWriting(profile)
 
         if canWriteProfile {
-            write(
-                profile: profile,
-                operation: operation,
-                rumVitals: Array(self.currentRUMVitals.values),
-                hangs: hangs,
-                longTasks: longTasks
-            )
+            return makeSnapshot(from: profile, operation: operation)
         } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
             telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
         }
 
-        cleanUpState()
-        dd_pprof_destroy(profile)
+        return nil
     }
 
     func cleanUpState(preservingOngoingOperations: Bool = true) {
@@ -515,13 +516,9 @@ private extension DatadogProfiler {
 
         prepareProfileForWriting(profile)
 
-        write(
-            profile: profile,
-            operation: .appLaunch,
-            rumVitals: Array(currentRUMVitals.values),
-            hangs: hangs,
-            longTasks: longTasks
-        )
+        if let snapshot = makeSnapshot(from: profile, operation: .appLaunch) {
+            writer.write([snapshot], operation: .appLaunch)
+        }
     }
 }
 
@@ -573,6 +570,35 @@ private extension DatadogProfiler {
         attributes = [:]
         telemetryController.sendAllocationFailure(for: operation)
         updateProfilingContext()
+    }
+
+    func makeSnapshot(from profile: OpaquePointer, operation: ProfilingOperation) -> ProfileSnapshot? {
+        let start = dd_pprof_get_start_timestamp_s(profile)
+        let end = dd_pprof_get_end_timestamp_s(profile)
+        var bytes: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &bytes)
+        guard let bytes else {
+            telemetryController.sendNoData(durationMs: (end - start).dd.toInt64Milliseconds, for: operation)
+            return nil
+        }
+        defer { dd_pprof_free_serialized_data(bytes) }
+        let count = Int(clamping: size)
+        guard count <= Int(ProfilerFeature.Constants.maxObjectSize) else {
+            telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
+            return nil
+        }
+
+        return ProfileSnapshot(
+            start: Date(timeIntervalSince1970: start),
+            end: Date(timeIntervalSince1970: end),
+            attachment: PprofAttachment(
+                filename: ProfileAttachments.Constants.pprofFilename,
+                data: Data(bytes: bytes, count: count)
+            ),
+            rumEvents: currentRUMVitals.values.map(RUMEvent.vital) + hangs.map(RUMEvent.hang) + longTasks.map(RUMEvent.longTask),
+            attributes: attributes,
+            rumContext: currentRUMContext
+        )
     }
 
     /// Applies server-time correction and retains events that could have been sampled by the profile.

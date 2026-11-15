@@ -49,8 +49,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
         let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        // Internal inputs until RUM-18353 exposes configuration and RUM-18355
-        // connects captured memory windows to the existing profile writer.
+        // Internal input until RUM-18353 exposes memory profiling configuration.
         let memorySampleRate = memorySampleRate.normalizedSampleRate
         self.profilingSamplerProvider = ProfilingSamplerProvider(
             continuousSampleRate: continuousSampleRate,
@@ -59,8 +58,10 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         )
         let quotaChecker = ProfilingQuotaChecker(profilingSamplerProvider: profilingSamplerProvider)
 
+        let writer = ProfileWriter(featureScope: core.scope(for: Self.self), telemetryController: telemetryController)
         let memoryProfiler = MemoryProfiler(
-            profilingSamplerProvider: profilingSamplerProvider
+            profilingSamplerProvider: profilingSamplerProvider,
+            writer: writer
         )
         self.memoryProfiler = memoryProfiler
 
@@ -72,6 +73,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
+            writer: writer,
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration
         )

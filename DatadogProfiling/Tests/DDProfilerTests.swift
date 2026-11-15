@@ -8,6 +8,7 @@
 import XCTest
 import DatadogInternal
 import TestUtilities
+@testable import DatadogProfiling
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler
 import DatadogMachProfiler.Pprof
@@ -180,6 +181,49 @@ final class DDProfilerTests: XCTestCase {
         let secondRead = dd_profiler_diagnostics()
         XCTAssertEqual(secondRead.dropped_batch_count, 0, "Reading diagnostics should reset batch drops")
         XCTAssertEqual(secondRead.dropped_sample_count, 0, "Reading diagnostics should reset sample drops")
+    }
+
+    func testHeapOnlyTelemetryPreservesDiagnosticsForNextCPUWrite() throws {
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 1)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        // Two ordered flushes allow a sampling pass between them, forcing a batch over the hard limit.
+        for _ in 0..<2 {
+            if let profile = dd_profiler_flush_and_get_profile() {
+                dd_pprof_destroy(profile)
+            }
+        }
+        dd_profiler_stop()
+
+        let core = PassthroughCoreMock()
+        let telemetry = TelemetryMock()
+        let writer = ProfileWriter(featureScope: core, telemetryController: .init(telemetry: telemetry))
+        for (filename, size) in [
+            ("heap.pprof", 1),
+            ("heap.pprof", Int(ProfilerFeature.Constants.maxObjectSize) + 1),
+            ("profile.pprof", 1)
+        ] {
+            let snapshot = ProfileSnapshot(
+                start: Date(timeIntervalSince1970: 0),
+                end: Date(timeIntervalSince1970: 1),
+                attachment: .init(filename: filename, data: Data(repeating: 1, count: size)),
+                rumEvents: [.vital(.mockAny())],
+                attributes: [:]
+            )
+            writer.write([snapshot], operation: .continuousProfiling)
+        }
+
+        let metrics = telemetry.messages.compactMap(\.asMetric)
+        XCTAssertEqual(metrics.count, 3)
+        let diagnosticsKey = AggregationDiagnosticsMetric.Constants.diagnosticsKey
+        XCTAssertNil(metrics[0].attributes[diagnosticsKey])
+        XCTAssertNil(metrics[1].attributes[diagnosticsKey])
+        let diagnostics = try XCTUnwrap(metrics[2].attributes[diagnosticsKey] as? AggregationDiagnosticsMetric.Attributes).aggregation
+        XCTAssertGreaterThan(diagnostics.droppedBatchCount, 0)
+        XCTAssertGreaterThan(diagnostics.droppedSampleCount, 0)
+        XCTAssertGreaterThan(diagnostics.maxPendingBytes, 0)
+        let consumed = dd_profiler_diagnostics()
+        XCTAssertEqual(consumed.dropped_batch_count, 0)
+        XCTAssertEqual(consumed.dropped_sample_count, 0)
     }
 
     func testDDProfiler_doesNotIncludeProfilerInternalThreadsInProfile() throws {
