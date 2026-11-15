@@ -63,7 +63,8 @@ internal final class ProfilingTelemetryController {
     }
 
     /// Sends a metric for a written profile, decorated with shared profiling telemetry state.
-    func sendProfile(durationMs: Int64, fileSize: Int64, for operation: ProfilingOperation) {
+    /// Heap-only writes must not consume the pending CPU aggregation diagnostics.
+    func sendProfile(durationMs: Int64, fileSize: Int64, for operation: ProfilingOperation, includeCPUDiagnostics: Bool = true) {
         send(
             .init(
                 startReason: operation.startReason,
@@ -72,7 +73,8 @@ internal final class ProfilingTelemetryController {
                 fileSize: fileSize,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
-            )
+            ),
+            includeCPUDiagnostics: includeCPUDiagnostics
         )
     }
 
@@ -107,9 +109,11 @@ internal final class ProfilingTelemetryController {
     }
 
     /// Sends a metric for a profile that was intentionally dropped.
+    /// Heap-only drops must not consume the pending CPU aggregation diagnostics.
     func sendProfileDropped(
         for operation: ProfilingOperation,
-        reason: ProfilingSessionMetric.ProfileDropReason = .noProfiledEvents
+        reason: ProfilingSessionMetric.ProfileDropReason = .noProfiledEvents,
+        includeCPUDiagnostics: Bool = true
     ) {
         send(
             .profileDropped(
@@ -118,16 +122,19 @@ internal final class ProfilingTelemetryController {
                 reason: reason,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
-            )
+            ),
+            includeCPUDiagnostics: includeCPUDiagnostics
         )
     }
 
-    func send(_ metric: ProfilingSessionMetric) {
+    func send(_ metric: ProfilingSessionMetric, includeCPUDiagnostics: Bool = true) {
         guard var metricAttributes = metric.asMetricAttributes() else {
             telemetry.debug("Failed to compute attributes for '\(metric.metricName)'")
             return
         }
-        metricAttributes.merge(AggregationDiagnosticsMetric.consumeDiagnostics().asMetricAttributes() ?? [:]) { $1 }
+        if includeCPUDiagnostics {
+            metricAttributes.merge(AggregationDiagnosticsMetric.consumeDiagnostics().asMetricAttributes() ?? [:]) { $1 }
+        }
         metricAttributes.merge(configMetric.asMetricAttributes() ?? [:]) { $1 }
 
         telemetry.metric(name: metric.metricName, attributes: metricAttributes, sampleRate: sampleRate)

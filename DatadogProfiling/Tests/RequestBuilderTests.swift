@@ -20,7 +20,7 @@ class RequestBuilderTests: XCTestCase {
         version: .mockRandom(),
         start: .mockRandomInThePast(),
         end: Date(),
-        attachments: [],
+        attachments: ["profile.pprof", "rum-mobile-events.json"],
         tags: .mockAny(),
         additionalAttributes: mockRandomAttributes()
     )
@@ -32,7 +32,10 @@ class RequestBuilderTests: XCTestCase {
         let encoder = JSONEncoder.dd.default()
 
         let rumEventsData = try encoder.encode(rumEvents)
-        let attachments: ProfileAttachments = .init(pprof: pprof, rumEvents: rumEventsData)
+        let attachments = ProfileAttachments(
+            pprofs: [.init(filename: ProfileAttachments.Constants.pprofFilename, data: pprof)],
+            rumEvents: rumEventsData
+        )
         return try Event(
             data: encoder.encode(profileEvent),
             metadata: encoder.encode(attachments)
@@ -209,6 +212,106 @@ class RequestBuilderTests: XCTestCase {
             XCTAssertEqual(error as? ProfilingRequestBuilderError, .unexpectedEventCount(count: 2))
             XCTAssertEqual(TelemetrySanitizedError(sanitizing: error).message, "Profiling batch holds 2 events, expected exactly 1")
         }
+    }
+
+    func testItIncludesBothNamedPprofsAndOneRUMAttachment() throws {
+        let pprofs = [
+            PprofAttachment(filename: "profile.pprof", data: Data([1, 2])),
+            PprofAttachment(filename: "heap.pprof", data: Data([3, 4]))
+        ]
+        let encoder = JSONEncoder.dd.default()
+        let filenames = pprofs.map(\.filename) + ["rum-mobile-events.json"]
+        let profileEvent = ProfileEvent(
+            family: "ios",
+            runtime: "ios",
+            version: "4",
+            start: Date(),
+            end: Date(),
+            attachments: filenames,
+            tags: "",
+            additionalAttributes: nil
+        )
+        let attachments = ProfileAttachments(pprofs: pprofs, rumEvents: try encoder.encode(rumEvents))
+        let event = try Event(data: encoder.encode(profileEvent), metadata: encoder.encode(attachments))
+        let multipart = MultipartBuilderSpy()
+        let builder = RequestBuilder(multipartBuilder: multipart)
+
+        _ = try builder.request(for: [event], with: .mockAny(), execution: .mockAny())
+
+        XCTAssertEqual(multipart.formFiles.map(\.filename), ["event.json"] + filenames)
+        XCTAssertEqual(multipart.formFiles[1].data, pprofs[0].data)
+        XCTAssertEqual(multipart.formFiles[2].data, pprofs[1].data)
+    }
+
+    func testItRejectsHeapProfileWithoutRUMAttachments() throws {
+        struct UncorrelatedAttachments: Encodable {
+            let pprofs: [PprofAttachment]
+        }
+        let encoder = JSONEncoder.dd.default()
+        let attachments = UncorrelatedAttachments(pprofs: [.init(filename: "heap.pprof", data: Data([1, 2]))])
+        let event = try Event(data: encoder.encode(profileEvent), metadata: encoder.encode(attachments))
+        let multipart = MultipartBuilderSpy()
+
+        XCTAssertThrowsError(try RequestBuilder(multipartBuilder: multipart).request(
+            for: [event], with: .mockAny(), execution: .mockAny()
+        ))
+        XCTAssertTrue(multipart.formFiles.isEmpty)
+    }
+
+    func testItRejectsPprofsWithEmptyRUMEvents() throws {
+        let encoder = JSONEncoder.dd.default()
+        let attachments = ProfileAttachments(
+            pprofs: [.init(filename: "heap.pprof", data: Data([1, 2]))],
+            rumEvents: try encoder.encode([RUMEvent]())
+        )
+        let event = try Event(data: encoder.encode(profileEvent), metadata: encoder.encode(attachments))
+        let multipart = MultipartBuilderSpy()
+
+        XCTAssertThrowsError(try RequestBuilder(multipartBuilder: multipart).request(
+            for: [event], with: .mockAny(), execution: .mockAny()
+        ))
+        XCTAssertTrue(multipart.formFiles.isEmpty)
+    }
+
+    func testItDecodesPersistedLegacyAttachments() throws {
+        struct LegacyAttachments: Encodable {
+            let pprof: Data
+            let rumEvents: Data?
+        }
+        let encoder = JSONEncoder.dd.default()
+        let legacy = LegacyAttachments(pprof: pprof, rumEvents: try encoder.encode(rumEvents))
+        let metadata = try encoder.encode(legacy)
+        let decoded = try JSONDecoder().decode(ProfileAttachments.self, from: metadata)
+        XCTAssertEqual(decoded.pprofs.map(\.filename), ["profile.pprof"])
+        XCTAssertEqual(decoded.pprofs.first?.data, legacy.pprof)
+        XCTAssertEqual(decoded.rumEvents, legacy.rumEvents)
+        let event = try Event(data: encoder.encode(profileEvent), metadata: metadata)
+        let multipart = MultipartBuilderSpy()
+        let builder = RequestBuilder(multipartBuilder: multipart)
+
+        _ = try builder.request(for: [event], with: .mockAny(), execution: .mockAny())
+
+        XCTAssertEqual(multipart.formFiles.map(\.filename), ["event.json", "profile.pprof", "rum-mobile-events.json"])
+    }
+
+    func testNamedAttachmentsRoundTripPreservesOrderAndData() throws {
+        let attachments = ProfileAttachments(
+            pprofs: [
+                .init(filename: "heap.pprof", data: Data([1])),
+                .init(filename: "profile.pprof", data: Data([2]))
+            ],
+            rumEvents: try JSONEncoder().encode(rumEvents)
+        )
+
+        let encoded = try JSONEncoder().encode(attachments)
+        let decoded = try JSONDecoder().decode(ProfileAttachments.self, from: encoded)
+        let storedMetadata = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        XCTAssertEqual(decoded.pprofs.map(\.filename), attachments.pprofs.map(\.filename))
+        XCTAssertEqual(decoded.pprofs.map(\.data), attachments.pprofs.map(\.data))
+        XCTAssertEqual(decoded.rumEvents, attachments.rumEvents)
+        XCTAssertNotNil(storedMetadata["pprofs"] as? [[String: Any]])
+        XCTAssertNil(storedMetadata["pprof"])
     }
 
     func testWhenBatchDataIsMissingMetadata() {
