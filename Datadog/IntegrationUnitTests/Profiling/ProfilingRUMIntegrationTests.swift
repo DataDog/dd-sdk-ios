@@ -139,6 +139,85 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
     }
 
+    func testMemoryProfilingWithoutCPU_itUploadsHeapWithRUMContext() throws {
+        dd_profiler_stop()
+        dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+        defer { dd_memory_profiler_reset_for_testing() }
+        let suiteName = "ProfilingRUMIntegrationTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defaults.set(100, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
+        dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
+        defaults.removePersistentDomain(forName: suiteName)
+
+        var frameInfoProvider: FrameInfoProviderMock?
+        enableRUM(
+            sessionSampleRate: .maxSampleRate,
+            sessionUUID: Fixtures.deterministicSessionUUID,
+            frameInfoProviderFactory: {
+                frameInfoProvider = FrameInfoProviderMock(target: $0, selector: $1)
+                return frameInfoProvider!
+            }
+        )
+        let feature = ProfilerFeature(
+            core: core,
+            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
+            requestBuilder: DatadogProfiling.RequestBuilder(),
+            telemetryController: .init(),
+            memorySampleRate: 100
+        )
+        defer { feature.memoryProfiler.flushAndStop() }
+        try core.register(feature: feature)
+        startRUMView()
+        waitAndAssertRUMViewEvents()
+        MemoryProfiler.defaultQueue.sync {}
+
+        var sample = dd_memory_live_sample_t()
+        sample.address = UnsafeRawPointer(bitPattern: 0x10000)
+        sample.size = 64
+        sample.weight = 1
+        dd_memory_profiler_record_for_testing(&sample)
+        frameInfoProvider?.triggerCallback(interval: 1)
+
+        let attachments = try XCTUnwrap(waitForProfileAttachments().first)
+        let event = try XCTUnwrap(core.waitAndReturnEvents(
+            ofFeature: ProfilerFeature.name,
+            ofType: ProfileEvent.self,
+            timeout: timeout(after: 1)
+        ).first)
+        let views = core.waitAndReturnEvents(
+            ofFeature: RUMFeature.name,
+            ofType: RUMViewEvent.self,
+            timeout: timeout(after: 1)
+        )
+        let view = try XCTUnwrap(views.last { $0.view.name == "Test View" })
+        let appLaunch = try XCTUnwrap(core.waitAndReturnEvents(
+            ofFeature: RUMFeature.name,
+            ofType: RUMVitalAppLaunchEvent.self,
+            timeout: timeout(after: 1)
+        ).first)
+
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertEqual(attachments.pprofs.map(\.filename), [ProfileAttachments.Constants.heapPprofFilename])
+        XCTAssertFalse(try XCTUnwrap(attachments.pprofs.first).data.isEmpty)
+        XCTAssertEqual(event.attachments, [ProfileAttachments.Constants.heapPprofFilename, ProfileAttachments.Constants.rumEventsFilename])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.applicationID] as? String, view.application.id)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, view.session.id)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], [view.view.id])
+        XCTAssertEqual(try rumVitals(from: attachments).compactMap { $0["id"] as? String }, [appLaunch.vital.id])
+
+        let encoder = JSONEncoder.dd.default()
+        let storedEvent = Event(data: try encoder.encode(event), metadata: try encoder.encode(attachments))
+        let multipart = MultipartBuilderSpy()
+        _ = try DatadogProfiling.RequestBuilder(multipartBuilder: multipart).request(for: [storedEvent], with: core.context, execution: .mockAny())
+        XCTAssertEqual(multipart.formFiles.map(\.filename), ["event.json", "heap.pprof", "rum-mobile-events.json"])
+        let uploadedEvent = try XCTUnwrap(JSONSerialization.jsonObject(with: multipart.formFiles[0].data) as? [String: Any])
+        XCTAssertEqual(uploadedEvent[RUMCoreContext.IDs.applicationID] as? String, view.application.id)
+        XCTAssertEqual(uploadedEvent[RUMCoreContext.IDs.sessionID] as? String, view.session.id)
+        XCTAssertEqual(uploadedEvent[RUMCoreContext.IDs.viewID] as? [String], [view.view.id])
+        XCTAssertEqual(multipart.formFiles[1].data, attachments.pprofs[0].data)
+        XCTAssertEqual(multipart.formFiles[2].data, attachments.rumEvents)
+    }
+
     func testContinuousProfilingWithSampledOutRUMSession_itDoesNotSendAProfileEvent() throws {
         // Given
         let sessionUUID = Fixtures.deterministicSessionUUID
@@ -324,7 +403,7 @@ private extension ProfilingRUMIntegrationTests {
     }
 
     func rumVitals(from attachments: ProfileAttachments) throws -> [[String: Any]] {
-        let rumEventsData = try XCTUnwrap(attachments.rumEvents)
+        let rumEventsData = attachments.rumEvents
         let rumEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
         return rumEvents.filter { $0["type"] as? String == "vital" }
     }
@@ -371,8 +450,8 @@ private extension ProfilingRUMIntegrationTests {
         XCTAssertEqual(attachments.count, expectedCount)
 
         if let attachment = attachments.first {
-            XCTAssertNotNil(attachment.pprof)
-            XCTAssertNotNil(attachment.rumEvents)
+            XCTAssertTrue(attachment.pprofs.contains { $0.filename == ProfileAttachments.Constants.pprofFilename && !$0.data.isEmpty })
+            XCTAssertFalse(attachment.rumEvents.isEmpty)
         }
 
         let profilingEvents = try XCTUnwrap(core.waitAndReturnEvents(
