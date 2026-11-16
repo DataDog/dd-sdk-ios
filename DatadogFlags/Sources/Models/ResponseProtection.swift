@@ -23,12 +23,15 @@ extension Flags {
     /// )
     /// Flags.enable(with: configuration)
     /// ```
+    ///
+    /// More protection methods may be added in a minor version. A `switch` over this type needs `@unknown default`.
     public enum ResponseProtection: Sendable {
-        /// Requires normal TLS validation and a pinned server public key on every assignment connection.
+        /// Requires normal TLS validation and a pinned public key on every assignment connection.
         ///
         /// The SDK first runs the default system trust evaluation (certificate chain, hostname, and validity time).
-        /// It then requires the SHA-256 hash of the leaf certificate's DER `SubjectPublicKeyInfo` to match one pin
-        /// of `profile`. If a check fails, the SDK cancels the connection before it sends the request.
+        /// It then requires the SHA-256 hash of a DER `SubjectPublicKeyInfo` in the validated chain to match one pin
+        /// of `profile`. The ``TLSPinPolicy/pinTarget`` selects which certificates count. If a check fails, the SDK
+        /// cancels the connection before it sends the request.
         ///
         /// Assignments are fetched only from the origin of `profile`. When ``Flags/Configuration/customFlagsEndpoint``
         /// is set, it must use the same origin. Assignments cached without the same protection are not loaded.
@@ -45,25 +48,44 @@ extension Flags {
 
 extension Flags.ResponseProtection {
     /// The enforcement mode of ``Flags/ResponseProtection/tlsPinning(mode:profile:)``.
+    ///
+    /// More modes may be added in a minor version. A `switch` over this type needs `@unknown default`.
     public enum TLSPinningMode: Sendable {
         /// Rejects new assignments unless the TLS connection passes system trust evaluation and matches a pin.
         case required
     }
 
-    /// An exact HTTPS origin and the public key pins that the SDK trusts for it.
+    /// The certificates of the validated chain that a pin can match.
     ///
-    /// A pin is the base64-encoded SHA-256 hash of the DER-encoded `SubjectPublicKeyInfo` of a leaf certificate.
+    /// More targets may be added in a minor version. A `switch` over this type needs `@unknown default`.
+    public enum PinTarget: Sendable {
+        /// Pins match only the server (leaf) certificate.
+        ///
+        /// Use this target only when you control the server key. A renewal with a new key breaks the connection
+        /// unless the new key is already pinned.
+        case leaf
+
+        /// Pins match an issuer certificate: any certificate after the leaf in the validated chain, including the
+        /// trust anchor. The leaf certificate never matches.
+        ///
+        /// Use this target when the provider renews the leaf certificate and its key automatically.
+        case issuer
+    }
+
+    /// An exact HTTPS origin, a pin target, and the public key pins that the SDK trusts for the origin.
+    ///
+    /// A pin is the base64-encoded SHA-256 hash of the DER-encoded `SubjectPublicKeyInfo` of a certificate.
     /// You can compute a pin with this command:
     ///
     /// ```
-    /// openssl x509 -in leaf.pem -pubkey -noout \
+    /// openssl x509 -in certificate.pem -pubkey -noout \
     ///   | openssl pkey -pubin -outform DER \
     ///   | openssl dgst -sha256 -binary | base64
     /// ```
     ///
-    /// A policy needs at least two different pins: the active key and a backup key. The backup key lets the
-    /// server rotate its key without a new application release. The SDK validates the policy when the Flags
-    /// feature is enabled.
+    /// A policy needs at least two different pins: an active key and a backup key. The backup key lets the
+    /// server change keys or issuers without a new application release. The SDK validates the policy when the
+    /// Flags feature is enabled.
     public struct TLSPinPolicy: Sendable {
         /// The exact HTTPS origin, for example `https://flags.example.com`.
         ///
@@ -71,45 +93,47 @@ extension Flags.ResponseProtection {
         /// Only this host and port are trusted. Subdomains and redirects to other origins are rejected.
         public let origin: URL
 
-        /// The base64-encoded SHA-256 hashes of the trusted leaf `SubjectPublicKeyInfo` structures.
-        public let spkiSHA256Pins: Set<String>
+        /// The certificates of the validated chain that ``spkiSHA256Pins`` can match.
+        public let pinTarget: PinTarget
 
-        /// `true` for bundled profiles whose pins are not reviewed yet.
-        internal let isPlaceholder: Bool
+        /// The base64-encoded SHA-256 hashes of the trusted `SubjectPublicKeyInfo` structures.
+        public let spkiSHA256Pins: Set<String>
 
         /// Creates a custom pin policy.
         ///
         /// - Parameters:
         ///   - origin: The exact HTTPS origin that serves flag assignments.
-        ///   - spkiSHA256Pins: At least two base64-encoded SHA-256 hashes of leaf `SubjectPublicKeyInfo` structures.
-        public init(origin: URL, spkiSHA256Pins: Set<String>) {
-            self.init(origin: origin, spkiSHA256Pins: spkiSHA256Pins, isPlaceholder: false)
-        }
-
-        internal init(origin: URL, spkiSHA256Pins: Set<String>, isPlaceholder: Bool) {
+        ///   - pinTarget: The certificates of the validated chain that the pins can match.
+        ///   - spkiSHA256Pins: At least two base64-encoded SHA-256 hashes of `SubjectPublicKeyInfo` structures.
+        public init(origin: URL, pinTarget: PinTarget, spkiSHA256Pins: Set<String>) {
             self.origin = origin
+            self.pinTarget = pinTarget
             self.spkiSHA256Pins = spkiSHA256Pins
-            self.isPlaceholder = isPlaceholder
         }
 
         /// The Datadog staging profile, version 1.
         ///
-        /// - Warning: This profile is a placeholder. Its hostname is not provisioned and its pins are not reviewed
-        ///   public keys. All assignment requests fail with this profile until a reviewed policy replaces it.
+        /// It pins the issuers of the Fastly-managed staging certificate, which is renewed automatically with new
+        /// leaf keys.
         public static var datadogStagingV1: TLSPinPolicy {
             stagingV1
         }
 
+        // The pins are the real public keys of the Certainly CAs. The endpoint is pending provisioning and live
+        // validation (ddoghq/terraform-config PR 62220). Starfield Root G2, which cross-signs Certainly Intermediate R1,
+        // is not pinned: it issues for too many other services.
         private static let stagingV1 = TLSPinPolicy(
             // swiftlint:disable:next force_unwrapping
-            origin: URL(string: "https://ff-cdn-pinning-staging.datad0g.com")!,
+            origin: URL(string: "https://protected.ff-cdn.datad0g.com")!,
+            pinTarget: .issuer,
             spkiSHA256Pins: [
-                // UNVERIFIED PLACEHOLDER: SHA-256 of "dd-sdk-ios flags datadogStagingV1 placeholder active pin".
-                "pmw1sCrkXoU6R0fBNRTC4cmJ9IJxlgGp27ntnGOLdU8=",
-                // UNVERIFIED PLACEHOLDER: SHA-256 of "dd-sdk-ios flags datadogStagingV1 placeholder backup pin".
-                "sNsnJM/AghYI5SHTLunQQ2rcLRMmH3hwDxvmM189iZM=",
-            ],
-            isPlaceholder: true
+                // Certainly Intermediate R1 (RSA 2048), valid to 2032-06-21. It issues the current certificates.
+                "oW7smChMJRcnzTObF7K+HzInReAPTxB/L1h6eZTmw9Q=",
+                // Certainly Root R1 (RSA 4096), valid to 2046-04-01.
+                "P5Pz/PedIl0hPu9qSj9Yhc+E/j16ejwRVTUXaIwOIQA=",
+                // Certainly Root E1 (EC P-384), valid to 2046-04-01.
+                "HvZGJdqi5dQz10Sa4xogDRAl4AEqj+z6cJMvi1mbdd0=",
+            ]
         )
     }
 }
@@ -138,14 +162,6 @@ internal enum ResponseProtectionPolicy: Equatable {
     ) -> ResponseProtectionPolicy? {
         switch make(from: protection, customFlagsEndpoint: customFlagsEndpoint) {
         case .success(let policy):
-            if case .tlsPinning(let resolved)? = policy, resolved.isPlaceholder {
-                let message = """
-                `Flags.Configuration.responseProtection` uses a profile with unverified placeholder pins. \
-                Assignment requests will fail until a reviewed profile is available.
-                """
-                DD.logger.warn(message)
-                consolePrint(message, .warn)
-            }
             return policy
         case .failure(let error):
             let message = "`Flags.Configuration.responseProtection` is invalid: \(error.description) New flag assignments will be rejected."
@@ -217,14 +233,19 @@ internal struct ResolvedTLSPinPolicy: Equatable {
     /// The lowercased host name.
     let host: String
     let port: Int
+    let pinTarget: Flags.ResponseProtection.PinTarget
     /// Canonical base64 encodings of 32-byte SHA-256 hashes.
     let pins: Set<String>
     /// The URL of the flag assignments request.
     let assignmentsURL: URL
-    let isPlaceholder: Bool
 
     var cacheIdentifier: String {
-        let canonical = "tls-pinning;required;https://\(host):\(port);" + pins.sorted().joined(separator: ",")
+        let target: String
+        switch pinTarget {
+        case .leaf: target = "leaf"
+        case .issuer: target = "issuer"
+        }
+        let canonical = "tls-pinning;required;https://\(host):\(port);\(target);" + pins.sorted().joined(separator: ",")
         let digest = SHA256.hash(data: Data(canonical.utf8)).map { String(format: "%02x", $0) }.joined()
         return "tls-pinning-v1:\(digest)"
     }
@@ -272,9 +293,9 @@ internal struct ResolvedTLSPinPolicy: Equatable {
         var policy = ResolvedTLSPinPolicy(
             host: host,
             port: port,
+            pinTarget: profile.pinTarget,
             pins: pins,
-            assignmentsURL: profile.origin,
-            isPlaceholder: profile.isPlaceholder
+            assignmentsURL: profile.origin
         )
         if let customFlagsEndpoint {
             // A custom endpoint needs its own explicit policy; it never inherits trust from another origin.
@@ -294,6 +315,6 @@ internal struct ResolvedTLSPinPolicy: Equatable {
     }
 
     private func with(assignmentsURL: URL) -> ResolvedTLSPinPolicy {
-        ResolvedTLSPinPolicy(host: host, port: port, pins: pins, assignmentsURL: assignmentsURL, isPlaceholder: isPlaceholder)
+        ResolvedTLSPinPolicy(host: host, port: port, pinTarget: pinTarget, pins: pins, assignmentsURL: assignmentsURL)
     }
 }

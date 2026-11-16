@@ -18,7 +18,7 @@ final class ResponseProtectionTests: XCTestCase {
 
     func testValidPolicyResolvesToTheOriginAndCanonicalPins() throws {
         // Given
-        let profile = Flags.ResponseProtection.TLSPinPolicy(origin: URL(string: "https://FLAGS.example.com/")!, spkiSHA256Pins: [pinA, pinB])
+        let profile = Flags.ResponseProtection.TLSPinPolicy(origin: URL(string: "https://FLAGS.example.com/")!, pinTarget: .leaf, spkiSHA256Pins: [pinA, pinB])
 
         // When
         let policy = try ResolvedTLSPinPolicy.make(from: profile, customFlagsEndpoint: nil).get()
@@ -30,7 +30,7 @@ final class ResponseProtectionTests: XCTestCase {
         XCTAssertEqual(policy.assignmentsURL.absoluteString, "https://FLAGS.example.com/precompute-assignments")
         XCTAssertTrue(policy.permits(host: "flags.example.com", port: 443))
         XCTAssertFalse(policy.permits(host: "sub.flags.example.com", port: 443))
-        XCTAssertFalse(policy.isPlaceholder)
+        XCTAssertEqual(policy.pinTarget, .leaf)
     }
 
     func testInvalidPoliciesAreRejected() {
@@ -49,7 +49,7 @@ final class ResponseProtectionTests: XCTestCase {
         ]
 
         for (origin, pins, expectedError) in cases {
-            let profile = Flags.ResponseProtection.TLSPinPolicy(origin: URL(string: origin)!, spkiSHA256Pins: pins)
+            let profile = Flags.ResponseProtection.TLSPinPolicy(origin: URL(string: origin)!, pinTarget: .leaf, spkiSHA256Pins: pins)
 
             let result = ResolvedTLSPinPolicy.make(from: profile, customFlagsEndpoint: nil)
 
@@ -58,7 +58,7 @@ final class ResponseProtectionTests: XCTestCase {
     }
 
     func testCustomFlagsEndpointMustUseThePolicyOrigin() throws {
-        let profile = Flags.ResponseProtection.TLSPinPolicy(origin: origin, spkiSHA256Pins: [pinA, pinB])
+        let profile = Flags.ResponseProtection.TLSPinPolicy(origin: origin, pinTarget: .leaf, spkiSHA256Pins: [pinA, pinB])
 
         // Same origin: the custom endpoint is the assignments URL.
         let sameOrigin = URL(string: "https://flags.example.com:443/custom/precompute")!
@@ -74,10 +74,14 @@ final class ResponseProtectionTests: XCTestCase {
         }
     }
 
-    func testCacheIdentifierDependsOnTheOriginAndPinsOnly() throws {
-        func identifier(_ origin: String, _ pins: Set<String>) throws -> String {
+    func testCacheIdentifierDependsOnTheOriginTargetAndPinsOnly() throws {
+        func identifier(
+            _ origin: String,
+            _ pins: Set<String>,
+            _ pinTarget: Flags.ResponseProtection.PinTarget = .leaf
+        ) throws -> String {
             let result = ResolvedTLSPinPolicy.make(
-                from: .init(origin: URL(string: origin)!, spkiSHA256Pins: pins),
+                from: .init(origin: URL(string: origin)!, pinTarget: pinTarget, spkiSHA256Pins: pins),
                 customFlagsEndpoint: nil
             )
             return try result.get().cacheIdentifier
@@ -87,14 +91,38 @@ final class ResponseProtectionTests: XCTestCase {
         XCTAssertEqual(try identifier("https://FLAGS.example.com:443/", [pinB, pinA]), reference)
         XCTAssertNotEqual(try identifier("https://flags.example.com", [pinA, TLSPinningFixtures.pinUnused]), reference)
         XCTAssertNotEqual(try identifier("https://other.example.com", [pinA, pinB]), reference)
+        XCTAssertNotEqual(try identifier("https://flags.example.com", [pinA, pinB], .issuer), reference)
         XCTAssertTrue(reference.hasPrefix("tls-pinning-v1:"))
     }
 
-    func testStagingProfileIsAValidPlaceholder() throws {
-        let policy = try ResolvedTLSPinPolicy.make(from: .datadogStagingV1, customFlagsEndpoint: nil).get()
+    func testStagingProfilePinsTheCertainlyIssuers() throws {
+        // Given
+        let profile = Flags.ResponseProtection.TLSPinPolicy.datadogStagingV1
+        let policy = try ResolvedTLSPinPolicy.make(from: profile, customFlagsEndpoint: nil).get()
 
-        XCTAssertTrue(policy.isPlaceholder)
-        XCTAssertEqual(policy.pins.count, 2)
+        // When
+        // The pins are computed from the public CA certificates, not copied from the profile.
+        let issuerPins = try [
+            TLSPinningFixtures.certainlyIntermediateR1,
+            TLSPinningFixtures.certainlyRootR1,
+            TLSPinningFixtures.certainlyRootE1,
+        ].map { certificate in
+            try XCTUnwrap(SecCertificateCopyKey(certificate).flatMap(SubjectPublicKeyInfo.sha256Base64(of:)))
+        }
+
+        // Then
+        XCTAssertEqual(profile.origin.absoluteString, "https://protected.ff-cdn.datad0g.com")
+        XCTAssertEqual(profile.pinTarget, .issuer)
+        XCTAssertEqual(issuerPins, [
+            "oW7smChMJRcnzTObF7K+HzInReAPTxB/L1h6eZTmw9Q=",
+            "P5Pz/PedIl0hPu9qSj9Yhc+E/j16ejwRVTUXaIwOIQA=",
+            "HvZGJdqi5dQz10Sa4xogDRAl4AEqj+z6cJMvi1mbdd0=",
+        ])
+        XCTAssertEqual(profile.spkiSHA256Pins, Set(issuerPins))
+        XCTAssertEqual(policy.pins, Set(issuerPins))
+        XCTAssertEqual(policy.assignmentsURL.absoluteString, "https://protected.ff-cdn.datad0g.com/precompute-assignments")
+        // Starfield Root G2 is too broad to pin.
+        XCTAssertFalse(profile.spkiSHA256Pins.contains("gI1os/q0iEpflxrOfRBVDXqVoWN3Tz7Dav/7IT++THQ="))
     }
 
     // MARK: - Resolution and reporting
@@ -117,7 +145,7 @@ final class ResponseProtectionTests: XCTestCase {
         defer { consolePrint = { message, _ in print(message) } }
         let protection = Flags.ResponseProtection.tlsPinning(
             mode: .required,
-            profile: .init(origin: origin, spkiSHA256Pins: [pinA])
+            profile: .init(origin: origin, pinTarget: .leaf, spkiSHA256Pins: [pinA])
         )
 
         // When
@@ -131,7 +159,7 @@ final class ResponseProtectionTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 1)
     }
 
-    func testPlaceholderProfileIsReportedAsAWarning() throws {
+    func testStagingProfileResolvesWithoutWarnings() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -150,9 +178,8 @@ final class ResponseProtectionTests: XCTestCase {
         guard case .tlsPinning? = policy else {
             return XCTFail("Expected a TLS pinning policy, got \(String(describing: policy))")
         }
-        XCTAssertEqual(dd.logger.warnMessages.count, 1)
-        XCTAssertTrue(dd.logger.errorMessages.isEmpty)
-        XCTAssertTrue(try XCTUnwrap(printFunction.printedMessage).contains("unverified placeholder pins"))
+        XCTAssertTrue(dd.logger.recordedLogs.isEmpty)
+        XCTAssertTrue(printFunction.printedMessages.isEmpty)
     }
 }
 

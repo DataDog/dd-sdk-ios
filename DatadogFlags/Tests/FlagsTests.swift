@@ -136,6 +136,7 @@ final class FlagsTests: XCTestCase {
             mode: .required,
             profile: .init(
                 origin: URL(string: "https://\(TLSPinningFixtures.host)")!,
+                pinTarget: .leaf,
                 spkiSHA256Pins: [TLSPinningFixtures.pinP256, TLSPinningFixtures.pinP384]
             )
         )
@@ -167,6 +168,7 @@ final class FlagsTests: XCTestCase {
             mode: .required,
             profile: .init(
                 origin: URL(string: "https://\(TLSPinningFixtures.host)")!,
+                pinTarget: .leaf,
                 spkiSHA256Pins: [TLSPinningFixtures.pinP256, TLSPinningFixtures.pinP384]
             )
         )

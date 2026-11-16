@@ -150,14 +150,14 @@ flowchart LR
 - `DatadogFlags/Sources/Models/FlagValue.swift`, `DatadogFlags/Sources/Models/AnyValue.swift` — Supported value types.
 - `DatadogFlags/Sources/Client/FlagsClientInternal.swift` — `@_spi(Internal)` methods for cross-platform bridges.
 - `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods.
-- `DatadogFlags/Sources/Models/ResponseProtection.swift` — `Flags.ResponseProtection`, `TLSPinningMode`, `TLSPinPolicy`, and their validation.
+- `DatadogFlags/Sources/Models/ResponseProtection.swift` — `Flags.ResponseProtection`, `TLSPinningMode`, `PinTarget`, `TLSPinPolicy`, the `datadogStagingV1` profile, and their validation.
 
 ### Implementation
 - `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, cache restore, state transitions, initialization timeout.
 - `DatadogFlags/Sources/Client/FlagAssignmentsFetcher.swift` — Endpoint per site, response handling, flag selection fallbacks.
 - `DatadogFlags/Sources/Client/FlagAssignmentsRequest.swift` — Request headers and body.
 - `DatadogFlags/Sources/Client/FlagsDataStore.swift` — Per-client disk cache and its versions.
-- `DatadogFlags/Sources/Client/TLSPinningSessionDelegate.swift` — Assignment-only `URLSession` delegate: system trust evaluation, then leaf SPKI pin check.
+- `DatadogFlags/Sources/Client/TLSPinningSessionDelegate.swift` — Assignment-only `URLSession` delegate: system trust evaluation, then a leaf or issuer SPKI pin check.
 - `DatadogFlags/Sources/Client/SubjectPublicKeyInfo.swift` — DER `SubjectPublicKeyInfo` encoding of RSA and EC keys for pin hashes.
 - `DatadogFlags/Sources/Client/FallbackFlagsClient.swift` — No-op client returned on misuse.
 - `DatadogFlags/Sources/Client/ExposureLogger.swift`, `DatadogFlags/Sources/Client/ExposureTracker.swift` — Exposure events and deduplication.
@@ -204,11 +204,13 @@ Listeners are held weakly and called with the current state when added. A state 
 
 ### Response Protection
 - `responseProtection` is `nil` by default: assignments use the standard HTTPS transport.
-- `.tlsPinning(mode: .required, profile:)` is the only method. The SDK runs the default system trust evaluation (chain, hostname, validity time), then requires the base64 SHA-256 of the leaf certificate's DER `SubjectPublicKeyInfo` to match a pin. On failure, the challenge is cancelled and the request is not sent. Other hosts and cross-origin redirects are rejected.
-- `TLSPinPolicy(origin:spkiSHA256Pins:)` takes an exact `https` origin (no path, query, fragment or credentials) and at least two different pins (active and backup). The policy is validated at `Flags.enable()`. An invalid policy logs an error and a console message, and every assignment request then fails with `.invalidConfiguration`: evaluations return defaults.
-- `TLSPinPolicy.datadogStagingV1` is a placeholder: its hostname is not provisioned and its pins are not reviewed keys. The SDK logs a warning, and requests fail until a reviewed profile replaces it.
+- `.tlsPinning(mode: .required, profile:)` is the only method. The SDK runs the default system trust evaluation (chain, hostname, validity time). Then the base64 SHA-256 of a DER `SubjectPublicKeyInfo` in the validated chain must match a pin. On failure, the challenge is cancelled and the request is not sent. Other hosts and cross-origin redirects are rejected.
+- `TLSPinPolicy(origin:pinTarget:spkiSHA256Pins:)` takes an exact `https` origin (no path, query, fragment or credentials), a pin target, and at least two different pins. The policy is validated at `Flags.enable()`. An invalid policy logs an error and a console message, and every assignment request then fails with `.invalidConfiguration`: evaluations return defaults.
+- `PinTarget.leaf` matches only the server certificate. `PinTarget.issuer` matches any certificate after the leaf in the validated chain, including the anchor; the leaf never matches. Use `.issuer` when the provider renews leaf keys automatically.
+- `TLSPinPolicy.datadogStagingV1` uses `https://protected.ff-cdn.datad0g.com` with `.issuer` pins on Certainly Intermediate R1, Certainly Root R1 and Certainly Root E1. Starfield Root G2 is not pinned. The endpoint is pending provisioning and live validation.
+- `ResponseProtection`, `TLSPinningMode` and `PinTarget` can gain cases in a minor version: a `switch` over them needs `@unknown default`.
 - Only the assignment `URLSession` is pinned. Exposures, evaluations, RUM and Logs uploads are not affected.
-- Under response protection, a cache is loaded only if it was fetched under the same policy (same origin and pins). Without response protection, any cache loads as before.
+- Under response protection, a cache is loaded only if it was fetched under the same policy (same origin, pin target and pins). Without response protection, any cache loads as before.
 
 ### Exposures and Evaluation Telemetry
 - **Exposures** are written only for allocations whose assignment has `doLog` set (experiments). They are deduplicated in memory per client by targeting key and flag key, and logged again when the allocation, variant or serial ID changes. They include the targeting key and all context attributes.
@@ -237,7 +239,7 @@ Listeners are held weakly and called with the current state when added. A state 
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
 - `.typeMismatch`: the getter type differs from the flag's type, for example `getIntegerValue` on a flag served as a double. `getDoubleValue` accepts whole numbers from a "number" flag, but not from an "integer" flag.
 - `.invalidContext`: `dd_experimentation_opt_out_at` is malformed while an opt-out mode is enabled.
-- `responseProtection` is set and the pin policy is invalid, or the server key matches no pin. Look for the `responseProtection` error or `Rejected a flag assignments connection` in the SDK logs.
+- `responseProtection` is set and the pin policy is invalid, or no key in the pinned part of the chain (leaf or issuers) matches a pin. Look for the `responseProtection` error or `Rejected a flag assignments connection` in the SDK logs.
 - The client came from `FlagsClient.shared(named:)` before it was created, or `create` ran before `Flags.enable()`: this returns a no-op client that always returns defaults with `.providerNotReady`. Look for the SDK usage error message.
 
 **Solutions:** Call `Flags.enable()`, then `FlagsClient.create()`, then `setEvaluationContext` and wait for its completion (or `.ready` state) before relying on values.

@@ -80,7 +80,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         // Given
         featureScope.contextMock = .mockWith(site: .us3)
         let result = ResolvedTLSPinPolicy.make(
-            from: .init(origin: URL(string: "https://\(TLSPinningFixtures.host)")!, spkiSHA256Pins: [TLSPinningFixtures.pinP256, TLSPinningFixtures.pinP384]),
+            from: .init(origin: URL(string: "https://\(TLSPinningFixtures.host)")!, pinTarget: .leaf, spkiSHA256Pins: [TLSPinningFixtures.pinP256, TLSPinningFixtures.pinP384]),
             customFlagsEndpoint: nil
         )
         let policy = try result.get()

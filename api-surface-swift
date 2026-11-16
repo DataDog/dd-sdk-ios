@@ -1760,10 +1760,14 @@ public struct FlagsEvaluationContext: Equatable, Codable
 [?] extension Flags.ResponseProtection
     public enum TLSPinningMode: Sendable
         case required
+    public enum PinTarget: Sendable
+        case leaf
+        case issuer
     public struct TLSPinPolicy: Sendable
         public let origin: URL
+        public let pinTarget: PinTarget
         public let spkiSHA256Pins: Set<String>
-        public init(origin: URL, spkiSHA256Pins: Set<String>)
+        public init(origin: URL, pinTarget: PinTarget, spkiSHA256Pins: Set<String>)
         public static var datadogStagingV1: TLSPinPolicy
 
 # ----------------------------------

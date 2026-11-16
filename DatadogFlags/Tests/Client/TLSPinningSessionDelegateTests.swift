@@ -100,6 +100,67 @@ final class TLSPinningSessionDelegateTests: XCTestCase {
         )
     }
 
+    // MARK: - Issuer pins
+
+    func testIntermediatePinAcceptsRenewedLeafWithANewKey() throws {
+        // Given an issuer policy that pins the intermediate
+        let evaluator = try makeIssuerEvaluator(pins: [TLSPinningFixtures.pinIssuerIntermediate, TLSPinningFixtures.pinUnused])
+
+        // Then both leaf keys issued by it are trusted
+        XCTAssertEqual(evaluator.evaluate(try issuedTrust(leaf: TLSPinningFixtures.issuedLeafA), host: host, port: 443), .trusted)
+        XCTAssertEqual(evaluator.evaluate(try issuedTrust(leaf: TLSPinningFixtures.issuedLeafB), host: host, port: 443), .trusted)
+    }
+
+    func testRootPinIsTrusted() throws {
+        let evaluator = try makeIssuerEvaluator(pins: [TLSPinningFixtures.pinIssuerRoot, TLSPinningFixtures.pinUnused])
+
+        XCTAssertEqual(evaluator.evaluate(try issuedTrust(leaf: TLSPinningFixtures.issuedLeafA), host: host, port: 443), .trusted)
+    }
+
+    func testIssuerPolicyRejectsAChainFromAnotherTrustedRoot() throws {
+        // Given a device that also trusts an interception root
+        let evaluator = try makeIssuerEvaluator(pins: [TLSPinningFixtures.pinIssuerIntermediate, TLSPinningFixtures.pinIssuerRoot])
+        let intercepted = try trust(leaf: TLSPinningFixtures.interceptionLeaf, intermediates: [TLSPinningFixtures.interceptionRoot])
+
+        // Then system trust succeeds, but no issuer matches a pin
+        XCTAssertEqual(evaluator.evaluate(intercepted, host: host, port: 443), .rejected(.pinMismatch))
+    }
+
+    func testLeafPinDoesNotSatisfyAnIssuerPolicy() throws {
+        let evaluator = try makeIssuerEvaluator(pins: [TLSPinningFixtures.pinIssuedLeafA, TLSPinningFixtures.pinUnused])
+
+        XCTAssertEqual(
+            evaluator.evaluate(try issuedTrust(leaf: TLSPinningFixtures.issuedLeafA), host: host, port: 443),
+            .rejected(.pinMismatch)
+        )
+    }
+
+    func testIssuerPinDoesNotSatisfyALeafPolicyInAnIntermediateChain() throws {
+        let evaluator = try makeEvaluator(
+            pins: [TLSPinningFixtures.pinIssuerIntermediate, TLSPinningFixtures.pinIssuerRoot],
+            anchors: [TLSPinningFixtures.issuerRoot]
+        )
+
+        XCTAssertEqual(
+            evaluator.evaluate(try issuedTrust(leaf: TLSPinningFixtures.issuedLeafA), host: host, port: 443),
+            .rejected(.pinMismatch)
+        )
+    }
+
+    func testIssuerPinDoesNotReplaceSystemTrustEvaluation() throws {
+        // The issuer root is not an anchor here, so the chain is not trusted although the intermediate is pinned.
+        let evaluator = try makeEvaluator(
+            pins: [TLSPinningFixtures.pinIssuerIntermediate, TLSPinningFixtures.pinIssuerRoot],
+            pinTarget: .issuer,
+            anchors: [TLSPinningFixtures.interceptionRoot]
+        )
+
+        XCTAssertEqual(
+            evaluator.evaluate(try issuedTrust(leaf: TLSPinningFixtures.issuedLeafA), host: host, port: 443),
+            .rejected(.systemTrustFailed)
+        )
+    }
+
     // MARK: - Delegate
 
     func testDelegateUsesTheCredentialForATrustedServer() throws {
@@ -138,7 +199,7 @@ final class TLSPinningSessionDelegateTests: XCTestCase {
         XCTAssertEqual(taskDisposition, .cancelAuthenticationChallenge)
         XCTAssertNil(credential)
         XCTAssertEqual(dd.logger.errorMessages.count, 2)
-        XCTAssertTrue(try XCTUnwrap(dd.logger.errorMessages.first).contains("does not match a pin"))
+        XCTAssertTrue(try XCTUnwrap(dd.logger.errorMessages.first).contains("matches a pin"))
     }
 
     func testDelegateKeepsDefaultHandlingForOtherChallenges() throws {
@@ -187,25 +248,38 @@ final class TLSPinningSessionDelegateTests: XCTestCase {
 
     private func makeEvaluator(
         pins: Set<String>,
+        pinTarget: Flags.ResponseProtection.PinTarget = .leaf,
         anchors: [SecCertificate]? = [TLSPinningFixtures.root],
         verificationDate: Date = TLSPinningFixtures.verificationDate
     ) throws -> TLSPinningTrustEvaluator {
         let result = ResolvedTLSPinPolicy.make(
-            from: .init(origin: URL(string: "https://\(host)")!, spkiSHA256Pins: pins),
+            from: .init(origin: URL(string: "https://\(host)")!, pinTarget: pinTarget, spkiSHA256Pins: pins),
             customFlagsEndpoint: nil
         )
         return TLSPinningTrustEvaluator(policy: try result.get(), anchorCertificates: anchors, verificationDate: verificationDate)
     }
 
-    private func trust(leaf: SecCertificate) throws -> SecTrust {
+    private func trust(leaf: SecCertificate, intermediates: [SecCertificate] = [TLSPinningFixtures.root]) throws -> SecTrust {
         var trust: SecTrust?
         let status = SecTrustCreateWithCertificates(
-            [leaf, TLSPinningFixtures.root] as CFArray,
+            [leaf] + intermediates as CFArray,
             SecPolicyCreateBasicX509(),
             &trust
         )
         XCTAssertEqual(status, errSecSuccess)
         return try XCTUnwrap(trust)
+    }
+
+    private func makeIssuerEvaluator(pins: Set<String>) throws -> TLSPinningTrustEvaluator {
+        try makeEvaluator(
+            pins: pins,
+            pinTarget: .issuer,
+            anchors: [TLSPinningFixtures.issuerRoot, TLSPinningFixtures.interceptionRoot]
+        )
+    }
+
+    private func issuedTrust(leaf: SecCertificate) throws -> SecTrust {
+        try trust(leaf: leaf, intermediates: [TLSPinningFixtures.issuerIntermediate, TLSPinningFixtures.issuerRoot])
     }
 
     private func serverTrustChallenge(leaf: SecCertificate) throws -> URLAuthenticationChallenge {

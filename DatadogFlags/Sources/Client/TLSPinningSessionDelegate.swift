@@ -19,8 +19,7 @@ internal struct TLSPinningTrustEvaluator {
         case hostOutsidePolicy = "host outside the pin policy"
         case systemTrustFailed = "system trust evaluation failed"
         case missingLeafCertificate = "no leaf certificate"
-        case unsupportedKey = "unsupported leaf public key"
-        case pinMismatch = "leaf public key does not match a pin"
+        case pinMismatch = "no public key in the pinned part of the chain matches a pin"
     }
 
     let policy: ResolvedTLSPinPolicy
@@ -53,16 +52,26 @@ internal struct TLSPinningTrustEvaluator {
             return .rejected(.systemTrustFailed)
         }
 
-        guard let chain = SecTrustCopyCertificateChain(trust) as? [SecCertificate], let leaf = chain.first else {
+        // The chain that the system validated, from the leaf to the trust anchor.
+        guard let chain = SecTrustCopyCertificateChain(trust) as? [SecCertificate], !chain.isEmpty else {
             return .rejected(.missingLeafCertificate)
         }
-        guard let key = SecCertificateCopyKey(leaf), let pin = SubjectPublicKeyInfo.sha256Base64(of: key) else {
-            return .rejected(.unsupportedKey)
+        let candidates: ArraySlice<SecCertificate>
+        switch policy.pinTarget {
+        case .leaf:
+            candidates = chain.prefix(1)
+        case .issuer:
+            // Every certificate after the leaf, including the anchor. The leaf never satisfies an issuer pin.
+            candidates = chain.dropFirst()
         }
-        guard policy.pins.contains(pin) else {
-            return .rejected(.pinMismatch)
+        let matches = candidates.contains { certificate in
+            // A key type without a `SubjectPublicKeyInfo` encoding cannot match a pin.
+            guard let key = SecCertificateCopyKey(certificate), let pin = SubjectPublicKeyInfo.sha256Base64(of: key) else {
+                return false
+            }
+            return policy.pins.contains(pin)
         }
-        return .trusted
+        return matches ? .trusted : .rejected(.pinMismatch)
     }
 }
 
