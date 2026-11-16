@@ -123,6 +123,65 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(featureScope.telemetryMock.messages.count, 1)
     }
 
+    func testResponseProtectionIsNotSetByDefault() {
+        XCTAssertNil(Flags.Configuration().responseProtection)
+        XCTAssertNil(FlagsFeature(configuration: .init(trackEvaluations: false), featureScope: FeatureScopeMock(), core: FeatureRegistrationCoreMock()).responseProtection)
+    }
+
+    func testEnablingWithRequiredTLSPinningUsesThePolicy() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        var config = Flags.Configuration(trackEvaluations: false)
+        config.responseProtection = .tlsPinning(
+            mode: .required,
+            profile: .init(
+                origin: URL(string: "https://\(TLSPinningFixtures.host)")!,
+                spkiSHA256Pins: [TLSPinningFixtures.pinP256, TLSPinningFixtures.pinP384]
+            )
+        )
+
+        // When
+        Flags.enable(with: config, in: core)
+
+        // Then
+        let feature = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        guard case .tlsPinning(let policy)? = feature.responseProtection else {
+            return XCTFail("Expected a TLS pinning policy, got \(String(describing: feature.responseProtection))")
+        }
+        XCTAssertEqual(policy.host, TLSPinningFixtures.host)
+        let fetcher = try XCTUnwrap(feature.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
+        XCTAssertEqual(fetcher.responseProtection, feature.responseProtection)
+    }
+
+    func testEnablingWithAnInvalidRequiredPolicyReportsTheErrorAndFailsClosed() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+        let core = FeatureRegistrationCoreMock()
+        var config = Flags.Configuration(trackEvaluations: false)
+        config.customFlagsEndpoint = URL(string: "https://proxy.example.com/assignments")
+        config.responseProtection = .tlsPinning(
+            mode: .required,
+            profile: .init(
+                origin: URL(string: "https://\(TLSPinningFixtures.host)")!,
+                spkiSHA256Pins: [TLSPinningFixtures.pinP256, TLSPinningFixtures.pinP384]
+            )
+        )
+
+        // When
+        Flags.enable(with: config, in: core)
+
+        // Then
+        // The feature stays enabled, so clients can be created without crashing, but no assignment is fetched.
+        let feature = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        XCTAssertEqual(feature.responseProtection, .misconfigured)
+        XCTAssertEqual(dd.logger.errorMessages.count, 1)
+        XCTAssertTrue(try XCTUnwrap(printFunction.printedMessage).contains("customFlagsEndpoint"))
+    }
+
     func testFlushFlushesRegisteredClients() throws {
         // Given
         let core = FeatureRegistrationCoreMock()

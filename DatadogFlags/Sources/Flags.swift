@@ -128,6 +128,15 @@ public enum Flags {
         /// Default: `nil` (every flag is loaded).
         public var flagSelection: FlagSelection?
 
+        /// Protects flag assignments against tampering in transit.
+        ///
+        /// When set, the SDK rejects new assignments unless the selected protection succeeds, and it does not load
+        /// assignments cached without the same protection. The protection applies only to flag assignment requests.
+        /// See ``Flags/ResponseProtection`` for the methods and their requirements.
+        ///
+        /// Default: `nil` (assignments use the standard HTTPS transport).
+        public var responseProtection: ResponseProtection?
+
         /// Creates a configuration for the Datadog Flags feature.
         ///
         /// - Parameters:

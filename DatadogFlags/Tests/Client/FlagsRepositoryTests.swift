@@ -3513,6 +3513,106 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(stateInCompletion, .error)
     }
 
+    // MARK: - Response Protection
+
+    func testCachedFlagsDataFromAnotherResponseProtectionIsNotLoaded() throws {
+        let cases: [(cached: String?, configured: String)] = [
+            (nil, "tls-pinning-v1:a"),
+            ("tls-pinning-v1:b", "tls-pinning-v1:a"),
+        ]
+
+        for (cached, configured) in cases {
+            // Given
+            let scope = FeatureScopeMock()
+            let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), responseProtection: cached)
+            scope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
+
+            // When
+            let repository = FlagsRepository(
+                clientName: "cached",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                flagSelection: nil,
+                responseProtection: configured
+            )
+            scope.dataStore.flush()
+
+            // Then
+            XCTAssertNil(repository.flagAssignment(for: "flag"), "cached: \(String(describing: cached)), configured: \(configured)")
+            XCTAssertNil(repository.flagAssignments())
+            XCTAssertNil(repository.context)
+        }
+    }
+
+    func testCachedFlagsDataFromTheSameResponseProtectionIsLoaded() throws {
+        // Given
+        let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), responseProtection: "tls-pinning-v1:a")
+        featureScope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
+
+        // When
+        let repository = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: nil,
+            responseProtection: "tls-pinning-v1:a"
+        )
+        featureScope.dataStore.flush()
+
+        // Then
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.context, .mockAny())
+    }
+
+    func testProtectedCachedFlagsDataIsLoadedWithoutResponseProtection() throws {
+        // Given
+        let cachedData = FlagsData(flags: ["flag": .mockAny()], context: .mockAny(), date: .mockAny(), responseProtection: "tls-pinning-v1:a")
+        featureScope.flagsDataStore.setFlagsData(cachedData, forClientNamed: "cached")
+
+        // When
+        let repository = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: nil
+        )
+        featureScope.dataStore.flush()
+
+        // Then
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+    }
+
+    func testFetchedFlagsDataIsPersistedWithResponseProtection() throws {
+        // Given
+        let repository = FlagsRepository(
+            clientName: "persisted",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(.init(flags: ["flag": .mockAny()])))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flagSelection: nil,
+            responseProtection: "tls-pinning-v1:a"
+        )
+        featureScope.dataStore.flush()
+        let completed = expectation(description: "completed")
+
+        // When
+        repository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        repository.flush()
+        featureScope.dataStore.flush()
+        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["persisted"]?.data(expectedVersion: dataStoreDefaultKeyVersion))
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: persisted).responseProtection, "tls-pinning-v1:a")
+    }
+
     // MARK: - Flag Selection
 
     func testCachedFlagsDataWithMatchingFlagSelectionIsLoaded() throws {

@@ -76,6 +76,68 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertEqual(flagAssignments.flags, .mockAny())
     }
 
+    func testRequiredTLSPinningFetchesFromThePolicyOrigin() throws {
+        // Given
+        featureScope.contextMock = .mockWith(site: .us3)
+        let result = ResolvedTLSPinPolicy.make(
+            from: .init(origin: URL(string: "https://\(TLSPinningFixtures.host)")!, spkiSHA256Pins: [TLSPinningFixtures.pinP256, TLSPinningFixtures.pinP384]),
+            customFlagsEndpoint: nil
+        )
+        let policy = try result.get()
+        var capturedRequest: URLRequest?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: ["X-Proxy-Token": "secret"],
+            flagSelection: nil,
+            featureScope: featureScope,
+            responseProtection: .tlsPinning(policy),
+            fetch: { request, completion in
+                capturedRequest = request
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+            }
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { _ in completed.fulfill() }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(capturedRequest?.url?.absoluteString, "https://flags-pinning.example.com/precompute-assignments")
+        XCTAssertNil(capturedRequest?.value(forHTTPHeaderField: "X-Proxy-Token"))
+    }
+
+    func testMisconfiguredResponseProtectionSendsNoRequest() {
+        // Given
+        var fetchCount = 0
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: URL(string: "https://proxy.example.com")!,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: featureScope,
+            responseProtection: .misconfigured,
+            fetch: { _, completion in
+                fetchCount += 1
+                completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+            }
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(fetchCount, 0)
+        guard case .failure(.invalidConfiguration)? = capturedResult else {
+            return XCTFail("Expected an invalid configuration error, got \(String(describing: capturedResult))")
+        }
+    }
+
     func testFlagAssignmentsNetworkError() {
         // Given
         let fetcher = FlagAssignmentsFetcher(

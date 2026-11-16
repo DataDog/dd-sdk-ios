@@ -14,6 +14,9 @@ internal struct FlagsData: Equatable, Codable {
     let flagSelection: CanonicalFlagSelection?
     // Optional so snapshots written before opt-out support remain readable.
     let experimentationOptOutPolicy: ExperimentationOptOut?
+    // The response protection policy that the assignments were fetched under; `nil` for none.
+    // Optional so snapshots written before response protection remain readable.
+    let responseProtection: String?
 
     init(
         flags: [String: FlagAssignment],
@@ -21,7 +24,8 @@ internal struct FlagsData: Equatable, Codable {
         date: Date,
         obfuscation: FlagKeyObfuscation? = nil,
         flagSelection: CanonicalFlagSelection? = nil,
-        experimentationOptOutPolicy: ExperimentationOptOut? = nil
+        experimentationOptOutPolicy: ExperimentationOptOut? = nil,
+        responseProtection: String? = nil
     ) {
         self.flags = flags
         self.context = context
@@ -29,5 +33,6 @@ internal struct FlagsData: Equatable, Codable {
         self.obfuscation = obfuscation
         self.flagSelection = flagSelection
         self.experimentationOptOutPolicy = experimentationOptOutPolicy
+        self.responseProtection = responseProtection
     }
 }

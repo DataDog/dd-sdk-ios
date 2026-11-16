@@ -149,6 +149,7 @@ internal final class FlagsRepository {
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
     private let flagSelection: CanonicalFlagSelection?
+    private let responseProtection: String?
     private let readTimeout: TimeInterval
     private let cachePersistenceQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-flags-cache-persistence",
@@ -297,6 +298,7 @@ internal final class FlagsRepository {
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
         flagSelection: CanonicalFlagSelection?,
+        responseProtection: String? = nil,
         readTimeout: TimeInterval = 0.1,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil,
@@ -307,6 +309,7 @@ internal final class FlagsRepository {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
         self.flagSelection = flagSelection
+        self.responseProtection = responseProtection
         self.readTimeout = readTimeout
         self.initializationTimeout = initializationTimeout
         self.experimentationOptOutMode = experimentationOptOutMode
@@ -393,9 +396,11 @@ internal final class FlagsRepository {
 
     private func readState() {
         // Retain the read lifecycle, not the repository, so the group is balanced even after deallocation.
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [_repositoryState, weak firstFlags, flagSelection] data in
+        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [_repositoryState, weak firstFlags, flagSelection, responseProtection] data in
             // A cache written under another selection holds a different set of flags.
-            var cachedData = data?.flagSelection == flagSelection ? data : nil
+            // Under response protection, only assignments fetched under the same policy are trusted.
+            let isProtectionSatisfied = responseProtection == nil || data?.responseProtection == responseProtection
+            var cachedData = data?.flagSelection == flagSelection && isProtectionSatisfied ? data : nil
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
                 cachedAssignment.reason = "CACHED"
@@ -698,7 +703,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     date: self.dateProvider.now,
                     obfuscation: response.obfuscation,
                     flagSelection: self.flagSelection,
-                    experimentationOptOutPolicy: policy
+                    experimentationOptOutPolicy: policy,
+                    responseProtection: self.responseProtection
                 )
                 var versionAfterSuccess: UInt64?
                 var isServingRequestedContext = false

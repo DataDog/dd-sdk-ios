@@ -29,6 +29,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
     let flagSelection: CanonicalFlagSelection?
+    let responseProtection: ResponseProtectionPolicy?
 
     private let featureScope: any FeatureScope
     private let assignmentFetchQueue: DispatchQueue
@@ -49,18 +50,30 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customEndpoint: URL?,
         customHeaders: [String: String]?,
         flagSelection: CanonicalFlagSelection?,
-        featureScope: any FeatureScope
+        featureScope: any FeatureScope,
+        responseProtection: ResponseProtectionPolicy? = nil
     ) {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
 
-        let urlSession = URLSession(configuration: configuration)
+        let urlSession: URLSession
+        if case .tlsPinning(let policy)? = responseProtection {
+            // Only this session enforces the pins, so other SDK uploads are not affected.
+            urlSession = URLSession(
+                configuration: configuration,
+                delegate: TLSPinningSessionDelegate(evaluator: TLSPinningTrustEvaluator(policy: policy)),
+                delegateQueue: nil
+            )
+        } else {
+            urlSession = URLSession(configuration: configuration)
+        }
 
         self.init(
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
             flagSelection: flagSelection,
             featureScope: featureScope,
+            responseProtection: responseProtection,
             fetch: urlSession.fetch
         )
     }
@@ -70,6 +83,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customHeaders: [String: String]?,
         flagSelection: CanonicalFlagSelection?,
         featureScope: any FeatureScope,
+        responseProtection: ResponseProtectionPolicy? = nil,
         assignmentFetchQueue: DispatchQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-flags-assignment-fetch",
             qos: .utility,
@@ -80,6 +94,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.flagSelection = flagSelection
+        self.responseProtection = responseProtection
         self.featureScope = featureScope
         self.assignmentFetchQueue = assignmentFetchQueue
         self.fetch = fetch
@@ -122,9 +137,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         context: DatadogContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
+        guard let url = url(with: context) else {
+            // Required protection is misconfigured: fail closed and send nothing.
+            completion(.failure(.invalidConfiguration))
+            return
+        }
         do {
             let request = try URLRequest.flagAssignmentsRequest(
-                url: url(with: context),
+                url: url,
                 evaluationContext: evaluationContext,
                 context: context,
                 // Custom headers can carry proxy credentials, so only the custom endpoint receives them.
@@ -232,8 +252,17 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         }
     }
 
-    private func url(with context: DatadogContext) -> URL {
-        customEndpoint ?? context.site.flagsEndpoint().appendingPathComponent("precompute-assignments")
+    /// Returns `nil` when required response protection cannot be enforced.
+    private func url(with context: DatadogContext) -> URL? {
+        switch responseProtection {
+        case nil:
+            return customEndpoint ?? context.site.flagsEndpoint().appendingPathComponent("precompute-assignments")
+        case .tlsPinning(let policy)?:
+            // The policy owns the endpoint; a request never leaves the pinned origin.
+            return policy.assignmentsURL
+        case .misconfigured?:
+            return nil
+        }
     }
 }
 
