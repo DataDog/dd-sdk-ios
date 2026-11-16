@@ -1584,6 +1584,12 @@ public class RUMContextProviderMock: RUMContextProvider {
 
 // MARK: - Auto Instrumentation Mocks
 
+public class LongTaskObserverBackgroundStateProviderMock: LongTaskObserverBackgroundStateProvider {
+    public var isInBackgroundState = false
+
+    public init() {}
+}
+
 public class RUMCommandSubscriberMock: RUMCommandSubscriber {
     public var onCommandReceived: ((RUMCommand) -> Void)?
     public var receivedCommands: [RUMCommand] = []

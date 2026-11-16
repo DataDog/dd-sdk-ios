@@ -210,7 +210,18 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.scrollHandler = scrollHandler
         self.scrollViewSwizzler = scrollViewSwizzler
         #endif
-        self.longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
+        #if os(macOS)
+        let backgroundStateProvider = DefaultLongTaskObserverBackgroundStateProvider(
+            notificationCenterProvider: notificationCenterProvider
+        )
+        #else
+        let backgroundStateProvider = DefaultLongTaskObserverBackgroundStateProvider()
+        #endif
+        self.longTasks = LongTaskObserver(
+            threshold: longTaskThreshold,
+            dateProvider: dateProvider,
+            backgroundStateProvider: backgroundStateProvider
+        )
         self.appHangs = AppHangsMonitor(
             featureScope: featureScope,
             appHangThreshold: appHangThreshold,
@@ -266,7 +277,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider, notificationCenterProvider: notificationCenterProvider)
         // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
         self.actionsHandler = RUMActionsHandler(dateProvider: dateProvider)
-        self.longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
+        self.longTasks = LongTaskObserver(
+            threshold: longTaskThreshold,
+            dateProvider: dateProvider,
+            backgroundStateProvider: DefaultLongTaskObserverBackgroundStateProvider()
+        )
         self.appHangs = AppHangsMonitor(
             featureScope: featureScope,
             appHangThreshold: appHangThreshold,
@@ -325,7 +340,12 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
 private extension LongTaskObserver {
     /// Creates a `LongTaskObserver` if `threshold` is non-nil and above the minimum, otherwise returns `nil`.
-    convenience init?(threshold: TimeInterval?, dateProvider: DateProvider) {
+    convenience init?(
+        threshold: TimeInterval?,
+        dateProvider: DateProvider,
+        backgroundStateProvider: LongTaskObserverBackgroundStateProvider,
+        runLoop: RunLoop = .main
+    ) {
         guard let threshold = threshold else {
             return nil
         }
@@ -335,7 +355,12 @@ private extension LongTaskObserver {
             return nil
         }
 
-        self.init(threshold: threshold, dateProvider: dateProvider)
+        self.init(
+            threshold: threshold,
+            dateProvider: dateProvider,
+            backgroundStateProvider: backgroundStateProvider,
+            runLoop: runLoop
+        )
     }
 }
 
