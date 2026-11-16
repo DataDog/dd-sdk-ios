@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-11
-sdk_version: 3.21.0
-verified_against_commit: c5961cab1
+last_updated: 2026-11-16
+sdk_version: 3.22.0
+verified_against_commit: 77b6ec9f3
 tracked_files:
   - DatadogFlags/Sources/Flags.swift
   - DatadogFlags/Sources/Client/FlagsClient.swift
@@ -16,6 +16,7 @@ tracked_files:
   - DatadogFlags/Sources/Models/AnyValue.swift
   - DatadogFlags/Sources/Client/FlagsClientInternal.swift
   - DatadogFlags/Sources/Models/FlagAssignment.swift
+  - DatadogFlags/Sources/Models/ResponseProtection.swift
 ---
 
 # Flags Feature
@@ -149,12 +150,15 @@ flowchart LR
 - `DatadogFlags/Sources/Models/FlagValue.swift`, `DatadogFlags/Sources/Models/AnyValue.swift` — Supported value types.
 - `DatadogFlags/Sources/Client/FlagsClientInternal.swift` — `@_spi(Internal)` methods for cross-platform bridges.
 - `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods.
+- `DatadogFlags/Sources/Models/ResponseProtection.swift` — `Flags.ResponseProtection`, `TLSPinningMode`, `TLSPinPolicy`, and their validation.
 
 ### Implementation
 - `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, cache restore, state transitions, initialization timeout.
 - `DatadogFlags/Sources/Client/FlagAssignmentsFetcher.swift` — Endpoint per site, response handling, flag selection fallbacks.
 - `DatadogFlags/Sources/Client/FlagAssignmentsRequest.swift` — Request headers and body.
 - `DatadogFlags/Sources/Client/FlagsDataStore.swift` — Per-client disk cache and its versions.
+- `DatadogFlags/Sources/Client/TLSPinningSessionDelegate.swift` — Assignment-only `URLSession` delegate: system trust evaluation, then leaf SPKI pin check.
+- `DatadogFlags/Sources/Client/SubjectPublicKeyInfo.swift` — DER `SubjectPublicKeyInfo` encoding of RSA and EC keys for pin hashes.
 - `DatadogFlags/Sources/Client/FallbackFlagsClient.swift` — No-op client returned on misuse.
 - `DatadogFlags/Sources/Client/ExposureLogger.swift`, `DatadogFlags/Sources/Client/ExposureTracker.swift` — Exposure events and deduplication.
 - `DatadogFlags/Sources/Client/EvaluationAggregator.swift` — Evaluation counts and flush timer.
@@ -171,6 +175,7 @@ flowchart LR
 - `customFlagsEndpoint` replaces the full assignments URL.
 - `customFlagsHeaders` are sent only with requests to `customFlagsEndpoint`. They are ignored when using the default Datadog endpoint, so proxy credentials never reach the Datadog CDN.
 - `customExposureEndpoint` and `customEvaluationEndpoint` replace the intake URLs for exposures and evaluations.
+- With `responseProtection` set to `.tlsPinning`, assignments are fetched from the origin of the pin policy (`<origin>/precompute-assignments`). A `customFlagsEndpoint` must use that same origin.
 
 ### Startup and Caching
 - Assignments are saved per client name after each successful fetch. On the next launch, the cached assignments load at client creation and can be evaluated **before** `setEvaluationContext` is called. Their `reason` is `"CACHED"`. With an experimentation opt-out mode enabled, cached assignments are served only after `setEvaluationContext` with the same context.
@@ -196,6 +201,14 @@ Listeners are held weakly and called with the current state when added. A state 
 - Values are trimmed and deduplicated. Each list accepts at most 31 values, each value at most 200 UTF-8 bytes. Over a limit, the selection is not sent: the SDK logs an error and loads every flag.
 - If the server ignores the selection, it loads every flag and the SDK logs the reason (from the `DD-Flag-Selection-Ignored` header). A proxy behind `customFlagsEndpoint` must forward that header.
 - A cache saved under a different selection is not loaded.
+
+### Response Protection
+- `responseProtection` is `nil` by default: assignments use the standard HTTPS transport.
+- `.tlsPinning(mode: .required, profile:)` is the only method. The SDK runs the default system trust evaluation (chain, hostname, validity time), then requires the base64 SHA-256 of the leaf certificate's DER `SubjectPublicKeyInfo` to match a pin. On failure, the challenge is cancelled and the request is not sent. Other hosts and cross-origin redirects are rejected.
+- `TLSPinPolicy(origin:spkiSHA256Pins:)` takes an exact `https` origin (no path, query, fragment or credentials) and at least two different pins (active and backup). The policy is validated at `Flags.enable()`. An invalid policy logs an error and a console message, and every assignment request then fails with `.invalidConfiguration`: evaluations return defaults.
+- `TLSPinPolicy.datadogStagingV1` is a placeholder: its hostname is not provisioned and its pins are not reviewed keys. The SDK logs a warning, and requests fail until a reviewed profile replaces it.
+- Only the assignment `URLSession` is pinned. Exposures, evaluations, RUM and Logs uploads are not affected.
+- Under response protection, a cache is loaded only if it was fetched under the same policy (same origin and pins). Without response protection, any cache loads as before.
 
 ### Exposures and Evaluation Telemetry
 - **Exposures** are written only for allocations whose assignment has `doLog` set (experiments). They are deduplicated in memory per client by targeting key and flag key, and logged again when the allocation, variant or serial ID changes. They include the targeting key and all context attributes.
@@ -224,6 +237,7 @@ Listeners are held weakly and called with the current state when added. A state 
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
 - `.typeMismatch`: the getter type differs from the flag's type, for example `getIntegerValue` on a flag served as a double. `getDoubleValue` accepts whole numbers from a "number" flag, but not from an "integer" flag.
 - `.invalidContext`: `dd_experimentation_opt_out_at` is malformed while an opt-out mode is enabled.
+- `responseProtection` is set and the pin policy is invalid, or the server key matches no pin. Look for the `responseProtection` error or `Rejected a flag assignments connection` in the SDK logs.
 - The client came from `FlagsClient.shared(named:)` before it was created, or `create` ran before `Flags.enable()`: this returns a no-op client that always returns defaults with `.providerNotReady`. Look for the SDK usage error message.
 
 **Solutions:** Call `Flags.enable()`, then `FlagsClient.create()`, then `setEvaluationContext` and wait for its completion (or `.ready` state) before relying on values.
