@@ -516,6 +516,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         time: Date = Date(),
         message: String = .mockAny(),
         type: String? = .mockAny(),
+        stack: String? = nil,
         source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:]
@@ -525,6 +526,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
             time: time,
             message: message,
             type: type,
+            stack: stack,
             source: source,
             httpStatusCode: httpStatusCode,
             attributes: attributes
