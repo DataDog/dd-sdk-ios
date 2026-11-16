@@ -1283,10 +1283,11 @@ extension DatadogProfilerTests {
             ["ttid-id"]
         )
 
-        let unpackedProfile = try XCTUnwrap(metadata.pprof.withUnsafeBytes { bytes in
+        let pprof = try XCTUnwrap(metadata.pprofs.first { $0.filename == ProfileAttachments.Constants.pprofFilename }?.data)
+        let unpackedProfile = try XCTUnwrap(pprof.withUnsafeBytes { bytes in
             perftools__profiles__profile__unpack(
                 nil,
-                metadata.pprof.count,
+                pprof.count,
                 bytes.bindMemory(to: UInt8.self).baseAddress
             )
         })
@@ -3063,7 +3064,7 @@ extension DatadogProfilerTests {
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
 
-        XCTAssertTrue(metadata.rumEvents != nil)
+        XCTAssertFalse(metadata.rumEvents.isEmpty)
         XCTAssertEqual(Set(try eventIDs(ofType: "vital", from: metadata)), Set(["ttid-id", "ttfd-id"]))
         XCTAssertEqual(try eventIDs(ofType: "error", from: metadata), [])
         XCTAssertEqual(try eventIDs(ofType: "long_task", from: metadata), [])
@@ -3573,7 +3574,7 @@ private extension DatadogProfilerTests {
     }
 
     func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
+        let rumEventsData = metadata.rumEvents
         return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
     }
 
@@ -3600,6 +3601,7 @@ private extension DatadogProfilerTests {
         profilingSamplerProvider: ProfilingSamplerProvider? = nil,
         continuousProfilingSampled: Bool? = nil,
         profilingConditions: ProfilingConditions = ProfilingConditions(),
+        writer: ProfileWriter? = nil,
         profilingInterval: TimeInterval = .infinity,
         isAppLaunchProfilingEnabled: Bool = false,
         queue: DispatchQueue? = nil,
@@ -3620,10 +3622,13 @@ private extension DatadogProfilerTests {
             )
         }
 
+        let targetCore = core ?? self.core!
+        let writer = writer ?? ProfileWriter(featureScope: targetCore.scope(for: ProfilerFeature.self), telemetryController: telemetryController)
         return DatadogProfiler(
-            core: core ?? self.core,
+            core: targetCore,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
+            writer: writer,
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -3635,6 +3640,7 @@ private extension DatadogProfilerTests {
     func customProfiler(
         core: PassthroughCoreMock? = nil,
         profilingConditions: ProfilingConditions = ProfilingConditions(),
+        writer: ProfileWriter? = nil,
         profilingInterval: TimeInterval = .infinity,
         isAppLaunchProfilingEnabled: Bool = false,
         queue: DispatchQueue? = nil,
@@ -3651,10 +3657,13 @@ private extension DatadogProfilerTests {
             profilingSamplerProvider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 100))
         }
 
+        let targetCore = core ?? self.core!
+        let writer = writer ?? ProfileWriter(featureScope: targetCore.scope(for: ProfilerFeature.self), telemetryController: telemetryController)
         return DatadogProfiler(
-            core: core ?? self.core,
+            core: targetCore,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
+            writer: writer,
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -3745,4 +3754,5 @@ private extension DatadogProfilerTests {
         XCTFail("Condition was not met within \(timeout) seconds.", file: file, line: line)
     }
 }
+
 #endif // !os(watchOS) && !os(macOS)
