@@ -99,6 +99,7 @@
 
     [monitor _internal_sync_addError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                               source:DDRUMErrorSourceCustom attributes:@{}];
+    [monitor _internal_addLongTaskAt:[NSDate date] duration:0.25 attributes:@{}];
 
     [monitor setDebug:YES];
     [monitor setDebug:NO];

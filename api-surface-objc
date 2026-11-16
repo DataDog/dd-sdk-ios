@@ -4223,6 +4223,7 @@ public class objc_RUMMonitor: NSObject
     public var debug: Bool
 [?] extension objc_RUMMonitor
     public func _internal_sync_addError(_ error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
+    public func _internal_addLongTask(at time: Date,duration: TimeInterval,attributes: [String: Any])
 
 # ----------------------------------
 # API surface for DatadogCrashReporting:

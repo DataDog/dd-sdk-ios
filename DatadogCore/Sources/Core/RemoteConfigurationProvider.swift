@@ -338,6 +338,7 @@ internal final class RemoteConfigurationProvider {
             } catch let error as NSError where error.domain == NSURLErrorDomain && telemetryIgnoredNSURLErrorCodes.contains(error.code) {
                 // Do not report network transport errors: they come from the device's connectivity,
                 // not from an SDK issue, and a later sync will retry.
+                self.lastSyncDate = nil
             } catch {
                 self.lastSyncDate = nil
                 telemetry.error("[RemoteConfig] Failed to sync remote configuration", error: error)
