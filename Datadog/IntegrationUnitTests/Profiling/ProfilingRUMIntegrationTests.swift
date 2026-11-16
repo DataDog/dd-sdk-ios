@@ -160,10 +160,9 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         )
         let feature = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
+            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0, memorySampleRate: 100),
             requestBuilder: DatadogProfiling.RequestBuilder(),
-            telemetryController: .init(),
-            memorySampleRate: 100
+            telemetryController: .init()
         )
         defer { feature.memoryProfiler.flushAndStop() }
         try core.register(feature: feature)
