@@ -21,6 +21,7 @@
     XCTAssertNil(configuration.customEndpoint);
     XCTAssertEqual(configuration.applicationLaunchSampleRate, 5);
     XCTAssertEqual(configuration.continuousSampleRate, 5);
+    XCTAssertEqual(configuration.memorySampleRate, 0);
 }
 
 - (void)testCustomConfiguration {
@@ -36,10 +37,12 @@
     configuration.customEndpoint = nil;
     configuration.applicationLaunchSampleRate = 0;
     configuration.continuousSampleRate = 100;
+    configuration.memorySampleRate = 12.5;
 
     XCTAssertNil(configuration.customEndpoint);
     XCTAssertEqual(configuration.applicationLaunchSampleRate, 0);
     XCTAssertEqual(configuration.continuousSampleRate, 100);
+    XCTAssertEqual(configuration.memorySampleRate, 12.5);
 }
 
 - (void)testEnableAPI {

@@ -28,6 +28,8 @@ final class DDProfilingConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.configuration.applicationLaunchSampleRate, applicationLaunchSampleRate)
         XCTAssertEqual(configuration.continuousSampleRate, continuousSampleRate)
         XCTAssertEqual(configuration.configuration.continuousSampleRate, continuousSampleRate)
+        XCTAssertEqual(configuration.memorySampleRate, 0)
+        XCTAssertEqual(configuration.configuration.memorySampleRate, 0)
     }
 
     func testMutatingConfigurationForwardsToSwift() {
@@ -35,10 +37,12 @@ final class DDProfilingConfigurationTests: XCTestCase {
         let customEndpoint: URL = .mockRandom()
         let applicationLaunchSampleRate: Float = .mockRandom(min: 0, max: 100)
         let continuousSampleRate: Float = .mockRandom(min: 0, max: 100)
+        let memorySampleRate: Float = .mockRandom(min: 0, max: 100)
 
         configuration.customEndpoint = customEndpoint
         configuration.applicationLaunchSampleRate = applicationLaunchSampleRate
         configuration.continuousSampleRate = continuousSampleRate
+        configuration.memorySampleRate = memorySampleRate
 
         XCTAssertEqual(configuration.customEndpoint, customEndpoint)
         XCTAssertEqual(configuration.configuration.customEndpoint, customEndpoint)
@@ -46,6 +50,11 @@ final class DDProfilingConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.configuration.applicationLaunchSampleRate, applicationLaunchSampleRate)
         XCTAssertEqual(configuration.continuousSampleRate, continuousSampleRate)
         XCTAssertEqual(configuration.configuration.continuousSampleRate, continuousSampleRate)
+        XCTAssertEqual(configuration.memorySampleRate, memorySampleRate)
+        XCTAssertEqual(configuration.configuration.memorySampleRate, memorySampleRate)
+
+        configuration.configuration.memorySampleRate = 0
+        XCTAssertEqual(configuration.memorySampleRate, 0)
 
         configuration.customEndpoint = nil
         XCTAssertNil(configuration.customEndpoint)

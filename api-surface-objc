@@ -4333,6 +4333,7 @@ public final class objc_ProfilingConfiguration: NSObject
     public var customEndpoint: URL?
     public var applicationLaunchSampleRate: Float
     public var continuousSampleRate: Float
+    public var memorySampleRate: Float
     override public init()
     public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: Float = 5,continuousSampleRate: Float = 5)
 public final class objc_Profiling: NSObject

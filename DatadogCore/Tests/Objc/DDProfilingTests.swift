@@ -36,6 +36,7 @@ final class DDProfilingTests: XCTestCase {
             applicationLaunchSampleRate: 0,
             continuousSampleRate: 0
         )
+        configuration.memorySampleRate = 42
 
         objc_Profiling.enable(with: configuration)
 
@@ -43,6 +44,7 @@ final class DDProfilingTests: XCTestCase {
         let requestBuilder = try XCTUnwrap(feature.requestBuilder as? RequestBuilder)
         XCTAssertEqual(requestBuilder.customUploadURL, customEndpoint)
         XCTAssertFalse(feature.profilingSamplerProvider.isContinuousProfilingConfigured)
+        XCTAssertEqual(feature.profilingSamplerProvider.memory.sampleRate, 42)
     }
 
     func testEnableOnNamedInstance() {

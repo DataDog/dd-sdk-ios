@@ -40,6 +40,16 @@ public final class objc_ProfilingConfiguration: NSObject {
         set { configuration.continuousSampleRate = newValue }
     }
 
+    /// The per-session sampling rate for memory (heap) profiling, between 0 and 100.
+    ///
+    /// Applied in addition to the RUM session sample rate, independently of CPU profiling.
+    /// A positive rate enables allocation tracking and selects sessions for heap profile emission.
+    /// Also enables early memory collection on the next process launch. Default: `0.0` (disabled).
+    public var memorySampleRate: Float {
+        get { configuration.memorySampleRate }
+        set { configuration.memorySampleRate = newValue }
+    }
+
     /// Creates a profiling configuration with default values.
     override public init() {
         configuration = .init()

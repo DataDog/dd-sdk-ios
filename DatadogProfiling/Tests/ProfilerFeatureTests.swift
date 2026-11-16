@@ -76,14 +76,13 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
     }
 
-    func testInit_persistsInternalMemoryRate() {
+    func testInit_persistsConfiguredMemoryRate() {
         let feature = ProfilerFeature(
             core: core,
-            configuration: .init(),
+            configuration: .init(memorySampleRate: 42),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
-            userDefaults: userDefaults,
-            memorySampleRate: 42
+            userDefaults: userDefaults
         )
 
         XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 42)
@@ -106,16 +105,87 @@ final class ProfilerFeatureTests: XCTestCase {
         withExtendedLifetime(feature) {}
     }
 
-    func testMemoryLifecycleCapturesWhenCPUIsSampledOut() {
-        XCTAssertTrue(dd_memory_profiler_start_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED))
-        let session = RUMCoreContext.mockWith(sessionSampleRate: 100)
+    func testInit_debugModeOverridesMemorySampleRate() {
+        for sampleRate: SampleRate in [0, 42] {
+            var configuration = Profiling.Configuration(memorySampleRate: sampleRate)
+            configuration.debugSDK = true
+            let feature = ProfilerFeature(
+                core: core,
+                configuration: configuration,
+                requestBuilder: requestBuilder,
+                telemetryController: telemetryController,
+                userDefaults: userDefaults
+            )
+
+            XCTAssertTrue(feature.profilingSamplerProvider.memory.isConfigured)
+            XCTAssertEqual(feature.profilingSamplerProvider.memory.sampleRate, .maxSampleRate)
+            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 100)
+            withExtendedLifetime(feature) {}
+        }
+    }
+
+    func testDefaultMemoryConfigurationDoesNotInstallHooksForSampledSession() {
+        dd_memory_profiler_reset_for_testing()
+        let swiftBefore = dd_swift_alloc_hook_diagnostics()
+        let objcBefore = dd_objc_alloc_hook_diagnostics()
         let feature = ProfilerFeature(
             core: core,
             configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
-            userDefaults: userDefaults,
-            memorySampleRate: 100
+            userDefaults: userDefaults
+        )
+
+        _ = feature.messageReceiver.receive(
+            message: .context(.mockWith(
+                trackingConsent: .pending,
+                applicationStateHistory: .mockAppInForeground(),
+                additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+            )),
+            from: core
+        )
+        MemoryProfiler.defaultQueue.sync {}
+        DatadogProfiler.defaultQueue.sync {}
+
+        let swiftAfter = dd_swift_alloc_hook_diagnostics()
+        let objcAfter = dd_objc_alloc_hook_diagnostics()
+        XCTAssertEqual(swiftAfter.alloc_slots_patched, swiftBefore.alloc_slots_patched)
+        XCTAssertEqual(swiftAfter.class_dealloc_slots_patched, swiftBefore.class_dealloc_slots_patched)
+        XCTAssertEqual(swiftAfter.object_dealloc_slots_patched, swiftBefore.object_dealloc_slots_patched)
+        XCTAssertEqual(objcAfter.alloc_installed, objcBefore.alloc_installed)
+        XCTAssertEqual(objcAfter.dealloc_installed, objcBefore.dealloc_installed)
+        XCTAssertFalse(swiftAfter.is_enabled)
+        XCTAssertFalse(objcAfter.is_enabled)
+        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(dd_memory_profiler_capture_diagnostics_for_testing().captures_count, 0)
+        withExtendedLifetime(feature) {}
+    }
+
+    func testInit_normalizesMemoryRateBeforePersistingIt() {
+        for (configured, expected): (SampleRate, SampleRate) in [(-1, 0), (101, 100)] {
+            let feature = ProfilerFeature(
+                core: core,
+                configuration: .init(memorySampleRate: configured),
+                requestBuilder: requestBuilder,
+                telemetryController: telemetryController,
+                userDefaults: userDefaults
+            )
+
+            XCTAssertEqual(feature.profilingSamplerProvider.memory.sampleRate, expected)
+            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), Double(expected))
+            withExtendedLifetime(feature) {}
+        }
+    }
+
+    func testMemoryLifecycleCapturesWhenCPUIsSampledOut() {
+        XCTAssertTrue(dd_memory_profiler_start_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED))
+        let session = RUMCoreContext.mockWith(sessionSampleRate: 100)
+        let feature = ProfilerFeature(
+            core: core,
+            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0, memorySampleRate: 100),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
         )
         _ = feature.messageReceiver.receive(
             message: .context(.mockWith(
@@ -166,11 +236,10 @@ final class ProfilerFeatureTests: XCTestCase {
         )
         var previous: ProfilerFeature? = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
+            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0, memorySampleRate: 100),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
-            userDefaults: userDefaults,
-            memorySampleRate: 100
+            userDefaults: userDefaults
         )
         var previousReceiver = previous?.messageReceiver
         weak var previousProfiler = previous?.memoryProfiler
@@ -322,6 +391,17 @@ final class ProfilerFeatureTests: XCTestCase {
 
         provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 0))
 
+        XCTAssertEqual(provider.memory.sampled, false)
+    }
+
+    func testProfilingSamplerProvider_samplesCPUWhenMemoryIsSampledOut() {
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 100, memorySampleRate: 10)
+        let sessionSampler = DeterministicSampler(seed: 0xd860b2b9437a, samplingRate: 100)
+
+        provider.updateWith(deterministicSampler: sessionSampler)
+
+        XCTAssertTrue(sessionSampler.isSampled)
+        XCTAssertEqual(provider.continuousProfilingSampled, true)
         XCTAssertEqual(provider.memory.sampled, false)
     }
 

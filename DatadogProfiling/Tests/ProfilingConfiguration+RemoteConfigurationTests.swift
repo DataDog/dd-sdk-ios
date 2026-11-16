@@ -17,7 +17,8 @@ class ProfilingConfiguration_RemoteConfigurationTests: XCTestCase {
     func testWhenNoRemoteValuesAreProvided_itLeavesConfigurationUnchanged() {
         let baseline = Profiling.Configuration(
             customEndpoint: .mockRandom(),
-            applicationLaunchSampleRate: 42
+            applicationLaunchSampleRate: 42,
+            memorySampleRate: 37
         )
 
         var withNilRemote = baseline

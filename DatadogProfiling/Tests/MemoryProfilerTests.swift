@@ -53,6 +53,21 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(profiler.state, .stopped)
         XCTAssertFalse(dd_memory_profiler_is_running())
         XCTAssertEqual(diagnostics.captures_count, 0)
+        let swiftDiagnostics = dd_swift_alloc_hook_diagnostics()
+        let objcDiagnostics = dd_objc_alloc_hook_diagnostics()
+        XCTAssertFalse(swiftDiagnostics.is_enabled)
+        XCTAssertFalse(objcDiagnostics.is_enabled)
+
+        withExtendedLifetime((NSObject(), ProfilingSamplerProvider(continuousSampleRate: 0))) {}
+        record(address: 0x30000, size: 32)
+        profiler.captureWindow()
+        drain()
+
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_swift_alloc_hook_diagnostics().allocations, swiftDiagnostics.allocations)
+        XCTAssertEqual(dd_objc_alloc_hook_diagnostics().allocations, objcDiagnostics.allocations)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
     }
 
     func testConfiguredSamplerWaitsForFirstRUMDecision() {
