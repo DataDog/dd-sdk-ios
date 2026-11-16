@@ -695,7 +695,7 @@ class RemoteConfigurationTests: XCTestCase {
         // When — the cached file is corrupted before the next foreground sync
         try Data().write(to: fileURL, options: .atomic)
         dateProvider.advance(bySeconds: 360)
-        notificationCenterProvider.postEnterForeground()
+        notificationCenterProvider.postDidBecomeActive()
 
         // Then
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to read cached metadata etag")
