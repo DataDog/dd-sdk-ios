@@ -13,7 +13,11 @@ import Foundation
 @_implementationOnly import DatadogMachProfiler
 
 /// Owns memory profiling windows independently of CPU profiling decisions.
-internal final class MemoryProfiler: @unchecked Sendable {
+internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendable {
+    enum Constants {
+        static let cutOffTime: TimeInterval = 60 // 1 minute cutoff
+    }
+
     static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.datadog-memory-profiler",
         qos: .utility
@@ -35,6 +39,9 @@ internal final class MemoryProfiler: @unchecked Sendable {
     private let profilingSamplerProvider: ProfilingSamplerProvider
     private let profilingConditions = ProfilingConditions()
     private let writer: ProfileWriter
+    private let scheduler: ProfilingScheduler
+    private var periodicStart: DispatchTime?
+    private var samplingDeadline: DispatchTime?
     private let dateProvider: DateProvider
     private var hasCapturedAppLaunch = false
     private var pendingAppLaunch: (
@@ -59,6 +66,7 @@ internal final class MemoryProfiler: @unchecked Sendable {
     init(
         profilingSamplerProvider: ProfilingSamplerProvider,
         writer: ProfileWriter,
+        scheduler: ProfilingScheduler,
         queue: DispatchQueue = MemoryProfiler.defaultQueue,
         dateProvider: DateProvider = SystemDateProvider(),
         notificationCenter: NotificationCenter = .default
@@ -66,6 +74,7 @@ internal final class MemoryProfiler: @unchecked Sendable {
         self.profilingSamplerProvider = profilingSamplerProvider
         self.queue = queue
         self.writer = writer
+        self.scheduler = scheduler
         self.dateProvider = dateProvider
         queue.setSpecific(key: queueKey, value: ())
         // Only an admitted launch may record before the first RUM decision.
@@ -81,6 +90,11 @@ internal final class MemoryProfiler: @unchecked Sendable {
                 }
             }
         }
+        runOnQueueSync(queue, key: queueKey) {
+            if state == .waiting {
+                scheduleSamplingDeadline()
+            }
+        }
         if isEnabled {
             notificationCenter.addObserver(
                 self,
@@ -92,6 +106,7 @@ internal final class MemoryProfiler: @unchecked Sendable {
     }
 
     deinit {
+        scheduler.stopPeriodic(for: self)
         // RUM-18564 will coordinate SDK shutdown independently of receiver lifetime.
         if state != .shutDown {
             dd_memory_profiler_stop()
@@ -179,7 +194,9 @@ private extension MemoryProfiler {
                 clearDurationEvents()
             }
             currentContext = context
-            if nextRUMContext == nil, previousRUMContext != nil {
+            if nextRUMContext != nil {
+                samplingDeadline = nil
+            } else if previousRUMContext != nil {
                 stopNative()
                 return
             }
@@ -232,6 +249,9 @@ private extension MemoryProfiler {
                 // Serialize now so the pending snapshot owns its bytes until resolution.
                 var capture = dd_memory_capture_t()
                 let status = dd_memory_profiler_capture(&capture)
+                if periodicStart != nil {
+                    periodicStart = .now()
+                }
                 defer { clearDurationEvents() }
                 switch status {
                 case DD_MEMORY_CAPTURE_READY:
@@ -252,6 +272,17 @@ private extension MemoryProfiler {
 }
 
 extension MemoryProfiler {
+    func captureSnapshot(scheduledFor time: DispatchTime, completion: @escaping @Sendable (ProfileSnapshot?) -> Void) {
+        queue.async { [weak self] in
+            guard let self, state == .running, canEmit,
+                  let periodicStart, time >= periodicStart else {
+                completion(nil)
+                return
+            }
+            completion(closeWindow())
+        }
+    }
+
     /// Closes an eligible foreground window on the profiler queue.
     func captureWindow() {
         queue.async { [weak self] in
@@ -347,9 +378,18 @@ private extension MemoryProfiler {
                     state = .emissionSuspended
                 }
             }
+            stopPeriodicCapture()
             return
         }
         state = rumContext == nil ? .waiting : .running
+        if profilingSamplerProvider.memory.sampled(for: rumContext?.sessionSampler) == true {
+            if periodicStart == nil {
+                periodicStart = .now()
+            }
+            scheduler.startPeriodic(for: self)
+        } else {
+            stopPeriodicCapture()
+        }
     }
 
     func capture(shouldWrite: Bool = true, operation: ProfilingOperation = .continuousProfiling, message: TTIDMessage? = nil) {
@@ -362,6 +402,10 @@ private extension MemoryProfiler {
         defer { clearDurationEvents() }
         var capture = dd_memory_capture_t()
         let status = dd_memory_profiler_capture(&capture)
+        // Queued ticks from the preceding window must not close the new one.
+        if periodicStart != nil {
+            periodicStart = .now()
+        }
         switch status {
         case DD_MEMORY_CAPTURE_IDLE:
             return nil
@@ -414,8 +458,15 @@ private extension MemoryProfiler {
         )
     }
 
+    func stopPeriodicCapture() {
+        periodicStart = nil
+        scheduler.stopPeriodic(for: self)
+    }
+
     func stopNative() {
         let didFail = state == .failed
+        samplingDeadline = nil
+        stopPeriodicCapture()
         dd_memory_profiler_stop()
         state = didFail ? .failed : .stopped
         hasForegroundTime = false
@@ -430,6 +481,32 @@ private extension MemoryProfiler {
         }
         stopNative()
         state = .shutDown
+    }
+}
+
+// MARK: - Initial sampling deadline
+
+private extension MemoryProfiler {
+    func scheduleSamplingDeadline() {
+        let startTimeNanoseconds = dd_memory_profiler_window_start_time_nanos()
+        let origin = Double(startTimeNanoseconds) / 1_000_000_000
+        let age = startTimeNanoseconds > 0 ? max(0, dateProvider.now.timeIntervalSince1970 - origin) : 0
+        let remaining = max(0, Constants.cutOffTime - age)
+        samplingDeadline = remaining.isFinite ? .now() + remaining : nil
+        if let samplingDeadline {
+            queue.asyncAfter(deadline: samplingDeadline) { [weak self] in
+                self?.expireSamplingGrace()
+            }
+        }
+    }
+
+    func expireSamplingGrace() {
+        guard rumContext == nil,
+              let samplingDeadline, samplingDeadline <= .now(),
+              state == .waiting || state == .emissionSuspended else {
+            return
+        }
+        stopNative()
     }
 }
 
