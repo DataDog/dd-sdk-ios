@@ -129,6 +129,8 @@ extension Flags.ResponseProtection {
             spkiSHA256Pins: [
                 // Certainly Intermediate R1 (RSA 2048), valid to 2032-06-21. It issues the current certificates.
                 "oW7smChMJRcnzTObF7K+HzInReAPTxB/L1h6eZTmw9Q=",
+                // Certainly Intermediate E1 (EC P-384), valid to 2031-04-01 for the copy signed by Certainly Root E1.
+                "XkxTESlVMF59ZsGRFSBQJyCYjYJYNYkLwv/sqaDnMJA=",
                 // Certainly Root R1 (RSA 4096), valid to 2046-04-01.
                 "P5Pz/PedIl0hPu9qSj9Yhc+E/j16ejwRVTUXaIwOIQA=",
                 // Certainly Root E1 (EC P-384), valid to 2046-04-01.

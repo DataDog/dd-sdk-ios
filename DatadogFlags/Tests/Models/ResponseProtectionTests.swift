@@ -104,6 +104,7 @@ final class ResponseProtectionTests: XCTestCase {
         // The pins are computed from the public CA certificates, not copied from the profile.
         let issuerPins = try [
             TLSPinningFixtures.certainlyIntermediateR1,
+            TLSPinningFixtures.certainlyIntermediateE1,
             TLSPinningFixtures.certainlyRootR1,
             TLSPinningFixtures.certainlyRootE1,
         ].map { certificate in
@@ -115,6 +116,7 @@ final class ResponseProtectionTests: XCTestCase {
         XCTAssertEqual(profile.pinTarget, .issuer)
         XCTAssertEqual(issuerPins, [
             "oW7smChMJRcnzTObF7K+HzInReAPTxB/L1h6eZTmw9Q=",
+            "XkxTESlVMF59ZsGRFSBQJyCYjYJYNYkLwv/sqaDnMJA=",
             "P5Pz/PedIl0hPu9qSj9Yhc+E/j16ejwRVTUXaIwOIQA=",
             "HvZGJdqi5dQz10Sa4xogDRAl4AEqj+z6cJMvi1mbdd0=",
         ])
