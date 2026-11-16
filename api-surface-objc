@@ -4306,4 +4306,12 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject
 # API surface for DatadogProfiling:
 # ----------------------------------
 
-
+public final class objc_ProfilingConfiguration: NSObject
+    public var customEndpoint: URL?
+    public var applicationLaunchSampleRate: Float
+    public var continuousSampleRate: Float
+    override public init()
+    public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: Float = 5,continuousSampleRate: Float = 5)
+public final class objc_Profiling: NSObject
+    public static func enable(with configuration: objc_ProfilingConfiguration = .init())
+    public static func enable(with configuration: objc_ProfilingConfiguration, instanceName: String?)
