@@ -102,6 +102,64 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         XCTAssertEqual(actualBody.normalizedJSON, expectedBody.normalizedJSON)
     }
 
+    func testServiceIsSentWhenTheAppSetsIt() throws {
+        // Given
+        let context = DatadogContext.mockWith(service: "checkout-ios", applicationBundleIdentifier: "com.example.shop")
+
+        // When
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: testURL,
+            evaluationContext: .mockAny(),
+            context: context,
+            customHeaders: nil,
+            flagSelection: nil
+        )
+
+        // Then
+        XCTAssertEqual(request.value(forHTTPHeaderField: "dd-service"), "checkout-ios")
+    }
+
+    func testServiceIsNotSentWhenItIsTheCoreDefault() throws {
+        let defaults: [(service: String, bundleIdentifier: String)] = [
+            ("com.example.shop", "com.example.shop"),
+            ("ios", "unknown"),
+        ]
+        for (service, bundleIdentifier) in defaults {
+            // Given
+            let context = DatadogContext.mockWith(service: service, applicationBundleIdentifier: bundleIdentifier)
+
+            // When
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: testURL,
+                evaluationContext: .mockAny(),
+                context: context,
+                customHeaders: nil,
+                flagSelection: nil
+            )
+
+            // Then
+            XCTAssertNil(request.value(forHTTPHeaderField: "dd-service"), "\(service) is the core default")
+        }
+    }
+
+    func testCustomServiceHeaderReplacesTheService() throws {
+        // Given
+        let context = DatadogContext.mockWith(service: "checkout-ios", applicationBundleIdentifier: "com.example.shop")
+
+        // When
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: testURL,
+            evaluationContext: .mockAny(),
+            context: context,
+            customHeaders: ["DD-Service": "manual-service"],
+            flagSelection: nil
+        )
+
+        // Then
+        XCTAssertEqual(request.value(forHTTPHeaderField: "dd-service"), "manual-service")
+        XCTAssertEqual(request.allHTTPHeaderFields?.keys.filter { $0.lowercased() == "dd-service" }.count, 1)
+    }
+
     func testFlagAssignmentsRequestWithFlagSelection() throws {
         // Given
         let flagSelection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])

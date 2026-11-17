@@ -35,6 +35,13 @@ extension URLRequest {
             request.setValue(applicationId, forHTTPHeaderField: "dd-application-id")
         }
 
+        // Core uses the bundle identifier, or "ios" without one, when the app sets no service,
+        // so those values are treated as unset. Core strips "," and ":" from the service, which
+        // bundle identifiers never contain. The edge validates the value it receives.
+        if context.service != context.applicationBundleIdentifier && context.service != "ios" {
+            request.setValue(context.service, forHTTPHeaderField: "dd-service")
+        }
+
         if let customHeaders {
             for (key, value) in customHeaders {
                 request.setValue(value, forHTTPHeaderField: key)
