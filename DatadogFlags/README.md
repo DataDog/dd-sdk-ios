@@ -142,7 +142,7 @@ Client configuration is fixed for each client name. Creating a client with an ex
 
 ## Evaluation telemetry privacy
 
-Evaluation telemetry is protected by default. Each event sends the targeting key as `sha256_` followed by the lowercase hex SHA-256 of its UTF-8 bytes, and omits the evaluation context. An empty targeting key is sent as an empty string. Evaluations made before any context is set have no targeting key. A targeting key that is not valid UTF-16 is omitted, and the evaluation is still counted.
+Evaluation telemetry is protected by default. Each event sends the targeting key as `sha256_` followed by the lowercase hex SHA-256 of its UTF-8 bytes, and omits the evaluation context. An empty targeting key is sent as an empty string. With the default experimentation opt-out mode (`.disabled`), an evaluation made before a flags configuration is available sends its event with the targeting key omitted. With `.immediate` or `.futureExperimentsOnly`, an evaluation for a requested context whose configuration is still loading sends that context's targeting key in protected form. In both consent modes, the SDK omits a targeting key that fails strict UTF-8 encoding, such as one with an unpaired UTF-16 surrogate, and still counts the evaluation.
 
 The raw targeting key and the evaluation context are sent only when the flags configuration for the evaluated context enables full evaluation data. The SDK keeps that setting with the configuration it applies to, including when the configuration is restored from disk. A refresh changes later evaluations only. Events that are waiting to be sent keep the setting that applied when the flag was evaluated.
 

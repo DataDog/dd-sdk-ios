@@ -12,7 +12,10 @@ public protocol FlagsClientInternal: AnyObject {
     @_spi(Internal)
     func getFlagAssignments() -> [String: FlagAssignment]?
 
-    /// Assignments and consent must be cached together, including for missing-flag evaluations.
+    /// Returns the readable assignments and the `observeFullEvaluationData` consent of the configuration they came from.
+    /// Returns nil in the error state and when the readable configuration is missing or obfuscated.
+    /// Cache both together, and use that consent for missing-flag evaluations.
+    /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
 
@@ -28,7 +31,9 @@ public protocol FlagsClientInternal: AnyObject {
     @_spi(Internal)
     func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 
-    /// Records only an evaluation event. A missing assignment represents a runtime default.
+    /// Records only an evaluation event. A missing assignment represents a runtime default and reports in protected mode.
+    /// For a present assignment, its `observeFullEvaluationData` selects the mode: full mode sends the raw targeting key
+    /// and the context attributes, and protected mode sends the hashed key and omits the attributes.
     /// Respects the client's telemetry opt-out configuration using the supplied context.
     /// `errorCode` must be an OpenFeature error code; unrecognized codes are reported as `GENERAL`.
     /// Does not fetch configuration, record an exposure, or report to RUM.
