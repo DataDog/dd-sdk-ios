@@ -494,6 +494,20 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 42)
     }
 
+    #if !os(macOS)
+    func testWhenEnabledWithManualAppDisplayInitializedReporting_itDoesNotReadTheFirstFrame() throws {
+        // Given
+        config._internal_mutation { $0.reportsAppDisplayInitializedManually = true }
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertNil(monitor.applicationScope.dependencies.firstFrameReader)
+    }
+    #endif
+
     func testWhenEnabledWithNoOverwritingConfigurationTelemetrySampleRate() throws {
         // When
         RUM.enable(with: config, in: core)

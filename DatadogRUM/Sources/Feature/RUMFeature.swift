@@ -117,7 +117,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         // macOS has no render loop to read the first frame from: `RUMInstrumentation` reads the first window instead.
         firstFrameReader = nil
         #else
-        firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        // A cross-platform SDK that reports the first frame itself replaces this reader.
+        firstFrameReader = configuration.reportsAppDisplayInitializedManually
+            ? nil
+            : FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
         #endif
 
         #if !os(watchOS) && !os(macOS)

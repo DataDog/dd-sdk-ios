@@ -498,6 +498,9 @@ extension RUM {
         internal var viewEndedSampleRate = ViewEndedController.defaultSampleRate
         /// Sample rate for "session ended" metric in telemetry.
         internal var sessionEndedSampleRate = SessionEndedMetricController.defaultSampleRate
+        /// Allows cross-platform SDKs to disable first frame automatic detection for the TTID metric.
+        /// This can then be manually reported with `RUMMonitor._internal.reportAppDisplayInitialized(at:)`
+        internal var reportsAppDisplayInitializedManually = false
 
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 
@@ -912,6 +915,15 @@ extension InternalExtension where ExtendedType == RUM.Configuration {
     public var configurationTelemetrySampleRate: Float {
         get { type.configurationTelemetrySampleRate }
         set { type.configurationTelemetrySampleRate = newValue }
+    }
+
+    /// When `true`, the SDK does not detect the app's first frame to compute Time to Initial Display (TTID).
+    /// A cross-platform SDK must report it with `RUMMonitor._internal.reportAppDisplayInitialized(at:)` instead.
+    ///
+    /// It is used by cross-platform SDKs whose first native frame is not the first frame of the app's UI.
+    public var reportsAppDisplayInitializedManually: Bool {
+        get { type.reportsAppDisplayInitializedManually }
+        set { type.reportsAppDisplayInitializedManually = newValue }
     }
 }
 

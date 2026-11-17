@@ -152,6 +152,79 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(vitalEvents?.count, 1)
         XCTAssertEqual(vitalEvents?.first?.vital.appLaunchMetric, .ttid)
     }
+
+    func testInternalReportAppDisplayInitialized_thenTTIDIsWrittenFromProcessLaunch() throws {
+        // Given
+        let processLaunchDate = Date()
+        let featureScope = FeatureScopeMock(
+            context: .mockWith(
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: processLaunchDate)
+            )
+        )
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor._internal?.reportAppDisplayInitialized(at: processLaunchDate.addingTimeInterval(1.5))
+
+        // Then
+        let vitalEvents = featureScope.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
+
+        XCTAssertEqual(vitalEvents.count, 1)
+        XCTAssertEqual(vitalEvents.first?.vital.appLaunchMetric, .ttid)
+        XCTAssertEqual(try XCTUnwrap(vitalEvents.first?.vital.duration), 1_500_000_000, accuracy: 1_000)
+    }
+
+    func testInternalReportAppDisplayInitializedThenTTFD_thenTTIDAndTTFDAreWrittenInOrder() throws {
+        // Given
+        let processLaunchDate = Date()
+        let featureScope = FeatureScopeMock(
+            context: .mockWith(
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: processLaunchDate)
+            )
+        )
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope),
+            dateProvider: DateProviderMock(now: processLaunchDate.addingTimeInterval(2))
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor._internal?.reportAppDisplayInitialized(at: processLaunchDate.addingTimeInterval(1))
+        monitor.reportAppFullyDisplayed()
+
+        // Then
+        let vitalEvents = featureScope.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
+
+        XCTAssertEqual(vitalEvents.count, 2)
+        XCTAssertEqual(vitalEvents.first?.vital.appLaunchMetric, .ttid)
+        XCTAssertEqual(try XCTUnwrap(vitalEvents.first?.vital.duration), 1_000_000_000, accuracy: 1_000)
+        XCTAssertEqual(vitalEvents.last?.vital.appLaunchMetric, .ttfd)
+        XCTAssertEqual(try XCTUnwrap(vitalEvents.last?.vital.duration), 2_000_000_000, accuracy: 1_000)
+    }
+
+    func testInternalReportAppDisplayInitializedAfterTTFD_thenTTFDIsWrittenAfterTTID() throws {
+        // Given
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor.reportAppFullyDisplayed()
+        monitor._internal?.reportAppDisplayInitialized(at: Date())
+
+        // Then
+        let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
+
+        XCTAssertEqual(vitalEvents?.count, 2)
+        XCTAssertEqual(vitalEvents?.first?.vital.appLaunchMetric, .ttid)
+        XCTAssertEqual(vitalEvents?.last?.vital.appLaunchMetric, .ttfd)
+    }
     #endif
 
     // MARK: - View Loading Time
