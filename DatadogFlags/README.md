@@ -52,8 +52,6 @@ The SDK treats the JWT as opaque and sends it only in the `DD-Assignment-Token` 
 
 A usable token is a nonempty string containing only printable ASCII characters without whitespace (`0x21...0x7e`). Missing, `null`, empty, and unusable values send no header and do not establish a subject boundary by themselves. An unusable value produces a fixed warning that does not contain the supplied value. The assignment request still proceeds so that the endpoint can decide whether authorization is required.
 
-Assignment requests carrying a token refuse all HTTP redirects, including redirects within the same origin. Configure a custom flags endpoint with its final URL. The redirect destination receives no request or token. A refused redirect is handled as an ordinary download failure and can use an eligible stale fallback. Requests without a usable token retain their existing redirect behavior.
-
 A usable token creates a subject boundary as soon as the context update begins:
 
 - Retained assignments for a different targeting key are unavailable while the download is in progress and after it fails. Evaluation returns the application default with `.general`.

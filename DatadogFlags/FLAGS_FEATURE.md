@@ -155,7 +155,7 @@ flowchart LR
 
 ### Implementation
 - `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, subject isolation, cache restore, state transitions, initialization timeout.
-- `DatadogFlags/Sources/Client/FlagAssignmentsFetcher.swift` — Endpoint per site, authorization rejection detection, redirect policy, response handling, flag selection fallbacks.
+- `DatadogFlags/Sources/Client/FlagAssignmentsFetcher.swift` — Endpoint per site, authorization rejection detection, response handling, flag selection fallbacks.
 - `DatadogFlags/Sources/Client/FlagAssignmentsRequest.swift` — Request headers and body.
 - `DatadogFlags/Sources/Client/FlagsDataStore.swift` — Per-client disk cache and its versions.
 - `DatadogFlags/Sources/Client/FallbackFlagsClient.swift` — No-op client returned on misuse.
@@ -214,7 +214,6 @@ client.setEvaluationContext(
 
 - A usable token is a nonempty string of printable ASCII characters without whitespace (`0x21...0x7e`). Missing, null, and empty values send no header. Other values send no header and produce a fixed warning without the value. An unusable replacement does not reuse an earlier token.
 - The SDK treats the token as opaque. The endpoint validates JWT claims. The SDK does not parse JWTs, use the device clock to check expiration, or refresh tokens. The reserved attribute is excluded from request bodies, persistence, exposure events, evaluation telemetry, RUM annotations, errors, and SDK diagnostics.
-- Requests with a token refuse all HTTP redirects, including redirects within the same origin. The destination receives no request or token. Refusal uses the normal download-failure and fallback path. Requests without a usable token keep their existing redirect behavior.
 - A usable token activates a subject boundary immediately. HTTP 401 also activates it if a JSON:API `errors` entry has the exact code `ASSIGNMENT_AUTHORIZATION_FAILED`. This rejection returns `FlagsError.assignmentAuthorizationFailed`. Untyped or malformed 401 responses remain ordinary download failures.
 - While the boundary is active, another subject's assignments are withheld. Subjects match only when their `targetingKey` UTF-8 bytes are identical. Without eligible assignments, evaluations return the application default with `FlagEvaluationError.general` and telemetry code `GENERAL`. Eligible same-subject assignments retain their original downloaded context for evaluation and telemetry. With these assignments, a failed refresh sets `.stale`. Experimentation opt-out modes keep their stricter context and policy checks.
 - Removing the token does not end an unresolved boundary. A successful download or eligible same-subject stale fallback ends it, as in the browser provider. Later updates without a usable token follow ordinary iOS behavior. After authorization is observed, only the latest request can install assignments, including after recovery.
@@ -280,9 +279,9 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 
 ### "Assignment downloads fail after adding a token"
 
-**Causes:** The endpoint can reject authorization, or a proxy can redirect a request that carries a token. Token-bearing requests refuse redirects.
+**Causes:** The endpoint can reject authorization, or a custom proxy can omit the assignment-token header.
 
-**Solutions:** Use the final assignments URL in `customFlagsEndpoint`. Configure the proxy to forward `DD-Assignment-Token` without a redirect. For `.assignmentAuthorizationFailed`, obtain a current token for the requested subject and environment from your backend.
+**Solutions:** Configure the proxy to forward `DD-Assignment-Token`. For `.assignmentAuthorizationFailed`, obtain a current token for the requested subject and environment from your backend.
 
 ### "RUM shows the variant key, not the flag value"
 **Expected.** The RUM integration records the **variant key** under the view's `feature_flags.<flag key>`, not the evaluated value. It is attached only to the view active at evaluation time; evaluations without an active RUM view are dropped from RUM. RUM errors on that view carry the same feature flags.

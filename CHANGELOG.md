@@ -1,6 +1,5 @@
 # Unreleased
 
-- [BUGFIX] Flags: Refuse redirects for assignment downloads carrying `DD-Assignment-Token` to prevent forwarding the credential to another destination. Requests without an assignment token retain their existing redirect behavior.
 - [FEATURE] Flags: Add subject authorization for assignment downloads through the reserved `dd_assignment_token` evaluation-context attribute. The token is sent only in the `DD-Assignment-Token` header and is excluded from targeting, persistence, and Datadog telemetry. Adds `FlagsError.assignmentAuthorizationFailed` and `FlagEvaluationError.general`; exhaustive switches need the new cases.
 - [IMPROVEMENT] Flags: Protect evaluation telemetry by default. Targeting keys are hashed and the evaluation context is omitted unless the flags configuration enables full evaluation data. Only stable error codes are reported. See [#3340][]
 
