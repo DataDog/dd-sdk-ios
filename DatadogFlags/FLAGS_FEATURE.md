@@ -200,6 +200,7 @@ Listeners are held weakly and called with the current state when added. A state 
 ### Exposures and Evaluation Telemetry
 - **Exposures** are written only for allocations whose assignment has `doLog` set (experiments). They are deduplicated in memory per client by targeting key and flag key, and logged again when the allocation, variant or serial ID changes. They include the targeting key and all context attributes.
 - **Evaluations** are aggregated and flushed every `evaluationFlushInterval` seconds, or when 1,000 aggregations accumulate. Failed evaluations are also counted, with an error code.
+- **Evaluation telemetry privacy:** by default, evaluation events send the targeting key as `sha256_` plus the lowercase hex SHA-256 of its UTF-8 bytes, and omit the evaluation context. A flags configuration that sets `observeFullEvaluationData: true` sends the raw key and the context. The consent travels with the configuration, including when it is restored from disk, and splits evaluation buckets. A key that fails strict UTF-8 encoding is omitted in both modes. Error codes are limited to the stable OpenFeature set; any other code becomes `GENERAL`. See `DatadogFlags/README.md`.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
 
