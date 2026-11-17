@@ -91,9 +91,9 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
 
     /// Metadata of the split that served the value.
     ///
-    /// Features that the split sends to customer code appear as `__dd_feature.<key>` entries, for example
-    /// `__dd_feature.holdout.key`. Values are `.string`, `.double` or `.bool`. Only the `__dd_feature.` prefix
-    /// is a stable contract. Empty when evaluation failed or the split has no such features.
+    /// Holds one `__dd_feature.<key>` entry, for example `__dd_feature.holdout.key`, for each feature that the
+    /// split sends to customer code. Values are `.string`, `.double` or `.bool`. The `__dd_feature.` prefix
+    /// is the stable contract. A failed evaluation has an empty dictionary.
     public var flagMetadata: [String: AnyValue] = [:]
 
     /// Creates detailed flag evaluation information.
@@ -136,8 +136,8 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
 /// ```
 ///
 /// The callback runs synchronously on the thread that evaluated the flag, including the main thread.
-/// Keep it short and do not perform I/O on that thread. An error thrown by the callback is logged and
-/// never changes the evaluation result. The hook observes evaluations; it never records exposures itself.
+/// Keep it short and move I/O to another queue. The SDK catches and logs an error thrown by the callback
+/// and returns the evaluation result unchanged. The hook observes evaluations; the SDK records exposures.
 public final class ExposureHook {
     private let callback: (ExposureEvaluation) throws -> Void
     @ReadWriteLock
@@ -193,7 +193,7 @@ public struct ExposureEvaluation {
     /// `true` when the subject was already exposed to the same flag, allocation, variant and split.
     public let isCacheHit: Bool
 
-    /// `true` for an exposure that is not a repeat: exactly what the SDK sends to Datadog
+    /// `true` for a new exposure (`isExposure` and a cache miss): exactly what the SDK sends to Datadog
     /// when `Flags.Configuration.trackExposures` is enabled.
     public var shouldSend: Bool { isExposure && !isCacheHit }
 

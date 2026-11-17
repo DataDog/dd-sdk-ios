@@ -87,7 +87,7 @@ public enum Flags {
         /// Enables exposure logging via the dedicated exposures intake endpoint.
         ///
         /// When enabled, flag evaluation events are sent to the exposures endpoint for analytics and monitoring.
-        /// When disabled, no exposure is sent to Datadog, but the SDK still deduplicates exposures,
+        /// When disabled, the SDK stops sending exposures to Datadog and keeps deduplicating them,
         /// so ``exposureHook`` keeps receiving correct verdicts.
         ///
         /// Default: `true`.

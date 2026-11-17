@@ -22,7 +22,7 @@ internal struct ExposureEvent: Equatable, Codable {
     let variant: Identifier
     let serialID: Int?
     let subject: Subject
-    /// `EXPOSURE` features of the selected split. Not part of the deduplication key.
+    /// `EXPOSURE` features of the selected split.
     var features: [String: AnyValue]? = nil
 
     enum CodingKeys: String, CodingKey {

@@ -21,7 +21,7 @@ internal struct ExposureDecision: Equatable {
 }
 
 internal protocol ExposureLogging {
-    /// Records the exposure in the cache and returns the verdict. Call only for successful evaluations.
+    /// Records the exposure in the cache and returns the verdict. Call it for successful evaluations.
     @discardableResult
     func logExposure(
         for flagKey: String,
@@ -36,7 +36,7 @@ internal final class ExposureLogger: ExposureLogging {
     private let sendsExposures: Bool
     private let loggedExposures = ExposureTracker()
 
-    /// - Parameter sendsExposures: When `false`, the cache still records so verdicts stay correct, but nothing is sent.
+    /// - Parameter sendsExposures: `true` writes new exposures to Datadog. The cache records in both modes, which keeps verdicts correct.
     init(dateProvider: any DateProvider, featureScope: any FeatureScope, sendsExposures: Bool = true) {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
