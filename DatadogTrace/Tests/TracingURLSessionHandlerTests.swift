@@ -642,7 +642,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: incompleteInterception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -667,7 +667,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -686,7 +686,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -714,7 +714,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -736,7 +736,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -801,7 +801,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
     }
 
     // MARK: - Automatic Mode Support
@@ -892,7 +892,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -1438,7 +1438,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
         handler.interceptionDidComplete(interception: interception)
 
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -1489,7 +1489,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
         handler.interceptionDidComplete(interception: interception)
 
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -1588,7 +1588,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         noSpan.isInverted = true
         core.onEventWriteContext = { _ in noSpan.fulfill() }
         handler.interceptionDidComplete(interception: thirdParty)
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
         assertSpanCount(expectedSpanCount)
 
         let cancelled = makeCompletedInterception(error: URLError(.cancelled))
@@ -2291,7 +2291,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         let envelopes: [SpanEventsEnvelope] = core.events()
         XCTAssertEqual(envelopes.count, 0)
     }

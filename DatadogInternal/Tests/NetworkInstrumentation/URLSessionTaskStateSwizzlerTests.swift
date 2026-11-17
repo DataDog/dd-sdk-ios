@@ -126,11 +126,11 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(countAfterTask1, 2, "Task1 should have at least 2 state changes")
 
         // When - Second task should NOT be intercepted
-        let task2 = session.dataTask(with: url) { _, _, _ in }
+        let task2CompletedExpectation = self.expectation(description: "task2 completed")
+        let task2 = session.dataTask(with: url) { _, _, _ in task2CompletedExpectation.fulfill() }
         task2.resume()
 
-        // Give task2 time to complete
-        Thread.sleep(forTimeInterval: 1)
+        wait(for: [task2CompletedExpectation], timeout: 3)
 
         // Then - interception count should not have increased after unswizzle
         XCTAssertEqual(interceptionCount, countAfterTask1, "Task2 should not be intercepted after unswizzle")

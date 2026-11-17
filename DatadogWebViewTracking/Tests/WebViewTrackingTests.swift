@@ -599,8 +599,6 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        Thread.sleep(forTimeInterval: 1.0)
-
         webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
         // Start a session

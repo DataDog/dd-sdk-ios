@@ -61,6 +61,13 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testGroupedList() async throws {
+        try await takeLayerSnapshotFor(
+            GroupedListFixtureView(),
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testRoundedBorders() async throws {
         try await takeLayerSnapshotFor(
             RoundedBordersFixtureView(),
