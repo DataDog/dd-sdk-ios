@@ -10,6 +10,7 @@ import DatadogInternal
 internal class LongTaskObserver: RUMCommandPublisher {
     private let longTaskDurationThreshold: TimeInterval
     private let dateProvider: DateProvider
+    private let runLoop: RunLoop
 
     private(set) var observer_begin: CFRunLoopObserver?
     private(set) var observer_end: CFRunLoopObserver?
@@ -21,9 +22,15 @@ internal class LongTaskObserver: RUMCommandPublisher {
         self.subscriber = subscriber
     }
 
-    init(threshold: TimeInterval, dateProvider: DateProvider) {
+    init(
+        threshold: TimeInterval,
+        dateProvider: DateProvider,
+        backgroundStateProvider: LongTaskObserverBackgroundStateProvider,
+        runLoop: RunLoop = .main
+    ) {
         self.longTaskDurationThreshold = threshold
         self.dateProvider = dateProvider
+        self.runLoop = runLoop
 
         let activites_begin: [CFRunLoopActivity] = [
             .entry,
@@ -40,11 +47,14 @@ internal class LongTaskObserver: RUMCommandPublisher {
             guard let strongSelf = self else {
                 return
             }
+            guard backgroundStateProvider.isInBackgroundState == false else {
+                strongSelf.lastActivity = nil
+                return
+            }
             let now = strongSelf.dateProvider.now
             strongSelf.processActivity(block_act, at: now)
             strongSelf.lastActivity = (kind: block_act, date: now)
         }
-
         let activites_end: [CFRunLoopActivity] = [.beforeWaiting, .exit]
         observer_end = CFRunLoopObserverCreateWithHandler(
             kCFAllocatorDefault,
@@ -55,19 +65,23 @@ internal class LongTaskObserver: RUMCommandPublisher {
             guard let strongSelf = self else {
                 return
             }
+            guard backgroundStateProvider.isInBackgroundState == false else {
+                strongSelf.lastActivity = nil
+                return
+            }
             strongSelf.processActivity(block_act, at: strongSelf.dateProvider.now)
             strongSelf.lastActivity = nil
         }
     }
 
     func start() {
-        CFRunLoopAddObserver(RunLoop.main.getCFRunLoop(), observer_begin, .commonModes)
-        CFRunLoopAddObserver(RunLoop.main.getCFRunLoop(), observer_end, .commonModes)
+        CFRunLoopAddObserver(runLoop.getCFRunLoop(), observer_begin, .commonModes)
+        CFRunLoopAddObserver(runLoop.getCFRunLoop(), observer_end, .commonModes)
     }
 
     func stop() {
-        CFRunLoopRemoveObserver(RunLoop.main.getCFRunLoop(), observer_begin, .commonModes)
-        CFRunLoopRemoveObserver(RunLoop.main.getCFRunLoop(), observer_end, .commonModes)
+        CFRunLoopRemoveObserver(runLoop.getCFRunLoop(), observer_begin, .commonModes)
+        CFRunLoopRemoveObserver(runLoop.getCFRunLoop(), observer_end, .commonModes)
     }
 
     private func processActivity(_ activity: CFRunLoopActivity, at date: Date) {

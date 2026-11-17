@@ -1581,6 +1581,8 @@
 		6804F0BC4D67E9416B418186 /* CollapsingLowestDenseStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CEC7C5D50941F6E11D2D3 /* CollapsingLowestDenseStoreTests.swift */; };
 		EDC13F3F220F554EE9C5CA36 /* DDSketchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */; };
 		5B4BDFFC3098FAEB00927766 /* UIImage+PNGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4BDFFB3098FAEB00927766 /* UIImage+PNGTests.swift */; };
+		094D58BE30AB256F002F188C /* LongTaskObserverBackgroundStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094D58BD30AB256F002F188C /* LongTaskObserverBackgroundStateProvider.swift */; };
+		09564C8030AB2C560065F8E4 /* LongTaskObserverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09564C7F30AB2C560065F8E4 /* LongTaskObserverTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3684,6 +3686,8 @@
 		4B7CEC7C5D50941F6E11D2D3 /* CollapsingLowestDenseStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsingLowestDenseStoreTests.swift; sourceTree = "<group>"; };
 		490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSketchTests.swift; sourceTree = "<group>"; };
 		5B4BDFFB3098FAEB00927766 /* UIImage+PNGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+PNGTests.swift"; sourceTree = "<group>"; };
+		094D58BD30AB256F002F188C /* LongTaskObserverBackgroundStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongTaskObserverBackgroundStateProvider.swift; sourceTree = "<group>"; };
+		09564C7F30AB2C560065F8E4 /* LongTaskObserverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongTaskObserverTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -6631,6 +6635,7 @@
 				6167E6D82B80047900C3CA2D /* AppHangs */,
 				3CFF4F9C2C0DBEEA006F191D /* WatchdogTerminations */,
 				61C713BB2A3C95AD00FA735A /* RUMInstrumentationTests.swift */,
+				09564C7E30AB2C2E0065F8E4 /* LongTasks */,
 			);
 			path = Instrumentation;
 			sourceTree = "<group>";
@@ -6807,6 +6812,7 @@
 			isa = PBXGroup;
 			children = (
 				9E359F4D26CD518D001E25E9 /* LongTaskObserver.swift */,
+				094D58BD30AB256F002F188C /* LongTaskObserverBackgroundStateProvider.swift */,
 			);
 			path = LongTasks;
 			sourceTree = "<group>";
@@ -8102,6 +8108,14 @@
 				674F5CACF3B63463C48E4833 /* types.h */,
 			);
 			path = webp;
+			sourceTree = "<group>";
+		};
+		09564C7E30AB2C2E0065F8E4 /* LongTasks */ = {
+			isa = PBXGroup;
+			children = (
+				09564C7F30AB2C560065F8E4 /* LongTaskObserverTests.swift */,
+			);
+			path = LongTasks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -10393,6 +10407,7 @@
 				6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
 				A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */,
 				615E2B8E2D39444300D85243 /* ViewEndedController.swift in Sources */,
+				094D58BE30AB256F002F188C /* LongTaskObserverBackgroundStateProvider.swift in Sources */,
 				D29A9F8029DD85BB005C54A4 /* UIViewControllerHandler.swift in Sources */,
 				D29A9F5929DD85BB005C54A4 /* RUMCommand.swift in Sources */,
 				D29A9F8C29DD861C005C54A4 /* ValuePublisher.swift in Sources */,
@@ -10580,6 +10595,7 @@
 				96155A292D79A4E50029034E /* SwiftUIViewNameExtractorIntegrationTests.swift in Sources */,
 				3C4CF99B2C47DAA5006DE1C0 /* MemoryWarningMocks.swift in Sources */,
 				5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */,
+				09564C8030AB2C560065F8E4 /* LongTaskObserverTests.swift in Sources */,
 				3C43A3882C188974000BFB21 /* WatchdogTerminationMonitorTests.swift in Sources */,
 				B21F9B173E636896FBBF638B /* WatchdogTerminationReporterTests.swift in Sources */,
 				D29A9F9D29DDB483005C54A4 /* ValuePublisherTests.swift in Sources */,
