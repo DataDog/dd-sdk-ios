@@ -114,7 +114,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         let firstFrameReader: (RenderLoopReader & RUMCommandPublisher)?
         #if os(macOS)
-        // macOS has no render loop to read the first frame from: `RUMInstrumentation` reads the first window instead.
+        // macOS has no render loop to read the first frame from: `RUMInstrumentation` reads the first window instead,
+        // unless a cross-platform SDK reports the first frame itself.
         firstFrameReader = nil
         #else
         // A cross-platform SDK that reports the first frame itself replaces this reader.
@@ -350,6 +351,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             memoryWarningMonitor: nil,
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
+            reportsAppDisplayInitializedManually: configuration.reportsAppDisplayInitializedManually,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #elseif os(watchOS)

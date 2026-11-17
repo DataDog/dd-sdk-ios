@@ -202,7 +202,7 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
         #if os(macOS)
-        XCTAssertIdentical(monitor, rum.instrumentation.firstWindowReader.subscriber)
+        XCTAssertIdentical(monitor, rum.instrumentation.firstWindowReader?.subscriber)
         XCTAssertNil(monitor.applicationScope.dependencies.firstFrameReader, "macOS reads the first window instead of the first frame")
         #else
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
@@ -505,6 +505,18 @@ class RUMTests: XCTestCase {
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         XCTAssertNil(monitor.applicationScope.dependencies.firstFrameReader)
+    }
+    #else
+    func testWhenEnabledWithManualAppDisplayInitializedReporting_itDoesNotReadTheFirstWindow() throws {
+        // Given
+        config._internal_mutation { $0.reportsAppDisplayInitializedManually = true }
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        XCTAssertNil(rum.instrumentation.firstWindowReader)
     }
     #endif
 
