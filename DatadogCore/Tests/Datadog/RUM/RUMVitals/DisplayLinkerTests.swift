@@ -32,10 +32,8 @@ final class DisplayLinkerTests: XCTestCase {
             XCTAssertNotNil(observedReader)
         }
 
-        let released = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in observedLinker == nil && observedReader == nil },
-            object: nil
-        )
+        let released = XCTestExpectation(description: "Released")
+        wait(until: { observedLinker == nil && observedReader == nil }, andThenFulfill: released)
         _ = XCTWaiter.wait(for: [released], timeout: 2)
         XCTAssertNil(observedLinker, "Dropping the active owner must release its native display target")
         XCTAssertNil(observedReader, "An unowned display target must not retain its readers")
@@ -61,10 +59,8 @@ final class DisplayLinkerTests: XCTestCase {
             XCTAssertFalse(linker.isActive)
         }
 
-        let released = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in observedLinker == nil && observedReader == nil },
-            object: nil
-        )
+        let released = XCTestExpectation(description: "Released")
+        wait(until: { observedLinker == nil && observedReader == nil }, andThenFulfill: released)
         _ = XCTWaiter.wait(for: [released], timeout: 2)
         XCTAssertNil(observedLinker)
         XCTAssertNil(observedReader)
@@ -148,10 +144,8 @@ final class DisplayLinkerTests: XCTestCase {
             XCTAssertEqual(XCTWaiter.wait(for: [configurationDelivered], timeout: 7), .completed)
         }
 
-        let released = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in observedTarget == nil && observedFeature == nil && observedCore == nil },
-            object: nil
-        )
+        let released = XCTestExpectation(description: "Released")
+        wait(until: { observedTarget == nil && observedFeature == nil && observedCore == nil }, andThenFulfill: released)
         _ = XCTWaiter.wait(for: [released], timeout: 2)
         XCTAssertNil(observedCore)
         XCTAssertNil(observedSDKCore, "The actual SDK core must release after teardown")

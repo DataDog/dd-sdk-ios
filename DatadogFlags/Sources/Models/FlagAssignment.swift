@@ -22,9 +22,12 @@ public struct FlagAssignment: Equatable {
     public var reason: String
     public var doLog: Bool
     public var serialID: Int?
-    /// `true` when a `"variationType": "number"` value decodes as Int. The cache keeps this type.
-    internal var isNumberType = false
 
+    /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
+    private static let maxSafeInteger: Double = 9_007_199_254_740_991
+
+    /// Returns the variation as `T`. Numeric variations convert between `Int` and `Double` only
+    /// when the conversion is exact, whatever their served numeric type.
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {
         case .boolean(let value):
@@ -32,14 +35,18 @@ public struct FlagAssignment: Equatable {
         case .string(let value):
             return value as? T
         case .integer(let value):
-            // A whole number served as "number" decodes as `.integer`, so a Double
-            // read must accept it. A Double read of an assignment served as
-            // "integer" is a type mismatch.
             if T.self == Double.self {
-                return isNumberType ? Double(value) as? T : nil
+                return Double(exactly: value) as? T
             }
             return value as? T
         case .double(let value):
+            if T.self == Int.self {
+                // Above 2^53 - 1, a `.double` can be the rounded form of a different number, so it does not
+                // convert. For example, `JSONDecoder` decodes `9007199254740993.0001` as `9007199254740994.0`.
+                // Below the limit, exactness applies to the decoded value, not to the JSON text: `JSONDecoder`
+                // rounds over-precise literals such as `999999999999999.99` to `1000000000000000`.
+                return abs(value) <= Self.maxSafeInteger ? Int(exactly: value) as? T : nil
+            }
             return value as? T
         case .object(let value):
             return value as? T
@@ -55,6 +62,23 @@ public struct FlagAssignment: Equatable {
         self.reason = reason
         self.doLog = doLog
         self.serialID = serialID
+    }
+}
+
+internal extension CodingUserInfoKey {
+    /// Set on the decoder that reads the flags cache.
+    static let decodesStoredVariations = CodingUserInfoKey(
+        rawValue: "com.datadoghq.flags.decodes-stored-variations"
+    )
+}
+
+private extension Decoder {
+    /// Whether this decoder reads variations that the flags cache wrote.
+    var decodesStoredVariations: Bool {
+        guard let key = CodingUserInfoKey.decodesStoredVariations else {
+            return false
+        }
+        return userInfo[key] as? Bool ?? false
     }
 }
 
@@ -86,19 +110,20 @@ extension FlagAssignment: Codable {
             self.variation = try .boolean(container.decode(Bool.self, forKey: .variationValue))
         case "string":
             self.variation = try .string(container.decode(String.self, forKey: .variationValue))
-        case "number":
-            // "number" can carry an integer or a decimal flag. Check integer first, then
-            // double; `variation(as:)` lets a Double read accept the resulting `.integer`.
-            if let number = try? container.decode(Int.self, forKey: .variationValue) {
+        case "number", "integer", "float":
+            if variationType == "float", decoder.decodesStoredVariations {
+                // The flags cache writes a `.double` as "float". Restore it as `.double`, so a restore does not
+                // change its reads.
+                self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
+            } else if let number = try? container.decode(Int.self, forKey: .variationValue) {
+                // The served numeric type does not limit reads. Try `Int` before `Double` to keep integer
+                // literals exact. Known issue: `JSONDecoder` can decode a number with a fractional part as `Int`,
+                // for example `9007199254740993.5` as `9007199254740993`. This decode path cannot detect the lost
+                // fraction, because `JSONDecoder` does not expose the number text.
                 self.variation = .integer(number)
-                self.isNumberType = true
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
-        case "integer":
-            self.variation = try .integer(container.decode(Int.self, forKey: .variationValue))
-        case "float":
-            self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
         case "object":
             self.variation = try .object(container.decode(AnyValue.self, forKey: .variationValue))
         default:
@@ -126,7 +151,7 @@ extension FlagAssignment: Codable {
             try container.encode("float", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .integer(let value):
-            try container.encode(isNumberType ? "number" : "integer", forKey: .variationType)
+            try container.encode("integer", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .object(let value):
             try container.encode("object", forKey: .variationType)

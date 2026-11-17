@@ -470,18 +470,24 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testRequestAdvertisesCapabilitiesWithoutChangingSourceVersion() throws {
-        for source in ["ios", "flutter", "react-native", "future-bridge"] {
+        for (source, sdkName) in [
+            ("ios", "dd-sdk-ios"),
+            ("flutter", "flutter"),
+            ("react-native", "react-native"),
+            ("future-bridge", "future-bridge")
+        ] {
             let request = try URLRequest.flagAssignmentsRequest(
                 url: URL(string: "https://example.com/precompute-assignments")!,
                 evaluationContext: .mockAny(),
                 context: .mockWith(source: source, sdkVersion: "99.1.2-telemetry"),
-                customHeaders: nil
+                customHeaders: nil,
+                flagSelection: nil
             )
             let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
             let data = try XCTUnwrap(body["data"] as? [String: Any])
             let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
             let identity = try XCTUnwrap(attributes["source"] as? [String: String])
-            XCTAssertEqual(identity, ["sdk_name": "dd-sdk-ios", "sdk_version": "99.1.2-telemetry"])
+            XCTAssertEqual(identity, ["sdk_name": sdkName, "sdk_version": "99.1.2-telemetry"])
             XCTAssertNil(attributes["supported_capabilities"])
             if source != "ios" {
                 XCTAssertNil(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"))
@@ -557,6 +563,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             XCTAssertNil(repository.context)
@@ -590,7 +597,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
                     clientName: "client",
                     flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
                     dateProvider: DateProviderMock(),
-                    featureScope: scope
+                    featureScope: scope,
+                    flagSelection: nil
                 )
                 let evaluations = EvaluationLoggerMock()
                 let exposures = ExposureLoggerMock()
@@ -626,6 +634,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: NOPFeatureScope(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let completed = expectation(description: "repository completes without core context")
@@ -745,13 +754,13 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     private func makeFetcher(scope: FeatureScopeMock, data: @escaping () -> Data) -> FlagAssignmentsFetcher {
-        FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, featureScope: scope) { _, completion in
-            completion(.success(data()))
+        FlagAssignmentsFetcher(customEndpoint: nil, customHeaders: nil, flagSelection: nil, featureScope: scope) { _, completion in
+            completion(.success((data(), .mockAny())))
         }
     }
 
     private func makeRepository(scope: FeatureScopeMock, fetcher: FlagAssignmentsFetching) -> FlagsRepository {
-        FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope)
+        FlagsRepository(clientName: "client", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, flagSelection: nil)
     }
 }
 

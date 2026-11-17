@@ -124,6 +124,7 @@ final class FlagsClientTests: XCTestCase {
             flagAssignmentsFetcher: fetcher,
             dateProvider: DateProviderMock(),
             featureScope: scope,
+            flagSelection: nil,
             initializationTimeout: nil
         )
         scope.dataStore.flush()
@@ -643,25 +644,32 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNotNil(evaluationLogger.logEvaluationCalls[7].error, "typeMismatch should have error")
     }
 
-    func testDoubleEvaluationOfWholeNumberVariation() {
-        // Given - a whole number served as "number" decodes as `.integer`
+    func testNumericEvaluationConvertsWithoutLoss() {
+        // Given - whole and fractional numeric variations
         let exposureLogger = ExposureLoggerMock()
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
                 flagsData: .init(
                     flags: [
-                        "whole-number-flag": FlagAssignment(
+                        "integer-flag": .init(
                             allocationKey: "allocation-128",
-                            variationKey: "5.0",
+                            variationKey: "5",
                             variation: .integer(5),
                             reason: "TARGETING_MATCH",
                             doLog: true
-                        ).servedAsNumber(),
-                        "integer-flag": .init(
+                        ),
+                        "whole-double-flag": .init(
                             allocationKey: "allocation-129",
-                            variationKey: "variation-129",
-                            variation: .integer(7),
+                            variationKey: "7.0",
+                            variation: .double(7),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "fractional-double-flag": .init(
+                            allocationKey: "allocation-130",
+                            variationKey: "1.2",
+                            variation: .double(1.2),
                             reason: "TARGETING_MATCH",
                             doLog: true
                         ),
@@ -676,26 +684,43 @@ final class FlagsClientTests: XCTestCase {
         )
 
         // When
-        let doubleDetails = client.getDoubleDetails(key: "whole-number-flag", defaultValue: 3.14)
-        let integerDetails = client.getIntegerDetails(key: "whole-number-flag", defaultValue: 0)
-        let integerFlagAsDouble = client.getDoubleDetails(key: "integer-flag", defaultValue: 3.14)
+        let integerAsDouble = client.getDoubleDetails(key: "integer-flag", defaultValue: 3.14)
+        let integerAsInteger = client.getIntegerDetails(key: "integer-flag", defaultValue: 0)
+        let wholeDoubleAsInteger = client.getIntegerDetails(key: "whole-double-flag", defaultValue: 0)
+        let fractionalAsDouble = client.getDoubleDetails(key: "fractional-double-flag", defaultValue: 3.14)
+        let exposuresBeforeMismatch = exposureLogger.logExposureCalls.map(\.flagKey)
+        let fractionalAsInteger = client.getIntegerDetails(key: "fractional-double-flag", defaultValue: 0)
 
         // Then
         XCTAssertEqual(
-            doubleDetails,
+            integerAsDouble,
             FlagDetails(
-                key: "whole-number-flag",
+                key: "integer-flag",
                 value: 5.0,
-                variant: "5.0",
+                variant: "5",
                 reason: "TARGETING_MATCH",
                 allocationKey: "allocation-128"
             )
         )
-        XCTAssertEqual(integerDetails.value, 5)
-        XCTAssertNil(integerDetails.error)
-        XCTAssertEqual(integerFlagAsDouble, FlagDetails(key: "integer-flag", value: 3.14, error: .typeMismatch))
-        XCTAssertEqual(exposureLogger.logExposureCalls.count, 2)
-        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, "TYPE_MISMATCH"])
+        XCTAssertEqual(integerAsInteger.value, 5)
+        XCTAssertNil(integerAsInteger.error)
+        XCTAssertEqual(
+            wholeDoubleAsInteger,
+            FlagDetails(
+                key: "whole-double-flag",
+                value: 7,
+                variant: "7.0",
+                reason: "TARGETING_MATCH",
+                allocationKey: "allocation-129"
+            )
+        )
+        XCTAssertEqual(fractionalAsDouble.value, 1.2)
+        XCTAssertNil(fractionalAsDouble.error)
+        XCTAssertEqual(fractionalAsInteger, FlagDetails(key: "fractional-double-flag", value: 0, error: .typeMismatch))
+        let expectedExposures = ["integer-flag", "integer-flag", "whole-double-flag", "fractional-double-flag"]
+        XCTAssertEqual(exposuresBeforeMismatch, expectedExposures)
+        XCTAssertEqual(exposureLogger.logExposureCalls.map(\.flagKey), expectedExposures)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, nil, nil, "TYPE_MISMATCH"])
     }
 
     func testFlagEvaluationTracking() {
@@ -789,6 +814,38 @@ final class FlagsClientTests: XCTestCase {
         // Then
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
         XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
+    }
+
+    func testClientsCreatedAfterEnableUseTheConfiguredFlagSelectionForTheirCache() throws {
+        // Given
+        func encodedCache(selectedTags tags: [String]) throws -> Data {
+            try JSONEncoder().encode(
+                FlagsData(
+                    flags: ["test": .mockAnyString()],
+                    context: .mockAny(),
+                    date: .mockAny(),
+                    flagSelection: CanonicalFlagSelection(tags: tags, keyPatterns: [])
+                )
+            )
+        }
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(
+                storage: [
+                    "other-selection": .value(try encodedCache(selectedTags: ["web"]), 3),
+                    "same-selection": .value(try encodedCache(selectedTags: ["mobile"]), 3),
+                ]
+            )
+        )
+
+        // When
+        Flags.enable(with: .init(flagSelection: .init(tags: ["mobile"])), in: core)
+        let otherSelectionClient = FlagsClient.create(name: "other-selection", in: core)
+        let sameSelectionClient = FlagsClient.create(name: "same-selection", in: core)
+
+        // Then
+        // A cache written under another selection is not loaded, so that client has no flags data yet.
+        XCTAssertEqual(otherSelectionClient.getDetails(key: "test", defaultValue: "default").error, .providerNotReady)
+        XCTAssertNil(sameSelectionClient.getDetails(key: "test", defaultValue: "default").error)
     }
 
     func testSnapshot() {

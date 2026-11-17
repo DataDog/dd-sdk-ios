@@ -457,12 +457,17 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) {
+        stopResourceWithError(resourceKey: resourceKey, message: message, type: type, stack: nil, response: response, attributes: attributes)
+    }
+
+    func stopResourceWithError(resourceKey: String, message: String, type: String?, stack: String?, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
                 message: message,
                 type: type,
+                stack: stack,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 globalAttributes: self.attributes,

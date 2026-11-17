@@ -166,5 +166,9 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         XCTAssertNil(firstPartyRequest.httpHeaders["x-datadog-origin"])
         let tid = try taskWithRequest.meta.tid()
         XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-tags"], "_dd.p.tid=\(tid),_dd.p.dm=-1")
+        XCTAssertEqual(
+            firstPartyRequest.httpHeaders["baggage"],
+            "account.id=baggage-account,app.key=app-value,user.id=abcd-1234"
+        )
     }
 }

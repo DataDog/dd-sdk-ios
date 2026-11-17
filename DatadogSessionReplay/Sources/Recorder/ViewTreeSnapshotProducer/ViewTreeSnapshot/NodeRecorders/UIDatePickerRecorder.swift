@@ -117,8 +117,10 @@ private struct InlineStyleDatePickerRecorder {
     }
 
     func record(_ view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
+        let shouldMaskInputElements = attributes.resolveTextAndInputPrivacyLevel(in: context).shouldMaskInputElements
+
         viewRecorder.semanticsOverride = { _, viewAttributes in
-            if context.recorder.textAndInputPrivacy.shouldMaskInputElements {
+            if shouldMaskInputElements {
                 let isSquare = viewAttributes.frame.width == viewAttributes.frame.height
                 let isCircle = isSquare && viewAttributes.layerCornerRadius == viewAttributes.frame.width * 0.5
                 if isCircle {
@@ -128,12 +130,15 @@ private struct InlineStyleDatePickerRecorder {
             return nil
         }
 
-        if context.recorder.textAndInputPrivacy.shouldMaskInputElements {
-            labelRecorder.builderOverride = { builder in
-                var builder = builder
-                builder.textColor = SystemColors.label
+        // Recorders are reused across date pickers, so the override must be reset on every call:
+        // otherwise a masked picker would leak its label color override into subsequent unmasked ones.
+        labelRecorder.builderOverride = { builder in
+            guard shouldMaskInputElements else {
                 return builder
             }
+            var builder = builder
+            builder.textColor = SystemColors.label
+            return builder
         }
 
         return subtreeRecorder.record(view, in: context)

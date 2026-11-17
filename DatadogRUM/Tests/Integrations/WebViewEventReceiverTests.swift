@@ -857,7 +857,7 @@ class WebViewEventReceiverTests: XCTestCase {
         )
 
         // Necessary for RUM to set the session sampler in the feature, since it's an async process.
-        Thread.sleep(forTimeInterval: 1.0)
+        core.flush()
 
         let receiver = WebViewEventReceiver(
             featureScope: core.scope(for: RUMFeature.self),

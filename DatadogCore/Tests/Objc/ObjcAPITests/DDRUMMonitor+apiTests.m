@@ -84,6 +84,7 @@
     [monitor stopResourceWithErrorWithResourceKey:@""
                                                    error:[NSError errorWithDomain:NSURLErrorDomain code:-99 userInfo:nil] response:nil attributes:@{}];
     [monitor stopResourceWithErrorWithResourceKey:@"" message:@"" response:nil attributes:@{}];
+    [monitor stopResourceWithErrorWithResourceKey:@"" message:@"" type:nil stack:nil response:nil attributes:@{}];
     [monitor startActionWithType:DDRUMActionTypeSwipe name:@"" attributes:@{}];
     [monitor stopActionWithType:DDRUMActionTypeSwipe name:nil attributes:@{}];
     [monitor addActionWithType:DDRUMActionTypeTap name:@"" attributes:@{}];
@@ -99,6 +100,7 @@
 
     [monitor _internal_sync_addError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                               source:DDRUMErrorSourceCustom attributes:@{}];
+    [monitor _internal_addLongTaskAt:[NSDate date] duration:0.25 attributes:@{}];
 
     [monitor setDebug:YES];
     [monitor setDebug:NO];
