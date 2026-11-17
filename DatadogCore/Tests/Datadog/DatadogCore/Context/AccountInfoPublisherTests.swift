@@ -34,4 +34,38 @@ class AccountInfoPublisherTests: XCTestCase {
         // AccountInfoPublisher publishes in sync
         waitForExpectations(timeout: 0)
     }
+
+    func testWhenUpdateReturnsFalse_itDoesNotPublish() {
+        // Given
+        let publisher = AccountInfoPublisher()
+        var published: [AccountInfo?] = []
+        publisher.publish { published.append($0) }
+
+        // When
+        let result = publisher.update { _ in false }
+
+        // Then
+        XCTAssertFalse(result)
+        XCTAssertTrue(published.isEmpty)
+    }
+
+    func testWhenUpdateReturnsTrue_itPublishesTheUpdatedValue() {
+        // Given
+        let publisher = AccountInfoPublisher()
+        let accountInfo: AccountInfo = .mockRandom()
+        var published: [AccountInfo?] = []
+        publisher.publish { published.append($0) }
+
+        // When
+        let result = publisher.update {
+            $0 = accountInfo
+            return true
+        }
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertEqual(published.count, 1)
+        DDAssertReflectionEqual(published.first ?? nil, accountInfo)
+        DDAssertReflectionEqual(publisher.current, accountInfo)
+    }
 }

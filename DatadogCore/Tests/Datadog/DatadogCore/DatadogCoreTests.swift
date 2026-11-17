@@ -1045,4 +1045,149 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(userAfter.name, "user-name")
         XCTAssertEqual(userAfter.email, "user-email")
     }
+
+    // MARK: - Thread safety
+
+    func testWhenUserInfoAPIsAreCalledConcurrently_itKeepsEveryUpdate() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        core.setUserInfo(id: "user-id")
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { iteration in core.addUserExtraInfo(["key-\(iteration)": iteration]) },
+                { _ in core.set(anonymousId: "anonymous-id") }
+            ],
+            iterations: 500
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let user = core.userInfoPublisher.current
+        XCTAssertEqual(user.id, "user-id")
+        XCTAssertEqual(user.anonymousId, "anonymous-id")
+        XCTAssertEqual(user.extraInfo.count, 500)
+        let contextUser = core.contextProvider.read().userInfo
+        XCTAssertEqual(contextUser?.anonymousId, "anonymous-id")
+        XCTAssertEqual(contextUser?.extraInfo.count, 500)
+    }
+
+    func testWhenUserInfoIsSetAndClearedConcurrently_itKeepsTheAnonymousIdentifier() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        core.set(anonymousId: "anonymous-id")
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { core.setUserInfo(id: "user-id", name: "user-name", email: "user-email", extraInfo: ["key": "value"]) },
+                { core.addUserExtraInfo(["other-key": "other-value"]) },
+                { core.clearUserInfo() },
+                { core.set(anonymousId: "anonymous-id") }
+            ],
+            iterations: 250
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let user = core.userInfoPublisher.current
+        XCTAssertEqual(user.anonymousId, "anonymous-id")
+        let contextUser = core.contextProvider.read().userInfo
+        XCTAssertEqual(contextUser?.anonymousId, "anonymous-id")
+        XCTAssertEqual(contextUser?.id, user.id)
+        XCTAssertEqual(contextUser?.extraInfo.keys.sorted(), user.extraInfo.keys.sorted())
+    }
+
+    func testWhenAccountInfoAPIsAreCalledConcurrently_itKeepsEveryUpdate() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        core.setAccountInfo(id: "account-id")
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { iteration in core.addAccountExtraInfo(["key-\(iteration)": iteration]) }
+            ],
+            iterations: 1_000
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let account = core.accountInfoPublisher.current
+        XCTAssertEqual(account?.id, "account-id")
+        XCTAssertEqual(account?.extraInfo.count, 1_000)
+        XCTAssertEqual(core.contextProvider.read().accountInfo?.extraInfo.count, 1_000)
+    }
+
+    func testWhenTrackingConsentIsSetConcurrently_theContextHasTheLastConsent() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .pending,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { core.set(trackingConsent: .granted) },
+                { core.set(trackingConsent: .notGranted) },
+                { core.set(trackingConsent: .pending) }
+            ],
+            iterations: 300
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        XCTAssertEqual(core.contextProvider.read().trackingConsent, core.consentPublisher.consent)
+    }
 }
