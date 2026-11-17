@@ -69,6 +69,8 @@ Flags.enable(
         flagSelection: Flags.FlagSelection(tags: ["checkout"], keyPatterns: ["checkout-*"])
     )
 )
+// Receive every evaluation with the SDK's exposure decision. Default: nil. Set it on a `var` configuration
+// before `Flags.enable(with:)`, for example `configuration.exposureHook = ExposureHook { evaluation in ... }`.
 
 // Create a client. Clients are retained by name; no need to keep a reference.
 let client = FlagsClient.create(
@@ -94,7 +96,7 @@ client.setEvaluationContext(
 // Evaluate anywhere, synchronously. A failed evaluation returns `defaultValue`.
 let enabled = FlagsClient.shared().getBooleanValue(key: "new-checkout", defaultValue: false)
 let details = client.getStringDetails(key: "button-text", defaultValue: "Buy")
-// details.value, details.variant, details.reason, details.allocationKey, details.error
+// details.value, details.variant, details.reason, details.allocationKey, details.error, details.flagMetadata
 ```
 
 ### Evaluation API
@@ -104,7 +106,7 @@ All methods are on `FlagsClientProtocol`:
 | Method | Returns |
 |---|---|
 | `getBooleanValue` / `getStringValue` / `getIntegerValue` / `getDoubleValue` / `getObjectValue` | The value, or `defaultValue` on any error |
-| `getBooleanDetails` / `getStringDetails` / `getIntegerDetails` / `getDoubleDetails` / `getObjectDetails` | `FlagDetails<T>` with value, variant, reason, allocation key, error |
+| `getBooleanDetails` / `getStringDetails` / `getIntegerDetails` / `getDoubleDetails` / `getObjectDetails` | `FlagDetails<T>` with value, variant, reason, allocation key, error, and `flagMetadata` (split features as `__dd_feature.<key>`) |
 | `getValue(key:defaultValue:)` / `getDetails(key:defaultValue:)` | Generic over `FlagValue` (`Bool`, `String`, `Int`, `Double`, `AnyValue`) |
 | `setEvaluationContext(_:)` / `setEvaluationContext(_:completion:)` / `try await setEvaluationContext(_:)` | Fire-and-forget, callback, or async throwing |
 | `state` | `FlagsStateObservable`: `currentState`, `addListener(_:)`, `removeListener(_:)` |
@@ -146,12 +148,12 @@ flowchart LR
 - `DatadogFlags/Sources/Client/FlagsClientState.swift` — `FlagsClientState`.
 - `DatadogFlags/Sources/Client/FlagsStateManager.swift` — `FlagsStateObservable`, `FlagsStateListener`.
 - `DatadogFlags/Sources/Models/FlagsEvaluationContext.swift` — Context type, assignment token extraction, and opt-out timestamp parsing.
-- `DatadogFlags/Sources/Models/FlagDetails.swift` — `FlagDetails`, `FlagEvaluationError`, `FlagsSnapshot`, `FlagSnapshot`.
+- `DatadogFlags/Sources/Models/FlagDetails.swift` — `FlagDetails`, `FlagEvaluationError`, `ExposureHook`, `ExposureEvaluation`, `FlagsSnapshot`, `FlagSnapshot`.
 - `DatadogFlags/Sources/Models/FlagsError.swift` — Errors returned by `setEvaluationContext`.
 - `DatadogFlags/Sources/Models/FlagsClientEvent.swift` — `onFirstFlags` event, listener and subscription types.
 - `DatadogFlags/Sources/Models/FlagValue.swift`, `DatadogFlags/Sources/Models/AnyValue.swift` — Supported value types.
 - `DatadogFlags/Sources/Client/FlagsClientInternal.swift` — `@_spi(Internal)` methods for cross-platform bridges.
-- `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods.
+- `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods, and the lenient parser for split `features`.
 
 ### Implementation
 - `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, subject isolation, cache restore, state transitions, initialization timeout.
@@ -165,7 +167,7 @@ flowchart LR
 - `DatadogFlags/Sources/Feature/FlagsFeature.swift` — Feature wiring and flush interval clamping.
 - `DatadogFlags/Sources/Feature/IssueReporter.swift` — Graceful mode behavior.
 - `DatadogRUM/Sources/Integrations/FlagEvaluationReceiver.swift` — RUM side of the integration.
-- `DatadogFlags/README.md` — Detailed rules for subject authorization, evaluation telemetry opt-out, and experimentation opt-out.
+- `DatadogFlags/README.md` — Detailed rules for subject authorization, the evaluation telemetry opt-out, experimentation opt-out, evaluation telemetry privacy and `exposureHook`.
 
 ## Configuration Categories
 
@@ -234,6 +236,8 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - A flags response can enable full evaluation data for its configuration. Only then does telemetry send the raw targeting key and evaluation context. The SDK captures this consent with the assignments, including disk-restored assignments and bridge snapshots, so a later refresh does not change telemetry that was already recorded. The consent splits evaluation buckets.
 - Evaluation errors are limited to stable OpenFeature codes. Any other string becomes `GENERAL`, so customer data from an error cannot enter telemetry.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
+- **Split features:** each assignment can carry `features` with `HOOK`, `EXPOSURE` or `EVALUATION` destinations. `HOOK` features appear in `FlagDetails.flagMetadata` and `ExposureEvaluation.features`, `EXPOSURE` features in a `features` object on exposure events, and `EVALUATION` features in the evaluation bucket key and rows.
+- **`exposureHook`** receives every evaluation with `isExposure`, `isCacheHit` and `shouldSend`, from the same decision the SDK uses for Datadog. It runs synchronously on the evaluating thread. With `trackExposures` set to `false`, the SDK stops sending exposures and keeps deduplicating them, so the hook keeps correct decisions.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
 
 ### Experimentation Opt-Out
@@ -293,7 +297,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - The same subject already saw that variant in this process (deduplication).
 - Tracking consent is not `.granted`.
 
-**Solutions:** Confirm `trackExposures`, that the flag runs an experiment allocation, and the tracking consent value.
+**Solutions:** Confirm `trackExposures`, that the flag runs an experiment allocation, and the tracking consent value. An `exposureHook` shows the decision for each evaluation: `isExposure` and `isCacheHit`.
 
 ### "No RUM annotations or evaluation data for some users"
 **Causes:** `enableEvaluationTelemetryOptOutParameter` is `true` and the context has `dd_evaluation_telemetry_opt_out: .bool(true)`. Until the cached policy loads at startup, evaluation telemetry is also suppressed.
@@ -310,7 +314,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - **RUM**: optional. With `rumIntegrationEnabled`, each successful evaluation adds `feature_flags.<key> = <variant key>` to the active view. RUM must be enabled for this; without it, messages are ignored. When RUM is enabled before the fetch, the request also carries the RUM application ID.
 - **Tracking consent**: exposures and evaluation events are stored and uploaded like other events, following the SDK's tracking consent. Assignment fetching does not depend on consent.
 - **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `getFlagAssignmentsWithConsent`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Bridges that replay evaluations use the consent-aware snapshot and evaluation overload so each event keeps the privacy policy captured with its assignments. Obfuscated flag keys are supported only when the SDK source is `ios`.
-- **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status.
+- **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status. Exposures are recorded when the native client resolves the flag, so `exposureHook` also receives OpenFeature evaluations, and an OpenFeature `MultiProvider` records exposures for every evaluation of the Datadog provider.
 
 ## Additional Context
 
@@ -318,5 +322,5 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - `FlagsSnapshot`, `FlagSnapshot` and `snapshot()` are marked as preview and may change.
 - `FlagsClientState` documentation mentions `reset()`, but reset is internal and not available to apps.
 - `onFirstFlags` listeners run on a background queue, or on the calling thread if the first configuration was already published. `flagsChanged` lists configuration keys, which may be obfuscated rather than plaintext names. The no-op fallback client calls the listener immediately with an empty list.
-- Exposure deduplication is in memory, per client, for up to 5,000 subject and flag pairs, so a new process logs exposures again.
+- Exposure deduplication is in memory, per client, for up to 5,000 subject and flag pairs, so a new process logs exposures again. `exposureHook` is global and each client keeps its own cache.
 - Disk caches filtered by flag selection or an opt-out policy use cache version 3, which SDK versions without these features skip.
