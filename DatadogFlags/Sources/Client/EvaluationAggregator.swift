@@ -200,7 +200,7 @@ private struct AggregationKey: Hashable {
     let errorMessage: String?
     let context: [String: AnyValue]
     let observeFullEvaluationData: Bool
-    /// `EVALUATION` features split buckets. The serial ID stays out of the key.
+    /// `EVALUATION` features split buckets, next to the consent dimension.
     let features: [String: AnyValue]
 
     init(

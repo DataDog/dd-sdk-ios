@@ -25,7 +25,7 @@ public struct FlagAssignment: Equatable {
     /// Consent captured with this assignment, including when bridged or restored from disk.
     @_spi(Internal)
     public var observeFullEvaluationData: Bool = false
-    /// Features of the selected split. Bridged assignments rebuilt with the public initializer have none.
+    /// Features of the selected split. The public initializer starts with an empty list.
     internal var features: [SplitFeature] = []
 
     /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
@@ -185,13 +185,13 @@ internal struct SplitFeature: Equatable {
         case evaluation = "EVALUATION"
     }
 
-    /// The only public metadata prefix. Customers read `HOOK` features under it.
+    /// The public metadata prefix. Customers read `HOOK` features under it.
     static let hookMetadataPrefix = "__dd_feature."
 
     let key: String
     /// `.string`, `.double` or `.bool`.
     let value: AnyValue
-    /// Wire names, unknown ones included. Unknown names are ignored when routing.
+    /// Wire names, unknown ones included. Routing uses the known names.
     let destinations: [String]
 
     func routes(to destination: Destination) -> Bool {
@@ -233,8 +233,8 @@ extension Array where Element == SplitFeature {
     }
 }
 
-/// Decodes `features` without ever throwing. Invalid entries are skipped, and the first valid
-/// entry wins on a repeated key; an invalid entry does not claim its key.
+/// Decodes `features` leniently and returns an empty list for a malformed field. It skips invalid
+/// entries and keeps the first valid entry for each key.
 internal struct LenientSplitFeatures: Decodable {
     private enum CodingKeys: String, CodingKey {
         case key
@@ -310,7 +310,7 @@ internal struct LenientSplitFeatures: Decodable {
         self.features = features
     }
 
-    /// A failed decode does not advance an unkeyed container, so consume the element explicitly.
+    /// An unkeyed container advances on a successful decode, so this consumes a skipped element explicitly.
     fileprivate static func skip(_ list: inout UnkeyedDecodingContainer) -> Bool {
         if (try? list.decodeNil()) == true {
             return true
