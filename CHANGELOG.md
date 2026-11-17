@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Flags: Protect evaluation telemetry by default. Targeting keys are hashed and the evaluation context is omitted unless the flags configuration enables full evaluation data. Only stable error codes are reported. See [#3340][]
+
 # 3.22.0 / 12-11-2026
 
 - [FEATURE] Flags: Add `Flags.Configuration.flagSelection` to load only the flags that match the given tags or key patterns. See [#3344][]
@@ -1337,6 +1339,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3301]: https://github.com/DataDog/dd-sdk-ios/pull/3301
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
 [#3330]: https://github.com/DataDog/dd-sdk-ios/pull/3330
+[#3340]: https://github.com/DataDog/dd-sdk-ios/pull/3340
 [#3332]: https://github.com/DataDog/dd-sdk-ios/pull/3332
 [#3336]: https://github.com/DataDog/dd-sdk-ios/pull/3336
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
