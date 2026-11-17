@@ -26,6 +26,7 @@ internal protocol FlagsRepositoryProtocol {
     func flagAssignments() -> [String: FlagAssignment]?
 
     func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
+    func assignmentsSnapshot() -> FlagsData?
 
     func reset()
 
@@ -36,6 +37,7 @@ internal struct FlagEvaluationSnapshot {
     let context: FlagsEvaluationContext?
     let assignment: FlagAssignment?
     let telemetryOptedOut: Bool
+    let observeFullEvaluationData: Bool
     var requestedContext: FlagsEvaluationContext? = nil
     var error: FlagEvaluationError? = nil
 }
@@ -612,6 +614,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 assignment: readable ? assignment : nil,
                 // Unreadable assignments must not discard the stored subject's reporting policy.
                 telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: telemetryContext),
+                observeFullEvaluationData: readable ? (state.flagsData?.observeFullEvaluationData ?? false) : false,
                 requestedContext: state.experimentationOptOutMode == .disabled && !authorizationError
                     ? nil : state.latestRequestedContext,
                 error: state.hasInvalidContext ? .invalidContext : (authorizationError ? .general : nil)
@@ -640,13 +643,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
+        assignmentsSnapshot()?.flags
+    }
+
+    func assignmentsSnapshot() -> FlagsData? {
         waitForFlagsDataRead()
         guard stateManager.currentState != .error,
               let data = repositoryState.readableFlagsData,
               data.obfuscation == nil else {
             return nil
         }
-        return data.flags
+        return data
     }
 
     func setEvaluationContext(
@@ -774,7 +781,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     date: self.dateProvider.now,
                     obfuscation: response.obfuscation,
                     flagSelection: self.flagSelection,
-                    experimentationOptOutPolicy: policy
+                    experimentationOptOutPolicy: policy,
+                    observeFullEvaluationData: response.observeFullEvaluationData
                 )
                 var versionAfterSuccess: UInt64?
                 var isServingRequestedContext = false

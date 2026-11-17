@@ -29,7 +29,17 @@ import Foundation
 /// ```
 public struct FlagsEvaluationContext: Equatable, Codable {
     /// An empty evaluation context used for evaluation logging when no context has been set (PROVIDER_NOT_READY).
-    static let empty = FlagsEvaluationContext(targetingKey: "", attributes: [:])
+    static let empty: FlagsEvaluationContext = {
+        var context = FlagsEvaluationContext(targetingKey: "", attributes: [:])
+        context.hasTargetingKey = false
+        return context
+    }()
+
+    internal var hasTargetingKey = true
+
+    private enum CodingKeys: String, CodingKey {
+        case targetingKey, attributes
+    }
 
     /// The unique identifier used for targeting this user or session.
     ///

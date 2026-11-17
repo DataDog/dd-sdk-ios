@@ -125,6 +125,27 @@ final class FallbackFlagsClientTests: XCTestCase {
         )
     }
 
+    func testCapturedConsentEvaluationEventOnFallbackClientLogsError() {
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        Flags.enable(in: core)
+        let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        for targetingKey in [nil, ""] as [String?] {
+            client.sendFlagEvaluationEvent(
+                key: "flag",
+                assignment: .mockAny(),
+                context: .mockAny(),
+                telemetryTargetingKey: targetingKey,
+                observeFullEvaluationData: true,
+                errorCode: "FLAG_NOT_FOUND"
+            )
+        }
+
+        XCTAssertEqual(dd.logger.errorMessages.count, 2)
+    }
+
     func testSendFlagEvaluation() {
         // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()

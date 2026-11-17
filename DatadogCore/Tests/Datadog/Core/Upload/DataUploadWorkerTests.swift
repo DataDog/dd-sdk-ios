@@ -920,7 +920,7 @@ class DataUploadWorkerTests: XCTestCase {
         // Then
         writer.write(value: ["k1": "v1"])
 
-        server.waitFor(requestsCompletion: 0)
+        server.waitFor(requestsCompletion: 0, timeout: 0.2)
     }
 
     func testItFlushesAllData() {

@@ -393,13 +393,13 @@ class EvaluationLoggingTests: XCTestCase {
 
         // When - Record same flag with different errors
         aggregator.recordEvaluation(
-            for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "error-1"
+            for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "TYPE_MISMATCH"
         )
         aggregator.recordEvaluation(
-            for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "error-2"
+            for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "FLAG_NOT_FOUND"
         )
         aggregator.recordEvaluation(
-            for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "error-1"
+            for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "TYPE_MISMATCH"
         )
 
         aggregator.sendEvaluations()
@@ -408,8 +408,8 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "Different error messages should create separate aggregations")
 
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
-        let error1Event = try XCTUnwrap(events.first { $0.error?.message == "error-1" })
-        let error2Event = try XCTUnwrap(events.first { $0.error?.message == "error-2" })
+        let error1Event = try XCTUnwrap(events.first { $0.error?.message == "TYPE_MISMATCH" })
+        let error2Event = try XCTUnwrap(events.first { $0.error?.message == "FLAG_NOT_FOUND" })
 
         XCTAssertEqual(error1Event.evaluationCount, 2, "error-1 should be aggregated twice")
         XCTAssertEqual(error2Event.evaluationCount, 1, "error-2 should be aggregated once")
@@ -463,10 +463,13 @@ class EvaluationLoggingTests: XCTestCase {
             ]
         )
 
+        var assignment = FlagAssignment.mockAnyBoolean()
+        assignment.observeFullEvaluationData = true
+
         // When
         aggregator.recordEvaluation(
             for: "test-flag",
-            assignment: .mockAnyBoolean(),
+            assignment: assignment,
             evaluationContext: contextWithAttributes,
             flagError: nil
         )
@@ -618,9 +621,11 @@ class EvaluationLoggingTests: XCTestCase {
             flushInterval: 60.0
         )
 
-        let assignment = FlagAssignment(
+        var assignment = FlagAssignment(
             allocationKey: "alloc-1", variationKey: "var-1", variation: .boolean(true), reason: "MATCH", doLog: true
         )
+
+        assignment.observeFullEvaluationData = true
 
         // When - same context keys, different values: 2x iPhone, 1x Android
         aggregator.recordEvaluation(
