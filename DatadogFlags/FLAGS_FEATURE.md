@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-16
+last_updated: 2026-11-17
 sdk_version: 3.22.0
-verified_against_commit: 9d37b08d2
+verified_against_commit: 3ff2a7ba6
 tracked_files:
   - DatadogFlags/Sources/Flags.swift
   - DatadogFlags/Sources/Client/FlagsClient.swift
@@ -231,6 +231,9 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 ### Exposures and Evaluation Telemetry
 - **Exposures** are written only for allocations whose assignment has `doLog` set (experiments). They are deduplicated in memory per client by targeting key and flag key, and logged again when the allocation, variant or serial ID changes. They include the targeting key and context attributes after removal of `dd_assignment_token`.
 - **Evaluations** are aggregated and flushed every `evaluationFlushInterval` seconds, or when 1,000 aggregations accumulate. Failed evaluations are also counted, with an error code.
+- Evaluation telemetry is protected by default: the targeting key is sent as `sha256_` plus its lowercase SHA-256 digest, and context attributes are omitted. An empty targeting key remains empty; an evaluation made without a context omits the key.
+- A flags response can enable full evaluation data for its configuration. Only then does telemetry send the raw targeting key and evaluation context. The SDK captures this consent with the assignments, including disk-restored assignments and bridge snapshots, so a later refresh does not change telemetry that was already recorded.
+- Evaluation errors are limited to stable OpenFeature codes. Any other string becomes `GENERAL`, so customer data from an error cannot enter telemetry.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
 
@@ -307,7 +310,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 
 - **RUM**: optional. With `rumIntegrationEnabled`, each successful evaluation adds `feature_flags.<key> = <variant key>` to the active view. RUM must be enabled for this; without it, messages are ignored. When RUM is enabled before the fetch, the request also carries the RUM application ID.
 - **Tracking consent**: exposures and evaluation events are stored and uploaded like other events, following the SDK's tracking consent. Assignment fetching does not depend on consent.
-- **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Obfuscated flag keys are supported only when the SDK source is `ios`.
+- **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `getFlagAssignmentsWithConsent`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Bridges that replay evaluations use the consent-aware snapshot and evaluation overload so each event keeps the privacy policy captured with its assignments. Obfuscated flag keys are supported only when the SDK source is `ios`.
 - **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status.
 
 ## Additional Context
