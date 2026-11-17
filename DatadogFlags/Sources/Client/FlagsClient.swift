@@ -106,6 +106,7 @@ public final class FlagsClient {
         static let flagNotFound = "FLAG_NOT_FOUND"
         static let typeMismatch = "TYPE_MISMATCH"
         static let invalidContext = "INVALID_CONTEXT"
+        static let general = "GENERAL"
     }
 
     private let repository: any FlagsRepositoryProtocol
