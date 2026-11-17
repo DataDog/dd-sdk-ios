@@ -1858,6 +1858,29 @@ final class FlagsClientExposureHookTests: XCTestCase {
         XCTAssertEqual(evaluation.features["holdout.key"], .string("h-1"))
     }
 
+    func testBridgedEvaluationEventKeepsFeaturesWithCapturedConsent() throws {
+        let evaluationLogger = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        client.sendFlagEvaluationEvent(
+            key: "flag",
+            assignment: holdoutAssignment,
+            context: context,
+            telemetryTargetingKey: "user-1",
+            observeFullEvaluationData: true,
+            errorCode: nil
+        )
+
+        let call = try XCTUnwrap(evaluationLogger.logEvaluationCalls.first)
+        XCTAssertEqual(call.assignment.features, holdoutAssignment.features)
+        XCTAssertTrue(call.assignment.observeFullEvaluationData)
+    }
+
     func testThrowingCallbackDoesNotAffectTheEvaluation() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
