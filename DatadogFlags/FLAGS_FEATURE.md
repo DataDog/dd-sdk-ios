@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-12
+last_updated: 2026-11-16
 sdk_version: 3.22.0
-verified_against_commit: 63bfcd9fb
+verified_against_commit: 9d37b08d2
 tracked_files:
   - DatadogFlags/Sources/Flags.swift
   - DatadogFlags/Sources/Client/FlagsClient.swift
@@ -112,6 +112,8 @@ All methods are on `FlagsClientProtocol`:
 | `snapshot()` | **Preview API**: side-effect-free `FlagsSnapshot` of cached assignments; records no exposure, evaluation or RUM annotation. Returns `nil` when no assignments are readable (no context or cache, `.error` state, fallback client) or when assignments use obfuscated flag keys |
 
 Object flags use `AnyValue` (`.string`, `.bool`, `.int`, `.double`, `.dictionary`, `.array`, `.null`). Context attributes use the same type.
+
+Numeric flags convert between `Int` and `Double` only when the conversion is exact. A whole value such as `5` can be read as either type. A fractional value such as `1.2` can be read only as `Double`. A failed conversion returns the default with `.typeMismatch`.
 
 ## Architecture Overview
 
@@ -252,7 +254,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - `.providerNotReady`: no context set yet and no cache, the fetch is still running without readable assignments, or an ordinary fetch failure has no eligible fallback.
 - `.general`: an active subject-authorization boundary has no readable assignments for the requested subject.
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
-- `.typeMismatch`: the getter type differs from the flag's type, for example `getIntegerValue` on a flag served as a double. `getDoubleValue` accepts whole numbers from a "number" flag, but not from an "integer" flag.
+- `.typeMismatch`: the value cannot convert to the requested type without loss. For example, `getIntegerValue` rejects a fractional `Double`, and `getDoubleValue` rejects an `Int` that `Double` cannot represent exactly.
 - `.invalidContext`: `dd_experimentation_opt_out_at` is malformed while an opt-out mode is enabled.
 - The client came from `FlagsClient.shared(named:)` before it was created, or `create` ran before `Flags.enable()`: this returns a no-op client that always returns defaults with `.providerNotReady`. Look for the SDK usage error message.
 
