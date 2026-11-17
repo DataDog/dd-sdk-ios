@@ -1965,3 +1965,29 @@ final class FlagDetailsEqualityTests: XCTestCase {
         }
     }
 }
+
+extension FlagsClientTests {
+    func testFullReplayUsesConsentCarriedByTheAssignment() throws {
+        for consent in [false, true] {
+            let scope = FeatureScopeMock()
+            let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+            let client = FlagsClient(
+                repository: FlagsRepositoryMock(),
+                exposureLogger: ExposureLoggerMock(),
+                evaluationLogger: EvaluationLogger(aggregator: aggregator),
+                rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+            )
+            var assignment = FlagAssignment(allocationKey: "a", variationKey: "v", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: false)
+            assignment.observeFullEvaluationData = consent
+            client.sendFlagEvaluation(
+                key: "flag",
+                assignment: assignment,
+                context: .init(targetingKey: "jane.doe@datadoghq.com", attributes: ["tier": .string("premium")])
+            )
+            aggregator.sendEvaluations()
+            let event = try XCTUnwrap(scope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
+            XCTAssertEqual(event.targetingKey, consent ? "jane.doe@datadoghq.com" : "sha256_b4698f9b6d186781fa8dc59e533578fa2d8379a46b1cf6db85cda6aa9c99e51b")
+            XCTAssertEqual(event.context != nil, consent)
+        }
+    }
+}

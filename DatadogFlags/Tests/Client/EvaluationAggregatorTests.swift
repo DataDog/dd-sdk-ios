@@ -420,3 +420,23 @@ final class EvaluationFeaturesAggregationTests: XCTestCase {
         XCTAssertEqual(try encoded(["group": .string("control")])["features"] as? [String: String], ["group": "control"])
     }
 }
+
+extension EvaluationAggregatorTests {
+    func testProtectedAndFullBucketsStaySeparateWhenWireFieldsCollide() {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        var protected = FlagAssignment.mockAnyBoolean(doLog: false)
+        protected.observeFullEvaluationData = false
+        var full = protected
+        full.observeFullEvaluationData = true
+        aggregator.recordEvaluation(for: "flag", assignment: protected, evaluationContext: .init(targetingKey: "jane.doe@datadoghq.com"), flagError: nil)
+        aggregator.recordEvaluation(
+            for: "flag",
+            assignment: full,
+            evaluationContext: .init(targetingKey: "sha256_b4698f9b6d186781fa8dc59e533578fa2d8379a46b1cf6db85cda6aa9c99e51b"),
+            flagError: nil
+        )
+        aggregator.sendEvaluations()
+        XCTAssertEqual(scope.eventsWritten(ofType: FlagEvaluationEvent.self).count, 2)
+    }
+}
