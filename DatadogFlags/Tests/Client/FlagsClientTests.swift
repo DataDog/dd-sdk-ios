@@ -1878,3 +1878,30 @@ final class FlagsClientExposureHookTests: XCTestCase {
         XCTAssertEqual(exposures.first?.features, ["cohort": .string("c")])
     }
 }
+
+final class FlagDetailsEqualityTests: XCTestCase {
+    private let details = FlagDetails(key: "flag", value: true, variant: "on", reason: "TARGETING_MATCH", allocationKey: "a")
+
+    func testFlagDetailsEqualityIgnoresInternalConsent() {
+        var withConsent = details
+        withConsent.observeFullEvaluationData = true
+        XCTAssertEqual(withConsent, details)
+    }
+
+    func testFlagDetailsEqualityComparesEveryPublicField() {
+        let changes: [(inout FlagDetails<Bool>) -> Void] = [
+            { $0.key = "other" },
+            { $0.value = false },
+            { $0.variant = "off" },
+            { $0.reason = "DEFAULT" },
+            { $0.error = .flagNotFound },
+            { $0.allocationKey = "b" },
+            { $0.flagMetadata = ["__dd_feature.holdout.key": .string("h-1")] },
+        ]
+        for change in changes {
+            var changed = details
+            change(&changed)
+            XCTAssertNotEqual(changed, details)
+        }
+    }
+}

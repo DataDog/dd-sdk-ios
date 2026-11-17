@@ -117,6 +117,17 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
         self.error = error
         self.allocationKey = allocationKey
     }
+
+    /// Compares the public evaluation result: key, value, variant, reason, error, allocation key and flag metadata.
+    public static func == (lhs: FlagDetails<T>, rhs: FlagDetails<T>) -> Bool {
+        lhs.key == rhs.key
+            && lhs.value == rhs.value
+            && lhs.variant == rhs.variant
+            && lhs.reason == rhs.reason
+            && lhs.error == rhs.error
+            && lhs.allocationKey == rhs.allocationKey
+            && lhs.flagMetadata == rhs.flagMetadata
+    }
 }
 
 /// Receives every flag evaluation, with the exposure verdict that the SDK uses for Datadog.
