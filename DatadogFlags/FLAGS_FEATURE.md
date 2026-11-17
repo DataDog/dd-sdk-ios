@@ -172,6 +172,7 @@ flowchart LR
 
 ### Endpoints
 - Assignments are fetched from `https://preview.ff-cdn.<site domain>/precompute-assignments` (for example `preview.ff-cdn.datadoghq.eu` for EU1). Government sites (`us1_fed`, `us2_fed`) are not supported: the SDK logs a warning and uses the US1 endpoint.
+- The internal `.staging` site uses `https://preview.ff-cdn.datad0g.com/precompute-assignments`.
 - `customFlagsEndpoint` replaces the full assignments URL.
 - `customFlagsHeaders` are sent only with requests to `customFlagsEndpoint`. They are ignored when using the default Datadog endpoint, so proxy credentials never reach the Datadog CDN.
 - `customExposureEndpoint` and `customEvaluationEndpoint` replace the intake URLs for exposures and evaluations.

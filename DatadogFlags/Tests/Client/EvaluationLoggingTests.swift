@@ -92,6 +92,7 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertEqual(url(for: .uk1), "https://browser-intake-uk1-datadoghq.com/api/v2/flagevaluation")
         XCTAssertEqual(url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/flagevaluation")
         XCTAssertEqual(url(for: .us2_fed), "https://browser-intake-us2-ddog-gov.com/api/v2/flagevaluation")
+        XCTAssertEqual(url(for: .staging), "https://browser-intake-datad0g.com/api/v2/flagevaluation")
 
         // Then - Verify Content-Type and batched schema
         let contextWithRUM = DatadogContext.mockWith(

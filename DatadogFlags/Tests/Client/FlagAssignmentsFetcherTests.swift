@@ -107,6 +107,38 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertNil(capturedRequest?.value(forHTTPHeaderField: "X-Proxy-Token"))
     }
 
+    func testStagingSiteUsesTheStagingEndpointUnlessTheStagingProfileOwnsIt() throws {
+        // Given
+        featureScope.contextMock = .mockWith(site: .staging)
+        let profile = try ResolvedTLSPinPolicy.make(from: .datadogStagingV1, customFlagsEndpoint: nil).get()
+
+        for (protection, expectedURL) in [
+            (nil, "https://preview.ff-cdn.datad0g.com/precompute-assignments"),
+            (ResponseProtectionPolicy.tlsPinning(profile), "https://protected.ff-cdn.datad0g.com/precompute-assignments"),
+        ] {
+            var capturedRequest: URLRequest?
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: featureScope,
+                responseProtection: protection,
+                fetch: { request, completion in
+                    capturedRequest = request
+                    completion(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+                }
+            )
+            let completed = expectation(description: "completed")
+
+            // When
+            fetcher.flagAssignments(for: .mockAny()) { _ in completed.fulfill() }
+
+            // Then
+            waitForExpectations(timeout: 1)
+            XCTAssertEqual(capturedRequest?.url?.absoluteString, expectedURL)
+        }
+    }
+
     func testMisconfiguredResponseProtectionSendsNoRequest() {
         // Given
         var fetchCount = 0
@@ -652,6 +684,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             (.ap1, "https://preview.ff-cdn.ap1.datadoghq.com"),
             (.ap2, "https://preview.ff-cdn.ap2.datadoghq.com"),
             (.uk1, "https://preview.ff-cdn.uk1.datadoghq.com"),
+            (.staging, "https://preview.ff-cdn.datad0g.com"),
         ]
 
         for (site, expectedEndpoint) in flagsEndpoints {

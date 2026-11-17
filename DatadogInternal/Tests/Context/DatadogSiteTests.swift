@@ -18,6 +18,7 @@ class DatadogSiteTests: XCTestCase {
     func testAP2Host() { XCTAssertEqual(DatadogSite.ap2.host, "browser-intake-ap2-datadoghq.com") }
     func testUS1FedHost() { XCTAssertEqual(DatadogSite.us1_fed.host, "browser-intake-ddog-gov.com") }
     func testUS2FedHost() { XCTAssertEqual(DatadogSite.us2_fed.host, "browser-intake-us2-ddog-gov.com") }
+    func testStagingHost() { XCTAssertEqual(DatadogSite.staging.host, "browser-intake-datad0g.com") }
 
     // MARK: - endpoint per site
 
@@ -29,6 +30,7 @@ class DatadogSiteTests: XCTestCase {
     func testAP2Endpoint() { XCTAssertEqual(DatadogSite.ap2.endpoint.absoluteString, "https://browser-intake-ap2-datadoghq.com/") }
     func testUS1FedEndpoint() { XCTAssertEqual(DatadogSite.us1_fed.endpoint.absoluteString, "https://browser-intake-ddog-gov.com/") }
     func testUS2FedEndpoint() { XCTAssertEqual(DatadogSite.us2_fed.endpoint.absoluteString, "https://browser-intake-us2-ddog-gov.com/") }
+    func testStagingEndpoint() { XCTAssertEqual(DatadogSite.staging.endpoint.absoluteString, "https://browser-intake-datad0g.com/") }
 
     // MARK: - remoteConfigurationEndpoint per site
 
@@ -62,5 +64,14 @@ class DatadogSiteTests: XCTestCase {
 
     func testUS2FedRemoteConfigurationEndpoint() {
         XCTAssertEqual(DatadogSite.us2_fed.remoteConfigurationEndpoint.absoluteString, "https://sdk-configuration.browser-intake-us2-ddog-gov.com/")
+    }
+
+    func testStagingRemoteConfigurationEndpoint() {
+        XCTAssertEqual(DatadogSite.staging.remoteConfigurationEndpoint.absoluteString, "https://sdk-configuration.browser-intake-datad0g.com/")
+    }
+
+    func testStagingRawValue() {
+        XCTAssertEqual(DatadogSite.staging.rawValue, "staging")
+        XCTAssertEqual(DatadogSite(rawValue: "staging"), .staging)
     }
 }

@@ -36,6 +36,9 @@ public final class objc_DatadogSite: NSObject {
     public static func us1_fed() -> objc_DatadogSite { .init(sdkSite: .us1_fed) }
 
     public static func us2_fed() -> objc_DatadogSite { .init(sdkSite: .us2_fed) }
+
+    /// Datadog staging (internal usage only).
+    public static func staging() -> objc_DatadogSite { .init(sdkSite: .staging) }
 }
 
 @objc(DDBatchSize)

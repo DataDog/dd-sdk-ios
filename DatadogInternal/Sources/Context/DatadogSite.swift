@@ -34,6 +34,9 @@ public enum DatadogSite: String {
     /// US based servers, FedRAMP compatible.
     /// Sends data to [us2.ddog-gov.com](https://us2.ddog-gov.com/).
     case us2_fed
+    /// Datadog staging (internal usage only).
+    /// Sends data to [app.datad0g.com](https://app.datad0g.com/).
+    case staging
 }
 
 extension DatadogSite {
@@ -49,6 +52,7 @@ extension DatadogSite {
         case .uk1: return "browser-intake-uk1-datadoghq.com"
         case .us1_fed: return "browser-intake-ddog-gov.com"
         case .us2_fed: return "browser-intake-us2-ddog-gov.com"
+        case .staging: return "browser-intake-datad0g.com"
         }
     }
 

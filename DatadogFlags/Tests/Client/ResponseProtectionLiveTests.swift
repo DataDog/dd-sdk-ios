@@ -70,14 +70,15 @@ final class ResponseProtectionLiveTests: XCTestCase {
         XCTAssertTrue(outcome.rejections.isEmpty, "\(outcome.rejections)")
     }
 
-    func testUnprotectedControlFetchesAssignments() throws {
-        // There is no `DatadogSite` for staging, so the staging equivalents of the default endpoint are set explicitly.
-        for endpoint in ["https://preview.ff-cdn.datad0g.com/precompute-assignments", "https://protected.ff-cdn.datad0g.com/precompute-assignments"] {
-            let outcome = try fetch(responseProtection: nil, customFlagsEndpoint: URL(string: endpoint))
+    func testUnprotectedControlFetchesAssignmentsFromTheStagingSiteEndpoint() throws {
+        // Without response protection and without `customFlagsEndpoint`, the `.staging` site selects the endpoint.
+        XCTAssertEqual(DatadogSite.staging.flagsEndpoint().absoluteString, "https://preview.ff-cdn.datad0g.com")
 
-            XCTAssertNil(outcome.error, endpoint)
-            XCTAssertEqual(outcome.value, "treatment", endpoint)
-        }
+        let outcome = try fetch(responseProtection: nil)
+
+        XCTAssertNil(outcome.assignmentsHost)
+        XCTAssertNil(outcome.error)
+        XCTAssertEqual(outcome.value, "treatment")
     }
 
     /// Records the chain that the system builds for the staging endpoint. The challenge is cancelled, so no request is sent.
@@ -107,17 +108,16 @@ final class ResponseProtectionLiveTests: XCTestCase {
         let rejections: [String]
     }
 
-    private func fetch(responseProtection: Flags.ResponseProtection?, customFlagsEndpoint: URL? = nil) throws -> Outcome {
+    private func fetch(responseProtection: Flags.ResponseProtection?) throws -> Outcome {
         let logger = CoreLoggerMock()
         let dd = DD.mockWith(logger: logger)
         defer { dd.reset() }
         let core = DatadogCoreProxy(
-            context: .mockWith(site: .us1, clientToken: clientToken, env: "staging", source: "ios", trackingConsent: .granted)
+            context: .mockWith(site: .staging, clientToken: clientToken, env: "staging", source: "ios", trackingConsent: .granted)
         )
         defer { try? core.flushAndTearDown() }
 
         var configuration = Flags.Configuration(
-            customFlagsEndpoint: customFlagsEndpoint,
             trackExposures: false,
             trackEvaluations: false,
             rumIntegrationEnabled: false
@@ -148,7 +148,7 @@ final class ResponseProtectionLiveTests: XCTestCase {
         for log in logger.recordedLogs {
             print("[live log] \(log.level): \(log.message) \(log.error.map { "\($0)" } ?? "")")
         }
-        print("[live result] host=\(assignmentsHost ?? "default") error=\(error.map { "\($0)" } ?? "none") value=\(value)")
+        print("[live result] host=\(assignmentsHost ?? "site default: \(DatadogSite.staging.flagsEndpoint())") error=\(error.map { "\($0)" } ?? "none") value=\(value)")
         return Outcome(assignmentsHost: assignmentsHost, error: error, value: value, rejections: rejections)
     }
 }

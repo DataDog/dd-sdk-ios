@@ -48,6 +48,7 @@
     [DDSite uk1];
     [DDSite us1_fed];
     [DDSite us2_fed];
+    [DDSite staging];
 }
 
 - (void)testDDBatchSizeAPI {

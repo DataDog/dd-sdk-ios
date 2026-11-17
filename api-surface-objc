@@ -41,6 +41,7 @@ public final class objc_DatadogSite: NSObject
     public static func uk1() -> objc_DatadogSite
     public static func us1_fed() -> objc_DatadogSite
     public static func us2_fed() -> objc_DatadogSite
+    public static func staging() -> objc_DatadogSite
 public enum objc_BatchSize: Int
     case small
     case medium
