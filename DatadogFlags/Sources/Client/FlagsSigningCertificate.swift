@@ -138,12 +138,19 @@ internal struct FlagsSigningCertificate {
     let notAfter: TimeInterval
     let subjectKeyID: Data?
     let authorityKeyID: Data?
+    /// Decoded basicConstraints pathLenConstraint. Required for intermediates; optional for anchors.
+    let pathLength: Int?
 
     private static let signatureAlgorithm = Data([48, 10, 6, 8, 42, 134, 72, 206, 61, 4, 3, 2])
     private static let publicKeyAlgorithm = Data([
         48, 19, 6, 7, 42, 134, 72, 206, 61, 2, 1, 6, 8, 42, 134, 72, 206, 61, 3, 1, 7
     ])
-    private static let codeSigning = Data([48, 10, 6, 8, 43, 6, 1, 5, 5, 7, 3, 3])
+    /// FFE assignment-signing EKU OID `1.3.6.1.4.1.99999.1.1`, as OID content bytes.
+    /// PLACEHOLDER: the `1.3.6.1.4.1.99999` arc is not a Datadog-owned arc.
+    /// Identity-core must assign the production OID before merge. Keep this the only copy of the OID.
+    static let assignmentSigningUsage = Data([43, 6, 1, 4, 1, 134, 141, 31, 1, 1])
+    /// anyExtendedKeyUsage 2.5.29.37.0, OID content bytes.
+    static let anyExtendedKeyUsage = Data([85, 29, 37, 0])
 
     init(der: Data, role: Role) throws {
         let outer = try FlagsSigningDER.parse(der)
@@ -218,21 +225,38 @@ internal struct FlagsSigningCertificate {
             }
             extensions[oid] = (critical, value.content)
         }
+        let basic = extensions[Data([85, 29, 19])]
         if role != .anchor {
-            guard let basic = extensions[Data([85, 29, 19])], basic.critical,
+            guard let basic, basic.critical,
                 let usage = extensions[Data([85, 29, 15])], usage.critical,
-                basic.value == (role == .leaf ? Data([48, 0]) : Data([48, 6, 1, 1, 255, 2, 1, 0])),
+                role == .intermediate || basic.value == Data([48, 0]),
                 usage.value == (role == .leaf ? Data([3, 2, 7, 128]) : Data([3, 2, 1, 6]))
             else {
                 throw FlagsSigningError.invalidCertificate
             }
         }
-        let purpose = extensions[Data([85, 29, 37])]
-        guard role != .leaf || purpose != nil else {
-            throw FlagsSigningError.invalidCertificate
+        let constraints = try basic.map { try Self.basicConstraints($0.value) }
+        if role == .intermediate {
+            guard let constraints, constraints.isCA, constraints.pathLength != nil else {
+                throw FlagsSigningError.invalidCertificate
+            }
         }
-        if let purpose, purpose.value != Self.codeSigning {
-            throw FlagsSigningError.invalidCertificate
+        pathLength = constraints?.pathLength
+        let purpose = extensions[Data([85, 29, 37])]
+        switch role {
+        case .leaf:
+            let usages = try purpose.map { try Self.extendedKeyUsages($0.value) } ?? []
+            guard usages.contains(Self.assignmentSigningUsage), !usages.contains(Self.anyExtendedKeyUsage) else {
+                throw FlagsSigningError.invalidCertificate
+            }
+        case .intermediate, .anchor:
+            // An issuer EKU is optional. When present, it must allow assignment signing.
+            if let purpose {
+                let usages = try Self.extendedKeyUsages(purpose.value)
+                guard usages.contains(Self.assignmentSigningUsage) || usages.contains(Self.anyExtendedKeyUsage) else {
+                    throw FlagsSigningError.invalidCertificate
+                }
+            }
         }
         if let ski = extensions[Data([85, 29, 14])] {
             let parsed = try FlagsSigningDER.parse(ski.value)
@@ -254,6 +278,43 @@ internal struct FlagsSigningCertificate {
         } else {
             authorityKeyID = nil
         }
+    }
+
+    /// BasicConstraints ::= SEQUENCE { cA BOOLEAN DEFAULT FALSE, pathLenConstraint INTEGER (0..MAX) OPTIONAL }
+    static func basicConstraints(_ value: Data) throws -> (isCA: Bool, pathLength: Int?) {
+        let parsed = try FlagsSigningDER.parse(value)
+        guard parsed.tag == 48, parsed.children.count <= 2 else {
+            throw FlagsSigningError.invalidCertificate
+        }
+        var children = parsed.children[...]
+        var isCA = false
+        if let first = children.first, first.tag == 1 {
+            // DER omits DEFAULT FALSE, so an encoded cA must be TRUE.
+            guard first.content == Data([255]) else {
+                throw FlagsSigningError.invalidCertificate
+            }
+            isCA = true
+            children = children.dropFirst()
+        }
+        var pathLength: Int?
+        if let next = children.first {
+            guard next.tag == 2, children.count == 1, isCA, next.content.count <= 4,
+                let leading = next.content.first, leading & 128 == 0
+            else {
+                throw FlagsSigningError.invalidCertificate
+            }
+            pathLength = next.content.reduce(0) { $0 * 256 + Int($1) }
+        }
+        return (isCA, pathLength)
+    }
+
+    /// ExtKeyUsageSyntax ::= SEQUENCE SIZE (1..MAX) OF KeyPurposeId; returns OID content bytes.
+    static func extendedKeyUsages(_ value: Data) throws -> [Data] {
+        let parsed = try FlagsSigningDER.parse(value)
+        guard parsed.tag == 48, !parsed.children.isEmpty, parsed.children.allSatisfy({ $0.tag == 6 }) else {
+            throw FlagsSigningError.invalidCertificate
+        }
+        return parsed.children.map(\.content)
     }
 
     func validateLink(to parent: FlagsSigningCertificate) throws {

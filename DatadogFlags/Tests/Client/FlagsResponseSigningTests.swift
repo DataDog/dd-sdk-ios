@@ -106,7 +106,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     func testExplicitRootsReplaceBundledStagingTrust() throws {
-        let root = try XCTUnwrap(Data(base64Encoded: corpus().anchor))
+        let root = try SigningChainFixture.root("root-a")
         let configuration = Flags.ResponseSigningConfiguration(mode: .required, trustedRootCertificates: [root])
         XCTAssertEqual(
             configuration.roots(for: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments")),
@@ -115,171 +115,25 @@ final class FlagsResponseSigningTests: XCTestCase {
         XCTAssertEqual(Flags.ResponseSigningConfiguration().mode, .off)
     }
 
-    private struct Corpus: Decodable {
-        let anchor: String
-        let cases: [Vector]
-        enum CodingKeys: String, CodingKey {
-            case anchor = "anchor_der_base64"
-            case cases
-            case supplementalAnchor = "anchor"
-        }
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            anchor =
-                try container.decodeIfPresent(String.self, forKey: .anchor)
-                ?? container.decode(String.self, forKey: .supplementalAnchor)
-            cases = try container.decode([Vector].self, forKey: .cases)
-        }
-    }
-    private struct Vector: Decodable {
-        struct Request: Decodable {
-            let url: String
-            let method: String
-            let headers: [[String]]
-            let body_base64: String
-        }
-        struct Response: Decodable {
-            let status: Int
-            let headers: [[String]]
-            let body_base64: String
-        }
-        struct Credential: Decodable { let private_key_pkcs8_der_base64: String }
-        let id: String
-        let request: Request
-        let response: Response
-        let now: TimeInterval
-        let expected_accept: Bool
-        let transcript_base64: String?
-        let credential: Credential?
-    }
-
-    private func corpus(
-        name: String = "corpus",
-        hash: String = "393490bfefe382b9b75cf2964c131a910faa679888689457f99c2da2dc57fbbd"
-    ) throws -> Corpus {
-        #if SWIFT_PACKAGE
-        let bundle = Bundle.module
-        #else
-        let bundle = Bundle(for: Self.self)
-        #endif
-        let directory = name == "ResponseSigningKeyUsage" ? nil : "response-signing"
-        let url = try XCTUnwrap(bundle.url(forResource: name, withExtension: "json", subdirectory: directory))
-        let raw = try Data(contentsOf: url)
-        XCTAssertEqual(
-            SHA256.hash(data: raw).map { String(format: "%02x", $0) }.joined(),
-            hash
-        )
-        return try JSONDecoder().decode(Corpus.self, from: raw)
-    }
-
-    private func headers(_ pairs: [[String]]) -> [String: String] {
-        pairs.reduce(into: [:]) { result, pair in
-            let name = pair[0].lowercased()
-            result[name] = result[name].map { $0 + ", " + pair[1] } ?? pair[1]
-        }
-    }
-
+    // The pinned shared suites use the single-intermediate v1 format: one `signing-intermediate` header,
+    // a codeSigning leaf and the old transcript tail. The v1 chain format replaces that format.
+    // The chain fixtures in `response-signing/chain` cover the v1 chain format until the pin is updated.
     func testCentralManifestSuitesAndExactTranscripts() throws {
-        struct Manifest: Decodable {
-            struct Suite: Decodable {
-                let sha256: String
-                let response_cases: Int
-                let accepted: Int
-            }
-            let schema_version: Int
-            let files: [String: Suite]
-        }
-        #if SWIFT_PACKAGE
-        let bundle = Bundle.module
-        #else
-        let bundle = Bundle(for: Self.self)
-        #endif
-        let url = try XCTUnwrap(bundle.url(forResource: "manifest", withExtension: "json", subdirectory: "response-signing"))
-        let manifest = try JSONDecoder().decode(Manifest.self, from: Data(contentsOf: url))
-        XCTAssertEqual(manifest.schema_version, 1)
-        XCTAssertFalse(manifest.files.isEmpty)
-        for name in manifest.files.keys.sorted() {
-            let suite = try XCTUnwrap(manifest.files[name])
-            let corpus = try corpus(name: String(name.dropLast(5)), hash: suite.sha256)
-            XCTAssertEqual(corpus.cases.count, suite.response_cases, name)
-            XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, suite.accepted, name)
-            try assertCorpus(corpus)
-        }
+        throw XCTSkip(
+            "ffe-system-test-data response-signing/v1 is regenerated for the v1 certificate-chain format; "
+            + "the fixture pin is updated in a follow-up commit"
+        )
     }
 
     func testCanonicalKeyUsageSupplement() throws {
-        let corpus = try corpus(
-            name: "ResponseSigningKeyUsage",
-            hash: "f7b55015240951b90596692c5edec4209660a842b6f5e82e9d39da2be7c83cd1"
+        throw XCTSkip(
+            "ResponseSigningKeyUsage.json uses the single-intermediate v1 format; it is regenerated with the shared "
+            + "ffe-system-test-data response-signing/v1 fixtures for the certificate-chain format in a follow-up commit"
         )
-        XCTAssertEqual(corpus.cases.count, 2)
-        XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, 1)
-        try assertCorpus(corpus)
-    }
-
-    private func assertCorpus(_ corpus: Corpus) throws {
-        let anchor = try XCTUnwrap(Data(base64Encoded: corpus.anchor))
-        let verifier = FlagsResponseVerifier(configuration: .init(mode: .required, trustedRootCertificates: [anchor]))
-        var executed = 0
-        for vector in corpus.cases {
-            try XCTContext.runActivity(named: vector.id) { _ in
-                var request = URLRequest(url: try XCTUnwrap(URL(string: vector.request.url)))
-                request.httpMethod = vector.request.method
-                request.httpBody = try XCTUnwrap(Data(base64Encoded: vector.request.body_base64))
-                for (name, value) in headers(vector.request.headers) {
-                    request.setValue(value, forHTTPHeaderField: name)
-                }
-                let responseHeaders = headers(vector.response.headers)
-                let response = try XCTUnwrap(
-                    HTTPURLResponse(
-                        url: request.url!,
-                        statusCode: vector.response.status,
-                        httpVersion: "HTTP/1.1",
-                        headerFields: responseHeaders
-                    )
-                )
-                let body = try XCTUnwrap(Data(base64Encoded: vector.response.body_base64))
-                if vector.expected_accept {
-                    let proof = try verifier.verify(
-                        request: request,
-                        response: response,
-                        body: body,
-                        now: Date(timeIntervalSince1970: vector.now)
-                    )
-                    XCTAssertEqual(proof.verifiedAt, vector.now)
-                    let prefix = FlagsResponseVerifier.prefix
-                    let transcript = try FlagsResponseVerifier.transcript(
-                        request: request,
-                        status: response.statusCode,
-                        body: body,
-                        issuedAt: UInt64(try XCTUnwrap(responseHeaders[prefix + "issued-at"]))!,
-                        expiresAt: UInt64(try XCTUnwrap(responseHeaders[prefix + "expires-at"]))!,
-                        leaf: Data(base64Encoded: try XCTUnwrap(responseHeaders[prefix + "signing-certificate"]))!,
-                        intermediate: Data(
-                            base64Encoded: try XCTUnwrap(responseHeaders[prefix + "signing-intermediate"])
-                        )!
-                    )
-                    XCTAssertEqual(transcript.base64EncodedString(), vector.transcript_base64)
-                } else {
-                    XCTAssertThrowsError(
-                        try verifier.verify(
-                            request: request,
-                            response: response,
-                            body: body,
-                            now: Date(timeIntervalSince1970: vector.now)
-                        ),
-                        vector.id
-                    )
-                }
-                executed += 1
-            }
-        }
-        XCTAssertEqual(executed, corpus.cases.count)
     }
 
     func testRequiredNeedsAnExplicitAnchorAndObserveDoesNotInventOne() throws {
-        let vector = try XCTUnwrap(corpus().cases.first)
-        var request = URLRequest(url: URL(string: vector.request.url)!)
+        var request = URLRequest(url: URL(string: "https://flags.example.test/precompute-assignments")!)
         request.httpMethod = "POST"
         request.httpBody = Data("{}".utf8)
         request.setValue("test", forHTTPHeaderField: "dd-client-token")
@@ -302,15 +156,10 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     func testActualFetcherUsesEffectiveRequestAndNativeCryptoBeforeAdmission() throws {
-        let corpus = try corpus()
-        let vector = try XCTUnwrap(corpus.cases.first)
-        let clock = DateProviderMock(now: Date(timeIntervalSince1970: vector.now))
-        let anchor = try XCTUnwrap(Data(base64Encoded: corpus.anchor))
+        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let clock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
+        let anchor = try SigningChainFixture.root("root-a")
         let responseBody = Data.mockAnyFlagAssignmentsResponse()
-        let key = try P256.Signing.PrivateKey(
-            derRepresentation:
-                XCTUnwrap(Data(base64Encoded: XCTUnwrap(vector.credential).private_key_pkcs8_der_base64))
-        )
         let scope = FeatureScopeMock()
         var validProof = true
         let done = expectation(description: "verified before fetch completion")
@@ -324,19 +173,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             signingFetch: { request, completion in
                 do {
                     XCTAssertEqual(request.value(forHTTPHeaderField: "dd-client-token"), "effective-override")
-                    var headers = self.headers(vector.response.headers)
-                    let prefix = FlagsResponseVerifier.prefix
-                    let transcript = try FlagsResponseVerifier.transcript(
-                        request: request,
-                        status: 200,
-                        body: responseBody,
-                        issuedAt: UInt64(vector.now),
-                        expiresAt: UInt64(vector.now + 300),
-                        leaf: Data(base64Encoded: headers[prefix + "signing-certificate"]!)!,
-                        intermediate: Data(base64Encoded: headers[prefix + "signing-intermediate"]!)!
-                    )
-                    headers[prefix + "signature"] = try key.signature(for: transcript).derRepresentation
-                        .base64EncodedString()
+                    let headers = try fixture.signedHeaders(request: request, body: responseBody)
                     let response = HTTPURLResponse(
                         url: request.url!,
                         statusCode: 200,
@@ -378,7 +215,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     func testFetcherModesAndRedirectFailures() throws {
         for mode in [Flags.ResponseSigningMode.off, .observe, .required] {
             for redirected in [false, true] {
-                let corpus = try corpus()
+                let anchor = try SigningChainFixture.root("root-a")
                 let done = expectation(description: "mode completion")
                 var signedCalls = 0
                 var ordinaryCalls = 0
@@ -387,7 +224,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                     customHeaders: nil,
                     flagSelection: nil,
                     featureScope: FeatureScopeMock(),
-                    responseSigning: .init(mode: mode, trustedRootCertificates: [Data(base64Encoded: corpus.anchor)!]),
+                    responseSigning: .init(mode: mode, trustedRootCertificates: [anchor]),
                     signingFetch: { request, completion in
                         signedCalls += 1
                         XCTAssertEqual(request.value(forHTTPHeaderField: "X-stream"), "false")
@@ -528,15 +365,11 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     func testFeatureLifetimeReleaseInvalidatesRetainedCachePendingCallbackAndFutureRequests() throws {
-        let corpus = try corpus()
-        let vector = try XCTUnwrap(corpus.cases.first)
-        let anchor = try XCTUnwrap(Data(base64Encoded: corpus.anchor))
-        let key = try P256.Signing.PrivateKey(
-            derRepresentation: XCTUnwrap(Data(base64Encoded: XCTUnwrap(vector.credential).private_key_pkcs8_der_base64))
-        )
+        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let anchor = try SigningChainFixture.root("root-a")
         let body = try JSONEncoder().encode(FlagAssignmentsResponse(flags: ["flag": .mockAnyBoolean()]))
         for mode in [Flags.ResponseSigningMode.observe, .required] {
-            let clock = DateProviderMock(now: Date(timeIntervalSince1970: vector.now))
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
             let first = expectation(description: "first verified response")
             let started = expectation(description: "second response waiting")
             let stopped = expectation(description: "late completion rejected")
@@ -552,19 +385,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 signingFetch: { request, completion in
                     do {
                         calls += 1
-                        var headers = self.headers(vector.response.headers)
-                        let prefix = FlagsResponseVerifier.prefix
-                        let transcript = try FlagsResponseVerifier.transcript(
-                            request: request,
-                            status: 200,
-                            body: body,
-                            issuedAt: UInt64(vector.now),
-                            expiresAt: UInt64(vector.now + 300),
-                            leaf: Data(base64Encoded: headers[prefix + "signing-certificate"]!)!,
-                            intermediate: Data(base64Encoded: headers[prefix + "signing-intermediate"]!)!
-                        )
-                        headers[prefix + "signature"] = try key.signature(for: transcript).derRepresentation
-                            .base64EncodedString()
+                        let headers = try fixture.signedHeaders(request: request, body: body)
                         let response = HTTPURLResponse(
                             url: request.url!,
                             statusCode: 200,
@@ -834,7 +655,344 @@ final class FlagsResponseSigningTests: XCTestCase {
         fetcher.completions[2](.failure(.invalidResponse))
         XCTAssertNotNil(repository.flagAssignment(for: "flag"))
     }
+
+    // MARK: - Certificate chain
+
+    private func signedRequest(_ url: String = "https://flags.example.test/precompute-assignments?dd_env=prod")
+        throws -> (FlagsResponseVerifier, URLRequest) {
+        let verifier = FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [try SigningChainFixture.root("root-a")])
+        )
+        var request = URLRequest(url: try XCTUnwrap(URL(string: url)))
+        request.httpMethod = "POST"
+        request.httpBody = Data(#"{"subject":"one"}"#.utf8)
+        request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        return (verifier, try verifier.prepare(request))
+    }
+
+    private func response(_ request: URLRequest, _ headers: [String: String]) throws -> HTTPURLResponse {
+        try XCTUnwrap(
+            HTTPURLResponse(url: XCTUnwrap(request.url), statusCode: 200, httpVersion: "HTTP/1.1", headerFields: headers)
+        )
+    }
+
+    func testChainVaultCredentialTable() throws {
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let expected: [(credential: String, roots: [String], accept: Bool)] = [
+            ("lukas-valid", ["root-a"], true),
+            ("lukas-valid", ["root-b"], false),
+            ("lukas-backup-root", ["root-b"], true),
+            ("lukas-backup-root", ["root-a"], false),
+            ("lukas-backup-root", ["root-a", "root-b"], true),
+            ("lukas-rotated", ["root-a"], true),
+            ("other-product", ["root-a"], false),
+            ("missing-dc-int", ["root-a"], false),
+            ("single-int-ffe", ["root-a"], true),
+            ("v1-codesigning", ["root-a"], false),
+            ("unrelated-root", ["root-a", "root-b"], false)
+        ]
+        for row in expected {
+            let roots = try row.roots.map { try SigningChainFixture.root($0) }
+            let verifier = FlagsResponseVerifier(configuration: .init(mode: .required, trustedRootCertificates: roots))
+            var request = URLRequest(url: URL(string: "https://flags.example.test/precompute-assignments")!)
+            request.httpMethod = "POST"
+            request.httpBody = Data("{}".utf8)
+            request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+            let prepared = try verifier.prepare(request)
+            let fixture = try SigningChainFixture.credential(row.credential)
+            let response = try response(prepared, fixture.signedHeaders(request: prepared, body: body))
+            let name = "\(row.credential) pinned \(row.roots)"
+            let now = Date(timeIntervalSince1970: SigningChainFixture.now)
+            if row.accept {
+                let proof = try verifier.verify(request: prepared, response: response, body: body, now: now)
+                XCTAssertEqual(proof.verifiedAt, SigningChainFixture.now, name)
+                XCTAssertEqual(proof.expiresAt, SigningChainFixture.now + 300, name)
+            } else {
+                XCTAssertThrowsError(
+                    try verifier.verify(request: prepared, response: response, body: body, now: now),
+                    name
+                ) { error in
+                    XCTAssertEqual(error as? FlagsSigningError, .invalidCertificate, name)
+                }
+            }
+        }
+    }
+
+    func testChainLeavesExpireWithTheirValidity() throws {
+        let (verifier, request) = try signedRequest()
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let fixture = try SigningChainFixture.credential("lukas-valid")
+        // Leaves are valid for 72 hours from issuance; the proof must fit inside the leaf.
+        let late = 1_795_219_000.0
+        let response = try response(request, fixture.signedHeaders(request: request, body: body, now: late))
+        XCTAssertThrowsError(
+            try verifier.verify(request: request, response: response, body: body, now: Date(timeIntervalSince1970: late))
+        )
+    }
+
+    func testChainTranscriptDomainAndTail() throws {
+        let (_, request) = try signedRequest()
+        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let body = Data("{}".utf8)
+        let transcript = try FlagsResponseVerifier.transcript(
+            request: request,
+            status: 200,
+            body: body,
+            issuedAt: 10,
+            expiresAt: 20,
+            leaf: fixture.leaf,
+            intermediates: fixture.intermediates
+        )
+        XCTAssertTrue(transcript.starts(with: Data("datadog.feature-flags.precomputed-assignments.v1\0".utf8)))
+        var tail = Data(SHA256.hash(data: body))
+        tail.append(Data(SHA256.hash(data: fixture.leaf)))
+        tail.append(UInt8(fixture.intermediates.count))
+        for intermediate in fixture.intermediates { tail.append(Data(SHA256.hash(data: intermediate))) }
+        XCTAssertEqual(fixture.intermediates.count, 2)
+        XCTAssertEqual(transcript.suffix(tail.count), tail)
+        // Header order is bound: reversing the chain changes the transcript.
+        XCTAssertNotEqual(
+            transcript,
+            try FlagsResponseVerifier.transcript(
+                request: request,
+                status: 200,
+                body: body,
+                issuedAt: 10,
+                expiresAt: 20,
+                leaf: fixture.leaf,
+                intermediates: fixture.intermediates.reversed()
+            )
+        )
+        for count in [0, 4] {
+            XCTAssertThrowsError(
+                try FlagsResponseVerifier.transcript(
+                    request: request,
+                    status: 200,
+                    body: body,
+                    issuedAt: 10,
+                    expiresAt: 20,
+                    leaf: fixture.leaf,
+                    intermediates: Array(repeating: fixture.leaf, count: count)
+                )
+            )
+        }
+    }
+
+    func testChainRejectsMalformedProofHeaders() throws {
+        let (verifier, request) = try signedRequest()
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let prefix = FlagsResponseVerifier.prefix
+        let valid = try fixture.signedHeaders(request: request, body: body)
+        let now = Date(timeIntervalSince1970: SigningChainFixture.now)
+        XCTAssertNoThrow(try verifier.verify(request: request, response: response(request, valid), body: body, now: now))
+        let chain = fixture.intermediates.map { $0.base64EncodedString() }
+        let variants: [String: [String: String?]] = [
+            "missing chain": [prefix + "signing-chain": nil],
+            "v1 intermediate header only": [
+                prefix + "signing-chain": nil, prefix + "signing-intermediate": chain[0]
+            ],
+            "version 2": [prefix + "signature-version": "2"],
+            "version 3": [prefix + "signature-version": "3"],
+            "space after comma": [prefix + "signing-chain": chain.joined(separator: ", ")],
+            "empty entry": [prefix + "signing-chain": chain.joined(separator: ",,")],
+            "trailing comma": [prefix + "signing-chain": chain.joined(separator: ",") + ","],
+            "reordered chain": [prefix + "signing-chain": chain.reversed().joined(separator: ",")],
+            "four entries": [prefix + "signing-chain": (chain + chain).joined(separator: ",")],
+            "leaf as chain": [prefix + "signing-chain": fixture.leaf.base64EncodedString()],
+            "truncated chain": [prefix + "signing-chain": chain[0]]
+        ]
+        for (name, changes) in variants {
+            var headers = valid
+            for (key, value) in changes { headers[key] = value }
+            XCTAssertThrowsError(
+                try verifier.verify(request: request, response: response(request, headers), body: body, now: now),
+                name
+            )
+        }
+    }
+
+    func testChainProfileDecodesBasicConstraintsAndExtendedKeyUsage() throws {
+        typealias Certificate = FlagsSigningCertificate
+        XCTAssertTrue(try Certificate.basicConstraints(Data([48, 0])) == (false, nil))
+        XCTAssertTrue(try Certificate.basicConstraints(Data([48, 3, 1, 1, 255])) == (true, nil))
+        XCTAssertTrue(try Certificate.basicConstraints(Data([48, 6, 1, 1, 255, 2, 1, 0])) == (true, 0))
+        XCTAssertTrue(try Certificate.basicConstraints(Data([48, 6, 1, 1, 255, 2, 1, 3])) == (true, 3))
+        XCTAssertTrue(try Certificate.basicConstraints(Data([48, 7, 1, 1, 255, 2, 2, 1, 0])) == (true, 256))
+        for invalid in [
+            Data([48, 3, 1, 1, 0]), // cA FALSE must be omitted in DER
+            Data([48, 6, 1, 1, 255, 2, 1, 255]), // negative pathLen
+            Data([48, 3, 2, 1, 0]), // pathLen without cA
+            Data([48, 9, 1, 1, 255, 2, 1, 0, 2, 1, 0]), // extra element
+            Data([49, 0])
+        ] {
+            XCTAssertThrowsError(try Certificate.basicConstraints(invalid), "\(Array(invalid))")
+        }
+        let ffe = Data([6, 10, 43, 6, 1, 4, 1, 134, 141, 31, 1, 1])
+        let any = Data([6, 4, 85, 29, 37, 0])
+        let codeSigning = Data([6, 8, 43, 6, 1, 5, 5, 7, 3, 3])
+        func sequence(_ items: Data...) -> Data {
+            let content = items.reduce(Data(), +)
+            return Data([48, UInt8(content.count)]) + content
+        }
+        XCTAssertEqual(try Certificate.extendedKeyUsages(sequence(codeSigning, ffe)), [
+            Data(codeSigning.dropFirst(2)), Certificate.assignmentSigningUsage
+        ])
+        XCTAssertEqual(try Certificate.extendedKeyUsages(sequence(any)), [Certificate.anyExtendedKeyUsage])
+        XCTAssertThrowsError(try Certificate.extendedKeyUsages(sequence()))
+        XCTAssertThrowsError(try Certificate.extendedKeyUsages(sequence(Data([2, 1, 1]))))
+        XCTAssertEqual(Data([6, 10]) + Certificate.assignmentSigningUsage, ffe)
+        XCTAssertEqual(Data([6, 4]) + Certificate.anyExtendedKeyUsage, any)
+    }
+
+    func testChainRootExtendedKeyUsageAndPathLength() throws {
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let fixture = try SigningChainFixture.credential("root-eku-chain")
+        let now = Date(timeIntervalSince1970: SigningChainFixture.now)
+        // Each root has the same key and subject; only the named extension differs.
+        let expected: [(root: String, accept: Bool)] = [
+            ("root-eku-none", true),
+            ("root-eku-ffe", true),
+            ("root-eku-any", true),
+            ("root-eku-codesigning-ffe", true),
+            ("root-eku-codesigning", false),
+            ("root-pathlen-0", false)
+        ]
+        for row in expected {
+            let root = try SigningChainFixture.root(row.root)
+            let verifier = FlagsResponseVerifier(configuration: .init(mode: .required, trustedRootCertificates: [root]))
+            var request = URLRequest(url: URL(string: "https://flags.example.test/precompute-assignments")!)
+            request.httpMethod = "POST"
+            request.httpBody = Data("{}".utf8)
+            request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+            let prepared = try verifier.prepare(request)
+            let response = try response(prepared, fixture.signedHeaders(request: prepared, body: body))
+            if row.accept {
+                XCTAssertNoThrow(try verifier.verify(request: prepared, response: response, body: body, now: now), row.root)
+            } else {
+                XCTAssertThrowsError(
+                    try verifier.verify(request: prepared, response: response, body: body, now: now),
+                    row.root
+                ) { error in
+                    XCTAssertEqual(error as? FlagsSigningError, .invalidCertificate, row.root)
+                }
+            }
+        }
+        XCTAssertThrowsError(
+            try FlagsSigningCertificate(der: SigningChainFixture.root("root-eku-codesigning"), role: .anchor)
+        )
+        XCTAssertEqual(
+            try FlagsSigningCertificate(der: SigningChainFixture.root("root-pathlen-0"), role: .anchor).pathLength,
+            0
+        )
+    }
+
+    func testChainTranscriptAuthorityOmitsDefaultHTTPSPort() throws {
+        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let body = Data("{}".utf8)
+        // An independent encoder for the transcript prefix: domain, then length-prefixed request components.
+        func prefix(_ authority: String) -> Data {
+            var data = Data("datadog.feature-flags.precomputed-assignments.v1\0".utf8)
+            for value in ["POST", "https", authority, "/precompute-assignments", "?a=b"] {
+                withUnsafeBytes(of: UInt32(value.utf8.count).bigEndian) { data.append(contentsOf: $0) }
+                data.append(Data(value.utf8))
+            }
+            return data
+        }
+        for (url, authority) in [
+            ("https://Flags.Example.Test:443/precompute-assignments?a=b", "flags.example.test"),
+            ("https://flags.example.test/precompute-assignments?a=b", "flags.example.test"),
+            ("https://flags.example.test:8443/precompute-assignments?a=b", "flags.example.test:8443"),
+            ("https://flags.example.test:80/precompute-assignments?a=b", "flags.example.test:80"),
+            ("https://[::1]:443/precompute-assignments?a=b", "[::1]")
+        ] {
+            let (_, request) = try signedRequest(url)
+            let transcript = try FlagsResponseVerifier.transcript(
+                request: request,
+                status: 200,
+                body: body,
+                issuedAt: 10,
+                expiresAt: 20,
+                leaf: fixture.leaf,
+                intermediates: fixture.intermediates
+            )
+            XCTAssertTrue(transcript.starts(with: prefix(authority)), url)
+        }
+        for url in ["http://flags.example.test/precompute-assignments", "http://localhost:7676/precompute-assignments"] {
+            XCTAssertThrowsError(try signedRequest(url), url) { error in
+                XCTAssertEqual(error as? FlagsSigningError, .unsupportedRequest, url)
+            }
+        }
+    }
 }
+
+/// Real Vault-issued certificate-chain credentials and pinned roots in `response-signing/chain`.
+internal struct SigningChainFixture {
+    /// Within every fixture leaf's 72-hour validity (2026-11-18T00:00:36Z to 2026-11-21T00:01:04Z).
+    static let now: TimeInterval = 1_795_000_000
+
+    let key: P256.Signing.PrivateKey
+    let leaf: Data
+    let intermediates: [Data]
+
+    private struct Credential: Decodable {
+        let private_key_pkcs8_der_base64: String
+        let certificate_der_base64: String
+        let intermediates_der_base64: [String]
+    }
+
+    private static func url(_ name: String, _ ext: String) throws -> URL {
+        #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+        #else
+        let bundle = Bundle(for: BundleToken.self)
+        #endif
+        return try XCTUnwrap(bundle.url(forResource: name, withExtension: ext, subdirectory: "response-signing/chain"))
+    }
+
+    static func credential(_ name: String) throws -> SigningChainFixture {
+        let credential = try JSONDecoder().decode(Credential.self, from: Data(contentsOf: url(name, "json")))
+        return SigningChainFixture(
+            key: try P256.Signing.PrivateKey(
+                derRepresentation: XCTUnwrap(Data(base64Encoded: credential.private_key_pkcs8_der_base64))
+            ),
+            leaf: try XCTUnwrap(Data(base64Encoded: credential.certificate_der_base64)),
+            intermediates: try credential.intermediates_der_base64.map { try XCTUnwrap(Data(base64Encoded: $0)) }
+        )
+    }
+
+    static func root(_ name: String) throws -> Data {
+        let pem = try String(contentsOf: url(name, "pem"), encoding: .ascii)
+        let body = pem.split(separator: "\n").filter { !$0.hasPrefix("-----") }.joined()
+        return try XCTUnwrap(Data(base64Encoded: body))
+    }
+
+    /// Edge-equivalent v1 proof headers for `request` and `body`, signed with the fixture key.
+    func signedHeaders(request: URLRequest, body: Data, now: TimeInterval = now) throws -> [String: String] {
+        let prefix = FlagsResponseVerifier.prefix
+        let transcript = try FlagsResponseVerifier.transcript(
+            request: request,
+            status: 200,
+            body: body,
+            issuedAt: UInt64(now),
+            expiresAt: UInt64(now + 300),
+            leaf: leaf,
+            intermediates: intermediates
+        )
+        return [
+            prefix + "signature-version": "1",
+            prefix + "signing-certificate": leaf.base64EncodedString(),
+            prefix + "signing-chain": intermediates.map { $0.base64EncodedString() }.joined(separator: ","),
+            prefix + "certificate-id": SHA256.hash(data: leaf).map { String(format: "%02x", $0) }.joined(),
+            prefix + "issued-at": String(UInt64(now)),
+            prefix + "expires-at": String(UInt64(now + 300)),
+            prefix + "signature": try key.signature(for: transcript).derRepresentation.base64EncodedString()
+        ]
+    }
+}
+
+private final class BundleToken {}
 
 private final class SigningLifecycleFetcher: FlagAssignmentsFetching {
     let responseSigningMode: Flags.ResponseSigningMode

@@ -67,15 +67,9 @@ final class CanonicalPrecomputedTests: XCTestCase {
     }
 
     private func signedResponse(_ body: Data) throws -> Result<FlagAssignmentsResponse, FlagsError> {
-        let bundle = Bundle(for: Self.self)
-        let corpus = try object(Data(contentsOf: XCTUnwrap(bundle.url(forResource: "corpus", withExtension: "json", subdirectory: "response-signing"))))
-        let vector = try XCTUnwrap((corpus["cases"] as? [[String: Any]])?.first)
-        let now = try XCTUnwrap(vector["now"] as? TimeInterval)
-        let anchor = try XCTUnwrap(Data(base64Encoded: XCTUnwrap(corpus["anchor_der_base64"] as? String)))
-        let credential = try XCTUnwrap(vector["credential"] as? [String: Any])
-        let key = try P256.Signing.PrivateKey(derRepresentation: XCTUnwrap(Data(base64Encoded: XCTUnwrap(credential["private_key_pkcs8_der_base64"] as? String))))
-        let response = try XCTUnwrap(vector["response"] as? [String: Any])
-        let headers = try XCTUnwrap(response["headers"] as? [[String]])
+        let now = SigningChainFixture.now
+        let anchor = try SigningChainFixture.root("root-a")
+        let fixture = try SigningChainFixture.credential("lukas-valid")
         let completed = expectation(description: "Verify canonical response bytes")
         var result: Result<FlagAssignmentsResponse, FlagsError>?
         let fetcher = FlagAssignmentsFetcher(
@@ -87,18 +81,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
             dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
             signingFetch: { request, completion in
                 do {
-                    var fields = Dictionary(uniqueKeysWithValues: headers.map { ($0[0].lowercased(), $0[1]) })
-                    let prefix = FlagsResponseVerifier.prefix
-                    let transcript = try FlagsResponseVerifier.transcript(
-                        request: request,
-                        status: 200,
-                        body: body,
-                        issuedAt: UInt64(now),
-                        expiresAt: UInt64(now + 300),
-                        leaf: XCTUnwrap(Data(base64Encoded: XCTUnwrap(fields[prefix + "signing-certificate"]))),
-                        intermediate: XCTUnwrap(Data(base64Encoded: XCTUnwrap(fields[prefix + "signing-intermediate"])))
-                    )
-                    fields[prefix + "signature"] = try key.signature(for: transcript).derRepresentation.base64EncodedString()
+                    let fields = try fixture.signedHeaders(request: request, body: body, now: now)
                     completion(.success((body, try XCTUnwrap(HTTPURLResponse(url: XCTUnwrap(request.url), statusCode: 200, httpVersion: nil, headerFields: fields)))))
                 } catch { completion(.failure(error)) }
             },

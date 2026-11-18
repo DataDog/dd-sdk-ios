@@ -74,6 +74,9 @@ internal struct FlagsResponseVerification: Equatable {
 
 internal final class FlagsResponseVerifier {
     static let capability = "response-signing-v1"
+    static let signatureVersion = "1"
+    static let transcriptDomain = "datadog.feature-flags.precomputed-assignments.v1\0"
+    static let maximumIntermediates = 3
     static let prefix = "x-datadog-feature-flags-"
     static let maximumResponseBytes = 2 * 1_024 * 1_024
     let scope = UUID()
@@ -163,7 +166,7 @@ internal final class FlagsResponseVerifier {
         }
         // Whole-body proofs require buffered delivery, regardless of the server rollout.
         request.setValue("false", forHTTPHeaderField: "X-stream")
-        request.setValue("1", forHTTPHeaderField: Self.prefix + "signature-version")
+        request.setValue(Self.signatureVersion, forHTTPHeaderField: Self.prefix + "signature-version")
         request.setValue(Self.hex(Data(nonce)), forHTTPHeaderField: Self.prefix + "request-nonce")
         let existing = (request.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities") ?? "")
             .split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
@@ -185,11 +188,11 @@ internal final class FlagsResponseVerifier {
         guard !roots.isEmpty else {
             throw FlagsSigningError.missingAnchor
         }
-        guard response.statusCode == 200, try Self.header(response, "signature-version") == "1" else {
+        guard response.statusCode == 200, try Self.header(response, "signature-version") == Self.signatureVersion else {
             throw FlagsSigningError.invalidProof
         }
         let leafDER = try Self.base64(Self.header(response, "signing-certificate"), limit: 4_096)
-        let intermediateDER = try Self.base64(Self.header(response, "signing-intermediate"), limit: 4_096)
+        let intermediateDERs = try Self.chain(response)
         let identifier = try Self.header(response, "certificate-id")
         guard identifier == Self.hex(Self.digest(leafDER)) else {
             throw FlagsSigningError.invalidProof
@@ -203,12 +206,24 @@ internal final class FlagsResponseVerifier {
             throw FlagsSigningError.expiredProof
         }
         let leaf = try FlagsSigningCertificate(der: leafDER, role: .leaf)
-        let intermediate = try FlagsSigningCertificate(der: intermediateDER, role: .intermediate)
-        try Self.verifyChild(leaf, parent: intermediate)
+        let intermediates = try intermediateDERs.map { try FlagsSigningCertificate(der: $0, role: .intermediate) }
+        // Path: leaf -> intermediate[0] -> ... -> intermediate[n-1] -> pinned root.
+        var child = leaf
+        for (index, intermediate) in intermediates.enumerated() {
+            guard let pathLength = intermediate.pathLength, pathLength >= index else {
+                throw FlagsSigningError.invalidCertificate
+            }
+            try Self.verifyChild(child, parent: intermediate)
+            child = intermediate
+        }
+        guard let last = intermediates.last else {
+            throw FlagsSigningError.invalidProof
+        }
         var anchored = false
         for data in roots {
             guard let root = try? FlagsSigningCertificate(der: data, role: .anchor),
-                (try? Self.verifyChild(intermediate, parent: root)) != nil,
+                root.pathLength.map({ $0 >= intermediates.count }) ?? true,
+                (try? Self.verifyChild(last, parent: root)) != nil,
                 root.notBefore <= seconds, seconds < root.notAfter,
                 Double(issuedAt) >= root.notBefore, Double(expiresAt) <= root.notAfter
             else { continue }
@@ -218,7 +233,7 @@ internal final class FlagsResponseVerifier {
         guard anchored else {
             throw FlagsSigningError.invalidCertificate
         }
-        for certificate in [leaf, intermediate] {
+        for certificate in [leaf] + intermediates {
             guard certificate.notBefore <= seconds, seconds < certificate.notAfter,
                 Double(issuedAt) >= certificate.notBefore, Double(expiresAt) <= certificate.notAfter
             else {
@@ -233,7 +248,7 @@ internal final class FlagsResponseVerifier {
             issuedAt: issuedAt,
             expiresAt: expiresAt,
             leaf: leafDER,
-            intermediate: intermediateDER
+            intermediates: intermediateDERs
         )
         try Self.verifySignature(signature, bytes: transcript, key: leaf.publicKey)
         return FlagsResponseVerification(scope: scope, verifiedAt: seconds, expiresAt: Double(expiresAt))
@@ -246,13 +261,15 @@ internal final class FlagsResponseVerifier {
         issuedAt: UInt64,
         expiresAt: UInt64,
         leaf: Data,
-        intermediate: Data
+        intermediates: [Data]
     ) throws -> Data {
         let components = try requestComponents(request)
-        guard let status = UInt16(exactly: status), body.count <= maximumResponseBytes else {
+        guard let status = UInt16(exactly: status), body.count <= maximumResponseBytes,
+            (1...maximumIntermediates).contains(intermediates.count)
+        else {
             throw FlagsSigningError.invalidProof
         }
-        var result = Data("datadog.feature-flags.precomputed-assignments.v1\0".utf8)
+        var result = Data(transcriptDomain.utf8)
         for value in components { try appendLength(Data(value.utf8), to: &result) }
         guard let nonce = request.value(forHTTPHeaderField: prefix + "request-nonce") else {
             throw FlagsSigningError.unsupportedRequest
@@ -290,17 +307,19 @@ internal final class FlagsResponseVerifier {
         appendInteger(UInt64(body.count), to: &result)
         result.append(digest(body))
         result.append(digest(leaf))
-        result.append(digest(intermediate))
+        result.append(UInt8(intermediates.count))
+        for intermediate in intermediates { result.append(digest(intermediate)) }
         return result
     }
 
     private static func requestComponents(_ request: URLRequest) throws -> [String] {
         guard request.httpMethod == "POST", let url = request.url,
             let parts = URLComponents(url: url, resolvingAgainstBaseURL: false),
-            parts.scheme?.lowercased() == "https", parts.user == nil, parts.password == nil, parts.fragment == nil,
+            let scheme = parts.scheme?.lowercased(), scheme == "https",
+            parts.user == nil, parts.password == nil, parts.fragment == nil,
             var host = parts.host?.lowercased(), !host.isEmpty,
             (request.httpBody?.count ?? 0) <= 1_024 * 1_024,
-            request.value(forHTTPHeaderField: prefix + "signature-version") == "1",
+            request.value(forHTTPHeaderField: prefix + "signature-version") == signatureVersion,
             let nonce = request.value(forHTTPHeaderField: prefix + "request-nonce"), nonce.utf8.count == 32,
             nonce.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }),
             let token = request.value(forHTTPHeaderField: "dd-client-token"), !token.isEmpty, !token.contains(",")
@@ -318,11 +337,27 @@ internal final class FlagsResponseVerifier {
             throw FlagsSigningError.unsupportedRequest
         }
         if host.contains(":"), !host.hasPrefix("[") { host = "[\(host)]" }
-        if let port = parts.port, port != 443 { host += ":\(port)" }
+        // The authority omits the default port of the scheme.
+        if let port = parts.port, port != defaultPort(scheme) { host += ":\(port)" }
         return [
-            "POST", "https", host, parts.percentEncodedPath.isEmpty ? "/" : parts.percentEncodedPath,
+            "POST", scheme, host, parts.percentEncodedPath.isEmpty ? "/" : parts.percentEncodedPath,
             parts.percentEncodedQuery.map { "?" + $0 } ?? ""
         ]
+    }
+
+    private static func defaultPort(_ scheme: String) -> Int { scheme == "https" ? 443 : 80 }
+
+    /// Intermediates in issuance order: index 0 issued the leaf, and a pinned root issued the last one.
+    /// The header joins 1 to 3 standard base64 DER entries with "," and no spaces.
+    private static func chain(_ response: HTTPURLResponse) throws -> [Data] {
+        let value = try singleHeader(response, "signing-chain")
+        let entries = value.split(separator: ",", omittingEmptySubsequences: false)
+        guard value.utf8.count <= maximumIntermediates * 5_465 - 1,
+            (1...maximumIntermediates).contains(entries.count)
+        else {
+            throw FlagsSigningError.invalidProof
+        }
+        return try entries.map { try base64(String($0), limit: 4_096) }
     }
 
     private static func verifyChild(_ child: FlagsSigningCertificate, parent: FlagsSigningCertificate) throws {
@@ -341,6 +376,14 @@ internal final class FlagsResponseVerifier {
     }
 
     private static func header(_ response: HTTPURLResponse, _ suffix: String) throws -> String {
+        let value = try singleHeader(response, suffix)
+        guard value.utf8.count <= 5_464, !value.contains(",") else {
+            throw FlagsSigningError.invalidProof
+        }
+        return value
+    }
+
+    private static func singleHeader(_ response: HTTPURLResponse, _ suffix: String) throws -> String {
         let name = prefix + suffix
         let values = response.allHeaderFields.compactMap { key, value -> String? in
             guard let key = key as? String, key.lowercased() == name else {
@@ -350,9 +393,6 @@ internal final class FlagsResponseVerifier {
         }
         guard values.count == 1, let value = values.first, !value.isEmpty else {
             throw FlagsSigningError.missingProof
-        }
-        guard value.utf8.count <= 5_464, !value.contains(",") else {
-            throw FlagsSigningError.invalidProof
         }
         return value
     }
