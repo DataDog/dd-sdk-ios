@@ -144,7 +144,9 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
 /// ```
 ///
 /// The callback runs synchronously on the thread that evaluated the flag, including the main thread.
-/// Keep it short and move I/O to another queue. The SDK catches and logs an error thrown by the callback
+/// Several threads can call it at the same time, so it must be thread-safe. An evaluation inside the
+/// callback calls the hook again, so avoid unbounded recursion. Keep it short and move I/O to another queue.
+/// The SDK catches and logs an error thrown by the callback
 /// and returns the evaluation result unchanged. The hook observes evaluations; the SDK records exposures.
 /// The callback is immutable and the error flag is lock-protected, so the hook is safe to share across threads.
 public final class ExposureHook: @unchecked Sendable {
@@ -205,11 +207,13 @@ public struct ExposureEvaluation {
     /// The allocation key and the variant are both non-blank.
     public let isExposure: Bool
 
-    /// `true` when the subject was already exposed to the same flag, allocation, variant and split.
+    /// For an exposure (`isExposure`), `true` when this client's exposure cache holds the same allocation, variant
+    /// and split for the subject and flag. After an exposure of another assignment, or after the cache evicts the
+    /// entry, the next exposure is new.
     public let isCacheHit: Bool
 
-    /// `true` for a new exposure (`isExposure` and a cache miss): exactly what the SDK sends to Datadog
-    /// when `Flags.Configuration.trackExposures` is enabled.
+    /// `true` for a new exposure (`isExposure` and a cache miss). The Datadog write depends on
+    /// `Flags.Configuration.trackExposures` and the tracking consent.
     public var shouldSend: Bool { isExposure && !isCacheHit }
 
     internal init(

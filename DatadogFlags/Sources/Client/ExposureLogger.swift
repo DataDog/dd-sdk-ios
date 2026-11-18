@@ -11,10 +11,10 @@ import DatadogInternal
 internal struct ExposureDecision: Equatable {
     /// A successful evaluation of an allocation that logs exposures, repeats included.
     let isExposure: Bool
-    /// The subject was already exposed to the same flag, allocation, variant and serial ID.
+    /// For an exposure (`isExposure`), the exposure cache holds the same allocation, variant and serial ID for the subject and flag.
     let isCacheHit: Bool
 
-    /// What the SDK sends to Datadog when exposure tracking is enabled.
+    /// A new exposure. The Datadog write depends on exposure tracking and the tracking consent.
     var shouldSend: Bool { isExposure && !isCacheHit }
 
     static let notAnExposure = ExposureDecision(isExposure: false, isCacheHit: false)
