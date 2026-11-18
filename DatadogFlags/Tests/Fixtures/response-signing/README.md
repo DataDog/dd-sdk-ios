@@ -51,7 +51,7 @@ The chain contract has these rules:
   field fails to parse, and the signer does not sign.
 
 The FFE EKU in these fixtures is the placeholder `1.3.6.1.4.1.99999.1.1`.
-This arc does not belong to Datadog. Identity-core must assign the production OID
+This arc does not belong to Datadog. Datadog must assign the production OID
 before release. Then change `FFE_EKU` in `generate-v1.py` and
 `ci/verify-response-signing-vectors.py`, and regenerate all fixtures.
 
@@ -97,9 +97,9 @@ Accepted cases:
 - One intermediate (`valid-current`), a rotated leaf, a rotated intermediate in
   2032, an effective token with authorization, gzip transport bytes, and IPv6 with
   absent optional headers.
-- Two intermediates (root, DC intermediate with pathLen 1, lower intermediate with
+- Two intermediates (root, upper intermediate with pathLen 1, lower intermediate with
   pathLen 0, leaf) and three intermediates.
-- A rotated lower intermediate under the same DC intermediate, with no earlier history.
+- A rotated lower intermediate under the same upper intermediate, with no earlier history.
 - A leaf EKU with the FFE EKU and other OIDs. An intermediate EKU with the FFE EKU,
   or with anyExtendedKeyUsage. An intermediate pathLen of 1 at index 0
   (`intermediate-pathlen-one`).

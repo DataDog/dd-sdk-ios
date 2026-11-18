@@ -844,8 +844,8 @@ final class FlagsResponseSigningTests: XCTestCase {
             ("rotated-lower-intermediate", ["root-a"], true),
             ("other-product", ["root-a"], false),
             ("missing-upper-intermediate", ["root-a"], false),
-            ("single-int-ffe", ["root-a"], true),
-            ("v1-codesigning", ["root-a"], false),
+            ("one-intermediate", ["root-a"], true),
+            ("codesigning-leaf", ["root-a"], false),
             ("unrelated-root", ["root-a", "root-b"], false)
         ]
         for row in expected {
@@ -880,7 +880,7 @@ final class FlagsResponseSigningTests: XCTestCase {
         let body = Data.mockAnyFlagAssignmentsResponse()
         let fixture = try SigningChainFixture.credential("two-intermediates")
         // Leaves are valid for 72 hours from issuance; the proof must fit inside the leaf.
-        let late = 1_795_219_000.0
+        let late = 1_795_234_700.0
         let response = try response(request, fixture.signedHeaders(request: request, body: body, now: late))
         XCTAssertThrowsError(
             try verifier.verify(request: request, response: response, body: body, now: Date(timeIntervalSince1970: late))
@@ -1085,7 +1085,7 @@ final class FlagsResponseSigningTests: XCTestCase {
 
 /// Test-CA-issued certificate-chain credentials and pinned roots in `response-signing-chain`.
 internal struct SigningChainFixture {
-    /// Within every fixture leaf's 72-hour validity (2026-11-18T00:00:36Z to 2026-11-21T00:01:04Z).
+    /// Within every fixture leaf's 72-hour validity (2026-11-18T04:20:54Z to 2026-11-21T04:20:52Z).
     static let now: TimeInterval = 1_795_000_000
 
     let key: P256.Signing.PrivateKey

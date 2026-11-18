@@ -3,7 +3,7 @@
   "generator": "response-signing/generate-v1.py",
   "files": {
     "corpus.json": {
-      "sha256": "53fe3b641be971c287fd4bc8a7913c68c53f009bdb36e6a16ef1bcc53c138b67",
+      "sha256": "ecb757b8b79a209467fee79d98e010285013c62717b1e5176ef122b77bf59a1e",
       "response_cases": 77,
       "accepted": 17,
       "signing_cases": 12
@@ -15,7 +15,7 @@
       "signing_cases": 0
     },
     "nested-der.json": {
-      "sha256": "1e170f2252e3abac8beb78853c3e3d64f908965c4770a29c1618e308e3ea3d8e",
+      "sha256": "dafdd19b167ad4acb3d140c86d21511129bd3855660d2f6c93459b12e8e3a6a3",
       "response_cases": 2,
       "accepted": 1,
       "signing_cases": 2

@@ -14,8 +14,8 @@ A local test certificate authority issued these credentials and roots. Each JSON
 | `rotated-lower-intermediate` | a new lower intermediate under the same upper intermediate | accept |
 | `other-product` | leaf EKU is the product B OID only | reject (leaf EKU) |
 | `missing-upper-intermediate` | lower intermediate only | reject (no pinned root issued it) |
-| `single-int-ffe` | root A, one intermediate (pathLen 0), leaf with the FFE EKU | accept |
-| `v1-codesigning` | root A, one intermediate, leaf with `codeSigning` only | reject (leaf EKU) |
+| `one-intermediate` | root A, one intermediate (pathLen 0), leaf with the FFE EKU | accept |
+| `codesigning-leaf` | root A, one intermediate, leaf with `codeSigning` only | reject (leaf EKU) |
 | `unrelated-root` | a chain under a root that is not pinned | reject (no pinned root) |
 
 The leaves are valid for 72 hours from issuance. Tests use a fixed time inside that period, so the files do not need regeneration when the leaves expire.
