@@ -205,6 +205,7 @@ public struct ExposureEvaluation {
     public let features: [String: AnyValue]
 
     /// `true` for a successful evaluation of an allocation that logs exposures, repeats included.
+    /// The allocation key and the variant are both non-blank.
     public let isExposure: Bool
 
     /// `true` when the subject was already exposed to the same flag, allocation, variant and split.

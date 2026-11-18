@@ -177,7 +177,7 @@ Flags.enable(with: configuration)
 
 | Member | Meaning |
 | --- | --- |
-| `isExposure` | A successful evaluation of an allocation that logs exposures, repeats included. |
+| `isExposure` | A successful evaluation of an allocation that logs exposures, with a non-blank allocation key and variant, repeats included. |
 | `isCacheHit` | The subject was already exposed to the same flag, allocation, variant and split. |
 | `shouldSend` | A new exposure (`isExposure` and a cache miss): exactly what the SDK sends to Datadog when `trackExposures` is `true`. |
 | `features` | Features of the selected split for customer code, for example `holdout.key`, `holdout.assignment_group` and `holdout.should_include_in_holdout_analysis`. |
