@@ -88,18 +88,10 @@ public enum Flags {
         ///
         /// When enabled, flag evaluation events are sent to the exposures endpoint for analytics and monitoring.
         /// When disabled, the SDK stops sending exposures to Datadog and keeps deduplicating them,
-        /// so ``exposureHook`` keeps receiving correct verdicts.
+        /// so the exposure hook of the Datadog OpenFeature provider keeps receiving correct verdicts.
         ///
         /// Default: `true`.
         public var trackExposures: Bool
-
-        /// Receives every flag evaluation with the exposure verdict the SDK uses for Datadog.
-        ///
-        /// Use it to record exposures in your own data store. Set ``trackExposures`` to `false` to stop
-        /// sending exposures to Datadog at the same time. See ``ExposureHook``.
-        ///
-        /// Default: `nil`.
-        public var exposureHook: ExposureHook?
 
         /// Custom server url for sending Flags evaluation data.
         ///
@@ -176,7 +168,6 @@ public enum Flags {
             self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
             self.flagSelection = flagSelection
-            self.exposureHook = nil
         }
 
         /// Creates a configuration for the Datadog Flags feature without a flag selection.

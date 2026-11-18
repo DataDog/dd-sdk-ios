@@ -8,6 +8,13 @@ import Foundation
 import DatadogInternal
 
 public protocol FlagsClientInternal: AnyObject {
+    /// Evaluates like `getDetails(key:defaultValue:)`, records and sends the exposure the same way,
+    /// and returns the exposure decision for the Datadog OpenFeature provider's exposure hook.
+    /// Returns nil for a client that cannot evaluate.
+    /// > Warning: This is an internal method and can break in the future.
+    @_spi(Internal)
+    func getDetailsWithExposure<T>(key: String, defaultValue: T) -> FlagDetailsWithExposure<T>? where T: Equatable, T: FlagValue
+
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func getFlagAssignments() -> [String: FlagAssignment]?
@@ -63,6 +70,11 @@ public protocol FlagsClientInternal: AnyObject {
 
 extension FlagsClientInternal {
     @_spi(Internal)
+    public func getDetailsWithExposure<T>(key: String, defaultValue: T) -> FlagDetailsWithExposure<T>? where T: Equatable, T: FlagValue {
+        nil
+    }
+
+    @_spi(Internal)
     public func getFlagAssignments() -> [String: FlagAssignment]? {
         // no-op
         return nil
@@ -105,5 +117,41 @@ extension FlagsClientInternal {
         errorCode: String?
     ) {
         // no-op
+    }
+}
+
+/// The exposure decision of one evaluation, for the Datadog OpenFeature provider.
+@_spi(Internal)
+public struct FlagExposureDecision: Equatable {
+    /// A successful evaluation of an allocation that logs exposures, with a non-blank allocation key and variant.
+    public let isExposure: Bool
+    /// For an exposure, this client's exposure cache holds the same allocation, variant and serial ID
+    /// for the subject and flag.
+    public let isCacheHit: Bool
+    /// The targeting key of the evaluation, or `nil` for an evaluation made before any context was set.
+    public let targetingKey: String?
+    /// `HOOK` features of the selected split, keyed by feature key without prefix.
+    public let features: [String: AnyValue]
+
+    /// A new exposure: `isExposure` and a cache miss.
+    public var shouldSend: Bool { isExposure && !isCacheHit }
+
+    public init(isExposure: Bool, isCacheHit: Bool, targetingKey: String?, features: [String: AnyValue]) {
+        self.isExposure = isExposure
+        self.isCacheHit = isCacheHit
+        self.targetingKey = targetingKey
+        self.features = features
+    }
+}
+
+/// An evaluation result with its exposure decision.
+@_spi(Internal)
+public struct FlagDetailsWithExposure<T: Equatable> {
+    public let details: FlagDetails<T>
+    public let exposure: FlagExposureDecision
+
+    public init(details: FlagDetails<T>, exposure: FlagExposureDecision) {
+        self.details = details
+        self.exposure = exposure
     }
 }
