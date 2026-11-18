@@ -94,3 +94,16 @@ public extension DatadogCoreProtocol {
     /// registered in. Returns decisions only while a session exists on that core.
     var sessionSampler: SessionSampler { CoreSessionSampler(core: self) }
 }
+
+@_spi(Internal)
+public extension RUMContextHandoff {
+    struct Capture {
+        public let owner: Owner
+        public let value: CurrentValue
+
+        public init(owner: Owner, value: CurrentValue) {
+            self.owner = owner
+            self.value = value
+        }
+    }
+}
