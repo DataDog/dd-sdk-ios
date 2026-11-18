@@ -16,6 +16,7 @@
 		5B1C4F90305C42B300C2745C /* SnapshotEnvironments.json in Resources */ = {isa = PBXBuildFile; fileRef = 5B1C4F8F305C42B300C2745C /* SnapshotEnvironments.json */; };
 		5B1C4F92305C42B600C2745C /* LayerSnapshotEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1C4F91305C42B600C2745C /* LayerSnapshotEnvironment.swift */; };
 		5B307E4330AC7AF90088EFAA /* GroupedListFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B307E4230AC7AF90088EFAA /* GroupedListFixtureView.swift */; };
+		5B307E4530AC960E0088EFAA /* RoundedBordersFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B307E4430AC960E0088EFAA /* RoundedBordersFixtureView.swift */; };
 		5B5797B23062BD300002F9DF /* ShareSheetFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5797B13062BD300002F9DF /* ShareSheetFixtureViewController.swift */; };
 		5B8D57B12FF7F8A80082404D /* StepperFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */; };
 		5B94B8EB2FFFE3C5007DFF8E /* AlertFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B94B8EA2FFFE3C5007DFF8E /* AlertFixtureView.swift */; };
@@ -88,6 +89,7 @@
 		5B1C4F8F305C42B300C2745C /* SnapshotEnvironments.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SnapshotEnvironments.json; sourceTree = "<group>"; };
 		5B1C4F91305C42B600C2745C /* LayerSnapshotEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotEnvironment.swift; sourceTree = "<group>"; };
 		5B307E4230AC7AF90088EFAA /* GroupedListFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedListFixtureView.swift; sourceTree = "<group>"; };
+		5B307E4430AC960E0088EFAA /* RoundedBordersFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedBordersFixtureView.swift; sourceTree = "<group>"; };
 		5B5797B13062BD300002F9DF /* ShareSheetFixtureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetFixtureViewController.swift; sourceTree = "<group>"; };
 		5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperFixtureView.swift; sourceTree = "<group>"; };
 		5B94B8EA2FFFE3C5007DFF8E /* AlertFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertFixtureView.swift; sourceTree = "<group>"; };
@@ -293,6 +295,7 @@
 				5B0B6E55306D6B780079DA3A /* TextFixtureViewController.swift */,
 				5B0B6E57306D6BA50079DA3A /* TextVariantsFixtureView.swift */,
 				5B307E4230AC7AF90088EFAA /* GroupedListFixtureView.swift */,
+				5B307E4430AC960E0088EFAA /* RoundedBordersFixtureView.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -509,6 +512,7 @@
 				5B0B6E54306D6B3D0079DA3A /* CanvasFixtureView.swift in Sources */,
 				5BBEC04D3064091600D05D8B /* VideoPlayerFixtureView.swift in Sources */,
 				B32BB660FF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift in Sources */,
+				5B307E4530AC960E0088EFAA /* RoundedBordersFixtureView.swift in Sources */,
 				F5D1C29527334F449C400E97 /* LayerSnapshotTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
