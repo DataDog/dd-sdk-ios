@@ -387,6 +387,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             RUMSessionScope.resolveNavigationDestination(
                 on: command,
                 representative: $0.views.last?.sceneIdentifier,
+                views: $0.views,
                 cache: dependencies.viewCache
             )
         } ?? nil
