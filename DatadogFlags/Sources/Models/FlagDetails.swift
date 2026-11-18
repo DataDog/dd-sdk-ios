@@ -146,13 +146,14 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
 /// The callback runs synchronously on the thread that evaluated the flag, including the main thread.
 /// Keep it short and move I/O to another queue. The SDK catches and logs an error thrown by the callback
 /// and returns the evaluation result unchanged. The hook observes evaluations; the SDK records exposures.
-public final class ExposureHook {
-    private let callback: (ExposureEvaluation) throws -> Void
+/// The callback is immutable and the error flag is lock-protected, so the hook is safe to share across threads.
+public final class ExposureHook: @unchecked Sendable {
+    private let callback: @Sendable (ExposureEvaluation) throws -> Void
     @ReadWriteLock
     private var hasLoggedError = false
 
     /// Creates a hook that calls `callback` after each flag evaluation.
-    public init(_ callback: @escaping (ExposureEvaluation) throws -> Void) {
+    public init(_ callback: @escaping @Sendable (ExposureEvaluation) throws -> Void) {
         self.callback = callback
     }
 
