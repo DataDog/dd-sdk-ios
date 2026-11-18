@@ -6,7 +6,7 @@
 # Thus each root variant can anchor the same chain, and a test isolates one root rule.
 # All keys are public synthetic test material. Never trust these certificates outside tests.
 #
-# The FFE EKU OID 1.3.6.1.4.1.99999.1.1 is a placeholder. Identity-core must assign the production OID.
+# The FFE EKU OID 1.3.6.1.4.1.99999.1.1 is a placeholder. Datadog must assign the production OID.
 set -euo pipefail
 
 OPENSSL="${OPENSSL:-openssl}"

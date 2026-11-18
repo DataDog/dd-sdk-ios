@@ -249,7 +249,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     /// (`03 03 07 80 00`) is not the canonical `03 02 07 80`, so the leaf is rejected.
     /// This replaces the removed single-intermediate `ResponseSigningKeyUsage.json` supplement.
     func testLeafKeyUsageMustBeCanonicalNamedBitList() throws {
-        let leaf = try SigningChainFixture.credential("lukas-valid").leaf
+        let leaf = try SigningChainFixture.credential("two-intermediates").leaf
         XCTAssertNoThrow(try FlagsSigningCertificate(der: leaf, role: .leaf))
         func tlv(_ tag: UInt8, _ content: Data) -> Data {
             var length = Data()
@@ -312,7 +312,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     func testActualFetcherUsesEffectiveRequestAndNativeCryptoBeforeAdmission() throws {
-        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
         let clock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
         let anchor = try SigningChainFixture.root("root-a")
         let responseBody = Data.mockAnyFlagAssignmentsResponse()
@@ -521,7 +521,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     func testFeatureLifetimeReleaseInvalidatesRetainedCachePendingCallbackAndFutureRequests() throws {
-        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
         let anchor = try SigningChainFixture.root("root-a")
         let body = try JSONEncoder().encode(FlagAssignmentsResponse(flags: ["flag": .mockAnyBoolean()]))
         for mode in [Flags.ResponseSigningMode.observe, .required] {
@@ -833,17 +833,17 @@ final class FlagsResponseSigningTests: XCTestCase {
         )
     }
 
-    func testChainVaultCredentialTable() throws {
+    func testChainTestCACredentialTable() throws {
         let body = Data.mockAnyFlagAssignmentsResponse()
         let expected: [(credential: String, roots: [String], accept: Bool)] = [
-            ("lukas-valid", ["root-a"], true),
-            ("lukas-valid", ["root-b"], false),
-            ("lukas-backup-root", ["root-b"], true),
-            ("lukas-backup-root", ["root-a"], false),
-            ("lukas-backup-root", ["root-a", "root-b"], true),
-            ("lukas-rotated", ["root-a"], true),
+            ("two-intermediates", ["root-a"], true),
+            ("two-intermediates", ["root-b"], false),
+            ("backup-root", ["root-b"], true),
+            ("backup-root", ["root-a"], false),
+            ("backup-root", ["root-a", "root-b"], true),
+            ("rotated-lower-intermediate", ["root-a"], true),
             ("other-product", ["root-a"], false),
-            ("missing-dc-int", ["root-a"], false),
+            ("missing-upper-intermediate", ["root-a"], false),
             ("single-int-ffe", ["root-a"], true),
             ("v1-codesigning", ["root-a"], false),
             ("unrelated-root", ["root-a", "root-b"], false)
@@ -878,7 +878,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     func testChainLeavesExpireWithTheirValidity() throws {
         let (verifier, request) = try signedRequest()
         let body = Data.mockAnyFlagAssignmentsResponse()
-        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
         // Leaves are valid for 72 hours from issuance; the proof must fit inside the leaf.
         let late = 1_795_219_000.0
         let response = try response(request, fixture.signedHeaders(request: request, body: body, now: late))
@@ -889,7 +889,7 @@ final class FlagsResponseSigningTests: XCTestCase {
 
     func testChainTranscriptDomainAndTail() throws {
         let (_, request) = try signedRequest()
-        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
         let body = Data("{}".utf8)
         let transcript = try FlagsResponseVerifier.transcript(
             request: request,
@@ -938,7 +938,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     func testChainRejectsMalformedProofHeaders() throws {
         let (verifier, request) = try signedRequest()
         let body = Data.mockAnyFlagAssignmentsResponse()
-        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
         let prefix = FlagsResponseVerifier.prefix
         let valid = try fixture.signedHeaders(request: request, body: body)
         let now = Date(timeIntervalSince1970: SigningChainFixture.now)
@@ -1045,7 +1045,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     func testChainTranscriptAuthorityOmitsDefaultHTTPSPort() throws {
-        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
         let body = Data("{}".utf8)
         // An independent encoder for the transcript prefix: domain, then length-prefixed request components.
         func prefix(_ authority: String) -> Data {
@@ -1083,7 +1083,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 }
 
-/// Real Vault-issued certificate-chain credentials and pinned roots in `response-signing-chain`.
+/// Test-CA-issued certificate-chain credentials and pinned roots in `response-signing-chain`.
 internal struct SigningChainFixture {
     /// Within every fixture leaf's 72-hour validity (2026-11-18T00:00:36Z to 2026-11-21T00:01:04Z).
     static let now: TimeInterval = 1_795_000_000

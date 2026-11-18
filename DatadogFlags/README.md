@@ -65,7 +65,7 @@ Certificate profile:
 - The root extended key usage is optional. When present, it must contain the FFE OID or `anyExtendedKeyUsage`. A root path length constraint must be at least the number of intermediates.
 - The transcript authority is the lowercase host, with IPv6 in brackets. It contains the port only when the port is not the default port of the scheme.
 
-The FFE OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Identity-core must assign the production OID before this draft is released.
+The FFE OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Datadog must assign the production OID before this draft is released.
 
 Signing-enabled requests reject redirects, use a fresh 16-byte nonce and bind the exact emitted URL/query, request body, effective client token, semantic headers, response bytes and complete public chain. Verification runs before JSON decoding and cache admission, with expiry checked again at admission and evaluation. Response verification is bounded to 2 MiB and request signing to 1 MiB. Responses are buffered application bytes after HTTP decompression; this draft does not add a signed streaming or critical-flags protocol.
 
@@ -80,7 +80,7 @@ vectors across wire, nested DER, subject DER, certificate-rule, extension-profil
 A case can supply its own `anchor_der_base64`, which replaces the file anchor for that case.
 The test asserts only acceptance or rejection; `rejection_reason` is a fixture code, not a native error.
 Server-only signing cases are excluded.
-`Tests/Fixtures/response-signing-chain` holds repo-local Vault-issued chains and OpenSSL root variants.
+`Tests/Fixtures/response-signing-chain` holds repo-local test-CA-issued chains and OpenSSL root variants.
 It is outside the imported snapshot, so the importer checks stay valid.
 
 Refresh and verify signing fixtures through the existing snapshot importer and weekly workflow:

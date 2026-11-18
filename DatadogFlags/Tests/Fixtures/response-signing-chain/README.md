@@ -3,17 +3,17 @@
 These repo-local fixtures test the v1 certificate-chain format. They are test data only.
 They are separate from the imported `ffe-system-test-data` snapshot in `../response-signing`, so `ci/sync-precomputed-fixtures.py --signing --verify` stays valid.
 
-## Vault credentials
+## Test CA credentials
 
-A Vault 1.20.4 development server issued these credentials and roots. Each JSON file holds a public synthetic leaf private key (PKCS #8 DER), the leaf certificate and `intermediates_der_base64`. Index 0 issued the leaf. `root-a.pem` and `root-b.pem` are the pinned roots.
+A local test certificate authority issued these credentials and roots. Each JSON file holds a public synthetic leaf private key (PKCS #8 DER), the leaf certificate and `intermediates_der_base64`. Index 0 issued the leaf. `root-a.pem` and `root-b.pem` are the pinned roots.
 
 | Credential | Chain | Expected result |
 | --- | --- | --- |
-| `lukas-valid` | root A, DC intermediate (pathLen 1), tls-vault intermediate (pathLen 0), leaf with the FFE EKU | accept |
-| `lukas-backup-root` | the same layout under root B | accept when root B is pinned |
-| `lukas-rotated` | a new tls-vault intermediate under the same DC intermediate | accept |
+| `two-intermediates` | root A, upper intermediate (pathLen 1), lower intermediate (pathLen 0), leaf with the FFE EKU | accept |
+| `backup-root` | the same layout under root B | accept when root B is pinned |
+| `rotated-lower-intermediate` | a new lower intermediate under the same upper intermediate | accept |
 | `other-product` | leaf EKU is the product B OID only | reject (leaf EKU) |
-| `missing-dc-int` | tls-vault intermediate only | reject (no pinned root issued it) |
+| `missing-upper-intermediate` | lower intermediate only | reject (no pinned root issued it) |
 | `single-int-ffe` | root A, one intermediate (pathLen 0), leaf with the FFE EKU | accept |
 | `v1-codesigning` | root A, one intermediate, leaf with `codeSigning` only | reject (leaf EKU) |
 | `unrelated-root` | a chain under a root that is not pinned | reject (no pinned root) |
@@ -33,5 +33,5 @@ The leaves are valid for 72 hours from issuance. Tests use a fixed time inside t
 | `root-eku-codesigning` | reject (EKU without the FFE OID or `anyExtendedKeyUsage`) |
 | `root-pathlen-0` | reject (path length is less than the number of intermediates) |
 
-The FFE EKU OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Identity-core must assign the production OID before merge.
+The FFE EKU OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Datadog must assign the production OID before merge.
 Never trust these keys or certificates outside tests.

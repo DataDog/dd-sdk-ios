@@ -69,7 +69,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
     private func signedResponse(_ body: Data) throws -> Result<FlagAssignmentsResponse, FlagsError> {
         let now = SigningChainFixture.now
         let anchor = try SigningChainFixture.root("root-a")
-        let fixture = try SigningChainFixture.credential("lukas-valid")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
         let completed = expectation(description: "Verify canonical response bytes")
         var result: Result<FlagAssignmentsResponse, FlagsError>?
         let fetcher = FlagAssignmentsFetcher(

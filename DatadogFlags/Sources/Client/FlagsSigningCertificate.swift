@@ -147,7 +147,7 @@ internal struct FlagsSigningCertificate {
     ])
     /// FFE assignment-signing EKU OID `1.3.6.1.4.1.99999.1.1`, as OID content bytes.
     /// PLACEHOLDER: the `1.3.6.1.4.1.99999` arc is not a Datadog-owned arc.
-    /// Identity-core must assign the production OID before merge. Keep this the only copy of the OID.
+    /// Datadog must assign the production OID before merge. Keep this the only copy of the OID.
     static let assignmentSigningUsage = Data([43, 6, 1, 4, 1, 134, 141, 31, 1, 1])
     /// anyExtendedKeyUsage 2.5.29.37.0, OID content bytes.
     static let anyExtendedKeyUsage = Data([85, 29, 37, 0])
