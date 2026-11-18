@@ -1033,6 +1033,53 @@ extension MonitorTests {
     }
 
     @MainActor
+    func testAutomaticUIKitAppearance_waitsForAnOwnerWithoutReplacingPeerView() throws {
+        let clock = DateProviderMock(now: snapshotDate)
+        let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+        let monitor = navigationMonitor(clock: clock, cache: cache) { nil }
+        var owners: [ObjectIdentifier: RUMSceneIdentifier] = [:]
+        let handler = RUMSceneViewsHandler(
+            dateProvider: clock,
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: .init(name: "Automatic")),
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenterProvider: .init(applicationCenter: NotificationCenter()),
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { owners[ObjectIdentifier($0)] },
+            initialSceneActivityProvider: { [self.sceneA: true, self.sceneB: true] }
+        )
+        handler.publish(to: monitor)
+        let a = UIViewController()
+        let b = UIViewController()
+        let arriving = UIViewController()
+        owners[ObjectIdentifier(a)] = sceneA
+        owners[ObjectIdentifier(b)] = sceneB
+        handler.notify_viewDidAppear(viewController: a, animated: false)
+        handler.notify_viewDidAppear(viewController: b, animated: false)
+
+        let currentA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let currentB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, currentB.viewID)
+
+        handler.notify_viewDidAppear(viewController: arriving, animated: false)
+
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewID, currentA.viewID)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, currentB.viewID)
+
+        owners[ObjectIdentifier(arriving)] = sceneA
+        handler.notify_viewDidAppear(viewController: arriving, animated: false)
+        let attached = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        XCTAssertNotEqual(attached.viewID, currentA.viewID)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, currentB.viewID)
+
+        owners.removeValue(forKey: ObjectIdentifier(arriving))
+        handler.notify_viewDidDisappear(viewController: arriving, animated: false)
+        let restored = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        XCTAssertNotEqual(restored.viewID, attached.viewID)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, currentB.viewID)
+    }
+
+    @MainActor
     func testControllerViewCalls_fromBackgroundNeverReadUIKit() {
         for enabled in [false, true] {
             let monitor = MonitorCommandRecorder(enabled: enabled)
