@@ -1895,26 +1895,35 @@ final class FlagsClientExposureDecisionTests: XCTestCase {
     }
 
     func testConcurrentEvaluationsShareOneNewExposurePerSubjectAndFlag() {
-        let decisions = ExposureDecisionRecorder()
-        // The evaluation and RUM mocks are not thread-safe, so this test uses the NOP implementations.
-        let client = FlagsClient(
-            repository: FlagsRepositoryMock(flagsData: FlagsData(flags: ["flag": holdoutAssignment, "other": holdoutAssignment], context: context, date: .mockAny())),
-            exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: FeatureScopeMock()),
-            evaluationLogger: NOPEvaluationLogger(),
-            rumFlagEvaluationReporter: NOPRUMFlagEvaluationReporter()
-        )
+        let keys = ["a", "b", "c", "d"]
+        // Each round uses a fresh cache, so every round has one new exposure per flag to race for.
+        for round in 0..<100 {
+            let decisions = ExposureDecisionRecorder()
+            // The evaluation and RUM mocks are not thread-safe, so this test uses the NOP implementations.
+            let client = FlagsClient(
+                repository: FlagsRepositoryMock(flagsData: FlagsData(
+                    flags: Dictionary(uniqueKeysWithValues: keys.map { ($0, holdoutAssignment) }),
+                    context: context,
+                    date: .mockAny()
+                )),
+                exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: FeatureScopeMock()),
+                evaluationLogger: NOPEvaluationLogger(),
+                rumFlagEvaluationReporter: NOPRUMFlagEvaluationReporter()
+            )
 
-        DispatchQueue.concurrentPerform(iterations: 200) { index in
-            let key = index.isMultiple(of: 2) ? "flag" : "other"
-            if let result = client.getDetailsWithExposure(key: key, defaultValue: false) {
-                decisions.record(key, result.exposure)
+            DispatchQueue.concurrentPerform(iterations: 400) { index in
+                let key = keys[index % keys.count]
+                if let result = client.getDetailsWithExposure(key: key, defaultValue: false) {
+                    decisions.record(key, result.exposure)
+                }
+            }
+
+            let all = decisions.all
+            XCTAssertEqual(all.count, 400, "round \(round)")
+            for key in keys {
+                XCTAssertEqual(all.filter { $0.key == key && $0.decision.shouldSend }.count, 1, "round \(round), flag \(key)")
             }
         }
-
-        let all = decisions.all
-        XCTAssertEqual(all.count, 200)
-        XCTAssertEqual(all.filter { $0.key == "flag" && $0.decision.shouldSend }.count, 1)
-        XCTAssertEqual(all.filter { $0.key == "other" && $0.decision.shouldSend }.count, 1)
     }
 
     func testFallbackClientReturnsNoDecision() {
