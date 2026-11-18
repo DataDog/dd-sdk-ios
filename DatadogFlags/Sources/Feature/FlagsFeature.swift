@@ -51,11 +51,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         clientRegistry = FlagsClientRegistry()
         exposureHook = configuration.exposureHook
         makeExposureLogger = { featureScope in
-            // The verdict has readers only when the SDK sends exposures or a hook is set.
-            guard configuration.trackExposures || configuration.exposureHook != nil else {
-                return NOPExposureLogger()
-            }
-            return ExposureLogger(
+            ExposureLogger(
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
                 sendsExposures: configuration.trackExposures

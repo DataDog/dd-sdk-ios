@@ -144,18 +144,3 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(repository.flushCallsCount, 1)
     }
 }
-
-extension FlagsTests {
-    func testWithoutTrackingAndWithoutHookTheClientSkipsTheExposureCache() {
-        var configuration = Flags.Configuration(trackExposures: false)
-        let featureWithoutHook = FlagsFeature(configuration: configuration, featureScope: FeatureScopeMock(), core: FeatureRegistrationCoreMock())
-        XCTAssertTrue(featureWithoutHook.makeExposureLogger(FeatureScopeMock()) is NOPExposureLogger)
-
-        configuration.exposureHook = ExposureHook { _ in }
-        let featureWithHook = FlagsFeature(configuration: configuration, featureScope: FeatureScopeMock(), core: FeatureRegistrationCoreMock())
-        XCTAssertTrue(featureWithHook.makeExposureLogger(FeatureScopeMock()) is ExposureLogger)
-
-        let trackingFeature = FlagsFeature(configuration: .init(), featureScope: FeatureScopeMock(), core: FeatureRegistrationCoreMock())
-        XCTAssertTrue(trackingFeature.makeExposureLogger(FeatureScopeMock()) is ExposureLogger)
-    }
-}
