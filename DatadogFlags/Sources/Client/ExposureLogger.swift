@@ -91,3 +91,14 @@ internal final class ExposureLogger: ExposureLogging {
         return decision
     }
 }
+
+/// Used when exposure tracking is disabled and no ``ExposureHook`` reads the verdict.
+internal final class NOPExposureLogger: ExposureLogging {
+    func logExposure(
+        for flagKey: String,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext
+    ) -> ExposureDecision {
+        .notAnExposure
+    }
+}
