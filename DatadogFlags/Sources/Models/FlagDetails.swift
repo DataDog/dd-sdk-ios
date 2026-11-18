@@ -179,6 +179,8 @@ public final class ExposureHook: @unchecked Sendable {
 }
 
 /// A completed flag evaluation, as seen by ``ExposureHook``.
+///
+/// The SDK creates every value; the initializer stays internal, as in the other Datadog client SDKs.
 public struct ExposureEvaluation {
     /// The evaluated flag key.
     public let flagKey: String
@@ -189,11 +191,14 @@ public struct ExposureEvaluation {
     /// The allocation that served the value, or `nil` when evaluation failed.
     public let allocationKey: String?
 
-    /// The targeting key of ``evaluationContext``.
-    public let targetingKey: String
+    /// The targeting key of ``evaluationContext``, or `nil` for an evaluation made before any context was set.
+    public let targetingKey: String?
 
     /// The evaluation context used for the evaluation.
     public let evaluationContext: FlagsEvaluationContext
+
+    /// The evaluation error, or `nil` for a successful evaluation.
+    public let error: FlagEvaluationError?
 
     /// Features that the split sends to customer code, keyed by feature key (for example `holdout.key`).
     /// Values are `.string`, `.double` or `.bool`.
@@ -214,6 +219,7 @@ public struct ExposureEvaluation {
         variant: String?,
         allocationKey: String?,
         evaluationContext: FlagsEvaluationContext,
+        error: FlagEvaluationError?,
         features: [String: AnyValue],
         isExposure: Bool,
         isCacheHit: Bool
@@ -221,8 +227,9 @@ public struct ExposureEvaluation {
         self.flagKey = flagKey
         self.variant = variant
         self.allocationKey = allocationKey
-        self.targetingKey = evaluationContext.targetingKey
+        self.targetingKey = evaluationContext.hasTargetingKey ? evaluationContext.targetingKey : nil
         self.evaluationContext = evaluationContext
+        self.error = error
         self.features = features
         self.isExposure = isExposure
         self.isCacheHit = isCacheHit

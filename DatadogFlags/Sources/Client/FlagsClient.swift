@@ -450,6 +450,7 @@ extension FlagsClient: FlagsClientProtocol {
                 variant: details.variant,
                 allocationKey: details.allocationKey,
                 evaluationContext: context,
+                error: details.error,
                 features: features.values(for: .hook),
                 isExposure: decision.isExposure,
                 isCacheHit: decision.isCacheHit

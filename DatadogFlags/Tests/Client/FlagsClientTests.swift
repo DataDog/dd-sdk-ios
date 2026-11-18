@@ -1821,6 +1821,7 @@ final class FlagsClientExposureHookTests: XCTestCase {
         XCTAssertEqual(first.allocationKey, "allocation")
         XCTAssertEqual(first.targetingKey, "user-1")
         XCTAssertEqual(first.evaluationContext, context)
+        XCTAssertNil(first.error)
         XCTAssertEqual(first.features, ["holdout.key": .string("h-1"), "holdout.should_include_in_holdout_analysis": .bool(false)])
         XCTAssertTrue(first.isExposure)
         XCTAssertFalse(first.isCacheHit)
@@ -1840,6 +1841,7 @@ final class FlagsClientExposureHookTests: XCTestCase {
 
         XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
         XCTAssertEqual(evaluations.all.map(\.flagKey), ["flag", "missing"])
+        XCTAssertEqual(evaluations.all.map(\.error), [.typeMismatch, .flagNotFound])
         XCTAssertTrue(evaluations.all.allSatisfy { !$0.isExposure && !$0.isCacheHit && !$0.shouldSend && $0.features.isEmpty && $0.variant == nil })
     }
 
