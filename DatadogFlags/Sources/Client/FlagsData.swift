@@ -11,6 +11,7 @@ internal struct FlagsData: Equatable, Codable {
     var context: FlagsEvaluationContext
     var date: Date
     let obfuscation: FlagKeyObfuscation?
+    let flagSelection: CanonicalFlagSelection?
     // Optional so snapshots written before opt-out support remain readable.
     let experimentationOptOutPolicy: ExperimentationOptOut?
 
@@ -19,12 +20,14 @@ internal struct FlagsData: Equatable, Codable {
         context: FlagsEvaluationContext,
         date: Date,
         obfuscation: FlagKeyObfuscation? = nil,
+        flagSelection: CanonicalFlagSelection? = nil,
         experimentationOptOutPolicy: ExperimentationOptOut? = nil
     ) {
         self.flags = flags
         self.context = context
         self.date = date
         self.obfuscation = obfuscation
+        self.flagSelection = flagSelection
         self.experimentationOptOutPolicy = experimentationOptOutPolicy
     }
 }

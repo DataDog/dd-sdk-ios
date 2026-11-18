@@ -172,6 +172,7 @@ internal struct FatalErrorBuilder {
             ddtags: context.ddTags,
             device: original.device,
             display: original.display,
+            executionContext: original.executionContext,
             featureFlags: original.featureFlags,
             os: original.os,
             privacy: original.privacy,

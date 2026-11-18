@@ -1,5 +1,6 @@
 name: Publish Changelog and Feature Docs to Confluence
 on:
+    workflow_dispatch:
     push:
         branches:
             - master
@@ -10,10 +11,14 @@ on:
             - 'DatadogTrace/TRACE_FEATURE.md'
             - 'DatadogProfiling/PROFILING_FEATURE.md'
             - 'DatadogLogs/LOGS_FEATURE.md'
+            - 'DatadogFlags/FLAGS_FEATURE.md'
+            - 'DatadogCrashReporting/CRASH_REPORTING_FEATURE.md'
 permissions:
     contents: read
 jobs:
     publish:
+        # Manual runs publish released docs only
+        if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -39,6 +44,12 @@ jobs:
 
                   cp DatadogLogs/LOGS_FEATURE.md publish_folder/dd-sdk-ios-logs-feature.md
                   echo "Publishing LOGS_FEATURE.md"
+
+                  cp DatadogFlags/FLAGS_FEATURE.md publish_folder/dd-sdk-ios-flags-feature.md
+                  echo "Publishing FLAGS_FEATURE.md"
+
+                  cp DatadogCrashReporting/CRASH_REPORTING_FEATURE.md publish_folder/dd-sdk-ios-crash-reporting-feature.md
+                  echo "Publishing CRASH_REPORTING_FEATURE.md"
 
             - name: Publish Markdown to Confluence
               uses: markdown-confluence/publish-action@7710a0f79367aca135b8c892a7b717eac1a4c848 # v7.0.0

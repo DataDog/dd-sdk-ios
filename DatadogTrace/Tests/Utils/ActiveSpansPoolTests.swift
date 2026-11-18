@@ -92,14 +92,14 @@ class ActiveSpansPoolTests: XCTestCase, Sendable {
         }
 
         let task2 = Task {
-            try await Task.sleep(nanoseconds: 500_000_000)
+            _ = await task1.value
             XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
             let secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
             XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, secondSpan.dd.ddContext.spanID)
             return secondSpan
         }
 
-        let (firstSpan, secondSpan) = try await (task1.value, task2.value)
+        let (firstSpan, secondSpan) = await (task1.value, task2.value)
         XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
         oneSpan.finish()
         firstSpan.finish()

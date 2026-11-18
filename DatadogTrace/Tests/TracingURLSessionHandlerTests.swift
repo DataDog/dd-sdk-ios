@@ -161,6 +161,133 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(traceContext, "It must return no trace context")
     }
 
+    func testGivenExistingBaggage_whenInjectingTraceHeaders_itMergesSDKIdentities() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rum = makeRUMContext("A")
+        setSessionStore(rum: rum)
+        setCoreContext(rum: rum, userInfo: UserInfo(id: "sdk-user"), accountInfo: AccountInfo(id: "sdk-account"))
+
+        let formats: [Set<TracingHeaderType>] = [[.datadog], [.tracecontext], [.datadog, .tracecontext]]
+        for headerTypes in formats {
+            var request = makeRequest()
+            request.setValue("app.key=value,session.id=old,user.id=old,account.id=old", forHTTPHeaderField: "BaGgAgE")
+
+            let (modified, trace, _) = handler.modify(request: request, headerTypes: headerTypes, networkContext: nil)
+
+            XCTAssertEqual(
+                modified.value(forHTTPHeaderField: "baggage"),
+                "account.id=sdk-account,app.key=value,session.id=\(rum.sessionID),user.id=sdk-user"
+            )
+            XCTAssertEqual(try XCTUnwrap(trace).rumSessionId, rum.sessionID)
+        }
+    }
+
+    func testGivenAbsentOrEmptyBaggage_whenTracingWithoutRUM_itInjectsUserAndAccount() {
+        setCoreContext(rum: nil, userInfo: UserInfo(id: "sdk-user"), accountInfo: AccountInfo(id: "sdk-account"))
+
+        let formats: [Set<TracingHeaderType>] = [[.datadog], [.tracecontext]]
+        for headerTypes in formats {
+            for existing: String? in [nil, ""] {
+                var request = makeRequest()
+                request.setValue(existing, forHTTPHeaderField: "baggage")
+
+                let (modified, trace, _) = handler.modify(request: request, headerTypes: headerTypes, networkContext: nil)
+
+                XCTAssertEqual(
+                    modified.value(forHTTPHeaderField: "baggage"),
+                    existing == nil ? "user.id=sdk-user,account.id=sdk-account" : "account.id=sdk-account,user.id=sdk-user"
+                )
+                XCTAssertNil(trace?.rumSessionId)
+            }
+        }
+    }
+
+    func testGivenPartialSDKIdentity_whenMergingBaggage_itPreservesApplicationEntriesAndProperties() {
+        setCoreContext(rum: nil, userInfo: UserInfo(id: "sdk-user"))
+        var request = makeRequest()
+        request.setValue("session.id=app-session,account.id=app-account,p=1;tag=x;flag,v=a=b", forHTTPHeaderField: "baggage")
+
+        let (modified, _, _) = handler.modify(request: request, headerTypes: [.datadog, .tracecontext], networkContext: nil)
+
+        XCTAssertEqual(
+            modified.value(forHTTPHeaderField: "baggage"),
+            "account.id=app-account,p=1;tag=x;flag,session.id=app-session,user.id=sdk-user,v=a=b"
+        )
+    }
+
+    func testGivenExistingTraceHeaders_whenOnlyBaggageChanges_itReturnsNoInjectedTraceContext() {
+        setCoreContext(rum: nil, userInfo: UserInfo(id: "sdk-user"))
+        let traceFields = [
+            TracingHTTPHeaders.traceIDField, TracingHTTPHeaders.parentSpanIDField,
+            TracingHTTPHeaders.samplingPriorityField, TracingHTTPHeaders.tagsField,
+            W3CHTTPHeaders.traceparent, W3CHTTPHeaders.tracestate
+        ]
+        let formats: [Set<TracingHeaderType>] = [[.datadog], [.tracecontext], [.datadog, .tracecontext]]
+        for headerTypes in formats {
+            for existing: String? in [nil, "app.key=value"] {
+                var request = makeRequest()
+                traceFields.forEach { request.setValue("caller-value", forHTTPHeaderField: $0) }
+                request.setValue(existing, forHTTPHeaderField: "baggage")
+
+                let (modified, trace, state) = handler.modify(request: request, headerTypes: headerTypes, networkContext: nil)
+
+                XCTAssertEqual(
+                    modified.value(forHTTPHeaderField: "baggage"),
+                    existing == nil ? "user.id=sdk-user" : "app.key=value,user.id=sdk-user"
+                )
+                traceFields.forEach { XCTAssertEqual(modified.value(forHTTPHeaderField: $0), "caller-value") }
+                XCTAssertNil(trace)
+                XCTAssertNotNil(state)
+            }
+        }
+    }
+
+    func testGivenNoEmittedBaggage_whenInjectingTraceHeaders_itPreservesExistingBaggage() {
+        let cases: [(Set<TracingHeaderType>, Bool)] = [([.datadog, .tracecontext], false), ([.b3, .b3multi], true)]
+        for (headerTypes, hasIdentity) in cases {
+            if hasIdentity {
+                setCoreContext(rum: nil, userInfo: UserInfo(id: "sdk-user"))
+            }
+            var request = makeRequest()
+            request.setValue(" app.key=value ;flag ", forHTTPHeaderField: "baggage")
+
+            let (modified, _, _) = handler.modify(request: request, headerTypes: headerTypes, networkContext: nil)
+
+            XCTAssertEqual(modified.value(forHTTPHeaderField: "baggage"), request.value(forHTTPHeaderField: "baggage"))
+        }
+    }
+
+    func testGivenRejectedTraceWithBaggage_whenInjectingSampledOrAll_itPreservesInjectionPolicy() {
+        let receiver = ContextMessageReceiver()
+        let contextCore = PassthroughCoreMock(messageReceiver: receiver)
+        var context = contextCore.context
+        context.userInfo = UserInfo(id: "sdk-user")
+        contextCore.context = context
+
+        for injection: TraceContextInjection in [.sampled, .all] {
+            let handler = TracingURLSessionHandler(
+                tracer: tracer,
+                contextReceiver: receiver,
+                samplingRate: 0,
+                firstPartyHosts: .init(),
+                traceContextInjection: injection,
+                telemetry: NOPTelemetry()
+            )
+            var request = makeRequest()
+            request.setValue("app.key=value", forHTTPHeaderField: "baggage")
+
+            let (modified, trace, _) = handler.modify(request: request, headerTypes: [.datadog, .tracecontext], networkContext: nil)
+
+            if injection == .sampled {
+                XCTAssertEqual(modified, request)
+                XCTAssertNil(trace)
+            } else {
+                XCTAssertEqual(modified.value(forHTTPHeaderField: "baggage"), "app.key=value,user.id=sdk-user")
+                XCTAssertEqual(trace?.samplingPriority, .autoDrop)
+            }
+        }
+    }
+
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectTraceHeaders() throws {
         // Given
         let handler = TracingURLSessionHandler(
@@ -515,7 +642,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: incompleteInterception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -540,7 +667,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -559,7 +686,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -587,7 +714,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -609,7 +736,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -674,7 +801,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
     }
 
     // MARK: - Automatic Mode Support
@@ -765,7 +892,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -1311,7 +1438,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
         handler.interceptionDidComplete(interception: interception)
 
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -1362,7 +1489,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
         handler.interceptionDidComplete(interception: interception)
 
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
         XCTAssertTrue(core.events.isEmpty)
     }
 
@@ -1461,7 +1588,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         noSpan.isInverted = true
         core.onEventWriteContext = { _ in noSpan.fulfill() }
         handler.interceptionDidComplete(interception: thirdParty)
-        waitForExpectations(timeout: 0.5)
+        waitForExpectations(timeout: 0)
         assertSpanCount(expectedSpanCount)
 
         let cancelled = makeCompletedInterception(error: URLError(.cancelled))
@@ -2164,7 +2291,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: interception)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0, handler: nil)
         let envelopes: [SpanEventsEnvelope] = core.events()
         XCTAssertEqual(envelopes.count, 0)
     }

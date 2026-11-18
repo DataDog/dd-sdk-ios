@@ -7,7 +7,7 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
-import TestUtilities
+@testable import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
@@ -56,6 +56,34 @@ class UISwitchRecorderTests: XCTestCase {
 
         // Then
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+    }
+
+    func testWhenSwitchHasTextAndInputPrivacyOverrideThatUnmasksInputs() throws {
+        // Given
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.textAndInputPrivacy = .maskSensitiveInputs
+        let context: ViewTreeRecordingContext = .mockWith(recorder: .mockWith(textAndInputPrivacy: .maskAllInputs))
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: context))
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISwitchWireframesBuilder)
+        XCTAssertFalse(builder.isMasked, "Local override should take precedence over the global privacy level")
+    }
+
+    func testWhenSwitchHasTextAndInputPrivacyOverrideThatMasksInputs() throws {
+        // Given
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.textAndInputPrivacy = .maskAll
+        let context: ViewTreeRecordingContext = .mockWith(recorder: .mockWith(textAndInputPrivacy: .maskSensitiveInputs))
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: context))
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISwitchWireframesBuilder)
+        XCTAssertTrue(builder.isMasked, "Local override should take precedence over the global privacy level")
     }
 }
 #endif

@@ -7,7 +7,7 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
-import TestUtilities
+@testable import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
@@ -47,6 +47,42 @@ class UIStepperRecorderTests: XCTestCase {
 
         // Then
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+    }
+
+    func testWhenStepperHasTextAndInputPrivacyOverrideThatUnmasksInputs() throws {
+        // Given
+        stepper.minimumValue = 0
+        stepper.maximumValue = 10
+        stepper.value = 0 // at minimum: "minus" is disabled when not masked
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.textAndInputPrivacy = .maskSensitiveInputs
+        let context: ViewTreeRecordingContext = .mockWith(recorder: .mockWith(textAndInputPrivacy: .maskAllInputs))
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: stepper, with: viewAttributes, in: context))
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIStepperWireframesBuilder)
+        XCTAssertFalse(builder.isMinusEnabled, "Local override should take precedence over the global privacy level")
+        XCTAssertTrue(builder.isPlusEnabled)
+    }
+
+    func testWhenStepperHasTextAndInputPrivacyOverrideThatMasksInputs() throws {
+        // Given
+        stepper.minimumValue = 0
+        stepper.maximumValue = 10
+        stepper.value = 0 // at minimum: "minus" is still shown as enabled when masked
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.textAndInputPrivacy = .maskAll
+        let context: ViewTreeRecordingContext = .mockWith(recorder: .mockWith(textAndInputPrivacy: .maskSensitiveInputs))
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: stepper, with: viewAttributes, in: context))
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIStepperWireframesBuilder)
+        XCTAssertTrue(builder.isMinusEnabled, "Local override should take precedence over the global privacy level")
+        XCTAssertTrue(builder.isPlusEnabled)
     }
 }
 #endif

@@ -358,7 +358,8 @@ extension RUMViewEvent: RandomMockable {
         hasReplay: Bool? = Bool.random(),
         hasTimeseries: Bool? = .random(),
         isMainProcess: Bool? = .random(),
-        featureFlags: RUMViewEvent.FeatureFlags? = .init(featureFlagsInfo: ["flag-\(String.mockRandom())": Bool.mockRandom()])
+        featureFlags: RUMViewEvent.FeatureFlags? = .init(featureFlagsInfo: ["flag-\(String.mockRandom())": Bool.mockRandom()]),
+        slowFrames: [RUMViewEvent.View.SlowFrames]? = .mockRandom()
     ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
@@ -394,6 +395,11 @@ extension RUMViewEvent: RandomMockable {
                     maxScrollHeightTime: .mockRandom()
                 ),
                 viewport: .init(height: .mockRandom(), width: .mockRandom())
+            ),
+            executionContext: .init(
+                id: .mockRandom(),
+                name: .mockRandom(),
+                type: [.mainProcess, .rendererProcess, .utilityProcess].randomElement()!
             ),
             featureFlags: featureFlags,
             os: .mockRandom(),
@@ -467,7 +473,7 @@ extension RUMViewEvent: RandomMockable {
                 refreshRateAverage: .mockRandom(),
                 refreshRateMin: .mockRandom(),
                 resource: .init(count: .mockRandom()),
-                slowFrames: .mockRandom(),
+                slowFrames: slowFrames,
                 slowFramesRate: .mockRandom(),
                 timeSpent: viewTimeSpent,
                 url: viewURL

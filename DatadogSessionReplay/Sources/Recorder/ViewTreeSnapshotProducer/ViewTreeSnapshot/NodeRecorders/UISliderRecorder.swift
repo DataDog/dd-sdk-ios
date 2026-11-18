@@ -34,7 +34,7 @@ internal struct UISliderRecorder: NodeRecorder {
             thumbWireframeID: ids[3],
             value: (min: slider.minimumValue, max: slider.maximumValue, current: slider.value),
             isEnabled: slider.isEnabled,
-            isMasked: context.recorder.textAndInputPrivacy.shouldMaskInputElements,
+            isMasked: attributes.resolveTextAndInputPrivacyLevel(in: context).shouldMaskInputElements,
             minTrackTintColor: slider.minimumTrackTintColor?.cgColor ?? slider.tintColor?.cgColor,
             maxTrackTintColor: slider.maximumTrackTintColor?.cgColor,
             thumbTintColor: slider.thumbTintColor?.cgColor

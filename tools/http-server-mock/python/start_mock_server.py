@@ -30,6 +30,9 @@ class HTTPMockServer(BaseHTTPRequestHandler):
     GET /inspect
     - Endpoint listing the history of recorded generic requests.
 
+    DELETE /requests/<session_id>
+    - Removes the recorded generic requests whose path contains `session_id`.
+
     GET /cache-test/<resource_id>
     - Endpoint simulating a cacheable resource with ETag-based revalidation
       (`Cache-Control: no-cache` + `ETag`, i.e. cacheable but must always revalidate).
@@ -64,7 +67,7 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         Routes all incoming DELETE requests
         """
         self.__route([
-            (r"/requests$", self.__DELETE_requests),
+            (r"/requests/([^/]+)$", self.__DELETE_session_requests),
         ])
 
     def __POST_any(self, parameters):
@@ -138,14 +141,14 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def __DELETE_requests(self, parameters):
+    def __DELETE_session_requests(self, parameters):
         """
-        DELETE /requests
+        DELETE /requests/<session_id>
 
-        Remove all.
+        Remove the requests recorded in a session.
         """
         global history
-        history.clear()
+        history.clear_session(parameters[0])
         return bytes()
 
     def __route(self, routes):
@@ -173,7 +176,6 @@ class GenericRequest:
     """
 
     def __init__(self, http_method, path, http_headers, http_body):
-        self.id = None # set later by `GenericRequestsHistory`
         self.path = path
         self.http_method = http_method
         self.http_headers = http_headers
@@ -187,17 +189,13 @@ class GenericRequestsHistory:
     __requests = []
 
     def add_request(self, generic_request):
-        generic_request.id = len(self.__requests)
         self.__requests.append(generic_request)
 
     def all_requests(self):
         return self.__requests
 
-    def request(self, request_id):
-        return self.__requests[int(request_id)]
-
-    def clear(self):
-        self.__requests.clear()
+    def clear_session(self, session_id):
+        self.__requests[:] = [request for request in self.__requests if session_id not in request.path]
 
 class CacheTestRegistry:
     """

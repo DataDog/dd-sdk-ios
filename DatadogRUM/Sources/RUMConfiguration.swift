@@ -379,7 +379,7 @@ extension RUM {
         /// Enables collection of memory and CPU timeseries events.
         ///
         /// When set, memory footprint and CPU usage are sampled every second and uploaded as
-        /// timeseries events scoped to the RUM session.
+        /// timeseries events scoped to the RUM session. Timeseries are not collected in app extensions (e.g. widgets).
         ///
         /// Default: `nil` - which means timeseries collection is not enabled by default.
         @_spi(Experimental)

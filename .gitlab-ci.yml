@@ -79,21 +79,17 @@ workflow:
           - "BenchmarkTests/**/*"
         compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
+.develop-pipeline-job:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+
 .release-pipeline-job:
-  rules: 
-    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
 
-.release-pipeline-20m-delayed-job:
+.tag-pipeline-job:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
-      when: delayed
-      start_in: 20 minutes
-
-.release-pipeline-40m-delayed-job:
-  rules: 
-    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
-      when: delayed
-      start_in: 40 minutes
 
 .dd-octo-sts-id-token: &dd-octo-sts-id-token
   DDOCTOSTS_ID_TOKEN:
@@ -103,7 +99,7 @@ ENV check:
   stage: pre
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   script:
     - ./tools/runner-setup.sh --datadog-ci
     - make env-check
@@ -117,6 +113,7 @@ Build Dependencies:
   rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   artifacts:
     paths:
       - Carthage/Build
@@ -137,6 +134,8 @@ Lint:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.benchmark-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  dependencies: []
   script:
     - make clean repo-setup ENV=ci
     - make lint license-check
@@ -145,8 +144,9 @@ Lint:
 API Surface Verify:
   stage: lint
   rules:
-    - !reference [.test-pipeline-job, rules]
+    - !reference [.develop-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
     - make clean repo-setup ENV=ci
@@ -155,7 +155,7 @@ API Surface Verify:
 Feature Docs Verify:
   stage: lint
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+    - !reference [.release-pipeline-job, rules]
   # tools/feature-docs-verify.sh runs `git diff <verified_against_commit>..HEAD`,
   # which requires that commit to be reachable in the local history. GitLab CI
   # shallow-clones at depth 20 by default, which would silently bury baselines
@@ -164,14 +164,15 @@ Feature Docs Verify:
   # so the cost of a full clone is negligible.
   variables:
     GIT_DEPTH: "0"
+  dependencies: []
   script:
     - make feature-docs-verify
 
-Unit Tests (iOS):
+.unit-tests-ios:
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   # Job-level timeout below the project's global 1h CI/CD timeout, paired with a shorter
@@ -186,21 +187,32 @@ Unit Tests (iOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1 TEST_PLANS="$TEST_PLANS" SKIP_TEST_PLANS="$SKIP_TEST_PLANS"
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"
       - "ResultBundles/*.log"
     when: always
 
+# The Thread Sanitizer plan rebuilds the SDK with Thread Sanitizer, so it runs in its own job, in parallel.
+Unit Tests (iOS):
+  extends: .unit-tests-ios
+  variables:
+    SKIP_TEST_PLANS: "UnitTestsThreadSanitizer"
+
+Unit Tests (iOS, Thread Sanitizer):
+  extends: .unit-tests-ios
+  variables:
+    TEST_PLANS: "UnitTestsThreadSanitizer"
+
 Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
@@ -221,10 +233,10 @@ Unit Tests (watchOS):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
@@ -245,10 +257,10 @@ Unit Tests (visionOS):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
@@ -269,7 +281,7 @@ Unit Tests (macOS):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   variables:
@@ -285,14 +297,35 @@ Unit Tests (macOS):
       - "ResultBundles/*.log"
     when: always
 
+# Builds the UI tests once for all test plans, in the "test" stage alongside the unit tests.
+# "UI Tests" jobs run the products of this build after the whole "test" stage has passed.
+UI Tests (build):
+  stage: test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
+  variables:
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 17 Pro"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make ui-test-build OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  artifacts:
+    paths:
+      - build/ui-tests/Build/Products
+    expire_in: 1 day
+
 UI Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
-    - "Build Dependencies"
-  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+    - "UI Tests (build)"
+  # See ".unit-tests-ios" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
   # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
   timeout: 55m
   variables:
@@ -309,7 +342,7 @@ UI Tests:
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make ui-test-run TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"
@@ -320,7 +353,8 @@ SR Snapshot Tests:
   stage: ui-test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   # Job-level timeout below the project's global CI/CD timeout, paired with a shorter
@@ -349,7 +383,8 @@ SR Layer Snapshot Tests:
   stage: ui-test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   # See the "SR Snapshot Tests" job above for why timeout + RUNNER_SCRIPT_TIMEOUT +
@@ -379,6 +414,7 @@ Tools Tests:
           - "Makefile"
           - ".gitlab-ci.yml"
         compare_to: 'develop'
+  dependencies: []
   script:
     - make clean repo-setup ENV=ci
     - ./tools/runner-setup.sh --python
@@ -388,6 +424,7 @@ Benchmark Build:
   stage: smoke-test
   rules:
     - !reference [.benchmark-pipeline-job, rules]
+  dependencies: []
   script:
     - make benchmark-build
 
@@ -410,57 +447,89 @@ RUM FIT:
     DYNAMIC_BUILD_RENDER_RULES: ios
     TARGET_SHA_DD_SDK_IOS: $CI_COMMIT_SHA
 
-Smoke Tests (iOS):
+.smoke-tests:
   stage: smoke-test
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
+  after_script:
+    - ./tools/upload-smoke-test-reports.sh
+  artifacts:
+    paths:
+      - "artifacts/smoke-test-reports/**/*.xml"
+    reports:
+      junit: "artifacts/smoke-test-reports/**/*.xml"
+    when: always
+
+.smoke-tests-ios:
+  extends: .smoke-tests
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 17 Pro"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
-    - make smoke-test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
-  after_script:
-    - ./tools/upload-smoke-test-reports.sh
-  artifacts:
-    paths:
-      - "artifacts/smoke-test-reports/**/*.xml"
-    reports:
-      junit: "artifacts/smoke-test-reports/**/*.xml"
-    when: always
+    - make smoke-test-ios TEST_DIRECTORY="SmokeTests/$SUITE" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Smoke Tests (tvOS):
-  stage: smoke-test
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
-  id_tokens:
-    <<: *dd-octo-sts-id-token
+.smoke-tests-tvos:
+  extends: .smoke-tests
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
-    - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
-  after_script:
-    - ./tools/upload-smoke-test-reports.sh
-  artifacts:
-    paths:
-      - "artifacts/smoke-test-reports/**/*.xml"
-    reports:
-      junit: "artifacts/smoke-test-reports/**/*.xml"
-    when: always
+    - make smoke-test-tvos TEST_DIRECTORY="SmokeTests/$SUITE" OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+
+# SPM suites run in every test pipeline.
+Smoke Tests (iOS):
+  extends: .smoke-tests-ios
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: &smoke-test-suites
+          - spm
+          - spm-6
+
+Smoke Tests (tvOS):
+  extends: .smoke-tests-tvos
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: *smoke-test-suites
+
+# Carthage, CocoaPods and XCFramework suites only run on release and hotfix branches.
+Release Smoke Tests (iOS):
+  extends: .smoke-tests-ios
+  rules:
+    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: &release-smoke-test-suites
+          - carthage
+          - cocoapods
+          - xcframeworks
+
+Release Smoke Tests (tvOS):
+  extends: .smoke-tests-tvos
+  rules:
+    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  parallel:
+    matrix:
+      - SUITE: *release-smoke-test-suites
 
 Smoke Tests (macOS):
   stage: smoke-test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  dependencies: []
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
@@ -475,7 +544,8 @@ SPM Build (Swift 6.2):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
     - make clean repo-setup ENV=ci
@@ -487,9 +557,11 @@ SPM Build (Swift 6.2):
 
 SPI Docs Build:
   stage: lint
-  rules: 
-    - !reference [.test-pipeline-job, rules]
+  rules:
+    - !reference [.develop-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
     - make clean repo-setup ENV=ci
@@ -502,11 +574,12 @@ SPI Docs Build:
 E2E Test (upload to s8s):
   stage: e2e-test
   rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+    - !reference [.develop-pipeline-job, rules]
   artifacts:
     paths:
       - artifacts
     expire_in: 2 weeks
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
@@ -520,12 +593,13 @@ E2E Test (upload to s8s):
 Benchmark Test (upload to s8s):
   stage: benchmark-test
   rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
-      allow_failure: true
+    - !reference [.develop-pipeline-job, rules]
+  allow_failure: true
   artifacts:
     paths:
       - artifacts
     expire_in: 2 weeks
+  dependencies: []
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
@@ -577,7 +651,7 @@ Build Artifacts:
   stage: release-build
   interruptible: false
   rules:
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
   artifacts:
@@ -596,7 +670,7 @@ Publish GH Asset:
   stage: release-publish
   interruptible: false
   rules:
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
   before_script:
@@ -615,5 +689,6 @@ Publish GH Asset:
 # It syncs the GitLab pipeline status with GitHub status checks.
 Sync GH Checks:
   stage: post
+  dependencies: []
   script:
     - echo "All good"

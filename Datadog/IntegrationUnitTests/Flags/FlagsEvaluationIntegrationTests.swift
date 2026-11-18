@@ -37,6 +37,7 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
+            flagSelection: nil,
             featureScope: core.scope(for: FlagsFeature.self),
             fetch: server.fetch
         )
@@ -816,7 +817,7 @@ private final class FlagsLocalIntake {
 private final class OptOutAssignmentsStub {
     private(set) var options: [Bool] = []
 
-    func fetch(_ request: URLRequest, completion: @escaping (Result<Data, Error>) -> Void) {
+    func fetch(_ request: URLRequest, completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) {
         do {
             let body = try XCTUnwrap(request.httpBody)
             let request = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any]
@@ -852,7 +853,7 @@ private final class OptOutAssignmentsStub {
                 experimentationOptOutMode: mode == "future_experiments_only" ? mode : nil,
                 experimentationOptOutAt: mode == "future_experiments_only" ? "2099-01-01T00:00:00.123456789Z" : nil
             )
-            completion(.success(try JSONEncoder().encode(response)))
+            completion(.success((try JSONEncoder().encode(response), .mockAny())))
         } catch {
             XCTFail("Could not encode assignment fixture: \(error)")
             completion(.failure(error))

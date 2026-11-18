@@ -9,10 +9,21 @@ import DatadogInternal
 
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
-    private static let decoder = JSONDecoder()
-    // Version 2 readers support obfuscated keys but do not understand experimentation opt-out.
+    private static let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        if let key = CodingUserInfoKey.decodesStoredVariations {
+            decoder.userInfo[key] = true
+        }
+        return decoder
+    }()
+    // Version 2 readers support obfuscated keys but do not understand flag selection or experimentation opt-out.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
+    // Version 3 readers understand flag selection and experimentation opt-out. Earlier readers skip a cache
+    // filtered by either, because it does not hold the full flag configuration for its subject.
     private static let filteredAssignmentsVersion: DataStoreKeyVersion = 3
+    private static let knownVersions: Set<DataStoreKeyVersion> = [
+        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion
+    ]
 
     let featureScope: FeatureScope
 
@@ -41,16 +52,14 @@ internal struct FlagsDataStore {
 
     func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {
         featureScope.dataStore.value(forKey: clientName) { result in
-            let filteredData = result.data(expectedVersion: Self.filteredAssignmentsVersion)
-            let encodedData = result.data(expectedVersion: Self.encodedAssignmentsVersion)
-            guard let data = filteredData ?? encodedData ?? result.data() else {
+            guard case let .value(data, version) = result, Self.knownVersions.contains(version) else {
                 callback(nil)
                 return
             }
 
             do {
                 let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
-                guard result.data(expectedVersion: Self.version(for: flagsData)) != nil else {
+                guard Self.version(for: flagsData) == version else {
                     throw FlagsError.invalidResponse
                 }
                 callback(flagsData)
@@ -63,8 +72,8 @@ internal struct FlagsDataStore {
     }
 
     private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
-        // Protect both key encodings from readers that would ignore the persisted policy.
-        if flagsData.experimentationOptOutPolicy != nil {
+        // Protect both key encodings from readers that would ignore the persisted selection or policy.
+        if flagsData.flagSelection != nil || flagsData.experimentationOptOutPolicy != nil {
             return filteredAssignmentsVersion
         }
         return flagsData.obfuscation == nil ? dataStoreDefaultKeyVersion : encodedAssignmentsVersion

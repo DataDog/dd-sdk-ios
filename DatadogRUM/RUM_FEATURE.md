@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-02
+last_updated: 2026-11-09
 sdk_version: 3.21.0
-verified_against_commit: 070bc7db9
+verified_against_commit: 2eaafaeb9
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -240,7 +240,7 @@ monitor.stopView(key: "ProductList")
   - View attributes: `addViewAttribute(forKey:value:)`, `addViewAttributes(_:)`, `removeViewAttribute(forKey:)`, `removeViewAttributes(forKeys:)` affect the current view
   - Global attributes: `addAttribute(forKey:value:)`, `addAttributes(_:)`, `removeAttribute(forKey:)`, `removeAttributes(forKeys:)` affect subsequent RUM events
   - Errors: `addError()` accepts a message or an `Error`; `RUMErrorSource` cases are `.source`, `.network`, `.webview`, `.console`, `.logger`, and `.custom`. Use a string value for `RUM.Attributes.errorFingerprint` to supply a custom error fingerprint.
-  - Resources: `startResource()` accepts a request, URL, or HTTP method and URL string; `addResourceMetrics()` adds URLSession timing; `stopResource()` accepts a response or status code and `RUMResourceType`; `stopResourceWithError()` accepts an `Error` or message
+  - Resources: `startResource()` accepts a request, URL, or HTTP method and URL string; `addResourceMetrics()` adds URLSession timing; `stopResource()` accepts a response or status code and `RUMResourceType`; `stopResourceWithError()` accepts an `Error`, or a message with an optional type and stack trace
   - Actions: `addAction()`, `startAction()`, `stopAction()`; `RUMActionType` cases are `.tap`, `.click`, `.scroll`, `.swipe`, and `.custom`
   - Sessions: `currentSessionID(completion:)`; `stopSession()` ends the session, with the next `startView()` or `addAction()` starting a new one
   - App launch: `reportAppFullyDisplayed()` records time to full display (TTFD). RUM also reports time to initial display (TTID) automatically: the first rendered frame on iOS, tvOS and visionOS, and the first window shown on macOS, of any kind, including a menu bar item. TTFD is written after TTID and is dropped when there is no TTID, for example when a macOS app never shows a window. Neither is reported on watchOS.
@@ -305,6 +305,7 @@ Event mappers allow modifying or dropping events before upload:
   ```
 - `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
 - `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
+- Timeseries are not collected in app extensions (e.g. widgets): `RUMFeature` creates no collector when the bundle type is not `.iOSApp`, because extensions receive no app lifecycle notifications to pause collection and write buffered samples.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 
 ## Remote Configuration

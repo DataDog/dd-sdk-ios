@@ -2,7 +2,7 @@ all: env-check repo-setup dependencies templates
 .PHONY: env-check repo-setup dependencies clean templates \
 		lint lint-cpp license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
-		ui-test ui-test-all ui-test-podinstall \
+		ui-test ui-test-all ui-test-build ui-test-run ui-tests-open \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all smoke-test-macos smoke-test-macos-all \
@@ -90,6 +90,9 @@ DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
 # Default location for deploying artifacts
 DEFAULT_ARTIFACTS_PATH := artifacts
 
+# Default location of UI test build products shared by `make ui-test-build` and `make ui-test-run`
+DEFAULT_UI_TEST_PRODUCTS_PATH := build/ui-tests
+
 # Whether Test Visibility product is enabled by default
 DEFAULT_USE_TEST_VISIBILITY := 0
 
@@ -102,8 +105,9 @@ test:
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
 	@:$(eval USE_TEST_VISIBILITY ?= $(DEFAULT_USE_TEST_VISIBILITY))
-	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)'"
-	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)' TEST_PLANS='$(TEST_PLANS)' SKIP_TEST_PLANS='$(SKIP_TEST_PLANS)'"
+	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)" \
+		$(if $(TEST_PLANS),--test-plans "$(TEST_PLANS)") $(if $(SKIP_TEST_PLANS),--skip-test-plans "$(SKIP_TEST_PLANS)")
 
 # Run unit tests for specified SCHEME using iOS Simulator
 test-ios:
@@ -113,19 +117,9 @@ test-ios:
 	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all iOS schemes
+# Run unit tests for all iOS modules, using the test plans of the 'UnitTests-iOS' scheme
 test-ios-all:
-	@$(MAKE) test-ios SCHEME="DatadogCore"
-	@$(MAKE) test-ios SCHEME="DatadogInternal"
-	@$(MAKE) test-ios SCHEME="DatadogRUM"
-	@$(MAKE) test-ios SCHEME="DatadogSessionReplay"
-	@$(MAKE) test-ios SCHEME="DatadogLogs"
-	@$(MAKE) test-ios SCHEME="DatadogTrace"
-	@$(MAKE) test-ios SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-ios SCHEME="DatadogFlags"
-	@$(MAKE) test-ios SCHEME="DatadogProfiling"
-	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-ios SCHEME="UnitTests-iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
 test-tvos:
@@ -135,17 +129,9 @@ test-tvos:
 	@:$(eval DEVICE ?= $(DEFAULT_TVOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all tvOS schemes
+# Run unit tests for all tvOS modules, using the test plans of the 'UnitTests-tvOS' scheme
 test-tvos-all:
-	@$(MAKE) test-tvos SCHEME="DatadogCore"
-	@$(MAKE) test-tvos SCHEME="DatadogInternal"
-	@$(MAKE) test-tvos SCHEME="DatadogRUM"
-	@$(MAKE) test-tvos SCHEME="DatadogLogs"
-	@$(MAKE) test-tvos SCHEME="DatadogTrace"
-	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-tvos SCHEME="DatadogFlags"
-	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
-	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-tvos SCHEME="UnitTests-tvOS"
 
 # Run unit tests for specified SCHEME using watchOS Simulator
 test-watchos:
@@ -155,16 +141,9 @@ test-watchos:
 	@:$(eval DEVICE ?= $(DEFAULT_WATCHOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all watchOS schemes
+# Run unit tests for all watchOS modules, using the test plans of the 'UnitTests-watchOS' scheme
 test-watchos-all:
-	@$(MAKE) test-watchos SCHEME="DatadogCore"
-	@$(MAKE) test-watchos SCHEME="DatadogInternal"
-	@$(MAKE) test-watchos SCHEME="DatadogRUM"
-	@$(MAKE) test-watchos SCHEME="DatadogLogs"
-	@$(MAKE) test-watchos SCHEME="DatadogTrace"
-	@$(MAKE) test-watchos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-watchos SCHEME="DatadogFlags"
-	@$(MAKE) test-watchos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-watchos SCHEME="UnitTests-watchOS"
 
 # Run unit tests for specified SCHEME using visionOS Simulator
 test-visionos:
@@ -174,18 +153,9 @@ test-visionos:
 	@:$(eval DEVICE ?= $(DEFAULT_VISIONOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all visionOS schemes
+# Run unit tests for all visionOS modules, using the test plans of the 'UnitTests-visionOS' scheme
 test-visionos-all:
-	@$(MAKE) test-visionos SCHEME="DatadogCore"
-	@$(MAKE) test-visionos SCHEME="DatadogInternal"
-	@$(MAKE) test-visionos SCHEME="DatadogRUM"
-	@$(MAKE) test-visionos SCHEME="DatadogLogs"
-	@$(MAKE) test-visionos SCHEME="DatadogTrace"
-	@$(MAKE) test-visionos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-visionos SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-visionos SCHEME="DatadogFlags"
-	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
-	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-visionos SCHEME="UnitTests-visionOS"
 
 # Run unit tests for specified SCHEME using macOS
 test-macos:
@@ -195,16 +165,9 @@ test-macos:
 	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all schemes ready for macOS so far
+# Run unit tests for all macOS modules, using the test plans of the 'UnitTests-macOS' scheme
 test-macos-all:
-	@$(MAKE) test-macos SCHEME="DatadogInternal"
-	@$(MAKE) test-macos SCHEME="DatadogCore"
-	@$(MAKE) test-macos SCHEME="DatadogRUM"
-	@$(MAKE) test-macos SCHEME="DatadogLogs"
-	@$(MAKE) test-macos SCHEME="DatadogTrace"
-	@$(MAKE) test-macos SCHEME="DatadogCrashReporting"
-	@$(MAKE) test-macos SCHEME="DatadogWebViewTracking"
-	@$(MAKE) test-macos SCHEME="DatadogFlags"
+	@$(MAKE) test-macos SCHEME="UnitTests-macOS"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
@@ -215,6 +178,25 @@ ui-test:
 	@$(ECHO_TITLE) "make ui-test TEST_PLAN='$(TEST_PLAN)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
 	./tools/ui-test.sh --test-plan "$(TEST_PLAN)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
 
+# Build UI tests for all test plans into UI_TEST_PRODUCTS_PATH, to run them with `make ui-test-run`
+ui-test-build:
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@:$(eval UI_TEST_PRODUCTS_PATH ?= $(DEFAULT_UI_TEST_PRODUCTS_PATH))
+	@$(ECHO_TITLE) "make ui-test-build OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' UI_TEST_PRODUCTS_PATH='$(UI_TEST_PRODUCTS_PATH)'"
+	./tools/ui-test.sh --mode build-for-testing --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)" --products-path "$(UI_TEST_PRODUCTS_PATH)"
+
+# Run UI tests for specified TEST_PLAN from the products built by `make ui-test-build`
+ui-test-run:
+	@$(call require_param,TEST_PLAN)
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@:$(eval UI_TEST_PRODUCTS_PATH ?= $(DEFAULT_UI_TEST_PRODUCTS_PATH))
+	@$(ECHO_TITLE) "make ui-test-run TEST_PLAN='$(TEST_PLAN)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' UI_TEST_PRODUCTS_PATH='$(UI_TEST_PRODUCTS_PATH)'"
+	./tools/ui-test.sh --mode test-without-building --test-plan "$(TEST_PLAN)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)" --products-path "$(UI_TEST_PRODUCTS_PATH)"
+
 # Run UI tests for all test plans
 ui-test-all:
 	@$(MAKE) ui-test TEST_PLAN="Default"
@@ -222,10 +204,10 @@ ui-test-all:
 	@$(MAKE) ui-test TEST_PLAN="CrashReporting"
 	@$(MAKE) ui-test TEST_PLAN="NetworkInstrumentation"
 
-# Update UI test project with latest SDK
-ui-test-podinstall:
-	@$(ECHO_TITLE) "make ui-test-podinstall"
-	cd IntegrationTests/ && bundle exec pod install
+# Open UI tests with the local SPM package's testing utilities enabled
+ui-tests-open:
+	@$(ECHO_TITLE) "make ui-tests-open"
+	open --new --env DD_SDK_COMPILED_FOR_TESTING=1 --env DD_TEST_UTILITIES_ENABLED=1 IntegrationTests/IntegrationTests.xcworkspace
 
 # Run tests for repo tools
 tools-test:

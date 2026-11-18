@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
@@ -175,9 +176,16 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             writer.write(traceContext: injectedSpanContext)
 
             writer.traceHeaderFields.forEach { field, value in
-                // do not overwrite existing header
-                if request.value(forHTTPHeaderField: field) == nil {
-                    hasSetAnyHeader = hasSetAnyHeader || field != W3CHTTPHeaders.baggage
+                if field.lowercased() == W3CHTTPHeaders.baggage {
+                    if let existingValue = request.value(forHTTPHeaderField: field) {
+                        let mergedValue = BaggageHeaderMerger.merge(previousHeader: existingValue, with: value)
+                        request.setValue(mergedValue, forHTTPHeaderField: field)
+                    } else {
+                        request.setValue(value, forHTTPHeaderField: field)
+                    }
+                } else if request.value(forHTTPHeaderField: field) == nil {
+                    // Do not overwrite existing trace propagation headers.
+                    hasSetAnyHeader = true
                     request.setValue(value, forHTTPHeaderField: field)
                 }
             }

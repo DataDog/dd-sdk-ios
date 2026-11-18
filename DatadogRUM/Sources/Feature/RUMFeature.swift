@@ -196,6 +196,11 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         var replayState: HasReplayMessageReceiver?
         let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
+            // App extensions don't receive app lifecycle notifications, so the SDK can't tell foreground from
+            // background there and the collector would never pause nor write its buffered samples.
+            guard bundleType == .iOSApp else {
+                return nil
+            }
             let effectiveCollectTypes = timeseries.effectiveCollectTypes
             // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
             // `collectTypes: [.cpu]` on watchOS) would run the sampling timer for the whole session

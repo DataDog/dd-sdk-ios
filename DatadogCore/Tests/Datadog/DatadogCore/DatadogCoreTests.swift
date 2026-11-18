@@ -575,6 +575,7 @@ class DatadogCoreTests: XCTestCase {
         // Given
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let httpClient = PendingHTTPClientMock()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         weak var weakProvider: RemoteConfigurationProvider?
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -593,7 +594,8 @@ class DatadogCoreTests: XCTestCase {
                     site: .us1,
                     directory: temporaryCoreDirectory.coreDirectory,
                     httpClient: httpClient,
-                    notificationCenterProvider: notificationCenterProvider
+                    notificationCenterProvider: notificationCenterProvider,
+                    dateProvider: dateProvider
                 )
                 weakProvider = provider
                 return provider
@@ -601,15 +603,17 @@ class DatadogCoreTests: XCTestCase {
         )
 
         XCTAssertEqual(httpClient.requestsSent().count, 1)
+        dateProvider.advance(bySeconds: 360)
         #if os(macOS)
         notificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
-        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
         XCTAssertEqual(httpClient.requestsSent().count, 2)
 
         // When
         core.stop()
+        dateProvider.advance(bySeconds: 360)
 
         // Then
         XCTAssertNotNil(core.remoteConfigurationProvider)
@@ -617,7 +621,7 @@ class DatadogCoreTests: XCTestCase {
         #if os(macOS)
         notificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
-        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
         XCTAssertEqual(httpClient.requestsSent().count, 2)
     }

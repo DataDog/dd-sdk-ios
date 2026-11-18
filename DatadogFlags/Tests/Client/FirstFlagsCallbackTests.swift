@@ -49,6 +49,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(dataStore: store),
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             let delivered = expectation(description: "accepted winner delivered")
@@ -89,6 +90,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(context: .mockWith(source: "ios"), dataStore: store),
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             let delivered = expectation(description: "obfuscated winner delivered")
@@ -131,6 +133,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(context: .mockWith(source: "react-native"), dataStore: store),
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             let context = FlagsEvaluationContext.mockAny()
@@ -162,6 +165,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             let key = obfuscation.lookupKey(for: "flag")
@@ -197,7 +201,8 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 response = completion
             },
             dateProvider: DateProviderMock(),
-            featureScope: FeatureScopeMock(dataStore: store)
+            featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil
         )
         let keys = ReadWriteLock<[String]?>(wrappedValue: nil)
         let delivered = expectation(description: "empty disk installation delivered")
@@ -223,7 +228,8 @@ final class FirstFlagsCallbackTests: XCTestCase {
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
             dateProvider: DateProviderMock(),
-            featureScope: FeatureScopeMock(dataStore: store)
+            featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil
         )
         let entered = expectation(description: "handler entered")
         let drained = expectation(description: "handler drained storage")
@@ -263,6 +269,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(dataStore: store),
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             let entered = expectation(description: "context completion entered")
@@ -301,6 +308,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
                 dateProvider: DateProviderMock(),
                 featureScope: FeatureScopeMock(dataStore: store),
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             let delivered = expectation(description: "fallback becomes active")
@@ -333,6 +341,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let delivered = expectation(description: "network accepted instead of mismatched fallback")
@@ -354,6 +363,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let entered = expectation(description: "ready listener entered")
@@ -393,6 +403,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let delivered = expectation(description: "latest accepted success")
@@ -423,6 +434,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
+                flagSelection: nil,
                 initializationTimeout: nil
             )
             let events = ReadWriteLock<[FlagsClientEvent]>(wrappedValue: [])
@@ -449,6 +461,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completion(.success(.init(flags: ["network": .mockAny()]))) },
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let repositoryAccess = ReadWriteLock(wrappedValue: repository)
@@ -483,6 +496,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in response = completion },
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(),
+            flagSelection: nil,
             initializationTimeout: 1,
             scheduleInitializationTimeout: { _, action in timeout = action; return {} }
         )
@@ -518,6 +532,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                     },
                     dateProvider: DateProviderMock(),
                     featureScope: FeatureScopeMock(dataStore: store),
+                    flagSelection: nil,
                     initializationTimeout: nil
                 )
                 store.readCompletion?(.noValue)
@@ -579,6 +594,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in responses.append(completion) },
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock(),
+            flagSelection: nil,
             initializationTimeout: nil
         )
         let delivered = expectation(description: "winning installation published")
@@ -679,7 +695,8 @@ final class FirstFlagsCallbackTests: XCTestCase {
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
             dateProvider: DateProviderMock(),
-            featureScope: FeatureScopeMock(dataStore: store)
+            featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil
         )
         weak var weakRepository = repository
         let entered = expectation(description: "first handler claimed")
@@ -847,7 +864,8 @@ final class FirstFlagsCallbackTests: XCTestCase {
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
             dateProvider: DateProviderMock(),
-            featureScope: FeatureScopeMock(dataStore: store)
+            featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil
         )
         var probe: LifetimeProbe? = LifetimeProbe()
         weak var weakProbe = probe

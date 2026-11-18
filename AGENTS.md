@@ -40,7 +40,9 @@ Feature-specific docs (in each module directory):
 ├── DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
 ├── DatadogTrace/TRACE_FEATURE.md
 ├── DatadogProfiling/PROFILING_FEATURE.md
-└── DatadogLogs/LOGS_FEATURE.md
+├── DatadogLogs/LOGS_FEATURE.md
+├── DatadogFlags/FLAGS_FEATURE.md
+└── DatadogCrashReporting/CRASH_REPORTING_FEATURE.md
 ```
 
 ## Where to Look First
@@ -59,6 +61,8 @@ Feature-specific docs (in each module directory):
 | Work on Trace (APM) specifically | `DatadogTrace/TRACE_FEATURE.md` |
 | Work on Profiling specifically | `DatadogProfiling/PROFILING_FEATURE.md` |
 | Work on Logs specifically | `DatadogLogs/LOGS_FEATURE.md` |
+| Work on Feature Flags specifically | `DatadogFlags/FLAGS_FEATURE.md` |
+| Work on Crash Reporting specifically | `DatadogCrashReporting/CRASH_REPORTING_FEATURE.md` |
 | Update a `*_FEATURE.md` file | `docs/LLM_FEATURE_DOCS_GUIDELINES.md` |
 
 ## Critical Rules (always apply)

@@ -518,7 +518,8 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResource(resourceKey: "/resource/3", response: .mockAny())
         monitor.stopResource(resourceKey: "/resource/4", response: .mockAny())
         let customType: String = .mockRandom(among: .alphanumerics)
-        monitor.stopResourceWithError(resourceKey: "/resource/5", message: .mockAny(), type: customType)
+        let customStack: String = .mockRandom()
+        monitor.stopResourceWithError(resourceKey: "/resource/5", message: .mockAny(), type: customType, stack: customStack, response: nil, attributes: [:])
         monitor.stopView(key: "view2")
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -557,6 +558,8 @@ class RUMMonitorTests: XCTestCase {
 
         XCTAssertNil(secondResourceError.error.type, "Second resource's error must have no type")
         XCTAssertEqual(fifthResourceError.error.type, customType, "Second resource's error must have custom type")
+        XCTAssertNil(secondResourceError.error.stack, "Second resource's error must have no stack")
+        XCTAssertEqual(fifthResourceError.error.stack, customStack, "Fifth resource's error must have custom stack")
     }
 
     func testStartingView_thenTappingButton_thenTappingAnotherButton() throws {
