@@ -421,6 +421,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
             isMultiSceneTrackingEnabled: dependencies.isMultiSceneTrackingEnabled,
+            rumContextHandoffOwner: issuedOwner,
+            handoffMonitor: dependencies.isMultiSceneTrackingEnabled ? monitor : nil,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif
