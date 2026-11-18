@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-17
+last_updated: 2026-11-18
 sdk_version: 3.22.0
-verified_against_commit: 3ff2a7ba6
+verified_against_commit: c97682a27
 tracked_files:
   - DatadogFlags/Sources/Flags.swift
   - DatadogFlags/Sources/Client/FlagsClient.swift
@@ -224,7 +224,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - `Flags.FlagSelection` applies to every client and is fixed at `Flags.enable()`.
 - A flag is loaded if it has any listed tag (exact, case-sensitive) or its whole key matches any pattern (`*` matches any run of characters).
 - Values are trimmed and deduplicated. Each list accepts at most 31 values, each value at most 200 UTF-8 bytes. Over a limit, the selection is not sent: the SDK logs an error and loads every flag.
-- If the server ignores the selection, it loads every flag and the SDK logs the reason (from the `DD-Flag-Selection-Ignored` header). A proxy behind `customFlagsEndpoint` must forward that header.
+- If the server ignores the selection, it loads every flag. For a request without an assignment token, the SDK logs a known reason from the `DD-Flag-Selection-Ignored` header or reports another nonempty value as `unknown`. For a token-bearing request, it reports every nonempty value as `redacted`. A proxy behind `customFlagsEndpoint` must forward that header.
 - A cache saved under a different selection is not loaded.
 
 ### Exposures and Evaluation Telemetry
@@ -253,7 +253,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 
 ### "Every flag returns its default value"
 **Causes:** Check `details.error` and `client.state.currentState` to find which of these applies:
-- `.providerNotReady`: no context set yet and no cache, the fetch is still running without readable assignments, or an ordinary fetch failure has no eligible fallback.
+- `.providerNotReady`: no context set yet and no cache, or no subject-authorization boundary is active and either the fetch is still running without readable assignments or an ordinary fetch failure has no eligible fallback.
 - `.general`: an active subject-authorization boundary has no readable assignments for the requested subject.
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
 - `.typeMismatch`: the value cannot convert to the requested type without loss. For example, `getIntegerValue` rejects a fractional `Double`, and `getDoubleValue` rejects an `Int` that `Double` cannot represent exactly.

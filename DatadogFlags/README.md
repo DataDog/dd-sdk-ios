@@ -125,7 +125,8 @@ A missing acknowledgement reports `invalidResponse` through the context completi
 A later `setEvaluationContext` call can fetch assignments again.
 
 With either enabled mode, context isolation also applies when the timestamp attribute is absent.
-Before the first context update, and while a different context is pending, evaluations return defaults with `providerNotReady`.
+Before the first context update, evaluations return defaults with `providerNotReady`. During a valid context update or after a fetch failure,
+evaluations without readable assignments return `general` when a subject-authorization boundary is active and `providerNotReady` otherwise.
 A malformed timestamp returns `invalidContext`. Disabled mode keeps previous assignments available while a refresh is pending.
 An invalid context does not overwrite or delete the last successful disk snapshot.
 Snapshots with an opt-out policy use cache version 3. Older SDKs that support only versions 1 or 2 cannot restore them.
