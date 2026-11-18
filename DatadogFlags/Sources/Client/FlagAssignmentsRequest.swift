@@ -35,10 +35,9 @@ extension URLRequest {
             request.setValue(applicationId, forHTTPHeaderField: "dd-application-id")
         }
 
-        // Core uses the bundle identifier, or "ios" without one, when the app sets no service,
-        // so those values are treated as unset. Core strips "," and ":" from the service, which
-        // bundle identifiers never contain. The edge validates the value it receives.
-        if context.service != context.applicationBundleIdentifier && context.service != "ios" {
+        // Same value RUM puts on its events: the configured service, or core's default
+        // (the bundle identifier, or "ios" without one).
+        if !context.service.isEmpty {
             request.setValue(context.service, forHTTPHeaderField: "dd-service")
         }
 

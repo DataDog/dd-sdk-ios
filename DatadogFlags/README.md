@@ -117,4 +117,4 @@ These rules apply to evaluation telemetry only. They do not change assignment re
 
 ## Usage attribution
 
-When you set `service` in `Datadog.Configuration`, flag requests send it in the `dd-service` header, so Usage Attribution can split Feature Flags usage by `service`. Without `service`, no header is sent: the SDK does not send the bundle identifier (or `ios`) it uses by default. A service equal to the bundle identifier, or to `ios`, is not sent either.
+Flag requests send the SDK's `service` in the `dd-service` header, so Usage Attribution can split Feature Flags usage by `service`. It is the same service RUM reports: the one set in `Datadog.Configuration`, or else the bundle identifier (or `ios` without one). Use printable ASCII without spaces: other values, for example `Checkout API` or `café-api`, are not attributed correctly.

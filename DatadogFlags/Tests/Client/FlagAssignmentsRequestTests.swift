@@ -119,7 +119,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-service"), "checkout-ios")
     }
 
-    func testServiceIsNotSentWhenItIsTheCoreDefault() throws {
+    func testServiceIsSentWhenItIsTheCoreDefault() throws {
         let defaults: [(service: String, bundleIdentifier: String)] = [
             ("com.example.shop", "com.example.shop"),
             ("ios", "unknown"),
@@ -138,8 +138,25 @@ final class FlagAssignmentsRequestTests: XCTestCase {
             )
 
             // Then
-            XCTAssertNil(request.value(forHTTPHeaderField: "dd-service"), "\(service) is the core default")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "dd-service"), service, "\(service) is the core default")
         }
+    }
+
+    func testServiceIsNotSentWhenItIsEmpty() throws {
+        // Given
+        let context = DatadogContext.mockWith(service: "")
+
+        // When
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: testURL,
+            evaluationContext: .mockAny(),
+            context: context,
+            customHeaders: nil,
+            flagSelection: nil
+        )
+
+        // Then
+        XCTAssertNil(request.value(forHTTPHeaderField: "dd-service"))
     }
 
     func testCustomServiceHeaderReplacesTheService() throws {
