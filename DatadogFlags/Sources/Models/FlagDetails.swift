@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import DatadogInternal
 
 /// An error that occurs during feature flag evaluation.
 ///
@@ -130,114 +129,6 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
             && lhs.error == rhs.error
             && lhs.allocationKey == rhs.allocationKey
             && lhs.flagMetadata == rhs.flagMetadata
-    }
-}
-
-/// Receives every flag evaluation, with the exposure verdict that the SDK uses for Datadog.
-///
-/// Use it to record exposures in your own data store, with the same deduplication as Datadog:
-///
-/// ```swift
-/// var configuration = Flags.Configuration(trackExposures: false)
-/// configuration.exposureHook = ExposureHook { evaluation in
-///     guard evaluation.shouldSend else { return }
-///     warehouse.enqueue(evaluation.flagKey, evaluation.variant, evaluation.features)
-/// }
-/// Flags.enable(with: configuration)
-/// ```
-///
-/// The callback runs synchronously on the thread that evaluated the flag, including the main thread.
-/// Several threads can call it at the same time, so it must be thread-safe. An evaluation inside the
-/// callback calls the hook again, so avoid unbounded recursion. Keep it short and move I/O to another queue.
-/// The SDK catches and logs an error thrown by the callback
-/// and returns the evaluation result unchanged. The hook observes evaluations; the SDK records exposures.
-/// The callback is immutable and the error flag is lock-protected, so the hook is safe to share across threads.
-public final class ExposureHook: @unchecked Sendable {
-    private let callback: @Sendable (ExposureEvaluation) throws -> Void
-    @ReadWriteLock
-    private var hasLoggedError = false
-
-    /// Creates a hook that calls `callback` after each flag evaluation.
-    public init(_ callback: @escaping @Sendable (ExposureEvaluation) throws -> Void) {
-        self.callback = callback
-    }
-
-    internal func notify(_ evaluation: ExposureEvaluation) {
-        do {
-            try callback(evaluation)
-        } catch {
-            var isFirstError = false
-            _hasLoggedError.mutate { hasLoggedError in
-                isFirstError = !hasLoggedError
-                hasLoggedError = true
-            }
-            if isFirstError {
-                DD.logger.warn("`ExposureHook` callback failed. Later failures are logged at debug level.", error: error)
-            } else {
-                DD.logger.debug("`ExposureHook` callback failed.", error: error)
-            }
-        }
-    }
-}
-
-/// A completed flag evaluation, as seen by ``ExposureHook``.
-///
-/// The SDK creates every value; the initializer stays internal, as in the other Datadog client SDKs.
-public struct ExposureEvaluation {
-    /// The evaluated flag key.
-    public let flagKey: String
-
-    /// The served variant, or `nil` when evaluation failed.
-    public let variant: String?
-
-    /// The allocation that served the value, or `nil` when evaluation failed.
-    public let allocationKey: String?
-
-    /// The targeting key of ``evaluationContext``, or `nil` for an evaluation made before any context was set.
-    public let targetingKey: String?
-
-    /// The evaluation context used for the evaluation.
-    public let evaluationContext: FlagsEvaluationContext
-
-    /// The evaluation error, or `nil` for a successful evaluation.
-    public let error: FlagEvaluationError?
-
-    /// Features that the split sends to customer code, keyed by feature key (for example `holdout.key`).
-    /// Values are `.string`, `.double` or `.bool`.
-    public let features: [String: AnyValue]
-
-    /// `true` for a successful evaluation of an allocation that logs exposures, repeats included.
-    /// The allocation key and the variant are both non-blank.
-    public let isExposure: Bool
-
-    /// For an exposure (`isExposure`), `true` when this client's exposure cache holds the same allocation, variant
-    /// and split for the subject and flag. After an exposure of another assignment, or after the cache evicts the
-    /// entry, the next exposure is new.
-    public let isCacheHit: Bool
-
-    /// `true` for a new exposure (`isExposure` and a cache miss). The Datadog write depends on
-    /// `Flags.Configuration.trackExposures` and the tracking consent.
-    public var shouldSend: Bool { isExposure && !isCacheHit }
-
-    internal init(
-        flagKey: String,
-        variant: String?,
-        allocationKey: String?,
-        evaluationContext: FlagsEvaluationContext,
-        error: FlagEvaluationError?,
-        features: [String: AnyValue],
-        isExposure: Bool,
-        isCacheHit: Bool
-    ) {
-        self.flagKey = flagKey
-        self.variant = variant
-        self.allocationKey = allocationKey
-        self.targetingKey = evaluationContext.hasTargetingKey ? evaluationContext.targetingKey : nil
-        self.evaluationContext = evaluationContext
-        self.error = error
-        self.features = features
-        self.isExposure = isExposure
-        self.isCacheHit = isCacheHit
     }
 }
 

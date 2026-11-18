@@ -1609,6 +1609,7 @@ public final class FlagsClient
     public func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
 [?] extension FlagsClient: FlagsClientInternal
+    public func getDetailsWithExposure<T>(key: String, defaultValue: T) -> FlagDetailsWithExposure<T>? where T: Equatable, T: FlagValue
     public func getFlagAssignments() -> [String: FlagAssignment]?
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
@@ -1618,6 +1619,7 @@ public final class FlagsClient
 [?] extension FlagsClient
     public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
 public protocol FlagsClientInternal: AnyObject
+    func getDetailsWithExposure<T>(key: String, defaultValue: T) -> FlagDetailsWithExposure<T>? where T: Equatable, T: FlagValue
     func getFlagAssignments() -> [String: FlagAssignment]?
     func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
     func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
@@ -1626,6 +1628,7 @@ public protocol FlagsClientInternal: AnyObject
     func sendFlagEvaluationEvent(key: String,assignment: FlagAssignment?,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,errorCode: String?)
     func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
 [?] extension FlagsClientInternal
+    public func getDetailsWithExposure<T>(key: String, defaultValue: T) -> FlagDetailsWithExposure<T>? where T: Equatable, T: FlagValue
     public func getFlagAssignments() -> [String: FlagAssignment]?
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
@@ -1634,6 +1637,17 @@ public protocol FlagsClientInternal: AnyObject
 [?] extension FlagsClientInternal
     public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
     public func sendFlagEvaluationEvent(key: String,assignment: FlagAssignment?,context: FlagsEvaluationContext,telemetryTargetingKey: String?,observeFullEvaluationData: Bool,errorCode: String?)
+public struct FlagExposureDecision: Equatable
+    public let isExposure: Bool
+    public let isCacheHit: Bool
+    public let targetingKey: String?
+    public let features: [String: AnyValue]
+    public var shouldSend: Bool
+    public init(isExposure: Bool, isCacheHit: Bool, targetingKey: String?, features: [String: AnyValue])
+public struct FlagDetailsWithExposure<T: Equatable>
+    public let details: FlagDetails<T>
+    public let exposure: FlagExposureDecision
+    public init(details: FlagDetails<T>, exposure: FlagExposureDecision)
 public protocol FlagsClientProtocol: AnyObject
     var state: FlagsStateObservable
     func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
@@ -1679,7 +1693,6 @@ public enum Flags
         public var initializationTimeout: TimeInterval?
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
-        public var exposureHook: ExposureHook?
         public var customEvaluationEndpoint: URL?
         public var trackEvaluations: Bool
         public var evaluationFlushInterval: TimeInterval
@@ -1740,19 +1753,6 @@ public struct FlagDetails<T>: Equatable where T: Equatable
     public var flagMetadata: [String: AnyValue] = [:]
     public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil,allocationKey: String? = nil)
     public static func == (lhs: FlagDetails<T>, rhs: FlagDetails<T>) -> Bool
-public final class ExposureHook: @unchecked Sendable
-    public init(_ callback: @escaping @Sendable (ExposureEvaluation) throws -> Void)
-public struct ExposureEvaluation
-    public let flagKey: String
-    public let variant: String?
-    public let allocationKey: String?
-    public let targetingKey: String?
-    public let evaluationContext: FlagsEvaluationContext
-    public let error: FlagEvaluationError?
-    public let features: [String: AnyValue]
-    public let isExposure: Bool
-    public let isCacheHit: Bool
-    public var shouldSend: Bool
 public struct FlagsSnapshot: Equatable, Encodable
     public let assignments: [String: FlagSnapshot]
     public init(assignments: [String: FlagSnapshot])
