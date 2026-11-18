@@ -69,8 +69,6 @@ Flags.enable(
         flagSelection: Flags.FlagSelection(tags: ["checkout"], keyPatterns: ["checkout-*"])
     )
 )
-// Receive every evaluation with the SDK's exposure decision. Default: nil. Set it on a `var` configuration
-// before `Flags.enable(with:)`, for example `configuration.exposureHook = ExposureHook { evaluation in ... }`.
 
 // Create a client. Clients are retained by name; no need to keep a reference.
 let client = FlagsClient.create(
@@ -145,7 +143,7 @@ flowchart LR
 - `DatadogFlags/Sources/Client/FlagsClientState.swift` — `FlagsClientState`.
 - `DatadogFlags/Sources/Client/FlagsStateManager.swift` — `FlagsStateObservable`, `FlagsStateListener`.
 - `DatadogFlags/Sources/Models/FlagsEvaluationContext.swift` — Context type and opt-out timestamp parsing.
-- `DatadogFlags/Sources/Models/FlagDetails.swift` — `FlagDetails`, `FlagEvaluationError`, `ExposureHook`, `ExposureEvaluation`, `FlagsSnapshot`, `FlagSnapshot`.
+- `DatadogFlags/Sources/Models/FlagDetails.swift` — `FlagDetails`, `FlagEvaluationError`, `FlagsSnapshot`, `FlagSnapshot`.
 - `DatadogFlags/Sources/Models/FlagsError.swift` — Errors returned by `setEvaluationContext`.
 - `DatadogFlags/Sources/Models/FlagsClientEvent.swift` — `onFirstFlags` event, listener and subscription types.
 - `DatadogFlags/Sources/Models/FlagValue.swift`, `DatadogFlags/Sources/Models/AnyValue.swift` — Supported value types.
@@ -164,7 +162,7 @@ flowchart LR
 - `DatadogFlags/Sources/Feature/FlagsFeature.swift` — Feature wiring and flush interval clamping.
 - `DatadogFlags/Sources/Feature/IssueReporter.swift` — Graceful mode behavior.
 - `DatadogRUM/Sources/Integrations/FlagEvaluationReceiver.swift` — RUM side of the integration.
-- `DatadogFlags/README.md` — Detailed rules for the evaluation telemetry opt-out, experimentation opt-out, evaluation telemetry privacy and `exposureHook`.
+- `DatadogFlags/README.md` — Detailed rules for the evaluation telemetry opt-out, experimentation opt-out, evaluation telemetry privacy, and split features and exposures.
 
 ## Configuration Categories
 
@@ -204,8 +202,8 @@ Listeners are held weakly and called with the current state when added. A state 
 - **Evaluations** are aggregated and flushed every `evaluationFlushInterval` seconds, or when 1,000 aggregations accumulate. Failed evaluations are also counted, with an error code.
 - **Evaluation telemetry privacy:** by default, evaluation events send the targeting key as `sha256_` plus the lowercase hex SHA-256 of its UTF-8 bytes, and omit the evaluation context. A flags configuration that sets `observeFullEvaluationData: true` sends the raw key and the context. The consent travels with the configuration, including when it is restored from disk, and splits evaluation buckets. A key that fails strict UTF-8 encoding is omitted in both modes. Error codes are limited to the stable OpenFeature set; any other code becomes `GENERAL`. See `DatadogFlags/README.md`.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
-- **Split features:** each assignment can carry `features` with `HOOK`, `EXPOSURE` or `EVALUATION` destinations. `HOOK` features appear in `FlagDetails.flagMetadata` and `ExposureEvaluation.features`, `EXPOSURE` features in a `features` object on exposure events, and `EVALUATION` features in the evaluation bucket key and rows.
-- **`exposureHook`** receives every evaluation with `isExposure`, `isCacheHit` and `shouldSend`, from the same decision the SDK uses for Datadog. It runs synchronously on the evaluating thread. With `trackExposures` set to `false`, the SDK stops sending exposures and keeps deduplicating them, so the hook keeps correct decisions.
+- **Split features:** each assignment can carry `features` with `HOOK`, `EXPOSURE` or `EVALUATION` destinations. `HOOK` features appear in `FlagDetails.flagMetadata` and reach the OpenFeature provider's exposure hook, `EXPOSURE` features in a `features` object on exposure events, and `EVALUATION` features in the evaluation bucket key and rows.
+- **Exposure decisions:** the SDK makes one decision per evaluation and gives it to the Datadog OpenFeature provider through `@_spi(Internal)` `getDetailsWithExposure(key:defaultValue:)`. The provider's `ExposureHook` passes it to customer code. With `trackExposures` set to `false`, the SDK stops sending exposures and keeps deduplicating them.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
 
 ### Experimentation Opt-Out
@@ -258,7 +256,7 @@ Listeners are held weakly and called with the current state when added. A state 
 - The same subject already saw that variant in this process (deduplication).
 - Tracking consent is not `.granted`.
 
-**Solutions:** Confirm `trackExposures`, that the flag runs an experiment allocation, and the tracking consent value. An `exposureHook` shows the decision for each evaluation: `isExposure` and `isCacheHit`.
+**Solutions:** Confirm `trackExposures`, that the flag runs an experiment allocation, and the tracking consent value. The OpenFeature provider's `ExposureHook` shows the decision for each evaluation: `isExposure` and `isCacheHit`.
 
 ### "No RUM annotations or evaluation data for some users"
 **Causes:** `enableEvaluationTelemetryOptOutParameter` is `true` and the context has `dd_evaluation_telemetry_opt_out: .bool(true)`. Until the cached policy loads at startup, evaluation telemetry is also suppressed.
@@ -275,7 +273,7 @@ Listeners are held weakly and called with the current state when added. A state 
 - **RUM**: optional. With `rumIntegrationEnabled`, each successful evaluation adds `feature_flags.<key> = <variant key>` to the active view. RUM must be enabled for this; without it, messages are ignored. When RUM is enabled before the fetch, the request also carries the RUM application ID.
 - **Tracking consent**: exposures and evaluation events are stored and uploaded like other events, following the SDK's tracking consent. Assignment fetching does not depend on consent.
 - **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Obfuscated flag keys are supported only when the SDK source is `ios`.
-- **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status. Exposures are recorded when the native client resolves the flag, so `exposureHook` also receives OpenFeature evaluations, and an OpenFeature `MultiProvider` records exposures for every evaluation of the Datadog provider.
+- **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status. Exposures are recorded when the native client resolves the flag, so an OpenFeature `MultiProvider` records exposures for every evaluation of the Datadog provider. The provider's `ExposureHook` reads the decision through `getDetailsWithExposure(key:defaultValue:)`.
 
 ## Additional Context
 
@@ -283,5 +281,5 @@ Listeners are held weakly and called with the current state when added. A state 
 - `FlagsSnapshot`, `FlagSnapshot` and `snapshot()` are marked as preview and may change.
 - `FlagsClientState` documentation mentions `reset()`, but reset is internal and not available to apps.
 - `onFirstFlags` listeners run on a background queue, or on the calling thread if the first configuration was already published. `flagsChanged` lists configuration keys, which may be obfuscated rather than plaintext names. The no-op fallback client calls the listener immediately with an empty list.
-- Exposure deduplication is in memory, per client, for up to 5,000 subject and flag pairs, so a new process logs exposures again. `exposureHook` is global and each client keeps its own cache.
+- Exposure deduplication is in memory, per client, for up to 5,000 subject and flag pairs, so a new process logs exposures again.
 - Disk caches filtered by flag selection or an opt-out policy use cache version 3, which SDK versions without these features skip.

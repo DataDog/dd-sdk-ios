@@ -115,46 +115,20 @@ Evaluation errors are reported only as `PROVIDER_NOT_READY`, `PROVIDER_FATAL`, `
 
 These rules apply to evaluation telemetry only. They do not change assignment requests, targeting, or exposure events. The [evaluation telemetry control](#evaluation-telemetry-control) still suppresses evaluation telemetry for opted-out subjects.
 
-## Exposures in your own data store
+## Split features and exposures
 
-Set `Flags.Configuration.exposureHook` to receive every flag evaluation, with the same exposure deduplication the SDK uses for Datadog. Set `trackExposures` to `false` to stop sending exposures to Datadog at the same time.
+The flags configuration can carry `features` for the split that serves a flag. Each feature has a key, a value (string, number or boolean) and destinations:
 
-```swift
-import DatadogFlags
-
-var configuration = Flags.Configuration(trackExposures: false)
-configuration.exposureHook = ExposureHook { evaluation in
-    guard evaluation.shouldSend else {
-        return
-    }
-    exposureQueue.enqueue(
-        flag: evaluation.flagKey,
-        variant: evaluation.variant,
-        allocation: evaluation.allocationKey,
-        subject: evaluation.targetingKey,
-        holdoutKey: evaluation.features["holdout.key"]
-    )
-}
-Flags.enable(with: configuration)
-```
-
-`ExposureEvaluation` has these members:
-
-| Member | Meaning |
+| Destination | Where the SDK puts the feature |
 | --- | --- |
-| `isExposure` | A successful evaluation of an allocation that logs exposures, with a non-blank allocation key and variant, repeats included. |
-| `isCacheHit` | For an exposure (`isExposure`), this client's exposure cache holds the same allocation, variant and split for the subject and flag. After an exposure of another assignment, or after the cache evicts the entry, the next exposure is new. |
-| `shouldSend` | A new exposure (`isExposure` and a cache miss). The Datadog write depends on `trackExposures` and the tracking consent. |
-| `features` | Features of the selected split for customer code, for example `holdout.key`, `holdout.assignment_group` and `holdout.should_include_in_holdout_analysis`. |
-| `flagKey`, `variant`, `allocationKey`, `targetingKey`, `evaluationContext`, `error` | The evaluation. A failed evaluation has a `nil` `variant` and `allocationKey`, and its `error`. `targetingKey` is `nil` for an evaluation made before any context was set. |
+| `HOOK` | `FlagDetails.flagMetadata`, as `__dd_feature.<key>` (for example `__dd_feature.holdout.key`), and the exposure hook of the Datadog OpenFeature provider |
+| `EXPOSURE` | A `features` object on the exposure event |
+| `EVALUATION` | The evaluation-count bucket and its row |
 
-- The hook receives evaluations from every `FlagsClient` created after `Flags.enable(with:)`, including failed ones, which have `isExposure == false`. It also receives evaluations made through the OpenFeature provider, because the provider evaluates with a `FlagsClient`.
-- The callback runs synchronously on the thread that evaluated the flag, including the main thread. Several threads can call it at the same time, so it must be thread-safe. Keep it short and move I/O to another queue. An evaluation inside the callback calls the hook again, so avoid unbounded recursion.
-- The SDK catches an error thrown by the callback and returns the evaluation result unchanged. It logs the first error as a warning and later errors at debug level.
-- The hook is set once for the `Flags` feature, and each client keeps its own exposure cache. Two clients that evaluate the same flag for the same subject each report one exposure, to Datadog and to the hook.
-- Evaluations through the internal bridge (React Native) record exposures in the same cache and skip `exposureHook`. The React Native change connects them.
-- Each client deduplicates exposures in memory, for up to 5,000 subject and flag pairs. After the app restarts, the first evaluation of a flag is a new exposure.
-- The SDK records an exposure when the flag resolves in the native client. OpenFeature Swift hooks are non-throwing, so the result that the provider returns is final. Inside an OpenFeature `MultiProvider`, the SDK records exposures for every evaluation of the Datadog provider. The built-in first-match and first-successful strategies use the Datadog result whenever it succeeds. A strategy that evaluates every provider and picks one, such as a comparison strategy, can make the SDK record an exposure for a result that the app discards.
-- With `trackExposures` set to `false`, the SDK stops sending exposures to Datadog and keeps deduplicating them, so `isCacheHit` and `shouldSend` stay correct. Evaluation counts keep their usual behaviour.
-
-`FlagDetails.flagMetadata` carries the same features as `__dd_feature.<key>` entries, for example `__dd_feature.holdout.key`. The `__dd_feature.` prefix is the stable contract.
+- Values in `flagMetadata` are `.string`, `.double` or `.bool`. The `__dd_feature.` prefix is the stable contract. A failed evaluation has an empty dictionary.
+- To record exposures in your own data store, use the `ExposureHook` of the Datadog OpenFeature provider ([dd-openfeature-provider-swift](https://github.com/DataDog/dd-openfeature-provider-swift)). It receives each evaluation with the exposure decision that the SDK uses for Datadog.
+- The SDK makes one exposure decision for each evaluation. An exposure is a successful evaluation of an allocation that logs exposures. The provider's hook also requires a non-blank allocation key and variant.
+- Each client deduplicates exposures in memory, for up to 5,000 subject and flag pairs. The cache keeps the latest assignment for each subject and flag. After an exposure of another assignment, after an eviction, or after the app restarts, the next exposure is new.
+- With `trackExposures` set to `false`, the SDK stops sending exposures to Datadog and keeps deduplicating them, so the provider's hook keeps correct decisions. Evaluation counts keep their usual behaviour.
+- The SDK records an exposure when the flag resolves in the native client. OpenFeature Swift hooks are non-throwing, so the result that the provider returns is final. Inside an OpenFeature `MultiProvider`, the SDK records exposures for every evaluation of the Datadog provider. A strategy that evaluates every provider and picks one, such as a comparison strategy, can make the SDK record an exposure for a result that the app discards.
+- Evaluations through the internal bridge (React Native) record exposures in the same cache.
