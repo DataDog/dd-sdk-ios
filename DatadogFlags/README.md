@@ -62,7 +62,7 @@ The same boundary is established when the endpoint returns HTTP 401 with a JSON:
 
 A successful download or eligible same-subject stale fallback recovers the client and ends this boundary, matching the browser provider. Without a usable token or an `ASSIGNMENT_AUTHORIZATION_FAILED` rejection, the SDK does not establish a boundary, and evaluation follows the ordinary iOS behavior. With experimentation opt-out disabled, previous assignments may remain available while a later download is pending; if the download fails, only an exact-context fallback is eligible. Applications using subject authorization should include the appropriate token in each complete context update that requires it. Overlapping requests still cannot install superseded authorization results after recovery.
 
-Customer proxies must forward `DD-Assignment-Token`. Use an HTTPS `customFlagsEndpoint` when the evaluation context carries `dd_assignment_token`. The SDK does not automatically refresh tokens, retry context updates, or verify signed assignment response payloads.
+Customer proxies must forward `DD-Assignment-Token`. Assignment requests follow HTTP redirects. Configure `customFlagsEndpoint` with its final HTTPS URL to avoid forwarding `DD-Assignment-Token` to a redirect destination. The SDK does not automatically refresh tokens, retry context updates, or verify signed assignment response payloads.
 
 ## Per-subject experimentation opt-out
 
