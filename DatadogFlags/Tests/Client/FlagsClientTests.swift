@@ -1882,6 +1882,77 @@ final class FlagsClientExposureHookTests: XCTestCase {
         }
     }
 
+    func testHookSeesNotReadyEvaluations() throws {
+        let evaluations = ExposureEvaluationRecorder()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(flagsData: nil),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock(),
+            exposureHook: ExposureHook { evaluations.record($0) }
+        )
+
+        let details = client.getBooleanDetails(key: "flag", defaultValue: false)
+
+        XCTAssertEqual(details.error, .providerNotReady)
+        XCTAssertEqual(details.flagMetadata, [:])
+        XCTAssertEqual(evaluations.all.count, 1)
+        let evaluation = try XCTUnwrap(evaluations.all.first)
+        XCTAssertEqual(evaluation.flagKey, "flag")
+        XCTAssertEqual(evaluation.error, .providerNotReady)
+        XCTAssertNil(evaluation.targetingKey, "an evaluation before any context has no targeting key")
+        XCTAssertNil(evaluation.variant)
+        XCTAssertNil(evaluation.allocationKey)
+        XCTAssertFalse(evaluation.isExposure)
+        XCTAssertTrue(evaluation.features.isEmpty)
+    }
+
+    func testHookSeesRejectedContextEvaluationsWithTheRequestedContext() throws {
+        let core = FeatureRegistrationCoreMock()
+        let evaluations = ExposureEvaluationRecorder()
+        var configuration = Flags.Configuration()
+        configuration.exposureHook = ExposureHook { evaluations.record($0) }
+        Flags.enable(with: configuration, in: core)
+        let invalid = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .bool(true)])
+        let client = FlagsClient.create(configuration: .init(experimentationOptOutMode: .immediate), in: core)
+        let completed = expectation(description: "invalid context")
+        client.setEvaluationContext(invalid) { _ in completed.fulfill() }
+        wait(for: [completed], timeout: 1)
+
+        let details = client.getBooleanDetails(key: "flag", defaultValue: false)
+
+        XCTAssertEqual(details.error, .invalidContext)
+        XCTAssertEqual(details.flagMetadata, [:])
+        let evaluation = try XCTUnwrap(evaluations.all.last)
+        XCTAssertEqual(evaluation.flagKey, "flag")
+        XCTAssertEqual(evaluation.error, .invalidContext)
+        XCTAssertEqual(evaluation.targetingKey, "subject")
+        XCTAssertNil(evaluation.variant)
+        XCTAssertFalse(evaluation.isExposure)
+        XCTAssertTrue(evaluation.features.isEmpty)
+    }
+
+    func testConcurrentEvaluationsShareOneNewExposurePerSubjectAndFlag() {
+        let evaluations = ExposureEvaluationRecorder()
+        // The evaluation and RUM mocks are not thread-safe, so this test uses the NOP implementations.
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(flagsData: FlagsData(flags: ["flag": holdoutAssignment, "other": holdoutAssignment], context: context, date: .mockAny())),
+            exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: FeatureScopeMock()),
+            evaluationLogger: NOPEvaluationLogger(),
+            rumFlagEvaluationReporter: NOPRUMFlagEvaluationReporter(),
+            exposureHook: ExposureHook { evaluations.record($0) }
+        )
+
+        DispatchQueue.concurrentPerform(iterations: 200) { index in
+            _ = client.getBooleanValue(key: index.isMultiple(of: 2) ? "flag" : "other", defaultValue: false)
+        }
+
+        let all = evaluations.all
+        XCTAssertEqual(all.count, 200)
+        XCTAssertEqual(all.filter { $0.flagKey == "flag" && $0.shouldSend }.count, 1)
+        XCTAssertEqual(all.filter { $0.flagKey == "other" && $0.shouldSend }.count, 1)
+    }
+
     func testBridgedEvaluationEventKeepsFeaturesWithCapturedConsent() throws {
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
