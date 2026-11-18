@@ -230,6 +230,13 @@ internal class Monitor: RUMCommandSubscriber {
                 return
             }
 
+            if self.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
+                guard ownership.owner.isValid, self.rumContextHandoffOwner === ownership.owner else {
+                    ownership.close()
+                    return
+                }
+            }
+
             let transformedCommand = self.transform(command: command)
 
             // Record the replay state this command sees before processing it, as it may end or pause the session,
@@ -373,7 +380,7 @@ extension Monitor: RUMContextSnapshotProviding {
         }
         let context: RUMCoreContext?
         switch target {
-        case .none: return nil
+        case .none, .continuousAction: return nil
         case .scene(let identifier): context = snapshot.contextsByScene[identifier]
         case .view(let identifier):
             context = snapshot.contextsByScene.values.first { $0.viewID == identifier.toRUMDataFormat }
