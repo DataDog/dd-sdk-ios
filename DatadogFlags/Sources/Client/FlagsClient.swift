@@ -396,7 +396,10 @@ extension FlagsClient: FlagsClientProtocol {
         details.observeFullEvaluationData = snapshot.observeFullEvaluationData
         let decision = trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
 
-        return notifyingExposureHook(details, context: context, features: flagAssignment.features, decision: decision)
+        // The hook counts an exposure only with an allocation and a variant, as the Android SDK does.
+        // The Datadog send keeps its doLog-only rule.
+        let hookDecision = flagAssignment.hasExposureKeys ? decision : .notAnExposure
+        return notifyingExposureHook(details, context: context, features: flagAssignment.features, decision: hookDecision)
     }
 
     @discardableResult
@@ -548,5 +551,11 @@ extension FlagsClient {
             return nil
         }
         return (snapshot.flags, snapshot.observeFullEvaluationData)
+    }
+}
+
+private extension FlagAssignment {
+    var hasExposureKeys: Bool {
+        !allocationKey.allSatisfy(\.isWhitespace) && !variationKey.allSatisfy(\.isWhitespace)
     }
 }

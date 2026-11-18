@@ -1800,6 +1800,28 @@ final class FlagsClientExposureHookTests: XCTestCase {
         XCTAssertEqual(evaluation.features["holdout.key"], .string("h-1"))
     }
 
+    func testHookTreatsBlankAllocationOrVariantAsNonExposureAndDatadogStillReceivesIt() throws {
+        for (allocationKey, variationKey) in [("", "on"), (" ", "on"), ("allocation", ""), ("allocation", "\t")] {
+            let scope = FeatureScopeMock()
+            let evaluations = ExposureEvaluationRecorder()
+            var assignment = holdoutAssignment
+            assignment.allocationKey = allocationKey
+            assignment.variationKey = variationKey
+            let client = makeClient(
+                flags: ["flag": assignment],
+                hook: ExposureHook { evaluations.record($0) },
+                exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: scope)
+            )
+
+            _ = client.getBooleanValue(key: "flag", defaultValue: false)
+
+            let evaluation = try XCTUnwrap(evaluations.all.first)
+            XCTAssertFalse(evaluation.isExposure, "\(allocationKey)/\(variationKey)")
+            XCTAssertFalse(evaluation.shouldSend, "\(allocationKey)/\(variationKey)")
+            XCTAssertEqual(scope.eventsWritten(ofType: ExposureEvent.self).count, 1, "\(allocationKey)/\(variationKey)")
+        }
+    }
+
     func testBridgedEvaluationEventKeepsFeaturesWithCapturedConsent() throws {
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
