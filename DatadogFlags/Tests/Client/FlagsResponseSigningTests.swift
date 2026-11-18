@@ -115,21 +115,177 @@ final class FlagsResponseSigningTests: XCTestCase {
         XCTAssertEqual(Flags.ResponseSigningConfiguration().mode, .off)
     }
 
-    // The pinned shared suites use the single-intermediate v1 format: one `signing-intermediate` header,
-    // a codeSigning leaf and the old transcript tail. The v1 chain format replaces that format.
-    // The chain fixtures in `response-signing/chain` cover the v1 chain format until the pin is updated.
-    func testCentralManifestSuitesAndExactTranscripts() throws {
-        throw XCTSkip(
-            "ffe-system-test-data response-signing/v1 is regenerated for the v1 certificate-chain format; "
-            + "the fixture pin is updated in a follow-up commit"
-        )
+    private struct Corpus: Decodable {
+        let anchor_der_base64: String
+        let cases: [Vector]
+    }
+    private struct Vector: Decodable {
+        struct Request: Decodable {
+            let url: String
+            let method: String
+            let headers: [[String]]
+            let body_base64: String
+        }
+        struct Response: Decodable {
+            let status: Int
+            let headers: [[String]]
+            let body_base64: String
+        }
+        let id: String
+        let request: Request
+        let response: Response
+        let now: TimeInterval
+        let expected_accept: Bool
+        let transcript_base64: String?
+        /// Optional per-case root. It replaces the file anchor for this case only.
+        let anchor_der_base64: String?
     }
 
-    func testCanonicalKeyUsageSupplement() throws {
-        throw XCTSkip(
-            "ResponseSigningKeyUsage.json uses the single-intermediate v1 format; it is regenerated with the shared "
-            + "ffe-system-test-data response-signing/v1 fixtures for the certificate-chain format in a follow-up commit"
-        )
+    private func corpus(name: String, hash: String) throws -> Corpus {
+        #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+        #else
+        let bundle = Bundle(for: Self.self)
+        #endif
+        let url = try XCTUnwrap(bundle.url(forResource: name, withExtension: "json", subdirectory: "response-signing"))
+        let raw = try Data(contentsOf: url)
+        XCTAssertEqual(SHA256.hash(data: raw).map { String(format: "%02x", $0) }.joined(), hash, name)
+        return try JSONDecoder().decode(Corpus.self, from: raw)
+    }
+
+    private func headers(_ pairs: [[String]]) -> [String: String] {
+        pairs.reduce(into: [:]) { result, pair in
+            let name = pair[0].lowercased()
+            result[name] = result[name].map { $0 + ", " + pair[1] } ?? pair[1]
+        }
+    }
+
+    /// Runs every verifier case of every suite in the pinned ffe-system-test-data manifest.
+    /// Clients skip `signing_cases`, because they hold no signing keys.
+    func testCentralManifestSuitesAndExactTranscripts() throws {
+        struct Manifest: Decodable {
+            struct Suite: Decodable {
+                let sha256: String
+                let response_cases: Int
+                let accepted: Int
+            }
+            let schema_version: Int
+            let files: [String: Suite]
+        }
+        #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+        #else
+        let bundle = Bundle(for: Self.self)
+        #endif
+        let url = try XCTUnwrap(bundle.url(forResource: "manifest", withExtension: "json", subdirectory: "response-signing"))
+        let manifest = try JSONDecoder().decode(Manifest.self, from: Data(contentsOf: url))
+        XCTAssertEqual(manifest.schema_version, 1)
+        XCTAssertFalse(manifest.files.isEmpty)
+        var executed = 0
+        for name in manifest.files.keys.sorted() {
+            let suite = try XCTUnwrap(manifest.files[name])
+            let corpus = try corpus(name: String(name.dropLast(5)), hash: suite.sha256)
+            XCTAssertEqual(corpus.cases.count, suite.response_cases, name)
+            XCTAssertEqual(corpus.cases.filter(\.expected_accept).count, suite.accepted, name)
+            executed += try assertCorpus(corpus, suite: name)
+        }
+        XCTAssertEqual(executed, manifest.files.values.map(\.response_cases).reduce(0, +))
+    }
+
+    private func assertCorpus(_ corpus: Corpus, suite: String) throws -> Int {
+        var executed = 0
+        for vector in corpus.cases {
+            let name = "\(suite)/\(vector.id)"
+            try XCTContext.runActivity(named: name) { _ in
+                let anchor = try XCTUnwrap(Data(base64Encoded: vector.anchor_der_base64 ?? corpus.anchor_der_base64))
+                let verifier = FlagsResponseVerifier(
+                    configuration: .init(mode: .required, trustedRootCertificates: [anchor])
+                )
+                var request = URLRequest(url: try XCTUnwrap(URL(string: vector.request.url)))
+                request.httpMethod = vector.request.method
+                request.httpBody = try XCTUnwrap(Data(base64Encoded: vector.request.body_base64))
+                for (name, value) in headers(vector.request.headers) {
+                    request.setValue(value, forHTTPHeaderField: name)
+                }
+                let responseHeaders = headers(vector.response.headers)
+                let response = try XCTUnwrap(
+                    HTTPURLResponse(
+                        url: request.url!,
+                        statusCode: vector.response.status,
+                        httpVersion: "HTTP/1.1",
+                        headerFields: responseHeaders
+                    )
+                )
+                let body = try XCTUnwrap(Data(base64Encoded: vector.response.body_base64))
+                let now = Date(timeIntervalSince1970: vector.now)
+                if vector.expected_accept {
+                    let proof = try verifier.verify(request: request, response: response, body: body, now: now)
+                    XCTAssertEqual(proof.verifiedAt, vector.now, name)
+                    let prefix = FlagsResponseVerifier.prefix
+                    let chain = try XCTUnwrap(responseHeaders[prefix + "signing-chain"], name)
+                        .split(separator: ",").map { try XCTUnwrap(Data(base64Encoded: String($0))) }
+                    let transcript = try FlagsResponseVerifier.transcript(
+                        request: request,
+                        status: response.statusCode,
+                        body: body,
+                        issuedAt: try XCTUnwrap(UInt64(XCTUnwrap(responseHeaders[prefix + "issued-at"]))),
+                        expiresAt: try XCTUnwrap(UInt64(XCTUnwrap(responseHeaders[prefix + "expires-at"]))),
+                        leaf: try XCTUnwrap(Data(base64Encoded: XCTUnwrap(responseHeaders[prefix + "signing-certificate"]))),
+                        intermediates: chain
+                    )
+                    XCTAssertEqual(transcript.base64EncodedString(), vector.transcript_base64, name)
+                } else {
+                    // `rejection_reason` is a stable fixture code, not a native error; assert only the rejection.
+                    XCTAssertThrowsError(try verifier.verify(request: request, response: response, body: body, now: now), name)
+                }
+                executed += 1
+            }
+        }
+        XCTAssertEqual(executed, corpus.cases.count, suite)
+        return executed
+    }
+
+    /// X.690 11.2.2: a DER named bit list removes trailing zero bits. A leaf keyUsage with an extra zero octet
+    /// (`03 03 07 80 00`) is not the canonical `03 02 07 80`, so the leaf is rejected.
+    /// This replaces the removed single-intermediate `ResponseSigningKeyUsage.json` supplement.
+    func testLeafKeyUsageMustBeCanonicalNamedBitList() throws {
+        let leaf = try SigningChainFixture.credential("lukas-valid").leaf
+        XCTAssertNoThrow(try FlagsSigningCertificate(der: leaf, role: .leaf))
+        func tlv(_ tag: UInt8, _ content: Data) -> Data {
+            var length = Data()
+            var count = content.count
+            if count < 128 {
+                length.append(UInt8(count))
+            } else {
+                var bytes: [UInt8] = []
+                while count > 0 { bytes.insert(UInt8(count & 255), at: 0); count >>= 8 }
+                length.append(128 | UInt8(bytes.count))
+                length.append(contentsOf: bytes)
+            }
+            return Data([tag]) + length + content
+        }
+        func rebuild(_ node: FlagsSigningDER, _ transform: (FlagsSigningDER) -> Data?) -> Data {
+            if let replaced = transform(node) {
+                return replaced
+            }
+            guard !node.children.isEmpty else {
+                return node.raw
+            }
+            return tlv(node.tag, node.children.map { rebuild($0, transform) }.reduce(Data(), +))
+        }
+        let keyUsage = Data([6, 3, 85, 29, 15])
+        let mutated = rebuild(try FlagsSigningDER.parse(leaf)) { node in
+            guard node.tag == 48, node.children.first?.raw == keyUsage, let value = node.children.last else {
+                return nil
+            }
+            XCTAssertEqual(value.content, Data([3, 2, 7, 128]))
+            let items = node.children.dropLast().map(\.raw) + [tlv(4, Data([3, 3, 7, 128, 0]))]
+            return tlv(48, items.reduce(Data(), +))
+        }
+        XCTAssertNotEqual(mutated, leaf)
+        XCTAssertThrowsError(try FlagsSigningCertificate(der: mutated, role: .leaf))
+        // The rebuild itself is exact: an identity transform returns the original bytes.
+        XCTAssertEqual(rebuild(try FlagsSigningDER.parse(leaf)) { _ in nil }, leaf)
     }
 
     func testRequiredNeedsAnExplicitAnchorAndObserveDoesNotInventOne() throws {
@@ -927,7 +1083,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 }
 
-/// Real Vault-issued certificate-chain credentials and pinned roots in `response-signing/chain`.
+/// Real Vault-issued certificate-chain credentials and pinned roots in `response-signing-chain`.
 internal struct SigningChainFixture {
     /// Within every fixture leaf's 72-hour validity (2026-11-18T00:00:36Z to 2026-11-21T00:01:04Z).
     static let now: TimeInterval = 1_795_000_000
@@ -948,7 +1104,7 @@ internal struct SigningChainFixture {
         #else
         let bundle = Bundle(for: BundleToken.self)
         #endif
-        return try XCTUnwrap(bundle.url(forResource: name, withExtension: ext, subdirectory: "response-signing/chain"))
+        return try XCTUnwrap(bundle.url(forResource: name, withExtension: ext, subdirectory: "response-signing-chain"))
     }
 
     static func credential(_ name: String) throws -> SigningChainFixture {

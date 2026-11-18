@@ -1583,7 +1583,7 @@
 		F3A031202610270000000012 /* FlagsSigningCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000002 /* FlagsSigningCertificate.swift */; };
 		F3A031202610270000000013 /* FlagsResponseSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000003 /* FlagsResponseSigningTests.swift */; };
 		F3A031202610270000000014 /* response-signing in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000004 /* response-signing */; };
-		F3A031202610270000000015 /* ResponseSigningKeyUsage.json in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000005 /* ResponseSigningKeyUsage.json */; };
+		F3A031202610270000000015 /* response-signing-chain in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000005 /* response-signing-chain */; };
 		E0114863DA85419446E3F9F6 /* ProtoEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D8F4E81764B7CB8702E87E /* ProtoEncoder.swift */; };
 		E0C3AB4D04F40B9AF96DD1F1 /* LogarithmicMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494934821A8A7BB3D4D475BE /* LogarithmicMapping.swift */; };
 		BBFB0D5A71C212ECA613AC7B /* LogarithmicMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA76045D2C506FBC17AE5D67 /* LogarithmicMappingTests.swift */; };
@@ -3692,7 +3692,7 @@
 		F3A031202610270000000002 /* FlagsSigningCertificate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsSigningCertificate.swift; sourceTree = "<group>"; };
 		F3A031202610270000000003 /* FlagsResponseSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsResponseSigningTests.swift; sourceTree = "<group>"; };
 		F3A031202610270000000004 /* response-signing */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "response-signing"; path = "../DatadogFlags/Tests/Fixtures/response-signing"; sourceTree = SOURCE_ROOT; };
-		F3A031202610270000000005 /* ResponseSigningKeyUsage.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ResponseSigningKeyUsage.json; sourceTree = "<group>"; };
+		F3A031202610270000000005 /* response-signing-chain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "response-signing-chain"; path = "../DatadogFlags/Tests/Fixtures/response-signing-chain"; sourceTree = SOURCE_ROOT; };
 		C2D8F4E81764B7CB8702E87E /* ProtoEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoEncoder.swift; sourceTree = "<group>"; };
 		494934821A8A7BB3D4D475BE /* LogarithmicMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogarithmicMapping.swift; sourceTree = "<group>"; };
 		59B98EA5D5BFA33BE350E840 /* CollapsingLowestDenseStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsingLowestDenseStore.swift; sourceTree = "<group>"; };
@@ -4685,7 +4685,7 @@
 				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
 				F3A031202610270000000003 /* FlagsResponseSigningTests.swift */,
 				F3A031202610270000000004 /* response-signing */,
-				F3A031202610270000000005 /* ResponseSigningKeyUsage.json */,
+				F3A031202610270000000005 /* response-signing-chain */,
 				D1A600001000000000000003 /* FlagsRequestDiagnosticsTests.swift */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
 				11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */,
@@ -8878,7 +8878,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A031202610270000000014 /* response-signing in Resources */,
-				F3A031202610270000000015 /* ResponseSigningKeyUsage.json in Resources */,
+				F3A031202610270000000015 /* response-signing-chain in Resources */,
 				FFE000000000000000000003 /* precomputed in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

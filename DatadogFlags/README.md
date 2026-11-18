@@ -75,9 +75,13 @@ Disabling edge signing cannot weaken `required` in an installed SDK. A required 
 
 `Tests/Fixtures/response-signing/SOURCE.json` pins the central repository commit and file checksums.
 The native test reads every suite in the upstream manifest, checks counts and checksums,
-and verifies acceptance decisions and exact transcripts. The current snapshot has 66 response
+and verifies acceptance decisions and exact transcripts. The current snapshot has 97 response
 vectors across wire, nested DER, subject DER, certificate-rule, extension-profile, and expiry suites.
-The local two-case KeyUsage supplement remains separate. Server-only signing cases are excluded.
+A case can supply its own `anchor_der_base64`, which replaces the file anchor for that case.
+The test asserts only acceptance or rejection; `rejection_reason` is a fixture code, not a native error.
+Server-only signing cases are excluded.
+`Tests/Fixtures/response-signing-chain` holds repo-local Vault-issued chains and OpenSSL root variants.
+It is outside the imported snapshot, so the importer checks stay valid.
 
 Refresh and verify signing fixtures through the existing snapshot importer and weekly workflow:
 
@@ -89,7 +93,7 @@ python3 ci/sync-precomputed-fixtures.py --signing --check
 
 The implementation profile is SHA-256 `a32c6919d1f730b076994f89317ef441fa4c4b4556c093edf0216632a882f783`, with applicability profile `response-signing-public-v1`. The FFE LEAN spreadsheet remains decision authority; this implementation has no Lean proof claim.
 
-Before merge, run `make test-ios SCHEME=DatadogFlags USE_TEST_VISIBILITY=0`, `make lint`, and `make api-surface` on the supported Xcode/macOS toolchain. Review and commit the generated API surface. Native tests cover all manifest-listed response cases, two KeyUsage regressions, exact transcripts, effective custom token/query binding, unsigned observation, required rejection, redirects, expiry, context/reset races, disk isolation and verified fallback retention. Linux syntax checks and explicit OpenSSL/environment-backed Swift verifier/lifecycle harnesses do not establish Apple runtime or device conformance.
+Before merge, run `make test-ios SCHEME=DatadogFlags USE_TEST_VISIBILITY=0`, `make lint`, and `make api-surface` on the supported Xcode/macOS toolchain. Review and commit the generated API surface. Native tests cover all manifest-listed response cases, a noncanonical leaf KeyUsage regression, exact transcripts, effective custom token/query binding, unsigned observation, required rejection, redirects, expiry, context/reset races, disk isolation and verified fallback retention. Linux syntax checks and explicit OpenSSL/environment-backed Swift verifier/lifecycle harnesses do not establish Apple runtime or device conformance.
 
 ## Per-subject experimentation opt-out
 

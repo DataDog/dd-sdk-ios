@@ -1,38 +1,39 @@
 {
   "schema_version": 1,
+  "generator": "response-signing/generate-v1.py",
   "files": {
     "corpus.json": {
-      "sha256": "393490bfefe382b9b75cf2964c131a910faa679888689457f99c2da2dc57fbbd",
-      "response_cases": 46,
-      "accepted": 6,
-      "signing_cases": 2
-    },
-    "nested-der.json": {
-      "sha256": "16a5de8b346087c4e4145e5c7bb43ac2dfd945a780fb56a75f38b1f7061302c4",
-      "response_cases": 2,
-      "accepted": 1,
-      "signing_cases": 0
+      "sha256": "53fe3b641be971c287fd4bc8a7913c68c53f009bdb36e6a16ef1bcc53c138b67",
+      "response_cases": 77,
+      "accepted": 17,
+      "signing_cases": 12
     },
     "isolated-certificate-rules.json": {
-      "sha256": "7304bb12f011688a39b53ebd5fb5d842febd0f5ae81e67126a7e24d1e79a225a",
+      "sha256": "f65d7bc55bcffa95844a23006eb6678939c38b6e47bd58970243970f7ff3b326",
       "response_cases": 4,
       "accepted": 1,
       "signing_cases": 0
     },
+    "nested-der.json": {
+      "sha256": "1e170f2252e3abac8beb78853c3e3d64f908965c4770a29c1618e308e3ea3d8e",
+      "response_cases": 2,
+      "accepted": 1,
+      "signing_cases": 2
+    },
     "subject-der.json": {
-      "sha256": "c3cc9c3992ddb9b77892d0230212c9e6b383dbf7aeab705af6132125245afc59",
+      "sha256": "2857daab41adf5a811150d5bbc3d504c9065a00650d579f07e04f583b3d27ae6",
       "response_cases": 2,
       "accepted": 1,
       "signing_cases": 2
     },
     "near-expiry.json": {
-      "sha256": "f0de3afa5ed0083ddb9d687238431286fc025d9a72c29ba7eb0c4dc304d7914f",
+      "sha256": "0b1c16e83e9da2eda56b85fde9922150a408b47b3f86bed18e1708b8a5e88ecd",
       "response_cases": 6,
       "accepted": 4,
       "signing_cases": 6
     },
     "extension-profile.json": {
-      "sha256": "e3ca10b6429d171126d81c50fe4d624ae24a3450cf3ee121f2b1e437d84a9439",
+      "sha256": "252fb5b06fad65f56d0fe2f333731c2a4e3994d2377fdfe8b368d489d9f3a8dc",
       "response_cases": 6,
       "accepted": 2,
       "signing_cases": 6

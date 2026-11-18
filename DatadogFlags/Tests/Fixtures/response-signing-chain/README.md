@@ -1,7 +1,7 @@
 # Response signing v1 certificate-chain fixtures
 
 These repo-local fixtures test the v1 certificate-chain format. They are test data only.
-The shared `ffe-system-test-data` response-signing v1 suites in the parent directory still use the single-intermediate format. Those suites are disabled until the pin is updated.
+They are separate from the imported `ffe-system-test-data` snapshot in `../response-signing`, so `ci/sync-precomputed-fixtures.py --signing --verify` stays valid.
 
 ## Vault credentials
 
