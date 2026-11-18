@@ -146,7 +146,7 @@ Flags.enable(with: configuration)
 | `isCacheHit` | The subject was already exposed to the same flag, allocation, variant and split. |
 | `shouldSend` | A new exposure (`isExposure` and a cache miss): exactly what the SDK sends to Datadog when `trackExposures` is `true`. |
 | `features` | Features of the selected split for customer code, for example `holdout.key`, `holdout.assignment_group` and `holdout.should_include_in_holdout_analysis`. |
-| `flagKey`, `variant`, `allocationKey`, `targetingKey`, `evaluationContext` | The evaluation. A failed evaluation has a `nil` `variant` and `allocationKey`. |
+| `flagKey`, `variant`, `allocationKey`, `targetingKey`, `evaluationContext`, `error` | The evaluation. A failed evaluation has a `nil` `variant` and `allocationKey`, and its `error`. `targetingKey` is `nil` for an evaluation made before any context was set. |
 
 - The hook receives evaluations from every `FlagsClient` created after `Flags.enable(with:)`, including failed ones, which have `isExposure == false`. It also receives evaluations made through the OpenFeature provider, because the provider evaluates with a `FlagsClient`.
 - The callback runs synchronously on the thread that evaluated the flag, including the main thread. Keep it short and move I/O to another queue.

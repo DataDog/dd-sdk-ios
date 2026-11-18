@@ -1743,8 +1743,9 @@ public struct ExposureEvaluation
     public let flagKey: String
     public let variant: String?
     public let allocationKey: String?
-    public let targetingKey: String
+    public let targetingKey: String?
     public let evaluationContext: FlagsEvaluationContext
+    public let error: FlagEvaluationError?
     public let features: [String: AnyValue]
     public let isExposure: Bool
     public let isCacheHit: Bool
