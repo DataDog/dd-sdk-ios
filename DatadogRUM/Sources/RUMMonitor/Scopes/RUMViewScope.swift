@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -335,6 +336,13 @@ extension RUMViewScope {
                    case .continuousAction(let ownership) = command.target, let action = userActionScope {
                     ownership.claimAction(sessionID: self.context.sessionID, viewID: viewUUID, actionID: action.actionUUID)
                 }
+                if dependencies.isMultiSceneTrackingEnabled, let action = userActionScope {
+                    command.actionReceipt?.accept(
+                        sessionID: self.context.sessionID.toRUMDataFormat,
+                        viewID: viewUUID.toRUMDataFormat,
+                        actionID: action.actionUUID.toRUMDataFormat
+                    )
+                }
             } else {
                 reportActionDropped(type: command.actionType, name: command.name)
             }
@@ -497,7 +505,7 @@ extension RUMViewScope {
     }
 
     private func createDiscreteUserActionScope(on command: RUMAddUserActionCommand) -> RUMUserActionScope {
-        return RUMUserActionScope(
+        let action = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
             name: command.name,
@@ -513,6 +521,14 @@ extension RUMViewScope {
                 self?.onActionEventSent(event)
             }
         )
+        if dependencies.isMultiSceneTrackingEnabled {
+            command.actionReceipt?.accept(
+                sessionID: self.context.sessionID.toRUMDataFormat,
+                viewID: viewUUID.toRUMDataFormat,
+                actionID: action.actionUUID.toRUMDataFormat
+            )
+        }
+        return action
     }
 
     private func onActionEventSent(_ event: RUMActionEvent) {
