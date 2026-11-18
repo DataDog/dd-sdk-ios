@@ -239,10 +239,36 @@ private class MockScrollView: UIScrollView {
 @_spi(Internal)
 import DatadogInternal
 
-@available(iOS 27.0, *)
 @MainActor
 final class SceneScrollOwnershipTests: XCTestCase {
+    private func assertLegacyScrollDelivery() {
+        let subscriber = RUMCommandSubscriberMock()
+        let handler = RUMScrollHandler(dateProvider: DateProviderMock(), predicate: MockScrollPredicate(result: RUMAction(name: "legacy scroll")))
+        handler.publish(to: subscriber)
+        let pan = MockPanGestureRecognizer()
+        pan.mockState = .began
+        pan.mockVelocity = CGPoint(x: 0, y: 300)
+        let scroll = MockScrollView(panGesture: pan)
+        let owner = RUMContextHandoff.Owner()
+        let value = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "legacy", hasPendingUserAction: true, excludedUserActionID: nil)
+        RUMContextHandoff.withValue(value, for: owner) {
+            handler.notify_scrollViewWillBeginDragging(scroll)
+            scroll.contentOffset = CGPoint(x: 0, y: 100)
+            handler.notify_scrollViewDidEndDragging(scroll, willDecelerate: false)
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+        }
+        XCTAssertEqual(subscriber.receivedCommands.count, 2)
+        XCTAssertEqual(subscriber.receivedCommands.map(\.target), [.processRepresentative, .processRepresentative])
+        XCTAssertTrue(subscriber.receivedCommands.first is RUMStartUserActionCommand)
+        XCTAssertTrue(subscriber.receivedCommands.last is RUMStopUserActionCommand)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
     func testSceneScroll_capturesBeforePredicateAndNeverRechecksTerminalHierarchy() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let f = SceneScrollFixture()
         let scroll = f.scroll(in: f.windowA)
         let originalView = try XCTUnwrap(f.monitor.rumContextSnapshot(for: .scene(.init(rawValue: "a")))?.viewID)
@@ -281,6 +307,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_peerGesturesAndDuplicateTerminalsDoNotShareOwners() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let f = SceneScrollFixture()
         let a = f.scroll(in: f.windowA)
         let b = f.scroll(in: f.windowB)
@@ -312,6 +342,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_restartStopsOldOwnerBeforeFreshStart() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let f = SceneScrollFixture()
         let scroll = f.scroll(in: f.windowA)
         f.handler.notify_scrollViewWillBeginDragging(scroll)
@@ -340,6 +374,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_filteredRestartAndNonUserBeginPreserveExistingGesture() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let f = SceneScrollFixture()
         let scroll = f.scroll(in: f.windowA)
         f.handler.notify_scrollViewWillBeginDragging(scroll)
@@ -366,6 +404,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_nestedPredicateAndDelegatesRestoreEachPublicationFrame() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let f = SceneScrollFixture()
         let a = f.scroll(in: f.windowA)
         let b = f.scroll(in: f.windowB)
@@ -407,6 +449,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_sameReceiverPredicateAndDelegateReentryKeepDistinctOwners() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         for reenterPredicate in [false, true] {
             let f = SceneScrollFixture()
             let scroll = f.scroll(in: f.windowA)
@@ -446,6 +492,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_sourceLessInheritsButAttachedMissingSnapshotStaysAuthoritativeNil() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let f = SceneScrollFixture(startA: false)
         let outer = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "outer", hasPendingUserAction: false, excludedUserActionID: nil)
         let absent = f.scroll(in: nil)
@@ -471,6 +521,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_adapterPreservesLegacyClassifierAndAttributes() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         for (velocity, end, direction, swipe, deceleration) in [
             (CGPoint(x: 0, y: 499), CGPoint(x: 0, y: 40), "down", false, false),
             (CGPoint(x: 0, y: 500), CGPoint(x: 0, y: -40), "up", true, true),
@@ -504,6 +558,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_replacedSubscriberDoesNotPublishOrExposePending() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let f = SceneScrollFixture()
         let foreign = RUMCommandSubscriberMock()
         f.monitor.onOwnerRead = {
@@ -523,6 +581,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_monitorReleasedAfterEligibilityKeepsOneNonpendingOriginalCall() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let owner = RUMContextHandoff.Owner()
         let clock = DateProviderMock()
         var monitor: SceneScrollMonitor? = SceneScrollMonitor(owner: owner, clock: clock)
@@ -550,6 +612,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_foreignAndInvalidatedOwnersCannotPublishAcrossLifetime() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         for invalidate in [false, true] {
             let f = SceneScrollFixture()
             let fresh = RUMContextHandoff.Owner()
@@ -575,6 +641,10 @@ final class SceneScrollOwnershipTests: XCTestCase {
     }
 
     func testSceneScroll_retainsNoSourceUIOrExpectedMonitor() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
         let owner = RUMContextHandoff.Owner()
         let clock = DateProviderMock()
         var monitor: SceneScrollMonitor? = SceneScrollMonitor(owner: owner, clock: clock)
