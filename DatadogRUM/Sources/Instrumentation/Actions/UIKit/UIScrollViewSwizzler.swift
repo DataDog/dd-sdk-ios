@@ -23,6 +23,10 @@ internal final class UIScrollViewSwizzler {
         getDelegate = GetDelegate(method: getMethod)
     }
 
+    func publish(to subscriber: RUMCommandSubscriber) {
+        setDelegate.publish(to: subscriber)
+    }
+
     func swizzle() {
         setDelegate.swizzle()
         getDelegate.swizzle()
@@ -61,6 +65,10 @@ internal final class UIScrollViewSwizzler {
         init(handler: UIScrollViewHandler) throws {
             self.method = try dd_class_getInstanceMethod(UIScrollView.self, Self.selector)
             self.handler = handler
+        }
+
+        func publish(to subscriber: RUMCommandSubscriber) {
+            handler.publish(to: subscriber)
         }
 
         func swizzle() {
