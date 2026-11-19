@@ -531,8 +531,8 @@ extension DatadogCore: DatadogCoreProtocol {
             createdStore = (storage: storage, upload: upload)
             if !commitsStoreWithFeature {
                 // Preserve the existing registration order for unrelated legacy features.
-                _stores.mutate { stores in
-                    replacedStore = stores.updateValue((storage: storage, upload: upload), forKey: T.name)
+                _featureStores.mutate { stores in
+                    replacedStore = stores.entries.updateValue((storage: storage, upload: upload), forKey: T.name)
                 }
                 storage.clearUnauthorizedData()
             }
@@ -574,11 +574,15 @@ extension DatadogCore: DatadogCoreProtocol {
                     registry.handoff = .inactive
                     retirementReceivers = registry.features.values.map { $0.messageReceiver }
                 }
-                if commitsStoreWithFeature, let createdStore {
-                    // Keep the new store private until the registration commits.
-                    // Retain the displaced store so destruction occurs after unlock.
+                if commitsStoreWithFeature, createdStore != nil || retiredOwner != nil {
+                    // Publish the scoped owner and store together to FeatureScope readers.
                     _featureStores.mutate { stores in
-                        replacedStore = stores.entries.updateValue(createdStore, forKey: T.name)
+                        if let retiredOwner, stores.handoffOwner === retiredOwner {
+                            stores.handoffOwner = nil
+                        }
+                        if let createdStore {
+                            replacedStore = stores.entries.updateValue(createdStore, forKey: T.name)
+                        }
                     }
                 }
                 replacedFeature = registry.features.updateValue(
