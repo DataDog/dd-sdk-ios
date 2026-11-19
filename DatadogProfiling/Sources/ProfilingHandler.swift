@@ -213,10 +213,10 @@ extension ProfilingHandler {
                 if let stamp = ownedCorrelation, !stamp.ownership.isValid {
                     for key in stamp.installedKeys { attributes.removeValue(forKey: key) }
                 }
-                if !ownedOperations.isEmpty, valid.isEmpty, legacyVitals.isEmpty,
-                   rumEvents.isEmpty, operation == .customProfiling {
-                       return
-                   }
+                if !ownedOperations.isEmpty, valid.isEmpty, legacyVitals.isEmpty, rumEvents.isEmpty,
+                   operation == .customProfiling || operation == .continuousProfiling {
+                    return
+                }
                 let allVitals = legacyVitals + valid
                 if !allVitals.isEmpty {
                     attributes[RUMCoreContext.IDs.vitalID] = allVitals.map(\.id)
