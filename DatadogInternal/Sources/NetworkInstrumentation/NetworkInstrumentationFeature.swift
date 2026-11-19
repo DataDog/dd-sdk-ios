@@ -146,7 +146,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     let (request, traceContexts) = self.intercept(
                         request: currentRequest,
                         additionalFirstPartyHosts: configuredFirstPartyHosts,
-                        rumContext: captured
+                        rumContext: captured,
+                        preparation: preparation
                     )
                     task.dd.override(currentRequest: request)
                     self.intercept(
@@ -401,6 +402,7 @@ extension NetworkInstrumentationFeature {
     struct RUMRequestPreparation {
         let identifier: UUID?
         let handlers: [RUMURLSessionHandlerPreparation]
+        let preparedModifiers: Set<ObjectIdentifier>
     }
 
     /// Reserves captured ownership inside the winning task guard before request mutation.
@@ -411,6 +413,7 @@ extension NetworkInstrumentationFeature {
         let handlers = self.handlers
         var shared: RUMURLSessionPreparation?
         var states: [RUMURLSessionHandlerPreparation] = []
+        var preparedModifiers: Set<ObjectIdentifier> = []
         for handler in handlers {
             guard let capable = handler as? any DatadogURLSessionHandlerPreparingRUM else { continue }
             let preparation = capable.prepareRUMResource(capturing: context, reusing: shared)
@@ -418,13 +421,17 @@ extension NetworkInstrumentationFeature {
                 guard shared == nil || shared === preparation else {
                     // Releasing the uncommitted receipts abandons their pending keys.
                     // The carrier remains authoritative, with no handler state to adopt.
-                    return RUMRequestPreparation(identifier: nil, handlers: [])
+                    return RUMRequestPreparation(identifier: nil, handlers: [], preparedModifiers: [])
                 }
                 shared = preparation
             }
-            states.append(RUMURLSessionHandlerPreparation(handler: ObjectIdentifier(capable), state: preparation.capturedState))
+            let identifier = ObjectIdentifier(capable)
+            states.append(RUMURLSessionHandlerPreparation(handler: identifier, state: preparation.capturedState))
+            if preparation.allowsRequestModification {
+                preparedModifiers.insert(identifier)
+            }
         }
-        return RUMRequestPreparation(identifier: shared?.identifier, handlers: states)
+        return RUMRequestPreparation(identifier: shared?.identifier, handlers: states, preparedModifiers: preparedModifiers)
     }
 
     struct RequestInstrumentationContext {
@@ -441,7 +448,12 @@ extension NetworkInstrumentationFeature {
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     /// - Returns: A tuple containing the modified request and the list of injected TraceContexts, one or none for each handler. If no trace is injected (e.g., due to sampling),
     ///            the list will be empty.
-    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?, rumContext: RUMURLSessionContext? = nil) -> (URLRequest, [RequestInstrumentationContext]) {
+    func intercept(
+        request: URLRequest,
+        additionalFirstPartyHosts: FirstPartyHosts?,
+        rumContext: RUMURLSessionContext? = nil,
+        preparation: RUMRequestPreparation? = nil
+    ) -> (URLRequest, [RequestInstrumentationContext]) {
         let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
             .tracingHeaderTypes(for: request.url)
 
@@ -456,6 +468,10 @@ extension NetworkInstrumentationFeature {
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
         var instrumentationContexts: [RequestInstrumentationContext] = [] // each handler can inject distinct instrumentation context
         for handler in handlers {
+            if let preparation, let capable = handler as? any DatadogURLSessionHandlerPreparingRUM,
+               !preparation.preparedModifiers.contains(ObjectIdentifier(capable)) {
+                continue
+            }
             let (nextRequest, nextTraceContext, capturedState) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
             request = nextRequest
             instrumentationContexts.append(.init(traceContext: nextTraceContext, capturedState: capturedState))
