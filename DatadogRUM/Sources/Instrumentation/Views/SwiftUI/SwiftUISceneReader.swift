@@ -130,6 +130,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
     let onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
     let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)?
     let onDidDetach: (@MainActor () -> Void)?
+    let onDetachFromScene: (@MainActor (ObserverView, RUMSceneIdentifier) -> Bool)?
     let onChange: @MainActor (RUMViewTrackingState.Attachment) -> Void
 
     @MainActor
@@ -142,6 +143,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         onMount: (@MainActor (RUMSceneIdentifier) -> Void)? = nil,
         onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)? = nil,
         onDidDetach: (@MainActor () -> Void)? = nil,
+        onDetachFromScene: (@MainActor (ObserverView, RUMSceneIdentifier) -> Bool)? = nil,
         onChange: @escaping @MainActor (RUMViewTrackingState.Attachment) -> Void
     ) {
         self.admission = admission
@@ -152,6 +154,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         self.onMount = onMount
         self.onReconcile = onReconcile
         self.onDidDetach = onDidDetach
+        self.onDetachFromScene = onDetachFromScene
         self.onChange = onChange
     }
 
@@ -179,6 +182,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         }
         observer.onMount = mountCallback(for: observer)
         observer.onDidDetach = onDidDetach
+        observer.onDetachFromScene = onDetachFromScene
         onCreate?(observer)
         if let initialSceneIdentifier, admission.admits(sceneIdentifier: initialSceneIdentifier) {
             onInitialMount?(initialSceneIdentifier)
@@ -204,6 +208,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         observer.onMount = mountCallback(for: observer)
         observer.onChange = onChange
         observer.onDidDetach = onDidDetach
+        observer.onDetachFromScene = onDetachFromScene
         onReconcile?(observer.currentAttachment)
         observer.notifyCurrentAttachment()
     }
@@ -229,7 +234,8 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         var onChange: @MainActor (RUMViewTrackingState.Attachment) -> Void
         var onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
         var onDidDetach: (@MainActor () -> Void)?
-        private var detachingFromWindow = false
+        var onDetachFromScene: (@MainActor (ObserverView, RUMSceneIdentifier) -> Bool)?
+        private(set) var detachingFromWindow = false
         private var lastAttachment: RUMViewTrackingState.Attachment?
         private var requiresMountNotification = false
         private var lastProvenSceneIdentifier: RUMSceneIdentifier?
@@ -319,6 +325,10 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
                 return
             }
             lastAttachment = attachment
+            if attachment == .detached, let lastProvenSceneIdentifier,
+               onDetachFromScene?(self, lastProvenSceneIdentifier) == true {
+                return
+            }
             onChange(attachment)
         }
 

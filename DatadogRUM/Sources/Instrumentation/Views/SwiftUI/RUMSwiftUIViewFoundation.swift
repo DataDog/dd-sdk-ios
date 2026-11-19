@@ -241,6 +241,19 @@ internal final class RUMSwiftUIViewFoundation {
         }
     }
 
+    fileprivate func detachPendingDestinationReader(
+        _ observer: RUMSceneIdentifierReader.ObserverView,
+        in scene: RUMSceneIdentifier,
+        state: RUMViewTrackingState,
+        admission: RUMSwiftUIViewCallbackAdmission
+    ) -> Bool {
+        guard admission.isValid, admits(admission.binding),
+              state.admission?.matches(admission) == true else {
+            return false
+        }
+        return transitionArbiter?.detachPendingDestinationReader(observer, in: scene, state: state) == true
+    }
+
     @discardableResult
     func appear(
         identity: String,
@@ -356,6 +369,14 @@ internal final class RUMSwiftUIViewTransitionAdmission {
 
     func mountedSceneIdentifier(for state: RUMViewTrackingState) -> RUMSceneIdentifier? {
         foundation?.mountedSceneIdentifier(for: state, admission: admission)
+    }
+
+    func detachPendingDestinationReader(
+        _ observer: RUMSceneIdentifierReader.ObserverView,
+        in scene: RUMSceneIdentifier,
+        state: RUMViewTrackingState
+    ) -> Bool {
+        foundation?.detachPendingDestinationReader(observer, in: scene, state: state, admission: admission) == true
     }
 
     func process(
