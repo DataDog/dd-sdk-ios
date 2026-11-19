@@ -26,10 +26,24 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Used to restore the view when a new session starts after `sessionStop()`.
     private var lastActiveView: RUMViewScope?
 
+    struct WebViewLifecycleExpiry {
+        let sessionID: String
+        let reason: RUMSessionScope.EndReason
+        let sessionStart: TimeInterval
+        let lastInteraction: TimeInterval
+
+        func hasExpired(at time: TimeInterval) -> Bool {
+            RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: time)
+                || RUMSessionScope.hasExpired(sessionStart: sessionStart, now: time)
+        }
+    }
+
     private final class SceneRestoration {
         var views: [RUMViewScope] = []
+        var webViewLifecycleExpiry: WebViewLifecycleExpiry?
     }
     private let sceneRestoration: SceneRestoration?
+    var webViewLifecycleExpiry: WebViewLifecycleExpiry? { sceneRestoration?.webViewLifecycleExpiry }
 
     /// The end reason from the last active session. Used as "start reason" for the new session.
     private var lastSessionEndReason: RUMSessionScope.EndReason?
@@ -144,18 +158,37 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if let receipt = (command as? RUMKeepSessionAliveCommand)?.legacyWebViewRegistration, !receipt.isCurrent {
             return
         }
+        if command is RUMStopSessionCommand {
+            sceneRestoration?.webViewLifecycleExpiry = nil
+        }
         if let keepAlive = command as? RUMKeepSessionAliveCommand, let renewal = keepAlive.webViewSessionRenewal {
             guard dependencies.isMultiSceneTrackingEnabled,
-                  let capture = keepAlive.capture, capture.owner.isValid,
+                  let capture = keepAlive.capture, isCurrentWebViewRenewalOwner(capture),
                   capture.value.sceneIdentifier != nil, capture.value.rumContext == nil,
-                  RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner,
-                  let session = activeSession, session.sessionUUID.toRUMDataFormat == renewal.expiry.sessionID,
-                  renewal.expiry.observedAt <= monotonicTime,
-                  RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: renewal.expiry.observedAt)
-                    || RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: renewal.expiry.observedAt) else {
+                  renewal.expiry.observedAt <= monotonicTime else {
                 return
             }
-            // This mounted callback may drive the normal refresh of its exact predecessor.
+            if let session = activeSession {
+                guard session.sessionUUID.toRUMDataFormat == renewal.expiry.sessionID,
+                      RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: renewal.expiry.observedAt)
+                        || RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: renewal.expiry.observedAt) else {
+                    return
+                }
+                // The normal refresh will process this callback against its exact predecessor.
+            } else {
+                guard let expiry = webViewLifecycleExpiry, expiry.sessionID == renewal.expiry.sessionID,
+                      expiry.hasExpired(at: renewal.expiry.observedAt) else {
+                    return
+                }
+                lastSessionEndReason = expiry.reason
+                let session = startNewSession(on: keepAlive, monotonicTime: monotonicTime, context: context, writer: writer)
+                guard isCurrentWebViewRenewalOwner(capture) else {
+                    return
+                }
+                _ = session.process(command: keepAlive, monotonicTime: monotonicTime, context: context, writer: writer)
+                completeWebViewRenewal(renewal, capture: capture, session: session, context: context, writer: writer)
+                return
+            }
         } else if let keepAlive = command as? RUMKeepSessionAliveCommand, let capture = keepAlive.capture {
             guard dependencies.isMultiSceneTrackingEnabled,
                   capture.owner.isValid,
@@ -332,6 +365,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             if let renewingSessionID, scope.sessionUUID.toRUMDataFormat != renewingSessionID {
                 return scope
             }
+            let wasActive = scope.isActive
             if scope.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer) {
                 // proccss(command:context:writer) returned true, so keep the scope around
                 // as it it still has work to do.
@@ -366,6 +400,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                     // Replace this session scope with the scope for refreshed session:
                     return refresh(expiredSession: scope, on: command, monotonicTime: monotonicTime, context: context, writer: writer)
                 } else {
+                    if wasActive {
+                        sceneRestoration?.webViewLifecycleExpiry = WebViewLifecycleExpiry(
+                            sessionID: scope.sessionUUID.toRUMDataFormat,
+                            reason: endReason,
+                            sessionStart: scope.sessionStart,
+                            lastInteraction: scope.lastInteraction
+                        )
+                    }
                     // The next session will start lazily on next event
                     return nil
                 }
@@ -468,6 +510,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         )
 
         lastSessionEndReason = nil
+        sceneRestoration?.webViewLifecycleExpiry = nil
         sessionScopes.append(initialSession)
         sessionScopeDidUpdate(initialSession)
     }
@@ -507,7 +550,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         sessionScopeDidUpdate(refreshedSession)
         lastActiveView = nil
         sceneRestoration?.views.removeAll()
+        sceneRestoration?.webViewLifecycleExpiry = nil
         lastSessionEndReason = nil
+        let keepAlive = command as? RUMKeepSessionAliveCommand
+        if keepAlive?.webViewSessionRenewal != nil,
+           keepAlive?.capture.map(isCurrentWebViewRenewalOwner) != true {
+            return refreshedSession
+        }
         let expiredView = (command as? RUMUserActionCommand)?.expiredUnscopedView
         let restoredActionView = expiredView?.sessionID == expiredSession.sessionUUID.toRUMDataFormat
             ? refreshedSession.soleUnscopedActionView : nil
@@ -518,24 +567,40 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             writer: writer,
             restoredActionView: restoredActionView
         )
-        if let keepAlive = command as? RUMKeepSessionAliveCommand,
-           let renewal = keepAlive.webViewSessionRenewal, let capture = keepAlive.capture,
-           renewal.expiry.sessionID == expiredSession.sessionUUID.toRUMDataFormat,
-           capture.owner.isValid, RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner {
-            let renewedID = refreshedSession.sessionUUID.toRUMDataFormat
-            renewal.didRenew?(renewedID)
-            if refreshedSession.sampler.isSampled {
-                renewal.write(context, writer, RUMCoreContext(
-                    applicationID: refreshedSession.context.rumApplicationID,
-                    sessionID: renewedID,
-                    sessionSampler: refreshedSession.sampler
-                ))
-            }
+        if let renewal = keepAlive?.webViewSessionRenewal, let capture = keepAlive?.capture,
+           renewal.expiry.sessionID == expiredSession.sessionUUID.toRUMDataFormat {
+            completeWebViewRenewal(renewal, capture: capture, session: refreshedSession, context: context, writer: writer)
         }
         return refreshedSession
     }
 
-    private func startNewSession(on command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+    private func isCurrentWebViewRenewalOwner(_ capture: RUMContextHandoff.Capture) -> Bool {
+        capture.owner.isValid && RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner
+    }
+
+    private func completeWebViewRenewal(
+        _ renewal: RUMWebViewSessionRenewal,
+        capture: RUMContextHandoff.Capture,
+        session: RUMSessionScope,
+        context: DatadogContext,
+        writer: Writer
+    ) {
+        guard isCurrentWebViewRenewalOwner(capture) else {
+            return
+        }
+        let renewedID = session.sessionUUID.toRUMDataFormat
+        renewal.didRenew?(renewedID)
+        if session.sampler.isSampled {
+            renewal.write(context, writer, RUMCoreContext(
+                applicationID: session.context.rumApplicationID,
+                sessionID: renewedID,
+                sessionSampler: session.sampler
+            ))
+        }
+    }
+
+    @discardableResult
+    private func startNewSession(on command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
@@ -594,9 +659,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         )
         lastActiveView = nil
         sceneRestoration?.views.removeAll()
+        sceneRestoration?.webViewLifecycleExpiry = nil
         lastSessionEndReason = nil
         sessionScopes.append(newSession)
         sessionScopeDidUpdate(newSession)
+        return newSession
     }
 
     private func restoredViews(
