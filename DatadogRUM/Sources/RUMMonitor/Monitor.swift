@@ -246,6 +246,15 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             }
 
+            if let error = command as? RUMAddCurrentViewErrorCommand,
+               let ownership = error.capturedOwnership {
+                guard self.isMultiSceneTrackingEnabled, ownership.owner.isValid,
+                      self.rumContextHandoffOwner === ownership.owner else {
+                    error.completionHandler()
+                    return
+                }
+            }
+
             let transformedCommand = self.transform(command: command)
 
             // Record the replay state this command sees before processing it, as it may end or pause the session,

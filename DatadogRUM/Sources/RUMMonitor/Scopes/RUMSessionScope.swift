@@ -778,6 +778,25 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return command.target
     }
 
+    func processCapturedError(_ error: RUMAddCurrentViewErrorCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        guard sceneState != nil, isActive, sampler.isSampled,
+              let ownership = error.capturedOwnership,
+              ownership.owner.isValid,
+              RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+              ownership.sessionID == sessionUUID,
+              !hasTimedOut(now: monotonicTime), !hasExpired(now: monotonicTime),
+              let actionTarget = ownership.actionTarget(for: RUMContextHandoff.owner(in: dependencies.featureScope)),
+              let view = viewScopes.first(where: { $0.isActiveView && $0.viewUUID == ownership.viewID }) else {
+            return
+        }
+        var error = error
+        error.userActionTarget = actionTarget
+        // Stopped/removed owners are authoritative drops; no ViewCache fallback or peer mutation.
+        if !view.process(command: error, context: context, writer: writer) {
+            viewScopes.removeAll { $0 === view }
+        }
+    }
+
     /// Queue-only join, before application-level session creation or refresh.
     func ownsContinuousAction(_ ownership: RUMContinuousActionOwnership, monotonicTime: TimeInterval) -> Bool {
         guard isActive, ownership.owner.isValid, !ownership.isClosed,
