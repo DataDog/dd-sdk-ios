@@ -144,6 +144,7 @@ internal class Monitor: RUMCommandSubscriber {
             var sessionID: String?
             var sessionStart: TimeInterval?
             var lastInteraction: TimeInterval?
+            var webViewLifecycleExpiry: RUMApplicationScope.WebViewLifecycleExpiry?
         }
 
         @ReadWriteLock
@@ -322,7 +323,9 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             } else {
                 self.sessionActivitySnapshot = (nil, nil, nil)
-                self.sceneContextSnapshots?.value = SceneContextSnapshots.Value()
+                self.sceneContextSnapshots?.value = SceneContextSnapshots.Value(
+                    webViewLifecycleExpiry: self.applicationScope.webViewLifecycleExpiry
+                )
             }
         }
 
@@ -466,7 +469,9 @@ internal class Monitor: RUMCommandSubscriber {
     private func refreshResourceContextSnapshots() {
         guard let session = applicationScope.activeSession else {
             sessionActivitySnapshot = (nil, nil, nil)
-            sceneContextSnapshots?.value = SceneContextSnapshots.Value()
+            sceneContextSnapshots?.value = SceneContextSnapshots.Value(
+                webViewLifecycleExpiry: applicationScope.webViewLifecycleExpiry
+            )
             return
         }
         let representative = representativeView(in: session)
@@ -611,15 +616,20 @@ extension Monitor: RUMContextSnapshotProviding {
     func webViewSessionObservation(
         for sceneIdentifier: RUMSceneIdentifier
     ) -> (context: RUMCoreContext?, expiry: RUMWebViewSessionExpiry?) {
-        guard let snapshot = sceneContextSnapshots?.value,
-              let sessionStart = snapshot.sessionStart, let lastInteraction = snapshot.lastInteraction else {
+        guard let snapshot = sceneContextSnapshots?.value else {
             return (nil, nil)
+        }
+        let now = applicationScope.dependencies.monotonicClock.elapsedTime
+        guard let sessionStart = snapshot.sessionStart, let lastInteraction = snapshot.lastInteraction else {
+            guard let expired = snapshot.webViewLifecycleExpiry, expired.hasExpired(at: now) else {
+                return (nil, nil)
+            }
+            return (nil, .init(sessionID: expired.sessionID, observedAt: now))
         }
         let sceneContext = snapshot.contextsByScene[sceneIdentifier]
         guard let context = sceneContext ?? snapshot.representative, context.sessionID == snapshot.sessionID else {
             return (nil, nil)
         }
-        let now = applicationScope.dependencies.monotonicClock.elapsedTime
         if RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now)
             || RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now) {
             return (nil, .init(sessionID: context.sessionID, observedAt: now))
