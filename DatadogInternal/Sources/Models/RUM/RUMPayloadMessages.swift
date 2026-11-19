@@ -134,6 +134,18 @@ public struct RUMFlagEvaluationMessage {
     }
 }
 
+/// Captured Flags delivery; nil capture is an unavailable On route, never legacy fallback.
+@_spi(Internal)
+public struct RUMCapturedFlagEvaluationMessage {
+    public let evaluation: RUMFlagEvaluationMessage
+    public let capture: RUMContextHandoff.Capture?
+
+    public init(evaluation: RUMFlagEvaluationMessage, capture: RUMContextHandoff.Capture?) {
+        self.evaluation = evaluation
+        self.capture = capture
+    }
+}
+
 /// Internal On-only ownership metadata; the legacy error payload layout stays unchanged.
 @_spi(Internal)
 public struct RUMCapturedErrorMessage {
