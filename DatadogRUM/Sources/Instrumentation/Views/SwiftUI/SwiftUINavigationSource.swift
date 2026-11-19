@@ -28,7 +28,7 @@ internal final class RUMNavigationTransitions {
     }
 
     private var nextGeneration: UInt64 = 0
-    private var currentSnapshot: Snapshot?
+    fileprivate private(set) var currentSnapshot: Snapshot?
     private var preparedDestinations: [String: RUMView] = [:]
     private var observers: [UUID: (Snapshot) -> Void] = [:]
 
@@ -302,7 +302,19 @@ internal struct RUMNavigationMetadata {
 @available(iOS 27.0, *)
 @MainActor
 internal final class RUMNavigationObservedTransitions {
+    struct CommittedDestination {
+        fileprivate let identity: RUMNavigationDestination.Identity
+        fileprivate let view: RUMView
+    }
+
     let transitions = RUMNavigationTransitions()
+
+    var committedDestination: CommittedDestination? {
+        guard let currentIdentity, let snapshot = transitions.currentSnapshot else {
+            return nil
+        }
+        return CommittedDestination(identity: currentIdentity, view: snapshot.destination)
+    }
 
     private let acceptsDelivery: @MainActor () -> Bool
     private var currentIdentity: RUMNavigationDestination.Identity?
@@ -414,6 +426,16 @@ internal final class RUMNavigationObservedTransitions {
         updates.send(destination)
     }
     #endif
+
+    func restoreDestinationIfNeeded(_ destination: CommittedDestination) {
+        // A synchronous publisher replay or Observation read already supplied
+        // the current destination. Use the saved destination only if neither did.
+        guard !stopped, currentIdentity == nil else {
+            return
+        }
+        currentIdentity = destination.identity
+        transitions.setInitialDestination(destination.view)
+    }
 
     func stop() {
         stopped = true
