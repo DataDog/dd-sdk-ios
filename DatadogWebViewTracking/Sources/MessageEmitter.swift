@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Errors that can be thrown when parsing a WebView message
@@ -31,6 +32,20 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
     /// Sends a bag of data to the message bus
     /// - Parameter body: The data to send, it must be parsable to `WebViewMessage`
     override func send(body: Any, slotId: String? = nil) {
+        send(body: body, slotId: slotId, makeMessage: FeatureMessage.webview)
+    }
+
+    /// Forwards an already captured callback without consulting delivery-time ownership.
+    func send(body: Any, slotId: String?, capture: RUMContextHandoff.Capture?) {
+        guard let capture else {
+            return send(body: body, slotId: slotId)
+        }
+        send(body: body, slotId: slotId, makeMessage: { message in
+            .payload(WebViewMessageWithRUMContext(message: message, capture: capture))
+        })
+    }
+
+    private func send(body: Any, slotId: String?, makeMessage: (WebViewMessage) -> FeatureMessage) {
         guard let core = core else {
             return DD.logger.debug("Core must not be nil when using WebViewTracking")
         }
@@ -49,9 +64,9 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
 
             switch message {
             case .log:
-                send(log: message, in: core)
+                send(log: message, makeMessage: makeMessage, in: core)
             case .rum, .telemetry:
-                send(rum: message, in: core)
+                send(rum: message, makeMessage: makeMessage, in: core)
             case let .record(event, view):
                 send(record: event, view: view, slotId: slotId, in: core)
             }
@@ -61,18 +76,26 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
         }
     }
 
-    private func send(log message: WebViewMessage, in core: DatadogCoreProtocol) {
+    private func send(
+        log message: WebViewMessage,
+        makeMessage: (WebViewMessage) -> FeatureMessage,
+        in core: DatadogCoreProtocol
+    ) {
         guard logsSampler.sample() else {
             return
         }
 
-        core.send(message: .webview(message), else: {
+        core.send(message: makeMessage(message), else: {
             DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
         })
     }
 
-    private func send(rum message: WebViewMessage, in core: DatadogCoreProtocol) {
-        core.send(message: .webview(message), else: {
+    private func send(
+        rum message: WebViewMessage,
+        makeMessage: (WebViewMessage) -> FeatureMessage,
+        in core: DatadogCoreProtocol
+    ) {
+        core.send(message: makeMessage(message), else: {
             DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
         })
     }
