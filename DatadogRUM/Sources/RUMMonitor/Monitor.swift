@@ -293,42 +293,7 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             }
 
-            let transformedCommand = self.transform(command: command)
-
-            // Record the replay state this command sees before processing it, as it may end or pause the session,
-            // which flushes the collector before the context message bus delivers that state.
-            self.replayState?.update(from: context)
-
-            _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
-
-            if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.applicationScope)
-            }
-
-            if let activeSession = self.applicationScope.activeSession {
-                let representativeView = self.representativeView(in: activeSession)
-                self.sessionActivitySnapshot = (
-                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
-                    sessionStart: activeSession.sessionStart,
-                    lastInteraction: activeSession.lastInteraction
-                )
-                // A delayed interaction can keep this session alive after sampling self-stopped.
-                // Publish its activity snapshot first so the collector observes the refreshed lifetime.
-                if command.isUserInteraction && context.applicationStateHistory.currentState.isRunningInForeground {
-                    self.applicationScope.dependencies.timeseriesCollector?.noteActivity(sessionID: activeSession.sessionUUID.toRUMDataFormat)
-                }
-                if let sceneContextSnapshots = self.sceneContextSnapshots {
-                    sceneContextSnapshots.value = self.makeSceneContextSnapshot(
-                        session: activeSession,
-                        representativeView: representativeView
-                    )
-                }
-            } else {
-                self.sessionActivitySnapshot = (nil, nil, nil)
-                self.sceneContextSnapshots?.value = SceneContextSnapshots.Value(
-                    webViewLifecycleExpiry: self.applicationScope.webViewLifecycleExpiry
-                )
-            }
+            self.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
         }
 
         let updateContext = { [weak self] () -> RUMCoreContext? in
@@ -409,7 +374,9 @@ internal class Monitor: RUMCommandSubscriber {
             }
         } else {
             self.sessionActivitySnapshot = (nil, nil, nil)
-            self.sceneContextSnapshots?.value = SceneContextSnapshots.Value()
+            self.sceneContextSnapshots?.value = SceneContextSnapshots.Value(
+                webViewLifecycleExpiry: self.applicationScope.webViewLifecycleExpiry
+            )
         }
     }
 
