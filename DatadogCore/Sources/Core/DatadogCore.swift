@@ -16,14 +16,28 @@ import DatadogInternal
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
 internal final class DatadogCore: RUMContextHandoffActivating {
-    var canResumeLegacyWebViewTracking: Bool {
+    var legacyWebViewTrackingReceipt: RUMLegacyWebViewTrackingReceipt? {
         let snapshot = registry
         guard !snapshot.isStopped, case .inactive = snapshot.handoff,
               let registration = snapshot.features[Feature.rum], registration.committedHandoffOwner == nil,
-              let provider = registration.feature as? RUMContextHandoffWebViewProviding else {
-            return false
+              let provider = registration.feature as? RUMContextHandoffWebViewProviding,
+              provider.usesLegacyWebViewTracking else {
+            return nil
         }
-        return provider.usesLegacyWebViewTracking
+        return RUMLegacyWebViewTrackingReceipt(
+            isCurrent: { [weak self, weak registration] in
+                guard let self, let registration else {
+                    return false
+                }
+                return self.isRegistered(registration, forKey: Feature.rum)
+            },
+            setRUMContext: { [weak self, weak registration] context in
+                guard let self, let registration else {
+                    return
+                }
+                self.setRUMContext(forLegacyRegistration: registration, context: context)
+            }
+        )
     }
 
     var rumContextHandoffOwner: RUMContextHandoff.Owner? {
@@ -766,6 +780,29 @@ extension DatadogCore: DatadogCoreProtocol {
                       activation.owner === owner, owner.isValid else { return }
                 // Revalidate and mutate together with Core ownership retirement.
                 // The displaced value remains retained until after unlocking.
+                swap(&current, &candidate)
+                accepted = true
+            }
+            withExtendedLifetime(candidate) {}
+            return accepted
+        }
+    }
+
+    private func setRUMContext(
+        forLegacyRegistration registration: RegisteredFeature,
+        context: @escaping () -> RUMCoreContext?
+    ) {
+        contextProvider.writeIfAccepted { [weak self, weak registration] current in
+            guard let self, let registration, self.isRegistered(registration, forKey: Feature.rum) else {
+                return false
+            }
+            var candidate = current
+            candidate.set(additionalContext: context())
+            var accepted = false
+            self._registry.mutate { registry in
+                guard !registry.isStopped, registry.features[Feature.rum] === registration else {
+                    return
+                }
                 swap(&current, &candidate)
                 accepted = true
             }
