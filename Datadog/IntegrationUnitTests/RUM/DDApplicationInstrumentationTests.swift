@@ -46,6 +46,7 @@ class DDApplicationInstrumentationTests: XCTestCase {
 
 #if os(iOS)
 import UIKit
+@testable import DatadogSessionReplay
 
 @available(iOS 27.0, *)
 @MainActor
@@ -158,6 +159,48 @@ final class SceneApplicationInstrumentationTests: XCTestCase {
         }
     }
 
+    func testRUMAndReplay_keepSurvivingTouchInterceptionWhenFirstLayerStops() throws {
+        let application = try actualApplication()
+        let target = UIEvent()
+        for sceneTracking in [false, true] {
+            for replayFirst in [false, true] {
+                let previous = UIKitPreviousSpy(target: target)
+                try previous.install()
+                defer { previous.unswizzle() }
+                verifyPreviousCall(previous, application: application, event: target)
+                let replayHandler = ReplayDispatchHandler()
+                let rumHandler = SceneDispatchHandler()
+                let replay = try DatadogSessionReplay.UIApplicationSwizzler(handler: replayHandler)
+                let rum = try sceneTracking
+                    ? DDSceneApplicationInstrumentation(handler: rumHandler)
+                    : DDApplicationInstrumentation(handler: rumHandler)
+                if replayFirst {
+                    replay.swizzle()
+                    rum.install()
+                } else {
+                    rum.install()
+                    replay.swizzle()
+                }
+                defer {
+                    replay.unswizzle()
+                    rum.uninstall()
+                }
+
+                previous.calls = 0
+                application.sendEvent(target)
+                XCTAssertEqual(replayHandler.calls, 1)
+                XCTAssertEqual(rumHandler.intercepts + rumHandler.legacyNotifications, 1)
+                XCTAssertEqual(previous.calls, 1)
+
+                if replayFirst { replay.unswizzle() } else { rum.uninstall() }
+                application.sendEvent(target)
+                XCTAssertEqual(replayHandler.calls, replayFirst ? 1 : 2)
+                XCTAssertEqual(rumHandler.intercepts + rumHandler.legacyNotifications, replayFirst ? 2 : 1)
+                XCTAssertEqual(previous.calls, 2)
+            }
+        }
+    }
+
     func testSceneSendEvent_releasedHandlerStillCallsActualUIKitImplementationOnce() throws {
         let application = try actualApplication()
         let target = UIEvent()
@@ -218,6 +261,14 @@ private final class SceneDispatchHandler: RUMSceneActionsHandling {
         intercepts += 1
         onIntercept?()
         operation()
+    }
+}
+
+private final class ReplayDispatchHandler: DatadogSessionReplay.UIEventHandler {
+    private(set) var calls = 0
+
+    func notify_sendEvent(application: UIApplication, event: UIEvent) {
+        calls += 1
     }
 }
 
