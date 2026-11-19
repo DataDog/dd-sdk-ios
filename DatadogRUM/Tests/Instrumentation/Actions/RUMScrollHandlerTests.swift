@@ -540,6 +540,60 @@ final class SceneScrollOwnershipTests: XCTestCase {
         XCTAssertEqual(f.events.map(\.view.id), [viewID])
     }
 
+    func testSceneScroll_firstScrollAfterTimeoutUsesRestoredManualView() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene input requires iOS 27") }
+        let f = SceneScrollFixture(startA: false, startB: false)
+        f.monitor.startView(key: "manual", name: "Manual", attributes: [:])
+        let before = try XCTUnwrap(f.monitor.rumContextSnapshot(for: .processRepresentative))
+        f.expireSession()
+        XCTAssertNil(f.monitor.rumContextSnapshot(for: .processRepresentative))
+
+        let scroll = f.scroll(in: f.windowA)
+        f.handler.interceptWillBeginDragging(scroll) {
+            let capture = RUMContextHandoff.current(for: f.owner)
+            XCTAssertNil(capture?.rumContext)
+            XCTAssertEqual(capture?.sceneIdentifier, "a")
+        }
+        let after = try XCTUnwrap(f.monitor.rumContextSnapshot(for: .processRepresentative))
+        let ownership = try f.receipt(at: 0)
+        XCTAssertEqual(after.viewName, "Manual")
+        XCTAssertNotEqual(after.sessionID, before.sessionID)
+        XCTAssertNotEqual(after.viewID, before.viewID)
+        XCTAssertEqual(ownership.claim?.viewID.toRUMDataFormat, after.viewID)
+
+        scroll.contentOffset = CGPoint(x: 0, y: 100)
+        f.handler.interceptDidEndDragging(scroll, willDecelerate: false) {}
+        XCTAssertTrue(ownership.isClosed)
+        XCTAssertEqual(f.events.map(\.view.id), [after.viewID])
+    }
+
+    func testSceneScroll_expiredInputDoesNotAdoptSessionStartedByPredicate() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene input requires iOS 27") }
+        let f = SceneScrollFixture(startA: false, startB: false)
+        f.monitor.startView(key: "manual", name: "Manual", attributes: [:])
+        let before = try XCTUnwrap(f.monitor.rumContextSnapshot(for: .processRepresentative))
+        f.expireSession()
+
+        f.predicate.onAction = { _ in
+            f.monitor.startView(key: "replacement", name: "Replacement", attributes: [:])
+        }
+        defer { f.predicate.onAction = nil }
+        let scroll = f.scroll(in: f.windowA)
+        f.handler.interceptWillBeginDragging(scroll) {}
+        let replacement = try XCTUnwrap(f.monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertNotEqual(replacement.sessionID, before.sessionID)
+        XCTAssertEqual(replacement.viewName, "Replacement")
+        XCTAssertNil(try f.receipt(at: 0).claim)
+        f.handler.interceptDidEndDragging(scroll, willDecelerate: false) {}
+        XCTAssertTrue(f.events.isEmpty)
+
+        f.predicate.onAction = nil
+        f.handler.interceptWillBeginDragging(scroll) {}
+        scroll.contentOffset = CGPoint(x: 0, y: 100)
+        f.handler.interceptDidEndDragging(scroll, willDecelerate: false) {}
+        XCTAssertEqual(f.events.map(\.view.id), [replacement.viewID])
+    }
+
     func testSceneScroll_sourceLessInheritsButAttachedMissingSnapshotStaysAuthoritativeNil() throws {
         guard #available(iOS 27.0, *) else {
             assertLegacyScrollDelivery()
@@ -739,6 +793,7 @@ final class SceneScrollOwnershipTests: XCTestCase {
 private final class SceneScrollFixture {
     let owner = RUMContextHandoff.Owner()
     let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_600_000_000))
+    let elapsedClock = MonotonicClockMock()
     let windowA = UIWindow(frame: .zero)
     let windowB = UIWindow(frame: .zero)
     let predicate = SceneScrollPredicate()
@@ -748,7 +803,7 @@ private final class SceneScrollFixture {
     var events: [RUMActionEvent] { monitor.scope.eventsWritten(ofType: RUMActionEvent.self) }
 
     init(startA: Bool = true, startB: Bool = true) {
-        monitor = SceneScrollMonitor(owner: owner, clock: clock)
+        monitor = SceneScrollMonitor(owner: owner, clock: clock, monotonicClock: elapsedClock)
         let a = ObjectIdentifier(windowA), b = ObjectIdentifier(windowB), probe = sourceProbe
         handler = RUMSceneScrollHandler(legacyHandler: RUMScrollHandler(dateProvider: clock, predicate: predicate), dateProvider: clock, owner: owner, expectedMonitor: monitor, sceneIdentifier: { window in
             probe.reads += 1
@@ -759,6 +814,12 @@ private final class SceneScrollFixture {
         if startB { startView("b", scene: "b") }
         monitor.ownerReads = 0
     }
+    func expireSession() {
+        let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
+        elapsedClock.advance(by: timeout)
+        clock.now.addTimeInterval(timeout)
+    }
+
     func scroll(in window: UIWindow?) -> SceneScrollView {
         let scroll = SceneScrollView()
         window?.addSubview(scroll)
@@ -803,10 +864,10 @@ private final class SceneScrollMonitor: Monitor {
         onOwnerRead?()
         return owner
     }
-    init(owner: RUMContextHandoff.Owner, clock: DateProvider) {
+    init(owner: RUMContextHandoff.Owner, clock: DateProvider, monotonicClock: MonotonicClock = MonotonicClockMock()) {
         currentOwner = owner
         scope = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now, launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: clock.now), applicationStateHistory: .mockWith(initialState: .active, date: clock.now)))
-        super.init(dependencies: .mockWith(featureScope: scope, viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true), featureFlags: [.multiSceneTracking: true]), dateProvider: clock, executionContextProvider: RUMContextHandoff.current(for:))
+        super.init(dependencies: .mockWith(featureScope: scope, viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true), featureFlags: [.multiSceneTracking: true], monotonicClock: monotonicClock), dateProvider: clock, executionContextProvider: RUMContextHandoff.current(for:))
     }
     override func process(command: RUMCommand) {
         if command is RUMStartUserActionCommand || command is RUMStopUserActionCommand {
