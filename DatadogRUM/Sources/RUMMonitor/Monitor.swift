@@ -233,14 +233,20 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             if self.isMultiSceneTrackingEnabled, let receipt = (command as? RUMUserActionCommand)?.actionReceipt {
-                guard receipt.owner.isValid, self.rumContextHandoffOwner === receipt.owner else {
+                guard receipt.owner.isValid,
+                      self.rumContextHandoffOwner === receipt.owner,
+                      context.launchInfo.launchReason == .uncertain ||
+                        self.applicationScope.admitsActionReceipt(receipt, monotonicTime: monotonicTime) else {
                     receipt.reject()
+                    if case .continuousAction(let ownership) = command.target {
+                        ownership.close()
+                    }
                     return
                 }
             }
 
             if self.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
-                guard ownership.owner.isValid, self.rumContextHandoffOwner === ownership.owner else {
+                guard !ownership.isClosed, ownership.owner.isValid, self.rumContextHandoffOwner === ownership.owner else {
                     ownership.close()
                     return
                 }
