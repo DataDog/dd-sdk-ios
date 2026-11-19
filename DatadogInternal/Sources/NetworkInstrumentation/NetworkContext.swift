@@ -454,3 +454,40 @@ public struct AccountConfigurationContext: AdditionalContext, Equatable {
         self.name = accountInfo.name
     }
 }
+
+/// Provides a snapshot only after a caller independently proves the originating native scene.
+@_spi(Internal)
+public protocol RUMContextHandoffWebViewProviding {
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture?
+}
+
+/// Validates a captured native session against the current RUM lifetime.
+@_spi(Internal)
+public protocol RUMContextHandoffSessionValidating {
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool
+}
+
+/// Carries native ownership with a Browser message across asynchronous queues.
+@_spi(Internal)
+public struct WebViewMessageWithRUMContext {
+    public let message: WebViewMessage
+    public let capture: RUMContextHandoff.Capture
+
+    public init(message: WebViewMessage, capture: RUMContextHandoff.Capture) {
+        self.message = message
+        self.capture = capture
+    }
+
+    /// Resolves only its original owner and a native session that is still alive at delivery.
+    public func rumContext(in core: DatadogCoreProtocol, sessionID: String?) -> RUMCoreContext? {
+        guard let owner = RUMContextHandoff.owner(in: core),
+              owner === capture.owner, owner.isValid,
+              let context = capture.value.resolvedRUMContext(for: owner),
+              context.sessionID == sessionID,
+              let validator = core.feature(named: Feature.rum, type: RUMContextHandoffSessionValidating.self),
+              validator.isRUMContextHandoffSessionActive(sessionID: context.sessionID, owner: owner) else {
+            return nil
+        }
+        return context
+    }
+}
