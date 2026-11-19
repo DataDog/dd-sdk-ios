@@ -252,6 +252,14 @@ final class ProfilingHandlerTests: XCTestCase {
     }
 
     func testOwnedCustomProfile_retiredBeforeDeferredWrite_emitsNoEventAttachmentsOrSuccessTelemetry() throws {
+        try assertRetiredOperationSuppressesDeferredProfile(operation: .customProfiling)
+    }
+
+    func testOwnedContinuousProfile_retiredBeforeDeferredWrite_emitsNoEventAttachmentsOrSuccessTelemetry() throws {
+        try assertRetiredOperationSuppressesDeferredProfile(operation: .continuousProfiling)
+    }
+
+    private func assertRetiredOperationSuppressesDeferredProfile(operation: ProfilingOperation) throws {
         let fixture = OwnedProfileFixture()
         let ownership = try fixture.ownership()
         let scope = OwnedProfileDeferredScope(core: core)
@@ -274,7 +282,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
         ownedHandler.writeOwned(
             profile: profile,
-            operation: .customProfiling,
+            operation: operation,
             rumVitals: [],
             ownedOperations: [.init(vital: vital, ownership: ownership)],
             ownedCorrelation: stamp
@@ -294,6 +302,14 @@ final class ProfilingHandlerTests: XCTestCase {
     }
 
     func testMixedAppLaunchProfile_retiredOwnedOperation_preservesLegacyVitalHangAndLongTask() throws {
+        try assertMixedProfilePreservesRemainingEvents(operation: .appLaunch)
+    }
+
+    func testMixedContinuousProfile_retiredOwnedOperation_preservesLegacyVitalHangAndLongTask() throws {
+        try assertMixedProfilePreservesRemainingEvents(operation: .continuousProfiling)
+    }
+
+    private func assertMixedProfilePreservesRemainingEvents(operation: ProfilingOperation) throws {
         let fixture = OwnedProfileFixture()
         let ownership = try fixture.ownership()
         let scope = OwnedProfileDeferredScope(core: core)
@@ -324,7 +340,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
         ownedHandler.writeOwned(
             profile: profile,
-            operation: .appLaunch,
+            operation: operation,
             rumVitals: [legacy],
             hangs: [hang],
             longTasks: [longTask],
@@ -338,7 +354,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
         XCTAssertEqual(core.events.count, 1)
-        XCTAssertTrue(event.tags.contains("operation:application_launch"))
+        XCTAssertTrue(event.tags.contains("operation:\(operation.rawValue)"))
         XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.sessionID])
         XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.viewID])
         XCTAssertEqual(event.additionalAttributes?["customer-attribute"] as? String, "preserved")
