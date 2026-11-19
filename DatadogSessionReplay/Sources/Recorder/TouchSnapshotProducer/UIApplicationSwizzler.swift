@@ -33,8 +33,8 @@ internal final class UIApplicationSwizzler {
 
     /// Swizzles the `UIApplication.sendEvent(_:)`
     class SendEvent: MethodSwizzler <
-        @convention(c) (UIApplication, Selector, UIEvent) -> Bool,
-        @convention(block) (UIApplication, UIEvent) -> Bool
+        @convention(c) (UIApplication, Selector, UIEvent) -> Void,
+        @convention(block) (UIApplication, UIEvent) -> Void
     > {
         private static let selector = #selector(UIApplication.sendEvent(_:))
         private let method: Method
@@ -46,11 +46,11 @@ internal final class UIApplicationSwizzler {
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (UIApplication, UIEvent) -> Bool
+            typealias Signature = @convention(block) (UIApplication, UIEvent) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] application, event  in
                     handler?.notify_sendEvent(application: application, event: event)
-                    return previousImplementation(application, Self.selector, event)
+                    previousImplementation(application, Self.selector, event)
                 }
             }
         }

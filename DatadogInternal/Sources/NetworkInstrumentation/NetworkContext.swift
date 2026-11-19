@@ -76,13 +76,19 @@ public enum RUMContextHandoff {
             self.viewID = context?.viewID
         }
 
+        public var hasCapturedView: Bool { viewID != nil }
+
+        public func matchesView(sessionID: String, viewID: String) -> Bool {
+            self.sessionID == sessionID && self.viewID == viewID
+        }
+
         /// Called only when processing creates this command's action scope.
         public func accept(sessionID: String, viewID: String, actionID: String) {
             _state.mutate { state in
                 guard case .pending = state else {
                     return
                 }
-                guard owner.isValid, self.sessionID == sessionID, self.viewID == viewID else {
+                guard owner.isValid, matchesView(sessionID: sessionID, viewID: viewID) else {
                     state = .rejected
                     return
                 }
