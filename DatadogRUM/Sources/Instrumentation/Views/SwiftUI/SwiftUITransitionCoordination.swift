@@ -405,11 +405,25 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         let allowsSceneMigration: Bool
     }
 
+    private final class CrossSceneSourceStop {
+        let scene: RUMSceneIdentifier
+        let revision: UInt64
+        var revisionAfterStop: UInt64?
+
+        init(scene: RUMSceneIdentifier, revision: UInt64) {
+            self.scene = scene
+            self.revision = revision
+        }
+    }
+
     private final class DeferredState {
         let state: RUMViewTrackingState
         let admission: RUMSwiftUIViewCallbackAdmission?
         // Only a real disappearance callback may keep its registration until settlement.
         private var disappearanceLease: RUMSwiftUIViewTrackingEpoch?
+        private var retainedSourceStop: CrossSceneSourceStop?
+        private var predecessorStop: CrossSceneSourceStop?
+        var keepsSourceStop: Bool { retainedSourceStop != nil }
         var sequence: Int
         var baseRevision: UInt64
         let baseIsAppeared: Bool
@@ -731,6 +745,24 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
 
         @MainActor
+        func shouldPreserveStop(in scene: RUMSceneIdentifier) -> Bool {
+            state.sceneIdentifier == scene && state.activeLifecycleGeneration != nil
+                && state.revision == baseRevision && dormantBoundaryResolution == nil
+                && isAppeared == false
+        }
+
+        func matchesOccurrence(_ configuration: RUMViewTrackingState.Configuration) -> Bool {
+            self.configuration?.occurrenceKey == configuration.occurrenceKey
+                && self.configuration?.bindingGeneration == configuration.bindingGeneration
+        }
+
+        func linkStop(to destination: DeferredState, in scene: RUMSceneIdentifier) {
+            let stop = retainedSourceStop ?? CrossSceneSourceStop(scene: scene, revision: baseRevision)
+            retainedSourceStop = stop
+            destination.predecessorStop = stop
+        }
+
+        @MainActor
         func commit() {
             guard let admission, admission.isValid,
                   state.admission.map({ admission.matches($0) }) == true else {
@@ -746,6 +778,13 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                 return
             }
 
+            // A destination that disappeared before it committed never owned a RUM occurrence.
+            if predecessorStop != nil, isAppeared == false || attachment == .detached {
+                return
+            }
+            let revisionBeforeCommit = state.revision
+            let expectedRevision = predecessorStop?.revision == baseRevision
+                ? predecessorStop?.revisionAfterStop ?? baseRevision : baseRevision
             let transitions: [RUMViewTrackingState.Transition]
             if
                 let dormantBoundaryResolution,
@@ -757,7 +796,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                     from: dormantBoundaryResolution.expected,
                     to: dormantBoundaryResolution.accepted,
                     in: dormantBoundaryResolution.sceneIdentifier,
-                    expectedRevision: baseRevision,
+                    expectedRevision: expectedRevision,
                     allowsSceneMigration: dormantBoundaryResolution.allowsSceneMigration
                 )
             } else if let dormantBoundaryResolution {
@@ -767,7 +806,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                     in: dormantBoundaryResolution.sceneIdentifier,
                     attachment: attachment,
                     isAppeared: isAppeared,
-                    expectedRevision: baseRevision
+                    expectedRevision: expectedRevision
                 )
                 transitions = []
             } else if let configuration {
@@ -775,16 +814,21 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                     configuration: configuration,
                     attachment: attachment,
                     isAppeared: isAppeared,
-                    expectedRevision: baseRevision,
+                    expectedRevision: expectedRevision,
                     allowsRemount: allowsRemount
                 )
             } else {
                 transitions = state.reconcile(
                     attachment: attachment,
                     isAppeared: isAppeared,
-                    expectedRevision: baseRevision,
+                    expectedRevision: expectedRevision,
                     allowsRemount: allowsRemount
                 )
+            }
+            if let stop = retainedSourceStop, stop.revision == revisionBeforeCommit,
+               transitions.count == 1, case .stop(_, let scene) = transitions.first, scene == stop.scene {
+                // Let the destination cross only the exact revision produced by this source stop.
+                stop.revisionAfterStop = state.revision
             }
             send(transitions)
         }
@@ -793,11 +837,6 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
     private final class DeferredTransition {
         private(set) var states: [ObjectIdentifier: DeferredState] = [:]
         private var nextSequence = 0
-
-        @MainActor
-        func contains(state: RUMViewTrackingState) -> Bool {
-            states[ObjectIdentifier(state)] != nil
-        }
 
         @MainActor
         func merge(
@@ -1018,9 +1057,15 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             return
         }
 
-        let pending = deferredTransition(for: state)
+        let isTerminal = intent.isAppeared == false || intent.attachment == .detached
+        let unscopedTerminalConfiguration = isTerminal && intent.sceneIdentifier == nil ? intent.configuration : nil
+        let pending = deferredTransition(
+            for: state,
+            preferredScene: intent.sceneIdentifier ?? (isTerminal ? state.sceneIdentifier : nil),
+            terminalConfiguration: unscopedTerminalConfiguration
+        )
         let pendingTerminalScene: RUMSceneIdentifier?
-        if intent.isAppeared == false || intent.attachment == .detached,
+        if isTerminal,
            let pending,
            pending.transition.deferredState(for: state)?.admission?.matches(admission) == true,
            admission.admits(sceneIdentifier: pending.key.sceneIdentifier) {
@@ -1033,6 +1078,11 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             return
         }
         if let pending {
+            if let unscopedTerminalConfiguration,
+               let projection = pending.transition.deferredState(for: state),
+               projection.keepsSourceStop, !projection.matchesOccurrence(unscopedTerminalConfiguration) {
+                return
+            }
             if intent.isAppeared == false, intent.sceneIdentifier == nil,
                pendingTerminalScene == nil,
                pending.transition.deferredState(for: state)?.admission?.matches(admission) == true,
@@ -1374,16 +1424,36 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
 
     @MainActor
     private func deferredTransition(
-        for state: RUMViewTrackingState
+        for state: RUMViewTrackingState,
+        preferredScene: RUMSceneIdentifier?,
+        terminalConfiguration: RUMViewTrackingState.Configuration?
     ) -> (key: TransitionKey, transition: DeferredTransition)? {
         guard admitsCallbacks() else {
             return nil
         }
 
-        let match = deferredTransitions.first { _, transition in
-            transition.contains(state: state)
+        var matchingOccurrence: (key: TransitionKey, transition: DeferredTransition)?
+        var matchingScene: (key: TransitionKey, transition: DeferredTransition)?
+        var fallback: (key: TransitionKey, transition: DeferredTransition)?
+        for (key, transition) in deferredTransitions {
+            guard let projection = transition.deferredState(for: state) else {
+                continue
+            }
+            let preferred = key.sceneIdentifier == preferredScene
+            if preferred {
+                matchingScene = (key, transition)
+            }
+            if let terminalConfiguration, projection.matchesOccurrence(terminalConfiguration) {
+                if preferred {
+                    return (key, transition)
+                }
+                matchingOccurrence = (key, transition)
+            }
+            if fallback == nil || !projection.keepsSourceStop {
+                fallback = (key, transition)
+            }
         }
-        return match.map { (key: $0.key, transition: $0.value) }
+        return matchingOccurrence ?? matchingScene ?? fallback
     }
 
     @MainActor
@@ -1404,6 +1474,17 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         else {
             return
         }
+        let destination = interactiveDestination(of: intent, state: state, sceneIdentifier: destinationSceneIdentifier)
+        if let destination, deferredState.shouldPreserveStop(in: pending.key.sceneIdentifier) {
+            let mount = DeferredState(state: state, sequence: 0, isProvisional: destination.isProvisional, send: send)
+            guard mount.merge(intent, send: send) else {
+                return
+            }
+            // A successful source disappearance still owns its stop even if the new mount cancels.
+            deferredState.linkStop(to: mount, in: pending.key.sceneIdentifier)
+            stage(mount, in: destination)
+            return
+        }
         // Merge before removing the state from its original coordinator. A
         // generic callback from another scene may pass the broad projection
         // fence but still be rejected because a source-authorized settlement
@@ -1419,25 +1500,46 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             deferredTransitions.removeValue(forKey: pending.key)
         }
 
-        if let destinationSceneIdentifier, intent.isAppeared != false, case .attached = intent.attachment {
-            let observers = liveObservers(for: state, sceneIdentifier: destinationSceneIdentifier)
-            if let coordinator = coordinatorProvider(destinationSceneIdentifier, observers), coordinator.initiallyInteractive {
-                let key = TransitionKey(
-                    sceneIdentifier: destinationSceneIdentifier,
-                    coordinatorIdentity: coordinator.identity
-                )
-                let isProvisional = observers.allSatisfy { $0.nearestViewController == nil }
-                if let transition = deferredTransitions[key] {
-                    transition.append(deferredState, isProvisional: isProvisional)
-                } else {
-                    let transition = DeferredTransition()
-                    transition.append(deferredState, isProvisional: isProvisional)
-                    register(transition, key: key, coordinator: coordinator)
-                }
-                return
-            }
+        if let destination {
+            stage(deferredState, in: destination)
+        } else {
+            deferredState.commit()
         }
-        deferredState.commit()
+    }
+
+    private typealias InteractiveDestination = (
+        key: TransitionKey, coordinator: any RUMSwiftUITransitionCoordinating, isProvisional: Bool
+    )
+
+    @MainActor
+    private func interactiveDestination(
+        of intent: Intent,
+        state: RUMViewTrackingState,
+        sceneIdentifier: RUMSceneIdentifier?
+    ) -> InteractiveDestination? {
+        guard let sceneIdentifier, intent.isAppeared != false, case .attached? = intent.attachment else {
+            return nil
+        }
+        let observers = liveObservers(for: state, sceneIdentifier: sceneIdentifier)
+        guard let coordinator = coordinatorProvider(sceneIdentifier, observers), coordinator.initiallyInteractive else {
+            return nil
+        }
+        return (
+            key: TransitionKey(sceneIdentifier: sceneIdentifier, coordinatorIdentity: coordinator.identity),
+            coordinator: coordinator,
+            isProvisional: observers.allSatisfy { $0.nearestViewController == nil }
+        )
+    }
+
+    @MainActor
+    private func stage(_ deferredState: DeferredState, in destination: InteractiveDestination) {
+        if let transition = deferredTransitions[destination.key] {
+            transition.append(deferredState, isProvisional: destination.isProvisional)
+        } else {
+            let transition = DeferredTransition()
+            transition.append(deferredState, isProvisional: destination.isProvisional)
+            register(transition, key: destination.key, coordinator: destination.coordinator)
+        }
     }
 }
 #endif // os(iOS)
