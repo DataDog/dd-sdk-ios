@@ -387,6 +387,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             RUMSessionScope.resolveNavigationDestination(
                 on: command,
                 representative: $0.views.last?.sceneIdentifier,
+                views: $0.views,
                 cache: dependencies.viewCache
             )
         } ?? nil
@@ -428,7 +429,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             guard case .ownedScene(let scene) = navigationDestination else {
                 return sceneRestoration.views
             }
-            return sceneRestoration.views.filter { $0.sceneIdentifier != scene }
+            return RUMSessionScope.restoringViews(sceneRestoration.views, after: command, in: scene)
         }
         return restoreAll ? sceneRestoration.views : []
     }

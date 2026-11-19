@@ -1033,6 +1033,46 @@ extension MonitorTests {
     }
 
     @MainActor
+    func testControllerStop_whenDetached_finishesOnlyItsTrackedScene() throws {
+        for afterSessionStop in [false, true] {
+            let clock = DateProviderMock(now: snapshotDate)
+            let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+            let monitor = navigationMonitor(clock: clock, cache: cache) { nil }
+            let controller = MonitorControllerReadSpy()
+            monitor.process(command: RUMStartViewCommand(
+                time: clock.now,
+                identity: ViewIdentifier(controller),
+                name: "controller in A",
+                path: "controller",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .manual,
+                target: .scene(sceneA)
+            ))
+            startSnapshotView(monitor, key: "b", target: .scene(sceneB))
+            let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            XCTAssertNotNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+            if afterSessionStop {
+                monitor.stopSession()
+                clock.now = clock.now.addingTimeInterval(1)
+            }
+
+            monitor.stopView(viewController: controller, attributes: [:])
+
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let remainingPeer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            XCTAssertEqual(remainingPeer.viewName, peer.viewName)
+            if afterSessionStop {
+                XCTAssertNotEqual(remainingPeer.viewID, peer.viewID)
+            } else {
+                XCTAssertEqual(remainingPeer.viewID, peer.viewID)
+            }
+            XCTAssertEqual(controller.viewReads, 0)
+        }
+    }
+
+    @MainActor
     func testAutomaticUIKitAppearance_waitsForAnOwnerWithoutReplacingPeerView() throws {
         let clock = DateProviderMock(now: snapshotDate)
         let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
