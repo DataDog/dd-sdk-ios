@@ -285,9 +285,27 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             capturedRUMContext = $0.removeValue(forKey: interception.identifier)
         }
 
+        if let scoped = interception as? RUMURLSessionTaskInterception, let start = scoped.rumResourceStart {
+            // Keep the sent trace IDs and sampling decision. RUM rejected the old view's ownership.
+            let fallback = CapturedRUMContext(rumContext: nil, sessionDecision: capturedRUMContext?.sessionDecision)
+            start.whenResolved { accepted in
+                if !accepted {
+                    finishSpan(for: scoped, capturedRUMContext: fallback, canIgnoreRUMOrigin: true)
+                }
+            }
+        } else {
+            finishSpan(for: interception, capturedRUMContext: capturedRUMContext)
+        }
+    }
+
+    private func finishSpan(
+        for interception: DatadogInternal.URLSessionTaskInterception,
+        capturedRUMContext: CapturedRUMContext?,
+        canIgnoreRUMOrigin: Bool = false
+    ) {
         guard
-            interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
-            interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
+            interception.isFirstPartyRequest, // The request must be first party for Trace to send a span.
+            canIgnoreRUMOrigin || interception.origin != "rum",
             let tracer = tracer,
             let startTime = interception.fetchStartDate,
             let endTime = interception.fetchEndDate,

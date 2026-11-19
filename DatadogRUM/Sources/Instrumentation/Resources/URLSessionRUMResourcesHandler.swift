@@ -177,7 +177,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
               let state = captured.preparedState(for: self) as? ResourcePreparationState else { return }
         switch state {
         case let .eligible(receipt):
-            (original as? Monitor)?.processResource(command: command, preparation: receipt.identity)
+            let start = command is RUMStartResourceCommand ? captured.rumResourceStart?.claim() : nil
+            (original as? Monitor)?.processResource(command: command, preparation: receipt.identity, start: start)
         case .legacy:
             original.process(command: command)
         case .rejected:
