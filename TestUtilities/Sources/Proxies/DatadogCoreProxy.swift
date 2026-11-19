@@ -139,6 +139,7 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
 
 @_spi(Internal)
 extension DatadogCoreProxy: RUMContextHandoffActivating {
+    public var canResumeLegacyWebViewTracking: Bool { core.canResumeLegacyWebViewTracking }
     public var rumContextHandoffOwner: RUMContextHandoff.Owner? { core.rumContextHandoffOwner }
 
     public func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner {
