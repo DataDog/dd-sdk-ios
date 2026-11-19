@@ -1088,6 +1088,12 @@ internal final class RUMViewTrackingState {
         activeOccurrence?.lifecycleGeneration
     }
 
+    func hasActiveNavigationOccurrence(configuration: Configuration, in scene: RUMSceneIdentifier) -> Bool {
+        activeOccurrence?.configuration?.occurrenceKey == configuration.occurrenceKey
+            && activeOccurrence?.configuration?.bindingGeneration == configuration.bindingGeneration
+            && activeOccurrence?.sceneIdentifier == scene
+    }
+
     var acceptsReaderMount: Bool {
         lifecycleGeneration == 0 || activeOccurrence != nil || requiresRemount
     }

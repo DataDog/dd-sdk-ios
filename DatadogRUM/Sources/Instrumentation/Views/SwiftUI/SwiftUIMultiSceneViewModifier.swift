@@ -98,6 +98,7 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     let configuration: RUMViewTrackingState.Configuration?
     let navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
     let startsOnInitialMount: Bool
+    var onDestinationMounted: (@MainActor (RUMViewTrackingState.Configuration) -> Void)? = nil
     @State private var trackingEpoch = RUMSwiftUIViewTrackingEpoch()
 
     @ViewBuilder
@@ -113,7 +114,8 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                     configuration: configuration,
                     navigationOccurrenceSource: navigationOccurrenceSource,
                     startsOnInitialMount: startsOnInitialMount,
-                    admission: admission
+                    admission: admission,
+                    onDestinationMounted: onDestinationMounted
                 )
             )
         } else {
@@ -193,6 +195,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
     @Environment(\.rumSceneIdentifier)
     private var sceneIdentifier
     let admission: RUMSwiftUIViewCallbackAdmission
+    let onDestinationMounted: (@MainActor (RUMViewTrackingState.Configuration) -> Void)?
 
     func body(content: Content) -> some View {
         reconcileDormantNavigationBoundaryFromEnvironmentTrait()
@@ -394,6 +397,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 ) {
                 case .handled:
                     rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
+                    confirmMountedDestination(trackingState)
                     return
                 case .rejectStale:
                     return
@@ -963,7 +967,19 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 admission: admission
             )
             navigationOccurrenceSource?.reconcileOwnerState(trackingState, admission: admission)
+            confirmMountedDestination(trackingState)
         }
+    }
+
+    private func confirmMountedDestination(_ state: RUMViewTrackingState) {
+        guard let onDestinationMounted,
+              let configuration, configuration.isCurrentDestination,
+              let scene = transitionArbiter?.mountedSceneIdentifier(for: state),
+              state.hasActiveNavigationOccurrence(configuration: configuration, in: scene),
+              navigationOccurrenceSource?.isAcceptedBoundary(configuration, admission: admission) == true else {
+            return
+        }
+        onDestinationMounted(configuration)
     }
 
     private func recordDormantNavigationBoundaryFromReaderMount(
@@ -1238,7 +1254,8 @@ internal func rumMultiSceneTrackedContent<Content: SwiftUI.View>(
     path: String,
     attributes: [AttributeKey: AttributeValue],
     configuration: RUMViewTrackingState.Configuration?,
-    navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
+    navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?,
+    onDestinationMounted: (@MainActor (RUMViewTrackingState.Configuration) -> Void)? = nil
 ) -> some View {
     if binding.isValid {
         content.modifier(
@@ -1249,7 +1266,8 @@ internal func rumMultiSceneTrackedContent<Content: SwiftUI.View>(
                 attributes: attributes,
                 configuration: configuration,
                 navigationOccurrenceSource: navigationOccurrenceSource,
-                startsOnInitialMount: true
+                startsOnInitialMount: true,
+                onDestinationMounted: onDestinationMounted
             )
         )
     } else {

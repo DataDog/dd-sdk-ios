@@ -826,6 +826,8 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         fileprivate var route: Route?
         fileprivate var depth: Int
         fileprivate var isValid: Bool = true
+        fileprivate var mountedSlot: UUID?
+        fileprivate weak var mountedSource: RUMSwiftUINavigationOccurrenceSource?
 
         fileprivate init(route: Route?, depth: Int) {
             self.route = route
@@ -1012,8 +1014,22 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         let originalSource = source
         let priorRoute = claim.route
         let priorDepth = claim.depth
-        let currentDepth = depth(for: route, path: path)
-        let selectedDepth = !claim.isValid || priorRoute != route || priorDepth > path.count ? currentDepth : priorDepth
+        let reusedRoute = priorRoute == route
+        let keepsMountedSlot = reusedRoute && claim.mountedSource === originalSource
+        let selectedDepth: Int
+        if keepsMountedSlot, let slot = claim.mountedSlot {
+            if slot == rootSlot {
+                selectedDepth = 0
+            } else if let retainedIndex = slots.firstIndex(of: slot) {
+                selectedDepth = retainedIndex + 1
+            } else {
+                // An outgoing equal route must not impersonate the surviving route.
+                return nil
+            }
+        } else {
+            let currentDepth = depth(for: route, path: path)
+            selectedDepth = !claim.isValid || !reusedRoute || priorDepth > path.count ? currentDepth : priorDepth
+        }
         let configuration = configuration(
             route: route,
             depth: selectedDepth,
@@ -1028,7 +1044,31 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         claim.route = route
         claim.depth = selectedDepth
         claim.isValid = true
+        if !reusedRoute || claim.mountedSource !== originalSource {
+            claim.mountedSlot = nil
+            claim.mountedSource = nil
+        }
         return configuration
+    }
+
+    func didMaterialize(
+        _ configuration: RUMViewTrackingState.Configuration,
+        claim: Claim,
+        source originalSource: RUMSwiftUINavigationOccurrenceSource,
+        admission expected: RUMSwiftUIViewCallbackAdmission
+    ) {
+        let slot = acceptedSlots.last ?? rootSlot
+        let position = Position(container: container, slot: slot, depth: acceptedPath.count)
+        guard admits(expected), source === originalSource,
+              configuration.isCurrentDestination, configuration.bindingGeneration == generation,
+              configuration.occurrenceKey == RUMViewOccurrenceKey(position) else {
+            return
+        }
+        if let mountedSlot = claim.mountedSlot, claim.mountedSource === originalSource, mountedSlot != slot {
+            return
+        }
+        claim.mountedSlot = slot
+        claim.mountedSource = originalSource
     }
 
     func source(for expected: RUMSwiftUIViewCallbackAdmission) -> RUMSwiftUINavigationOccurrenceSource? {
@@ -1184,7 +1224,13 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
                     path: configuration.descriptor.path,
                     attributes: configuration.descriptor.attributes,
                     configuration: configuration,
-                    navigationOccurrenceSource: source
+                    navigationOccurrenceSource: source,
+                    onDestinationMounted: { [weak state, weak claim, weak source] mounted in
+                        guard let state, let claim, let source else {
+                            return
+                        }
+                        state.didMaterialize(mounted, claim: claim, source: source, admission: admission)
+                    }
                 )
             }
         }
