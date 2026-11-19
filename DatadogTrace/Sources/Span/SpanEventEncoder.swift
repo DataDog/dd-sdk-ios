@@ -87,6 +87,8 @@ public struct SpanEvent: Encodable {
         public let name: String?
         /// User email, if any.
         public let email: String?
+        /// User anonymous ID, if any.
+        public var anonymousId: String? = nil
         /// User custom attributes, if any.
         public var extraInfo: [String: String]
     }
@@ -159,6 +161,7 @@ internal struct SpanEventEncoder {
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
         case userEmail = "meta.usr.email"
+        case userAnonymousId = "meta.usr.anonymous_id"
 
         case accountId = "meta.account.id"
         case accountName = "meta.account.name"
@@ -241,6 +244,7 @@ internal struct SpanEventEncoder {
         try span.userInfo.id.dd.ifNotNil { try container.encode($0, forKey: .userId) }
         try span.userInfo.name.dd.ifNotNil { try container.encode($0, forKey: .userName) }
         try span.userInfo.email.dd.ifNotNil { try container.encode($0, forKey: .userEmail) }
+        try span.userInfo.anonymousId.dd.ifNotNil { try container.encode($0, forKey: .userAnonymousId) }
 
         if let accountInfo = span.accountInfo {
             try container.encode(accountInfo.id, forKey: .accountId)

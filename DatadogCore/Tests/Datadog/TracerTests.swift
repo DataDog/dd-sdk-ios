@@ -357,6 +357,30 @@ class TracerTests: XCTestCase {
 
     // MARK: - Sending user info
 
+    func testSendingUserAnonymousID() throws {
+        core.context = .mockWith(userInfo: .empty)
+
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core).dd
+
+        tracer.startSpan(operationName: "span with no anonymous id").finish()
+
+        core.context.userInfo = UserInfo(anonymousId: "anon-123", id: "abc-123")
+        tracer.startSpan(operationName: "span with anonymous id and user id").finish()
+
+        core.context.userInfo = UserInfo(anonymousId: "anon-123")
+        tracer.startSpan(operationName: "span with anonymous id only").finish()
+
+        let spanMatchers = try core.waitAndReturnSpanMatchers()
+        XCTAssertNil(try? spanMatchers[0].meta.userAnonymousID())
+
+        XCTAssertEqual(try spanMatchers[1].meta.userAnonymousID(), "anon-123")
+        XCTAssertEqual(try spanMatchers[1].meta.userID(), "abc-123")
+
+        XCTAssertEqual(try spanMatchers[2].meta.userAnonymousID(), "anon-123")
+        XCTAssertNil(try? spanMatchers[2].meta.userID())
+    }
+
     func testSendingUserInfo() throws {
         core.context = .mockWith(
             userInfo: .empty

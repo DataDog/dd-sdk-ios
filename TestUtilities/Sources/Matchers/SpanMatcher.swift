@@ -135,6 +135,7 @@ public class SpanMatcher {
         public func userID()               throws -> String { try matcher.meta(forKeyPath: "meta.usr.id") }
         public func userName()             throws -> String { try matcher.meta(forKeyPath: "meta.usr.name") }
         public func userEmail()            throws -> String { try matcher.meta(forKeyPath: "meta.usr.email") }
+        public func userAnonymousID()      throws -> String { try matcher.meta(forKeyPath: "meta.usr.anonymous_id") }
 
         public func accountID()            throws -> String { try matcher.meta(forKeyPath: "meta.account.id") }
         public func accountName()          throws -> String { try matcher.meta(forKeyPath: "meta.account.name") }
