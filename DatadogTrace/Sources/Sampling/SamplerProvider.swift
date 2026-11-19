@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// A `Sampling` that reports a decision which was already made.
@@ -51,6 +52,24 @@ internal final class SamplerProvider: TracerSamplerProvider, @unchecked Sendable
     /// Refer to ``TracerSamplerProvider`` documentation for more details.
     var sampler: any Sampling {
         makeSamplerFor(samplingRate: sampleRate)
+    }
+
+    /// Pairs the span sampler with ownership captured on the calling thread.
+    func samplerWithRUMContext(samplingRate: SampleRate?) -> TraceSamplingContext {
+        let rate = samplingRate ?? sampleRate
+        let context: RUMSessionSamplingContext
+        if let sampler = sessionSampler as? SessionSamplerWithRUMContext {
+            context = sampler.decisionWithRUMContext(for: .featureRate, rate: rate)
+        } else {
+            context = RUMSessionSamplingContext(decision: sessionSampler?.decision(for: .featureRate, rate: rate), capture: nil)
+        }
+        let sampler: Sampling
+        if let decision = context.decision {
+            sampler = DecidedSampler(samplingRate: rate.normalizedSampleRate, isSampled: decision.isSampled)
+        } else {
+            sampler = Sampler(samplingRate: rate)
+        }
+        return TraceSamplingContext(sampler: sampler, capture: context.capture, sessionID: context.decision?.sessionID)
     }
 
     /// Obtains a sampler with a custom rate appropriate for tracing operations.
