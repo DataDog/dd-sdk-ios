@@ -922,6 +922,32 @@ extension RUMActionsHandlerTests {
         XCTAssertEqual(fixture.monitor.actions.last?.actionReceipt?.hasCapturedView, false)
     }
 
+    func testSceneInput_rolloverCallbackRetiresOwnerBeforeTapDispatch() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene input requires iOS 27") }
+        var retireOnUpdate = false
+        let fixture = SceneInputFixture(startA: false, startB: false, onSessionUpdate: { owner in
+            if retireOnUpdate {
+                owner.invalidate()
+            }
+        })
+        fixture.monitor.startView(key: "manual", name: "Manual", attributes: [:])
+        let before = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .processRepresentative))
+        let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
+        fixture.elapsedClock.advance(by: timeout)
+        fixture.clock.now.addTimeInterval(timeout)
+        retireOnUpdate = true
+
+        let button = UIButton()
+        fixture.windowA.addSubview(button)
+        let event = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: button))
+        fixture.handler.intercept(application: .shared, event: event) {}
+
+        XCTAssertFalse(fixture.owner.isValid)
+        let after = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertNotEqual(after.sessionID, before.sessionID)
+        XCTAssertNil(after.userActionID)
+    }
+
     func testSceneInput_missingSnapshotIsAuthoritativeForAttachedScene() {
         guard #available(iOS 27.0, *) else {
             assertLegacyInputDelivery()
@@ -1219,11 +1245,14 @@ private final class SceneInputFixture {
         predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(),
         startA: Bool = true,
         startB: Bool = true,
-        windows: (UIWindow, UIWindow)? = nil
+        windows: (UIWindow, UIWindow)? = nil,
+        onSessionUpdate: ((RUMContextHandoff.Owner) -> Void)? = nil
     ) {
         windowA = windows?.0 ?? UIWindow(frame: .zero)
         windowB = windows?.1 ?? UIWindow(frame: .zero)
-        monitor = SceneInputMonitor(owner: owner, clock: clock, monotonicClock: elapsedClock)
+        monitor = SceneInputMonitor(owner: owner, clock: clock, monotonicClock: elapsedClock, onSessionUpdate: { [owner] _ in
+            onSessionUpdate?(owner)
+        })
         factory = SceneInputFactory(base: UITouchCommandFactory(dateProvider: clock, heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(), uiKitPredicate: predicate, swiftUIPredicate: nil, swiftUIDetector: nil))
         let a = windowA, b = windowB
         handler = RUMSceneActionsHandler(legacyHandler: RUMActionsHandler(dateProvider: clock, eventCommandsFactory: factory), eventCommandsFactory: factory, dateProvider: clock, owner: owner, expectedMonitor: monitor, sceneIdentifier: { window in
@@ -1249,13 +1278,28 @@ private final class SceneInputMonitor: Monitor {
         onOwnerRead?()
         return owner
     }
-    init(owner: RUMContextHandoff.Owner, clock: DateProvider, monotonicClock: MonotonicClock = MonotonicClockMock()) {
+    init(
+        owner: RUMContextHandoff.Owner,
+        clock: DateProvider,
+        monotonicClock: MonotonicClock = MonotonicClockMock(),
+        onSessionUpdate: @escaping RUM.SessionUpdater = { _ in }
+    ) {
         currentOwner = owner
         let scope = FeatureScopeMock(context: .mockWith(
             sdkInitDate: clock.now,
             applicationStateHistory: .mockWith(initialState: .active, date: clock.now)
         ))
-        super.init(dependencies: .mockWith(featureScope: scope, viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true), featureFlags: [.multiSceneTracking: true], monotonicClock: monotonicClock), dateProvider: clock, executionContextProvider: RUMContextHandoff.current(for:))
+        super.init(
+            dependencies: .mockWith(
+                featureScope: scope,
+                onSessionUpdate: onSessionUpdate,
+                viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true),
+                featureFlags: [.multiSceneTracking: true],
+                monotonicClock: monotonicClock
+            ),
+            dateProvider: clock,
+            executionContextProvider: RUMContextHandoff.current(for:)
+        )
     }
     override func process(command: RUMCommand) {
         if let action = command as? RUMAddUserActionCommand { actions.append(action); onAction?(action) }
