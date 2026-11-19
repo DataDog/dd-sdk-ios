@@ -160,6 +160,7 @@ internal final class RUMSemanticNavigationHostState {
     private weak var configuredTransitions: RUMNavigationTransitions?
     private(set) var selectedTransitions: RUMNavigationTransitions?
     private var observedTransitions: RUMNavigationObservedTransitions?
+    private var detachedDestination: RUMNavigationObservedTransitions.CommittedDestination?
     private var configuredObservationFactory:
         (@MainActor (@escaping @MainActor () -> Bool) -> RUMNavigationObservedTransitions)?
     private var sourceConfigurationGeneration: UInt64 = 0
@@ -206,6 +207,8 @@ internal final class RUMSemanticNavigationHostState {
         input: RUMNavigationHostInput,
         binding: RUMSwiftUIViewFoundationBinding?
     ) -> RUMSwiftUIViewCallbackAdmission? {
+        let previousDestination = detachedDestination
+        defer { withExtendedLifetime(previousDestination) {} }
         guard let binding else {
             if admission != nil {
                 finish(stopOccurrence: true)
@@ -281,20 +284,37 @@ internal final class RUMSemanticNavigationHostState {
         sourceConfigurationGeneration &+= 1
         let generation = sourceConfigurationGeneration
         isConfiguringObservation = true
+        defer {
+            if sourceConfigurationGeneration == generation {
+                isConfiguringObservation = false
+            }
+        }
         let observation = makeObservation { [weak self, weak expected] in
             guard let self, let expected else {
                 return false
             }
             return self.sourceConfigurationGeneration == generation && self.admits(expected)
         }
-        isConfiguringObservation = false
         guard sourceConfigurationGeneration == generation, admits(expected) else {
             observation.stop()
             return false
         }
-        observedTransitions = observation
-        configuredTransitions = observation.transitions
-        return true
+        do {
+            let previousDestination = detachedDestination
+            if let previousDestination {
+                observation.restoreDestinationIfNeeded(previousDestination)
+            }
+            guard sourceConfigurationGeneration == generation, admits(expected) else {
+                observation.stop()
+                return false
+            }
+            observedTransitions = observation
+            configuredTransitions = observation.transitions
+            detachedDestination = nil
+            // Releasing app-owned metadata can reenter the host.
+            withExtendedLifetime(previousDestination) {}
+        }
+        return sourceConfigurationGeneration == generation && admits(expected)
     }
 
     func register(
@@ -331,7 +351,8 @@ internal final class RUMSemanticNavigationHostState {
         }
         // A disconnected host may return without SwiftUI rebuilding its value.
         // Recreate only its pinned input, after this actual reader proves ownership.
-        guard prepareObservedTransitions(admission: expected) else {
+        guard prepareObservedTransitions(admission: expected), admits(expected),
+              observer?.currentSceneIdentifier == scene, expected.admits(sceneIdentifier: scene) else {
             return
         }
         requiresReaderMount = false
@@ -375,7 +396,7 @@ internal final class RUMSemanticNavigationHostState {
         guard admits(expected) else {
             return
         }
-        finish(stopOccurrence: true)
+        finish(stopOccurrence: true, retainObservedDestination: true)
     }
 
     func sceneDidDisconnect(
@@ -537,12 +558,18 @@ internal final class RUMSemanticNavigationHostState {
         }
     }
 
-    private func finish(stopOccurrence: Bool) {
+    private func finish(stopOccurrence: Bool, retainObservedDestination: Bool = false) {
         let previous = activeOccurrence
         let originalAdmission = admission
         let source = selectedTransitions
         let observation = observedTransitions
         let id = observationID
+        let previousDetachedDestination = detachedDestination
+        if retainObservedDestination {
+            detachedDestination = observation?.committedDestination ?? previousDetachedDestination
+        } else {
+            detachedDestination = nil
+        }
         observationGeneration &+= 1
         attachmentGeneration &+= 1
         detachGeneration &+= 1
@@ -570,6 +597,7 @@ internal final class RUMSemanticNavigationHostState {
             )
         }
         observation?.stop()
+        withExtendedLifetime(previousDetachedDestination) {}
     }
 }
 
