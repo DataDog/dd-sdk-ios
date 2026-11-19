@@ -44,6 +44,7 @@ internal class WebViewSessionRolloverHandler {
     enum RUMReceipt {
         case unscoped
         case native(RUMContextHandoff.Capture)
+        case expired(RUMContextHandoff.Capture, RUMWebViewSessionExpiry)
         case legacy(RUMLegacyWebViewTrackingReceipt)
     }
 
@@ -83,14 +84,21 @@ internal class WebViewSessionRolloverHandler {
         captureRUMContext(forSceneIdentifier: { sceneIdentifier })
     }
 
-    private func captureRUMContext(forSceneIdentifier sceneIdentifier: String?, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture {
+    private func observeNativeReceipt(
+        forSceneIdentifier sceneIdentifier: String?,
+        webView: WKWebView?,
+        owner: RUMContextHandoff.Owner
+    ) -> RUMReceipt {
         guard owner.isValid, let sceneIdentifier, let core,
               let provider = core.feature(named: Feature.rum, type: RUMContextHandoffWebViewProviding.self),
-              let capture = provider.captureRUMContext(forSceneIdentifier: sceneIdentifier, owner: owner),
-              capture.owner === owner, capture.value.sceneIdentifier == sceneIdentifier else {
-            return emptyCapture(for: owner)
+              let observation = provider.observeRUMSession(forSceneIdentifier: sceneIdentifier, owner: owner),
+              observation.capture.owner === owner, observation.capture.value.sceneIdentifier == sceneIdentifier else {
+            return .native(emptyCapture(for: owner))
         }
-        return capture
+        if let expiry = observation.expiry, let webView, activeWebViews.object(forKey: webView) != nil {
+            return .expired(observation.capture, expiry)
+        }
+        return .native(observation.capture)
     }
 
     func captureRUMContext(forSceneIdentifier resolveSceneIdentifier: () -> String?) -> RUMContextHandoff.Capture? {
@@ -101,7 +109,10 @@ internal class WebViewSessionRolloverHandler {
     }
 
     /// Captures the registration before the bridge queues the callback.
-    func captureRUMReceipt(forSceneIdentifier resolveSceneIdentifier: () -> String?) -> RUMReceipt {
+    func captureRUMReceipt(
+        for webView: WKWebView? = nil,
+        forSceneIdentifier resolveSceneIdentifier: () -> String?
+    ) -> RUMReceipt {
         switch nativeOwnership {
         case .legacy:
             return .unscoped
@@ -111,7 +122,7 @@ internal class WebViewSessionRolloverHandler {
             guard owner.isValid else {
                 return captureAfterRetirement(of: owner)
             }
-            return .native(captureRUMContext(forSceneIdentifier: resolveSceneIdentifier(), owner: owner))
+            return observeNativeReceipt(forSceneIdentifier: resolveSceneIdentifier(), webView: webView, owner: owner)
         }
     }
 

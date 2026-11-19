@@ -36,12 +36,17 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
     }
 
     /// Forwards an already captured callback without consulting delivery-time ownership.
-    func send(body: Any, slotId: String?, capture: RUMContextHandoff.Capture?) {
+    func send(
+        body: Any,
+        slotId: String?,
+        capture: RUMContextHandoff.Capture?,
+        sessionExpiry: RUMWebViewSessionExpiry? = nil
+    ) {
         guard let capture else {
             return send(body: body, slotId: slotId)
         }
         send(body: body, slotId: slotId, makeMessage: { message in
-            .payload(WebViewMessageWithRUMContext(message: message, capture: capture))
+            .payload(WebViewMessageWithRUMContext(message: message, capture: capture, sessionExpiry: sessionExpiry))
         })
     }
 
