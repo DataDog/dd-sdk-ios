@@ -224,12 +224,17 @@ internal class Monitor: RUMCommandSubscriber {
         command.globalAttributes = attributes
         // process command in event context
         let completesDroppedErrors = isMultiSceneTrackingEnabled
+        let legacyRegistration = (command as? RUMKeepSessionAliveCommand)?.legacyWebViewRegistration
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
                 if completesDroppedErrors {
                     (command as? RUMUserActionCommand)?.actionReceipt?.reject()
                     (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
                 }
+                return
+            }
+
+            guard legacyRegistration?.isCurrent != false else {
                 return
             }
 
@@ -279,32 +284,34 @@ internal class Monitor: RUMCommandSubscriber {
             self.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
         }
 
-        // update the core context with rum context
-        featureScope.set(
-            context: { [weak self] () -> RUMCoreContext? in
-                guard let self = self else {
-                    return nil
-                }
-
-                guard let activeSession = self.applicationScope.activeSession else {
-                    return nil
-                }
-
-                let activeViewScope = self.representativeView(in: activeSession)
-                let context = activeViewScope?.context ?? activeSession.context
-
-                return RUMCoreContext(
-                    applicationID: context.rumApplicationID,
-                    sessionID: context.sessionID.toRUMDataFormat,
-                    sessionSampler: activeSession.sampler,
-                    viewID: context.activeViewID?.toRUMDataFormat,
-                    userActionID: context.activeUserActionID?.toRUMDataFormat,
-                    viewServerTimeOffset: activeViewScope?.serverTimeOffset,
-                    viewPath: context.activeViewPath,
-                    viewName: context.activeViewName
-                )
+        let updateContext = { [weak self] () -> RUMCoreContext? in
+            guard let self = self else {
+                return nil
             }
-        )
+
+            guard let activeSession = self.applicationScope.activeSession else {
+                return nil
+            }
+
+            let activeViewScope = self.representativeView(in: activeSession)
+            let context = activeViewScope?.context ?? activeSession.context
+
+            return RUMCoreContext(
+                applicationID: context.rumApplicationID,
+                sessionID: context.sessionID.toRUMDataFormat,
+                sessionSampler: activeSession.sampler,
+                viewID: context.activeViewID?.toRUMDataFormat,
+                userActionID: context.activeUserActionID?.toRUMDataFormat,
+                viewServerTimeOffset: activeViewScope?.serverTimeOffset,
+                viewPath: context.activeViewPath,
+                viewName: context.activeViewName
+            )
+        }
+        if let legacyRegistration {
+            legacyRegistration.setRUMContext(updateContext)
+        } else {
+            featureScope.set(context: updateContext)
+        }
     }
 
     private func process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {

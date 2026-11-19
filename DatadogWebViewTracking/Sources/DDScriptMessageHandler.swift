@@ -59,16 +59,17 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
         webView: WKWebView?,
         rolloverHandler: WebViewSessionRolloverHandler
     ) {
-        let capture = rolloverHandler.captureRUMContext(forSceneIdentifier: {
+        let receipt = rolloverHandler.captureRUMReceipt(forSceneIdentifier: {
             webView?.window?.windowScene?.session.persistentIdentifier
         })
-        if let capture {
-            queue.async {
-                self.emitter.send(body: body, slotId: slotId, capture: capture)
-            }
-        } else {
-            queue.async {
+        queue.async {
+            switch receipt {
+            case .unscoped:
                 self.emitter.send(body: body, slotId: slotId)
+            case .native(let capture):
+                self.emitter.send(body: body, slotId: slotId, capture: capture)
+            case .legacy(let registration):
+                self.emitter.send(body: body, slotId: slotId, legacyRegistration: registration)
             }
         }
     }
