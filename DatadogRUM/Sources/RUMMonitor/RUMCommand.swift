@@ -335,6 +335,7 @@ internal struct RUMStartViewCommand: RUMCommand {
 
 internal struct RUMStopViewCommand: RUMCommand {
     var target: RUMCommandTarget = .processRepresentative
+    var resolvesTrackedControllerOwner = false
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
