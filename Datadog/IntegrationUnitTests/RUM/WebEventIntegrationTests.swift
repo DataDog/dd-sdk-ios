@@ -8,6 +8,7 @@ import XCTest
 
 #if !os(tvOS) && !os(watchOS)
 
+@_spi(Internal)
 import DatadogInternal
 import TestUtilities
 import WebKit
@@ -528,6 +529,61 @@ class WebEventIntegrationTests: XCTestCase {
             eventDate: currentBEventDate + serverOffsetMilliseconds,
             containerViewID: nativeBEvent.view.id
         )
+    }
+
+    func testFreshBrowserCallbacksResumeAfterCommittedLegacyRUMReplacement() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-aware bridge requires iOS 27") }
+        let originalApp: String = .mockRandom()
+        var original = RUM.Configuration(applicationID: originalApp)
+        original.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        original.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: original, in: core)
+        RUMMonitor.shared(in: core).startView(key: "original-rum-view")
+        core.flush()
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        XCTAssertTrue(owner.isValid)
+
+        let bridge = try XCTUnwrap(controller.scriptMessageHandler(forName: DDScriptMessageHandler.name) as? DDScriptMessageHandler)
+        let entered = DispatchSemaphore(value: 0)
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        bridge.queue.async {
+            entered.signal()
+            release.wait()
+        }
+        guard entered.wait(timeout: .now() + 5) == .success else {
+            return XCTFail("Could not hold the script delivery queue")
+        }
+        let before = UUID().uuidString.lowercased()
+        let after = UUID().uuidString.lowercased()
+        let browserSession = UUID().uuidString.lowercased()
+        let eventDate = Int64(Date().timeIntervalSince1970 * 1_000)
+        controller.send(body: webViewViewBody(date: eventDate, applicationID: originalApp, sessionID: browserSession, viewID: before))
+
+        let replacementApp: String = .mockRandom()
+        let replacementSession: RUMUUID = .mockRandom()
+        try RUM.enableOrThrow(with: .mockWith(applicationID: replacementApp) {
+            $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: replacementSession)
+        }, in: core)
+        XCTAssertFalse(owner.isValid)
+        RUMMonitor.shared(in: core).startView(key: "legacy-rum-view")
+        core.flush()
+        XCTAssertTrue(controller.scriptMessageHandler(forName: DDScriptMessageHandler.name) === bridge)
+        controller.send(body: webViewViewBody(date: eventDate, applicationID: originalApp, sessionID: browserSession, viewID: after))
+        release.signal()
+        controller.flush()
+
+        let events = try core.waitAndReturnRUMEventMatchers()
+        let oldEvents = events.filter { (try? $0.jsonMatcher.valueOrNil(forKeyPath: "view.id")) == before }
+        let newEvents = events.filter { (try? $0.jsonMatcher.valueOrNil(forKeyPath: "view.id")) == after }
+        XCTAssertTrue(oldEvents.isEmpty)
+        XCTAssertEqual(newEvents.count, 1)
+        let written = try XCTUnwrap(newEvents.first)
+        let applicationID: String? = try written.jsonMatcher.valueOrNil(forKeyPath: "application.id")
+        let sessionID: String? = try written.jsonMatcher.valueOrNil(forKeyPath: "session.id")
+        XCTAssertEqual(applicationID, replacementApp)
+        XCTAssertEqual(sessionID, replacementSession.toRUMDataFormat)
     }
 
     private func webViewViewBody(date: Int64, applicationID: String, sessionID: String, viewID: String) -> String {
