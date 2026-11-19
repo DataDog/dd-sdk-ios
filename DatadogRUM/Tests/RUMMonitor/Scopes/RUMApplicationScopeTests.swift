@@ -1481,6 +1481,34 @@ extension RUMApplicationScopeTests {
         XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), action.action.id)
     }
 
+    func testCapturedDiscreteActionDoesNotUseReplacementViewOrRefreshAnExpiredSession() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Requires iOS 27 action receipt routing")
+        }
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let session = try XCTUnwrap(app.activeSession)
+        let view = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+
+        navigate(app, context: context, scene: routingSceneA, name: "replacement", after: 3)
+        let interaction = session.lastInteraction
+        var stale = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(4), actionType: .custom, name: "stale")
+        stale.target = .scene(routingSceneA)
+        stale.actionReceipt = .init(owner: owner, context: captured)
+        _ = routeApplicationCommand(app: app, command: stale, context: context, writer: writer)
+        XCTAssertFalse(writer.events(ofType: RUMActionEvent.self).contains { $0.action.target?.name == "stale" })
+        XCTAssertEqual(session.lastInteraction, interaction)
+
+        let activeView = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        stale.actionReceipt = try .init(owner: owner, context: capturedReceiptContext(app, view: activeView))
+        _ = app.process(command: stale, monotonicTime: interaction + RUMSessionScope.Constants.sessionTimeoutDuration + 1, context: context, writer: writer)
+        XCTAssertTrue(app.activeSession === session)
+        XCTAssertNil(session.endReason)
+        XCTAssertFalse(writer.events(ofType: RUMActionEvent.self).contains { $0.action.target?.name == "stale" })
+    }
+
     func testUncertainLaunchReceiptRemainsUnclaimedUntilActualResolution() throws {
         guard #available(iOS 27.0, *) else {
             throw XCTSkip("Requires iOS 27 action receipt routing")

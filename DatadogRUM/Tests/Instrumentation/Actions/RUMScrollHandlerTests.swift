@@ -306,6 +306,32 @@ final class SceneScrollOwnershipTests: XCTestCase {
         XCTAssertNil(RUMContextHandoff.current(for: f.owner))
     }
 
+    func testSceneScroll_doesNotStartOnViewOpenedByPredicate() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
+        let f = SceneScrollFixture()
+        let scroll = f.scroll(in: f.windowA)
+        f.predicate.onAction = { _ in f.startView("next-a", scene: "a") }
+        var forwarded = 0
+
+        f.handler.interceptWillBeginDragging(scroll) { forwarded += 1 }
+        XCTAssertNil(try f.receipt(at: 0).claim)
+        scroll.contentOffset = CGPoint(x: 0, y: 100)
+        f.handler.interceptDidEndDragging(scroll, willDecelerate: false) { forwarded += 1 }
+        XCTAssertEqual(forwarded, 2)
+        XCTAssertTrue(f.events.isEmpty)
+
+        f.predicate.onAction = nil
+        let freshScroll = f.scroll(in: f.windowA)
+        f.handler.notify_scrollViewWillBeginDragging(freshScroll)
+        freshScroll.contentOffset = CGPoint(x: 0, y: 100)
+        f.handler.notify_scrollViewDidEndDragging(freshScroll, willDecelerate: false)
+        let replacementID = try XCTUnwrap(f.monitor.rumContextSnapshot(for: .scene(.init(rawValue: "a")))?.viewID)
+        XCTAssertEqual(f.events.map(\.view.id), [replacementID])
+    }
+
     func testSceneScroll_peerGesturesAndDuplicateTerminalsDoNotShareOwners() throws {
         guard #available(iOS 27.0, *) else {
             assertLegacyScrollDelivery()
