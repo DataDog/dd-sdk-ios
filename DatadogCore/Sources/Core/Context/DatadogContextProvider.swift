@@ -108,6 +108,17 @@ internal final class DatadogContextProvider {
         }
     }
 
+    /// Publishes only when the owner-validated mutation was accepted.
+    /// A false result must leave the supplied context unchanged.
+    func writeIfAccepted(block: @escaping (inout DatadogContext) -> Bool) {
+        queue.async {
+            guard block(&self.context) else {
+                return
+            }
+            self.receivers.forEach { $0(self.context) }
+        }
+    }
+
     /// Subscribes a context's property to a publisher.
     ///
     /// The context provider can subscribe a context property to a publisher that complies

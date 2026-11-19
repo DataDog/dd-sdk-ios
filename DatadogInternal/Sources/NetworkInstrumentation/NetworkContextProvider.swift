@@ -11,10 +11,13 @@ internal protocol NetworkContextProvider: AnyObject {
     /// Returns current `NetworkContext` value.
     var currentNetworkContext: NetworkContext? { get }
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
+    func captureRUMContext() -> RUMURLSessionContext?
 }
 
 extension NetworkContextProvider {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { nil }
+
+    func captureRUMContext() -> RUMURLSessionContext? { nil }
 }
 
 /// Manages the `NetworkContext` reads and writes in a thread-safe manner.
@@ -36,6 +39,15 @@ internal class NetworkContextCoreProvider: NetworkContextProvider {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? {
         let owner = state.owner
         return owner?.isValid == true ? owner : nil
+    }
+
+    /// Captures request ownership without discarding a retained invalid owner.
+    func captureRUMContext() -> RUMURLSessionContext? {
+        let owner = state.owner
+        guard let owner, let value = RUMContextHandoff.captureValue(for: owner) else {
+            return nil
+        }
+        return RUMURLSessionContext(owner: owner, value: value)
     }
 }
 
