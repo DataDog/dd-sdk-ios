@@ -928,7 +928,31 @@ extension DatadogProfilerTests {
 // MARK: - Attachments bounded by the sampled range
 
 extension DatadogProfilerTests {
+    private func enterOwnedMode(_ profiler: DatadogProfiler, date: Date) throws -> OwnedProfilerQueueFixture {
+        let fixture = OwnedProfilerQueueFixture(date: date)
+        let ownership = try fixture.ownership()
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
+        // An unmatched end selects the owned path without making a profile eligible by itself.
+        let message = OwnedOperationMessage(
+            ownership: ownership,
+            attributes: ["owned-mode-seed": true],
+            operation: Vital.mockWith(id: "owned-mode-end", operationKey: nil, stepType: .end, date: date)
+        )
+        _ = profiler.receive(message: .payload(message), from: core)
+        flushQueue()
+        XCTAssertEqual(profiler.attributes["owned-mode-seed"] as? Bool, true)
+        return fixture
+    }
+
     func testApplicationDidEnterBackground_dropsProfile_whenOnlyEventsOutsideSampledRangeRemain() throws {
+        try assertBackgroundDropsOutOfRangeEvents(owned: false)
+    }
+
+    func testApplicationDidEnterBackground_dropsProfile_whenOnlyEventsOutsideSampledRangeRemain_withOwnedOperations() throws {
+        try assertBackgroundDropsOutOfRangeEvents(owned: true)
+    }
+
+    private func assertBackgroundDropsOutOfRangeEvents(owned: Bool) throws {
         // Given
         let telemetry = TelemetryMock()
         let dateProvider = DateProviderMock()
@@ -937,6 +961,8 @@ extension DatadogProfilerTests {
             telemetryController: .init(telemetry: telemetry),
             dateProvider: dateProvider
         )
+        let ownedFixture = try owned ? enterOwnedMode(profiler, date: dateProvider.now) : nil
+        defer { withExtendedLifetime(ownedFixture) {} }
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         dd_profiler_stop()
         addSampleToCurrentProfile()
@@ -972,10 +998,20 @@ extension DatadogProfilerTests {
     }
 
     func testApplicationDidEnterBackground_filtersEventsAgainstCorrectedSampledRange() throws {
+        try assertBackgroundFiltersAgainstCorrectedRange(owned: false)
+    }
+
+    func testApplicationDidEnterBackground_filtersEventsAgainstCorrectedSampledRange_withOwnedOperations() throws {
+        try assertBackgroundFiltersAgainstCorrectedRange(owned: true)
+    }
+
+    private func assertBackgroundFiltersAgainstCorrectedRange(owned: Bool) throws {
         // Given
         let serverTimeOffset: TimeInterval = 60
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(continuousProfilingSampled: true, dateProvider: dateProvider)
+        let ownedFixture = try owned ? enterOwnedMode(profiler, date: dateProvider.now) : nil
+        defer { withExtendedLifetime(ownedFixture) {} }
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         dd_profiler_stop()
         addSampleToCurrentProfile()
@@ -3210,6 +3246,14 @@ extension DatadogProfilerTests {
     // MARK: - App-launch profile writes
 
     func testReceiveTTIDMessage_withValidProfileData_createsCorrectProfileEvent() throws {
+        try assertTTIDWritesValidProfile(owned: false)
+    }
+
+    func testReceiveTTIDMessage_withValidProfileData_createsCorrectProfileEvent_withOwnedOperations() throws {
+        try assertTTIDWritesValidProfile(owned: true)
+    }
+
+    private func assertTTIDWritesValidProfile(owned: Bool) throws {
         // Given
         let telemetry = TelemetryMock()
         let ttidVital = Vital.mockWith(
@@ -3242,6 +3286,8 @@ extension DatadogProfilerTests {
             isAppLaunchProfilingEnabled: true,
             telemetryController: ProfilingTelemetryController(telemetry: telemetry)
         )
+        let ownedFixture = try owned ? enterOwnedMode(profiler, date: Date()) : nil
+        defer { withExtendedLifetime(ownedFixture) {} }
         _ = profiler.receive(message: .context(core.context), from: core)
         flushQueue()
         addSampleToCurrentProfile()

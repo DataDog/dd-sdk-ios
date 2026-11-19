@@ -615,8 +615,9 @@ private extension DatadogProfiler {
 
 private extension DatadogProfiler {
     /// Applies server-time correction and retains events that could have been sampled by the profile.
-    func prepareProfileForWriting(_ profile: OpaquePointer) {
-        dd_pprof_set_server_time_offset_ns(profile, currentServerTimeOffset.dd.toInt64Nanoseconds)
+    func prepareProfileForWriting(_ profile: OpaquePointer, serverTimeOffset: TimeInterval? = nil) {
+        let timeOffset = serverTimeOffset ?? currentServerTimeOffset
+        dd_pprof_set_server_time_offset_ns(profile, timeOffset.dd.toInt64Nanoseconds)
         let firstSample = dd_pprof_get_start_timestamp_s(profile).dd.toInt64Nanoseconds
         let lastSample = dd_pprof_get_end_timestamp_s(profile).dd.toInt64Nanoseconds
 
@@ -1004,6 +1005,9 @@ private extension DatadogProfiler {
             return
         }
 
+        let serverTimeOffset = currentServerTimeOffset
+        prepareProfileForWriting(profile, serverTimeOffset: serverTimeOffset)
+
         if canWriteOwnedProfile {
             writeOwned(
                 profile: profile,
@@ -1012,7 +1016,8 @@ private extension DatadogProfiler {
                 hangs: hangs,
                 longTasks: longTasks,
                 ownedOperations: ownedOperations?.profileOperations,
-                ownedCorrelation: ownedOperations?.correlation
+                ownedCorrelation: ownedOperations?.correlation,
+                serverTimeOffset: serverTimeOffset
             )
         } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
             telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
@@ -1068,6 +1073,9 @@ private extension DatadogProfiler {
             return
         }
 
+        let serverTimeOffset = currentServerTimeOffset
+        prepareProfileForWriting(profile, serverTimeOffset: serverTimeOffset)
+
         writeOwned(
             profile: profile,
             operation: .appLaunch,
@@ -1075,7 +1083,8 @@ private extension DatadogProfiler {
             hangs: hangs,
             longTasks: longTasks,
             ownedOperations: ownedOperations?.profileOperations,
-            ownedCorrelation: ownedOperations?.correlation
+            ownedCorrelation: ownedOperations?.correlation,
+            serverTimeOffset: serverTimeOffset
         )
     }
 
