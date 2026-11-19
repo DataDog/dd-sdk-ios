@@ -172,10 +172,11 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
 internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubscriber {
     private struct Capture {
         let scene: RUMSceneIdentifier?
+        let target: RUMCommandTarget
         let value: RUMContextHandoff.CurrentValue?
 
         func pending(receipt: RUMContextHandoff.ActionReceipt?) -> Capture {
-            Capture(scene: scene, value: value.map {
+            Capture(scene: scene, target: target, value: value.map {
                 RUMContextHandoff.CurrentValue(
                     rumContext: $0.rumContext,
                     sceneIdentifier: $0.sceneIdentifier,
@@ -188,7 +189,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
 
         /// Terminal callbacks cannot expose a prior or queued action's identity.
         var terminal: Capture {
-            Capture(scene: scene, value: scene.map {
+            Capture(scene: scene, target: target, value: scene.map {
                 RUMContextHandoff.CurrentValue(
                     rumContext: nil,
                     sceneIdentifier: $0.rawValue,
@@ -267,7 +268,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
 
     func interceptDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool, operation: () -> Void) {
         let id = ObjectIdentifier(scrollView)
-        let capture = gestures[id]?.capture.terminal ?? Capture(scene: nil, value: nil)
+        let capture = gestures[id]?.capture.terminal ?? Capture(scene: nil, target: .processRepresentative, value: nil)
         let previousFrame = publicationFrame
         publicationFrame = PublicationFrame(scrollID: id, capture: capture)
         defer { publicationFrame = previousFrame }
@@ -279,7 +280,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
 
     func interceptDidEndDecelerating(_ scrollView: UIScrollView, operation: () -> Void) {
         let id = ObjectIdentifier(scrollView)
-        let capture = gestures[id]?.capture.terminal ?? Capture(scene: nil, value: nil)
+        let capture = gestures[id]?.capture.terminal ?? Capture(scene: nil, target: .processRepresentative, value: nil)
         let previousFrame = publicationFrame
         publicationFrame = PublicationFrame(scrollID: id, capture: capture)
         defer { publicationFrame = previousFrame }
@@ -297,7 +298,11 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
             guard isOwnedSubscriber else {
                 return
             }
-            let ownership = RUMContinuousActionOwnership(sceneIdentifier: frame.capture.scene, owner: owner)
+            let ownership = RUMContinuousActionOwnership(
+                sceneIdentifier: frame.capture.scene,
+                owner: owner,
+                target: frame.capture.target
+            )
             start.target = .continuousAction(ownership)
             let receipt = frame.capture.value.map {
                 RUMContextHandoff.ActionReceipt(owner: owner, context: $0.rumContext)
@@ -330,15 +335,12 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
     private func captureSource(_ scrollView: UIScrollView) -> Capture {
         guard let window = scrollView.window, let scene = sceneIdentifier(window) else {
             // Source-less callbacks preserve an inherited binding without inventing one.
-            return Capture(scene: nil, value: nil)
+            return Capture(scene: nil, target: .processRepresentative, value: nil)
         }
-        let context: RUMCoreContext?
-        if isOwnedSubscriber, let monitor = expectedMonitor {
-            context = monitor.rumContextSnapshot(for: .scene(scene))
-        } else {
-            context = nil
-        }
-        return Capture(scene: scene, value: RUMContextHandoff.CurrentValue(
+        let (target, context) = isOwnedSubscriber
+            ? expectedMonitor?.captureAutomaticAction(in: scene) ?? (.scene(scene), nil)
+            : (.scene(scene), nil)
+        return Capture(scene: scene, target: target, value: RUMContextHandoff.CurrentValue(
             rumContext: context,
             sceneIdentifier: scene.rawValue,
             hasPendingUserAction: false,
