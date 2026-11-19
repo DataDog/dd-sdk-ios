@@ -837,14 +837,16 @@ class RUMSceneViewsHandlerTests: XCTestCase {
         predicate: UIKitRUMViewsPredicate? = UIKitRUMViewsPredicateMock(result: .init(name: "View")),
         initial: [RUMSceneIdentifier: Bool]? = nil,
         initialProvider: (() -> [RUMSceneIdentifier: Bool])? = nil,
-        sceneProvider: ((UIViewController) -> RUMSceneIdentifier?)? = nil
+        sceneProvider: ((UIViewController) -> RUMSceneIdentifier?)? = nil,
+        swiftUIPredicate: SwiftUIRUMViewsPredicate? = nil,
+        swiftUIViewNameExtractor: SwiftUIViewNameExtractor? = nil
     ) -> RUMSceneViewsHandler {
         let initial = initial ?? [sceneA: true, sceneB: true]
         let handler = RUMSceneViewsHandler(
             dateProvider: date,
             uiKitPredicate: predicate,
-            swiftUIPredicate: nil,
-            swiftUIViewNameExtractor: nil,
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIViewNameExtractor: swiftUIViewNameExtractor,
             notificationCenterProvider: .init(applicationCenter: center),
             isMultiSceneApplication: true,
             sceneIdentifierProvider: sceneProvider ?? { self.owners[ObjectIdentifier($0)] },
@@ -897,6 +899,52 @@ class RUMSceneViewsHandlerTests: XCTestCase {
         appear(b, in: sceneB, using: handler)
         try assertCommands([(true, ViewIdentifier(a), .scene(sceneA)), (true, ViewIdentifier(b), .scene(sceneB))])
     }
+
+    #if canImport(SwiftUI)
+    func testSwiftUIAuthority_preservesUIKitAppearanceAndMigration() throws {
+        let predicate = CountingPredicate()
+        let handler = makeHandler(predicate: predicate)
+        handler.swiftUIViewEligibility = { _ in false }
+        let view = UIViewController()
+
+        appear(view, in: sceneA, using: handler)
+        appear(view, in: sceneB, using: handler)
+
+        try assertCommands([
+            (true, ViewIdentifier(view), .scene(sceneA)),
+            (false, ViewIdentifier(view), .scene(sceneA)),
+            (true, ViewIdentifier(view), .scene(sceneB)),
+        ])
+        XCTAssertEqual(predicate.calls, 1)
+    }
+
+    func testSwiftUIAuthority_stillSuppressesAutomaticSwiftUIAppearanceAndMigration() throws {
+        let handler = makeHandler(
+            predicate: nil,
+            swiftUIPredicate: SwiftUIRUMViewsPredicateMock(result: .init(name: "Automatic")),
+            swiftUIViewNameExtractor: SwiftUIViewNameExtractorMock(defaultResult: "SwiftUI")
+        )
+        let view = UIViewController()
+        handler.swiftUIViewEligibility = { _ in false }
+
+        appear(view, in: sceneA, using: handler)
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+
+        handler.swiftUIViewEligibility = { _ in true }
+        appear(view, in: sceneA, using: handler)
+        handler.swiftUIViewEligibility = { _ in false }
+        appear(view, in: sceneB, using: handler)
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA))])
+
+        handler.swiftUIViewEligibility = { _ in true }
+        appear(view, in: sceneB, using: handler)
+        try assertCommands([
+            (true, ViewIdentifier(view), .scene(sceneA)),
+            (false, ViewIdentifier(view), .scene(sceneA)),
+            (true, ViewIdentifier(view), .scene(sceneB)),
+        ])
+    }
+    #endif
 
     func testControllerMovement_stopsCapturedOwnerAndStartsNewOwner() throws {
         let predicate = CountingPredicate()
