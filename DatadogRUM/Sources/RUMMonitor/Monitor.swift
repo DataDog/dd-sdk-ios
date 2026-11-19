@@ -526,7 +526,11 @@ internal class Monitor: RUMCommandSubscriber {
                 break
             }
             guard self.applicationScope.processResourcePreparation(
-                command, monotonicTime: monotonicTime, context: context, writer: writer, startReceipt: startReceipt
+                command,
+                monotonicTime: monotonicTime,
+                context: context,
+                writer: writer,
+                startReceipt: startReceipt
             ) else {
                 return
             }
