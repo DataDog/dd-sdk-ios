@@ -130,7 +130,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
     let onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
     let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)?
     let onDidDetach: (@MainActor () -> Void)?
-    let onDetachFromScene: (@MainActor (RUMSceneIdentifier) -> Bool)?
+    let onDetachFromScene: (@MainActor (ObserverView, RUMSceneIdentifier) -> Bool)?
     let onChange: @MainActor (RUMViewTrackingState.Attachment) -> Void
 
     @MainActor
@@ -143,7 +143,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         onMount: (@MainActor (RUMSceneIdentifier) -> Void)? = nil,
         onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)? = nil,
         onDidDetach: (@MainActor () -> Void)? = nil,
-        onDetachFromScene: (@MainActor (RUMSceneIdentifier) -> Bool)? = nil,
+        onDetachFromScene: (@MainActor (ObserverView, RUMSceneIdentifier) -> Bool)? = nil,
         onChange: @escaping @MainActor (RUMViewTrackingState.Attachment) -> Void
     ) {
         self.admission = admission
@@ -234,8 +234,8 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         var onChange: @MainActor (RUMViewTrackingState.Attachment) -> Void
         var onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
         var onDidDetach: (@MainActor () -> Void)?
-        var onDetachFromScene: (@MainActor (RUMSceneIdentifier) -> Bool)?
-        private var detachingFromWindow = false
+        var onDetachFromScene: (@MainActor (ObserverView, RUMSceneIdentifier) -> Bool)?
+        private(set) var detachingFromWindow = false
         private var lastAttachment: RUMViewTrackingState.Attachment?
         private var requiresMountNotification = false
         private var lastProvenSceneIdentifier: RUMSceneIdentifier?
@@ -326,7 +326,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
             }
             lastAttachment = attachment
             if attachment == .detached, let lastProvenSceneIdentifier,
-               onDetachFromScene?(lastProvenSceneIdentifier) == true {
+               onDetachFromScene?(self, lastProvenSceneIdentifier) == true {
                 return
             }
             onChange(attachment)
