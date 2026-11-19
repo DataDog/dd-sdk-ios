@@ -762,6 +762,78 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertTrue(provider.rumContextHandoffOwner === owner)
     }
 
+    func testReplacingCommittedRUMWithLegacyRegistration_retiresTheExactOwnerBeforeDeliveringMessages() throws {
+        let core = makeHandoffCore()
+        defer {
+            core.flush()
+            core.stop()
+        }
+        let old = HandoffReceiver(provider: NetworkContextCoreProvider())
+        let replacement = HandoffReceiver(provider: NetworkContextCoreProvider())
+        let peer = HandoffReceiver(provider: NetworkContextCoreProvider())
+        try core.register(feature: OtherHandoffFeature(receiver: peer))
+        let owner = try core.activateRUMContextHandoff()
+        try core.registerRUMContextHandoff(feature: HandoffRUMFeature(receiver: old), owner: owner)
+        core.bus.flush()
+        let storage = try XCTUnwrap(core.stores[Feature.rum]?.storage.authorizedFilesOrchestrator)
+
+        var retired = false
+        peer.beforePublication = { retiredOwner, active in
+            guard !active, retiredOwner === owner else {
+                return
+            }
+            retired = true
+            XCTAssertFalse(owner.isValid)
+            XCTAssertNil(core.rumContextHandoffOwner)
+            XCTAssertTrue(core.get(feature: HandoffRUMFeature.self)?.receiver === replacement)
+            XCTAssertFalse(core.stores[Feature.rum]?.storage.authorizedFilesOrchestrator === storage)
+            core.send(message: .payload("legacy registration committed"), else: {})
+        }
+        defer { peer.beforePublication = nil }
+        try core.register(feature: HandoffRUMFeature(receiver: replacement))
+        core.bus.flush()
+
+        XCTAssertTrue(retired)
+        XCTAssertFalse(owner.isValid)
+        XCTAssertNil(core.rumContextHandoffOwner)
+        XCTAssertNil(peer.provider.rumContextHandoffOwner)
+        XCTAssertEqual(old.payloads, [])
+        XCTAssertEqual(replacement.payloads, ["legacy registration committed"])
+    }
+
+    func testReplacingLegacyRUMWhileSceneActivationIsStaged_keepsTheStagedOwner() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        try core.register(feature: HandoffRUMMemoryFeature(receiver: receiver))
+        let owner = try core.activateRUMContextHandoff()
+
+        try core.register(feature: HandoffRUMMemoryFeature(receiver: receiver))
+        XCTAssertTrue(owner.isValid)
+        XCTAssertTrue(core.rumContextHandoffOwner === owner)
+
+        try core.registerRUMContextHandoff(feature: HandoffRUMMemoryFeature(receiver: receiver), owner: owner)
+        XCTAssertTrue(core.rumContextHandoffOwner === owner)
+    }
+
+    func testFailedLegacyRUMRegistration_preservesTheCommittedHandoff() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        let owner = try core.activateRUMContextHandoff()
+        try core.registerRUMContextHandoff(feature: HandoffRUMMemoryFeature(receiver: receiver), owner: owner)
+
+        // Block new remote storage in this test's own temporary directory.
+        let blocked = temporaryCoreDirectory.coreDirectory.url.appendingPathComponent(Feature.rum)
+        try Data().write(to: blocked)
+
+        XCTAssertThrowsError(try core.register(feature: HandoffRUMFeature(receiver: receiver)))
+        XCTAssertTrue(owner.isValid)
+        XCTAssertTrue(core.rumContextHandoffOwner === owner)
+        XCTAssertTrue(core.get(feature: HandoffRUMMemoryFeature.self)?.receiver === receiver)
+        XCTAssertTrue(receiver.provider.rumContextHandoffOwner === owner)
+    }
+
     func testProviderRegisteredAfterActivationReceivesSameOwner() throws {
         let core = makeHandoffCore()
         defer { core.stop() }
@@ -1917,11 +1989,26 @@ private struct OtherHandoffFeature: DatadogFeature {
     var messageReceiver: FeatureMessageReceiver { receiver }
 }
 
+private struct HandoffRUMMemoryFeature: DatadogFeature {
+    static let name = Feature.rum
+    let receiver: HandoffReceiver
+    var messageReceiver: FeatureMessageReceiver { receiver }
+}
+
+private struct HandoffRUMFeature: DatadogRemoteFeature {
+    static let name = Feature.rum
+    let receiver: HandoffReceiver
+    var messageReceiver: FeatureMessageReceiver { receiver }
+    var requestBuilder: FeatureRequestBuilder { FeatureRequestBuilderMock() }
+    var performanceOverride: PerformancePresetOverride? { nil }
+}
+
 private final class HandoffReceiver: FeatureMessageReceiver, RUMContextHandoffReceiving {
     let provider: NetworkContextCoreProvider
     var beforePublication: ((RUMContextHandoff.Owner, Bool) -> Void)?
     private(set) var publications = 0
     private(set) var messages = 0
+    private(set) var payloads: [String] = []
 
     init(provider: NetworkContextCoreProvider) { self.provider = provider }
 
@@ -1933,6 +2020,9 @@ private final class HandoffReceiver: FeatureMessageReceiver, RUMContextHandoffRe
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         messages += 1
+        if case let .payload(probe as String) = message {
+            payloads.append(probe)
+        }
         return false
     }
 }
