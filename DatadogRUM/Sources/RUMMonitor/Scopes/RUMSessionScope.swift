@@ -796,7 +796,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         monotonicTime: TimeInterval,
         restoredActionView: RUMViewScope?
     ) -> [RUMViewScope] {
-        if (command as? RUMUserActionCommand)?.expiredUnscopedView != nil {
+        if let action = command as? RUMUserActionCommand, action.expiredUnscopedView != nil {
+            // Session-start callbacks may retire the registration before this dispatch.
+            guard action.actionReceipt?.owner.isValid == true else {
+                return []
+            }
             // Only the session created by this command can supply the restored recipient.
             if case .continuousAction(let ownership) = command.target, !ownership.canClaim {
                 return []

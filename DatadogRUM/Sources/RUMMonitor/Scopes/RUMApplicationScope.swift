@@ -178,7 +178,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         if dependencies.isMultiSceneTrackingEnabled, let expiredView = (command as? RUMUserActionCommand)?.expiredUnscopedView {
             // A different command may already have rolled the session over or replaced the original view.
-            guard let session = activeSession, session.sessionUUID.toRUMDataFormat == expiredView.sessionID,
+            guard actionReceipt?.owner.isValid == true,
+                  let session = activeSession, session.sessionUUID.toRUMDataFormat == expiredView.sessionID,
                   session.soleUnscopedActionView?.viewUUID == expiredView.viewID,
                   context.applicationStateHistory.currentState.isRunningInForeground,
                   RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: monotonicTime)
