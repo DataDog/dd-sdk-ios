@@ -895,6 +895,33 @@ extension RUMActionsHandlerTests {
         XCTAssertTrue(action.actionReceipt?.hasCapturedView == true)
     }
 
+    func testSceneInput_firstTapAfterTimeoutUsesRestoredManualView() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene input requires iOS 27") }
+        let fixture = SceneInputFixture(startA: false, startB: false)
+        fixture.monitor.startView(key: "manual", name: "Manual", attributes: [:])
+        let before = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .processRepresentative))
+        let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
+        fixture.elapsedClock.advance(by: timeout)
+        fixture.clock.now.addTimeInterval(timeout)
+        XCTAssertNil(fixture.monitor.rumContextSnapshot(for: .processRepresentative))
+
+        let button = UIButton()
+        fixture.windowA.addSubview(button)
+        let event = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: button))
+        fixture.handler.intercept(application: .shared, event: event) {
+            let capture = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertNil(capture?.rumContext)
+            XCTAssertEqual(capture?.sceneIdentifier, "a")
+        }
+
+        let after = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertEqual(after.viewName, "Manual")
+        XCTAssertNotEqual(after.sessionID, before.sessionID)
+        XCTAssertNotEqual(after.viewID, before.viewID)
+        XCTAssertNotNil(after.userActionID)
+        XCTAssertEqual(fixture.monitor.actions.last?.actionReceipt?.hasCapturedView, false)
+    }
+
     func testSceneInput_missingSnapshotIsAuthoritativeForAttachedScene() {
         guard #available(iOS 27.0, *) else {
             assertLegacyInputDelivery()
