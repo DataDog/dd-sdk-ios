@@ -198,6 +198,102 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testPendingSceneMoveStopsTheCommittedViewWhenDestinationDisconnects() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        defer { fixture.restore(); core.stop() }
+        let application = UIApplication.shared
+        let originalSessions = Set(application.openSessions.map(\.persistentIdentifier))
+        let observations = SceneHostLifetimeNotifications()
+        defer { observations.stop() }
+        addTeardownBlock { [weak self, observations] in
+            guard let self else { return }
+            try await self.cleanupSceneHostSessions(observations, originalSessionIDs: originalSessions)
+        }
+        let request = UISceneSessionActivationRequest(userActivity: NSUserActivity(activityType: "com.datadoghq.tests.scene-lifetime"))
+        application.activateSceneSession(for: request) { error in observations.recordRequestError(error) }
+        try await awaitSceneHostBoundary("destination scene connected", core: core) {
+            !observations.requestErrors.isEmpty || application.connectedScenes.contains {
+                !originalSessions.contains($0.session.persistentIdentifier) && $0.activationState != .unattached
+            }
+        }
+        try requireSceneHost(observations.requestErrors.isEmpty, "Native scene creation")
+        let added = application.connectedScenes.filter {
+            !originalSessions.contains($0.session.persistentIdentifier) && $0.activationState != .unattached
+        }
+        let destination = RUMSceneIdentifier(rawValue: try XCTUnwrap(added.count == 1 ? added.first : nil).session.persistentIdentifier)
+        observations.recordCreatedScene(destination.rawValue)
+        let feature = try makeSemanticFeature(in: core, rows: SemanticHostRows())
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        var finishCallbacks: [@MainActor () async -> Void] = []
+
+        for isKeyed in [false, true] {
+            let holder = RUMSwiftUIViewTrackingEpoch()
+            let callback = try XCTUnwrap(holder.enter(binding))
+            let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
+            let state = try XCTUnwrap(admission.withSession { $0.trackingState })
+            let committed = configuration(generation: 1)
+            let pending = configuration(generation: 2)
+            let initial = isKeyed
+                ? state.reconcile(configuration: committed, attachment: .attached(fixture.identifier), isAppeared: true)
+                : state.reconcile(attachment: .attached(fixture.identifier), isAppeared: true)
+            XCTAssertEqual(initial.count, 1)
+            guard case let .start(identity, scene) = try XCTUnwrap(initial.first) else {
+                return XCTFail("The initial occurrence must start in scene A")
+            }
+            XCTAssertEqual(scene, fixture.identifier)
+            XCTAssertNotNil(state.activeLifecycleGeneration)
+            XCTAssertTrue(admission.admits(sceneIdentifier: destination))
+            let coordinator = RetainedCompletionCoordinator()
+            let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+                notificationCenter: NotificationCenterProvider.makeTestProvider().applicationCenter,
+                admitsCallbacks: { binding.isValid },
+                coordinatorProvider: { _, _ in coordinator }
+            )
+            let move: RUMSwiftUIInteractiveTransitionArbiter.Intent = isKeyed
+                ? .reconcile(configuration: pending, attachment: .attached(destination), isAppeared: true)
+                : .update(.attached(destination))
+            var transitions: [RUMViewTrackingState.Transition] = []
+            arbiter.process(move, state: state) { transitions += $0 }
+            XCTAssertEqual(coordinator.registrations, 1)
+            XCTAssertEqual(state.sceneIdentifier, fixture.identifier)
+            XCTAssertTrue(transitions.isEmpty)
+
+            finishCallbacks.append {
+                XCTAssertFalse(admission.admits(sceneIdentifier: destination))
+                XCTAssertTrue(admission.admits(sceneIdentifier: fixture.identifier))
+                let disappear: RUMSwiftUIInteractiveTransitionArbiter.Intent = isKeyed
+                    ? .reconcile(configuration: committed, attachment: nil, isAppeared: false)
+                    : .disappear
+                // Delay this arbiter's notification so admission sees B disconnect first.
+                if isKeyed {
+                    arbiter.process(
+                        .reconcile(configuration: pending, attachment: nil, isAppeared: false),
+                        state: state
+                    ) { transitions += $0 }
+                    XCTAssertTrue(transitions.isEmpty)
+                    XCTAssertNotNil(state.activeLifecycleGeneration)
+                }
+                arbiter.process(disappear, state: state) { transitions += $0 }
+                arbiter.discard(sceneIdentifier: destination)
+                coordinator.complete(cancelled: false)
+                await self.drainOwnedMainDelivery()
+                XCTAssertEqual(transitions, [.stop(identity: identity, sceneIdentifier: fixture.identifier)])
+                XCTAssertNil(state.activeLifecycleGeneration)
+                holder.retire(callback)
+            }
+        }
+        try requestSceneHostDestruction(destination.rawValue, observations: observations)
+        try await awaitSceneHostBoundary("pending destination disconnected", core: core) {
+            !application.connectedScenes.contains { $0.session.persistentIdentifier == destination.rawValue }
+        }
+        for finish in finishCallbacks {
+            await finish()
+        }
+    }
+
+    @MainActor
     func testOrdinaryTrackedView_overlappingReadersRecoverAfterOldWindowDetaches() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let fixture = try SemanticHostWindow()

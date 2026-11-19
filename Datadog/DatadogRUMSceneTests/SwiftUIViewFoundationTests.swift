@@ -1047,7 +1047,7 @@ private struct StoppedSwiftUIOwnershipGraph {
 }
 
 @MainActor
-private final class RetainedCompletionCoordinator: RUMSwiftUITransitionCoordinating {
+final class RetainedCompletionCoordinator: RUMSwiftUITransitionCoordinating {
     var identity: ObjectIdentifier { ObjectIdentifier(self) }
     var initiallyInteractive: Bool { true }
     private(set) var registrations = 0
