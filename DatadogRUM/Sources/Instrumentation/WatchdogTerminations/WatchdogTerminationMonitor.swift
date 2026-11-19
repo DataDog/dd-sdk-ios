@@ -47,8 +47,8 @@ internal final class WatchdogTerminationMonitor {
         var stoppedSessionIDs: Set<String> = []
         /// The last view update received before startup completes. It is saved once the monitor has started.
         var pendingViewEvent: RUMViewEvent?
-        /// If the RUM session was stopped before startup completes. The stop is saved once the monitor has started.
-        var hasPendingSessionStop = false
+        /// Whether to clear the previous view record before persisting an optional successor view.
+        var shouldClearSavedView = false
     }
 
     @ReadWriteLock
@@ -95,8 +95,8 @@ internal final class WatchdogTerminationMonitor {
                 return
             }
             currentState = .started
-            if tracking.hasPendingSessionStop {
-                tracking.hasPendingSessionStop = false
+            if tracking.shouldClearSavedView {
+                tracking.shouldClearSavedView = false
                 saveSessionStop()
             }
             if let viewEvent = tracking.pendingViewEvent {
@@ -148,7 +148,7 @@ internal final class WatchdogTerminationMonitor {
             case .initialized, .starting:
                 // The saved stop might be currently used to report the Watchdog Termination event,
                 // so it is saved once the monitor has started.
-                tracking.hasPendingSessionStop = true
+                tracking.shouldClearSavedView = true
             case .stopped:
                 break
             }
@@ -174,23 +174,31 @@ internal final class WatchdogTerminationMonitor {
     }
 
     /// Stores the accepted representative without reviving a stopped session or deleting a persisted stop.
-    /// The scene session calls this after its command propagation completes.
+    /// The scene session calls this after propagation. Returns true if the update was saved immediately.
     @discardableResult
     func updateRepresentativeView(viewEvent: RUMViewEvent?) -> Bool {
         var accepted = false
         _tracking.mutate { tracking in
-            guard currentState == .started else {
+            if let viewEvent, tracking.stoppedSessionIDs.contains(viewEvent.session.id) {
                 return
             }
-            if let viewEvent {
-                guard !tracking.stoppedSessionIDs.contains(viewEvent.session.id) else {
-                    return
+            switch currentState {
+            case .started:
+                if let viewEvent {
+                    save(viewEvent: viewEvent)
+                } else {
+                    saveSessionStop()
                 }
-                save(viewEvent: viewEvent)
-            } else {
-                saveSessionStop()
+                accepted = true
+            case .initialized, .starting:
+                // Finish reading the previous launch before replacing its saved view.
+                tracking.pendingViewEvent = viewEvent
+                if viewEvent == nil {
+                    tracking.shouldClearSavedView = true
+                }
+            case .stopped:
+                return
             }
-            accepted = true
         }
         return accepted
     }
@@ -241,7 +249,7 @@ internal final class WatchdogTerminationMonitor {
         _tracking.mutate { tracking in
             currentState = .stopped
             tracking.pendingViewEvent = nil
-            tracking.hasPendingSessionStop = false
+            tracking.shouldClearSavedView = false
         }
     }
 }
