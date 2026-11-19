@@ -408,6 +408,74 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testPendingSceneMoveAcceptsTerminalCallbacksAfterOriginalSceneDisconnects() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        let destination = try connectedSceneIdentifier(binding)
+        let disconnected = RUMSceneIdentifier(rawValue: "disconnected-previous-scene")
+
+        for keyed in [false, true] {
+            let original = configuration(generation: 1)
+            let replacement = configuration(generation: 2)
+            let disappear: RUMSwiftUIInteractiveTransitionArbiter.Intent = keyed
+                ? .reconcile(configuration: replacement, attachment: nil, isAppeared: false) : .disappear
+            let detach: RUMSwiftUIInteractiveTransitionArbiter.Intent = keyed
+                ? .reconcile(configuration: replacement, attachment: .detached, isAppeared: nil) : .update(.detached)
+            for terminal in [nil, disappear, detach] {
+                let holder = RUMSwiftUIViewTrackingEpoch()
+                let callback = try XCTUnwrap(holder.enter(binding))
+                let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
+                let state = try XCTUnwrap(admission.withSession { $0.trackingState })
+                // Seed the committed state that the arbiter still holds before its disconnect notification.
+                if keyed {
+                    _ = state.reconcile(configuration: original, attachment: .attached(disconnected), isAppeared: true)
+                } else {
+                    _ = state.reconcile(attachment: .attached(disconnected), isAppeared: true)
+                }
+                XCTAssertEqual(state.sceneIdentifier, disconnected)
+                XCTAssertFalse(admission.admits(sceneIdentifier: disconnected))
+                XCTAssertTrue(admission.admits(sceneIdentifier: destination))
+
+                let coordinator = RetainedCompletionCoordinator()
+                let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+                    notificationCenter: NotificationCenterProvider.makeTestProvider().applicationCenter,
+                    admitsCallbacks: { binding.isValid },
+                    coordinatorProvider: { _, _ in coordinator }
+                )
+                let move: RUMSwiftUIInteractiveTransitionArbiter.Intent = keyed
+                    ? .reconcile(configuration: replacement, attachment: .attached(destination), isAppeared: true)
+                    : .update(.attached(destination))
+                var transitions: [RUMViewTrackingState.Transition] = []
+                arbiter.process(move, state: state) { transitions += $0 }
+                XCTAssertEqual(coordinator.registrations, 1)
+                XCTAssertTrue(transitions.isEmpty)
+
+                if let terminal {
+                    arbiter.process(terminal, state: state) { transitions += $0 }
+                }
+                arbiter.discard(sceneIdentifier: disconnected)
+                coordinator.complete(cancelled: false)
+                await drainOwnedMainDelivery()
+
+                if terminal == nil {
+                    XCTAssertEqual(transitions.count, 1)
+                    guard case let .start(_, scene) = try XCTUnwrap(transitions.first) else {
+                        return XCTFail("The connected destination should start when the move completes")
+                    }
+                    XCTAssertEqual(scene, destination)
+                } else {
+                    XCTAssertTrue(transitions.isEmpty)
+                    XCTAssertNil(state.activeLifecycleGeneration)
+                }
+                holder.retire(callback)
+            }
+        }
+    }
+
+    @MainActor
     func testRegistry_whenOriginalHolderRetiresOrReleases_itStopsSuppressingOnlyItsContainedSubtree() throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let core = makeHandoffCore()
