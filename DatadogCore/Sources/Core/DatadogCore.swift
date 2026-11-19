@@ -26,11 +26,15 @@ internal final class DatadogCore: RUMContextHandoffActivating {
         }
         return RUMLegacyWebViewTrackingReceipt(
             isCurrent: { [weak self, weak registration] in
-                guard let self, let registration else { return false }
+                guard let self, let registration else {
+                    return false
+                }
                 return self.isRegistered(registration, forKey: Feature.rum)
             },
             setRUMContext: { [weak self, weak registration] context in
-                guard let self, let registration else { return }
+                guard let self, let registration else {
+                    return
+                }
                 self.setRUMContext(forLegacyRegistration: registration, context: context)
             }
         )
@@ -722,7 +726,9 @@ extension DatadogCore: DatadogCoreProtocol {
             candidate.set(additionalContext: context())
             var accepted = false
             self._registry.mutate { registry in
-                guard !registry.isStopped, registry.features[Feature.rum] === registration else { return }
+                guard !registry.isStopped, registry.features[Feature.rum] === registration else {
+                    return
+                }
                 swap(&current, &candidate)
                 accepted = true
             }
