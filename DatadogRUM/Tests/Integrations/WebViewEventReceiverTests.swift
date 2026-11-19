@@ -1046,8 +1046,8 @@ class WebViewEventReceiverTests: XCTestCase {
     func testCapturedMessage_keepsOriginalSceneAcrossDeferredWrite() throws {
         let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
         let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
-        cache.insert(id: "native-a", timestamp: 999_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-a"))
-        cache.insert(id: "native-b", timestamp: 999_500, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-b"))
+        cache.insert(id: "native-a", timestamp: 999_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-a"), sessionID: "native-session")
+        cache.insert(id: "native-b", timestamp: 999_500, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-b"), sessionID: "native-session")
         cache.insert(id: "legacy", timestamp: 999_900, hasReplay: true, isActive: true)
         let original = capturedWebViewContext(viewID: "native-a")
         let scope = FeatureScopeMock(context: .mockWith(serverTimeOffset: 0, additionalContext: [original]), deferEventWriteContext: true)
@@ -1105,7 +1105,7 @@ class WebViewEventReceiverTests: XCTestCase {
     func testCapturedMessage_doesNotBorrowPeerContainer() throws {
         let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
         let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
-        cache.insert(id: "native-b", timestamp: 999_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-b"))
+        cache.insert(id: "native-b", timestamp: 999_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-b"), sessionID: "native-session")
         let context = capturedWebViewContext(viewID: "native-a")
         let scope = FeatureScopeMock(context: .mockWith(serverTimeOffset: 0, additionalContext: [context]))
         let owner = RUMContextHandoff.Owner()
@@ -1117,6 +1117,33 @@ class WebViewEventReceiverTests: XCTestCase {
         let json = try JSONObjectMatcher(event)
         XCTAssertNil(json.object["container"])
         XCTAssertEqual(try json.value("view.id"), "browser-view")
+    }
+
+    func testCapturedMessage_keepsOnlyContainerFromCapturedSession() throws {
+        let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_000))
+        let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+        let scene = RUMSceneIdentifier(rawValue: "scene-a")
+        cache.insert(id: "old-view", timestamp: 999_500, hasReplay: true, sceneIdentifier: scene, sessionID: "old-session")
+        cache.insert(id: "new-view", timestamp: 1_000_100, hasReplay: true, isActive: true, sceneIdentifier: scene, sessionID: "native-session")
+        let context = capturedWebViewContext(viewID: "new-view")
+        let scope = FeatureScopeMock(context: .mockWith(serverTimeOffset: 0, additionalContext: [context]))
+        let owner = RUMContextHandoff.Owner()
+        let core = CapturedWebViewCore()
+        core.owner = owner
+        let receiver = WebViewEventReceiver(featureScope: scope, dateProvider: clock, commandSubscriber: RUMCommandSubscriberMock(), viewCache: cache)
+        for date in [1_000_000, 1_000_200] {
+            let message = capturedWebViewMessage(owner: owner, context: context, date: date)
+            XCTAssertTrue(receiver.receive(message: .payload(message), from: core))
+        }
+
+        let events = scope.eventsWritten(ofType: AnyEncodable.self)
+        XCTAssertEqual(events.count, 2)
+        let beforeNewView = try JSONObjectMatcher(XCTUnwrap(events.first))
+        let afterNewView = try JSONObjectMatcher(XCTUnwrap(events.last))
+        XCTAssertNil(beforeNewView.object["container"])
+        XCTAssertEqual(try beforeNewView.value("session.id"), "native-session")
+        XCTAssertEqual(try beforeNewView.value("view.id"), "browser-view")
+        XCTAssertEqual(try afterNewView.value("container.view.id"), "new-view")
     }
 
     func testCapturedMessage_clearsUnprovedContainerWithoutValidMetadata() throws {
@@ -1222,9 +1249,13 @@ class WebViewEventReceiverTests: XCTestCase {
         RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: viewID)
     }
 
-    private func capturedWebViewMessage(owner: RUMContextHandoff.Owner, context: RUMCoreContext?) -> WebViewMessageWithRUMContext {
+    private func capturedWebViewMessage(
+        owner: RUMContextHandoff.Owner,
+        context: RUMCoreContext?,
+        date: Int = 1_000_000
+    ) -> WebViewMessageWithRUMContext {
         WebViewMessageWithRUMContext(
-            message: .rum(["application": ["id": "browser-app"], "session": ["id": "browser-session"], "view": ["id": "browser-view"], "date": 1_000_000, "container": ["view": ["id": "unproved-container"]]]),
+            message: .rum(["application": ["id": "browser-app"], "session": ["id": "browser-session"], "view": ["id": "browser-view"], "date": date, "container": ["view": ["id": "unproved-container"]]]),
             capture: .init(owner: owner, value: .init(rumContext: context, sceneIdentifier: "scene-a", hasPendingUserAction: false, excludedUserActionID: nil))
         )
     }

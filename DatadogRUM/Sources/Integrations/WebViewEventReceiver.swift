@@ -137,9 +137,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 // Inject the container source and view id
                 let viewID: String?
                 if let capture {
-                    // A captured native callback can only use history from its originating scene.
                     viewID = capture.capture.value.sceneIdentifier.flatMap {
-                        self.viewCache.lastView(before: correctedDate, hasReplay: true, in: RUMSceneIdentifier(rawValue: $0))
+                        self.viewCache.lastView(
+                            before: correctedDate,
+                            hasReplay: true,
+                            in: RUMSceneIdentifier(rawValue: $0),
+                            sessionID: rum.sessionID
+                        )
                     }
                 } else {
                     viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true)
