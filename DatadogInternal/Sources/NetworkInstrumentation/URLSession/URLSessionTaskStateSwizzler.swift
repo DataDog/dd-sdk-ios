@@ -9,7 +9,7 @@ import Foundation
 /// Swizzles `URLSessionTask.setState:` private method to detect task completion.
 ///
 /// This swizzler is necessary to capture completion for:
-/// - Async/await APIs: These use internal delegates that cannot be swizzled
+/// - Async/await APIs without a hooked completion handler (e.g. async `upload`, `download`, `bytes`)
 /// - Delegate-less tasks without completion handlers
 ///
 /// By observing state transitions to `Canceling` (2) or `Completed` (3), we can detect

@@ -33,10 +33,10 @@ public class URLSessionTaskInterception {
     ///
     /// Collected via:
     /// - Registered delegate mode: incremental `URLSessionDataDelegate` chunks
-    /// - Automatic mode: completion handler swizzling (tasks with completion handlers only)
+    /// - Completion handler swizzling (tasks with completion handlers, including async/await `data(for:)` / `data(from:)`)
     ///
     /// `nil` when:
-    /// - No completion handler in automatic mode (e.g., async/await tasks)
+    /// - No completion handler in automatic mode (e.g., async/await `upload`, `download` or `bytes` tasks)
     /// - Download tasks (data is written to file, not memory)
     /// - Media responses in registered-delegate mode (`image/*`, `video/*`, `audio/*`, `application/octet-stream`)
     /// - Response body exceeds 512 KB in registered-delegate mode

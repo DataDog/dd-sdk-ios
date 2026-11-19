@@ -180,7 +180,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             )
         }
 
-        // Swizzle completion handlers for `URLSession.dataTask(with:completionHandler:)` methods
+        // Swizzle completion handlers for `URLSession.dataTask(with:completionHandler:)` methods and for the private
+        // selectors behind async `URLSession.data(for:delegate:)` / `data(from:delegate:)`
         //
         // In dual-mode (automatic + registered delegate), both modes swizzle completion handlers.
         // To prevent double-counting, automatic mode skips tasks with registered delegates.
@@ -228,7 +229,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         // Swizzle `setState:` to detect completion for tasks without completion handlers
         // This is necessary because:
-        // - Async/await APIs use internal delegates that cannot be swizzled
+        // - Async upload/download/bytes APIs have no hooked completion handler
         // - Tasks without completion handlers and without delegates won't trigger any other callback
         try swizzler.swizzle(
             interceptSetState: { [weak self] task, state in

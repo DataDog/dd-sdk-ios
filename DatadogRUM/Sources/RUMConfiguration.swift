@@ -414,7 +414,8 @@ extension RUM {
             /// attributes for RUM resource based on the provided request, response, data, and error.
             /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
             ///
-            /// Note: This is not supported for async-await APIs.
+            /// For async/await APIs, `data` is provided for `URLSession.data(for:delegate:)` and `data(from:delegate:)`.
+            /// It is `nil` for async `upload`, `download` and `bytes` APIs.
             ///
             /// **Constraints on the `data` parameter in registered-delegate mode**
             /// (`URLSessionInstrumentation.enableDurationBreakdown(with:)`):
