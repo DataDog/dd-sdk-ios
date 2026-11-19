@@ -383,7 +383,11 @@ internal class Monitor: RUMCommandSubscriber {
         return RUMResourcePreparationReceipt(identity: identity, publisher: self)
     }
 
-    func processResource(command: RUMCommand, preparation: RUMResourcePreparationIdentity) {
+    func processResource(
+        command: RUMCommand,
+        preparation: RUMResourcePreparationIdentity,
+        start: RUMURLSessionResourceStart.Receipt? = nil
+    ) {
         let operation: RUMResourcePreparationCommand.Operation
         if let start = command as? RUMStartResourceCommand {
             operation = .commit(start)
@@ -392,14 +396,20 @@ internal class Monitor: RUMCommandSubscriber {
         } else {
             return
         }
-        enqueueResourcePreparation(RUMResourcePreparationCommand(identity: preparation, operation: operation, time: command.time))
+        enqueueResourcePreparation(
+            RUMResourcePreparationCommand(identity: preparation, operation: operation, time: command.time),
+            startReceipt: start
+        )
     }
 
     func abandonResourcePreparation(_ identity: RUMResourcePreparationIdentity) {
         enqueueResourcePreparation(RUMResourcePreparationCommand(identity: identity, operation: .abandon, time: dateProvider.now))
     }
 
-    private func enqueueResourcePreparation(_ value: RUMResourcePreparationCommand) {
+    private func enqueueResourcePreparation(
+        _ value: RUMResourcePreparationCommand,
+        startReceipt: RUMURLSessionResourceStart.Receipt? = nil
+    ) {
         guard isMultiSceneTrackingEnabled else {
             return
         }
@@ -431,8 +441,10 @@ internal class Monitor: RUMCommandSubscriber {
                 break
             }
             guard self.applicationScope.processResourcePreparation(
-                command, monotonicTime: monotonicTime, context: context, writer: writer
-            ) else { return }
+                command, monotonicTime: monotonicTime, context: context, writer: writer, startReceipt: startReceipt
+            ) else {
+                return
+            }
             self.refreshResourceContextSnapshots()
             guard let publisher = self.featureScope as? RUMContextHandoffContextUpdating else {
                 return
