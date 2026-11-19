@@ -126,7 +126,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Captured input may only mutate the live view occurrence that received it.
     /// A receipt without a view keeps the existing routing for input before a view starts.
     func admitsActionReceipt(_ receipt: RUMContextHandoff.ActionReceipt, monotonicTime: TimeInterval) -> Bool {
-        guard receipt.hasCapturedView else { return true }
+        guard receipt.hasCapturedView else {
+            return true
+        }
         guard let session = activeSession,
               !RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: monotonicTime),
               !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: monotonicTime) else {
@@ -513,6 +515,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             RUMSessionScope.resolveNavigationDestination(
                 on: command,
                 representative: $0.views.last?.sceneIdentifier,
+                views: $0.views,
                 cache: dependencies.viewCache
             )
         } ?? nil
@@ -554,7 +557,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             guard case .ownedScene(let scene) = navigationDestination else {
                 return sceneRestoration.views
             }
-            return sceneRestoration.views.filter { $0.sceneIdentifier != scene }
+            return RUMSessionScope.restoringViews(sceneRestoration.views, after: command, in: scene)
         }
         return restoreAll ? sceneRestoration.views : []
     }

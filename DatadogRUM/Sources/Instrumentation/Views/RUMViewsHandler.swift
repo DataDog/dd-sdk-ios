@@ -1406,6 +1406,11 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
         }
         let identity = ViewIdentifier(viewController)
         let attachedSceneIdentifier = sceneIdentifierProvider(viewController)
+        let trackedView = stacks.lazy.flatMap(\ViewStack.views).first(where: { $0.identity == identity })
+        // A new appearance cannot borrow the process representative's view or scene.
+        guard attachedSceneIdentifier != nil || trackedView != nil else {
+            return
+        }
         if let attachedSceneIdentifier, !canTrackViews(in: attachedSceneIdentifier) {
             return
         }
@@ -1417,7 +1422,7 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
             // RUM destination is the independently visible detail column.
             return
         }
-        if let view = stacks.lazy.flatMap(\ViewStack.views).first(where: { $0.identity == identity }) {
+        if let view = trackedView {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
             if view.instrumentationType == .uikit {
