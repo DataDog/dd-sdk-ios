@@ -6,7 +6,8 @@
 
 #if !os(macOS)
 import XCTest
-import TestUtilities
+@testable import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
 
@@ -708,4 +709,465 @@ private class MockUIKitRUMActionsPredicate: UITouchRUMActionsPredicate & UIPress
 }
 
 #endif // !os(watchOS)
+#endif
+
+#if os(iOS)
+@MainActor
+extension RUMActionsHandlerTests {
+    @available(iOS 27.0, *)
+    private func inputFixture(predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(), startA: Bool = true) -> SceneInputFixture {
+        SceneInputFixture(predicate: predicate, startA: startA)
+    }
+
+    private func assertLegacyInputDelivery() {
+        let subscriber = RUMCommandSubscriberMock()
+        let handler = RUMActionsHandler(dateProvider: DateProviderMock(), eventCommandsFactory: nil)
+        handler.publish(to: subscriber)
+        let owner = RUMContextHandoff.Owner()
+        let value = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "legacy", hasPendingUserAction: true, excludedUserActionID: nil)
+        RUMContextHandoff.withValue(value, for: owner) {
+            handler.notify_viewModifierTapped(actionName: "legacy action", actionAttributes: [:])
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+        }
+        XCTAssertEqual(subscriber.receivedCommands.count, 1)
+        XCTAssertEqual(subscriber.receivedCommands.map(\.target), [.processRepresentative])
+        XCTAssertEqual((subscriber.receivedCommands.first as? RUMAddUserActionCommand)?.name, "legacy action")
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testSceneInput_capturesOriginalWindowBeforePredicateReparenting() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let predicate = SceneInputPredicate()
+        let fixture = inputFixture(predicate: predicate)
+        defer { predicate.onAction = nil; fixture.monitor.onAction = nil }
+        let view = UIButton()
+        fixture.windowB.addSubview(view)
+        let event = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))
+        let a = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .scene(fixture.sceneA)))
+        let b = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertNotEqual(a.viewID, b.viewID)
+        var order: [String] = []
+        predicate.onAction = { _ in
+            order.append("predicate")
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.rumContext?.viewID, a.viewID)
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, false)
+            fixture.windowA.addSubview(view)
+        }
+        fixture.monitor.onAction = { command in
+            order.append("publish")
+            XCTAssertEqual(command.target, .scene(fixture.sceneA))
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.rumContext?.viewID, a.viewID)
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, true)
+        }
+        fixture.handler.intercept(application: .shared, event: event) {
+            order.append("previous")
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.rumContext?.viewID, a.viewID)
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, true)
+        }
+        XCTAssertEqual(order, ["predicate", "publish", "previous"])
+        XCTAssertEqual(fixture.factory.calls, 1)
+        XCTAssertNil(RUMContextHandoff.current(for: fixture.owner))
+    }
+
+    func testSceneInput_predicateMovesViewToPeerAfterSourceCapture() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let predicate = SceneInputPredicate()
+        let fixture = inputFixture(predicate: predicate)
+        defer { predicate.onAction = nil }
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        predicate.onAction = { _ in fixture.windowB.addSubview(view) }
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            XCTAssertIdentical(view.window, fixture.windowB)
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+        }
+        XCTAssertEqual(fixture.monitor.actions.last?.target, .scene(fixture.sceneA))
+    }
+
+    func testSceneInput_monitorReleasedAfterEligibilityCallsPreviousWithoutPending() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let clock = DateProviderMock()
+        var monitor: SceneInputMonitor? = SceneInputMonitor(owner: owner, clock: clock)
+        weak var weakMonitor = monitor
+        let factory = UITouchCommandFactory(dateProvider: clock, heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(), uiKitPredicate: DefaultUIKitRUMActionsPredicate(), swiftUIPredicate: nil, swiftUIDetector: nil)
+        let handler = RUMSceneActionsHandler(legacyHandler: RUMActionsHandler(dateProvider: clock, eventCommandsFactory: factory), eventCommandsFactory: factory, dateProvider: clock, owner: owner, expectedMonitor: monitor!, sceneIdentifier: { _ in RUMSceneIdentifier(rawValue: "a") })
+        handler.publish(to: monitor!)
+        var ownerReads = 0
+        monitor?.onOwnerRead = {
+            ownerReads += 1
+            if ownerReads == 2 { monitor = nil }
+        }
+        let window = UIWindow(frame: .zero)
+        let view = UIButton()
+        window.addSubview(view)
+        var previousCalls = 0
+        handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: window, view: view))) {
+            previousCalls += 1
+            XCTAssertNil(weakMonitor)
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "a")
+            XCTAssertEqual(RUMContextHandoff.current(for: owner)?.hasPendingUserAction, false)
+        }
+        XCTAssertEqual(ownerReads, 2)
+        XCTAssertEqual(previousCalls, 1)
+        XCTAssertNil(weakMonitor)
+    }
+
+    func testSceneInput_nilOriginalUsesCurrentWindowButUnattachedOriginalDoesNotBorrowIt() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        let view = UIButton()
+        fixture.windowB.addSubview(view)
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: nil, view: view))) {
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "b")
+        }
+        XCTAssertEqual(fixture.monitor.actions.last?.target, .scene(fixture.sceneB))
+        let unattached = UIWindow(frame: .zero)
+        let beforeReads = fixture.monitor.ownerReads
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: unattached, view: view))) {
+            XCTAssertNil(RUMContextHandoff.current(for: fixture.owner))
+        }
+        XCTAssertEqual(fixture.monitor.actions.last?.target, .processRepresentative)
+        XCTAssertEqual(fixture.monitor.ownerReads, beforeReads)
+    }
+
+    func testSceneInput_missingAndAmbiguousSourcesPreserveInheritedContextWithoutPending() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        let outer = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "outer", hasPendingUserAction: false, excludedUserActionID: nil)
+        let view = UIButton()
+        let sourceLessWindow = UIWindow(frame: .zero)
+        sourceLessWindow.addSubview(view)
+        let absent = SceneInputTouch(originalWindow: nil, view: view)
+        let attached = SceneInputTouch(originalWindow: fixture.windowA, view: view)
+        var previousCalls = 0
+        let beforeReads = fixture.monitor.ownerReads
+        RUMContextHandoff.withValue(outer, for: fixture.owner) {
+            for event in [UIEvent.mockWith(touch: absent), UIEvent.mockWith(touches: [absent, attached]), UIEvent()] {
+                fixture.handler.intercept(application: .shared, event: event) {
+                    previousCalls += 1
+                    XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "outer")
+                    XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, false)
+                }
+            }
+        }
+        XCTAssertEqual(previousCalls, 3)
+        XCTAssertEqual(fixture.monitor.ownerReads, beforeReads)
+        XCTAssertEqual(fixture.monitor.actions.map(\.target), [.processRepresentative])
+        XCTAssertNil(RUMContextHandoff.current(for: fixture.owner))
+    }
+
+    func testSceneInput_missingSnapshotIsAuthoritativeForAttachedScene() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture(startA: false)
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        XCTAssertNotNil(fixture.monitor.rumContextSnapshot(for: .processRepresentative))
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            let value = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertNotNil(value)
+            XCTAssertNil(value?.rumContext)
+            XCTAssertEqual(value?.sceneIdentifier, "a")
+            XCTAssertEqual(value?.hasPendingUserAction, true)
+        }
+        XCTAssertEqual(fixture.monitor.actions.last?.target, .scene(fixture.sceneA))
+    }
+
+    func testSceneInput_filteredCommandKeepsCapturedSceneWithoutPending() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture(predicate: UITouchRUMActionsPredicateMock())
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, false)
+            XCTAssertNil(RUMContextHandoff.current(for: fixture.owner)?.excludedUserActionID)
+        }
+        XCTAssertTrue(fixture.monitor.actions.isEmpty)
+        XCTAssertEqual(fixture.factory.calls, 1)
+    }
+
+    func testSceneInput_pendingExcludesOnlyCapturedPriorAction() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        fixture.monitor.startAction(type: .custom, name: "prior-a", attributes: [:], explicitTarget: .scene(fixture.sceneA))
+        let prior = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .scene(fixture.sceneA))?.userActionID)
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            let current = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertEqual(current?.rumContext?.userActionID, prior)
+            XCTAssertEqual(current?.excludedUserActionID, prior)
+            XCTAssertEqual(current?.hasPendingUserAction, true)
+        }
+    }
+
+    func testSceneInput_replacedSubscriberAfterEligibilityCallsPreviousWithoutPending() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        let foreign = RUMCommandSubscriberMock()
+        fixture.monitor.onOwnerRead = {
+            if fixture.monitor.ownerReads == 2 {
+                fixture.handler.publish(to: foreign)
+            }
+        }
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        var previousCalls = 0
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            previousCalls += 1
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, false)
+        }
+        XCTAssertEqual(previousCalls, 1)
+        XCTAssertTrue(fixture.monitor.actions.isEmpty)
+        XCTAssertTrue(foreign.receivedCommands.isEmpty)
+        fixture.monitor.onOwnerRead = nil
+    }
+
+    func testSceneInput_foreignOwnerCannotSupplySnapshotOrReceiveTargetedCommand() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        fixture.monitor.currentOwner = RUMContextHandoff.Owner()
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            let current = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertNotNil(current)
+            XCTAssertNil(current?.rumContext)
+            XCTAssertEqual(current?.sceneIdentifier, "a")
+            XCTAssertEqual(current?.hasPendingUserAction, false)
+        }
+        XCTAssertTrue(fixture.monitor.actions.isEmpty)
+    }
+
+    func testSceneInput_predicateInvalidationDoesNotPublishOrOverrideFreshOwner() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let predicate = SceneInputPredicate()
+        let fixture = inputFixture(predicate: predicate)
+        defer { predicate.onAction = nil }
+        let freshOwner = RUMContextHandoff.Owner()
+        predicate.onAction = { _ in fixture.owner.invalidate(); fixture.monitor.currentOwner = freshOwner }
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        var previousCalls = 0
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            previousCalls += 1
+            XCTAssertNil(RUMContextHandoff.current(for: fixture.owner))
+            XCTAssertNil(RUMContextHandoff.current(for: freshOwner))
+        }
+        XCTAssertEqual(previousCalls, 1)
+        XCTAssertTrue(fixture.monitor.actions.isEmpty)
+    }
+
+    func testSceneInput_nestedDifferentAndSourceLessEventsRestoreOuterBinding() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        let a = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))
+        let b = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: fixture.windowB, view: view))
+        fixture.handler.intercept(application: .shared, event: a) {
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+            fixture.handler.intercept(application: .shared, event: b) {
+                XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "b")
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+            fixture.handler.intercept(application: .shared, event: UIEvent()) {
+                XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: fixture.owner))
+    }
+
+    func testSceneInput_reusesFactoryOutputsAndForwardsManualNotifications() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        let view = UIButton()
+        view.accessibilityIdentifier = "button"
+        fixture.windowA.addSubview(view)
+        let event = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))
+        let expected = try XCTUnwrap(fixture.factory.base.command(from: event))
+        fixture.handler.intercept(application: .shared, event: event, operation: {})
+        let actual = try XCTUnwrap(fixture.monitor.actions.last)
+        XCTAssertEqual(actual.name, expected.name)
+        XCTAssertEqual(actual.time, expected.time)
+        XCTAssertEqual(actual.instrumentation, expected.instrumentation)
+        XCTAssertEqual(actual.actionType, expected.actionType)
+        DDAssertDictionariesEqual(actual.attributes, expected.attributes)
+        XCTAssertEqual(actual.heatmapAttributes, expected.heatmapAttributes)
+        XCTAssertEqual(fixture.factory.calls, 1)
+        fixture.handler.notify_viewModifierTapped(actionName: "manual", actionAttributes: ["key": "value"])
+        XCTAssertEqual(fixture.monitor.actions.last?.target, .processRepresentative)
+        XCTAssertEqual(fixture.monitor.actions.last?.instrumentation, .swiftui)
+        XCTAssertEqual(fixture.monitor.actions.last?.name, "manual")
+    }
+
+    func testSceneInput_doesNotRetainExpectedMonitorOrSubscriber() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let clock = DateProviderMock()
+        var monitor: SceneInputMonitor? = SceneInputMonitor(owner: owner, clock: clock)
+        weak var weakMonitor = monitor
+        let handler = RUMSceneActionsHandler(
+            legacyHandler: RUMActionsHandler(dateProvider: clock, eventCommandsFactory: nil),
+            eventCommandsFactory: nil,
+            dateProvider: clock,
+            owner: owner,
+            expectedMonitor: monitor!
+        )
+        handler.publish(to: monitor!)
+        monitor = nil
+        XCTAssertNil(weakMonitor)
+        var previousCalls = 0
+        handler.intercept(application: .shared, event: UIEvent()) { previousCalls += 1 }
+        XCTAssertEqual(previousCalls, 1)
+    }
+
+    func testSceneInput_expiredSnapshotDoesNotBorrowRepresentativeOrPriorAction() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyInputDelivery()
+            return
+        }
+        let fixture = inputFixture()
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(16 * 60)
+        XCTAssertNotNil(fixture.monitor.rumContextSnapshot(for: .scene(fixture.sceneA)))
+        fixture.elapsedClock.advance(by: 16 * 60)
+        let view = UIButton()
+        fixture.windowA.addSubview(view)
+        fixture.handler.intercept(application: .shared, event: .mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: view))) {
+            let value = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertNotNil(value)
+            XCTAssertNil(value?.rumContext)
+            XCTAssertEqual(value?.sceneIdentifier, "a")
+            XCTAssertNil(value?.excludedUserActionID)
+        }
+        XCTAssertEqual(fixture.monitor.actions.last?.target, .scene(fixture.sceneA))
+    }
+}
+
+@MainActor
+@available(iOS 27.0, *)
+private final class SceneInputFixture {
+    let owner = RUMContextHandoff.Owner()
+    let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_600_000_000))
+    let elapsedClock = MonotonicClockMock()
+    let windowA = UIWindow(frame: .zero)
+    let windowB = UIWindow(frame: .zero)
+    let sceneA = RUMSceneIdentifier(rawValue: "a")
+    let sceneB = RUMSceneIdentifier(rawValue: "b")
+    let monitor: SceneInputMonitor
+    let factory: SceneInputFactory
+    let handler: RUMSceneActionsHandler
+
+    init(predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(), startA: Bool = true) {
+        monitor = SceneInputMonitor(owner: owner, clock: clock, monotonicClock: elapsedClock)
+        factory = SceneInputFactory(base: UITouchCommandFactory(dateProvider: clock, heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(), uiKitPredicate: predicate, swiftUIPredicate: nil, swiftUIDetector: nil))
+        let a = windowA, b = windowB
+        handler = RUMSceneActionsHandler(legacyHandler: RUMActionsHandler(dateProvider: clock, eventCommandsFactory: factory), eventCommandsFactory: factory, dateProvider: clock, owner: owner, expectedMonitor: monitor, sceneIdentifier: { window in
+            window === a ? RUMSceneIdentifier(rawValue: "a") : (window === b ? RUMSceneIdentifier(rawValue: "b") : nil)
+        })
+        handler.publish(to: monitor)
+        for (key, target) in [("a", sceneA), ("b", sceneB)] where startA || key == "b" {
+            monitor.process(command: RUMStartViewCommand(time: clock.now, identity: ViewIdentifier(key), name: key, path: key, globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .scene(target)))
+        }
+        monitor.ownerReads = 0
+    }
+}
+
+private final class SceneInputMonitor: Monitor {
+    var currentOwner: RUMContextHandoff.Owner?
+    var ownerReads = 0
+    var onOwnerRead: (() -> Void)?
+    var actions: [RUMAddUserActionCommand] = []
+    var onAction: ((RUMAddUserActionCommand) -> Void)?
+    override var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        ownerReads += 1
+        let owner = currentOwner
+        onOwnerRead?()
+        return owner
+    }
+    init(owner: RUMContextHandoff.Owner, clock: DateProvider, monotonicClock: MonotonicClock = MonotonicClockMock()) {
+        currentOwner = owner
+        let scope = FeatureScopeMock(context: .mockWith(
+            sdkInitDate: clock.now,
+            applicationStateHistory: .mockWith(initialState: .active, date: clock.now)
+        ))
+        super.init(dependencies: .mockWith(featureScope: scope, viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true), featureFlags: [.multiSceneTracking: true], monotonicClock: monotonicClock), dateProvider: clock, executionContextProvider: RUMContextHandoff.current(for:))
+    }
+    override func process(command: RUMCommand) {
+        if let action = command as? RUMAddUserActionCommand { actions.append(action); onAction?(action) }
+        super.process(command: command)
+    }
+}
+
+private final class SceneInputFactory: UIEventCommandFactory {
+    let base: UIEventCommandFactory
+    var calls = 0
+    init(base: UIEventCommandFactory) { self.base = base }
+    func command(from event: UIEvent) -> RUMAddUserActionCommand? { calls += 1; return base.command(from: event) }
+}
+
+private final class SceneInputPredicate: UITouchRUMActionsPredicate {
+    var onAction: ((UIView) -> Void)?
+    func rumAction(targetView: UIView) -> RUMAction? { onAction?(targetView); return RUMAction(name: "selected") }
+}
+
+private final class SceneInputTouch: UITouch {
+    private let originalWindow: UIWindow?
+    private let currentView: UIView
+    init(originalWindow: UIWindow?, view: UIView) {
+        self.originalWindow = originalWindow
+        currentView = view
+        super.init()
+    }
+    override var window: UIWindow? { originalWindow }
+    override var view: UIView? { currentView }
+    override var phase: UITouch.Phase { .ended }
+    override func location(in view: UIView?) -> CGPoint { .zero }
+}
 #endif

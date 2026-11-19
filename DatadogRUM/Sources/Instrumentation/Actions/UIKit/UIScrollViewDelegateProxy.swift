@@ -43,18 +43,21 @@ internal final class UIScrollViewDelegateProxy: __dd_private_DDForwardingProxyBa
     // MARK: - UIScrollViewDelegate (intercepted)
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        handler.notify_scrollViewWillBeginDragging(scrollView)
-        originalDelegate?.scrollViewWillBeginDragging?(scrollView)
+        handler.interceptWillBeginDragging(scrollView) {
+            self.originalDelegate?.scrollViewWillBeginDragging?(scrollView)
+        }
     }
 
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: decelerate)
-        originalDelegate?.scrollViewDidEndDragging?(scrollView, willDecelerate: decelerate)
+        handler.interceptDidEndDragging(scrollView, willDecelerate: decelerate) {
+            self.originalDelegate?.scrollViewDidEndDragging?(scrollView, willDecelerate: decelerate)
+        }
     }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        handler.notify_scrollViewDidEndDecelerating(scrollView)
-        originalDelegate?.scrollViewDidEndDecelerating?(scrollView)
+        handler.interceptDidEndDecelerating(scrollView) {
+            self.originalDelegate?.scrollViewDidEndDecelerating?(scrollView)
+        }
     }
 
     // MARK: - Forwarding

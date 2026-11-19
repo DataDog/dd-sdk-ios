@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -122,7 +123,57 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
     }
 
+    /// Captured input may only mutate the live view occurrence that received it.
+    /// A receipt without a view keeps the existing routing for input before a view starts.
+    func admitsActionReceipt(_ receipt: RUMContextHandoff.ActionReceipt, monotonicTime: TimeInterval) -> Bool {
+        guard receipt.hasCapturedView else { return true }
+        guard let session = activeSession,
+              !RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: monotonicTime),
+              !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: monotonicTime) else {
+            return false
+        }
+        let sessionID = session.sessionUUID.toRUMDataFormat
+        return session.viewScopes.contains { view in
+            view.isActiveView && receipt.matchesView(sessionID: sessionID, viewID: view.viewUUID.toRUMDataFormat)
+        }
+    }
+
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        let actionReceipt = dependencies.isMultiSceneTrackingEnabled
+            ? (command as? RUMUserActionCommand)?.actionReceipt : nil
+        defer { actionReceipt?.reject() }
+        if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
+            if command is RUMStartUserActionCommand {
+                guard ownership.beginStart() else {
+                    return
+                }
+            } else if command is RUMStopUserActionCommand {
+                // A terminal cannot create/refresh a session or adopt a later action.
+                guard let session = activeSession,
+                      session.ownsContinuousAction(ownership, monotonicTime: monotonicTime) else {
+                    ownership.close()
+                    return
+                }
+            } else {
+                return
+            }
+        }
+        defer {
+            if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
+                if command is RUMStartUserActionCommand {
+                    ownership.finishStart()
+                } else if command is RUMStopUserActionCommand {
+                    ownership.close()
+                }
+            }
+        }
+        if let actionReceipt, !admitsActionReceipt(actionReceipt, monotonicTime: monotonicTime) {
+            if case .continuousAction(let ownership) = command.target {
+                ownership.close()
+            }
+            return
+        }
+
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).

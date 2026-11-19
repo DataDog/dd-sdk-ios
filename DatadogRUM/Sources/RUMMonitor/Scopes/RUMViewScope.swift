@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -231,6 +232,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
 extension RUMViewScope {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        if dependencies.isMultiSceneTrackingEnabled,
+           command is RUMStartUserActionCommand,
+           case .continuousAction(let ownership) = command.target, !ownership.canClaim {
+            return true
+        }
         let wasActiveView = isActiveView
         let command = command.resolvingResourceOwners(in: [self])
 
@@ -326,6 +332,17 @@ extension RUMViewScope {
         case let command as RUMStartUserActionCommand where isActiveView:
             if userActionScope == nil {
                 startContinuousUserAction(on: command)
+                if dependencies.isMultiSceneTrackingEnabled,
+                   case .continuousAction(let ownership) = command.target, let action = userActionScope {
+                    ownership.claimAction(sessionID: self.context.sessionID, viewID: viewUUID, actionID: action.actionUUID)
+                }
+                if dependencies.isMultiSceneTrackingEnabled, let action = userActionScope {
+                    command.actionReceipt?.accept(
+                        sessionID: self.context.sessionID.toRUMDataFormat,
+                        viewID: viewUUID.toRUMDataFormat,
+                        actionID: action.actionUUID.toRUMDataFormat
+                    )
+                }
             } else {
                 reportActionDropped(type: command.actionType, name: command.name)
             }
@@ -488,7 +505,7 @@ extension RUMViewScope {
     }
 
     private func createDiscreteUserActionScope(on command: RUMAddUserActionCommand) -> RUMUserActionScope {
-        return RUMUserActionScope(
+        let action = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
             name: command.name,
@@ -504,6 +521,14 @@ extension RUMViewScope {
                 self?.onActionEventSent(event)
             }
         )
+        if dependencies.isMultiSceneTrackingEnabled {
+            command.actionReceipt?.accept(
+                sessionID: self.context.sessionID.toRUMDataFormat,
+                viewID: viewUUID.toRUMDataFormat,
+                actionID: action.actionUUID.toRUMDataFormat
+            )
+        }
+        return action
     }
 
     private func onActionEventSent(_ event: RUMActionEvent) {

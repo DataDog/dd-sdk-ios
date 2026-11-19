@@ -8,6 +8,7 @@
 #if !os(watchOS)
 import UIKit
 #endif
+@_spi(Internal)
 import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
@@ -135,6 +136,134 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         }
 
         subscriber.process(command: command)
+    }
+}
+#endif
+
+#if os(iOS)
+/// Encloses the original UIKit delivery in scene-owned action context.
+@available(iOS 27.0, *)
+internal protocol RUMSceneActionsHandling: RUMActionsHandling {
+    func intercept(application: UIApplication, event: UIEvent, operation: () -> Void)
+}
+
+/// Publishes automatic touch actions using ownership captured before customer predicates.
+@available(iOS 27.0, *)
+internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
+    private let legacyHandler: RUMActionsHandler
+    private let eventCommandsFactory: UIEventCommandFactory?
+    private let dateProvider: DateProvider
+    private let owner: RUMContextHandoff.Owner
+    private weak var expectedMonitor: Monitor?
+    private weak var subscriber: RUMCommandSubscriber?
+    private let sceneIdentifier: (UIWindow) -> RUMSceneIdentifier?
+
+    init(
+        legacyHandler: RUMActionsHandler,
+        eventCommandsFactory: UIEventCommandFactory?,
+        dateProvider: DateProvider,
+        owner: RUMContextHandoff.Owner,
+        expectedMonitor: Monitor,
+        sceneIdentifier: @escaping (UIWindow) -> RUMSceneIdentifier? = {
+            $0.windowScene.map { RUMSceneIdentifier(rawValue: $0.session.persistentIdentifier) }
+        }
+    ) {
+        self.legacyHandler = legacyHandler
+        self.eventCommandsFactory = eventCommandsFactory
+        self.dateProvider = dateProvider
+        self.owner = owner
+        self.expectedMonitor = expectedMonitor
+        self.sceneIdentifier = sceneIdentifier
+    }
+
+    func publish(to subscriber: RUMCommandSubscriber) {
+        self.subscriber = subscriber
+        legacyHandler.publish(to: subscriber)
+    }
+
+    func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable]) {
+        legacyHandler.notify_viewModifierTapped(actionName: actionName, actionAttributes: actionAttributes)
+    }
+
+    func notify_sendEvent(application: UIApplication, event: UIEvent) {
+        intercept(application: application, event: event, operation: {})
+    }
+
+    func intercept(application: UIApplication, event: UIEvent, operation: () -> Void) {
+        guard let identifier = sourceSceneIdentifier(for: event) else {
+            // No new binding: a nested source-less event preserves its inherited context.
+            legacyHandler.notify_sendEvent(application: application, event: event)
+            operation()
+            return
+        }
+
+        let captured = RUMContextHandoff.CurrentValue(
+            rumContext: snapshot(for: identifier),
+            sceneIdentifier: identifier.rawValue,
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        RUMContextHandoff.withValue(captured, for: owner) {
+            guard var command = eventCommandsFactory?.command(from: event), isOwnedSubscriber else {
+                operation()
+                return
+            }
+            command.target = .scene(identifier)
+            let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured.rumContext)
+            command.actionReceipt = receipt
+            // Pending denotes a selected command awaiting processing, not an Action UUID.
+            let pending = RUMContextHandoff.CurrentValue(
+                rumContext: captured.rumContext,
+                sceneIdentifier: captured.sceneIdentifier,
+                hasPendingUserAction: true,
+                excludedUserActionID: captured.rumContext?.userActionID,
+                actionReceipt: receipt
+            )
+            let didPublish = RUMContextHandoff.withValue(pending, for: owner) {
+                guard publishIfOwned(command) else {
+                    return false
+                }
+                operation()
+                return true
+            }
+            if !didPublish {
+                receipt.reject()
+                operation()
+            }
+        }
+    }
+
+    private func sourceSceneIdentifier(for event: UIEvent) -> RUMSceneIdentifier? {
+        guard let touches = event.allTouches, touches.count == 1,
+              let touch = touches.first, let window = touch.window ?? touch.view?.window else {
+            return nil
+        }
+        // A nonnil original window without a scene must not borrow the view's new window.
+        return sceneIdentifier(window)
+    }
+
+    private var isOwnedSubscriber: Bool {
+        guard owner.isValid, let monitor = expectedMonitor, subscriber === monitor else {
+            return false
+        }
+        return monitor.isMultiSceneTrackingEnabled && monitor.rumContextHandoffOwner === owner
+    }
+
+    private func snapshot(for identifier: RUMSceneIdentifier) -> RUMCoreContext? {
+        guard owner.isValid, let monitor = expectedMonitor, subscriber === monitor,
+              monitor.isMultiSceneTrackingEnabled, monitor.rumContextHandoffOwner === owner else {
+            return nil
+        }
+        return monitor.rumContextSnapshot(for: .scene(identifier))
+    }
+
+    private func publishIfOwned(_ command: RUMAddUserActionCommand) -> Bool {
+        guard owner.isValid, let monitor = expectedMonitor, subscriber === monitor,
+              monitor.isMultiSceneTrackingEnabled, monitor.rumContextHandoffOwner === owner else {
+            return false
+        }
+        monitor.process(command: command)
+        return true
     }
 }
 #endif

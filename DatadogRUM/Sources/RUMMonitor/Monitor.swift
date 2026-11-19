@@ -212,6 +212,7 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         guard !isMultiSceneTrackingEnabled || command.target != .none else {
+            (command as? RUMUserActionCommand)?.actionReceipt?.reject()
             (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
             return
         }
@@ -225,9 +226,30 @@ internal class Monitor: RUMCommandSubscriber {
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
                 if completesDroppedErrors {
+                    (command as? RUMUserActionCommand)?.actionReceipt?.reject()
                     (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
                 }
                 return
+            }
+
+            if self.isMultiSceneTrackingEnabled, let receipt = (command as? RUMUserActionCommand)?.actionReceipt {
+                guard receipt.owner.isValid,
+                      self.rumContextHandoffOwner === receipt.owner,
+                      context.launchInfo.launchReason == .uncertain ||
+                        self.applicationScope.admitsActionReceipt(receipt, monotonicTime: monotonicTime) else {
+                    receipt.reject()
+                    if case .continuousAction(let ownership) = command.target {
+                        ownership.close()
+                    }
+                    return
+                }
+            }
+
+            if self.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
+                guard !ownership.isClosed, ownership.owner.isValid, self.rumContextHandoffOwner === ownership.owner else {
+                    ownership.close()
+                    return
+                }
             }
 
             let transformedCommand = self.transform(command: command)
@@ -373,7 +395,7 @@ extension Monitor: RUMContextSnapshotProviding {
         }
         let context: RUMCoreContext?
         switch target {
-        case .none: return nil
+        case .none, .continuousAction: return nil
         case .scene(let identifier): context = snapshot.contextsByScene[identifier]
         case .view(let identifier):
             context = snapshot.contextsByScene.values.first { $0.viewID == identifier.toRUMDataFormat }
