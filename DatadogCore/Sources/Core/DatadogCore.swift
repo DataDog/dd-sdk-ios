@@ -78,10 +78,12 @@ internal final class DatadogCore: RUMContextHandoffActivating {
     private final class RegisteredFeature {
         let feature: DatadogFeature
         let messageReceiver: FeatureMessageReceiver
+        let committedHandoffOwner: RUMContextHandoff.Owner?
 
-        init(feature: DatadogFeature, messageReceiver: FeatureMessageReceiver) {
+        init(feature: DatadogFeature, messageReceiver: FeatureMessageReceiver, committedHandoffOwner: RUMContextHandoff.Owner?) {
             self.feature = feature
             self.messageReceiver = messageReceiver
+            self.committedHandoffOwner = committedHandoffOwner
         }
     }
 
@@ -455,7 +457,10 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     private func register<T>(feature: T, expectedOwner: RUMContextHandoff.Owner?) throws where T: DatadogFeature {
+        let isRUMRegistration = T.name == Feature.rum
+        let commitsStoreWithFeature = expectedOwner != nil || isRUMRegistration
         var createdStore: (storage: FeatureStorage, upload: FeatureUpload)?
+        var replacedStore: (storage: FeatureStorage, upload: FeatureUpload)?
         if let expectedOwner {
             // Reject stale/foreign transactions before constructing storage/upload.
             try _registry.mutate { registry in
@@ -499,18 +504,25 @@ extension DatadogCore: DatadogCoreProtocol {
             )
 
             createdStore = (storage: storage, upload: upload)
-            if expectedOwner == nil {
-                // Preserve the legacy registration order for Off/custom features.
-                stores[T.name] = createdStore
+            if !commitsStoreWithFeature {
+                // Preserve the existing registration order for unrelated legacy features.
+                _stores.mutate { stores in
+                    replacedStore = stores.updateValue((storage: storage, upload: upload), forKey: T.name)
+                }
                 storage.clearUnauthorizedData()
             }
         }
 
         let messageReceiver = feature.messageReceiver
-        let registration = RegisteredFeature(feature: feature, messageReceiver: messageReceiver)
+        let registration = RegisteredFeature(
+            feature: feature,
+            messageReceiver: messageReceiver,
+            committedHandoffOwner: isRUMRegistration ? expectedOwner : nil
+        )
         var owner: RUMContextHandoff.Owner?
+        var retiredOwner: RUMContextHandoff.Owner?
+        var retirementReceivers: [FeatureMessageReceiver] = []
         var replacedFeature: RegisteredFeature?
-        var replacedStore: (storage: FeatureStorage, upload: FeatureUpload)?
         do {
             try _registry.mutate { registry in
                 switch registry.handoff {
@@ -526,8 +538,19 @@ extension DatadogCore: DatadogCoreProtocol {
                         throw ProgrammerError(description: "RUM context ownership expired before feature registration.")
                     }
                 }
-                if expectedOwner != nil, let createdStore {
-                    // The On transaction keeps its store private until this commit.
+                if expectedOwner == nil,
+                   let activeOwner = owner,
+                   registry.features[T.name]?.committedHandoffOwner === activeOwner {
+                    // A staged activation may coexist with legacy RUM. Only retirement
+                    // of the exact committed registration can end its ownership.
+                    activeOwner.invalidate()
+                    retiredOwner = activeOwner
+                    owner = nil
+                    registry.handoff = .inactive
+                    retirementReceivers = registry.features.values.map { $0.messageReceiver }
+                }
+                if commitsStoreWithFeature, let createdStore {
+                    // Keep the new store private until the registration commits.
                     // Retain the displaced store so destruction occurs after unlock.
                     _stores.mutate { stores in
                         replacedStore = stores.updateValue(createdStore, forKey: T.name)
@@ -549,11 +572,13 @@ extension DatadogCore: DatadogCoreProtocol {
         }
         withExtendedLifetime(replacedFeature) {}
         withExtendedLifetime(replacedStore) {}
-        if expectedOwner != nil {
+        if commitsStoreWithFeature {
             createdStore?.storage.clearUnauthorizedData()
         }
         if let owner {
             (messageReceiver as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true)
+        }
+        if owner != nil || retiredOwner != nil {
             // Registration survives a nonterminal activation rollback. Only stop or
             // replacement may suppress its queued connection and initial context.
             bus.connect(messageReceiver, forKey: T.name, while: { [weak self, weak registration] in
@@ -562,6 +587,10 @@ extension DatadogCore: DatadogCoreProtocol {
                 }
                 return self.isRegistered(registration, forKey: T.name)
             })
+            if let retiredOwner {
+                // Reentrant messages from retirement callbacks follow the new connection.
+                retirementReceivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: retiredOwner, active: false) }
+            }
             contextProvider.read { [weak self, weak registration] context in
                 self?.bus.queue.async { [weak self, weak registration] in
                     guard let self, let registration, self.isRegistered(registration, forKey: T.name) else {
