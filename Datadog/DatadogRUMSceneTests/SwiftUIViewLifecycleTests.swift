@@ -673,43 +673,71 @@ extension SwiftUINavigationOwnershipTests {
         defer { core.stop() }
         let feature = try makeSemanticFeature(in: core, rows: SemanticHostRows())
         let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        for keepsOtherReader in [false, true] {
+            try await assertDestinationReaderDetach(
+                binding: binding, source: fixture.identifier, destination: destination,
+                window: window, keepsOtherReader: keepsOtherReader
+            )
+        }
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func assertDestinationReaderDetach(
+        binding: RUMSwiftUIViewFoundationBinding,
+        source: RUMSceneIdentifier,
+        destination: RUMSceneIdentifier,
+        window: UIWindow,
+        keepsOtherReader: Bool
+    ) async throws {
         let holder = RUMSwiftUIViewTrackingEpoch()
         let callback = try XCTUnwrap(holder.enter(binding))
         defer { holder.retire(callback) }
         let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
         let state = try XCTUnwrap(admission.withSession { $0.trackingState })
-        let initial = state.reconcile(attachment: .attached(fixture.identifier), isAppeared: true)
+        let initial = state.reconcile(attachment: .attached(source), isAppeared: true)
         guard case let .start(identity, scene) = try XCTUnwrap(initial.first) else {
             return XCTFail("The source must own the initial occurrence")
         }
-        XCTAssertEqual(scene, fixture.identifier)
+        XCTAssertEqual(scene, source)
 
         let coordinatorA = RetainedCompletionCoordinator()
         let coordinatorB = RetainedCompletionCoordinator()
         let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
             notificationCenter: NotificationCenterProvider.makeTestProvider().applicationCenter,
             admitsCallbacks: { binding.isValid },
-            coordinatorProvider: { scene, _ in scene == fixture.identifier ? coordinatorA : coordinatorB }
+            coordinatorProvider: { scene, _ in scene == source ? coordinatorA : coordinatorB }
         )
         var transitions: [RUMViewTrackingState.Transition] = []
         arbiter.process(.disappear, state: state) { transitions += $0 }
-        let reader = RUMSceneIdentifierReader.ObserverView(
-            admission: admission,
-            onChange: { attachment in
-                arbiter.process(.update(attachment), state: state) { transitions += $0 }
-            },
-            onMount: { scene in
-                arbiter.process(.mount(scene), state: state) { transitions += $0 }
-            },
-            applicationSupportsMultipleScenes: true
-        )
         var observedDetach: RUMSceneIdentifier?
-        reader.onDetachFromScene = { scene in
-            observedDetach = scene
-            return arbiter.detachPendingDestinationReader(in: scene, state: state)
+        func makeReader() -> RUMSceneIdentifierReader.ObserverView {
+            let reader = RUMSceneIdentifierReader.ObserverView(
+                admission: admission,
+                onChange: { attachment in
+                    arbiter.process(.update(attachment), state: state) { transitions += $0 }
+                },
+                onMount: { scene in
+                    arbiter.process(.mount(scene), state: state) { transitions += $0 }
+                },
+                applicationSupportsMultipleScenes: true
+            )
+            reader.onDetachFromScene = { observer, scene in
+                observedDetach = scene
+                return arbiter.detachPendingDestinationReader(observer, in: scene, state: state)
+            }
+            return reader
         }
+        let reader = makeReader()
         window.addSubview(reader)
+        arbiter.register(observer: reader, for: state)
         XCTAssertTrue(reader.window === window)
+        let other = keepsOtherReader ? makeReader() : nil
+        if let other {
+            window.addSubview(other)
+            arbiter.register(observer: other, for: state)
+        }
+        defer { other?.removeFromSuperview() }
         XCTAssertEqual(coordinatorB.registrations, 1)
         reader.removeFromSuperview()
         XCTAssertNil(reader.window)
@@ -718,12 +746,21 @@ extension SwiftUINavigationOwnershipTests {
 
         coordinatorA.complete(cancelled: false)
         await drainOwnedMainDelivery()
-        let expected = [RUMViewTrackingState.Transition.stop(identity: identity, sceneIdentifier: fixture.identifier)]
+        let expected = [RUMViewTrackingState.Transition.stop(identity: identity, sceneIdentifier: source)]
         XCTAssertEqual(transitions, expected)
         coordinatorB.complete(cancelled: false)
         await drainOwnedMainDelivery()
-        XCTAssertEqual(transitions, expected)
-        XCTAssertNil(state.activeLifecycleGeneration)
+        if keepsOtherReader {
+            XCTAssertEqual(transitions.count, 2)
+            XCTAssertEqual(transitions.first, expected.first)
+            guard case let .start(_, scene) = transitions.last else {
+                return XCTFail("The surviving destination reader must start its occurrence")
+            }
+            XCTAssertEqual(scene, destination)
+        } else {
+            XCTAssertEqual(transitions, expected)
+            XCTAssertNil(state.activeLifecycleGeneration)
+        }
     }
 
     @MainActor
