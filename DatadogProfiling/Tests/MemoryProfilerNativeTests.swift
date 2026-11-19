@@ -115,11 +115,8 @@ final class MemoryProfilerNativeTests: XCTestCase {
         XCTAssertEqual(try decode(secondData).values, [2, 6, 4, 26])
     }
 
-    func testSerializationSkipsInvalidAndEmptyCapturesAndCanRecover() throws {
+    func testSerializationRejectsInvalidCapturesAndCanRecover() throws {
         XCTAssertNil(dd_memory_profiler_serialize(nil).data)
-        var empty = capture(expected: DD_MEMORY_CAPTURE_IDLE)
-        XCTAssertEqual(dd_memory_profiler_serialize(&empty).size, 0)
-
         record(address: 0x10000, size: 8)
         var valid = capture(expected: DD_MEMORY_CAPTURE_READY)
         XCTAssertFalse(try serializedData(&valid).isEmpty)
@@ -130,13 +127,41 @@ final class MemoryProfilerNativeTests: XCTestCase {
         XCTAssertEqual(failed.size, 0)
         XCTAssertEqual(try decode(serializedData(&valid)).values, [1, 8, 1, 8])
 
-        dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x10000))
-        empty = capture(expected: DD_MEMORY_CAPTURE_READY)
-        let skipped = dd_memory_profiler_serialize(&empty)
-        XCTAssertNil(skipped.data)
-        XCTAssertEqual(skipped.size, 0)
         dd_memory_profiler_stop()
-        XCTAssertNil(dd_memory_profiler_serialize(&empty).data)
+        let stopped = dd_memory_profiler_serialize(&valid)
+        XCTAssertNil(stopped.data)
+        XCTAssertEqual(stopped.size, 0)
+    }
+
+    func testLastFreeSerializesEmptyReadyProfileBeforeBecomingIdle() throws {
+        record(address: 0x10000, size: 8)
+        var populated = capture(expected: DD_MEMORY_CAPTURE_READY)
+        XCTAssertEqual(try decode(serializedData(&populated)).values, [1, 8, 1, 8])
+
+        dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x10000))
+        var empty = capture(expected: DD_MEMORY_CAPTURE_READY)
+        XCTAssertEqual(empty.aggregation.count, 0)
+        let data = try serializedData(&empty)
+        let decoded = try data.withUnsafeBytes { bytes in
+            try XCTUnwrap(perftools__profiles__profile__unpack(
+                nil,
+                bytes.count,
+                bytes.bindMemory(to: UInt8.self).baseAddress
+            ))
+        }
+        defer { perftools__profiles__profile__free_unpacked(decoded, nil) }
+        let profile = decoded.pointee
+        let strings = (0..<profile.n_string_table).map { String(cString: profile.string_table[$0]!) }
+        let sampleTypes = (0..<profile.n_sample_type).map { profile.sample_type[$0]!.pointee }
+        XCTAssertEqual(sampleTypes.map { strings[Int($0.type)] }, ["alloc_objects", "alloc_space", "inuse_objects", "inuse_space"])
+        XCTAssertEqual(sampleTypes.map { strings[Int($0.unit)] }, ["count", "bytes", "count", "bytes"])
+        XCTAssertEqual(profile.n_sample, 0)
+        XCTAssertEqual(profile.n_location, 0)
+        XCTAssertEqual(profile.n_mapping, 0)
+        XCTAssertEqual(profile.time_nanos, empty.time_nanos)
+        XCTAssertEqual(profile.duration_nanos, empty.duration_nanos)
+        XCTAssertEqual(strings[Int(profile.default_sample_type)], "inuse_space")
+        _ = capture(expected: DD_MEMORY_CAPTURE_IDLE)
     }
 
     func testPauseDrainsAllocationsKeepsFreesAndReportsLastFreeAsReady() {

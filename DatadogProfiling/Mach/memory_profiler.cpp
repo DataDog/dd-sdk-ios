@@ -375,7 +375,7 @@ dd_memory_capture_status_t dd_memory_profiler::capture(dd_memory_capture_t *capt
 
 dd_memory_pprof_view_t dd_memory_profiler::serialize(const dd_memory_capture_t *capture) {
     std::lock_guard<std::mutex> lock(lifecycle_mutex);
-    if (!is_running() || capture == nullptr || capture->aggregation.count == 0) {
+    if (!is_running() || capture == nullptr) {
         return {};
     }
     if (encoder == nullptr) {
