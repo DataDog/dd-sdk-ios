@@ -586,6 +586,66 @@ class WebEventIntegrationTests: XCTestCase {
         XCTAssertEqual(sessionID, replacementSession.toRUMDataFormat)
     }
 
+    func testQueuedLegacyWebViewCallbackDoesNotBorrowReplacementRegistration() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-aware bridge requires iOS 27") }
+        let manifest = BundleMock.mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        let firstApp = UUID().uuidString.lowercased()
+        var on = RUM.Configuration(applicationID: firstApp)
+        on.bundle = manifest
+        on.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: on, in: core)
+        let firstOwner = try XCTUnwrap(core.get(feature: RUMFeature.self)?.rumContextHandoffOwner)
+        let legacyApp = UUID().uuidString.lowercased()
+        let legacySession: RUMUUID = .mockRandom()
+        try RUM.enableOrThrow(with: .mockWith(applicationID: legacyApp) {
+            $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: legacySession)
+        }, in: core)
+        XCTAssertFalse(firstOwner.isValid)
+        RUMMonitor.shared(in: core).startView(key: "legacy-web-owner")
+        core.flush()
+
+        let bridge = try XCTUnwrap(controller.scriptMessageHandler(forName: DDScriptMessageHandler.name) as? DDScriptMessageHandler)
+        let entered = DispatchSemaphore(value: 0)
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        bridge.queue.async {
+            entered.signal()
+            release.wait()
+        }
+        guard entered.wait(timeout: .now() + 5) == .success else {
+            return XCTFail("Could not hold the script delivery queue")
+        }
+        let staleView = UUID().uuidString.lowercased()
+        let date = Int64(Date().timeIntervalSince1970 * 1_000)
+        controller.send(body: webViewViewBody(
+            date: date, applicationID: firstApp, sessionID: UUID().uuidString.lowercased(), viewID: staleView
+        ))
+
+        let successorApp = UUID().uuidString.lowercased()
+        let successorSession: RUMUUID = .mockRandom()
+        var successor = RUM.Configuration(applicationID: successorApp)
+        successor.bundle = manifest
+        successor.featureFlags = [.multiSceneTracking: true]
+        successor.uuidGenerator = RUMUUIDGeneratorMock(uuid: successorSession)
+        try RUM.enableOrThrow(with: successor, in: core)
+        let successorFeature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let successorOwner = try XCTUnwrap(successorFeature.rumContextHandoffOwner)
+        XCTAssertTrue(successorOwner.isValid && successorOwner !== firstOwner)
+        RUMMonitor.shared(in: core).startView(key: "successor-native-view")
+        RUMMonitor.shared(in: core).addAction(type: .custom, name: "successor-control")
+        core.flush()
+        XCTAssertEqual(successorFeature.monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID, successorSession.toRUMDataFormat)
+        XCTAssertTrue(controller.scriptMessageHandler(forName: DDScriptMessageHandler.name) === bridge)
+        release.signal()
+        controller.flush()
+        core.flush()
+
+        let events = try core.waitAndReturnRUMEventMatchers()
+        let leaked = events.filter { (try? $0.jsonMatcher.valueOrNil(forKeyPath: "view.id")) == staleView }
+        XCTAssertTrue(leaked.isEmpty, "A callback received under legacy RUM cannot acquire the replacement registration")
+        XCTAssertTrue(events.contains { (try? $0.jsonMatcher.valueOrNil(forKeyPath: "application.id")) == successorApp })
+    }
+
     private func webViewViewBody(date: Int64, applicationID: String, sessionID: String, viewID: String) -> String {
         """
         {
