@@ -99,6 +99,43 @@ extension SwiftUINavigationOwnershipTests {
         }
     }
 
+    @MainActor
+    func testObservedNavigation_deliversQueuedWorkerUpdateBeforeLaterMainUpdate() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Semantic navigation requires iOS 27") }
+        let updates = CurrentValueSubject<Int, Never>(0)
+        let observed = RUMNavigationObservedTransitions(
+            updates: updates,
+            acceptsDelivery: { true },
+            destination: { .route($0, attributes: ["source": $0]) }
+        )
+        defer { observed.stop() }
+        var snapshots: [RUMNavigationTransitions.Snapshot] = []
+        let observer = observed.transitions.observe { snapshots.append($0) }
+        defer { observed.transitions.removeObserver(observer) }
+        XCTAssertEqual(snapshots.compactMap { $0.destination.attributes["source"] as? Int }, [0])
+
+        let workerSent = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            updates.send(1)
+            workerSent.signal()
+        }
+        guard workerSent.wait(timeout: .now() + 5) == .success else {
+            return XCTFail("Worker update did not reach the subscriber")
+        }
+        updates.send(2)
+
+        let drained = expectation(description: "Queued main-thread deliveries finished")
+        DispatchQueue.main.async { drained.fulfill() }
+        await fulfillment(of: [drained], timeout: 5)
+
+        XCTAssertEqual(snapshots.compactMap { $0.destination.attributes["source"] as? Int }, [0, 1, 2])
+        XCTAssertEqual(snapshots.map(\.generation), [0, 1, 2])
+        var replayedSource: Int?
+        let replayObserver = observed.transitions.observe { replayedSource = $0.destination.attributes["source"] as? Int }
+        defer { observed.transitions.removeObserver(replayObserver) }
+        XCTAssertEqual(replayedSource, 2)
+    }
+
     private struct NavigationSourceReentrantValue: Hashable {
         let value: Int
         let onEquality: () -> Void
