@@ -1425,7 +1425,15 @@ final class AutomaticContinuousActionOwnershipTests: XCTestCase {
         f.monitor.process(command: error)
         let nav = RUMStartViewCommand(time: f.clock.now, identity: ViewIdentifier("foreign"), name: "foreign", path: "foreign", globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .continuousAction(receipt))
         f.monitor.process(command: nav)
-        if case .unresolved? = RUMSessionScope.resolveNavigationDestination(on: nav, representative: .init(rawValue: "a"), cache: f.monitor.applicationScope.dependencies.viewCache) {} else { XCTFail("Receipt navigation must stay unresolved") }
+        let destination = RUMSessionScope.resolveNavigationDestination(
+            on: nav,
+            representative: .init(rawValue: "a"),
+            views: [view],
+            cache: f.monitor.applicationScope.dependencies.viewCache
+        )
+        guard case .unresolved? = destination else {
+            return XCTFail("Receipt navigation must stay unresolved")
+        }
         XCTAssertTrue(view.isActiveView)
         XCTAssertNil(receipt.claim)
         XCTAssertTrue(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
