@@ -573,14 +573,16 @@ extension SwiftUINavigationOwnershipTests {
         let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
 
         for keyed in [false, true] {
-            for (cancelA, cancelB, completesAFirst) in [
-                (false, true, true),
-                (false, false, true),
-                (false, false, false),
-                (false, true, false),
-                (true, true, true),
-                (true, false, true),
-            ] {
+            for (cancelA, cancelB, completesAFirst, destinationDisappears) in [
+                (false, true, true, false),
+                (false, false, true, false),
+                (false, false, false, false),
+                (false, true, false, false),
+                (true, true, true, false),
+                (true, false, true, false),
+                (false, false, true, true),
+                (false, false, false, true),
+            ] where keyed || !destinationDisappears {
                 let holder = RUMSwiftUIViewTrackingEpoch()
                 let callback = try XCTUnwrap(holder.enter(binding))
                 defer { holder.retire(callback) }
@@ -615,6 +617,12 @@ extension SwiftUINavigationOwnershipTests {
                 XCTAssertEqual(coordinatorB.registrations, 1)
                 XCTAssertTrue(transitions.isEmpty)
 
+                if destinationDisappears {
+                    arbiter.process(.reconcile(configuration: next, attachment: nil, isAppeared: false), state: state) {
+                        transitions += $0
+                    }
+                }
+                let destinationStarts = !cancelB && !destinationDisappears
                 let sourceStop = RUMViewTrackingState.Transition.stop(identity: identity, sceneIdentifier: source)
                 if completesAFirst {
                     coordinatorA.complete(cancelled: cancelA)
@@ -624,12 +632,12 @@ extension SwiftUINavigationOwnershipTests {
                 } else {
                     coordinatorB.complete(cancelled: cancelB)
                     await drainOwnedMainDelivery()
-                    XCTAssertEqual(transitions.count, cancelB ? 0 : 2)
+                    XCTAssertEqual(transitions.count, destinationStarts ? 2 : 0)
                     coordinatorA.complete(cancelled: cancelA)
                 }
                 await drainOwnedMainDelivery()
 
-                if !cancelB {
+                if destinationStarts {
                     XCTAssertEqual(transitions.count, 2)
                     XCTAssertEqual(transitions.first, sourceStop)
                     if case let .start(_, scene) = transitions.last {
