@@ -16,7 +16,7 @@ public protocol RUMContextHandoffOwnerProviding {
 /// Custom and NOP cores need not implement this SPI.
 @_spi(Internal)
 public protocol RUMContextHandoffActivating: RUMContextHandoffOwnerProviding {
-    var canResumeLegacyWebViewTracking: Bool { get }
+    var legacyWebViewTrackingReceipt: RUMLegacyWebViewTrackingReceipt? { get }
     func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner
     func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner)
     func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature
@@ -24,7 +24,7 @@ public protocol RUMContextHandoffActivating: RUMContextHandoffOwnerProviding {
 
 @_spi(Internal)
 public extension RUMContextHandoffActivating {
-    var canResumeLegacyWebViewTracking: Bool { false }
+    var legacyWebViewTrackingReceipt: RUMLegacyWebViewTrackingReceipt? { nil }
 }
 
 /// Receives activation directly, independently of asynchronous context messages.
@@ -477,6 +477,35 @@ public extension RUMContextHandoffWebViewProviding {
 @_spi(Internal)
 public protocol RUMContextHandoffSessionValidating {
     func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool
+}
+
+/// Identifies the committed legacy RUM registration that received a Browser callback.
+@_spi(Internal)
+public struct RUMLegacyWebViewTrackingReceipt {
+    private let isRegistrationCurrent: () -> Bool
+    private let updateRUMContext: (@escaping () -> RUMCoreContext?) -> Void
+
+    public init(isCurrent: @escaping () -> Bool, setRUMContext: @escaping (@escaping () -> RUMCoreContext?) -> Void) {
+        self.isRegistrationCurrent = isCurrent
+        self.updateRUMContext = setRUMContext
+    }
+
+    public var isCurrent: Bool { isRegistrationCurrent() }
+
+    public func setRUMContext(_ context: @escaping () -> RUMCoreContext?) {
+        updateRUMContext(context)
+    }
+}
+
+@_spi(Internal)
+public struct WebViewMessageWithLegacyRUMRegistration {
+    public let message: WebViewMessage
+    public let receipt: RUMLegacyWebViewTrackingReceipt
+
+    public init(message: WebViewMessage, receipt: RUMLegacyWebViewTrackingReceipt) {
+        self.message = message
+        self.receipt = receipt
+    }
 }
 
 /// Carries native ownership with a Browser message across asynchronous queues.
