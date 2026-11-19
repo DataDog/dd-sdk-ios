@@ -16,6 +16,16 @@ import DatadogInternal
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
 internal final class DatadogCore: RUMContextHandoffActivating {
+    var canResumeLegacyWebViewTracking: Bool {
+        let snapshot = registry
+        guard !snapshot.isStopped, case .inactive = snapshot.handoff,
+              let registration = snapshot.features[Feature.rum], registration.committedHandoffOwner == nil,
+              let provider = registration.feature as? RUMContextHandoffWebViewProviding else {
+            return false
+        }
+        return provider.usesLegacyWebViewTracking
+    }
+
     var rumContextHandoffOwner: RUMContextHandoff.Owner? {
         guard case let .active(activation) = registry.handoff else {
             return nil
