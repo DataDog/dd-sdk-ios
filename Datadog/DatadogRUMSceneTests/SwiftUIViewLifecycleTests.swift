@@ -198,6 +198,96 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testOrdinaryTrackedView_overlappingReadersRecoverAfterOldWindowDetaches() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        defer { fixture.restore(); core.stop() }
+        let application = UIApplication.shared
+        try requireSceneHost(application.supportsMultipleScenes, "Requires two native scene sessions")
+        let originalSessions = Set(application.openSessions.map(\.persistentIdentifier))
+        let observations = SceneHostLifetimeNotifications()
+        defer { observations.stop() }
+        addTeardownBlock { [weak self, observations] in
+            guard let self else { return }
+            try await self.cleanupSceneHostSessions(observations, originalSessionIDs: originalSessions)
+        }
+        let rows = SemanticHostRows()
+        let feature = try makeSemanticFeature(in: core, rows: rows)
+        let driver = OrdinarySwiftUIViewDriver()
+        weak var originalReader: RUMSceneIdentifierReader.ObserverView?
+        var capturedState: RUMViewTrackingState?
+        var capturedAdmission: RUMSwiftUIViewCallbackAdmission?
+        XCTAssertNil(RUMNativeNavigationTesting.onBoundary)
+        RUMNativeNavigationTesting.onBoundary = { source, reader, state, admission, configuration in
+            guard source == nil, configuration == nil, originalReader == nil else { return }
+            originalReader = reader
+            capturedState = state
+            capturedAdmission = admission
+        }
+        defer { RUMNativeNavigationTesting.onBoundary = nil }
+        _ = fixture.install(OrdinarySwiftUIViewChild(driver: driver).trackRUMView(name: "Overlapping reader", in: core))
+        try await awaitSemanticBoundary("old scene reader tracking", core: core) {
+            originalReader?.window === fixture.window
+                && feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewName == "Overlapping reader"
+        }
+        let originalView = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID)
+        let original = try XCTUnwrap(originalReader)
+        let state = try XCTUnwrap(capturedState)
+        let admission = try XCTUnwrap(capturedAdmission)
+        let arbiter = try XCTUnwrap(admission.foundation?.makeTransitionAdmission(for: admission))
+
+        let request = UISceneSessionActivationRequest(userActivity: NSUserActivity(activityType: "com.datadoghq.tests.scene-lifetime"))
+        application.activateSceneSession(for: request) { error in observations.recordRequestError(error) }
+        try await awaitSceneHostBoundary("second overlap scene", core: core) {
+            !observations.requestErrors.isEmpty || application.connectedScenes.contains {
+                !originalSessions.contains($0.session.persistentIdentifier) && $0.activationState != .unattached
+            }
+        }
+        try requireSceneHost(observations.requestErrors.isEmpty, "Native scene creation")
+        let peers = application.connectedScenes.compactMap { $0 as? UIWindowScene }.filter {
+            !originalSessions.contains($0.session.persistentIdentifier) && $0.activationState != .unattached
+        }
+        let peer = try XCTUnwrap(peers.count == 1 ? peers.first : nil)
+        let peerID = RUMSceneIdentifier(rawValue: peer.session.persistentIdentifier)
+        observations.recordCreatedScene(peerID.rawValue)
+        let delegate = try XCTUnwrap(peer.delegate as? UIWindowSceneDelegate)
+        let peerWindow = try XCTUnwrap(delegate.window ?? nil)
+
+        // Mount a second reader for the same modifier before removing the old one.
+        let replacement = RUMSceneIdentifierReader.ObserverView(
+            admission: admission,
+            onChange: original.onChange,
+            applicationSupportsMultipleScenes: true
+        )
+        replacement.onMount = { [weak replacement] scene in
+            guard let replacement else { return }
+            arbiter.register(observer: replacement, for: state)
+            original.onMount?(scene)
+        }
+        defer { replacement.removeFromSuperview() }
+        peerWindow.addSubview(replacement)
+        XCTAssertTrue(original.window === fixture.window)
+        XCTAssertTrue(replacement.window === peerWindow)
+        XCTAssertEqual(original.currentSceneIdentifier, fixture.identifier)
+        XCTAssertEqual(replacement.currentSceneIdentifier, peerID)
+        XCTAssertNil(arbiter.mountedSceneIdentifier(for: state))
+        core.flush()
+        XCTAssertNil(feature.monitor.rumContextSnapshot(for: .scene(peerID))?.viewID)
+
+        original.removeFromSuperview()
+        XCTAssertNil(original.window)
+        XCTAssertTrue(replacement.window === peerWindow)
+        XCTAssertEqual(arbiter.mountedSceneIdentifier(for: state), peerID)
+        core.flush()
+        let recovered = feature.monitor.rumContextSnapshot(for: .scene(peerID))
+        XCTAssertEqual(recovered?.viewName, "Overlapping reader", "B must recover without another attachment callback")
+        guard let returnedView = recovered?.viewID else { return }
+        XCTAssertNotEqual(returnedView, originalView)
+        XCTAssertTrue(rows.views.contains { $0.view.id == returnedView && $0.view.isActive == true })
+    }
+
+    @MainActor
     func testOrdinaryTrackedView_whenRUMEnablesAfterAppearance_itKeepsCustomerState() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let fixture = try SemanticHostWindow()
