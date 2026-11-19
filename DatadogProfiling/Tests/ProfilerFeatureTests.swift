@@ -117,6 +117,15 @@ final class ProfilerFeatureTests: XCTestCase {
             userDefaults: userDefaults,
             memorySampleRate: 100
         )
+        _ = feature.messageReceiver.receive(
+            message: .context(.mockWith(
+                trackingConsent: .pending,
+                applicationStateHistory: .mockWith(initialState: .active, date: Date()),
+                additionalContext: [session]
+            )),
+            from: core
+        )
+        MemoryProfiler.defaultQueue.sync {}
         let initialCaptures = dd_memory_profiler_capture_diagnostics_for_testing().captures_count
         var sample = dd_memory_live_sample_t()
         sample.address = UnsafeRawPointer(bitPattern: 0x10000)
@@ -124,16 +133,14 @@ final class ProfilerFeatureTests: XCTestCase {
         sample.weight = 1
         dd_memory_profiler_record_for_testing(&sample)
 
-        for appState in [AppState.active, .background] {
-            _ = feature.messageReceiver.receive(
-                message: .context(.mockWith(
-                    trackingConsent: .pending,
-                    applicationStateHistory: .mockWith(initialState: appState, date: Date()),
-                    additionalContext: [session]
-                )),
-                from: core
-            )
-        }
+        _ = feature.messageReceiver.receive(
+            message: .context(.mockWith(
+                trackingConsent: .pending,
+                applicationStateHistory: .mockWith(initialState: .background, date: Date()),
+                additionalContext: [session]
+            )),
+            from: core
+        )
 
         MemoryProfiler.defaultQueue.sync {}
         DatadogProfiler.defaultQueue.sync {}
@@ -339,11 +346,8 @@ final class ProfilerFeatureTests: XCTestCase {
         provider.updateWith(deterministicSampler: DeterministicSampler(seed: previousSampler.seed, samplingRate: 0))
 
         XCTAssertEqual(provider.memory.sampled(for: previousSampler), true)
-        XCTAssertEqual(provider.memory.appLaunchSampled(for: previousSampler), true)
         XCTAssertNil(provider.memory.sampled(for: nil))
-        XCTAssertNil(provider.memory.appLaunchSampled(for: nil))
         XCTAssertEqual(provider.memory.sampled, false)
-        XCTAssertEqual(provider.memory.appLaunchSampled, false)
         XCTAssertEqual(provider.continuousProfilingSampled, false)
         XCTAssertEqual(provider.appLaunchProfilingSampled, false)
     }
@@ -361,21 +365,17 @@ final class ProfilerFeatureTests: XCTestCase {
             provider.updateWith(deterministicSampler: index.isMultiple(of: 2) ? sampledSession : unsampledSession)
 
             XCTAssertEqual(provider.memory.sampled(for: sampledSession), true)
-            XCTAssertEqual(provider.memory.appLaunchSampled(for: sampledSession), true)
             XCTAssertEqual(provider.memory.sampled(for: unsampledSession), false)
-            XCTAssertEqual(provider.memory.appLaunchSampled(for: unsampledSession), false)
             XCTAssertTrue(provider.isContinuousProfilingConfigured)
             XCTAssertTrue(provider.isAppLaunchProfilingAvailable)
             XCTAssertTrue(provider.memory.isConfigured)
-            XCTAssertTrue(provider.memory.isAppLaunchConfigured)
             XCTAssertNotNil(provider.continuousProfilingSampled)
             XCTAssertNotNil(provider.appLaunchProfilingSampled)
             XCTAssertNotNil(provider.memory.sampled)
-            XCTAssertNotNil(provider.memory.appLaunchSampled)
         }
     }
 
-    func testProfilingSamplerProvider_doesNotSampleAppLaunchTwice() {
+    func testProfilingSamplerProvider_appliesMemoryRateInSwiftAndCPULaunchRateOnlyInNative() {
         let sampleRate: SampleRate = 10
         let sessionSampler = DeterministicSampler(seed: 0xd860b2b9437a, samplingRate: 100)
         let provider = ProfilingSamplerProvider(
@@ -384,51 +384,48 @@ final class ProfilerFeatureTests: XCTestCase {
             memorySampleRate: sampleRate
         )
         XCTAssertTrue(provider.isAppLaunchProfilingAvailable)
-        XCTAssertTrue(provider.memory.isAppLaunchConfigured)
+        XCTAssertTrue(provider.memory.isConfigured)
         XCTAssertNil(provider.appLaunchProfilingSampled)
-        XCTAssertNil(provider.memory.appLaunchSampled)
         XCTAssertFalse(sessionSampler.combined(with: sampleRate).isSampled)
         XCTAssertEqual(provider.memory.sampled(for: sessionSampler), false)
-        XCTAssertEqual(provider.memory.appLaunchSampled(for: sessionSampler), true)
         XCTAssertNil(provider.continuousProfilingSampled)
         XCTAssertNil(provider.memory.sampled)
-        XCTAssertNil(provider.memory.appLaunchSampled)
 
         provider.updateWith(deterministicSampler: sessionSampler)
 
         XCTAssertEqual(provider.appLaunchProfilingSampled, true)
-        XCTAssertEqual(provider.memory.appLaunchSampled, true)
         XCTAssertEqual(provider.continuousProfilingSampled, false)
         XCTAssertEqual(provider.memory.sampled, false)
 
         provider.updateWith(deterministicSampler: DeterministicSampler(seed: sessionSampler.seed, samplingRate: 0))
 
         XCTAssertEqual(provider.appLaunchProfilingSampled, false)
-        XCTAssertEqual(provider.memory.appLaunchSampled, false)
         XCTAssertEqual(provider.continuousProfilingSampled, false)
         XCTAssertEqual(provider.memory.sampled, false)
     }
 
-    func testProfilingSamplerProvider_gatesMemoryLaunchByConfigurationAndRUMSampling() {
-        let provider = ProfilingSamplerProvider(continuousSampleRate: 0, memorySampleRate: 100)
-        let sampledSession = DeterministicSampler(seed: 1, samplingRate: 100)
-        let unsampledSession = DeterministicSampler(seed: 1, samplingRate: 0)
+    func testProfilingSamplerProvider_appliesMemorySampleRateOnce() {
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 0, memorySampleRate: 10)
+        let sessionSampler = DeterministicSampler(seed: 1, samplingRate: 100)
+        let memorySampler = sessionSampler.combined(with: 10)
+        XCTAssertTrue(memorySampler.isSampled)
+        XCTAssertFalse(memorySampler.combined(with: 10).isSampled)
 
-        provider.updateWith(deterministicSampler: sampledSession)
+        provider.updateWith(deterministicSampler: sessionSampler)
 
-        XCTAssertTrue(provider.memory.isAppLaunchConfigured)
-        XCTAssertEqual(provider.memory.appLaunchSampled, true)
         XCTAssertEqual(provider.memory.sampled, true)
+    }
 
-        provider.updateWith(deterministicSampler: unsampledSession)
+    func testProfilingSamplerProvider_preservesNativeCPULaunchSamplingWithoutRecomposingRUMRate() {
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 0, appLaunchSampleRate: 10, memorySampleRate: 100)
+        let sessionSampler = DeterministicSampler(seed: 137_383_866_022_882, samplingRate: 0.79)
+        XCTAssertFalse(sessionSampler.isSampled)
+        XCTAssertTrue(sessionSampler.combined(with: 100).isSampled)
 
-        XCTAssertEqual(provider.memory.appLaunchSampled, false)
+        provider.updateWith(deterministicSampler: sessionSampler)
 
-        let disabledProvider = ProfilingSamplerProvider(continuousSampleRate: 0, memorySampleRate: 0)
-        disabledProvider.updateWith(deterministicSampler: sampledSession)
-
-        XCTAssertFalse(disabledProvider.memory.isAppLaunchConfigured)
-        XCTAssertEqual(disabledProvider.memory.appLaunchSampled, false)
+        XCTAssertEqual(provider.appLaunchProfilingSampled, false)
+        XCTAssertEqual(provider.memory.sampled, true)
     }
 
     func testProfilingSamplerProvider_normalizesRates() {

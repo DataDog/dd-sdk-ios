@@ -56,13 +56,8 @@ void auto_start(CFStringRef suite_name, bool prewarming, bool thread_sanitizer) 
     if (prewarming || thread_sanitizer || !std::isfinite(sample_rate) || sample_rate <= 0) {
         return;
     }
-    if (sample_rate < 100) {
-        const double random = static_cast<double>(arc4random()) /
-                              (static_cast<double>(UINT32_MAX) + 1.0);
-        if (random * 100 >= sample_rate) {
-            return;
-        }
-    }
+    // Sampling controls emission in Swift. Recording must span sampled-out
+    // sessions so later live-set snapshots retain their surviving objects.
     start_at_launch();
 }
 
