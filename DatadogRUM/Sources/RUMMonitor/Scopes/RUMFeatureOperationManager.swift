@@ -87,7 +87,7 @@ internal class RUMFeatureOperationManager {
         ownership: RUMOperationOwnership,
         correlation: [AttributeKey: AttributeValue]
     ) {
-        guard ownership.isValid, command.origin === ownership.origin,
+        guard ownership.isCurrentSession, command.origin === ownership.origin,
               validateCommand(command.step) else {
                   return
               }
@@ -102,7 +102,7 @@ internal class RUMFeatureOperationManager {
             ownership: ownership,
             correlation: correlation
         )
-        guard ownership.isValid else {
+        guard ownership.isCurrentSession else {
             return
         }
         let lookupKey = "\(command.step.name)\(command.step.operationKey ?? "")"
@@ -157,14 +157,13 @@ internal class RUMFeatureOperationManager {
                 )
             )
             if let ownership {
-                guard ownership.isValid, let correlation else {
-                    return
+                if ownership.isValid, let correlation {
+                    dependencies.featureScope.send(message: .payload(OwnedOperationMessage(
+                        ownership: ownership,
+                        attributes: correlation,
+                        operation: message.operation
+                    )))
                 }
-                dependencies.featureScope.send(message: .payload(OwnedOperationMessage(
-                    ownership: ownership,
-                    attributes: correlation,
-                    operation: message.operation
-                )))
             } else {
                 dependencies.featureScope.send(message: .payload(message))
             }
@@ -204,7 +203,7 @@ internal class RUMFeatureOperationManager {
             vital: vital
         )
 
-        if let ownership, !ownership.isValid {
+        if let ownership, !ownership.isCurrentSession {
             return
         }
         writer.write(value: sanitizer.sanitize(event: vitalEvent))
