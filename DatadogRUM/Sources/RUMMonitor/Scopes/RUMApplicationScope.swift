@@ -158,6 +158,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if let receipt = (command as? RUMKeepSessionAliveCommand)?.legacyWebViewRegistration, !receipt.isCurrent {
             return
         }
+        if dependencies.isMultiSceneTrackingEnabled, let operation = command as? RUMOwnedOperationStepCommand {
+            guard operation.origin.isCurrent else {
+                return
+            }
+            if let capture = operation.capture {
+                guard let original = capture.resolvedRUMContext(for: operation.origin.owner),
+                      let session = activeSession,
+                      session.sessionUUID.toRUMDataFormat == original.sessionID else {
+                          return
+                      }
+                session.processOwnedOperation(operation, monotonicTime: monotonicTime, context: context, writer: writer)
+                return
+            }
+        }
         if command is RUMStopSessionCommand {
             sceneRestoration?.webViewLifecycleExpiry = nil
         }
