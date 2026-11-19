@@ -8,6 +8,8 @@ import XCTest
 import UIKit
 import SwiftUI
 import Combine
+import WebKit
+@testable import DatadogWebViewTracking
 @testable import TestUtilities
 @_spi(Internal)
 @testable import DatadogInternal
@@ -18,6 +20,173 @@ import Combine
 
 #if os(iOS) && canImport(SwiftUI)
 extension SwiftUINavigationOwnershipTests {
+    @MainActor
+    func testMountedWebViewActivityAfterTimeoutRenewsOnlyTheFreshMessage() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-aware bridge requires iOS 27") }
+        try exerciseMountedWebViewRenewal(afterHardCap: false)
+    }
+
+    @MainActor
+    func testMountedWebViewActivityAfterMaximumDurationRenewsOnlyTheFreshMessage() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-aware bridge requires iOS 27") }
+        try exerciseMountedWebViewRenewal(afterHardCap: true)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func exerciseMountedWebViewRenewal(afterHardCap: Bool) throws {
+        let fixture = try SemanticHostWindow()
+        let date = Date()
+        let clock = MonotonicClockMock()
+        let intake = HTTPClientMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockAny(),
+            httpClient: intake,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer { core.stop(); fixture.restore() }
+        core.contextProvider.write {
+            $0 = .mockWith(
+                sdkInitDate: date,
+                trackingConsent: .granted,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+                applicationStateHistory: .mockWith(initialState: .active, date: date)
+            )
+        }
+        core.flush()
+        func readRUMEvents() throws -> [[String: Any]] {
+            core.flushAndUpload()
+            return try intake.requestsSent().flatMap { request -> [[String: Any]] in
+                guard request.url?.path.hasSuffix("/rum") == true,
+                      let data = try request.decompressed().httpBody else {
+                    return []
+                }
+                return try data.split(separator: 0x0A).compactMap {
+                    try JSONSerialization.jsonObject(with: Data($0)) as? [String: Any]
+                }
+            }
+        }
+        func viewID(of row: [String: Any]) -> String? {
+            (row["view"] as? [String: Any])?["id"] as? String
+        }
+        let applicationID = "mounted-browser-session-renewal"
+        var config = RUM.Configuration(applicationID: applicationID, trackAnonymousUser: false)
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        config.sessionSampleRate = 100
+        config.monotonicClock = clock
+        config.vitalsUpdateFrequency = nil
+        try RUM.enableOrThrow(with: config, in: core)
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        feature.monitor.startView(key: "session-seed", attributes: [:])
+        feature.monitor.addAction(type: .custom, name: "session-seed", attributes: [:])
+        core.flush()
+        let predecessor = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID)
+        let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
+        let maxDuration = RUMSessionScope.Constants.sessionMaxDuration
+        if afterHardCap {
+            let safeInterval = timeout / 2
+            while clock.elapsedTime + safeInterval < maxDuration {
+                clock.advance(by: safeInterval)
+                feature.monitor.addAction(type: .custom, name: "pre-cap-activity", attributes: [:])
+                core.flush()
+            }
+            XCTAssertEqual(feature.monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID, predecessor)
+            XCTAssertLessThan(maxDuration - clock.elapsedTime, timeout)
+        }
+
+        let configuration = WKWebViewConfiguration()
+        let controller = WKUserContentControllerMock()
+        configuration.userContentController = controller
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 100, height: 100), configuration: configuration)
+        defer { webView.removeFromSuperview() }
+        fixture.window.addSubview(webView)
+        XCTAssertTrue(webView.window?.windowScene === fixture.scene)
+        try WebViewTracking.enableOrThrow(
+            tracking: webView, hosts: [], hostsSanitizer: HostsSanitizer(), logsSampleRate: 100, in: core
+        )
+        let bridge = try XCTUnwrap(controller.scriptMessageHandler(forName: DDScriptMessageHandler.name) as? DDScriptMessageHandler)
+        XCTAssertEqual(bridge.sessionRolloverHandler?.hasNativeOwnership, true)
+
+        func send(_ viewID: String) {
+            let body = """
+            {
+              "eventType": "view",
+              "event": {
+                "type": "view",
+                "date": 1700000000000,
+                "application": { "id": "browser-app" },
+                "session": { "id": "browser-session", "type": "user" },
+                "view": { "id": "\(viewID)" },
+                "container": { "view": { "id": "foreign-view" }, "source": "ios" }
+              }
+            }
+            """
+            controller.send(body: body, from: webView)
+        }
+        let initial = UUID().uuidString
+        send(initial)
+        controller.flush()
+        let initialRows = try readRUMEvents()
+        let initialBrowserView = try XCTUnwrap(initialRows.first { viewID(of: $0) == initial })
+        XCTAssertEqual((initialBrowserView["session"] as? [String: Any])?["id"] as? String, predecessor)
+
+        let entered = DispatchSemaphore(value: 0)
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        bridge.queue.async { entered.signal(); release.wait() }
+        guard entered.wait(timeout: .now() + 5) == .success else {
+            return XCTFail("Could not hold the Browser delivery queue")
+        }
+
+        let stale = UUID().uuidString
+        let detached = UUID().uuidString
+        let fresh = UUID().uuidString
+        send(stale)
+        clock.advance(by: afterHardCap ? maxDuration - clock.elapsedTime : timeout)
+        XCTAssertNil(feature.monitor.rumContextSnapshot(for: .processRepresentative))
+        webView.removeFromSuperview()
+        XCTAssertNil(webView.window)
+        send(detached)
+        fixture.window.addSubview(webView)
+        XCTAssertTrue(webView.window?.windowScene === fixture.scene)
+        send(fresh)
+        release.signal()
+        controller.flush()
+        core.flush()
+
+        let renewed = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID)
+        XCTAssertNotEqual(renewed, predecessor)
+        let events = try readRUMEvents()
+        let markers = events.compactMap(viewID(of:))
+        XCTAssertFalse(markers.contains(stale))
+        XCTAssertFalse(markers.contains(detached))
+        XCTAssertEqual(markers.filter { $0 == fresh }.count, 1)
+        let result = try XCTUnwrap(events.first { viewID(of: $0) == fresh })
+        let sessionID = try XCTUnwrap((result["session"] as? [String: Any])?["id"] as? String)
+        XCTAssertNil(result["container"])
+        XCTAssertNotEqual(sessionID, predecessor)
+        XCTAssertEqual(sessionID, renewed)
+        XCTAssertTrue(feature.rumContextHandoffOwner === owner)
+
+        let following = UUID().uuidString
+        send(following)
+        controller.flush()
+        core.flush()
+        let followingEvents = try readRUMEvents()
+        let followingEvent = try XCTUnwrap(followingEvents.first { viewID(of: $0) == following })
+        let followingSessionID = (followingEvent["session"] as? [String: Any])?["id"] as? String
+        XCTAssertEqual(followingSessionID, sessionID)
+    }
+
     @MainActor
     func testDisappearanceCallback_keepsItsRegistrationUntilReleaseAndStopsOnlyOnce() throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
