@@ -365,11 +365,12 @@ class TracerTests: XCTestCase {
 
         tracer.startSpan(operationName: "span with no anonymous id").finish()
 
-        core.context.userInfo = UserInfo(anonymousId: "anon-123", id: "abc-123")
+        core.set(anonymousId: "anon-123")
+        core.setUserInfo(id: "abc-123")
         tracer.startSpan(operationName: "span with anonymous id and user id").finish()
 
-        core.context.userInfo = UserInfo(anonymousId: "anon-123")
-        tracer.startSpan(operationName: "span with anonymous id only").finish()
+        core.clearUserInfo()
+        tracer.startSpan(operationName: "span after clearing user info").finish()
 
         let spanMatchers = try core.waitAndReturnSpanMatchers()
         XCTAssertNil(try? spanMatchers[0].meta.userAnonymousID())

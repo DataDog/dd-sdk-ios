@@ -994,3 +994,34 @@ class SpanEventBuilderTests: XCTestCase {
         }
     }
 }
+
+class SpanEventEncoderUserAnonymousIDTests: XCTestCase {
+    private func encodedMeta(_ span: SpanEvent) throws -> [String: Any] {
+        let data = try JSONEncoder().encode(span)
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    func testWhenAnonymousIDIsSet_itTakesPrecedenceOverCustomValues() throws {
+        let span: SpanEvent = .mockWith(
+            userInfo: .mockWith(anonymousId: "sdk-anon-id", extraInfo: ["anonymous_id": "extra-info-value"]),
+            tags: ["usr.anonymous_id": "tag-value"]
+        )
+
+        let json = try encodedMeta(span)
+
+        XCTAssertEqual(json["meta.usr.anonymous_id"] as? String, "sdk-anon-id")
+    }
+
+    func testWhenAnonymousIDIsNotSet_customValuesAreKept() throws {
+        let fromExtraInfo: SpanEvent = .mockWith(
+            userInfo: .mockWith(anonymousId: nil, extraInfo: ["anonymous_id": "extra-info-value"])
+        )
+        let fromTag: SpanEvent = .mockWith(
+            userInfo: .mockWith(anonymousId: nil),
+            tags: ["usr.anonymous_id": "tag-value"]
+        )
+
+        XCTAssertEqual(try encodedMeta(fromExtraInfo)["meta.usr.anonymous_id"] as? String, "extra-info-value")
+        XCTAssertEqual(try encodedMeta(fromTag)["meta.usr.anonymous_id"] as? String, "tag-value")
+    }
+}

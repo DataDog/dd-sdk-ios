@@ -87,8 +87,8 @@ public struct SpanEvent: Encodable {
         public let name: String?
         /// User email, if any.
         public let email: String?
-        /// User anonymous ID, if any.
-        public var anonymousId: String? = nil
+        /// User anonymous ID, if any. When set, it takes precedence over custom `meta.usr.anonymous_id` values.
+        internal var anonymousId: String? = nil
         /// User custom attributes, if any.
         public var extraInfo: [String: String]
     }
@@ -293,8 +293,16 @@ internal struct SpanEventEncoder {
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
         // NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes
+        // The SDK anonymous ID wins over custom values encoded under the same key.
+        let isReservedKey: (String) -> Bool = { metaKey in
+            span.userInfo.anonymousId != nil && metaKey == StaticCodingKeys.userAnonymousId.rawValue
+        }
+
         try span.userInfo.extraInfo.forEach {
             let metaKey = "meta.usr.\($0.key)"
+            guard !isReservedKey(metaKey) else {
+                return
+            }
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
 
@@ -304,6 +312,9 @@ internal struct SpanEventEncoder {
         }
         try span.tags.forEach {
             let metaKey = "meta.\($0.key)"
+            guard !isReservedKey(metaKey) else {
+                return
+            }
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
     }
