@@ -496,7 +496,7 @@ extension DatadogCore {
         )
 
         #if os(macOS)
-        writeBufferedDataOnTermination(observing: configuration.notificationCenterProvider.applicationCenter)
+        startObservingAppTermination(in: configuration.notificationCenterProvider.applicationCenter)
         #endif
 
         telemetry.configuration(

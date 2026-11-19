@@ -284,16 +284,36 @@ internal final class DatadogCore {
         }
     }
 
+    #if os(macOS)
+    /// Writes the data features hold in memory when the app terminates.
+    ///
+    /// The app exits as soon as the `NSApplication.willTerminateNotification` observers return, so the observer
+    /// blocks the main thread until the data is stored. Call it after the context provider is created: its application
+    /// state publisher then observes the notification first, and features receive the `.terminating` state before
+    /// they write.
+    ///
+    /// - Parameter notificationCenter: The notification center where `NSApplication` notifications are posted.
+    func startObservingAppTermination(in notificationCenter: NotificationCenter) {
+        let token = notificationCenter.addObserver(
+            forName: ApplicationNotifications.willTerminate,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            self?.writeBufferedDataSynchronously()
+        }
+        terminationObserver = (token, notificationCenter)
+    }
+
     /// Writes the data features hold in memory and waits until it is stored. It **blocks the caller thread**.
     ///
     /// Unlike `flush()`, it does not wait for the features' own operations, some of which wait for the main thread.
-    func writeBufferedData() {
+    private func writeBufferedDataSynchronously() {
         // Deliver the context changes and messages posted so far, like the `.terminating` state, before features write.
         // The configuration telemetry is delivered too, in case its dispatch delay has not ended yet.
         contextProvider.flush()
         bus.flush()
         bus.dispatchPendingConfiguration()
-        features.values.compactMap { $0 as? BufferedDataWritable }.forEach { $0.writeBufferedData() }
+        features.values.compactMap { $0 as? BufferedDataWritable }.forEach { $0.writeBufferedDataSynchronously() }
         // Then run the event write contexts opened so far, deliver the messages they send, like telemetry,
         // and store the events written for them.
         contextProvider.flush()
@@ -303,6 +323,7 @@ internal final class DatadogCore {
         // and draining until no work is left would delay termination.
         readWriteQueue.sync { }
     }
+    #endif
 
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
@@ -523,21 +544,19 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         }
 
         #if os(macOS)
-        // Sudden termination stays disabled until the events the block writes synchronously are stored. The
-        // writer stores them on the read-write queue, so they are stored before the queue runs what comes after them.
+        // Sudden termination stays disabled until the block runs. Each write in the block holds it on its own
+        // until the event is stored.
         let suddenTermination = core.suddenTermination
-        let readWriteQueue = core.readWriteQueue
         suddenTermination.disableSuddenTermination()
         #endif
 
-        // (on user thread) request SDK context, from the provider rather than through the weak core
-        // reference, so the block always runs
-        core.contextProvider.read { context in
+        // (on user thread) request SDK context
+        context { context in
             // (on context thread) call the block
             let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
             #if os(macOS)
-            readWriteQueue.async { suddenTermination.enableSuddenTermination() }
+            suddenTermination.enableSuddenTermination()
             #endif
         }
     }
@@ -691,29 +710,6 @@ extension DatadogContextProvider {
         #endif
     }
 }
-
-#if os(macOS)
-extension DatadogCore {
-    /// Writes the data features hold in memory when the app terminates.
-    ///
-    /// The app exits as soon as the `NSApplication.willTerminateNotification` observers return, so this blocks
-    /// the main thread until the data is stored. Call it after the context provider is created: its application
-    /// state publisher then observes the notification first, and features receive the `.terminating` state before
-    /// they write.
-    ///
-    /// - Parameter notificationCenter: The notification center where `NSApplication` notifications are posted.
-    func writeBufferedDataOnTermination(observing notificationCenter: NotificationCenter) {
-        let token = notificationCenter.addObserver(
-            forName: ApplicationNotifications.willTerminate,
-            object: nil,
-            queue: nil
-        ) { [weak self] _ in
-            self?.writeBufferedData()
-        }
-        terminationObserver = (token, notificationCenter)
-    }
-}
-#endif
 
 extension DatadogCore: Flushable {
     /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK

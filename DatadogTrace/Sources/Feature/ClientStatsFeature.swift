@@ -13,7 +13,7 @@ import DatadogInternal
 /// Registered as a separate `DatadogRemoteFeature` alongside `TraceFeature`
 /// so that it has its own storage and upload pipeline.
 // `@unchecked Sendable`: finished spans are recorded from any thread. The only mutable state is the
-// flush timer, set once in `init`, and the lock-protected suspension and termination flags.
+// flush timer, set once in `init`, and the lock-protected recording mode and suspendable flush flag.
 internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendable {
     static let name = "tracing-client-stats"
 
@@ -111,14 +111,17 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     /// `suspendableFlushDelay`. Once the app is terminating, it is flushed right away.
     func record(_ snapshot: SpanSnapshot) {
         concentrator.add(snapshot, now: dateProvider.now.timeIntervalSince1970.dd.toNanoseconds)
-        if isTerminating {
+        switch recordingMode {
+        case .periodic:
+            break
+        case .suspendable:
+            scheduleSuspendableFlush()
+        case .terminating:
             // The app exits once nothing is left to write, so spans finished during termination are flushed
             // right away instead of holding the exit until the next flush.
             flushQueue.async { [weak self] in
                 self?.flushStats(.appTermination)
             }
-        } else if appMayBeSuspended {
-            scheduleSuspendableFlush()
         }
     }
 
@@ -168,18 +171,30 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         }
     }
 
-    /// Whether the app may currently be suspended, as last reported by the context receiver.
+    /// When a finished span is flushed, depending on the app state.
+    private enum RecordingMode {
+        /// With the next periodic flush.
+        case periodic
+        /// Within `suspendableFlushDelay`, because the app may be suspended, as last reported by the context receiver.
+        case suspendable
+        /// Right away, because the app is terminating, as reported by `writeBufferedDataSynchronously()`.
+        case terminating
+    }
+
+    /// A single state, so that recording a span reads one lock.
     @ReadWriteLock
-    private var appMayBeSuspended = false
+    private var recordingMode: RecordingMode = .periodic
     /// Whether a flush of spans finished while the app may be suspended is already scheduled.
     @ReadWriteLock
     private var isSuspendableFlushScheduled = false
-    /// Whether the app is terminating, as reported by `writeBufferedData()`.
-    @ReadWriteLock
-    private var isTerminating = false
 
     private func appMayBeSuspendedDidChange(_ mayBeSuspended: Bool) {
-        appMayBeSuspended = mayBeSuspended
+        _recordingMode.mutate { mode in
+            // Termination is final.
+            if mode != .terminating {
+                mode = mayBeSuspended ? .suspendable : .periodic
+            }
+        }
         if mayBeSuspended {
             // Flush on the feature's queue, not the message bus queue this is called on: flushing waits
             // for pending aggregation and exports every buffered sketch.
@@ -226,8 +241,8 @@ extension ClientStatsFeature: DataClearable {
 }
 
 extension ClientStatsFeature: BufferedDataWritable {
-    func writeBufferedData() {
-        isTerminating = true
+    func writeBufferedDataSynchronously() {
+        recordingMode = .terminating
         // On the flush queue, so it waits for a periodic flush that exported buckets but has not
         // opened its event write context yet.
         flushQueue.sync {

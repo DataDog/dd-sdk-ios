@@ -12,8 +12,8 @@ import Foundation
 /// notifying it. The SDK disables sudden termination while it holds data that is not written to storage yet, so
 /// that the app terminates normally and the SDK can write that data on `NSApplication.willTerminateNotification`.
 ///
-/// Calls are counted: sudden termination is enabled again once every `disableSuddenTermination()` is balanced
-/// by an `enableSuddenTermination()`.
+/// `ProcessInfo` counts the calls, not the SDK: sudden termination is enabled again once every
+/// `disableSuddenTermination()` is balanced by an `enableSuddenTermination()`.
 public protocol SuddenTerminationControl {
     func disableSuddenTermination()
     func enableSuddenTermination()

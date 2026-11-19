@@ -39,7 +39,7 @@ private final class BufferingFeatureMock: DatadogFeature, BufferedDataWritable, 
     private(set) var writeCount = 0
     private(set) var flushCount = 0
 
-    func writeBufferedData() {
+    func writeBufferedDataSynchronously() {
         writeCount += 1
         onWriteBufferedData()
     }
@@ -1152,7 +1152,7 @@ class DatadogCoreTests: XCTestCase {
         defer { core.stop() }
         let feature = BufferingFeatureMock()
         try core.register(feature: feature)
-        core.writeBufferedDataOnTermination(observing: notificationCenter)
+        core.startObservingAppTermination(in: notificationCenter)
 
         // When
         notificationCenter.post(name: ApplicationNotifications.willTerminate, object: nil)
@@ -1184,7 +1184,7 @@ class DatadogCoreTests: XCTestCase {
         var messagesAtWrite: [FeatureMessage] = []
         feature.onWriteBufferedData = { messagesAtWrite = receiver.messages }
         try core.register(feature: feature)
-        core.writeBufferedDataOnTermination(observing: notificationCenter)
+        core.startObservingAppTermination(in: notificationCenter)
         core.bus.flush()
         core.bus.queue.async { Thread.sleep(forTimeInterval: 0.1) } // keep the next message queued when the app terminates
         core.send(message: .payload("before termination"))
@@ -1220,7 +1220,7 @@ class DatadogCoreTests: XCTestCase {
         defer { core.stop() }
         let receiver = FeatureMessageReceiverMock()
         try core.register(feature: FeatureMock(messageReceiver: receiver))
-        core.writeBufferedDataOnTermination(observing: notificationCenter)
+        core.startObservingAppTermination(in: notificationCenter)
         core.telemetry.configuration(batchSize: 1)
 
         // When
@@ -1263,7 +1263,7 @@ class DatadogCoreTests: XCTestCase {
             }
         }
         try core.register(feature: feature)
-        core.writeBufferedDataOnTermination(observing: notificationCenter)
+        core.startObservingAppTermination(in: notificationCenter)
 
         // When
         notificationCenter.post(name: ApplicationNotifications.willTerminate, object: nil)

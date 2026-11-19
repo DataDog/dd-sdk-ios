@@ -557,7 +557,7 @@ extension RUMFeature {
 }
 
 extension RUMFeature: BufferedDataWritable {
-    func writeBufferedData() {
+    func writeBufferedDataSynchronously() {
         timeseriesCollector?.stopForTermination()
     }
 }

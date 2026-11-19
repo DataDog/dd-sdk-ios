@@ -265,7 +265,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.record(.mockWith(startTime: 0, duration: 100))
 
         // When
-        stats.writeBufferedData()
+        stats.writeBufferedDataSynchronously()
 
         // Then
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [1])
@@ -283,7 +283,7 @@ class ClientStatsFeatureTests: XCTestCase {
             suddenTermination: suddenTermination
         )
         try core.register(feature: stats)
-        stats.writeBufferedData()
+        stats.writeBufferedDataSynchronously()
 
         // When
         stats.record(.mockWith(startTime: 0, duration: 100))

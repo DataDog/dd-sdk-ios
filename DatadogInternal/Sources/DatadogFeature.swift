@@ -40,7 +40,7 @@ public protocol BufferedDataWritable {
     ///
     /// The app is terminating: the process exits once nothing holds sudden termination. After this call, the
     /// feature must stop collecting, or write new data right away, so that new data does not delay the exit.
-    func writeBufferedData()
+    func writeBufferedDataSynchronously()
 }
 
 /// A Datadog Feature with remote data store.
