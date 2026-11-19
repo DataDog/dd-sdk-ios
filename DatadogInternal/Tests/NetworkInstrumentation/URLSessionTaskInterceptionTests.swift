@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogInternal
 
 class URLSessionTaskInterceptionTests: XCTestCase {
@@ -531,3 +532,41 @@ class ResourceMetricsTests: XCTestCase {
         }
     }
 }
+
+extension URLSessionTaskInterceptionTests {
+    func testPreparedInterception_preservesCarrierAndReleasesHandlerReceipts() throws {
+        let owner = RUMContextHandoff.Owner()
+        let capture = RUMURLSessionContext(owner: owner, value: .init(rumContext: nil, sceneIdentifier: "original", hasPendingUserAction: false, excludedUserActionID: nil))
+        let producer = NSObject()
+        let other = NSObject()
+        let identifier = UUID()
+        var state: InterceptionPreparationState? = InterceptionPreparationState()
+        weak var released = state
+        var retained: RUMURLSessionTaskInterception? = RUMURLSessionTaskInterception(
+            request: .mockAny(),
+            isFirstParty: false,
+            trackingMode: .automatic,
+            identifier: identifier,
+            rumContext: capture,
+            preparations: [.init(handler: ObjectIdentifier(producer), state: try XCTUnwrap(state))]
+        )
+        state = nil
+        XCTAssertNotNil(released)
+        XCTAssertEqual(retained?.identifier, identifier)
+        XCTAssertTrue(retained?.rumContext.owner === owner)
+        XCTAssertNil(retained?.rumContext.rumContext)
+        XCTAssertNotNil(retained?.preparedState(for: producer))
+        XCTAssertNil(retained?.preparedState(for: other))
+        owner.invalidate()
+        XCTAssertNotNil(retained?.rumContext, "Invalidated carrier cannot turn into absent legacy capture")
+        retained = nil
+        XCTAssertNil(released)
+        let late = RUMURLSessionTaskInterception(request: .mockAny(), isFirstParty: false, trackingMode: .automatic, identifier: nil, rumContext: capture, preparations: [])
+        XCTAssertNil(late.preparedState(for: producer))
+        XCTAssertTrue(late.rumContext.owner === owner)
+        let legacy = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false, trackingMode: .automatic)
+        XCTAssertFalse(legacy is RUMURLSessionTaskInterception)
+    }
+}
+
+private final class InterceptionPreparationState: URLSessionHandlerCapturedState {}

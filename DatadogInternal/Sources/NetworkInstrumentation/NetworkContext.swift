@@ -27,9 +27,21 @@ public protocol RUMContextHandoffReceiving: AnyObject {
     func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool)
 }
 
+/// Optional owner-conditional RUM context publication; ordinary scopes are unchanged.
+@_spi(Internal)
+public protocol RUMContextHandoffContextUpdating {
+    func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate)
+}
+
 /// Declares request-local ownership; activation is supplied by the scene input layer.
 @_spi(Internal)
 public enum RUMContextHandoff {
+    /// Rejection is distinct from an accepted update that clears RUM context.
+    public enum ContextUpdate {
+        case skip
+        case set(RUMCoreContext?)
+    }
+
     /// A lifetime token that retains no core, feature or UI object.
     public final class Owner: @unchecked Sendable {
         @ReadWriteLock
@@ -239,6 +251,8 @@ public struct NetworkContext {
     public var activeSpanProvider: TraceActiveSpanProvider?
     public var userConfigurationContext: UserConfigurationContext?
     public var accountConfigurationContext: AccountConfigurationContext?
+    @_spi(Internal)
+    public var rumURLSessionContext: RUMURLSessionContext? = nil
 }
 
 /// The User configuration context received from `Core`.
