@@ -323,9 +323,15 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             expiredSessionResourceKeys.remove(completion.resourceKey)
         }
 
+        // A Browser renewal can only refresh the exact expired predecessor it observed.
+        // Retained sessions may still own pending resources and have their own lifetime.
+        let renewingSessionID = (command as? RUMKeepSessionAliveCommand)?.webViewSessionRenewal?.expiry.sessionID
         // Can't use scope(byPropagating:context:writer) because of the extra step in looking for sessions
         // that need a refresh
         sessionScopes = sessionScopes.compactMap({ scope in
+            if let renewingSessionID, scope.sessionUUID.toRUMDataFormat != renewingSessionID {
+                return scope
+            }
             if scope.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer) {
                 // proccss(command:context:writer) returned true, so keep the scope around
                 // as it it still has work to do.
