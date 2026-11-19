@@ -402,18 +402,10 @@ internal class Monitor: RUMCommandSubscriber {
                 self.applicationScope.dependencies.timeseriesCollector?.noteActivity(sessionID: activeSession.sessionUUID.toRUMDataFormat)
             }
             if let sceneContextSnapshots = self.sceneContextSnapshots {
-                var snapshot = SceneContextSnapshots.Value(
-                    representative: self.makeCoreContext(session: activeSession, view: representativeView),
-                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
-                    sessionStart: activeSession.sessionStart,
-                    lastInteraction: activeSession.lastInteraction
+                sceneContextSnapshots.value = makeSceneContextSnapshot(
+                    session: activeSession,
+                    representativeView: representativeView
                 )
-                for view in activeSession.viewScopes where view.isActiveView {
-                    if let sceneIdentifier = view.sceneIdentifier {
-                        snapshot.contextsByScene[sceneIdentifier] = self.makeCoreContext(session: activeSession, view: view)
-                    }
-                }
-                sceneContextSnapshots.value = snapshot
             }
         } else {
             self.sessionActivitySnapshot = (nil, nil, nil)
