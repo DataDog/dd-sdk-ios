@@ -1015,7 +1015,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     }
     var canStartApplicationLaunchView = false
     let canStartBackgroundView = false
-    let shouldRestartLastViewAfterSessionExpiration = false
+    var shouldRestartLastViewAfterSessionExpiration: Bool { webViewSessionRenewal != nil }
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false
