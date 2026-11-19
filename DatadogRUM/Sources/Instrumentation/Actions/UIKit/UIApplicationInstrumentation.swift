@@ -31,8 +31,8 @@ internal class DDApplicationInstrumentation {
 
     /// Swizzles the `DDApplication.sendEvent(_:)`
     class SendEvent: MethodSwizzler <
-        @convention(c) (DDApplication, Selector, DDEvent) -> Bool,
-        @convention(block) (DDApplication, DDEvent) -> Bool
+        @convention(c) (DDApplication, Selector, DDEvent) -> Void,
+        @convention(block) (DDApplication, DDEvent) -> Void
     > {
         private static let selector = #selector(DDApplication.sendEvent(_:))
         private let method: Method
@@ -44,11 +44,11 @@ internal class DDApplicationInstrumentation {
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (DDApplication, DDEvent) -> Bool
+            typealias Signature = @convention(block) (DDApplication, DDEvent) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] application, event  in
                     handler?.notify_sendEvent(application: application, event: event)
-                    return previousImplementation(application, Self.selector, event)
+                    previousImplementation(application, Self.selector, event)
                 }
             }
         }
@@ -79,7 +79,7 @@ internal final class DDSceneApplicationInstrumentation: DDApplicationInstrumenta
         sceneSendEvent.unswizzle()
     }
 
-    /// UIKit's `sendEvent:` returns Void, independently of the legacy generic interceptor.
+    /// Uses the same UIKit signature as the legacy interceptor so both can be installed together.
     final class SceneSendEvent: MethodSwizzler<
         @convention(c) (UIApplication, Selector, UIEvent) -> Void,
         @convention(block) (UIApplication, UIEvent) -> Void
