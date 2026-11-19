@@ -410,7 +410,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         let admission: RUMSwiftUIViewCallbackAdmission?
         // Only a real disappearance callback may keep its registration until settlement.
         private var disappearanceLease: RUMSwiftUIViewTrackingEpoch?
-        let sequence: Int
+        var sequence: Int
         var baseRevision: UInt64
         let baseIsAppeared: Bool
         var send: @MainActor ([RUMViewTrackingState.Transition]) -> Void
@@ -834,6 +834,14 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
 
         @MainActor
+        func append(_ deferredState: DeferredState, isProvisional: Bool) {
+            deferredState.sequence = nextSequence
+            deferredState.isProvisional = isProvisional
+            nextSequence += 1
+            states[ObjectIdentifier(deferredState.state)] = deferredState
+        }
+
+        @MainActor
         func deferredState(for state: RUMViewTrackingState) -> DeferredState? {
             states[ObjectIdentifier(state)]
         }
@@ -1054,6 +1062,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                     intent,
                     state: state,
                     pending: pending,
+                    destinationSceneIdentifier: destinationSceneIdentifier,
                     send: send
                 )
                 return
@@ -1127,6 +1136,19 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         guard !deferredTransition.isEmpty else {
             return
         }
+        register(
+            deferredTransition,
+            key: transitionKey,
+            coordinator: coordinator
+        )
+    }
+
+    @MainActor
+    private func register(
+        _ deferredTransition: DeferredTransition,
+        key transitionKey: TransitionKey,
+        coordinator: any RUMSwiftUITransitionCoordinating
+    ) {
         deferredTransitions[transitionKey] = deferredTransition
 
         let didRegister = coordinator.registerCompletion { [weak self, weak deferredTransition] isCancelled in
@@ -1369,6 +1391,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         _ intent: Intent,
         state: RUMViewTrackingState,
         pending: (key: TransitionKey, transition: DeferredTransition),
+        destinationSceneIdentifier: RUMSceneIdentifier? = nil,
         send: @escaping @MainActor ([RUMViewTrackingState.Transition]) -> Void
     ) {
         guard admitsCallbacks() else {
@@ -1394,6 +1417,25 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
         if pending.transition.isEmpty {
             deferredTransitions.removeValue(forKey: pending.key)
+        }
+
+        if let destinationSceneIdentifier, intent.isAppeared != false, case .attached = intent.attachment {
+            let observers = liveObservers(for: state, sceneIdentifier: destinationSceneIdentifier)
+            if let coordinator = coordinatorProvider(destinationSceneIdentifier, observers), coordinator.initiallyInteractive {
+                let key = TransitionKey(
+                    sceneIdentifier: destinationSceneIdentifier,
+                    coordinatorIdentity: coordinator.identity
+                )
+                let isProvisional = observers.allSatisfy { $0.nearestViewController == nil }
+                if let transition = deferredTransitions[key] {
+                    transition.append(deferredState, isProvisional: isProvisional)
+                } else {
+                    let transition = DeferredTransition()
+                    transition.append(deferredState, isProvisional: isProvisional)
+                    register(transition, key: key, coordinator: coordinator)
+                }
+                return
+            }
         }
         deferredState.commit()
     }
