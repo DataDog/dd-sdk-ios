@@ -116,17 +116,48 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
     }
 
     func testTraceBaggageKeepsTheCapturedSessionAfterRollover() throws {
+        try assertBaggageKeepsCapturedSessionAfterRollover(trackRUMResources: false)
+    }
+
+    func testRUMResourceBaggageKeepsTheCapturedSessionAfterRollover() throws {
+        try assertBaggageKeepsCapturedSessionAfterRollover(trackRUMResources: true)
+    }
+
+    private func assertBaggageKeepsCapturedSessionAfterRollover(trackRUMResources: Bool) throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
         let hosts: [String: Set<TracingHeaderType>] = ["datadog.example.com": [.datadog], "w3c.example.com": [.tracecontext]]
-        let feature = try enableTraceWithRUMSession(hosts: hosts)
+        // The proxy's FeatureScope does not implement captured Resource preparation.
+        let root = obtainUniqueTemporaryDirectory()
+        let sdkDirectory = root.appendingPathComponent("sdk", isDirectory: true)
+        try FileManager.default.createDirectory(at: sdkDirectory, withIntermediateDirectories: true)
+        let directory = CoreDirectory(osDirectory: .init(url: root), coreDirectory: .init(url: sdkDirectory))
+        let real = DatadogCore(
+            directory: directory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer {
+            real.flushAndTearDown()
+            try? FileManager.default.removeItem(at: root)
+        }
+        let feature = try enableFirstPartyTracing(hosts: hosts, trackRUMResources: trackRUMResources, in: real)
         let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
         let monitor = feature.monitor
         monitor.startView(key: "previous", name: "Previous", attributes: [:])
-        core.flush()
+        real.flush()
         let previous = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertNotNil(previous.viewID)
+        XCTAssertTrue(previous.sessionSampler.isSampled)
         monitor.stopSession()
         monitor.startView(key: "current", name: "Current", attributes: [:])
-        core.flush()
+        real.flush()
         let current = try XCTUnwrap(feature.decision(for: .combinedWithSessionRate, rate: 100))
         XCTAssertNotEqual(previous.sessionID, current.sessionID)
 
@@ -148,7 +179,7 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
 
     func testTraceWithEmptyCaptureOmitsRUMSessionButUnscopedRequestsUseTheStore() throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
-        let feature = try enableTraceWithRUMSession(hosts: ["www.example.com": [.tracecontext]])
+        let feature = try enableFirstPartyTracing(hosts: ["www.example.com": [.tracecontext]], trackRUMResources: false, in: core)
         let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
         feature.monitor.startView(key: "live", name: "Live", attributes: [:])
         core.flush()
@@ -171,18 +202,25 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         XCTAssertNotNil(unscopedRequest.value(forHTTPHeaderField: "traceparent"))
     }
 
-    private func enableTraceWithRUMSession(hosts: [String: Set<TracingHeaderType>]) throws -> RUMFeature {
-        Trace.enable(with: Trace.Configuration(urlSessionTracking: .init(
-            firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100)
-        )), in: core)
+    private func enableFirstPartyTracing(
+        hosts: [String: Set<TracingHeaderType>],
+        trackRUMResources: Bool,
+        in core: DatadogCoreProtocol
+    ) throws -> RUMFeature {
         var config = RUM.Configuration(applicationID: .mockAny())
+        // Register one network handler so the observed header has an unambiguous source.
+        if trackRUMResources {
+            config.urlSessionTracking = .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100))
+        } else {
+            Trace.enable(with: Trace.Configuration(urlSessionTracking: .init(
+                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100)
+            )), in: core)
+        }
         config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
         config.featureFlags = [.multiSceneTracking: true]
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
-        // Keep RUM active without its URLSession handler so the observed header comes from Trace.
         try RUM.enableOrThrow(with: config, in: core)
-        core.flush()
         return try XCTUnwrap(core.get(feature: RUMFeature.self))
     }
 
