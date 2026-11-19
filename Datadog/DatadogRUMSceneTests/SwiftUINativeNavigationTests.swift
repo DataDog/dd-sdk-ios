@@ -203,6 +203,75 @@ extension SwiftUINavigationOwnershipTests {
         completed = true
     }
 
+    func testNativeNavigationStack_poppedEqualRouteCannotReclaimRetainedSlot() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Native semantic navigation requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        let rows = SemanticHostRows()
+        let feature = try makeSemanticFeature(in: core, rows: rows)
+        let driver = NativeHostDriver(core: core)
+        let capture = NativeHostCapture()
+        let previousBoundaryHook = RUMNativeNavigationTesting.onBoundary
+        let previousClaimHook = RUMNativeNavigationTesting.onClaim
+        capture.observeBoundaries()
+        var evaluate: [RUMViewOccurrenceKey: @MainActor () -> RUMViewTrackingState.Configuration?] = [:]
+        RUMNativeNavigationTesting.onClaim = { configuration, reevaluate in
+            if configuration.isCurrentDestination {
+                evaluate[configuration.occurrenceKey] = reevaluate
+            }
+        }
+        defer {
+            RUMNativeNavigationTesting.onBoundary = previousBoundaryHook
+            RUMNativeNavigationTesting.onClaim = previousClaimHook
+            evaluate.removeAll()
+            fixture.restore()
+            core.stop()
+        }
+        _ = fixture.install(NativeHostRoot(driver: driver, capture: capture))
+        func snapshot() -> RUMCoreContext? {
+            feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))
+        }
+        func activeKey(at depth: Int) -> RUMViewOccurrenceKey? {
+            capture.boundaries.first(where: {
+                $0.state?.activeLifecycleGeneration != nil
+                    && $0.state?.configuration?.descriptor.attributes["native_test_depth"] as? Int == depth
+                    && $0.observer?.currentSceneIdentifier == fixture.identifier
+            })?.state?.configuration?.occurrenceKey
+        }
+        try await awaitSemanticBoundary("root reader", core: core) {
+            capture.path != nil && capture.proof(viewID: snapshot()?.viewID, depth: 0, fixture: fixture, rows: rows) != nil
+        }
+        let path = try XCTUnwrap(capture.path)
+        let route = NativeHostRoute.detail(secret: "same route value")
+        path.wrappedValue = [route]
+        try await awaitSemanticBoundary("mounted lower route", core: core) {
+            capture.proof(viewID: snapshot()?.viewID, depth: 1, fixture: fixture, rows: rows) != nil
+        }
+        let lower = try XCTUnwrap(activeKey(at: 1))
+
+        path.wrappedValue = [route, route]
+        try await awaitSemanticBoundary("mounted upper equal route", core: core) {
+            capture.proof(viewID: snapshot()?.viewID, depth: 2, fixture: fixture, rows: rows) != nil
+        }
+        let removed = try XCTUnwrap(activeKey(at: 2))
+        let reevaluateRemoved = try XCTUnwrap(evaluate[removed])
+        XCTAssertNotEqual(removed, lower)
+
+        path.wrappedValue = [route]
+        try await awaitSemanticBoundary("retained lower route after pop", core: core) {
+            capture.proof(viewID: snapshot()?.viewID, depth: 1, fixture: fixture, rows: rows) != nil
+        }
+        XCTAssertEqual(activeKey(at: 1), lower)
+        XCTAssertNil(reevaluateRemoved(), "The popped boundary must give up its claim after the equal lower route is revealed")
+
+        path.wrappedValue = [route, route]
+        try await awaitSemanticBoundary("fresh upper equal route", core: core) {
+            capture.proof(viewID: snapshot()?.viewID, depth: 2, fixture: fixture, rows: rows) != nil
+        }
+        XCTAssertNotEqual(activeKey(at: 2), removed)
+        XCTAssertNil(reevaluateRemoved(), "The old claim cannot impersonate a fresh occurrence at the same depth")
+    }
+
     func testNativeNavigationStack_whenAdmissionRetires_itRejectsStaleCallbacksAndPreservesUnusedTracking() async throws {
         guard #available(iOS 27.0, *) else {
             throw XCTSkip("Native semantic navigation requires iOS 27")
