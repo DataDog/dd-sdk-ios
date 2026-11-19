@@ -353,12 +353,19 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Routes a private request control without launch resolution or session fanout.
     @discardableResult
     func processResourcePreparation(
-        _ command: RUMResourcePreparationCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer
+        _ command: RUMResourcePreparationCommand,
+        monotonicTime: TimeInterval,
+        context: DatadogContext,
+        writer: Writer,
+        startReceipt: RUMURLSessionResourceStart.Receipt? = nil
     ) -> Bool {
         guard dependencies.isMultiSceneTrackingEnabled,
               let session = sessionScopes.first(where: { $0.sessionUUID == command.identity.sessionID }),
               let result = session.processResourcePreparation(command, monotonicTime: monotonicTime, context: context, writer: writer) else {
             return false
+        }
+        if case .commit = command.operation {
+            startReceipt?.accept()
         }
         if !result.keepAlive {
             // Settling a stopped A must not overwrite a newer active B's metadata.
