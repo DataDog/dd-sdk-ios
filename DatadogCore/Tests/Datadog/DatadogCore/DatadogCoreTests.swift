@@ -297,17 +297,26 @@ class DatadogCoreTests: XCTestCase {
         }
         let oldCore = makeHandoffCore()
         let oldOwner = try oldCore.activateRUMContextHandoff()
-        let gate = HandoffScopeTestGate()
-        let captured = RUMContextHandoff.withValue(handoffValue("old"), for: oldOwner) {
-            Task {
-                await gate.wait()
-                return RUMContextHandoff.current(for: oldOwner)?.sceneIdentifier
-            }
-        }
-        oldCore.stop()
         let newCore = makeHandoffCore()
         defer { newCore.stop() }
         let newOwner = try newCore.activateRUMContextHandoff()
+        XCTAssertNil(RUMContextHandoff.captureValue(for: newOwner))
+        let gate = HandoffScopeTestGate()
+        let captured = RUMContextHandoff.withValue(handoffValue("old"), for: oldOwner) {
+            XCTAssertNil(RUMContextHandoff.captureValue(for: newOwner))
+            return Task {
+                await gate.wait()
+                let replacement = RUMContextHandoff.captureValue(for: newOwner)
+                return (
+                    oldScene: RUMContextHandoff.current(for: oldOwner)?.sceneIdentifier,
+                    hasReplacementCapture: replacement != nil,
+                    replacementScene: replacement?.sceneIdentifier,
+                    hasReplacementRUM: replacement?.rumContext != nil,
+                    hasOffCapture: RUMContextHandoff.captureValue(for: nil) != nil
+                )
+            }
+        }
+        oldCore.stop()
         XCTAssertFalse(oldOwner.isValid)
         XCTAssertTrue(newOwner.isValid)
         XCTAssertFalse(oldOwner === newOwner)
@@ -320,7 +329,11 @@ class DatadogCoreTests: XCTestCase {
         }
         await gate.release()
         let actual = await captured.value
-        XCTAssertNil(actual)
+        XCTAssertNil(actual.oldScene)
+        XCTAssertTrue(actual.hasReplacementCapture)
+        XCTAssertNil(actual.replacementScene)
+        XCTAssertFalse(actual.hasReplacementRUM)
+        XCTAssertFalse(actual.hasOffCapture)
     }
 
     func testHandoffExecutionScopeDoesNotRetainCore() async throws {
