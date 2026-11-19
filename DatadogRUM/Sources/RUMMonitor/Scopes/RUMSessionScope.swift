@@ -642,7 +642,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: hasReplay,
             isActive: true,
-            sceneIdentifier: sceneIdentifier
+            sceneIdentifier: sceneIdentifier,
+            sessionID: sceneState == nil ? nil : sessionUUID.toRUMDataFormat
         )
     }
 
