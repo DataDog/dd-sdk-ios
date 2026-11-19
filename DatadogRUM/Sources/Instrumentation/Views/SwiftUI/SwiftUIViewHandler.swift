@@ -20,3 +20,38 @@ internal protocol SwiftUIViewHandler: RUMCommandPublisher {
     /// Respond to a `SwiftUI.View.onDisappear` event.
     func notify_onDisappear(identity: String)
 }
+
+#if os(iOS)
+/// Explicit scene callbacks from the originally admitted SwiftUI foundation.
+@MainActor
+internal protocol RUMSceneSwiftUIViewHandling: AnyObject {
+    @discardableResult
+    func notify_onAppear(
+        identity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool
+
+    @discardableResult
+    func notify_onDisappear(
+        identity: String,
+        attributes: [AttributeKey: AttributeValue]?,
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool
+
+    @discardableResult
+    func notify_onReplace(
+        identity: String,
+        newIdentity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool
+}
+#endif

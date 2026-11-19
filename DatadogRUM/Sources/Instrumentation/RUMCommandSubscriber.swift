@@ -38,6 +38,13 @@ internal extension RUMCommandSubscriber {
     }
 }
 
+#if os(iOS)
+/// Receives explicit scene-view commands bound to their originating feature.
+internal protocol RUMOwnedSwiftUIViewCommandSubscriber: AnyObject {
+    func process(command: RUMCommand, lifetime: RUMSwiftUIViewLifetime)
+}
+#endif
+
 /// Supplies immutable scene context without synchronizing command processing.
 internal protocol RUMContextSnapshotProviding: AnyObject {
     func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext?
@@ -79,11 +86,11 @@ internal enum InstrumentationType: Equatable {
     /// from a lower-priority type (e.g., a SwiftUI button tap takes precedence over the touch on its containing UIKit table view cell).
     var priority: Int {
         switch self {
-            #if canImport(UIKit)
+        #if canImport(UIKit)
         case .uikit: return 0
-            #elseif canImport(AppKit)
+        #elseif canImport(AppKit)
         case .appkit: return 0
-            #endif
+        #endif
         case .swiftuiAutomatic: return 1
         case .swiftui: return 2
         case .manual: return 3
