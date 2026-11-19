@@ -94,7 +94,7 @@ func catalogContent(current: CurrentValueSubject<CatalogPage, Never>) -> some Vi
 }
 ```
 
-Keep the publisher or router alive for the navigation host's lifetime. A content-only host supports navigation inferred from supported SwiftUI containers. An Observation closure is also proposed under Swift 6.4 or later. Metadata supplies names and paths; it does not change the app's navigation.
+Keep the publisher or router alive for the navigation host's lifetime. Use a Combine publisher or, with Swift 6.4 or later, an Observation closure to report semantic destinations. A content-only host leaves your existing RUM view tracking in place. Metadata supplies view names and paths while the app's router controls navigation.
 
 ## What this candidate establishes
 

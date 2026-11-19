@@ -242,7 +242,7 @@ On iOS 15 and later, `RUMViewTarget.current(in:)` identifies the scene whose cur
 
 Earlier systems, disabled tracking and external monitor conformers use the existing fallback path. The Objective-C `DDRUMViewTarget.currentInScene:` factory is nullable and rejects invalid/off-main input; its target-taking monitor selectors are available in Release.
 
-On iOS 27 and later, `RUMNavigationHost` supports content-only navigation, an existing Combine publisher, and, under Swift 6.4 or later, an Observation closure. `RUMNavigationDestination` supplies root, route, route-with-occurrence and presentation factories. `RUMNavigationMetadata` supports initialization, automatic metadata with an optional namespace and per-destination overrides. Keep older-system tracking behind availability checks. Transition machinery remains internal.
+On iOS 27 and later, `RUMNavigationHost` reports semantic destinations from an existing Combine publisher or, under Swift 6.4 or later, an Observation closure. The content-only initializer leaves existing RUM view tracking in place. `RUMNavigationDestination` supplies root, route, route-with-occurrence and presentation factories. `RUMNavigationMetadata` supports initialization, automatic metadata with an optional namespace and per-destination overrides. Keep older-system tracking behind availability checks. Transition machinery remains internal.
 
 Native completion callbacks follow the currently tracked RUM view. Detail can still own callback work before Home becomes the tracked view. Expanded split views and tab bars retain their existing capture limitations; identical event counts across layouts are not promised.
 

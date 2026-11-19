@@ -44,6 +44,8 @@ public struct RUMNavigationHost<Content: View>: View {
         self.content = content()
     }
 
+    /// Leaves the content’s existing RUM view tracking in place. Supply a publisher or an Observation
+    /// closure to report semantic destinations.
     public init(
         in core: DatadogCoreProtocol = CoreRegistry.default,
         @ViewBuilder content: () -> Content
