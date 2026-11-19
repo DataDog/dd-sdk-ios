@@ -167,6 +167,7 @@ The flags configuration can carry `features` for the split that serves a flag. E
 - With `trackExposures` set to `false`, the SDK stops sending exposures to Datadog and keeps deduplicating them, so the provider's hook keeps correct decisions. Evaluation counts keep their usual behaviour.
 - The SDK records an exposure when the flag resolves in the native client. OpenFeature Swift hooks are non-throwing, so the result that the provider returns is final. Inside an OpenFeature `MultiProvider`, the SDK records exposures for every evaluation of the Datadog provider. A strategy that evaluates every provider and picks one, such as a comparison strategy, can make the SDK record an exposure for a result that the app discards.
 - Evaluations through the internal bridge (React Native) record exposures in the same cache.
+- Evaluations made directly through `FlagsClient` on the same client also record exposures in this cache and skip the provider's `ExposureHook`. When you use the hook, evaluate those flags through OpenFeature.
 
 ## Usage attribution
 
