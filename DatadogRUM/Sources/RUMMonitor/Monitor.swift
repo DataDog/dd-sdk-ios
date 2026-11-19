@@ -405,16 +405,7 @@ internal class Monitor: RUMCommandSubscriber {
         }
         let representative = representativeView(in: session)
         sessionActivitySnapshot = (session.sessionUUID.toRUMDataFormat, session.sessionStart, session.lastInteraction)
-        var snapshot = SceneContextSnapshots.Value(
-            representative: makeCoreContext(session: session, view: representative),
-            sessionID: session.sessionUUID.toRUMDataFormat,
-            sessionStart: session.sessionStart,
-            lastInteraction: session.lastInteraction
-        )
-        for view in session.viewScopes where view.isActiveView {
-            if let scene = view.sceneIdentifier { snapshot.contextsByScene[scene] = makeCoreContext(session: session, view: view) }
-        }
-        sceneContextSnapshots?.value = snapshot
+        sceneContextSnapshots?.value = makeSceneContextSnapshot(session: session, representativeView: representative)
     }
 
     private func representativeView(in session: RUMSessionScope) -> RUMViewScope? {
