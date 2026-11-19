@@ -140,7 +140,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
     func body(content: Content) -> some View {
         reconcileDormantNavigationBoundaryFromEnvironmentTrait()
         let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)?
-        if startsOnInitialMount {
+        if startsOnInitialMount, navigationOccurrenceSource != nil {
             onInitialMount = { sceneIdentifier in
                 initialMount(in: sceneIdentifier)
             }
@@ -177,13 +177,16 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     onMount: onMount,
                     onReconcile: onReconcile,
                     onChange: { attachment in
-                        update(attachment: attachment)
-                        rebindNavigationOccurrenceSource(attachment: attachment)
+                        readerAttachmentChanged(attachment)
                     }
                 )
             )
             .onChange(of: sceneIdentifier, initial: true) { _, sceneIdentifier in
-                update(attachment: attachment(for: sceneIdentifier))
+                if navigationOccurrenceSource != nil {
+                    update(attachment: attachment(for: sceneIdentifier))
+                } else if let scene = mountedOrdinaryScene {
+                    update(attachment: .attached(scene))
+                }
                 // SwiftUI defines the initial callback as part of this view's
                 // appearance. Enqueue once from this supported signal so the
                 // scene-aware transition reaches RUM's serial queue as early as
@@ -192,13 +195,21 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 _ = admission.withSession { session in
                     if !session.didReceiveInitialSceneIdentifier {
                         session.didReceiveInitialSceneIdentifier = true
-                        appear()
+                        if navigationOccurrenceSource == nil {
+                            requestOrdinaryAppearance()
+                        } else {
+                            appear()
+                        }
                     }
                 }
             }
             .onAppear {
-                update(attachment: attachment(for: sceneIdentifier))
-                appear()
+                if navigationOccurrenceSource == nil {
+                    requestOrdinaryAppearance()
+                } else {
+                    update(attachment: attachment(for: sceneIdentifier))
+                    appear()
+                }
             }
             .onDisappear(perform: admission.disappearanceCallback {
                 disappear()
@@ -280,6 +291,15 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
     private func mount(in sceneIdentifier: RUMSceneIdentifier) {
         _ = admission.withSession { session in
             let trackingState = session.trackingState
+            if navigationOccurrenceSource == nil {
+                guard transitionArbiter?.mountedSceneIdentifier(for: trackingState) == sceneIdentifier else {
+                    return
+                }
+                if session.hasPendingOrdinaryAppearance {
+                    requestOrdinaryAppearance()
+                    return
+                }
+            }
             let navigationOccurrenceRegistration = session.navigationRegistration
 
             if let configuration {
@@ -528,6 +548,43 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         }
     }
 
+    private var mountedOrdinaryScene: RUMSceneIdentifier? {
+        admission.withSession { session in
+            transitionArbiter?.mountedSceneIdentifier(for: session.trackingState)
+        } ?? nil
+    }
+
+    private func readerAttachmentChanged(_ attachment: RUMViewTrackingState.Attachment) {
+        if navigationOccurrenceSource == nil, case .attached(let sceneIdentifier) = attachment {
+            guard let sceneIdentifier, sceneIdentifier == mountedOrdinaryScene else {
+                return
+            }
+        }
+        update(attachment: attachment)
+        rebindNavigationOccurrenceSource(attachment: attachment)
+    }
+
+    private func requestOrdinaryAppearance() {
+        _ = admission.withSession { session in
+            let state = session.trackingState
+            guard let transitionArbiter,
+                  let sceneIdentifier = transitionArbiter.mountedSceneIdentifier(for: state) else {
+                session.hasPendingOrdinaryAppearance = true
+                return
+            }
+            session.hasPendingOrdinaryAppearance = false
+            // A live reader can recover the state after its previous scene disconnects.
+            if state.needsReaderRemount {
+                transitionArbiter.process(.mount(sceneIdentifier), state: state, send: apply)
+            }
+            transitionArbiter.process(
+                .reconcile(configuration: nil, attachment: .attached(sceneIdentifier), isAppeared: true),
+                state: state,
+                send: apply
+            )
+        }
+    }
+
     private func appear() {
         _ = admission.withSession { session in
             let trackingState = session.trackingState
@@ -591,6 +648,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             #if DD_SDK_COMPILED_FOR_TESTING
             admission.recordLifecycleObservation("trait-disappear-admitted", state: trackingState)
             #endif
+            session.hasPendingOrdinaryAppearance = false
 
             if let configuration {
                 if navigationOccurrenceSource?.retainsManagedInitialOccurrence(

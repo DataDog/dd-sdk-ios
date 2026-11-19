@@ -224,7 +224,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         case appear
         case disappear
         case reconcile(
-            configuration: RUMViewTrackingState.Configuration,
+            configuration: RUMViewTrackingState.Configuration?,
             attachment: RUMViewTrackingState.Attachment?,
             isAppeared: Bool?
         )
@@ -235,8 +235,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                  .keyedMount(let configuration, _),
                  .promoteDormantBoundary(_, let configuration, _),
                  .migrateDormantBoundary(_, let configuration, _),
-                 .settleDormantBoundary(_, let configuration, _),
-                 .reconcile(let configuration, _, _):
+                 .settleDormantBoundary(_, let configuration, _):
+                return configuration
+            case .reconcile(let configuration, _, _):
                 return configuration
             case .update, .initialMount, .mount, .appear, .disappear:
                 return nil
@@ -360,11 +361,14 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             case .disappear:
                 return state.disappear()
             case .reconcile(let configuration, let attachment, let isAppeared):
-                return state.reconcile(
-                    configuration: configuration,
-                    attachment: attachment,
-                    isAppeared: isAppeared
-                )
+                if let configuration {
+                    return state.reconcile(
+                        configuration: configuration,
+                        attachment: attachment,
+                        isAppeared: isAppeared
+                    )
+                }
+                return state.reconcile(attachment: attachment, isAppeared: isAppeared)
             }
         }
     }
@@ -965,6 +969,31 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             state: state,
             navigationOccurrenceSource: navigationOccurrenceSource
         )
+    }
+
+    /// An ordinary view can use only its own reader's current UIKit scene.
+    @MainActor
+    func mountedSceneIdentifier(
+        for state: RUMViewTrackingState,
+        admission: RUMSwiftUIViewCallbackAdmission
+    ) -> RUMSceneIdentifier? {
+        guard admitsCallbacks(), Thread.isMainThread, admission.isValid,
+              state.admission?.matches(admission) == true else {
+            return nil
+        }
+        var mountedScene: RUMSceneIdentifier?
+        for registration in observerRegistrations.values where registration.state === state {
+            guard registration.admission?.matches(admission) == true,
+                  let scene = registration.observer?.currentSceneIdentifier,
+                  admission.admits(sceneIdentifier: scene) else {
+                continue
+            }
+            if let mountedScene, mountedScene != scene {
+                return nil
+            }
+            mountedScene = scene
+        }
+        return mountedScene
     }
 
     @MainActor
