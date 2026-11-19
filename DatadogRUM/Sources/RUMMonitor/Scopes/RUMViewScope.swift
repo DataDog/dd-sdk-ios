@@ -284,12 +284,21 @@ extension RUMViewScope {
         // A final pending-key settlement also needs the ordinary inactive update.
         needsViewUpdate = completesPreparation
 
-        // Propagate to User Action scope
-        userActionScope = userActionScope?.scope(
-            byPropagating: command,
-            context: context,
-            writer: writer
-        )
+        // A captured error cannot refresh or count against a different action.
+        let propagatesToUserAction: Bool
+        if let error = command as? RUMAddCurrentViewErrorCommand,
+           case .captured(let actionID) = error.userActionTarget {
+            propagatesToUserAction = actionID != nil && actionID == userActionScope?.actionUUID
+        } else {
+            propagatesToUserAction = true
+        }
+        if propagatesToUserAction {
+            userActionScope = userActionScope?.scope(
+                byPropagating: command,
+                context: context,
+                writer: writer
+            )
+        }
 
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
@@ -906,6 +915,14 @@ extension RUMViewScope {
 
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
+        let userActionID: RUMUUID?
+        if let error = command as? RUMAddCurrentViewErrorCommand,
+           case .captured(let capturedActionID) = error.userActionTarget {
+            userActionID = capturedActionID
+        } else {
+            userActionID = self.context.activeUserActionID
+        }
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -917,7 +934,7 @@ extension RUMViewScope {
                 )
             ),
             account: .init(context: context),
-            action: self.context.activeUserActionID.map { rumUUID in
+            action: userActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
