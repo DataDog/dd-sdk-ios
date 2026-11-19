@@ -756,6 +756,17 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                 && self.configuration?.bindingGeneration == configuration.bindingGeneration
         }
 
+        @MainActor
+        func detachDestinationReader(in scene: RUMSceneIdentifier) -> Bool {
+            guard predecessorStop != nil, admission?.isValid == true,
+                  state.admission.map({ admission?.matches($0) == true }) == true,
+                  attachment == .attached(scene) || attachment == .detached else {
+                return false
+            }
+            attachment = .detached
+            return true
+        }
+
         func linkStop(to destination: DeferredState, in scene: RUMSceneIdentifier) {
             let stop = retainedSourceStop ?? CrossSceneSourceStop(scene: scene, revision: baseRevision)
             retainedSourceStop = stop
@@ -1222,6 +1233,19 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
         deferredTransitions.removeValue(forKey: transitionKey)
         deferredTransition.commit()
+    }
+
+    @MainActor
+    func detachPendingDestinationReader(in scene: RUMSceneIdentifier, state: RUMViewTrackingState) -> Bool {
+        guard admitsCallbacks() else {
+            return false
+        }
+        for (key, transition) in deferredTransitions where key.sceneIdentifier == scene {
+            if transition.deferredState(for: state)?.detachDestinationReader(in: scene) == true {
+                return true
+            }
+        }
+        return false
     }
 
     @MainActor
