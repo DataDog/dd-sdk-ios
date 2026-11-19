@@ -58,7 +58,6 @@ Feature-specific docs (in each module directory):
 | Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
 | Work on RUM specifically | `DatadogRUM/RUM_FEATURE.md` |
 | Work on Session Replay specifically | `DatadogSessionReplay/SESSION_REPLAY_FEATURE.md` |
-| Diagnose or change layer-tree replay rendering | `.claude/skills/session-replay-rendering/SKILL.md` |
 | Work on Trace (APM) specifically | `DatadogTrace/TRACE_FEATURE.md` |
 | Work on Profiling specifically | `DatadogProfiling/PROFILING_FEATURE.md` |
 | Work on Logs specifically | `DatadogLogs/LOGS_FEATURE.md` |
