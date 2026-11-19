@@ -1662,7 +1662,12 @@ extension RUMSceneViewsHandler: RUMSceneSwiftUIViewHandling {
               tracked.swiftUILifetime === lifetime else {
             return false
         }
-        remove(identity: tracked.identity, sceneIdentifier: sceneIdentifier, stopAttributes: attributes)
+        remove(
+            identity: tracked.identity,
+            sceneIdentifier: sceneIdentifier,
+            stopAttributes: attributes,
+            removeRetainedPlatformView: true
+        )
         return true
     }
 
