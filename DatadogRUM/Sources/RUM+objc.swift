@@ -1000,6 +1000,16 @@ public class objc_RUMMonitor: NSObject {
     }
 
     public func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: objc_RUMErrorSource,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.addError(message: message, type: type, stack: stack, source: source.swiftType, attributes: attributes.dd.swiftAttributes)
+    }
+
+    public func addError(
         error: Error,
         source: objc_RUMErrorSource,
         attributes: [String: Any]
