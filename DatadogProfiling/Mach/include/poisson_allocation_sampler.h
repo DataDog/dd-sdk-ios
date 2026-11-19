@@ -53,8 +53,9 @@ public:
     /**
      * Returns both weights for a selected allocation, or two zero weights otherwise.
      *
-     * The caller supplies the session token. Each new profiling session observed by this instance
-     * must have a distinct token, including sessions after the observer stops and restarts.
+     * The caller supplies a token for each native recording lifetime, from start through stop.
+     * A new recording lifetime must have a distinct token, including after the observer restarts.
+     * Capture windows and RUM session boundaries within continuous recording may retain the token.
      * A changed token discards the previous countdown and draws a fresh interval on the first
      * nonzero allocation. Zero-byte allocations do not change sampler state.
      *

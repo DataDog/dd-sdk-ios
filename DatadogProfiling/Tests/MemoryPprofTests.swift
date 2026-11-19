@@ -301,14 +301,42 @@ final class MemoryPprofTests: XCTestCase {
         XCTAssertEqual(dd_memory_pprof_encoder_diagnostics(encoder).invalid_profiles, 6)
     }
 
-    func testEmptyProfilesAreSkippedAndPayloadLimitIsEnforced() throws {
-        var empty = dd_memory_aggregation_view_t()
-        XCTAssertFalse(dd_memory_pprof_encoder_encode(encoder, &empty, 0, 0))
-        XCTAssertEqual(dd_memory_pprof_encoder_diagnostics(encoder).empty_profiles_skipped, 1)
-        XCTAssertEqual(dd_memory_pprof_encoder_view(encoder).size, 0)
+    func testEmptyProfilePreservesSchemaAndTimingWithoutPreviousSamples() throws {
+        let symbol = try XCTUnwrap(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "malloc"))
+        let address = UInt64(UInt(bitPattern: symbol))
+        try record(address: 0x10000, size: 16, weight: 1, className: "Previous", frames: [address])
+        XCTAssertTrue(dd_memory_allocation_window_close(window, generation))
+        let populated = try encodeClosedWindow()
+        XCTAssertEqual(populated.samples.count, 1)
+        XCTAssertEqual(populated.locationCount, 1)
+        XCTAssertEqual(populated.mappingCount, 1)
 
+        var empty = dd_memory_aggregation_view_t()
+        XCTAssertTrue(dd_memory_pprof_encoder_encode(encoder, &empty, 456_000, 70_000))
+        let decoded = try decode()
+        XCTAssertTrue(decoded.samples.isEmpty)
+        XCTAssertEqual(decoded.types.map { $0.0 }, ["alloc_objects", "alloc_space", "inuse_objects", "inuse_space"])
+        XCTAssertEqual(decoded.types.map { $0.1 }, ["count", "bytes", "count", "bytes"])
+        XCTAssertEqual(decoded.periodType, "space")
+        XCTAssertEqual(decoded.periodUnit, "bytes")
+        XCTAssertEqual(decoded.period, 524_288)
+        XCTAssertEqual(decoded.defaultType, "inuse_space")
+        XCTAssertEqual(decoded.time, 456_000)
+        XCTAssertEqual(decoded.duration, 70_000)
+        XCTAssertEqual(decoded.locationCount, 0)
+        XCTAssertEqual(decoded.mappingCount, 0)
+        XCTAssertFalse(decoded.strings.contains("Previous"))
+        XCTAssertEqual(dd_memory_pprof_encoder_diagnostics(encoder).encoded_profiles, 2)
+    }
+
+    func testPayloadLimitIsEnforcedForEmptyAndPopulatedProfiles() throws {
         let bounded = try XCTUnwrap(dd_memory_pprof_encoder_create(32))
         defer { dd_memory_pprof_encoder_destroy(bounded) }
+        var empty = dd_memory_aggregation_view_t()
+        XCTAssertFalse(dd_memory_pprof_encoder_encode(bounded, &empty, 0, 0))
+        XCTAssertEqual(dd_memory_pprof_encoder_view(bounded).size, 0)
+        XCTAssertEqual(dd_memory_pprof_encoder_diagnostics(bounded).limit_failures, 1)
+
         var aggregate = dd_memory_aggregate_t()
         aggregate.alloc_objects = 1
         var view = dd_memory_aggregation_view_t()
@@ -318,7 +346,7 @@ final class MemoryPprofTests: XCTestCase {
             return dd_memory_pprof_encoder_encode(bounded, &view, 0, 0)
         })
         XCTAssertEqual(dd_memory_pprof_encoder_view(bounded).size, 0)
-        XCTAssertEqual(dd_memory_pprof_encoder_diagnostics(bounded).limit_failures, 1)
+        XCTAssertEqual(dd_memory_pprof_encoder_diagnostics(bounded).limit_failures, 2)
         XCTAssertEqual(dd_memory_pprof_encoder_diagnostics(bounded).max_payload_bytes, 32)
     }
 
