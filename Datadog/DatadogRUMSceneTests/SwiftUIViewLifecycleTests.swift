@@ -198,6 +198,50 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testOrdinaryTrackedView_whenRUMEnablesAfterAppearance_itKeepsCustomerState() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        defer { fixture.restore(); core.stop() }
+        let driver = OrdinarySwiftUIViewDriver()
+        let host = fixture.install(LateRUMEnableRoot(core: core, driver: driver))
+        let container = try XCTUnwrap(host.parent)
+        XCTAssertNil(core.get(feature: RUMFeature.self))
+        try await awaitSemanticBoundary("before-enabling-rum", core: core) {
+            driver.states == [0] && driver.taskRuns == 1
+        }
+        try XCTUnwrap(driver.update)()
+        try await awaitSemanticBoundary("counter-before-enabling-rum", core: core) { driver.states == [0, 1] }
+
+        let rows = SemanticHostRows()
+        let feature = try makeSemanticFeature(in: core, rows: rows)
+        driver.renderRevision += 1
+        func snapshot() -> RUMCoreContext? {
+            feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))
+        }
+        try await awaitSemanticBoundary("mounted-view-after-enable", core: core) {
+            snapshot()?.viewName == "Late enable" && rows.views.contains { $0.view.id == snapshot()?.viewID && $0.view.isActive == true }
+        }
+        XCTAssertTrue(fixture.window.rootViewController === container && host.parent === container)
+        XCTAssertTrue(host.view.window === fixture.window)
+        XCTAssertEqual(driver.states, [0, 1])
+        XCTAssertEqual(driver.taskRuns, 1)
+        XCTAssertEqual(driver.disappearances, 0)
+        let viewID = try XCTUnwrap(snapshot()?.viewID)
+        try XCTUnwrap(driver.update)()
+        try await awaitSemanticBoundary("counter-after-enabling-rum", core: core) { driver.states.last == 2 || driver.states.count >= 4 }
+        XCTAssertEqual(driver.states, [0, 1, 2])
+        XCTAssertEqual(snapshot()?.viewID, viewID)
+
+        driver.visible = false
+        try await awaitSemanticBoundary("valid-view-removal", core: core) {
+            snapshot()?.viewID == nil && rows.views.contains { $0.view.id == viewID && $0.view.isActive == false }
+        }
+        XCTAssertEqual(driver.disappearances, 1)
+        XCTAssertEqual(Set(rows.views.filter { $0.view.name == "Late enable" }.map(\.view.id)), [viewID])
+    }
+
+    @MainActor
     func testOrdinaryTrackedView_preservesItsOccurrenceAndRoutesEventsToItsHostScene() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let expectedDelegate = try XCTUnwrap(NSClassFromString(
@@ -1185,7 +1229,9 @@ private final class OrdinarySwiftUIViewRows: @unchecked Sendable {
 @MainActor
 final class OrdinarySwiftUIViewDriver: ObservableObject {
     @Published var visible = true
+    @Published var renderRevision = 0
     var states: [Int] = []
+    var taskRuns = 0
     var disappearances = 0
     var update: (() -> Void)?
 }
@@ -1198,6 +1244,20 @@ struct OrdinarySwiftUIViewChild: View {
             .onAppear { driver.states.append(counter); driver.update = { counter += 1 } }
             .onChange(of: counter) { driver.states.append($0) }
             .onDisappear { driver.disappearances += 1 }
+    }
+}
+
+private struct LateRUMEnableRoot: View {
+    let core: DatadogCore
+    @ObservedObject var driver: OrdinarySwiftUIViewDriver
+
+    var body: some View {
+        let _ = driver.renderRevision
+        if driver.visible {
+            OrdinarySwiftUIViewChild(driver: driver)
+                .task { driver.taskRuns += 1 }
+                .trackRUMView(name: "Late enable", in: core)
+        }
     }
 }
 
