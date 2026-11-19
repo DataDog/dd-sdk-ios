@@ -349,7 +349,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     /// Processes a command using its captured monotonic time to evaluate session lifetime.
     /// - Parameter monotonicTime: The monotonic clock reading captured before queueing or buffering.
-    func process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) -> Bool {
+    func process(
+        command: RUMCommand,
+        monotonicTime: TimeInterval,
+        context: DatadogContext,
+        writer: Writer,
+        restoredActionView: RUMViewScope? = nil
+    ) -> Bool {
         let command = command.resolvingResourceOwners(in: viewScopes)
         // Use monotonic time captured before queueing, independently of processing delays and
         // `command.time`, which may hold a cross-platform SDK's timestamp.
@@ -466,7 +472,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Keep the legacy fanout and expiry position unchanged when the flag is Off.
         if sceneState != nil {
             emitRestoredViews(on: command, context: context, writer: writer)
-            propagateOwned(command, monotonicTime: monotonicTime, context: context, writer: writer)
+            propagateOwned(
+                command,
+                monotonicTime: monotonicTime,
+                context: context,
+                writer: writer,
+                restoredActionView: restoredActionView
+            )
         } else {
             viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
         }
@@ -719,6 +731,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
+    var soleUnscopedActionView: RUMViewScope? {
+        guard let view = activeView, view.sceneIdentifier == nil,
+              view.viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+              view.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
+              !viewScopes.contains(where: { $0 !== view && $0.isActiveView }) else {
+            return nil
+        }
+        return view
+    }
+
     /// A navigation replaces its own scene; unrelated foreground peers are restored.
     var foregroundViewsForRestoration: [RUMViewScope] {
         let views = viewScopes.filter {
@@ -893,7 +915,22 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func recipients(for command: RUMCommand, monotonicTime: TimeInterval) -> [RUMViewScope] {
+    private func recipients(
+        for command: RUMCommand,
+        monotonicTime: TimeInterval,
+        restoredActionView: RUMViewScope?
+    ) -> [RUMViewScope] {
+        if let action = command as? RUMUserActionCommand, action.expiredUnscopedView != nil {
+            // Session-start callbacks may retire the registration before this dispatch.
+            guard action.actionReceipt?.owner.isValid == true else {
+                return []
+            }
+            // Only the session created by this command can supply the restored recipient.
+            if case .continuousAction(let ownership) = command.target, !ownership.canClaim {
+                return []
+            }
+            return restoredActionView.map { [$0] } ?? []
+        }
         if case .continuousAction(let ownership) = command.target {
             if command is RUMStartUserActionCommand, ownership.canClaim {
                 return activeRecipients(for: ownership.sourceTarget)
@@ -937,8 +974,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return activeRecipients(for: effectiveTarget(of: command))
     }
 
-    private func propagateOwned(_ command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
-        let selected = recipients(for: command, monotonicTime: monotonicTime)
+    private func propagateOwned(
+        _ command: RUMCommand,
+        monotonicTime: TimeInterval,
+        context: DatadogContext,
+        writer: Writer,
+        restoredActionView: RUMViewScope?
+    ) {
+        let selected = recipients(for: command, monotonicTime: monotonicTime, restoredActionView: restoredActionView)
         let selectedIDs = Set(selected.map { $0.viewUUID })
         if command.isUserInteraction, let recipient = selected.last(where: { $0.isActiveView }) {
             sceneState?.representativeViewID = recipient.viewUUID
