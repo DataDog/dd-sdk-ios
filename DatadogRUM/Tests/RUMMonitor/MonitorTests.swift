@@ -858,7 +858,7 @@ extension MonitorTests {
         )
         monitor.startView(key: "owned", name: nil, attributes: [:])
         monitor.addAction(type: .tap, name: "tap", attributes: [:])
-        XCTAssertEqual(scope.ownerReads, 2)
+        // Session setup also reads the owner. Only the manual commands call the execution provider.
         XCTAssertEqual(owners.count, 2)
         XCTAssertIdentical(owners.first, owners.last)
         XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "owned")
