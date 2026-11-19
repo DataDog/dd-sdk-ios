@@ -328,13 +328,25 @@ internal final class RUMNavigationObservedTransitions {
             stopped = true
             return
         }
+        let pendingDeliveries = ReadWriteLock(wrappedValue: 0)
         let subscription = updates.sink { [weak self] state in
-            if Thread.isMainThread {
-                MainActor.assumeIsolated {
+            var deliverInline = false
+            pendingDeliveries.mutate { count in
+                if Thread.isMainThread, count == 0 {
+                    deliverInline = true
+                    return
+                }
+
+                // Enqueue under the same lock so a main-thread update cannot
+                // overtake an older update that is waiting for the main queue.
+                count += 1
+                DispatchQueue.main.async { [weak self] in
+                    pendingDeliveries.mutate { $0 -= 1 }
                     self?.receive(state, destination: destination, metadata: metadata)
                 }
-            } else {
-                DispatchQueue.main.async { [weak self] in
+            }
+            if deliverInline {
+                MainActor.assumeIsolated {
                     self?.receive(state, destination: destination, metadata: metadata)
                 }
             }
