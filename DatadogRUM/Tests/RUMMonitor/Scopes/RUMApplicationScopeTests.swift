@@ -1246,6 +1246,35 @@ extension RUMApplicationScopeTests {
         }
     }
 
+    func testMultiSceneStaleStopAfterRollover_keepsBothActiveViews() throws {
+        for explicitSessionStop in [true, false] {
+            let (app, context) = routingApplication()
+            startRoutingPeers(app, context: context)
+            navigate(app, context: context, scene: routingSceneA, name: "a-next", after: 3)
+            let old = try XCTUnwrap(app.activeSession)
+
+            let stopTime: TimeInterval
+            if explicitSessionStop {
+                let stop = RUMStopSessionCommand(time: routingDate.addingTimeInterval(4))
+                _ = routeApplicationCommand(app: app, command: stop, context: context, writer: writer)
+                stopTime = 5
+            } else {
+                stopTime = RUMSessionScope.Constants.sessionTimeoutDuration + 4
+            }
+
+            var staleStop = RUMStopViewCommand.mockWith(
+                time: routingDate.addingTimeInterval(stopTime),
+                identity: ViewIdentifier("a")
+            )
+            staleStop.target = .scene(routingSceneA)
+            _ = routeApplicationCommand(app: app, command: staleStop, context: context, writer: writer)
+
+            let current = try XCTUnwrap(app.activeSession)
+            XCTAssertNotEqual(current.sessionUUID, old.sessionUUID)
+            XCTAssertEqual(Set(current.viewScopes.filter { $0.isActiveView }.map { $0.viewName }), Set(["a-next", "b"]))
+        }
+    }
+
     func testMultiSceneRollover_restoresViewsOnlyWhenApplicationIsInForeground() throws {
         #if os(macOS)
         let states: [AppState] = [.active, .inactive, .hidden, .lockScreen, .sleeping, .terminating]

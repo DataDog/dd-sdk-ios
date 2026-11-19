@@ -31,6 +31,7 @@ internal final class ViewCache {
         let hasReplay: Bool?
         var inactiveSince: Int64?
         let sceneIdentifier: RUMSceneIdentifier?
+        let sessionID: String?
     }
 
     private enum SceneBucket: Hashable {
@@ -68,12 +69,14 @@ internal final class ViewCache {
     ///   - hasReplay: `true` if the view has replay.
     ///   - isActive: `true` if the view is currently active.
     ///   - sceneIdentifier: The optional scene owner; `nil` preserves legacy ownership.
+    ///   - sessionID: The native session for a view recorded with scene tracking enabled.
     func insert(
         id: String,
         timestamp: Int64,
         hasReplay: Bool? = nil,
         isActive: Bool = false,
-        sceneIdentifier: RUMSceneIdentifier? = nil
+        sceneIdentifier: RUMSceneIdentifier? = nil,
+        sessionID: String? = nil
     ) {
         let now = currentTimestamp
 
@@ -88,7 +91,8 @@ internal final class ViewCache {
                 id: id,
                 hasReplay: hasReplay,
                 inactiveSince: isActive ? nil : timestamp,
-                sceneIdentifier: sceneIdentifier
+                sceneIdentifier: sceneIdentifier,
+                sessionID: sessionID
             )
             // Order views by descending epoch time.
             if let index = views.firstIndex(where: { $0.timestamp < timestamp }) {
@@ -144,13 +148,15 @@ internal final class ViewCache {
     }
 
     /// Finds a historical container only within its originating native scene.
+    /// Supply the captured session to restrict a browser container to that session.
     /// Missing, expired and replay-ineligible entries never borrow a peer or legacy view.
     func lastView<Integer>(
         before timestamp: Integer,
         // Preserve the scene-qualified query's established argument order.
         // swiftlint:disable:next function_default_parameter_at_end
         hasReplay: Bool? = nil,
-        in sceneIdentifier: RUMSceneIdentifier
+        in sceneIdentifier: RUMSceneIdentifier,
+        sessionID: String? = nil
     ) -> String? where Integer: BinaryInteger {
         let now = currentTimestamp
         var result: String?
@@ -158,7 +164,9 @@ internal final class ViewCache {
         _views.mutate { views in
             purge(&views, now: now)
             result = views.first(where: {
-                guard $0.sceneIdentifier == sceneIdentifier, $0.timestamp < timestamp else {
+                guard $0.sceneIdentifier == sceneIdentifier,
+                      sessionID == nil || $0.sessionID == sessionID,
+                      $0.timestamp < timestamp else {
                     return false
                 }
                 guard let hasReplay else {
