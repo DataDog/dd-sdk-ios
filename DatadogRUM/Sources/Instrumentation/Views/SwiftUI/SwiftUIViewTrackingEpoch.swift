@@ -23,6 +23,7 @@ internal final class RUMSwiftUIViewTrackingEpoch {
         let navigationRegistration: RUMSwiftUINavigationOccurrenceRegistration
         let suppressionState = RUMSwiftUIAutomaticViewSuppressionState()
         var didReceiveInitialSceneIdentifier = false
+        fileprivate var isDisappearanceCallbackActive = false
         fileprivate var registrationFence: RUMSwiftUIViewRegistrationFence?
 
         @MainActor
@@ -219,10 +220,22 @@ internal final class RUMSwiftUIViewCallbackAdmission {
             && stateIdentity == other.stateIdentity
     }
 
+    /// Allows different body evaluations of the same registration to share the terminal lease.
+    var activeDisappearanceLease: RUMSwiftUIViewTrackingEpoch? {
+        guard let holder, holder.withSession(for: callback, { $0.isDisappearanceCallbackActive }) == true else {
+            return nil
+        }
+        return holder
+    }
+
     /// Keeps the registration alive until SwiftUI releases its disappearance callback.
     func disappearanceCallback(perform operation: @escaping () -> Void) -> () -> Void {
         let retainedHolder = isValid ? holder : nil
-        return {
+        return { [callback] in
+            let session = retainedHolder?.withSession(for: callback) { $0 }
+            let previous = session?.isDisappearanceCallbackActive ?? false
+            session?.isDisappearanceCallbackActive = true
+            defer { session?.isDisappearanceCallbackActive = previous }
             withExtendedLifetime(retainedHolder, operation)
         }
     }
