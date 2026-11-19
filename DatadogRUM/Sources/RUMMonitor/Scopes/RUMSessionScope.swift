@@ -650,9 +650,21 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             guard let destination = sceneState?.navigationDestination, case .ownedScene(let scene) = destination else {
                 return views
             }
-            return views.filter { $0.sceneIdentifier != scene }
+            return Self.restoringViews(views, after: command, in: scene)
         }
         return restoreAll ? views : []
+    }
+
+    /// A start replaces the selected scene's view. A stop only replaces the identity it can end.
+    static func restoringViews(
+        _ views: [RUMViewScope],
+        after navigation: RUMCommand,
+        in scene: RUMSceneIdentifier?
+    ) -> [RUMViewScope] {
+        if let stop = navigation as? RUMStopViewCommand {
+            return views.filter { $0.sceneIdentifier != scene || $0.identity != stop.identity }
+        }
+        return views.filter { $0.sceneIdentifier != scene }
     }
 
     private func restoreViews(_ views: [RUMViewScope], at time: Date, context: DatadogContext) {
