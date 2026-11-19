@@ -16,9 +16,15 @@ public protocol RUMContextHandoffOwnerProviding {
 /// Custom and NOP cores need not implement this SPI.
 @_spi(Internal)
 public protocol RUMContextHandoffActivating: RUMContextHandoffOwnerProviding {
+    var canResumeLegacyWebViewTracking: Bool { get }
     func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner
     func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner)
     func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature
+}
+
+@_spi(Internal)
+public extension RUMContextHandoffActivating {
+    var canResumeLegacyWebViewTracking: Bool { false }
 }
 
 /// Receives activation directly, independently of asynchronous context messages.
@@ -375,7 +381,13 @@ public struct AccountConfigurationContext: AdditionalContext, Equatable {
 /// Provides a snapshot only after a caller independently proves the originating native scene.
 @_spi(Internal)
 public protocol RUMContextHandoffWebViewProviding {
+    var usesLegacyWebViewTracking: Bool { get }
     func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture?
+}
+
+@_spi(Internal)
+public extension RUMContextHandoffWebViewProviding {
+    var usesLegacyWebViewTracking: Bool { false }
 }
 
 /// Validates a captured native session against the current RUM lifetime.
