@@ -404,6 +404,8 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
     private final class DeferredState {
         let state: RUMViewTrackingState
         let admission: RUMSwiftUIViewCallbackAdmission?
+        // Only a real disappearance callback may keep its registration until settlement.
+        private var disappearanceLease: RUMSwiftUIViewTrackingEpoch?
         let sequence: Int
         var baseRevision: UInt64
         let baseIsAppeared: Bool
@@ -520,6 +522,11 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             }
             guard accepts(intent) else {
                 return false
+            }
+            if intent.isAppeared == false, let lease = admission?.activeDisappearanceLease {
+                disappearanceLease = lease
+            } else if intent.isAppeared == true {
+                disappearanceLease = nil
             }
             if let incomingConfiguration = intent.configuration {
                 self.configuration = incomingConfiguration
@@ -974,14 +981,19 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             return
         }
 
-        if let scene = intent.sceneIdentifier ?? state.sceneIdentifier,
-           !admission.admits(sceneIdentifier: scene) {
-               return
-           }
-        guard (intent.sceneIdentifier ?? state.sceneIdentifier) != nil else {
+        let pending = deferredTransition(for: state)
+        let pendingTerminalScene: RUMSceneIdentifier?
+        if intent.isAppeared == false || intent.attachment == .detached,
+           let pending, pending.transition.deferredState(for: state)?.admission?.matches(admission) == true {
+            pendingTerminalScene = pending.key.sceneIdentifier
+        } else {
+            pendingTerminalScene = nil
+        }
+        guard let sceneIdentifier = intent.sceneIdentifier ?? state.sceneIdentifier ?? pendingTerminalScene,
+              admission.admits(sceneIdentifier: sceneIdentifier) else {
             return
         }
-        if let pending = deferredTransition(for: state) {
+        if let pending {
             if let destinationSceneIdentifier = intent.sceneIdentifier,
                destinationSceneIdentifier != pending.key.sceneIdentifier {
                 commitOutsidePendingTransition(
@@ -1027,11 +1039,6 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             return
         }
 
-        guard let sceneIdentifier = intent.sceneIdentifier ?? state.sceneIdentifier,
-              admission.admits(sceneIdentifier: sceneIdentifier) else {
-                  return
-              }
-
         let observers = liveObservers(for: state, sceneIdentifier: sceneIdentifier)
         let isProvisional = observers.allSatisfy { $0.nearestViewController == nil }
         guard
@@ -1068,9 +1075,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
         deferredTransitions[transitionKey] = deferredTransition
 
-        let didRegister = coordinator.registerCompletion { [weak self] isCancelled in
-            DispatchQueue.main.async { [weak self] in
-                guard let self, self.admitsCallbacks() else {
+        let didRegister = coordinator.registerCompletion { [weak self, weak deferredTransition] isCancelled in
+            DispatchQueue.main.async { [weak self, weak deferredTransition] in
+                guard let self, let deferredTransition, self.admitsCallbacks() else {
                     return
                 }
                 self.resolve(
