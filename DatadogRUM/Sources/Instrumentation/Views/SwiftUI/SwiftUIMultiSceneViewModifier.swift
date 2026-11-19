@@ -601,9 +601,11 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
 
     private func reconcileSurvivingOrdinaryReader() {
         _ = admission.withSession { session in
+            let state = session.trackingState
+            let restoresAppearance = state.needsReaderRemount && state.appearanceForReaderMount == true
             guard session.shouldReconcileSurvivingOrdinaryReader,
-                  session.trackingState.isAppeared || session.hasPendingOrdinaryAppearance,
-                  let scene = transitionArbiter?.mountedSceneIdentifier(for: session.trackingState) else {
+                  state.isAppeared || session.hasPendingOrdinaryAppearance || restoresAppearance,
+                  let scene = transitionArbiter?.mountedSceneIdentifier(for: state) else {
                 return
             }
             // UIKit has removed the old window reference. The reader that

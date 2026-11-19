@@ -1080,6 +1080,29 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             return
         }
         if let pending {
+            if intent.isAppeared == false, intent.sceneIdentifier == nil,
+               pendingTerminalScene == nil,
+               pending.transition.deferredState(for: state)?.admission?.matches(admission) == true,
+               !admission.admits(sceneIdentifier: pending.key.sceneIdentifier) {
+                // The abandoned destination cannot settle this terminal callback.
+                // Apply it to the committed state's own occurrence and generation.
+                if let configuration = intent.configuration {
+                    guard let committed = state.configuration,
+                          configuration.occurrenceKey == committed.occurrenceKey,
+                          configuration.bindingGeneration == committed.bindingGeneration else {
+                        return
+                    }
+                } else if state.configuration != nil {
+                    return
+                }
+                let abandoned = pending.transition.remove(state: state)
+                defer { withExtendedLifetime(abandoned) {} }
+                if pending.transition.isEmpty {
+                    deferredTransitions.removeValue(forKey: pending.key)
+                }
+                send(intent.apply(to: state))
+                return
+            }
             if let destinationSceneIdentifier = intent.sceneIdentifier,
                destinationSceneIdentifier != pending.key.sceneIdentifier {
                 commitOutsidePendingTransition(
