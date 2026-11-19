@@ -115,7 +115,25 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: false)
     }
 
-    private func assertStandaloneTraceWhenRUMRejectsResource(traceFirst: Bool) throws {
+    func testTraceIgnoresRUMModifierRegisteredAfterPreparationStarted() throws {
+        let lateModifier = RequestModifier(header: "x-late-modifier")
+        let preparedModifier = RequestModifier(header: "x-prepared-modifier") { [weak core] in
+            do {
+                try XCTUnwrap(core).register(urlSessionHandler: lateModifier)
+            } catch {
+                XCTFail("Could not register modifier during request preparation: \(error)")
+            }
+        }
+        let request = try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: true, modifier: preparedModifier)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "x-prepared-modifier"), "set")
+        XCTAssertNil(request.value(forHTTPHeaderField: "x-late-modifier"))
+    }
+
+    @discardableResult
+    private func assertStandaloneTraceWhenRUMRejectsResource(
+        traceFirst: Bool,
+        modifier: RequestModifier? = nil
+    ) throws -> URLRequest {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
         let hosts: [String: Set<TracingHeaderType>] = ["www.example.com": [.datadog, .tracecontext]]
         let traceConfig = Trace.Configuration(urlSessionTracking: .init(
@@ -135,6 +153,9 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         } else {
             try RUM.enableOrThrow(with: rumConfig, in: core)
             Trace.enable(with: traceConfig, in: core)
+        }
+        if let modifier {
+            try core.register(urlSessionHandler: modifier)
         }
         core.flush()
 
@@ -160,6 +181,35 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         XCTAssertEqual(try spans.map { try $0.operationName() }, ["urlsession.request"])
         let rumEvents = try core.waitAndReturnRUMEventMatchers()
         XCTAssertFalse(try rumEvents.contains { try $0.eventType() == "resource" })
+        return request
+    }
+
+    private final class RequestModifier: DatadogURLSessionHandler, DatadogURLSessionHandlerPreparingRUM {
+        let firstPartyHosts = FirstPartyHosts()
+        private let header: String
+        private let onPrepare: () -> Void
+
+        init(header: String, onPrepare: @escaping () -> Void = {}) {
+            self.header = header
+            self.onPrepare = onPrepare
+        }
+
+        func prepareRUMResource(capturing context: RUMURLSessionContext, reusing preparation: RUMURLSessionPreparation?) -> RUMURLSessionPreparation {
+            onPrepare()
+            return .init(identifier: nil, capturedState: context)
+        }
+
+        func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+            var request = request
+            request.setValue("set", forHTTPHeaderField: header)
+            return (request, nil, nil)
+        }
+
+        func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+        }
+
+        func interceptionDidComplete(interception: URLSessionTaskInterception) {
+        }
     }
     #endif
 

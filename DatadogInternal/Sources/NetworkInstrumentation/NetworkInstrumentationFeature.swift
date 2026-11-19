@@ -402,7 +402,7 @@ extension NetworkInstrumentationFeature {
     struct RUMRequestPreparation {
         let identifier: UUID?
         let handlers: [RUMURLSessionHandlerPreparation]
-        let rejectedModifiers: Set<ObjectIdentifier>
+        let preparedModifiers: Set<ObjectIdentifier>
     }
 
     /// Reserves captured ownership inside the winning task guard before request mutation.
@@ -413,7 +413,7 @@ extension NetworkInstrumentationFeature {
         let handlers = self.handlers
         var shared: RUMURLSessionPreparation?
         var states: [RUMURLSessionHandlerPreparation] = []
-        var rejectedModifiers: Set<ObjectIdentifier> = []
+        var preparedModifiers: Set<ObjectIdentifier> = []
         for handler in handlers {
             guard let capable = handler as? any DatadogURLSessionHandlerPreparingRUM else { continue }
             let preparation = capable.prepareRUMResource(capturing: context, reusing: shared)
@@ -421,22 +421,17 @@ extension NetworkInstrumentationFeature {
                 guard shared == nil || shared === preparation else {
                     // Releasing the uncommitted receipts abandons their pending keys.
                     // The carrier remains authoritative, with no handler state to adopt.
-                    let preparingHandlers = handlers.compactMap { $0 as? any DatadogURLSessionHandlerPreparingRUM }
-                    return RUMRequestPreparation(
-                        identifier: nil,
-                        handlers: [],
-                        rejectedModifiers: Set(preparingHandlers.map(ObjectIdentifier.init))
-                    )
+                    return RUMRequestPreparation(identifier: nil, handlers: [], preparedModifiers: [])
                 }
                 shared = preparation
             }
             let identifier = ObjectIdentifier(capable)
             states.append(RUMURLSessionHandlerPreparation(handler: identifier, state: preparation.capturedState))
-            if !preparation.allowsRequestModification {
-                rejectedModifiers.insert(identifier)
+            if preparation.allowsRequestModification {
+                preparedModifiers.insert(identifier)
             }
         }
-        return RUMRequestPreparation(identifier: shared?.identifier, handlers: states, rejectedModifiers: rejectedModifiers)
+        return RUMRequestPreparation(identifier: shared?.identifier, handlers: states, preparedModifiers: preparedModifiers)
     }
 
     struct RequestInstrumentationContext {
@@ -474,7 +469,7 @@ extension NetworkInstrumentationFeature {
         var instrumentationContexts: [RequestInstrumentationContext] = [] // each handler can inject distinct instrumentation context
         for handler in handlers {
             if let preparation, let capable = handler as? any DatadogURLSessionHandlerPreparingRUM,
-               preparation.rejectedModifiers.contains(ObjectIdentifier(capable)) {
+               !preparation.preparedModifiers.contains(ObjectIdentifier(capable)) {
                 continue
             }
             let (nextRequest, nextTraceContext, capturedState) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
