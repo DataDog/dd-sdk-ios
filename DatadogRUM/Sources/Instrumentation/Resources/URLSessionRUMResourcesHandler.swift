@@ -407,16 +407,16 @@ extension DistributedTracing {
             activeSpanContext = nil
         }
 
-        // Read the RUM session from its store rather than from `networkContext`, which is delivered
-        // through the message bus and can still be empty at this point. A request modified inside that
-        // window used to fall through to the random `Sampler` below and to be injected without a RUM
-        // session ID, which is exactly the early-request gap this handler needs to close.
-        //
-        // The tracing `samplingRate` is a share of the sessions RUM already keeps, so the effective
-        // rate is the product of the two: `.combinedWithSessionRate`. The snapshot carries the ID and
-        // the session-derived decision together. A sampled active span still takes precedence below,
-        // as required to preserve the parent trace's decision.
-        let sessionDecision = sessionSampling?.decision(for: .combinedWithSessionRate, rate: samplingRate)
+        // A captured request keeps the original session identity and sampling seed. Without a
+        // capture, read the live store so early requests still work before the message bus delivers it.
+        let sessionDecision: SessionSamplingDecision?
+        if let capture = networkContext?.rumURLSessionContext {
+            sessionDecision = capture.rumContext.map {
+                SessionSamplingDecision(sessionID: $0.sessionID, isSampled: $0.sessionSampler.combined(with: samplingRate).sample())
+            }
+        } else {
+            sessionDecision = sessionSampling?.decision(for: .combinedWithSessionRate, rate: samplingRate)
+        }
         // When no RUM session is active, fall back to a random decision at the tracing rate.
         let isSampled: () -> Bool = {
             sessionDecision?.isSampled ?? Sampler(samplingRate: samplingRate).sample()
