@@ -137,6 +137,67 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testOrdinaryViewDoesNotStartBeforeReaderAttachesEvenWithConnectedSceneTrait() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        let scene = try connectedSceneIdentifier(binding)
+        let windowScene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.session.persistentIdentifier == scene.rawValue })
+        let delegate = try XCTUnwrap(windowScene.delegate as? UIWindowSceneDelegate)
+        let window = try XCTUnwrap(delegate.window ?? nil)
+        let originalRoot = try XCTUnwrap(window.rootViewController)
+        let originalHidden = window.isHidden
+        let originalKey = windowScene.windows.first(where: \.isKeyWindow)
+        let originalTrait = windowScene.traitOverrides[RUMSceneIdentifierTrait.self]
+        XCTAssertNil(RUMNativeNavigationTesting.onBoundary)
+        XCTAssertNil(RUMSwiftUIViewCallbackAdmission.lifecycleObserver)
+
+        weak var currentReader: RUMSceneIdentifierReader.ObserverView?
+        var registrationIdentifier: UUID?
+        var observedUnattachedReader = false
+        var startScenes: [RUMSceneIdentifier?] = []
+        RUMNativeNavigationTesting.onBoundary = { source, reader, _, admission, configuration in
+            guard source == nil, configuration == nil else { return }
+            currentReader = reader
+            registrationIdentifier = admission.registrationIdentifier
+            if reader.window == nil {
+                observedUnattachedReader = true
+            }
+        }
+        RUMSwiftUIViewCallbackAdmission.lifecycleObserver = { observation in
+            guard observation.phase == "trait-publisher-call",
+                  observation.registrationIdentifier == registrationIdentifier,
+                  observation.transitions.contains(where: { $0.kind == "start" }) else { return }
+            startScenes.append(currentReader?.currentSceneIdentifier)
+        }
+        defer {
+            RUMNativeNavigationTesting.onBoundary = nil
+            RUMSwiftUIViewCallbackAdmission.lifecycleObserver = nil
+            windowScene.traitOverrides[RUMSceneIdentifierTrait.self] = originalTrait
+            window.rootViewController = originalRoot
+            window.isHidden = originalHidden
+            originalKey?.makeKey()
+        }
+
+        let driver = OrdinarySwiftUIViewDriver()
+        windowScene.traitOverrides[RUMSceneIdentifierTrait.self] = scene.rawValue
+        let host = UIHostingController(
+            rootView: OrdinarySwiftUIViewChild(driver: driver).trackRUMView(name: "Reader-owned view", in: core)
+        )
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        try await awaitOrdinaryBoundary("mounted ordinary reader", core: core) {
+            driver.states == [0] && feature.monitor.rumContextSnapshot(for: .scene(scene))?.viewName == "Reader-owned view"
+        }
+        XCTAssertTrue(observedUnattachedReader, "The fixture must expose the reader before its window attaches")
+        XCTAssertEqual(startScenes, [scene], "The first RUM view must use its own mounted reader")
+        XCTAssertEqual(currentReader?.currentSceneIdentifier, scene)
+    }
+
+    @MainActor
     func testOrdinaryTrackedView_preservesItsOccurrenceAndRoutesEventsToItsHostScene() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let expectedDelegate = try XCTUnwrap(NSClassFromString(
