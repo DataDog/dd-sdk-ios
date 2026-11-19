@@ -136,7 +136,8 @@ extension ProfilingHandler {
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil,
         ownedOperations: [OwnedProfileOperation]? = nil,
-        ownedCorrelation: OwnedProfileCorrelation? = nil
+        ownedCorrelation: OwnedProfileCorrelation? = nil,
+        serverTimeOffset: TimeInterval? = nil
     ) {
         var attributes = self.attributes
 
@@ -164,7 +165,8 @@ extension ProfilingHandler {
             attributes: attributes,
             legacyVitals: rumVitals,
             ownedOperations: ownedOperations,
-            ownedCorrelation: ownedCorrelation
+            ownedCorrelation: ownedCorrelation,
+            serverTimeOffset: serverTimeOffset ?? currentServerTimeOffset
         )
     }
 
@@ -175,9 +177,10 @@ extension ProfilingHandler {
         attributes: [AttributeKey: AttributeValue],
         legacyVitals: [Vital],
         ownedOperations: [OwnedProfileOperation]?,
-        ownedCorrelation: OwnedProfileCorrelation?
+        ownedCorrelation: OwnedProfileCorrelation?,
+        serverTimeOffset: TimeInterval
     ) {
-        let timeOffsetInNanoseconds = currentServerTimeOffset.dd.toInt64Nanoseconds
+        let timeOffsetInNanoseconds = serverTimeOffset.dd.toInt64Nanoseconds
         dd_pprof_set_server_time_offset_ns(profile, timeOffsetInNanoseconds)
 
         var data: UnsafeMutablePointer<UInt8>?
