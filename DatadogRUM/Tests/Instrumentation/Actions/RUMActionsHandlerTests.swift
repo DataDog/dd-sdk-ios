@@ -1016,6 +1016,68 @@ extension RUMActionsHandlerTests {
         XCTAssertTrue(fixture.monitor.actions.isEmpty)
     }
 
+    func testSceneInput_sameEventPreservesBothCoreBindingsInsideApplicationCallback() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene input requires iOS 27") }
+        let outer = SceneInputFixture()
+        let inner = SceneInputFixture(windows: (outer.windowA, outer.windowB))
+        let outerID = try XCTUnwrap(outer.monitor.rumContextSnapshot(for: .scene(outer.sceneA))?.viewID)
+        let innerID = try XCTUnwrap(inner.monitor.rumContextSnapshot(for: .scene(inner.sceneA))?.viewID)
+        let outerView = RUMUUID(rawValue: try XCTUnwrap(UUID(uuidString: outerID)))
+        let innerView = RUMUUID(rawValue: try XCTUnwrap(UUID(uuidString: innerID)))
+        XCTAssertNotEqual(outerID, innerID)
+        XCTAssertNotEqual(outer.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, outerID)
+        XCTAssertNotEqual(inner.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, innerID)
+        let button = UIButton()
+        outer.windowA.addSubview(button)
+        let event = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: outer.windowA, view: button))
+        let unrelated = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: outer.windowA, view: button))
+        let ordinary = RUMContextHandoff.Owner()
+        let empty = RUMContextHandoff.CurrentValue(
+            rumContext: nil,
+            sceneIdentifier: nil,
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        var inherited: Task<[String?], Never>?
+        outer.handler.intercept(application: .shared, event: event) {
+            inner.handler.intercept(application: .shared, event: event) {
+                outer.monitor.addAction(type: .custom, name: "outer callback", attributes: [:])
+                inner.monitor.addAction(type: .custom, name: "inner callback", attributes: [:])
+                XCTAssertEqual(RUMContextHandoff.current(for: outer.owner)?.rumContext?.viewID, outerID)
+                XCTAssertEqual(RUMContextHandoff.current(for: inner.owner)?.rumContext?.viewID, innerID)
+                RUMContextHandoff.withValue(empty, for: ordinary) {
+                    XCTAssertNil(RUMContextHandoff.current(for: outer.owner))
+                    XCTAssertNil(RUMContextHandoff.current(for: inner.owner))
+                    XCTAssertNotNil(RUMContextHandoff.current(for: ordinary))
+                }
+                inner.handler.intercept(application: .shared, event: unrelated) {
+                    XCTAssertNil(RUMContextHandoff.current(for: outer.owner))
+                    XCTAssertEqual(RUMContextHandoff.current(for: inner.owner)?.rumContext?.viewID, innerID)
+                }
+                inherited = Task { @MainActor in
+                    let captured = [
+                        RUMContextHandoff.current(for: outer.owner)?.rumContext?.viewID,
+                        RUMContextHandoff.current(for: inner.owner)?.rumContext?.viewID
+                    ]
+                    inner.handler.intercept(application: .shared, event: event) {
+                        XCTAssertNil(RUMContextHandoff.current(for: outer.owner))
+                        XCTAssertEqual(RUMContextHandoff.current(for: inner.owner)?.rumContext?.viewID, innerID)
+                    }
+                    XCTAssertEqual(RUMContextHandoff.current(for: outer.owner)?.rumContext?.viewID, outerID)
+                    return captured
+                }
+            }
+            XCTAssertEqual(RUMContextHandoff.current(for: outer.owner)?.rumContext?.viewID, outerID)
+            XCTAssertNil(RUMContextHandoff.current(for: inner.owner))
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: outer.owner))
+        XCTAssertNil(RUMContextHandoff.current(for: inner.owner))
+        let captured = await inherited?.value
+        XCTAssertEqual(captured, [outerID, innerID])
+        XCTAssertEqual(outer.monitor.actions.first { $0.name == "outer callback" }?.target, .view(outerView))
+        XCTAssertEqual(inner.monitor.actions.first { $0.name == "inner callback" }?.target, .view(innerView))
+    }
+
     func testSceneInput_nestedDifferentAndSourceLessEventsRestoreOuterBinding() {
         guard #available(iOS 27.0, *) else {
             assertLegacyInputDelivery()
@@ -1118,15 +1180,22 @@ private final class SceneInputFixture {
     let owner = RUMContextHandoff.Owner()
     let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_600_000_000))
     let elapsedClock = MonotonicClockMock()
-    let windowA = UIWindow(frame: .zero)
-    let windowB = UIWindow(frame: .zero)
+    let windowA: UIWindow
+    let windowB: UIWindow
     let sceneA = RUMSceneIdentifier(rawValue: "a")
     let sceneB = RUMSceneIdentifier(rawValue: "b")
     let monitor: SceneInputMonitor
     let factory: SceneInputFactory
     let handler: RUMSceneActionsHandler
 
-    init(predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(), startA: Bool = true, startB: Bool = true) {
+    init(
+        predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(),
+        startA: Bool = true,
+        startB: Bool = true,
+        windows: (UIWindow, UIWindow)? = nil
+    ) {
+        windowA = windows?.0 ?? UIWindow(frame: .zero)
+        windowB = windows?.1 ?? UIWindow(frame: .zero)
         monitor = SceneInputMonitor(owner: owner, clock: clock, monotonicClock: elapsedClock)
         factory = SceneInputFactory(base: UITouchCommandFactory(dateProvider: clock, heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(), uiKitPredicate: predicate, swiftUIPredicate: nil, swiftUIDetector: nil))
         let a = windowA, b = windowB
