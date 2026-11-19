@@ -213,8 +213,8 @@ public enum RUMContextHandoff {
         return binding.value
     }
 
-    /// Captures an On consumer without turning an invalid retained owner into legacy fallback.
-    /// A valid owner without a binding and unsupported systems retain the original path.
+    /// Keeps a retired owner or inherited binding authoritative for an On consumer.
+    /// An unbound call or a different live owner's binding uses the receiver's normal path.
     public static func captureValue(for owner: Owner?) -> CurrentValue? {
         guard supportsExecutionScope, let owner else {
             return nil
@@ -222,7 +222,7 @@ public enum RUMContextHandoff {
         if let value = current(for: owner) {
             return value
         }
-        guard !owner.isValid else {
+        guard !owner.isValid || binding?.owner.isValid == false else {
             return nil
         }
         return CurrentValue(
