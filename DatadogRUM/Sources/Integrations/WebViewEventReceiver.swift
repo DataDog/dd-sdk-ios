@@ -58,22 +58,29 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         let browserMessage: WebViewMessage
         let capturedMessage: WebViewMessageWithRUMContext?
+        let legacyRegistration: RUMLegacyWebViewTrackingReceipt?
         switch message {
         case let .webview(message):
             browserMessage = message
             capturedMessage = nil
+            legacyRegistration = nil
         case let .payload(message as WebViewMessageWithRUMContext):
             browserMessage = message.message
             capturedMessage = message
+            legacyRegistration = nil
+        case let .payload(message as WebViewMessageWithLegacyRUMRegistration):
+            browserMessage = message.message
+            capturedMessage = nil
+            legacyRegistration = message.receipt
         default:
             return false
         }
 
         switch browserMessage {
         case let .rum(event):
-            receive(rum: event, capture: capturedMessage, core: core)
+            receive(rum: event, capture: capturedMessage, legacyRegistration: legacyRegistration, core: core)
         case let .telemetry(event):
-            receive(telemetry: event, capture: capturedMessage, core: core)
+            receive(telemetry: event, capture: capturedMessage, legacyRegistration: legacyRegistration, core: core)
         default:
             return false
         }
@@ -81,7 +88,15 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         return true
     }
 
-    private func receive(rum event: JSON, capture: WebViewMessageWithRUMContext?, core: DatadogCoreProtocol) {
+    private func receive(
+        rum event: JSON,
+        capture: WebViewMessageWithRUMContext?,
+        legacyRegistration: RUMLegacyWebViewTrackingReceipt?,
+        core: DatadogCoreProtocol
+    ) {
+        guard legacyRegistration?.isCurrent != false else {
+            return
+        }
         if let capture {
             guard capture.capture.owner.isValid,
                   RUMContextHandoff.owner(in: core) === capture.capture.owner else {
@@ -89,10 +104,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             }
         }
         if capture == nil {
-            keepRUMSessionAlive()
+            keepRUMSessionAlive(legacyRegistration: legacyRegistration)
         }
 
         featureScope.eventWriteContext { context, writer in
+            guard legacyRegistration?.isCurrent != false else {
+                return
+            }
             let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
             let rum: RUMCoreContext?
             if let capture {
@@ -201,15 +219,31 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func keepRUMSessionAlive(capture: RUMContextHandoff.Capture? = nil) {
+    private func keepRUMSessionAlive(
+        capture: RUMContextHandoff.Capture? = nil,
+        legacyRegistration: RUMLegacyWebViewTrackingReceipt? = nil
+    ) {
         commandSubscriber.process(
-            command: RUMKeepSessionAliveCommand(time: dateProvider.now, attributes: [:], capture: capture)
+            command: RUMKeepSessionAliveCommand(
+                time: dateProvider.now,
+                attributes: [:],
+                capture: capture,
+                legacyWebViewRegistration: legacyRegistration
+            )
         )
     }
 
-    private func receive(telemetry event: JSON, capture: WebViewMessageWithRUMContext?, core: DatadogCoreProtocol) {
+    private func receive(
+        telemetry event: JSON,
+        capture: WebViewMessageWithRUMContext?,
+        legacyRegistration: RUMLegacyWebViewTrackingReceipt?,
+        core: DatadogCoreProtocol
+    ) {
         // RUM-2866: Update with dedicated telemetry track
         featureScope.eventWriteContext { context, writer in
+            guard legacyRegistration?.isCurrent != false else {
+                return
+            }
             let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
             let rum: RUMCoreContext?
             if let capture {

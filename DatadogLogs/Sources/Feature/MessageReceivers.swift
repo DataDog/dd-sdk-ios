@@ -72,16 +72,26 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         var event: WebViewMessage.Event
         let capture: WebViewMessageWithRUMContext?
+        let legacyRegistration: RUMLegacyWebViewTrackingReceipt?
         switch message {
         case let .webview(.log(browserEvent)):
             event = browserEvent
             capture = nil
+            legacyRegistration = nil
         case let .payload(message as WebViewMessageWithRUMContext):
             guard case let .log(browserEvent) = message.message else {
                 return false
             }
             event = browserEvent
             capture = message
+            legacyRegistration = nil
+        case let .payload(message as WebViewMessageWithLegacyRUMRegistration):
+            guard case let .log(browserEvent) = message.message else {
+                return false
+            }
+            event = browserEvent
+            capture = nil
+            legacyRegistration = message.receipt
         default:
             return false
         }
@@ -99,15 +109,18 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             }
 
             let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
+            let legacyRegistrationRetired = legacyRegistration?.isCurrent == false
             let rum: RUMCoreContext?
             if let capture {
                 rum = capture.rumContext(in: core, sessionID: currentRUM?.sessionID)
+            } else {
+                rum = legacyRegistrationRetired ? nil : currentRUM
+            }
+            if capture != nil || legacyRegistrationRetired {
                 event[LogEvent.Attributes.RUM.applicationID] = nil
                 event[LogEvent.Attributes.RUM.sessionID] = nil
                 event[LogEvent.Attributes.RUM.viewID] = nil
                 event[LogEvent.Attributes.RUM.actionID] = nil
-            } else {
-                rum = currentRUM
             }
             if let rum, rum.sessionSampler.isSampled {
                 event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID

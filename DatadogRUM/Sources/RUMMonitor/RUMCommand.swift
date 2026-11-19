@@ -984,6 +984,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue]
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
     var capture: RUMContextHandoff.Capture? = nil
+    var legacyWebViewRegistration: RUMLegacyWebViewTrackingReceipt? = nil
 }
 
 // MARK: - Feature Operation Steps (Vital) commands
