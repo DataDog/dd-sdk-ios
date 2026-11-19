@@ -907,7 +907,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         }
         command.origin.updateSession(sessionUUID.toRUMDataFormat, start: sessionStart, lastInteraction: lastInteraction)
         guard let ownership = command.origin.ownership(for: sessionUUID.toRUMDataFormat),
-              ownership.isValid else {
+              ownership.isCurrentSession else {
                   return
               }
         var correlation: [AttributeKey: AttributeValue] = [
@@ -929,7 +929,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
             ownership: ownership,
             correlation: correlation
         )
-        guard ownership.isValid else {
+        guard ownership.isCurrentSession else {
             return
         }
         if let selectedView, selectedView.isActiveView,

@@ -287,6 +287,40 @@ final class OwnedOperationMonitorTests: XCTestCase {
         XCTAssertFalse(ownership.isValid)
     }
 
+    func testQueuedOperationWritesVitalAtReceiptTimeWithoutStartingExpiredProfiling() throws {
+        try requireOwnedOperations()
+        let monotonicClock = MonotonicClockMock()
+        let fixture = try Fixture(monotonicClock: monotonicClock)
+        defer { fixture.tearDown() }
+        fixture.startView("original")
+        fixture.drain()
+        let capture = try fixture.capture("original")
+        let context = try XCTUnwrap(capture.value.rumContext)
+        let origin = try XCTUnwrap(fixture.feature.operationOrigin)
+        let session = try XCTUnwrap(fixture.feature.monitor.applicationScope.activeSession)
+        let ownership = try XCTUnwrap(origin.ownership(for: context.sessionID))
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let messagesBefore = fixture.receiver.messages.count
+        monotonicClock.advance(by: session.lastInteraction + RUMSessionScope.Constants.sessionTimeoutDuration - monotonicClock.elapsedTime - 1)
+        XCTAssertTrue(ownership.isValid)
+        let release = holdOriginalQueue(in: fixture)
+        defer { release.signal() }
+
+        fixture.start("admitted-before-expiry", capture: capture)
+        monotonicClock.advance(by: 2)
+        XCTAssertTrue(origin.isCurrent)
+        XCTAssertFalse(ownership.isValid)
+        release.signal()
+        fixture.drain()
+
+        let events = try fixture.storedVitals(in: storage).filter { $0.vital.name == "admitted-before-expiry" }
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.session.id, context.sessionID)
+        XCTAssertEqual(events.first?.view.id, context.viewID)
+        XCTAssertTrue(fixture.feature.monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(fixture.receiver.messages.count, messagesBefore)
+    }
+
     private func holdOriginalQueue(in fixture: Fixture, recordPhases: Bool = false) -> DispatchSemaphore {
         let entered = expectation(description: "original Core context queue held")
         let release = DispatchSemaphore(value: 0)

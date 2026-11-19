@@ -121,6 +121,12 @@ public final class RUMOperationOrigin: @unchecked Sendable {
         return result
     }
 
+    fileprivate func ownsCurrentSession(_ candidate: RUMOperationOwnership) -> Bool {
+        let snapshot = state
+        return !snapshot.isRetired && snapshot.sessionID == candidate.sessionID
+            && snapshot.ownership === candidate && isCurrent
+    }
+
     public func isSessionActive(_ sessionID: String) -> Bool {
         guard isCurrent else {
             return false
@@ -174,6 +180,10 @@ public final class RUMOperationOwnership: @unchecked Sendable {
         self.sessionID = sessionID
     }
 
+    /// Revalidates the owner of a RUM command already admitted at its receipt time.
+    public var isCurrentSession: Bool { !state.isRetired && origin.ownsCurrentSession(self) }
+
+    /// Requires a live session for work that can be delivered to Profiling later.
     public var isValid: Bool { !state.isRetired && origin.isSessionActive(sessionID) }
 
     /// A retired ownership refuses subscription; callbacks run after unlock.
