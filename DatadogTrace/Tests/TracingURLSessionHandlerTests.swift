@@ -38,10 +38,11 @@ class TracingURLSessionHandlerTests: XCTestCase {
                     headerTypes: [.datadog],
                     networkContext: network
                 )
-                XCTAssertEqual(sampler.legacyCalls, 1)
+                XCTAssertEqual(sampler.legacyCalls, 0)
                 XCTAssertEqual(sampler.richCalls, 0)
-                XCTAssertEqual(sampler.legacyPolicies, [.combinedWithSessionRate])
+                XCTAssertTrue(sampler.legacyPolicies.isEmpty)
                 XCTAssertEqual(trace != nil, injected)
+                XCTAssertEqual(trace?.rumSessionId, injected ? fixture.value.rumContext?.sessionID : nil)
                 XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), injected ? "1" : "existing")
                 let interception = makeCompletedInterception()
                 if let trace { interception.register(trace: trace) }
@@ -51,9 +52,18 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 fixture.resolveReceiptAndFlush()
                 let events = try fixture.scope.spanEventsWritten()
                 XCTAssertEqual(events.count, 1)
-                fixture.assertCapturedTags(try XCTUnwrap(events.first))
+                let event = try XCTUnwrap(events.first)
+                switch mode {
+                case .foreignSession, .missingSession:
+                    XCTAssertEqual(event.tags[SpanTags.rumApplicationID], fixture.original.applicationID)
+                    XCTAssertEqual(event.tags[SpanTags.rumSessionID], fixture.original.sessionID)
+                    XCTAssertEqual(event.tags[SpanTags.rumViewID], fixture.original.viewID)
+                    XCTAssertEqual(event.tags[SpanTags.rumActionID], "accepted-action-a")
+                default:
+                    fixture.assertCapturedTags(event)
+                }
                 XCTAssertEqual(events.first?.operationName, "urlsession.request")
-                XCTAssertEqual(sampler.legacyCalls, 1)
+                XCTAssertEqual(sampler.legacyCalls, 0)
             }
         }
     }
