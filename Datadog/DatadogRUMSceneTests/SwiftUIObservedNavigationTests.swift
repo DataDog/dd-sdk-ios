@@ -19,6 +19,90 @@ import Combine
 import Observation
 
 extension SwiftUINavigationOwnershipTests {
+
+    @MainActor
+    func testObservedNavigationHost_nonReplayingPublisherRestoresDestinationOnReaderRemount() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Observed navigation requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        defer { fixture.restore(); core.stop() }
+        let rows = SemanticHostRows()
+        let feature = try makeSemanticFeature(in: core, rows: rows)
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        let state = RUMSemanticNavigationHostState()
+        let updates = PassthroughSubject<RUMNavigationDestination, Never>()
+        var subscriptions = 0
+        var cancellations = 0
+        let publisher = updates.handleEvents(
+            receiveSubscription: { _ in subscriptions += 1 },
+            receiveCancel: { cancellations += 1 }
+        )
+        let admission = try XCTUnwrap(state.configure(
+            input: .observing { acceptsDelivery in
+                RUMNavigationObservedTransitions(updates: publisher, acceptsDelivery: acceptsDelivery, destination: { $0 })
+            },
+            binding: binding
+        ))
+        let controller = UIViewController()
+        fixture.window.rootViewController = controller
+        fixture.window.makeKeyAndVisible()
+        let container = try XCTUnwrap(controller.view)
+        let reader = RUMSceneIdentifierReader.ObserverView(
+            admission: admission,
+            onChange: { [weak state] in state?.reconcile(attachment: $0, admission: admission) },
+            onMount: { [weak state] in state?.readerDidMount(in: $0, admission: admission) },
+            applicationSupportsMultipleScenes: true
+        )
+        state.register(observer: reader, admission: admission)
+        defer {
+            reader.removeFromSuperview()
+            state.finalDetach(admission: admission)
+        }
+        func snapshot() -> RUMCoreContext? {
+            feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))
+        }
+
+        container.addSubview(reader)
+        XCTAssertTrue(reader.window === fixture.window)
+        XCTAssertEqual(reader.currentSceneIdentifier, fixture.identifier)
+        XCTAssertEqual(subscriptions, 1)
+        let firstSource = try XCTUnwrap(state.selectedTransitions)
+        let home = RUMNavigationDestination.root(ObservedHostRoute.home)
+        updates.send(home)
+        try await awaitSemanticBoundary("non-replaying-initial-home", core: core) { snapshot()?.viewName == "Home" }
+        let firstView = try XCTUnwrap(snapshot()?.viewID)
+
+        reader.removeFromSuperview()
+        try await awaitSemanticBoundary("non-replaying-final-detach", core: core) {
+            firstSource.observationCount == 0 && cancellations == 1 && snapshot()?.viewID == nil
+        }
+        XCTAssertTrue(rows.views.contains { $0.view.id == firstView && $0.view.isActive == false })
+        container.addSubview(reader)
+        XCTAssertTrue(reader.window === fixture.window)
+        XCTAssertEqual(subscriptions, 2)
+        let returnedSource = try XCTUnwrap(state.selectedTransitions)
+        XCTAssertFalse(returnedSource === firstSource)
+        var generations: [UInt64] = []
+        let token = returnedSource.observe { generations.append($0.generation) }
+        defer { returnedSource.removeObserver(token) }
+        XCTAssertEqual(generations, [0], "The new subscription did not replay; restore the host's committed destination")
+        guard generations == [0] else { return }
+        try await awaitSemanticBoundary("non-replaying-returned-home", core: core) { snapshot()?.viewName == "Home" }
+        let returnedView = try XCTUnwrap(snapshot()?.viewID)
+        XCTAssertNotEqual(returnedView, firstView)
+        updates.send(home)
+        XCTAssertEqual(generations, [0])
+        feature.monitor.addAction(type: .custom, name: "remounted-action", attributes: [:], explicitTarget: .scene(fixture.identifier))
+        try await awaitSemanticBoundary("non-replaying-remounted-action", core: core) {
+            rows.actions.contains { $0.action.target?.name == "remounted-action" }
+        }
+        XCTAssertEqual(rows.actions.first { $0.action.target?.name == "remounted-action" }?.view.id, returnedView)
+
+        updates.send(.route(ObservedHostRoute.detail(secret: "fixture")))
+        XCTAssertEqual(generations, [0, 1])
+        try await awaitSemanticBoundary("non-replaying-next-destination", core: core) { snapshot()?.viewName == "Detail" }
+        XCTAssertNotEqual(snapshot()?.viewID, returnedView)
+    }
     @MainActor
     func testObservedNavigationHost_whenCommittedStateChanges_itPublishesTheAcceptedOwner() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Observed navigation requires iOS 27") }
