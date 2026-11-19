@@ -831,7 +831,7 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
         return origin
     }
 
-    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+    func dispatchFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
         core?.bus.sendFlagEvaluation(evaluation)
     }
 
