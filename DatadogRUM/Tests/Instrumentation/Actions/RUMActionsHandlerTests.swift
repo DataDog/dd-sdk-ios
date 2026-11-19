@@ -873,6 +873,28 @@ extension RUMActionsHandlerTests {
         XCTAssertNil(RUMContextHandoff.current(for: fixture.owner))
     }
 
+    func testSceneInput_soleUnscopedManualViewOwnsTapAndReceipt() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene input requires iOS 27") }
+        let fixture = SceneInputFixture(startA: false, startB: false)
+        fixture.monitor.startView(key: "manual", name: "Manual", attributes: [:])
+        let viewID = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+        XCTAssertEqual(fixture.monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "Manual")
+        let target = RUMCommandTarget.view(.init(rawValue: try XCTUnwrap(UUID(uuidString: viewID))))
+        let button = UIButton()
+        fixture.windowA.addSubview(button)
+        let event = UIEvent.mockWith(touch: SceneInputTouch(originalWindow: fixture.windowA, view: button))
+        fixture.handler.intercept(application: .shared, event: event) {
+            let current = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertEqual(current?.rumContext?.viewID, viewID)
+            XCTAssertEqual(current?.sceneIdentifier, "a")
+            XCTAssertEqual(current?.hasPendingUserAction, true)
+        }
+
+        let action = try XCTUnwrap(fixture.monitor.actions.last)
+        XCTAssertEqual(action.target, target)
+        XCTAssertTrue(action.actionReceipt?.hasCapturedView == true)
+    }
+
     func testSceneInput_missingSnapshotIsAuthoritativeForAttachedScene() {
         guard #available(iOS 27.0, *) else {
             assertLegacyInputDelivery()
@@ -1104,7 +1126,7 @@ private final class SceneInputFixture {
     let factory: SceneInputFactory
     let handler: RUMSceneActionsHandler
 
-    init(predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(), startA: Bool = true) {
+    init(predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(), startA: Bool = true, startB: Bool = true) {
         monitor = SceneInputMonitor(owner: owner, clock: clock, monotonicClock: elapsedClock)
         factory = SceneInputFactory(base: UITouchCommandFactory(dateProvider: clock, heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(), uiKitPredicate: predicate, swiftUIPredicate: nil, swiftUIDetector: nil))
         let a = windowA, b = windowB
@@ -1112,7 +1134,7 @@ private final class SceneInputFixture {
             window === a ? RUMSceneIdentifier(rawValue: "a") : (window === b ? RUMSceneIdentifier(rawValue: "b") : nil)
         })
         handler.publish(to: monitor)
-        for (key, target) in [("a", sceneA), ("b", sceneB)] where startA || key == "b" {
+        for (key, target) in [("a", sceneA), ("b", sceneB)] where key == "a" ? startA : startB {
             monitor.process(command: RUMStartViewCommand(time: clock.now, identity: ViewIdentifier(key), name: key, path: key, globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .scene(target)))
         }
         monitor.ownerReads = 0

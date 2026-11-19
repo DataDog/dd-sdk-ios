@@ -517,6 +517,29 @@ final class SceneScrollOwnershipTests: XCTestCase {
         }
     }
 
+    func testSceneScroll_soleUnscopedManualViewOwnsScrollAndTerminals() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene input requires iOS 27") }
+        let f = SceneScrollFixture(startA: false, startB: false)
+        f.monitor.startView(key: "manual", name: "Manual", attributes: [:])
+        let viewID = try XCTUnwrap(f.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+        XCTAssertEqual(f.monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "Manual")
+        let scroll = f.scroll(in: f.windowA)
+        f.handler.interceptWillBeginDragging(scroll) {
+            let current = RUMContextHandoff.current(for: f.owner)
+            XCTAssertEqual(current?.rumContext?.viewID, viewID)
+            XCTAssertEqual(current?.sceneIdentifier, "a")
+            XCTAssertEqual(current?.hasPendingUserAction, true)
+        }
+
+        let receipt = try f.receipt(at: 0)
+        XCTAssertEqual(receipt.claim?.viewID.toRUMDataFormat, viewID)
+        scroll.contentOffset = CGPoint(x: 0, y: 100)
+        f.handler.interceptDidEndDragging(scroll, willDecelerate: false) {}
+        XCTAssertEqual(f.monitor.commands.last?.target, .continuousAction(receipt))
+        XCTAssertTrue(receipt.isClosed)
+        XCTAssertEqual(f.events.map(\.view.id), [viewID])
+    }
+
     func testSceneScroll_sourceLessInheritsButAttachedMissingSnapshotStaysAuthoritativeNil() throws {
         guard #available(iOS 27.0, *) else {
             assertLegacyScrollDelivery()
@@ -724,7 +747,7 @@ private final class SceneScrollFixture {
     let handler: RUMSceneScrollHandler
     var events: [RUMActionEvent] { monitor.scope.eventsWritten(ofType: RUMActionEvent.self) }
 
-    init(startA: Bool = true) {
+    init(startA: Bool = true, startB: Bool = true) {
         monitor = SceneScrollMonitor(owner: owner, clock: clock)
         let a = ObjectIdentifier(windowA), b = ObjectIdentifier(windowB), probe = sourceProbe
         handler = RUMSceneScrollHandler(legacyHandler: RUMScrollHandler(dateProvider: clock, predicate: predicate), dateProvider: clock, owner: owner, expectedMonitor: monitor, sceneIdentifier: { window in
@@ -733,7 +756,7 @@ private final class SceneScrollFixture {
         })
         handler.publish(to: monitor)
         if startA { startView("a", scene: "a") }
-        startView("b", scene: "b")
+        if startB { startView("b", scene: "b") }
         monitor.ownerReads = 0
     }
     func scroll(in window: UIWindow?) -> SceneScrollView {
