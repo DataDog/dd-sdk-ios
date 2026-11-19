@@ -140,7 +140,7 @@ private:
     binary_image_cache *image_cache = nullptr;
     uint8_t *output = nullptr;
     // written tracks construction; encoded_size publishes only a complete profile.
-    // Failed or skipped attempts leave encoded_size zero, hiding partial output.
+    // Failed attempts leave encoded_size zero, hiding partial output.
     size_t encoded_size = 0;
     size_t written = 0;
     size_t location_count = 0;
@@ -510,11 +510,6 @@ bool HeapPprofEncoder::encode(const dd_memory_aggregation_view_t *view,
     if (view->count > DD_MEMORY_AGGREGATION_CAPACITY) {
         return limit();
     }
-    if (view->count == 0) {
-        ++counters.empty_profiles_skipped;
-        return false;
-    }
-
     written = 0;
     location_count = 0;
     mapping_count = 0;

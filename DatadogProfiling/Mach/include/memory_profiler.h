@@ -66,7 +66,8 @@ dd_memory_capture_status_t dd_memory_profiler_capture(dd_memory_capture_t *captu
 
 /// Serializes the current capture using the profiler's reusable native encoder.
 /// The capture must still be valid; serialize before another capture, start or
-/// stop. Returns empty bytes for empty/invalid input or an encoding failure.
+/// stop. A zero-sample READY capture encodes the transition to an empty live set;
+/// callers skip IDLE captures. Invalid input and encoding failures return empty bytes.
 /// Encoded bytes are borrowed until the next serialization or stop. Copy them
 /// before either operation, serializing lifecycle calls and byte consumption on
 /// the background profiler queue, outside native observation callbacks.

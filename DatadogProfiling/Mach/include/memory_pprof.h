@@ -34,7 +34,6 @@ typedef struct {
 
 typedef struct {
     uint64_t encoded_profiles;
-    uint64_t empty_profiles_skipped;
     uint64_t invalid_profiles;
     uint64_t limit_failures;
     uint64_t omitted_class_names;
@@ -60,7 +59,8 @@ void dd_memory_pprof_encoder_destroy(dd_memory_pprof_encoder_t *encoder);
 /// total once. Positive overflow (including infinity) saturates at INT64_MAX;
 /// negative values and NaN reject the emission. time_nanos is collection time
 /// since the Unix epoch; duration_nanos is the window duration. Both must be
-/// nonnegative. An empty input skips emission and returns false.
+/// nonnegative. An empty view encodes the schema and timing without samples,
+/// preserving a capture where the last tracked object was freed.
 ///
 /// Encoding is bounded by output, unique-location and mapping capacities.
 /// Invalid input or a capacity failure discards the complete emission and
@@ -78,7 +78,7 @@ bool dd_memory_pprof_encoder_encode(
     int64_t duration_nanos);
 
 /// Borrowed encoded bytes, valid until the next encode or destroy. Empty
-/// before encoding and after any skipped or failed encode. NULL is empty.
+/// before encoding and after any failed encode. NULL is empty.
 dd_memory_pprof_view_t dd_memory_pprof_encoder_view(
     const dd_memory_pprof_encoder_t *encoder);
 
