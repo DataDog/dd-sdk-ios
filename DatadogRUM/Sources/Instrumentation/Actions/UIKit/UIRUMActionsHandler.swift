@@ -204,7 +204,7 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
             hasPendingUserAction: false,
             excludedUserActionID: nil
         )
-        RUMContextHandoff.withValue(captured, for: owner) {
+        RUMContextHandoff.withUIKitDeliveryValue(captured, for: owner, event: event) {
             guard var command = eventCommandsFactory?.command(from: event), isOwnedSubscriber else {
                 operation()
                 return
@@ -220,7 +220,7 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
                 excludedUserActionID: captured.rumContext?.userActionID,
                 actionReceipt: receipt
             )
-            let didPublish = RUMContextHandoff.withValue(pending, for: owner) {
+            let didPublish = RUMContextHandoff.withUIKitDeliveryValue(pending, for: owner, event: event) {
                 guard publishIfOwned(command) else {
                     return false
                 }
