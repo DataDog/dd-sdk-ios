@@ -32,10 +32,40 @@ extension SwiftUINavigationOwnershipTests {
         try exerciseMountedWebViewRenewal(afterHardCap: true)
     }
 
+    @MainActor
+    func testMountedWebViewActivityRecoversAfterForegroundRetiresTheExpiredSession() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-aware bridge requires iOS 27") }
+        try exerciseMountedWebViewRenewal(afterHardCap: false, afterLifecycle: .foreground)
+    }
+
+    @MainActor
+    func testMountedWebViewActivityDoesNotRenewAfterExplicitStop() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-aware bridge requires iOS 27") }
+        try exerciseMountedWebViewRenewal(afterHardCap: false, afterLifecycle: .foregroundThenStop)
+    }
+
+    @MainActor
+    func testMountedWebViewRolloverRestoresBothNativeSceneViews() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-aware bridge requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        let peer = try await openAdditionalSceneForTransitionTest()
+        try exerciseMountedWebViewRenewal(afterHardCap: false, hostedIn: fixture, peerScene: peer)
+    }
+
+    private enum BrowserExpiryLifecycle {
+        case foreground
+        case foregroundThenStop
+    }
+
     @available(iOS 27.0, *)
     @MainActor
-    private func exerciseMountedWebViewRenewal(afterHardCap: Bool) throws {
-        let fixture = try SemanticHostWindow()
+    private func exerciseMountedWebViewRenewal(
+        afterHardCap: Bool,
+        afterLifecycle: BrowserExpiryLifecycle? = nil,
+        hostedIn existingHost: SemanticHostWindow? = nil,
+        peerScene: RUMSceneIdentifier? = nil
+    ) throws {
+        let fixture = try existingHost ?? SemanticHostWindow()
         let date = Date()
         let clock = MonotonicClockMock()
         let intake = HTTPClientMock()
@@ -86,9 +116,29 @@ extension SwiftUINavigationOwnershipTests {
         try RUM.enableOrThrow(with: config, in: core)
         let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
-        feature.monitor.startView(key: "session-seed", attributes: [:])
-        feature.monitor.addAction(type: .custom, name: "session-seed", attributes: [:])
+        let nativeScenes = peerScene.map { [fixture.identifier, $0] } ?? []
+        if nativeScenes.isEmpty {
+            feature.monitor.startView(key: "session-seed", attributes: [:])
+            feature.monitor.addAction(type: .custom, name: "session-seed", attributes: [:])
+        } else {
+            for (position, scene) in nativeScenes.enumerated() {
+                let name = "Native scene \(position)"
+                feature.monitor.process(command: RUMStartViewCommand(
+                    time: date,
+                    identity: ViewIdentifier(name),
+                    name: name,
+                    path: name,
+                    globalAttributes: [:],
+                    attributes: [:],
+                    instrumentationType: .manual,
+                    target: .scene(scene)
+                ))
+            }
+        }
         core.flush()
+        let originalNativeIDs = try nativeScenes.map {
+            try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene($0))?.viewID)
+        }
         let predecessor = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID)
         let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
         let maxDuration = RUMSessionScope.Constants.sessionMaxDuration
@@ -153,6 +203,16 @@ extension SwiftUINavigationOwnershipTests {
         send(stale)
         clock.advance(by: afterHardCap ? maxDuration - clock.elapsedTime : timeout)
         XCTAssertNil(feature.monitor.rumContextSnapshot(for: .processRepresentative))
+        if afterLifecycle != nil {
+            feature.monitor.process(command: RUMHandleAppLifecycleEventCommand(time: date, event: .willEnterForeground))
+            core.flush()
+            XCTAssertNil(feature.monitor.applicationScope.activeSession, "The lifecycle command must leave no active session")
+        }
+        if afterLifecycle == .foregroundThenStop {
+            feature.monitor.stopSession()
+            core.flush()
+            XCTAssertNil(feature.monitor.applicationScope.activeSession)
+        }
         webView.removeFromSuperview()
         XCTAssertNil(webView.window)
         send(detached)
@@ -163,12 +223,17 @@ extension SwiftUINavigationOwnershipTests {
         controller.flush()
         core.flush()
 
-        let renewed = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID)
-        XCTAssertNotEqual(renewed, predecessor)
         let events = try readRUMEvents()
         let markers = events.compactMap(viewID(of:))
         XCTAssertFalse(markers.contains(stale))
         XCTAssertFalse(markers.contains(detached))
+        if afterLifecycle == .foregroundThenStop {
+            XCTAssertFalse(markers.contains(fresh))
+            XCTAssertNil(feature.monitor.applicationScope.activeSession)
+            return
+        }
+        let renewed = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID)
+        XCTAssertNotEqual(renewed, predecessor)
         XCTAssertEqual(markers.filter { $0 == fresh }.count, 1)
         let result = try XCTUnwrap(events.first { viewID(of: $0) == fresh })
         let sessionID = try XCTUnwrap((result["session"] as? [String: Any])?["id"] as? String)
@@ -185,6 +250,60 @@ extension SwiftUINavigationOwnershipTests {
         let followingEvent = try XCTUnwrap(followingEvents.first { viewID(of: $0) == following })
         let followingSessionID = (followingEvent["session"] as? [String: Any])?["id"] as? String
         XCTAssertEqual(followingSessionID, sessionID)
+
+        let restored = try nativeScenes.map { scene in
+            try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(scene)))
+        }
+        var expectedActions: [String: String] = [:]
+        for (position, context) in restored.enumerated() {
+            XCTAssertEqual(context.sessionID, renewed)
+            let restoredViewID = try XCTUnwrap(context.viewID)
+            XCTAssertNotEqual(restoredViewID, originalNativeIDs[position])
+            let action = "Action after Browser rollover \(position)"
+            expectedActions[action] = restoredViewID
+            feature.monitor.addAction(type: .custom, name: action, attributes: [:], explicitTarget: .scene(nativeScenes[position]))
+        }
+        if !expectedActions.isEmpty {
+            let observedActions = try readRUMEvents().filter { $0["type"] as? String == "action" }
+            for (name, view) in expectedActions {
+                let matches = observedActions.filter {
+                    let action = $0["action"] as? [String: Any]
+                    return (action?["target"] as? [String: Any])?["name"] as? String == name
+                }
+                XCTAssertEqual(matches.count, 1)
+                let match = try XCTUnwrap(matches.first)
+                XCTAssertEqual(viewID(of: match), view)
+            }
+        }
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func openAdditionalSceneForTransitionTest() async throws -> RUMSceneIdentifier {
+        let core = makeSemanticCore()
+        defer { core.stop() }
+        let application = UIApplication.shared
+        let original = Set(application.openSessions.map(\.persistentIdentifier))
+        let observations = SceneHostLifetimeNotifications()
+        addTeardownBlock { [weak self, observations] in
+            defer { observations.stop() }
+            guard let self else { return }
+            try await self.cleanupSceneHostSessions(observations, originalSessionIDs: original)
+        }
+        let request = UISceneSessionActivationRequest(userActivity: NSUserActivity(activityType: "com.datadoghq.tests.scene-lifetime"))
+        application.activateSceneSession(for: request) { error in observations.recordRequestError(error) }
+        try await awaitSceneHostBoundary("second test scene connected", core: core) {
+            !observations.requestErrors.isEmpty || application.connectedScenes.contains {
+                !original.contains($0.session.persistentIdentifier) && $0.activationState != .unattached
+            }
+        }
+        try requireSceneHost(observations.requestErrors.isEmpty, "Native scene creation")
+        let scenes = application.connectedScenes.filter {
+            !original.contains($0.session.persistentIdentifier) && $0.activationState != .unattached
+        }
+        let replacement = try XCTUnwrap(scenes.count == 1 ? scenes.first : nil)
+        observations.recordCreatedScene(replacement.session.persistentIdentifier)
+        return RUMSceneIdentifier(rawValue: replacement.session.persistentIdentifier)
     }
 
     @MainActor
