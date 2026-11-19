@@ -1216,6 +1216,13 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
 
     var body: some View {
         let configuration = state.configuration(for: route, retaining: claim, admission: admission)
+        #if DD_SDK_COMPILED_FOR_TESTING
+        if let configuration, let observe = RUMNativeNavigationTesting.onClaim {
+            observe(configuration) { [state, claim, route, admission] in
+                state.configuration(for: route, retaining: claim, admission: admission)
+            }
+        }
+        #endif
         let source = admission.flatMap { state.source(for: $0) }
         return content.background {
             if let admission, admission.isValid, let configuration, let source,
@@ -1245,6 +1252,9 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
 @available(iOS 27.0, *)
 @MainActor
 internal enum RUMNativeNavigationTesting {
+    static var onClaim: ((
+        RUMViewTrackingState.Configuration, @escaping @MainActor () -> RUMViewTrackingState.Configuration?
+    ) -> Void)?
     static var onBoundary: ((
         RUMSwiftUINavigationOccurrenceSource?, RUMSceneIdentifierReader.ObserverView,
         RUMViewTrackingState, RUMSwiftUIViewCallbackAdmission, RUMViewTrackingState.Configuration?
