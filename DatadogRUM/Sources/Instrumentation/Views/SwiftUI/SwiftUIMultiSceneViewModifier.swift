@@ -186,6 +186,16 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     onMount: onMount,
                     onReconcile: onReconcile,
                     onDidDetach: onDidDetach,
+                    onDetachFromScene: { observer, scene in
+                        guard configuration == nil else {
+                            return false
+                        }
+                        return admission.withSession { session in
+                            transitionArbiter?.detachPendingDestinationReader(
+                                observer, in: scene, state: session.trackingState
+                            ) == true
+                        } ?? false
+                    },
                     onChange: { attachment in
                         readerAttachmentChanged(attachment)
                     }
