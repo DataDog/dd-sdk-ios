@@ -620,6 +620,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 return self.isRegistered(registration, forKey: T.name)
             })
             if let retiredOwner {
+                bus.publishFlagEvaluationOwner(retiredOwner, active: false)
                 // Reentrant messages from retirement callbacks follow the new connection.
                 retirementReceivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: retiredOwner, active: false) }
             }
