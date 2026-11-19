@@ -33,6 +33,23 @@ public protocol RUMContextHandoffContextUpdating {
     func setRUMContext(for owner: RUMContextHandoff.Owner, context: @escaping () -> RUMContextHandoff.ContextUpdate)
 }
 
+/// Optional built-in delivery capability; custom scopes retain ordinary Flags delivery.
+@_spi(Internal)
+public protocol RUMFlagEvaluationSending {
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage)
+}
+
+@_spi(Internal)
+public extension FeatureScope {
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        if let scope = self as? RUMFlagEvaluationSending {
+            scope.sendFlagEvaluation(evaluation)
+        } else {
+            send(message: .payload(evaluation))
+        }
+    }
+}
+
 /// Optional built-in write capability; custom and NOP scopes keep their original method.
 @_spi(Internal)
 public protocol RUMContextHandoffEventWriting {

@@ -124,6 +124,16 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        if let flag = command as? RUMAddFeatureFlagEvaluationCommand,
+           let ownership = flag.capturedOwnership {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  ownership.owner.isValid,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+                  let session = activeSession, session.sessionUUID == ownership.sessionID else { return }
+            // This also runs after deferred launch resolution, before creating/refreshing a session.
+            session.processCapturedFlagEvaluation(flag, monotonicTime: monotonicTime, context: context, writer: writer)
+            return
+        }
         if let error = command as? RUMAddCurrentViewErrorCommand,
            let ownership = error.capturedOwnership {
             guard dependencies.isMultiSceneTrackingEnabled,
