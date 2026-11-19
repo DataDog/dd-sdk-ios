@@ -305,9 +305,18 @@ extension SwiftUINavigationOwnershipTests {
         try await exerciseOrdinaryReaderOverlap(savedAppearance: true)
     }
 
+    @MainActor
+    func testOrdinaryTrackedView_readerRecoversWhenOldSceneDisconnectsWithoutDetach() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        try await exerciseOrdinaryReaderOverlap(savedAppearance: false, disconnectWithoutDetach: true)
+    }
+
     @available(iOS 27.0, *)
     @MainActor
-    private func exerciseOrdinaryReaderOverlap(savedAppearance: Bool) async throws {
+    private func exerciseOrdinaryReaderOverlap(
+        savedAppearance: Bool,
+        disconnectWithoutDetach: Bool = false
+    ) async throws {
         let fixture = try SemanticHostWindow()
         let core = makeSemanticCore()
         defer { fixture.restore(); core.stop() }
@@ -368,8 +377,10 @@ extension SwiftUINavigationOwnershipTests {
             onChange: original.onChange,
             applicationSupportsMultipleScenes: true
         )
+        var replacementMounts = 0
         replacement.onMount = { [weak replacement] scene in
             guard let replacement else { return }
+            replacementMounts += 1
             arbiter.register(observer: replacement, for: state)
             original.onMount?(scene)
         }
@@ -390,8 +401,18 @@ extension SwiftUINavigationOwnershipTests {
             XCTAssertTrue(state.needsReaderRemount)
             XCTAssertEqual(state.appearanceForReaderMount, true)
         }
-        original.removeFromSuperview()
-        XCTAssertNil(original.window)
+        if disconnectWithoutDetach {
+            let center = try XCTUnwrap(admission.foundation?.sceneLifecycleNotificationCenter)
+            center.post(name: UIScene.didDisconnectNotification, object: fixture.scene)
+            try await awaitSemanticBoundary("old reader registration removed", core: core) {
+                arbiter.mountedSceneIdentifier(for: state) == peerID
+            }
+            XCTAssertTrue(original.window === fixture.window)
+            XCTAssertEqual(replacementMounts, 1, "The surviving reader must not need another UIKit mount")
+        } else {
+            original.removeFromSuperview()
+            XCTAssertNil(original.window)
+        }
         XCTAssertTrue(replacement.window === peerWindow)
         XCTAssertEqual(arbiter.mountedSceneIdentifier(for: state), peerID)
         core.flush()
