@@ -701,7 +701,7 @@ extension DatadogCore: DatadogCoreProtocol {
 
 internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMFlagEvaluationSending, RUMContextHandoffContextUpdating, RUMContextHandoffEventWriting where Feature: DatadogFeature {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
-    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+    func dispatchFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
         core?.bus.sendFlagEvaluation(evaluation)
     }
 

@@ -186,7 +186,7 @@ private struct FeatureScopeProxy: FeatureScope, RUMContextHandoffOwnerProviding,
         RUMContextHandoff.owner(in: proxy)
     }
 
-    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+    func dispatchFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
         proxy.sendFlagEvaluation(evaluation)
     }
 
