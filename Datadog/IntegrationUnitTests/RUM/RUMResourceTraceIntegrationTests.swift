@@ -115,6 +115,77 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: false)
     }
 
+    func testTraceBaggageKeepsTheCapturedSessionAfterRollover() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
+        let hosts: [String: Set<TracingHeaderType>] = ["datadog.example.com": [.datadog], "w3c.example.com": [.tracecontext]]
+        let feature = try enableTraceWithRUMSession(hosts: hosts)
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let monitor = feature.monitor
+        monitor.startView(key: "previous", name: "Previous", attributes: [:])
+        core.flush()
+        let previous = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative))
+        monitor.stopSession()
+        monitor.startView(key: "current", name: "Current", attributes: [:])
+        core.flush()
+        let current = try XCTUnwrap(feature.decision(for: .combinedWithSessionRate, rate: 100))
+        XCTAssertNotEqual(previous.sessionID, current.sessionID)
+
+        let capture = RUMContextHandoff.CurrentValue(
+            rumContext: previous,
+            sceneIdentifier: nil,
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        for (host, traceHeader) in [("datadog.example.com", "x-datadog-trace-id"), ("w3c.example.com", "traceparent")] {
+            let url = try XCTUnwrap(URL(string: "https://\(host)/captured"))
+            let request = try RUMContextHandoff.withValue(capture, for: owner) {
+                try sendURLSessionRequest(to: url)
+            }
+            XCTAssertEqual(request.value(forHTTPHeaderField: "baggage"), "session.id=\(previous.sessionID)")
+            XCTAssertNotNil(request.value(forHTTPHeaderField: traceHeader))
+        }
+    }
+
+    func testTraceWithEmptyCaptureOmitsRUMSessionButUnscopedRequestsUseTheStore() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
+        let feature = try enableTraceWithRUMSession(hosts: ["www.example.com": [.tracecontext]])
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        feature.monitor.startView(key: "live", name: "Live", attributes: [:])
+        core.flush()
+        let current = try XCTUnwrap(feature.decision(for: .combinedWithSessionRate, rate: 100))
+        let url = try XCTUnwrap(URL(string: "https://www.example.com/empty-capture"))
+        let capture = RUMContextHandoff.CurrentValue(
+            rumContext: nil,
+            sceneIdentifier: "empty",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        let scopedRequest = try RUMContextHandoff.withValue(capture, for: owner) {
+            try sendURLSessionRequest(to: url)
+        }
+        XCTAssertNil(scopedRequest.value(forHTTPHeaderField: "baggage"))
+        XCTAssertNotNil(scopedRequest.value(forHTTPHeaderField: "traceparent"))
+
+        let unscopedRequest = try sendURLSessionRequest(to: url)
+        XCTAssertEqual(unscopedRequest.value(forHTTPHeaderField: "baggage"), "session.id=\(current.sessionID)")
+        XCTAssertNotNil(unscopedRequest.value(forHTTPHeaderField: "traceparent"))
+    }
+
+    private func enableTraceWithRUMSession(hosts: [String: Set<TracingHeaderType>]) throws -> RUMFeature {
+        Trace.enable(with: Trace.Configuration(urlSessionTracking: .init(
+            firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100)
+        )), in: core)
+        var config = RUM.Configuration(applicationID: .mockAny())
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        config.longTaskThreshold = nil
+        config.appHangThreshold = nil
+        // Keep RUM active without its URLSession handler so the observed header comes from Trace.
+        try RUM.enableOrThrow(with: config, in: core)
+        core.flush()
+        return try XCTUnwrap(core.get(feature: RUMFeature.self))
+    }
+
     func testTraceIgnoresRUMModifierRegisteredAfterPreparationStarted() throws {
         let lateModifier = RequestModifier(header: "x-late-modifier")
         let preparedModifier = RequestModifier(header: "x-prepared-modifier") { [weak core] in
