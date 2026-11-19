@@ -15,7 +15,7 @@ import UIKit
 #if os(iOS)
 
 @available(iOS 17.0, *)
-private struct RUMSceneIdentifierEnvironmentKey: UITraitBridgedEnvironmentKey {
+internal struct RUMSceneIdentifierEnvironmentKey: UITraitBridgedEnvironmentKey {
     static let defaultValue: String? = nil
 
     static func read(from traitCollection: UITraitCollection) -> String? {
@@ -31,7 +31,7 @@ private struct RUMSceneIdentifierEnvironmentKey: UITraitBridgedEnvironmentKey {
 #if os(iOS)
 
 @available(iOS 17.0, *)
-private extension EnvironmentValues {
+internal extension EnvironmentValues {
     var rumSceneIdentifier: String? {
         get { self[RUMSceneIdentifierEnvironmentKey.self] }
         set { self[RUMSceneIdentifierEnvironmentKey.self] = newValue }
@@ -266,6 +266,13 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 trackingState: trackingState,
                 admission: admission
             )
+            #if DD_SDK_COMPILED_FOR_TESTING
+            if #available(iOS 27.0, *) {
+                RUMNativeNavigationTesting.onBoundary?(
+                    navigationOccurrenceSource, observer, trackingState, admission, configuration
+                )
+            }
+            #endif
             #endif
         }
     }
