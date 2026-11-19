@@ -626,7 +626,7 @@ extension RUMFeature: RUMContextHandoffWebViewProviding {
         guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
             return nil
         }
-        let context = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneIdentifier)))
+        let context = monitor.webViewContextSnapshot(for: RUMSceneIdentifier(rawValue: sceneIdentifier))
         return RUMContextHandoff.Capture(
             owner: owner,
             value: .init(

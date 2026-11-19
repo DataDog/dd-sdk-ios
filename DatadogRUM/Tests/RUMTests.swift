@@ -280,6 +280,59 @@ class RUMTests: XCTestCase {
     }
 
     @MainActor
+    func testWebViewInSceneWithoutNativeView_capturesSessionWithoutPeerAttribution() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene-based tracking requires iOS 27") }
+        let now = Date()
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true, .viewUpdates: false]
+        config.dateProvider = DateProviderMock(now: now)
+        config.longTaskThreshold = nil
+        config.appHangThreshold = nil
+
+        let nativeCore = DatadogCoreProxy(context: .mockWith(
+            sdkInitDate: now,
+            trackingConsent: .granted,
+            applicationStateHistory: .mockAppInForeground()
+        ))
+        defer { XCTAssertNoThrow(try nativeCore.flushAndTearDown()) }
+        try RUM.enableOrThrow(with: config, in: nativeCore)
+        let feature = try XCTUnwrap(nativeCore.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let webScene = RUMSceneIdentifier(rawValue: "browser")
+        let peer = RUMSceneIdentifier(rawValue: "native")
+        feature.monitor.process(command: RUMStartViewCommand(
+            time: now,
+            identity: ViewIdentifier("peer-view"),
+            name: "Peer",
+            path: "native",
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentationType: .uikit,
+            target: .scene(peer)
+        ))
+        feature.monitor.startAction(type: .custom, name: "Peer action", attributes: [:], explicitTarget: .scene(peer))
+        nativeCore.flush()
+
+        let native = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(peer)))
+        XCTAssertNotNil(native.viewID)
+        XCTAssertNotNil(native.userActionID)
+        XCTAssertNil(feature.monitor.rumContextSnapshot(for: .scene(webScene)))
+
+        let capture = try XCTUnwrap(feature.captureRUMContext(forSceneIdentifier: webScene.rawValue, owner: owner))
+        let sessionOnly = try XCTUnwrap(capture.value.resolvedRUMContext(for: owner))
+        XCTAssertEqual(sessionOnly.applicationID, native.applicationID)
+        XCTAssertEqual(sessionOnly.sessionID, native.sessionID)
+        XCTAssertEqual(sessionOnly.sessionSampler, native.sessionSampler)
+        XCTAssertNil(sessionOnly.viewID)
+        XCTAssertNil(sessionOnly.userActionID)
+        XCTAssertNil(sessionOnly.viewName)
+        XCTAssertNil(sessionOnly.viewPath)
+        XCTAssertNil(sessionOnly.viewServerTimeOffset)
+        let peerCapture = feature.captureRUMContext(forSceneIdentifier: peer.rawValue, owner: owner)
+        XCTAssertEqual(peerCapture?.value.resolvedRUMContext(for: owner), native)
+    }
+
+    @MainActor
     func testFeatureCacheKeepsAnActiveSceneWhenPeerHistoryReachesCapacity() throws {
         let bundle = MutableSceneManifestBundle()
         bundle.sceneManifest = ["UIApplicationSupportsMultipleScenes": true]
