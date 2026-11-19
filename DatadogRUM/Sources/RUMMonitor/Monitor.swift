@@ -1185,7 +1185,8 @@ extension Monitor: RUMMonitorViewProtocol {
             attributes: attributes,
             identity: ViewIdentifier(viewController)
         )
-        command.target = sceneTarget(for: viewController)
+        // The controller may be detached or called off-main by the time it stops.
+        command.resolvesTrackedControllerOwner = isMultiSceneTrackingEnabled
         process(command: command)
     }
 

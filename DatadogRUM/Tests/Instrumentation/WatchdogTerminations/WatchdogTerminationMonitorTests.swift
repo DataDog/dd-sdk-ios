@@ -551,6 +551,38 @@ extension WatchdogTerminationMonitorTests {
 }
 
 extension WatchdogTerminationMonitorTests {
+    func testRepresentativeUpdatesDuringStartup_arePersistedWithoutAnotherCommand() throws {
+        for clearRepresentative in [false, true] {
+            let queue = DispatchQueue(label: "com.datadoghq.tests.watchdog-representative-startup")
+            givenDefaultApp(didSend: XCTestExpectation(description: "Read the previous launch"), queue: queue)
+            let previous: RUMViewEvent = .mockRandom()
+            featureScope.rumDataStore.setValue(previous, forKey: .watchdogRUMViewEvent)
+
+            queue.suspend()
+            _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+            XCTAssertEqual(sut.currentState, .starting)
+            let first: RUMViewEvent = .mockRandom()
+            let latest: RUMViewEvent = .mockRandom()
+            XCTAssertFalse(sut.updateRepresentativeView(viewEvent: first))
+            XCTAssertFalse(sut.updateRepresentativeView(viewEvent: clearRepresentative ? nil : latest))
+            var saved: RUMViewEvent??
+            featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (value: RUMViewEvent??) in saved = value }
+            XCTAssertEqual((saved ?? nil)?.view.id, previous.view.id)
+
+            queue.resume()
+            queue.sync {}
+
+            XCTAssertEqual(sut.currentState, .started)
+            featureScope.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (value: RUMViewEvent??) in saved = value }
+            let persisted = try XCTUnwrap(saved)
+            if clearRepresentative {
+                XCTAssertNil(persisted)
+            } else {
+                XCTAssertEqual(persisted?.view.id, latest.view.id)
+            }
+        }
+    }
+
     func testRepresentativeUpdate_afterSessionStop_ignoresStoppedSessionAndAcceptsNewSession() throws {
         let reporter = WatchdogTerminationReporterMock(didSend: XCTestExpectation(description: "No launch report is sent"))
         let monitor = WatchdogTerminationMonitor(
