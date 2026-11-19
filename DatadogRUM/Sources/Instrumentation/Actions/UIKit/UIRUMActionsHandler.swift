@@ -197,8 +197,9 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
             return
         }
 
+        let (target, context) = capture(for: identifier)
         let captured = RUMContextHandoff.CurrentValue(
-            rumContext: snapshot(for: identifier),
+            rumContext: context,
             sceneIdentifier: identifier.rawValue,
             hasPendingUserAction: false,
             excludedUserActionID: nil
@@ -208,7 +209,7 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
                 operation()
                 return
             }
-            command.target = .scene(identifier)
+            command.target = target
             let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured.rumContext)
             command.actionReceipt = receipt
             // Pending denotes a selected command awaiting processing, not an Action UUID.
@@ -249,12 +250,12 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
         return monitor.isMultiSceneTrackingEnabled && monitor.rumContextHandoffOwner === owner
     }
 
-    private func snapshot(for identifier: RUMSceneIdentifier) -> RUMCoreContext? {
+    private func capture(for scene: RUMSceneIdentifier) -> (RUMCommandTarget, RUMCoreContext?) {
         guard owner.isValid, let monitor = expectedMonitor, subscriber === monitor,
               monitor.isMultiSceneTrackingEnabled, monitor.rumContextHandoffOwner === owner else {
-            return nil
+            return (.scene(scene), nil)
         }
-        return monitor.rumContextSnapshot(for: .scene(identifier))
+        return monitor.captureAutomaticAction(in: scene)
     }
 
     private func publishIfOwned(_ command: RUMAddUserActionCommand) -> Bool {
