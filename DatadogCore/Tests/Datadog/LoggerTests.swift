@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 import OpenTelemetryApi
 
@@ -806,6 +807,103 @@ class LoggerTests: XCTestCase {
             isTypeOf: String.self
         )
     }
+
+    #if os(iOS)
+    @MainActor
+    func testErrorLogInheritedFromRetiredCore_doesNotAdoptDeliveryRUMView() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Requires scene ownership") }
+        let date = Date()
+        let sourceDirectory = temporaryUniqueCoreDirectory()
+        let destinationDirectory = temporaryUniqueCoreDirectory()
+        for directory in [sourceDirectory, destinationDirectory] {
+            for url in [directory.osDirectory.url, directory.coreDirectory.url] {
+                try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+                addTeardownBlock { try FileManager.default.removeItem(at: url) }
+            }
+        }
+
+        func makeCore(in directory: CoreDirectory) -> DatadogCore {
+            DatadogCore(
+                directory: directory,
+                dateProvider: SystemDateProvider(),
+                initialConsent: .granted,
+                performance: .mockAny(),
+                httpClient: HTTPClientMock(),
+                encryption: nil,
+                contextProvider: .mockWith(context: .mockWith(
+                    sdkInitDate: date,
+                    trackingConsent: .granted,
+                    launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+                    applicationStateHistory: .mockAppInForeground()
+                )),
+                applicationVersion: .mockAny(),
+                maxBatchesPerUpload: 1,
+                backgroundTasksEnabled: false
+            )
+        }
+
+        var logs: [LogEvent] = []
+        var errors: [RUMErrorEvent] = []
+        var configuration = RUM.Configuration(applicationID: "logs-ownership-check", trackAnonymousUser: false)
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true, .viewUpdates: false]
+        configuration.sessionSampleRate = 100
+        configuration.vitalsUpdateFrequency = nil
+        configuration.longTaskThreshold = nil
+        configuration.appHangThreshold = nil
+
+        let source = makeCore(in: sourceDirectory)
+        defer { source.stop() }
+        try RUM.enableOrThrow(with: configuration, in: source)
+        let inheritedOwner = try XCTUnwrap(source.rumContextHandoffOwner)
+
+        let destination = makeCore(in: destinationDirectory)
+        defer { destination.stop() }
+        configuration.errorEventMapper = { event in
+            errors.append(event)
+            return event
+        }
+        try RUM.enableOrThrow(with: configuration, in: destination)
+        try Logs.enableOrThrow(with: .init(eventMapper: { event in
+            logs.append(event)
+            return event
+        }), in: destination)
+        let feature = try XCTUnwrap(destination.get(feature: RUMFeature.self))
+        let destinationOwner = try XCTUnwrap(destination.rumContextHandoffOwner)
+        XCTAssertFalse(inheritedOwner === destinationOwner)
+        feature.monitor.startView(key: "destination-view")
+        destination.flush()
+        let expected = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative))
+        let expectedView = try XCTUnwrap(expected.viewID)
+
+        let logger = Logger.create(in: destination)
+        let inherited = RUMContextHandoff.CurrentValue(
+            rumContext: nil, sceneIdentifier: "source-scene", hasPendingUserAction: false, excludedUserActionID: nil
+        )
+        RUMContextHandoff.withValue(inherited, for: inheritedOwner) {
+            logger.error("live foreign binding")
+            source.stop()
+            XCTAssertFalse(inheritedOwner.isValid)
+            logger.error("retired foreign binding")
+        }
+        logger.error("unbound")
+        destination.flush()
+
+        XCTAssertTrue(destinationOwner.isValid)
+        XCTAssertEqual(logs.map(\.message), ["live foreign binding", "retired foreign binding", "unbound"])
+        let log = try XCTUnwrap(logs.first { $0.message == "retired foreign binding" })
+        XCTAssertNil(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.applicationID])
+        XCTAssertNil(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.sessionID])
+        XCTAssertNil(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.viewID])
+        XCTAssertNil(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.actionID])
+        for control in logs where control.message != log.message {
+            XCTAssertEqual(control.attributes.internalAttributes?[LogEvent.Attributes.RUM.sessionID] as? String, expected.sessionID)
+            XCTAssertEqual(control.attributes.internalAttributes?[LogEvent.Attributes.RUM.viewID] as? String, expectedView)
+        }
+        XCTAssertEqual(errors.map(\.error.message), ["live foreign binding", "unbound"])
+        XCTAssertTrue(errors.allSatisfy { $0.view.id == expectedView })
+    }
+    #endif
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
         let logging: LogsFeature = .mockAny()
