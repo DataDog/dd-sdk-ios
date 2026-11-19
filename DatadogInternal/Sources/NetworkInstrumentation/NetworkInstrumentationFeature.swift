@@ -533,7 +533,8 @@ extension NetworkInstrumentationFeature {
                     trackingMode: trackingMode,
                     identifier: preparation?.identifier,
                     rumContext: rumContext,
-                    preparations: preparation?.handlers ?? []
+                    preparations: preparation?.handlers ?? [],
+                    rumResourceStart: preparation?.identifier.map { _ in RUMURLSessionResourceStart(queue: self.queue) }
                 )
             } else {
                 interception = URLSessionTaskInterception(
@@ -575,6 +576,7 @@ extension NetworkInstrumentationFeature {
                                 capturedStates: capturedStates
                             )
                         }
+                    (interception as? RUMURLSessionTaskInterception)?.rumResourceStart?.rejectIfUnclaimed()
                 }
         }
     }

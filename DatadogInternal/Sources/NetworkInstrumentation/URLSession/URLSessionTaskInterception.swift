@@ -453,10 +453,90 @@ internal struct RUMURLSessionHandlerPreparation {
     let state: any URLSessionHandlerCapturedState
 }
 
+/// The captured RUM resource is authoritative only once its queued Start commits.
+@_spi(Internal)
+public final class RUMURLSessionResourceStart {
+    public final class Receipt {
+        private let start: RUMURLSessionResourceStart
+
+        fileprivate init(start: RUMURLSessionResourceStart) {
+            self.start = start
+        }
+
+        public func accept() {
+            start.resolve(true)
+        }
+
+        deinit {
+            // A Core that declines event delivery releases the queued receipt.
+            start.resolve(false)
+        }
+    }
+
+    private struct State {
+        var claimed = false
+        var accepted: Bool?
+        var callbacks: [(Bool) -> Void] = []
+    }
+
+    @ReadWriteLock
+    private var state = State()
+    private let queue: DispatchQueue
+
+    internal init(queue: DispatchQueue) {
+        self.queue = queue
+    }
+
+    public func claim() -> Receipt? {
+        var claimed = false
+        _state.mutate {
+            guard !$0.claimed, $0.accepted == nil else {
+                return
+            }
+            $0.claimed = true
+            claimed = true
+        }
+        return claimed ? Receipt(start: self) : nil
+    }
+
+    internal func rejectIfUnclaimed() {
+        resolve(false, onlyIfUnclaimed: true)
+    }
+
+    public func whenResolved(_ callback: @escaping (Bool) -> Void) {
+        var accepted: Bool?
+        _state.mutate {
+            if let result = $0.accepted {
+                accepted = result
+            } else {
+                $0.callbacks.append(callback)
+            }
+        }
+        if let accepted {
+            queue.async { callback(accepted) }
+        }
+    }
+
+    private func resolve(_ accepted: Bool, onlyIfUnclaimed: Bool = false) {
+        var callbacks: [(Bool) -> Void] = []
+        _state.mutate {
+            guard $0.accepted == nil, !onlyIfUnclaimed || !$0.claimed else {
+                return
+            }
+            $0.accepted = accepted
+            swap(&callbacks, &$0.callbacks)
+        }
+        if !callbacks.isEmpty {
+            queue.async { [callbacks] in callbacks.forEach { $0(accepted) } }
+        }
+    }
+}
+
 /// Carries authoritative captured ownership through start, metrics and completion.
 @_spi(Internal)
 public final class RUMURLSessionTaskInterception: URLSessionTaskInterception {
     public let rumContext: RUMURLSessionContext
+    public let rumResourceStart: RUMURLSessionResourceStart?
     private let preparations: [RUMURLSessionHandlerPreparation]
 
     internal init(
@@ -465,10 +545,12 @@ public final class RUMURLSessionTaskInterception: URLSessionTaskInterception {
         trackingMode: TrackingMode,
         identifier: UUID?,
         rumContext: RUMURLSessionContext,
-        preparations: [RUMURLSessionHandlerPreparation]
+        preparations: [RUMURLSessionHandlerPreparation],
+        rumResourceStart: RUMURLSessionResourceStart? = nil
     ) {
         self.rumContext = rumContext
         self.preparations = preparations
+        self.rumResourceStart = rumResourceStart
         super.init(request: request, isFirstParty: isFirstParty, trackingMode: trackingMode, identifier: identifier)
     }
 
