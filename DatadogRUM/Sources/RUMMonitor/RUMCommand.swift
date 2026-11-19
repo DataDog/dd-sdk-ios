@@ -999,6 +999,12 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
 // MARK: - RUM Web Events related commands
 
 /// RUM Events received from WebView should keep the active session alive, therefore they fire this command to do so. (ref: RUMM-1793)
+internal struct RUMWebViewSessionRenewal {
+    let expiry: RUMWebViewSessionExpiry
+    let write: (DatadogContext, Writer, RUMCoreContext) -> Void
+    var didRenew: ((String) -> Void)? = nil
+}
+
 internal struct RUMKeepSessionAliveCommand: RUMCommand {
     /// Ownership supplied by a captured WebView message; nil preserves legacy processing.
     var target: RUMCommandTarget {
@@ -1019,6 +1025,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
     var capture: RUMContextHandoff.Capture? = nil
     var legacyWebViewRegistration: RUMLegacyWebViewTrackingReceipt? = nil
+    var webViewSessionRenewal: RUMWebViewSessionRenewal? = nil
 }
 
 // MARK: - Feature Operation Steps (Vital) commands

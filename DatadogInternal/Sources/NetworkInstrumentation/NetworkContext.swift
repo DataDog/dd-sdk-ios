@@ -466,11 +466,39 @@ public struct AccountConfigurationContext: AdditionalContext, Equatable {
 public protocol RUMContextHandoffWebViewProviding {
     var usesLegacyWebViewTracking: Bool { get }
     func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture?
+    func observeRUMSession(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMWebViewSessionObservation?
 }
 
 @_spi(Internal)
 public extension RUMContextHandoffWebViewProviding {
     var usesLegacyWebViewTracking: Bool { false }
+
+    func observeRUMSession(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMWebViewSessionObservation? {
+        captureRUMContext(forSceneIdentifier: sceneIdentifier, owner: owner).map { .init(capture: $0, expiry: nil) }
+    }
+}
+
+/// Distinguishes a fresh observation of a known expired session from generic absence.
+@_spi(Internal)
+public struct RUMWebViewSessionExpiry {
+    public let sessionID: String
+    public let observedAt: TimeInterval
+
+    public init(sessionID: String, observedAt: TimeInterval) {
+        self.sessionID = sessionID
+        self.observedAt = observedAt
+    }
+}
+
+@_spi(Internal)
+public struct RUMWebViewSessionObservation {
+    public let capture: RUMContextHandoff.Capture
+    public let expiry: RUMWebViewSessionExpiry?
+
+    public init(capture: RUMContextHandoff.Capture, expiry: RUMWebViewSessionExpiry?) {
+        self.capture = capture
+        self.expiry = expiry
+    }
 }
 
 /// Validates a captured native session against the current RUM lifetime.
@@ -513,10 +541,12 @@ public struct WebViewMessageWithLegacyRUMRegistration {
 public struct WebViewMessageWithRUMContext {
     public let message: WebViewMessage
     public let capture: RUMContextHandoff.Capture
+    public let sessionExpiry: RUMWebViewSessionExpiry?
 
-    public init(message: WebViewMessage, capture: RUMContextHandoff.Capture) {
+    public init(message: WebViewMessage, capture: RUMContextHandoff.Capture, sessionExpiry: RUMWebViewSessionExpiry? = nil) {
         self.message = message
         self.capture = capture
+        self.sessionExpiry = sessionExpiry
     }
 
     /// Resolves only its original owner and a native session that is still alive at delivery.

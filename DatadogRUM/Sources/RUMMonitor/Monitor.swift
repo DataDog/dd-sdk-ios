@@ -222,6 +222,17 @@ internal class Monitor: RUMCommandSubscriber {
         // must not make a command issued before expiry lose its original session.
         let monotonicTime = applicationScope.dependencies.monotonicClock.elapsedTime
         command.globalAttributes = attributes
+        let isWebViewRenewal: Bool
+        if var keepAlive = command as? RUMKeepSessionAliveCommand,
+           keepAlive.webViewSessionRenewal != nil, let owner = keepAlive.capture?.owner {
+            isWebViewRenewal = true
+            keepAlive.webViewSessionRenewal?.didRenew = { [weak self] sessionID in
+                self?.publishWebViewRenewedSession(sessionID, for: owner)
+            }
+            command = keepAlive
+        } else {
+            isWebViewRenewal = false
+        }
         // process command in event context
         let completesDroppedErrors = isMultiSceneTrackingEnabled
         let legacyRegistration = (command as? RUMKeepSessionAliveCommand)?.legacyWebViewRegistration
@@ -334,8 +345,23 @@ internal class Monitor: RUMCommandSubscriber {
         }
         if let legacyRegistration {
             legacyRegistration.setRUMContext(updateContext)
-        } else {
+        } else if !isWebViewRenewal {
             featureScope.set(context: updateContext)
+        }
+    }
+
+    private func publishWebViewRenewedSession(_ sessionID: String, for owner: RUMContextHandoff.Owner) {
+        guard owner.isValid, rumContextHandoffOwner === owner,
+              let publisher = featureScope as? RUMContextHandoffContextUpdating else {
+            return
+        }
+        publisher.setRUMContext(for: owner) { [weak self] in
+            guard let self, owner.isValid, self.rumContextHandoffOwner === owner,
+                  let session = self.applicationScope.activeSession,
+                  session.sessionUUID.toRUMDataFormat == sessionID else {
+                return .skip
+            }
+            return .set(self.makeCoreContext(session: session, view: self.representativeView(in: session)))
         }
     }
 
@@ -582,19 +608,28 @@ extension Monitor: RUMContextSnapshotProviding {
     }
 
     /// A mounted browser can report to the live session before its scene has a native view.
-    func webViewContextSnapshot(for sceneIdentifier: RUMSceneIdentifier) -> RUMCoreContext? {
-        guard let snapshot = sceneContextSnapshots?.value else {
-            return nil
+    func webViewSessionObservation(
+        for sceneIdentifier: RUMSceneIdentifier
+    ) -> (context: RUMCoreContext?, expiry: RUMWebViewSessionExpiry?) {
+        guard let snapshot = sceneContextSnapshots?.value,
+              let sessionStart = snapshot.sessionStart, let lastInteraction = snapshot.lastInteraction else {
+            return (nil, nil)
         }
         let sceneContext = snapshot.contextsByScene[sceneIdentifier]
-        guard let context = sceneContext ?? snapshot.representative, isLiveContext(context, in: snapshot) else {
-            return nil
+        guard let context = sceneContext ?? snapshot.representative, context.sessionID == snapshot.sessionID else {
+            return (nil, nil)
         }
-        return sceneContext ?? RUMCoreContext(
+        let now = applicationScope.dependencies.monotonicClock.elapsedTime
+        if RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now)
+            || RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now) {
+            return (nil, .init(sessionID: context.sessionID, observedAt: now))
+        }
+        let sessionContext = sceneContext ?? RUMCoreContext(
             applicationID: context.applicationID,
             sessionID: context.sessionID,
             sessionSampler: context.sessionSampler
         )
+        return (sessionContext, nil)
     }
 
     private func isLiveContext(_ context: RUMCoreContext, in snapshot: SceneContextSnapshots.Value) -> Bool {

@@ -144,7 +144,19 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if let receipt = (command as? RUMKeepSessionAliveCommand)?.legacyWebViewRegistration, !receipt.isCurrent {
             return
         }
-        if let keepAlive = command as? RUMKeepSessionAliveCommand, let capture = keepAlive.capture {
+        if let keepAlive = command as? RUMKeepSessionAliveCommand, let renewal = keepAlive.webViewSessionRenewal {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  let capture = keepAlive.capture, capture.owner.isValid,
+                  capture.value.sceneIdentifier != nil, capture.value.rumContext == nil,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner,
+                  let session = activeSession, session.sessionUUID.toRUMDataFormat == renewal.expiry.sessionID,
+                  renewal.expiry.observedAt <= monotonicTime,
+                  RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: renewal.expiry.observedAt)
+                    || RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: renewal.expiry.observedAt) else {
+                return
+            }
+            // This mounted callback may drive the normal refresh of its exact predecessor.
+        } else if let keepAlive = command as? RUMKeepSessionAliveCommand, let capture = keepAlive.capture {
             guard dependencies.isMultiSceneTrackingEnabled,
                   capture.owner.isValid,
                   RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner,
@@ -500,6 +512,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             writer: writer,
             restoredActionView: restoredActionView
         )
+        if let keepAlive = command as? RUMKeepSessionAliveCommand,
+           let renewal = keepAlive.webViewSessionRenewal, let capture = keepAlive.capture,
+           renewal.expiry.sessionID == expiredSession.sessionUUID.toRUMDataFormat,
+           capture.owner.isValid, RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner {
+            let renewedID = refreshedSession.sessionUUID.toRUMDataFormat
+            renewal.didRenew?(renewedID)
+            if refreshedSession.sampler.isSampled {
+                renewal.write(context, writer, RUMCoreContext(
+                    applicationID: refreshedSession.context.rumApplicationID,
+                    sessionID: renewedID,
+                    sessionSampler: refreshedSession.sampler
+                ))
+            }
+        }
         return refreshedSession
     }
 
