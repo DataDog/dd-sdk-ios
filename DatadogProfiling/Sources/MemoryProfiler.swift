@@ -21,10 +21,11 @@ internal final class MemoryProfiler: @unchecked Sendable {
 
     enum State: Equatable {
         case stopped
-        /// Native launch recording is active while awaiting the first RUM sampling decision.
+        /// Recording is active while awaiting RUM context for emission.
         case waiting
         case running
-        /// Emission is suspended; allocation and free observation remain active.
+        /// Emission is suspended; allocation and free observation keep the continuous live set current.
+        /// An admitted launch remains open until its final capture at TTID.
         case emissionSuspended
         case failed
         case shutDown
@@ -41,8 +42,10 @@ internal final class MemoryProfiler: @unchecked Sendable {
     private let profilingConditions = ProfilingConditions()
     private let dateProvider: DateProvider
     private var sessionSampler: DeterministicSampler?
-    private var sessionID: String?
-    private var hasCapturedAppLaunch = false
+    // Retain the last ID through missing RUM context so returning sessions start a fresh delta.
+    private var lastSessionID: String?
+    /// Whether the native launch window is still open for TTID capture.
+    private var isRecordingAppLaunch = false
     private var pendingAppLaunch: Snapshot?
     private var hasForegroundTime = false
     private(set) var state: State = .stopped
@@ -59,13 +62,11 @@ internal final class MemoryProfiler: @unchecked Sendable {
         self.queue = queue
         self.dateProvider = dateProvider
         queue.setSpecific(key: queueKey, value: ())
-        // Only an admitted launch may record before the first RUM decision.
-        if isEnabled,
-           dd_memory_profiler_was_started_at_launch(),
-           dd_memory_profiler_is_running() {
+        // Native startup preserves launch coverage independently of emission sampling.
+        if isEnabled, dd_memory_profiler_is_running() {
+            isRecordingAppLaunch = dd_memory_profiler_was_started_at_launch()
             state = .waiting
         } else {
-            hasCapturedAppLaunch = true
             if !isEnabled {
                 runOnQueueSync(queue, key: queueKey) {
                     dd_memory_profiler_stop()
@@ -126,18 +127,15 @@ private extension MemoryProfiler {
             // Revocation discards the whole window; it never flushes previously permitted work.
             guard context.trackingConsent != .notGranted else {
                 sessionSampler = nil
+                lastSessionID = nil
                 stopNative()
                 return
             }
 
             let rumContext = context.additionalContext(ofType: RUMCoreContext.self)
             if let rumContext,
-               sessionID == rumContext.sessionID,
+               lastSessionID == rumContext.sessionID,
                sessionSampler == rumContext.sessionSampler {
-                // Unchanged session sampling cannot restore eligibility for a stopped recording.
-                if state == .stopped {
-                    return
-                }
                 // Keep processing until this window has established foreground eligibility.
                 if state == .running, hasForegroundTime,
                    profilingConditions.canProfileApplication(with: context) {
@@ -145,12 +143,16 @@ private extension MemoryProfiler {
                 }
             }
             let newSessionID = rumContext?.sessionID
-            let didChangeSession = newSessionID != sessionID
-            if didChangeSession, sessionID != nil {
-                if state == .running || state == .emissionSuspended,
-                   profilingSamplerProvider.memory.sampled(for: sessionSampler) == true {
-                    // Recording continues while emission is suspended. Drain the prior
-                    // session's delta even when its final window cannot be emitted.
+            let didChangeSession = newSessionID != lastSessionID || rumContext?.sessionSampler != sessionSampler
+            if didChangeSession,
+               lastSessionID != nil || !dd_memory_profiler_was_started_at_launch(),
+               rumContext != nil || sessionSampler != nil {
+                // A launch cannot span RUM sessions. Continue tracking its surviving objects.
+                isRecordingAppLaunch = false
+                pendingAppLaunch = nil
+                if state == .running || state == .waiting || state == .emissionSuspended {
+                    // Drain every prior delta, including sampled-out and uncorrelated periods,
+                    // so only the live set carries across emission boundaries.
                     capture(shouldWrite: state == .running && canEmit)
                 }
                 // The new window must establish its own foreground history. An
@@ -159,11 +161,7 @@ private extension MemoryProfiler {
             }
             sessionSampler = rumContext?.sessionSampler
             if let rumContext {
-                sessionID = rumContext.sessionID
-            } else if sessionID != nil {
-                sessionID = nil
-                stopNative()
-                return
+                lastSessionID = rumContext.sessionID
             }
 
             let currentAppState = context.applicationStateHistory.currentState
@@ -183,7 +181,7 @@ private extension MemoryProfiler {
             }
             if let pendingAppLaunch, sessionSampler != nil {
                 self.pendingAppLaunch = nil
-                if canEmitAppLaunch {
+                if canEmit {
                     write(snapshot: pendingAppLaunch)
                 }
             }
@@ -193,21 +191,16 @@ private extension MemoryProfiler {
 
     func captureAppLaunch() {
         queue.async { [weak self] in
-            guard let self, state != .shutDown, !hasCapturedAppLaunch else {
+            guard let self, state != .shutDown, isRecordingAppLaunch else {
                 return
             }
-            hasCapturedAppLaunch = true
-            defer {
-                if state != .failed, !canCollect {
-                    stopNative()
-                }
-            }
-            let isWaitingForSession = sessionSampler == nil
-                && (state == .waiting || state == .emissionSuspended)
-            guard state == .running || isWaitingForSession else {
+            isRecordingAppLaunch = false
+            guard state == .running || state == .waiting || state == .emissionSuspended else {
                 return
             }
-            if isWaitingForSession {
+            // Environmental blockers suspend continuous emission, but the admitted launch
+            // still closes once at TTID so its final capture includes the whole launch window.
+            if sessionSampler == nil {
                 // Close exactly at TTID while the first session decision is pending.
                 // Serialize now so the pending snapshot owns its bytes until resolution.
                 var capture = dd_memory_capture_t()
@@ -220,8 +213,8 @@ private extension MemoryProfiler {
                     stopNative()
                     state = .failed
                 }
-            } else if canEmitAppLaunch {
-                capture()
+            } else {
+                capture(shouldWrite: canEmit)
             }
         }
     }
@@ -231,7 +224,7 @@ extension MemoryProfiler {
     /// Closes an eligible foreground window on the profiler queue.
     func captureWindow() {
         queue.async { [weak self] in
-            guard let self, state == .running, canEmit else {
+            guard let self, state == .running, !isRecordingAppLaunch, canEmit else {
                 return
             }
             capture()
@@ -262,34 +255,12 @@ private extension MemoryProfiler {
             && hasForegroundTime
     }
 
-    var canCollect: Bool {
-        isEnabled
-            && (
-                profilingSamplerProvider.memory.sampled(for: sessionSampler) == true
-                    || (state != .stopped && sessionSampler == nil)
-                    || (
-                        state != .stopped && !hasCapturedAppLaunch
-                            && profilingSamplerProvider.memory.appLaunchSampled(for: sessionSampler) == true
-                    )
-            )
-    }
-
-    var canEmitAppLaunch: Bool {
-        isEnabled
-            && profilingSamplerProvider.memory.appLaunchSampled(for: sessionSampler) == true
-            && hasForegroundTime
-    }
-
     func updateState(context: DatadogContext) {
         guard state != .failed, state != .shutDown else {
             return
         }
-        guard canCollect else {
-            stopNative()
-            return
-        }
-        // Eligibility controls recording even while environmental conditions
-        // suppress emission, including consent recovery in background.
+        // Configuration and consent control recording. Sampling and environmental
+        // conditions control emission while the recorder keeps the live set current.
         if state == .stopped {
             guard dd_memory_profiler_start() else {
                 state = .failed
@@ -301,7 +272,8 @@ private extension MemoryProfiler {
         let isReturningToForeground = context.applicationStateHistory.currentState == .active
         guard canEmitInCurrentConditions, state != .emissionSuspended || isReturningToForeground else {
             if state == .running || state == .waiting {
-                if canEmit {
+                // Preserve the launch boundary until TTID rather than closing it early.
+                if !isRecordingAppLaunch, canEmit {
                     capture()
                 }
                 if state != .failed {
@@ -349,7 +321,7 @@ private extension MemoryProfiler {
         dd_memory_profiler_stop()
         state = didFail ? .failed : .stopped
         hasForegroundTime = false
-        hasCapturedAppLaunch = true
+        isRecordingAppLaunch = false
         pendingAppLaunch = nil
     }
 

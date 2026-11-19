@@ -67,7 +67,7 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testUnrelatedContextChangesKeepActiveWindowOpen() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         drain()
         let origin = dd_memory_profiler_window_start_time_nanos()
@@ -97,8 +97,9 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testMemorySamplingDoesNotRequireCPUProfilingDecision() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
+        drain()
         record(size: 16, weight: 2)
         profiler.captureWindow()
         drain()
@@ -110,97 +111,147 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.inuse_space, 32)
     }
 
-    func testSampledOutSessionDropsWindowAndRestartsCleanlyForNextSession() {
-        let profiler = makeProfiler()
-        record(size: 16)
+    func testSampledOutSessionTracksAllocationsAndFreesWithoutEmitting() {
+        let profiler = makeRuntimeProfiler()
         receive(context: context(sampleRate: 0), on: profiler)
-        receive(context: context(sampleRate: 0, viewID: "next-view"), on: profiler)
         drain()
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        record(size: 16)
+        record(address: 0x20000, size: 8)
+        for index in 0..<100 {
+            receive(context: context(sampleRate: 0, viewID: "view-\(index)"), on: profiler)
+            profiler.captureWindow()
+        }
+        drain()
+
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
         XCTAssertEqual(diagnostics.captures_count, 0)
+        dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x20000))
 
         receive(context: context(sessionID: UUID()), on: profiler)
         drain()
-        record(address: 0x20000, size: 8)
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.alloc_space, 24)
+        XCTAssertEqual(diagnostics.inuse_space, 16)
+        let nextOrigin = dd_memory_profiler_window_start_time_nanos()
+
+        record(address: 0x30000, size: 4)
         profiler.captureWindow()
         drain()
         XCTAssertEqual(profiler.state, .running)
-        XCTAssertEqual(diagnostics.alloc_space, 8)
-        XCTAssertEqual(diagnostics.inuse_space, 8)
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.time_nanos, nextOrigin)
+        XCTAssertEqual(diagnostics.alloc_space, 4)
+        XCTAssertEqual(diagnostics.inuse_space, 20)
     }
 
-    func testSamplingChangeWithinSessionDiscardsWindowAndCanRestart() {
-        let profiler = makeProfiler()
+    func testSamplingChangeWithinSessionClosesDeltaAndKeepsLiveObjects() {
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         drain()
+        let origin = dd_memory_profiler_window_start_time_nanos()
         record(size: 16)
 
         receive(context: context(sampleRate: 0), on: profiler)
+        profiler.captureWindow()
         drain()
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.alloc_space, 16)
 
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
-        XCTAssertEqual(diagnostics.captures_count, 0)
-
-        receive(context: context(), on: profiler)
-        drain()
         record(address: 0x20000, size: 8)
+        receive(context: context(), on: profiler)
         profiler.captureWindow()
         drain()
 
         XCTAssertEqual(profiler.state, .running)
-        XCTAssertEqual(diagnostics.captures_count, 1)
-        XCTAssertEqual(diagnostics.alloc_space, 8)
-        XCTAssertEqual(diagnostics.inuse_space, 8)
+        XCTAssertEqual(diagnostics.captures_count, 3)
+        XCTAssertEqual(diagnostics.alloc_space, 0)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
     }
 
-    func testMemorySamplerCanRejectAnOtherwiseSampledRUMSession() {
+    func testMemorySamplerRejectsEmissionWhileRecordingContinues() {
         dd_memory_profiler_stop()
         let profiler = makeProfiler(memorySampleRate: 1)
+        XCTAssertEqual(profiler.state, .stopped)
         receive(context: context(sessionID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!), on: profiler)
         profiler.captureWindow()
         drain()
 
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(profilingSamplerProvider.memory.sampled, false)
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
         XCTAssertEqual(diagnostics.captures_count, 0)
     }
 
-    func testRejectedLaunchStartsAtSampledSessionAndSkipsTTID() {
+    func testRuntimeStartsWithoutRUMAndKeepsRecordingInSampledOutSession() {
         dd_memory_profiler_stop()
         let profiler = makeProfiler(memorySampleRate: 10)
         XCTAssertEqual(profiler.state, .stopped)
         XCTAssertFalse(dd_memory_profiler_is_running())
 
         receive(context: context(hasRUM: false), on: profiler)
-        receive(context: context(sessionID: UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-d860b2b9437a")!), on: profiler)
         drain()
-
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
-        XCTAssertFalse(dd_swift_alloc_hook_diagnostics().is_enabled)
-        XCTAssertFalse(dd_objc_alloc_hook_diagnostics().is_enabled)
-        XCTAssertEqual(diagnostics.captures_count, 0)
-
-        receive(context: context(sessionID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!), on: profiler)
-        drain()
-        XCTAssertEqual(profiler.state, .running)
+        XCTAssertEqual(profiler.state, .waiting)
         XCTAssertTrue(dd_memory_profiler_is_running())
         XCTAssertFalse(dd_memory_profiler_was_started_at_launch())
-        record()
-        receiveTTID(on: profiler)
-        drain()
-        XCTAssertEqual(diagnostics.captures_count, 0)
-        XCTAssertEqual(profiler.state, .running)
+        record(size: 16)
 
+        receive(context: context(sessionID: UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-d860b2b9437a")!), on: profiler)
+        receiveTTID(on: profiler)
         profiler.captureWindow()
+        drain()
+        XCTAssertEqual(profilingSamplerProvider.memory.sampled, false)
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.alloc_space, 16)
+
+        record(address: 0x20000, size: 8)
+        receive(context: context(sessionID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!), on: profiler)
+        drain()
+        XCTAssertEqual(profilingSamplerProvider.memory.sampled, true)
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+
+        record(address: 0x30000, size: 4)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 3)
+        XCTAssertEqual(diagnostics.alloc_space, 4)
+        XCTAssertEqual(diagnostics.inuse_space, 28)
+    }
+
+    func testFirstSessionDiscardsRuntimeDeltaAndKeepsItsLiveObjects() {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(hasRUM: false), on: profiler)
+        drain()
+        XCTAssertFalse(dd_memory_profiler_was_started_at_launch())
+        record(size: 16)
+
+        receive(context: context(), on: profiler)
         drain()
         XCTAssertEqual(diagnostics.captures_count, 1)
         XCTAssertEqual(diagnostics.alloc_space, 16)
+        XCTAssertEqual(diagnostics.inuse_space, 16)
+        let origin = dd_memory_profiler_window_start_time_nanos()
+
+        record(address: 0x20000, size: 8)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
     }
 
-    func testAdmittedLaunchIsNotSampledAgainByRuntimeMemoryRate() {
+    func testLaunchUsesMemorySessionSamplingAndKeepsRecordingWhenRejected() {
         let profiler = makeProfiler(memorySampleRate: 1)
         let origin = dd_memory_profiler_window_start_time_nanos()
         record()
@@ -209,7 +260,6 @@ final class MemoryProfilerTests: XCTestCase {
         drain()
 
         XCTAssertEqual(profilingSamplerProvider.memory.sampled, false)
-        XCTAssertEqual(profilingSamplerProvider.memory.appLaunchSampled, true)
         XCTAssertTrue(dd_memory_profiler_is_running())
         XCTAssertEqual(diagnostics.captures_count, 0)
 
@@ -219,11 +269,11 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 1)
         XCTAssertEqual(diagnostics.time_nanos, origin)
         XCTAssertEqual(diagnostics.alloc_space, 16)
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
     }
 
-    func testPendingAdmittedLaunchSurvivesRuntimeMemoryRejection() {
+    func testPendingLaunchUsesMemorySessionSamplingWithoutStoppingRecording() {
         let profiler = makeProfiler(memorySampleRate: 1)
         let origin = dd_memory_profiler_window_start_time_nanos()
         record()
@@ -234,12 +284,130 @@ final class MemoryProfilerTests: XCTestCase {
         drain()
 
         XCTAssertEqual(profilingSamplerProvider.memory.sampled, false)
-        XCTAssertEqual(profilingSamplerProvider.memory.appLaunchSampled, true)
         XCTAssertEqual(diagnostics.captures_count, 1)
         XCTAssertEqual(diagnostics.time_nanos, origin)
         XCTAssertEqual(diagnostics.alloc_space, 16)
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+    }
+
+    func testBlockedSampledOutLaunchClosesAtTTIDAndKeepsRecording() {
+        let profiler = makeProfiler(memorySampleRate: 1)
+        let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        record(size: 16)
+        receive(context: context(sessionID: sessionID, lowPower: true), on: profiler)
+        drain()
+
+        XCTAssertEqual(profilingSamplerProvider.memory.sampled, false)
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+
+        record(address: 0x20000, size: 8)
+        receiveTTID(on: profiler)
+        drain()
+
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.alloc_space, 24)
+
+        receive(context: context(sessionID: sessionID), on: profiler)
+        receiveTTID(on: profiler)
+        profiler.captureWindow()
+        drain()
+
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 1)
+    }
+
+    func testBlockedConditionsDeferLaunchCaptureUntilTTIDThenKeepContinuousEmissionSuspended() {
+        let suiteName = "MemoryProfilerTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        for blocker in ["low-power", "battery", "background"] {
+            dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+            defaults.set(100, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
+            dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
+            do {
+                let profiler = makeProfiler()
+                let origin = dd_memory_profiler_window_start_time_nanos()
+                record(size: 16)
+                receive(context: context(
+                    state: blocker == "background" ? .background : .active,
+                    lowPower: blocker == "low-power",
+                    battery: blocker == "battery" ? .mockWith(state: .unplugged, level: 0.05) : nil,
+                    hadForeground: blocker == "background"
+                ), on: profiler)
+                drain()
+
+                XCTAssertEqual(profiler.state, .emissionSuspended, blocker)
+                XCTAssertEqual(diagnostics.captures_count, 0, blocker)
+                XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin, blocker)
+                XCTAssertTrue(dd_memory_profiler_is_running(), blocker)
+                XCTAssertFalse(dd_memory_profiler_is_paused(), blocker)
+
+                record(address: 0x20000, size: 8)
+                receiveTTID(on: profiler)
+                receiveTTID(on: profiler)
+                profiler.captureWindow()
+                drain()
+
+                XCTAssertEqual(profiler.state, .emissionSuspended, blocker)
+                XCTAssertEqual(diagnostics.captures_count, 1, blocker)
+                XCTAssertEqual(diagnostics.time_nanos, origin, blocker)
+                XCTAssertEqual(diagnostics.alloc_space, 24, blocker)
+                XCTAssertEqual(diagnostics.inuse_space, 24, blocker)
+
+                record(address: 0x30000, size: 4)
+                profiler.captureWindow()
+                drain()
+                XCTAssertEqual(diagnostics.captures_count, 1, blocker)
+
+                receive(context: context(), on: profiler)
+                profiler.captureWindow()
+                drain()
+                XCTAssertEqual(profiler.state, .running, blocker)
+                XCTAssertEqual(diagnostics.captures_count, 2, blocker)
+                XCTAssertEqual(diagnostics.alloc_space, 4, blocker)
+                XCTAssertEqual(diagnostics.inuse_space, 28, blocker)
+            }
+        }
+    }
+
+    func testSessionChangeClosesPriorSessionBeforeBlockedRuntimeWindow() {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record(size: 16)
+        let nextSessionID = UUID()
+        receive(context: context(sessionID: nextSessionID, lowPower: true), on: profiler)
+        drain()
+
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.ready_count, 1)
+        XCTAssertEqual(diagnostics.idle_count, 1)
+
+        record(address: 0x20000, size: 8)
+        receive(context: context(sessionID: nextSessionID), on: profiler)
+        receiveTTID(on: profiler)
+        receiveTTID(on: profiler)
+        drain()
+
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        profiler.captureWindow()
+        drain()
+
+        XCTAssertEqual(diagnostics.captures_count, 3)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
     }
 
     func testReceiverObservesTTIDWithoutConsumingCPUMessage() {
@@ -262,7 +430,7 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testNativeIdleWindowAndLastFreeHaveDifferentCaptureStatuses() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         profiler.captureWindow()
         drain()
@@ -311,7 +479,7 @@ final class MemoryProfilerTests: XCTestCase {
             dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
             do {
                 let profiler = makeProfiler()
-                receive(context: context(sampleRate: 0), on: profiler)
+                receive(context: context(consent: .notGranted), on: profiler)
                 drain()
                 XCTAssertEqual(profiler.state, .stopped)
 
@@ -336,8 +504,9 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testCaptureFailureDropsWindowAndStopsHooks() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
+        drain()
         dd_memory_profiler_fail_next_capture_for_testing()
         profiler.captureWindow()
         drain()
@@ -355,8 +524,9 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testBackgroundClosesForegroundWindowOnceWhileRecordingContinues() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
+        drain()
         record()
         receive(context: context(state: .background), on: profiler)
         receive(context: context(state: .background), on: profiler)
@@ -386,6 +556,7 @@ final class MemoryProfilerTests: XCTestCase {
             do {
                 let profiler = makeProfiler()
                 receive(context: context(), on: profiler)
+                drain()
                 record()
                 receive(context: context(
                     lowPower: blocker == "low-power",
@@ -413,7 +584,7 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testInactiveTransitionDoesNotRearmBackgroundEmission() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         receive(context: context(state: .background), on: profiler)
         receive(context: context(state: .inactive), on: profiler)
@@ -434,7 +605,7 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testFirstActiveContextMakesInactiveWindowEligibleForCapture() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(state: .inactive), on: profiler)
         drain()
         XCTAssertEqual(profiler.state, .running)
@@ -453,7 +624,7 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testFirstForegroundWindowRetainsBackgroundRecordingDuration() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         drain()
         record(size: 16)
@@ -492,7 +663,7 @@ final class MemoryProfilerTests: XCTestCase {
 
     func testForegroundResumeWaitsForExplicitCapture() {
         let dateProvider = DateProviderMock()
-        let profiler = makeProfiler(dateProvider: dateProvider)
+        let profiler = makeRuntimeProfiler(dateProvider: dateProvider)
         receive(context: context(), on: profiler)
         receive(context: context(state: .background), on: profiler)
         drain()
@@ -507,7 +678,7 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 2)
     }
 
-    func testBackgroundOnlyLaunchDoesNotCloseRequestedWindows() {
+    func testBackgroundOnlyLaunchIsNotEmittedAndRecordingContinues() {
         let profiler = makeProfiler()
         receive(context: context(state: .background), on: profiler)
         receiveTTID(on: profiler)
@@ -515,12 +686,12 @@ final class MemoryProfilerTests: XCTestCase {
         drain()
 
         XCTAssertEqual(profiler.state, .emissionSuspended)
-        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(diagnostics.captures_count, 1)
         XCTAssertTrue(dd_memory_profiler_is_running())
         XCTAssertFalse(dd_memory_profiler_is_paused())
     }
 
-    func testSampledSessionBoundaryClosesDeltaAndKeepsLiveObjects() {
+    func testSessionBoundaryClosesDeltaAndInvalidatesPreviousLaunchWindow() {
         let profiler = makeProfiler()
         receive(context: context(viewID: "prior-view"), on: profiler)
         record(size: 16)
@@ -531,6 +702,10 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.alloc_space, 16)
         XCTAssertEqual(diagnostics.inuse_space, 16)
         record(address: 0x20000, size: 8)
+        receiveTTID(on: profiler)
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1, "TTID must not emit a partial launch from the new session")
         profiler.captureWindow()
         drain()
 
@@ -540,31 +715,49 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(profiler.state, .running)
     }
 
-    func testSessionSampleOutFlushesPriorSessionThenResetsLiveObjects() {
-        let profiler = makeProfiler()
-        record()
+    func testSampledOutSessionRetainsEarlierSurvivorsAndIsolatesAllocationDelta() {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record(size: 16)
         queue.suspend()
         receive(context: context(), on: profiler)
-        receive(context: context(sessionID: UUID(), sampleRate: 0), on: profiler)
+        let sampledOutSession = UUID()
+        receive(context: context(sessionID: sampledOutSession, sampleRate: 0), on: profiler)
         XCTAssertEqual(profilingSamplerProvider.memory.sampled, false)
         queue.resume()
         drain()
 
         XCTAssertEqual(diagnostics.captures_count, 1, "Queued session A must retain its sampled-in decision")
         XCTAssertEqual(diagnostics.alloc_space, 16)
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
-
-        receive(context: context(sessionID: UUID()), on: profiler)
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        record(address: 0x20000, size: 8)
+        record(address: 0x30000, size: 4)
+        dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x30000))
         profiler.captureWindow()
         drain()
-        XCTAssertEqual(diagnostics.last_status, DD_MEMORY_CAPTURE_IDLE)
-        XCTAssertEqual(diagnostics.inuse_space, 0)
+        XCTAssertEqual(diagnostics.captures_count, 1)
+
+        receive(context: context(sessionID: UUID()), on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 12)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        let origin = dd_memory_profiler_window_start_time_nanos()
+
+        record(address: 0x40000, size: 2)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 3)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.alloc_space, 2)
+        XCTAssertEqual(diagnostics.inuse_space, 26)
     }
 
     func testSessionBoundaryDiscardsBackgroundDeltaBeforeRecordingNextSession() {
         let nextSession = UUID()
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         receive(context: context(state: .background), on: profiler)
         drain()
@@ -592,8 +785,9 @@ final class MemoryProfilerTests: XCTestCase {
 
     func testNewBackgroundSessionDoesNotInheritPriorSessionForegroundEligibility() {
         let nextSession = UUID()
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
+        drain()
         record()
         receive(context: context(sessionID: nextSession, state: .background), on: profiler)
         profiler.captureWindow()
@@ -609,8 +803,8 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.inuse_space, 16)
     }
 
-    func testSessionSampleOutWhileEmissionSuspendedStopsRecording() {
-        let profiler = makeProfiler()
+    func testSessionSampleOutWhileEmissionSuspendedKeepsRecording() {
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         receive(context: context(state: .background), on: profiler)
         drain()
@@ -618,18 +812,19 @@ final class MemoryProfilerTests: XCTestCase {
         receive(context: context(sessionID: UUID(), sampleRate: 0, state: .background), on: profiler)
         drain()
 
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertTrue(dd_memory_profiler_is_running())
         XCTAssertEqual(diagnostics.captures_count, 2)
         XCTAssertEqual(diagnostics.alloc_space, 16)
     }
 
-    func testSampledInSessionRestartsBackgroundRecordingAfterSampledOutSession() {
-        let profiler = makeProfiler()
+    func testSampledInSessionRetainsBackgroundLiveSetFromSampledOutSession() {
+        let profiler = makeRuntimeProfiler()
         receive(context: context(sampleRate: 0, state: .background), on: profiler)
         drain()
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        record(size: 16)
 
         let nextSession = UUID()
         receive(context: context(sessionID: nextSession, state: .background), on: profiler)
@@ -638,42 +833,57 @@ final class MemoryProfilerTests: XCTestCase {
 
         XCTAssertEqual(profiler.state, .emissionSuspended)
         XCTAssertTrue(dd_memory_profiler_is_running())
-        XCTAssertEqual(diagnostics.captures_count, 0)
-        record()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.alloc_space, 16)
+        record(address: 0x20000, size: 8)
         receive(context: context(sessionID: nextSession), on: profiler)
         profiler.captureWindow()
         drain()
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+    }
+
+    func testRUMGapKeepsLiveObjectsAndIsolatesUnattributedAllocations() {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record(size: 16)
+        receive(context: context(hasRUM: false), on: profiler)
+        profiler.captureWindow()
+        receive(context: context(hasRUM: false), on: profiler)
+        drain()
+
+        XCTAssertEqual(profiler.state, .waiting)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 1)
         XCTAssertEqual(diagnostics.alloc_space, 16)
+        record(address: 0x20000, size: 8)
+
+        receive(context: context(), on: profiler)
+        drain()
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        let origin = dd_memory_profiler_window_start_time_nanos()
+
+        record(address: 0x30000, size: 4)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 3)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.alloc_space, 4)
+        XCTAssertEqual(diagnostics.inuse_space, 28)
     }
 
-    func testLossOfRUMClosesPriorSessionAndDoesNotResumeInitialRecording() {
-        for appState in [AppState.active, .background] {
-            dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
-            do {
-                let profiler = makeProfiler()
-                receive(context: context(state: appState), on: profiler)
-                drain()
-                XCTAssertEqual(profiler.state, appState == .active ? .running : .emissionSuspended)
-                record()
-                receive(context: context(hasRUM: false), on: profiler)
-                profiler.captureWindow()
-                receive(context: context(hasRUM: false), on: profiler)
-                drain()
-
-                XCTAssertEqual(profiler.state, .stopped)
-                XCTAssertFalse(dd_memory_profiler_is_running())
-                XCTAssertEqual(diagnostics.captures_count, 1)
-                XCTAssertEqual(diagnostics.alloc_space, 16)
-            }
-        }
-    }
-
-    func testConsentRevocationDiscardsAndPendingOrGrantedCanRestart() {
+    func testConsentRevocationClearsLiveSetAndRecoveryRecordsSampledOutSession() {
         for consent in [TrackingConsent.pending, .granted] {
             dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
             do {
                 let profiler = makeProfiler()
                 receive(context: context(), on: profiler)
+                drain()
                 record(size: 16)
                 receive(context: context(consent: .notGranted), on: profiler)
                 drain()
@@ -681,20 +891,32 @@ final class MemoryProfilerTests: XCTestCase {
                 XCTAssertFalse(dd_memory_profiler_is_running())
                 XCTAssertEqual(diagnostics.captures_count, 0)
 
-                receive(context: context(consent: consent), on: profiler)
+                receive(context: context(sampleRate: 0, consent: consent), on: profiler)
                 drain()
+                XCTAssertEqual(profiler.state, .running)
+                XCTAssertTrue(dd_memory_profiler_is_running())
                 record(address: 0x20000, size: 8)
                 profiler.captureWindow()
                 drain()
-                XCTAssertEqual(profiler.state, .running)
+                XCTAssertEqual(diagnostics.captures_count, 0)
+
+                receive(context: context(sessionID: UUID(), consent: consent), on: profiler)
+                drain()
+                XCTAssertEqual(diagnostics.captures_count, 1)
                 XCTAssertEqual(diagnostics.alloc_space, 8)
                 XCTAssertEqual(diagnostics.inuse_space, 8)
+                record(address: 0x30000, size: 4)
+                profiler.captureWindow()
+                drain()
+                XCTAssertEqual(profiler.state, .running)
+                XCTAssertEqual(diagnostics.alloc_space, 4)
+                XCTAssertEqual(diagnostics.inuse_space, 12)
             }
         }
     }
 
     func testConsentRevocationWhileEmissionSuspendedStopsRecordingWithoutCapture() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         receive(context: context(state: .background), on: profiler)
         receive(context: context(consent: .notGranted, state: .background), on: profiler)
@@ -828,7 +1050,7 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(profiler.state, .emissionSuspended)
     }
 
-    func testPendingLaunchRetainsForegroundHistoryFromBeforeTTID() {
+    func testPendingLaunchKeepsHistoricalForegroundEligibility() {
         let profiler = makeProfiler()
         let launchOrigin = dd_memory_profiler_window_start_time_nanos()
         record()
@@ -847,7 +1069,7 @@ final class MemoryProfilerTests: XCTestCase {
         receive(context: firstContext, on: profiler)
         drain()
 
-        XCTAssertEqual(diagnostics.captures_count, 2, "The pending launch establishes historical foreground eligibility")
+        XCTAssertEqual(diagnostics.captures_count, 2, "Historical foreground time qualifies the closing continuous window")
         XCTAssertEqual(profiler.state, .emissionSuspended)
     }
 
@@ -859,12 +1081,13 @@ final class MemoryProfilerTests: XCTestCase {
         drain()
 
         XCTAssertEqual(diagnostics.captures_count, 1)
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
         receive(context: context(sessionID: UUID()), on: profiler)
         profiler.captureWindow()
         drain()
-        XCTAssertEqual(diagnostics.inuse_space, 0)
+        XCTAssertEqual(diagnostics.inuse_space, 16)
+        XCTAssertEqual(diagnostics.alloc_space, 0)
     }
 
     func testWindowRequestWhileAwaitingFirstSessionKeepsRecording() {
@@ -881,7 +1104,7 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 0)
     }
 
-    func testBackgroundKeepsRecordingUntilFirstSessionDecision() {
+    func testBackgroundKeepsLaunchOpenUntilFirstSessionDecision() {
         let profiler = makeProfiler()
         receive(context: context(state: .background, hasRUM: false), on: profiler)
         profiler.captureWindow()
@@ -895,7 +1118,7 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 0)
     }
 
-    func testLowPowerKeepsRecordingUntilFirstSessionDecision() {
+    func testLowPowerKeepsLaunchOpenUntilFirstSessionDecision() {
         let profiler = makeProfiler()
         receive(context: context(lowPower: true, hasRUM: false), on: profiler)
         profiler.captureWindow()
@@ -907,8 +1130,9 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 0)
     }
 
-    func testConsentRecoveryWithoutRUMWaitsForSessionBeforeRestarting() {
+    func testConsentRecoveryWithoutRUMRestartsRecordingBeforeSessionDecision() {
         let profiler = makeProfiler()
+        record(size: 16)
         receive(context: context(consent: .notGranted, state: .background, hasRUM: false), on: profiler)
         drain()
         XCTAssertEqual(profiler.state, .stopped)
@@ -917,21 +1141,29 @@ final class MemoryProfilerTests: XCTestCase {
         receive(context: context(consent: .pending, state: .background, hasRUM: false), on: profiler)
         profiler.captureWindow()
         drain()
-        XCTAssertFalse(dd_memory_profiler_is_running())
-        XCTAssertEqual(profiler.state, .stopped)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        record(address: 0x20000, size: 8)
         receive(context: context(consent: .pending, state: .background, hasRUM: false), on: profiler)
         drain()
-        XCTAssertEqual(profiler.state, .stopped)
-        XCTAssertFalse(dd_memory_profiler_is_running())
         XCTAssertEqual(diagnostics.captures_count, 0)
 
-        receive(context: context(state: .background), on: profiler)
+        receive(context: context(), on: profiler)
         drain()
-        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertEqual(profiler.state, .running)
         XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 8)
+        record(address: 0x30000, size: 4)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 4)
+        XCTAssertEqual(diagnostics.inuse_space, 12)
     }
 
-    func testWindowRequestPreservesPendingTTIDUntilFirstSessionDecision() {
+    func testWindowRequestDoesNotRecapturePendingLaunchAfterBlockedConditions() {
         let profiler = makeProfiler()
         record()
         receiveTTID(on: profiler)
@@ -955,7 +1187,7 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.inuse_space, 16)
     }
 
-    func testRuntimeBlockerPreservesUncorrelatedLaunchWindowUntilSessionDecision() {
+    func testRuntimeBlockerRecoveryBeforeTTIDKeepsWholeLaunchWindow() {
         let profiler = makeProfiler()
         let launchOrigin = dd_memory_profiler_window_start_time_nanos()
         record()
@@ -963,18 +1195,29 @@ final class MemoryProfilerTests: XCTestCase {
         drain()
         XCTAssertEqual(profiler.state, .emissionSuspended)
         XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), launchOrigin)
 
+        record(address: 0x20000, size: 8)
         receive(context: context(), on: profiler)
+        receiveTTID(on: profiler)
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.time_nanos, launchOrigin)
+        XCTAssertEqual(diagnostics.alloc_space, 24)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        let continuousOrigin = dd_memory_profiler_window_start_time_nanos()
         profiler.captureWindow()
         drain()
 
         XCTAssertEqual(profiler.state, .running)
-        XCTAssertEqual(diagnostics.captures_count, 1)
-        XCTAssertEqual(diagnostics.time_nanos, launchOrigin)
-        XCTAssertEqual(diagnostics.alloc_space, 16)
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.time_nanos, continuousOrigin)
+        XCTAssertEqual(diagnostics.alloc_space, 0)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
     }
 
-    func testRuntimeBlockerPreservesPendingTTIDUntilSessionDecision() {
+    func testRuntimeBlockerDoesNotRecapturePendingLaunchAfterConditionsRecover() {
         let profiler = makeProfiler()
         record()
         receiveTTID(on: profiler)
@@ -986,6 +1229,8 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 1)
         let launch = diagnostics
         receive(context: context(), on: profiler)
+        receiveTTID(on: profiler)
+        receiveTTID(on: profiler)
         drain()
         XCTAssertEqual(profiler.state, .running)
         XCTAssertEqual(diagnostics.captures_count, 1)
@@ -993,15 +1238,17 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.alloc_space, 16)
     }
 
-    func testTTIDDuringUnresolvedRuntimeBlockerClosesLaunchWithoutRecapture() {
+    func testTTIDDuringUnresolvedRuntimeBlockerCapturesLaunchOnceWhileWaitingForSession() {
         let profiler = makeProfiler()
         receive(context: context(lowPower: true, hasRUM: false), on: profiler)
+        drain()
         record()
         receiveTTID(on: profiler)
         drain()
 
         XCTAssertEqual(profiler.state, .emissionSuspended)
         XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.last_status, DD_MEMORY_CAPTURE_READY)
         XCTAssertEqual(diagnostics.alloc_space, 16)
 
         receive(context: context(lowPower: true), on: profiler)
@@ -1010,12 +1257,24 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(profiler.state, .emissionSuspended)
         XCTAssertEqual(diagnostics.captures_count, 1)
         XCTAssertTrue(dd_memory_profiler_is_running())
+
+        receive(context: context(), on: profiler)
+        receiveTTID(on: profiler)
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 0)
+        XCTAssertEqual(diagnostics.inuse_space, 16)
     }
 
     func testConcurrentContextAndWindowRequestsShareOneNativeQueue() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         let sessionID = sessionID
         receive(context: context(), on: profiler)
+        drain()
         DispatchQueue.concurrentPerform(iterations: 64) { index in
             let activeContext: DatadogContext = .mockWith(
                 applicationStateHistory: .mockAppInForeground(),
@@ -1036,8 +1295,9 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testOrderlyTerminationFlushesAndDoesNotRestart() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
+        drain()
         record()
         profiler.flushAndStop()
         XCTAssertEqual(profiler.state, .shutDown)
@@ -1055,7 +1315,7 @@ final class MemoryProfilerTests: XCTestCase {
 
     func testTerminationNotificationFlushesSynchronously() {
         let center = NotificationCenter()
-        let profiler = makeProfiler(notificationCenter: center)
+        let profiler = makeRuntimeProfiler(notificationCenter: center)
         receive(context: context(), on: profiler)
         drain()
         record()
@@ -1069,7 +1329,7 @@ final class MemoryProfilerTests: XCTestCase {
 
     func testTerminationNotificationOnProfilerQueueFlushesSynchronously() {
         let center = NotificationCenter()
-        let profiler = makeProfiler(notificationCenter: center)
+        let profiler = makeRuntimeProfiler(notificationCenter: center)
         receive(context: context(), on: profiler)
         drain()
         record()
@@ -1090,7 +1350,7 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testTerminationCaptureFailureStillPermanentlyShutsDown() {
-        let profiler = makeProfiler()
+        let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)
         drain()
         record()
@@ -1161,6 +1421,19 @@ final class MemoryProfilerTests: XCTestCase {
 
     private var diagnostics: dd_memory_profiler_test_capture_diagnostics_t {
         dd_memory_profiler_capture_diagnostics_for_testing()
+    }
+
+    private func makeRuntimeProfiler(
+        memorySampleRate: SampleRate = 100,
+        dateProvider: DateProvider = SystemDateProvider(),
+        notificationCenter: NotificationCenter = NotificationCenter()
+    ) -> MemoryProfiler {
+        dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+        return makeProfiler(
+            memorySampleRate: memorySampleRate,
+            dateProvider: dateProvider,
+            notificationCenter: notificationCenter
+        )
     }
 
     private func makeProfiler(

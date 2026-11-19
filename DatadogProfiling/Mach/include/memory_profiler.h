@@ -37,8 +37,9 @@ typedef struct {
 /// Failure of either runtime hook disables both and releases the recorder.
 /// Recorder allocation failure prevents restarting in the same process.
 bool dd_memory_profiler_start(void);
-/// Whether the current recording was started by the native launch sampler.
-/// Cleared on stop; runtime starts do not create launch eligibility.
+/// Whether the current recording includes native launch coverage.
+/// Cleared on stop; runtime starts do not create launch coverage.
+/// Launch-profile emission is sampled separately by the Swift owner.
 bool dd_memory_profiler_was_started_at_launch(void);
 bool dd_memory_profiler_is_running(void);
 bool dd_memory_profiler_is_paused(void);

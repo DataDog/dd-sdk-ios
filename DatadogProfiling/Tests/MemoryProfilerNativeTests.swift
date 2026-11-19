@@ -25,6 +25,48 @@ final class MemoryProfilerNativeTests: XCTestCase {
         super.tearDown()
     }
 
+    func testLaunchRecordingStartsForEveryPositiveRate() {
+        let suiteName = "MemoryProfilerNativeTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        for rate in [Double.leastNormalMagnitude, 1, 100] {
+            dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+            defaults.set(rate, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
+
+            dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
+
+            XCTAssertTrue(dd_memory_profiler_is_running(), "rate: \(rate)")
+            XCTAssertTrue(dd_memory_profiler_was_started_at_launch(), "rate: \(rate)")
+            XCTAssertNil(defaults.object(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY))
+            record(address: 0x10000, size: 8)
+            assertTotals(
+                capture(expected: DD_MEMORY_CAPTURE_READY),
+                allocationObjects: 1,
+                allocationBytes: 8,
+                liveObjects: 1,
+                liveBytes: 8
+            )
+        }
+    }
+
+    func testLaunchRecordingRejectsDisabledAndInvalidNumericRates() {
+        let suiteName = "MemoryProfilerNativeTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        for rate in [0, -1, Double.infinity, -Double.infinity, Double.nan] {
+            dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+            defaults.set(rate, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
+
+            dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
+
+            XCTAssertFalse(dd_memory_profiler_is_running(), "rate: \(rate)")
+            XCTAssertFalse(dd_memory_profiler_was_started_at_launch(), "rate: \(rate)")
+            XCTAssertNil(defaults.object(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY))
+        }
+    }
+
     func testRepeatedStartAdoptsAllocationAndLiveStateAcrossCaptures() {
         record(address: 0x10000, size: 8, weight: 2.5)
         let origin = dd_memory_profiler_window_start_time_nanos()

@@ -12,7 +12,7 @@ import DatadogInternal
 /// - `isContinuousProfilingConfigured` reflects the configured `continuousSampleRate`
 /// - `continuousProfilingSampled` reflects the current RUM-linked sampling result
 /// - `appLaunchProfilingSampled` reflects whether the current RUM session admits the launch profile
-/// - `memory.sampled` reflects the independent memory profiling result for that session
+/// - `memory.sampled` admits both memory launch and continuous profiles for that session
 ///
 /// The provider stores the resolved results rather than the deterministic sampler. Each result has
 /// three states:
@@ -23,10 +23,10 @@ import DatadogInternal
 /// Memory decisions can also be resolved for a supplied session without changing the stored results.
 internal final class ProfilingSamplerProvider: @unchecked Sendable {
     @ReadWriteLock
-    private var cpu: Sampling
+    private var cpu: CPUSampling
 
     @ReadWriteLock
-    private(set) var memory: Sampling
+    private(set) var memory: MemorySampling
 
     /// Session-linked sampling result for continuous profiling.
     ///
@@ -48,17 +48,12 @@ internal final class ProfilingSamplerProvider: @unchecked Sendable {
         appLaunchSampleRate: SampleRate = 0,
         memorySampleRate: SampleRate = 0
     ) {
-        cpu = Sampling(
+        cpu = CPUSampling(
             sampleRate: continuousSampleRate.normalizedSampleRate,
             isConfigured: continuousSampleRate > 0,
             isAppLaunchConfigured: appLaunchSampleRate > 0
         )
-        let normalizedMemorySampleRate = memorySampleRate.normalizedSampleRate
-        memory = Sampling(
-            sampleRate: normalizedMemorySampleRate,
-            isConfigured: normalizedMemorySampleRate > 0,
-            isAppLaunchConfigured: normalizedMemorySampleRate > 0
-        )
+        memory = MemorySampling(sampleRate: memorySampleRate.normalizedSampleRate)
     }
 
     /// Updates the session-linked sampling result from the current RUM session sampler.
@@ -67,25 +62,32 @@ internal final class ProfilingSamplerProvider: @unchecked Sendable {
         _memory.mutate { $0.update(with: deterministicSampler) }
     }
 
-    struct Sampling {
+    private struct CPUSampling {
         let sampleRate: SampleRate
         let isConfigured: Bool
         let isAppLaunchConfigured: Bool
         var sampled: Bool?
         var appLaunchSampled: Bool?
 
+        mutating func update(with sessionSampler: DeterministicSampler) {
+            sampled = sessionSampler.combined(with: sampleRate).sample()
+            // Native startup already applied the CPU launch rate.
+            appLaunchSampled = isAppLaunchConfigured && sessionSampler.isSampled
+        }
+    }
+
+    struct MemorySampling {
+        let sampleRate: SampleRate
+        var sampled: Bool?
+
+        var isConfigured: Bool { sampleRate > 0 }
+
         func sampled(for sessionSampler: DeterministicSampler?) -> Bool? {
             sessionSampler.map { $0.combined(with: sampleRate).sample() }
         }
 
-        func appLaunchSampled(for sessionSampler: DeterministicSampler?) -> Bool? {
-            // Native startup already applied the app-launch rate; only RUM session eligibility remains.
-            sessionSampler.map { isAppLaunchConfigured && $0.isSampled }
-        }
-
         mutating func update(with sessionSampler: DeterministicSampler) {
             sampled = sampled(for: sessionSampler)
-            appLaunchSampled = appLaunchSampled(for: sessionSampler)
         }
     }
 }
