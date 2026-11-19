@@ -625,11 +625,15 @@ extension RUMFeature: RUMContextHandoffWebViewProviding {
     var usesLegacyWebViewTracking: Bool { !isMultiSceneTrackingEnabled }
 
     func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
+        observeRUMSession(forSceneIdentifier: sceneIdentifier, owner: owner)?.capture
+    }
+
+    func observeRUMSession(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMWebViewSessionObservation? {
         guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
             return nil
         }
-        let context = monitor.webViewContextSnapshot(for: RUMSceneIdentifier(rawValue: sceneIdentifier))
-        return RUMContextHandoff.Capture(
+        let (context, expiry) = monitor.webViewSessionObservation(for: RUMSceneIdentifier(rawValue: sceneIdentifier))
+        let capture = RUMContextHandoff.Capture(
             owner: owner,
             value: .init(
                 rumContext: context,
@@ -638,6 +642,7 @@ extension RUMFeature: RUMContextHandoffWebViewProviding {
                 excludedUserActionID: nil
             )
         )
+        return RUMWebViewSessionObservation(capture: capture, expiry: expiry)
     }
 }
 
