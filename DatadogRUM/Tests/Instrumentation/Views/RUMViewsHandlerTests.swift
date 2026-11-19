@@ -954,6 +954,33 @@ class RUMSceneViewsHandlerTests: XCTestCase {
         ])
     }
 
+    func testRepeatedManualStart_replacesVisibleOccurrenceInItsOwnScene() throws {
+        let handler = makeHandler()
+        let root = UIViewController()
+        let peer = UIViewController()
+        appear(root, in: sceneA, using: handler)
+        appear(peer, in: sceneB, using: handler)
+
+        handler.startView(key: "manual", name: "First", attributes: ["revision": "first"], sceneIdentifier: sceneA)
+        handler.startView(key: "manual", name: "Second", attributes: ["revision": "second"], sceneIdentifier: sceneA)
+        handler.stopView(key: "manual", attributes: [:], sceneIdentifier: sceneA)
+
+        let key = ViewIdentifier("manual")
+        try assertCommands([
+            (true, ViewIdentifier(root), .scene(sceneA)),
+            (true, ViewIdentifier(peer), .scene(sceneB)),
+            (false, ViewIdentifier(root), .scene(sceneA)),
+            (true, key, .scene(sceneA)),
+            (false, key, .scene(sceneA)),
+            (true, key, .scene(sceneA)),
+            (false, key, .scene(sceneA)),
+            (true, ViewIdentifier(root), .scene(sceneA)),
+        ])
+        let starts = subscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }.filter { $0.identity == key }
+        XCTAssertEqual(starts.map(\.name), ["First", "Second"])
+        XCTAssertEqual(starts.compactMap { $0.attributes["revision"] as? String }, ["first", "second"])
+    }
+
     func testManualAuthority_retainsImmediatePlatformUntilMatchingStop() throws {
         let handler = makeHandler()
         let view = UIViewController()
