@@ -286,9 +286,10 @@ extension SwiftUINavigationOwnershipTests {
         let original = Set(application.openSessions.map(\.persistentIdentifier))
         let observations = SceneHostLifetimeNotifications()
         addTeardownBlock { [weak self, observations] in
-            defer { observations.stop() }
-            guard let self else { return }
-            try await self.cleanupSceneHostSessions(observations, originalSessionIDs: original)
+            try await Task { @MainActor in
+                defer { observations.stop() }
+                try await self?.cleanupSceneHostSessions(observations, originalSessionIDs: original)
+            }.value
         }
         let request = UISceneSessionActivationRequest(userActivity: NSUserActivity(activityType: "com.datadoghq.tests.scene-lifetime"))
         application.activateSceneSession(for: request) { error in observations.recordRequestError(error) }
