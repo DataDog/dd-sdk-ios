@@ -115,6 +115,138 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: false)
     }
 
+    @MainActor
+    func testTraceFallsBackWhenQueuedRUMReservationRejectsTheCapturedView() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
+        try await assertTraceResourceStartOutcome(stopsViewFirst: true)
+    }
+
+    @MainActor
+    func testTraceDoesNotDuplicateACommittedRUMResourceAfterTheViewStops() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
+        try await assertTraceResourceStartOutcome(stopsViewFirst: false)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func assertTraceResourceStartOutcome(stopsViewFirst: Bool) async throws {
+        let url = try XCTUnwrap(URL(string: "https://www.example.com/captured-view-request"))
+        let hosts: [String: Set<TracingHeaderType>] = ["www.example.com": [.datadog]]
+        let intake = HTTPClientMock()
+        let root = obtainUniqueTemporaryDirectory()
+        let sdkDirectory = root.appendingPathComponent("sdk", isDirectory: true)
+        try FileManager.default.createDirectory(at: sdkDirectory, withIntermediateDirectories: true)
+        let core = DatadogCore(
+            directory: .init(osDirectory: .init(url: root), coreDirectory: .init(url: sdkDirectory)),
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockAny(),
+            httpClient: intake,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer {
+            core.stop()
+            try? FileManager.default.removeItem(at: root)
+        }
+        let date = Date()
+        core.contextProvider.write {
+            $0 = .mockWith(
+                sdkInitDate: date,
+                trackingConsent: .granted,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+                applicationStateHistory: .mockWith(initialState: .active, date: date)
+            )
+        }
+        core.flush()
+        let feature = try enableFirstPartyTracing(hosts: hosts, trackRUMResources: true, in: core)
+        Trace.enable(with: Trace.Configuration(urlSessionTracking: .init(
+            firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100)
+        )), in: core)
+        let monitor = feature.monitor
+        monitor.startView(key: "source", name: "Source", attributes: [:])
+        core.flush()
+        let source = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative))
+        let sourceViewID = try XCTUnwrap(source.viewID)
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let captured = RUMContextHandoff.CurrentValue(
+            rumContext: source, sceneIdentifier: nil, hasPendingUserAction: false, excludedUserActionID: nil
+        )
+
+        let entered = DispatchSemaphore(value: 0)
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        core.contextProvider.write { _ in
+            entered.signal()
+            release.wait()
+        }
+        guard entered.wait(timeout: .now() + 5) == .success else {
+            return XCTFail("Could not hold the Core context queue")
+        }
+        if stopsViewFirst {
+            monitor.stopView(key: "source", attributes: [:])
+            monitor.startView(key: "peer", name: "Peer", attributes: [:])
+        }
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: Data()))
+        let session = server.getInterceptedURLSession()
+        let request = RUMContextHandoff.withValue(captured, for: owner) {
+            Task {
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.rumContext?.viewID, sourceViewID)
+                return try await session.data(for: URLRequest(url: url, timeoutInterval: 5))
+            }
+        }
+        let (_, response) = try await request.value
+        XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
+        let wire = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
+        let wireTraceID = try XCTUnwrap(wire.value(forHTTPHeaderField: "x-datadog-trace-id"))
+        let wireSpanID = try XCTUnwrap(wire.value(forHTTPHeaderField: "x-datadog-parent-id"))
+
+        if !stopsViewFirst {
+            monitor.stopView(key: "source", attributes: [:])
+        }
+        release.signal()
+        core.flushAndUpload()
+
+        let rows = try intake.requestsSent().flatMap { request -> [[String: Any]] in
+            guard let path = request.url?.path, path.hasSuffix("/rum") || path.hasSuffix("/spans"),
+                  let body = try request.decompressed().httpBody else {
+                return []
+            }
+            return try body.split(separator: 0x0A).compactMap {
+                try JSONSerialization.jsonObject(with: Data($0)) as? [String: Any]
+            }
+        }
+        XCTAssertTrue(rows.contains { ($0["view"] as? [String: Any])?["id"] as? String == sourceViewID })
+        let resources = rows.filter {
+            $0["type"] as? String == "resource" && ($0["resource"] as? [String: Any])?["url"] as? String == url.absoluteString
+        }
+        let spans = rows.flatMap { $0["spans"] as? [[String: Any]] ?? [] }
+            .filter { $0["name"] as? String == "urlsession.request" && $0["resource"] as? String == url.absoluteString }
+
+        if stopsViewFirst {
+            XCTAssertTrue(resources.isEmpty)
+            XCTAssertEqual(spans.count, 1)
+            let span = try XCTUnwrap(spans.first)
+            let trace = try XCTUnwrap(span["trace_id"] as? String)
+            let spanID = try XCTUnwrap(span["span_id"] as? String)
+            XCTAssertEqual(UInt64(trace, radix: 16).map { String($0) }, wireTraceID)
+            XCTAssertEqual(UInt64(spanID, radix: 16).map { String($0) }, wireSpanID)
+            let meta = try XCTUnwrap(span["meta"] as? [String: Any])
+            XCTAssertNil(meta[SpanTags.rumSessionID])
+            XCTAssertNil(meta[SpanTags.rumViewID])
+            XCTAssertNil(meta[SpanTags.rumActionID])
+        } else {
+            XCTAssertTrue(spans.isEmpty)
+            XCTAssertEqual(resources.count, 1)
+            let resource = try XCTUnwrap(resources.first)
+            XCTAssertEqual((resource["view"] as? [String: Any])?["id"] as? String, sourceViewID)
+        }
+    }
+
     func testTraceBaggageKeepsTheCapturedSessionAfterRollover() throws {
         try assertBaggageKeepsCapturedSessionAfterRollover(trackRUMResources: false)
     }
