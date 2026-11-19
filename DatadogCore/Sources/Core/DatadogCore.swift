@@ -631,6 +631,8 @@ extension DatadogCore: DatadogCoreProtocol {
             committedHandoffOwner: isRUMRegistration ? expectedOwner : nil
         )
         var owner: RUMContextHandoff.Owner?
+        var registeredHandoff: ActivatedHandoff?
+        var retiredHandoff: ActivatedHandoff?
         var retiredOwner: RUMContextHandoff.Owner?
         var retirementReceivers: [FeatureMessageReceiver] = []
         var replacedFeature: RegisteredFeature?
@@ -657,6 +659,8 @@ extension DatadogCore: DatadogCoreProtocol {
                     // of the exact committed registration can end its ownership.
                     activeOwner.invalidate()
                     retiredOwner = activeOwner
+                    retiredHandoff = registeredHandoff
+                    registeredHandoff = nil
                     owner = nil
                     registry.handoff = .inactive
                     retirementReceivers = registry.features.values.map { $0.messageReceiver }
@@ -686,7 +690,7 @@ extension DatadogCore: DatadogCoreProtocol {
             }
             throw error
         }
-        withExtendedLifetime(replacedFeature) {}
+        defer { withExtendedLifetime(replacedFeature) {} }
         withExtendedLifetime(replacedStore) {}
         if commitsStoreWithFeature {
             createdStore?.storage.clearUnauthorizedData()
@@ -715,6 +719,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 bus.publishFlagEvaluationOwner(retiredOwner, active: false)
                 // Reentrant messages from retirement callbacks follow the new connection.
                 retirementReceivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: retiredOwner, active: false) }
+                bus.notifyOperationBusMode(receivers: retirementReceivers, owner: retiredOwner, active: false)
+                retiredHandoff?.retire()
             }
             contextProvider.read { [weak self, weak registration] context in
                 self?.bus.queue.async { [weak self, weak registration] in
