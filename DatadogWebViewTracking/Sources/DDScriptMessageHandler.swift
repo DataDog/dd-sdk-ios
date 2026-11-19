@@ -8,12 +8,16 @@
 
 import Foundation
 import WebKit
+@_spi(Internal)
 import DatadogInternal
 
 internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
 
     let emitter: MessageEmitter
+
+    // The provider keeps Core and tracked WebViews weak; retaining it preserves retired ownership.
+    var sessionRolloverHandler: WebViewSessionRolloverHandler?
 
     let queue = DispatchQueue(
         label: "com.datadoghq.JSEventBridge",
@@ -28,13 +32,47 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
-        let hash = message.webView.map { String($0.hash) }
+        let webView = message.webView
+        let hash = webView.map { String($0.hash) }
         // message.body must be called within UI thread
         let body = message.body
+        #if os(iOS)
+        if #available(iOS 27.0, *),
+           let rolloverHandler = sessionRolloverHandler,
+           rolloverHandler.hasNativeOwnership {
+            enqueueMessageWithRUMContext(body: body, slotId: hash, webView: webView, rolloverHandler: rolloverHandler)
+            return
+        }
+        #endif
         queue.async {
             self.emitter.send(body: body, slotId: hash)
         }
     }
+
+    #if os(iOS)
+    /// Captures RUM ownership before enqueueing the WebView message.
+    @available(iOS 27.0, *)
+    @inline(never)
+    private func enqueueMessageWithRUMContext(
+        body: Any,
+        slotId: String?,
+        webView: WKWebView?,
+        rolloverHandler: WebViewSessionRolloverHandler
+    ) {
+        let capture = rolloverHandler.captureRUMContext(forSceneIdentifier: {
+            webView?.window?.windowScene?.session.persistentIdentifier
+        })
+        if let capture {
+            queue.async {
+                self.emitter.send(body: body, slotId: slotId, capture: capture)
+            }
+        } else {
+            queue.async {
+                self.emitter.send(body: body, slotId: slotId)
+            }
+        }
+    }
+    #endif
 }
 
 extension DDScriptMessageHandler: Flushable {

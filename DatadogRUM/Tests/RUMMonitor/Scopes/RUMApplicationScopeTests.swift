@@ -1732,6 +1732,23 @@ private final class WebViewKeepAliveOwnerScope: FeatureScope, RUMContextHandoffO
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
 }
 
+private final class WebViewKeepAliveOwnerCore: DatadogCoreProtocol, RUMContextHandoffOwnerProviding, RUMContextHandoffSessionValidating {
+    var owner: RUMContextHandoff.Owner?
+    var sessionEligibility: (String, RUMContextHandoff.Owner) -> Bool = { _, _ in false }
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    var remoteConfiguration: RemoteConfiguration? { nil }
+
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool {
+        sessionEligibility(sessionID, owner)
+    }
+    func register<T>(feature: T) throws where T: DatadogFeature {}
+    func feature<T>(named name: String, type: T.Type) -> T? { name == Feature.rum ? self as? T : nil }
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature { NOPFeatureScope() }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
+}
+
 extension RUMApplicationScopeTests {
     func testPreparedResource_stoppedAndExpiredSessionsKeepOriginalOwnership() throws {
         for expires in [false, true] {
