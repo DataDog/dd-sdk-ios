@@ -8,7 +8,12 @@ import Foundation
 @_spi(Internal)
 import DatadogInternal
 
-internal class RUMSessionScope: RUMScope, RUMContextProvider {
+/// Receives complete mapped view events on the RUM queue before representative projection.
+internal protocol RUMMappedViewContextUpdating: AnyObject {
+    func recordMappedViewEvent(_ event: RUMViewEvent, for viewID: RUMUUID)
+}
+
+internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewContextUpdating {
     struct Constants {
         /// If no interaction is registered within this period, a new session is started.
         static let sessionTimeoutDuration: TimeInterval = 15 * 60 // 15 minutes
@@ -87,6 +92,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var representativeViewID: RUMUUID?
         var interactionMetrics: [RUMSceneIdentifier: INVMetricTracking?] = [:]
         var restoredViews: [RUMViewScope] = []
+        var mappedViewEvents: [RUMUUID: RUMViewEvent] = [:]
+        var projectedViewID: RUMUUID?
+        var projectedViewVersion: Int64?
+        var hasProjectedView = false
+        var projectedWatchdogViewID: RUMUUID?
+        var projectedWatchdogViewVersion: Int64?
+        var hasProjectedWatchdogView = false
     }
 
     private let sceneState: SceneState?
@@ -510,6 +522,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 identity.resourceKey, on: tick, writesEvents: canWrite, context: context, writer: writer
             ) else { return nil }
             if !keepView { viewScopes.removeAll { $0 === view } }
+            if canWrite && isActive { updateRepresentativeFatalErrorContext() }
             let publishesContext = canWrite && !keepView
             return (isActive || !viewScopes.isEmpty, publishesContext)
         }
@@ -543,6 +556,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             return nil // handled above, including invalid-owner bookkeeping cleanup
         }
         if !keepView { viewScopes.removeAll { $0 === view } }
+        if isActive { updateRepresentativeFatalErrorContext() }
         return (isActive || !viewScopes.isEmpty, true)
     }
 
@@ -792,6 +806,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         if !view.process(command: flag, context: context, writer: writer) {
             viewScopes.removeAll { $0 === view }
         }
+        updateRepresentativeFatalErrorContext()
     }
 
     /// Consumes a captured mirror only in its original, still-active view and lifetime.
@@ -812,6 +827,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         if !view.process(command: error, context: context, writer: writer) {
             viewScopes.removeAll { $0 === view }
         }
+        updateRepresentativeFatalErrorContext()
     }
 
     /// Queue-only join, before application-level session creation or refresh.
@@ -926,6 +942,53 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // A peer's time advances, but the foreign command cannot change its attributes/counters.
             view.expireActionIfNeeded(on: command, context: context, writer: writer)
             return view
+        }
+        updateRepresentativeFatalErrorContext()
+    }
+
+    func recordMappedViewEvent(_ event: RUMViewEvent, for viewID: RUMUUID) {
+        guard let sceneState else {
+            return
+        }
+        guard viewScopes.contains(where: { $0.viewUUID == viewID && $0.isActiveView }),
+              event.view.id == viewID.toRUMDataFormat,
+              event.session.id == sessionUUID.toRUMDataFormat else {
+            sceneState.mappedViewEvents.removeValue(forKey: viewID)
+            return
+        }
+        sceneState.mappedViewEvents[viewID] = event
+    }
+
+    private func updateRepresentativeFatalErrorContext() {
+        guard let sceneState else {
+            return
+        }
+        // A retained session cannot replace its successor's accepted projection.
+        if let current = (parent as? RUMApplicationScope)?.activeSession, current !== self {
+            return
+        }
+        let activeIDs = Set(viewScopes.lazy.filter { $0.isActiveView }.map { $0.viewUUID })
+        sceneState.mappedViewEvents = sceneState.mappedViewEvents.filter { activeIDs.contains($0.key) }
+        let viewID = activeView?.viewUUID
+        let event = viewID.flatMap { sceneState.mappedViewEvents[$0] }
+        let mappedViewID = event == nil ? nil : viewID
+        let version = event?.dd.documentVersion
+        if !sceneState.hasProjectedView || sceneState.projectedViewID != mappedViewID
+            || sceneState.projectedViewVersion != version {
+            sceneState.hasProjectedView = true
+            sceneState.projectedViewID = mappedViewID
+            sceneState.projectedViewVersion = version
+            dependencies.fatalErrorContext.view = event
+        }
+        if !sceneState.hasProjectedWatchdogView || sceneState.projectedWatchdogViewID != mappedViewID
+            || sceneState.projectedWatchdogViewVersion != version {
+            // A startup guard may defer this update while the previous report consumes its snapshot.
+            // Retain only accepted projections so an unchanged later command retries the current view.
+            if dependencies.watchdogTermination?.updateRepresentativeView(viewEvent: event) == true {
+                sceneState.hasProjectedWatchdogView = true
+                sceneState.projectedWatchdogViewID = mappedViewID
+                sceneState.projectedWatchdogViewVersion = version
+            }
         }
     }
 
