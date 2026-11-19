@@ -123,6 +123,21 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
     }
 
+    /// Captured input may only mutate the live view occurrence that received it.
+    /// A receipt without a view keeps the existing routing for input before a view starts.
+    func admitsActionReceipt(_ receipt: RUMContextHandoff.ActionReceipt, monotonicTime: TimeInterval) -> Bool {
+        guard receipt.hasCapturedView else { return true }
+        guard let session = activeSession,
+              !RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: monotonicTime),
+              !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: monotonicTime) else {
+            return false
+        }
+        let sessionID = session.sessionUUID.toRUMDataFormat
+        return session.viewScopes.contains { view in
+            view.isActiveView && receipt.matchesView(sessionID: sessionID, viewID: view.viewUUID.toRUMDataFormat)
+        }
+    }
+
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
         if dependencies.isMultiSceneTrackingEnabled, let operation = command as? RUMOwnedOperationStepCommand {
             guard operation.origin.isCurrent else {
@@ -203,6 +218,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 }
             }
         }
+        if let actionReceipt, !admitsActionReceipt(actionReceipt, monotonicTime: monotonicTime) {
+            if case .continuousAction(let ownership) = command.target {
+                ownership.close()
+            }
+            return
+        }
+
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
