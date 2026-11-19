@@ -859,7 +859,7 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
         // Storage publication and owner were read together; capture after unlocking.
         let capture: RUMContextHandoff.Capture?
         if let owner = snapshot.owner {
-            if let value = RUMContextHandoff.current(for: owner) {
+            if let value = RUMContextHandoff.captureValue(for: owner) {
                 capture = RUMContextHandoff.Capture(owner: owner, value: value)
             } else if !owner.isValid {
                 // Owner validity is monotonic; a raced invalidation cannot select legacy context.
