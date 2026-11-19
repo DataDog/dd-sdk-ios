@@ -296,6 +296,18 @@ extension SwiftUINavigationOwnershipTests {
     @MainActor
     func testOrdinaryTrackedView_overlappingReadersRecoverAfterOldWindowDetaches() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        try await exerciseOrdinaryReaderOverlap(savedAppearance: false)
+    }
+
+    @MainActor
+    func testOrdinaryTrackedView_overlappingReaderUsesAppearanceSavedForRemount() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        try await exerciseOrdinaryReaderOverlap(savedAppearance: true)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func exerciseOrdinaryReaderOverlap(savedAppearance: Bool) async throws {
         let fixture = try SemanticHostWindow()
         let core = makeSemanticCore()
         defer { fixture.restore(); core.stop() }
@@ -371,6 +383,13 @@ extension SwiftUINavigationOwnershipTests {
         core.flush()
         XCTAssertNil(feature.monitor.rumContextSnapshot(for: .scene(peerID))?.viewID)
 
+        if savedAppearance {
+            // Isolate this order of state invalidation and UIKit detach.
+            XCTAssertTrue(state.invalidateAfterSceneDisconnect(fixture.identifier))
+            XCTAssertFalse(state.isAppeared)
+            XCTAssertTrue(state.needsReaderRemount)
+            XCTAssertEqual(state.appearanceForReaderMount, true)
+        }
         original.removeFromSuperview()
         XCTAssertNil(original.window)
         XCTAssertTrue(replacement.window === peerWindow)
