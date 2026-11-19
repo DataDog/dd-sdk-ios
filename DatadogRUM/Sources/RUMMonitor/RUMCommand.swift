@@ -824,20 +824,29 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
 
 // MARK: - RUM User Action related commands
 
+/// The exact unscoped view eligible for restoration by the input that rolls over its session.
+internal struct RUMExpiredUnscopedActionView {
+    let sessionID: String
+    let viewID: RUMUUID
+}
+
 internal protocol RUMUserActionCommand: RUMCommand {
     /// The action identifying the RUM User Action.
     var actionType: RUMActionType { get }
     var target: RUMCommandTarget { get set }
     var explicitTarget: RUMCommandTarget? { get }
     var actionReceipt: RUMContextHandoff.ActionReceipt? { get }
+    var expiredUnscopedView: RUMExpiredUnscopedActionView? { get }
 }
 
 extension RUMUserActionCommand {
     var actionReceipt: RUMContextHandoff.ActionReceipt? { nil }
+    var expiredUnscopedView: RUMExpiredUnscopedActionView? { nil }
 }
 
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
+    var expiredUnscopedView: RUMExpiredUnscopedActionView? = nil
     var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
@@ -879,6 +888,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 
 /// Adds discrete (discontinuous) User Action.
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
+    var expiredUnscopedView: RUMExpiredUnscopedActionView? = nil
     var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
