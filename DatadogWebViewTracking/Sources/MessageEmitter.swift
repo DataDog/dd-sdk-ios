@@ -45,6 +45,12 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
         })
     }
 
+    func send(body: Any, slotId: String?, legacyRegistration: RUMLegacyWebViewTrackingReceipt) {
+        send(body: body, slotId: slotId, makeMessage: { message in
+            .payload(WebViewMessageWithLegacyRUMRegistration(message: message, receipt: legacyRegistration))
+        })
+    }
+
     private func send(body: Any, slotId: String?, makeMessage: (WebViewMessage) -> FeatureMessage) {
         guard let core = core else {
             return DD.logger.debug("Core must not be nil when using WebViewTracking")

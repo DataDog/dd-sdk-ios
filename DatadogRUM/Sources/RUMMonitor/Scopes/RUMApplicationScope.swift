@@ -141,6 +141,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) {
+        if let receipt = (command as? RUMKeepSessionAliveCommand)?.legacyWebViewRegistration, !receipt.isCurrent {
+            return
+        }
         if dependencies.isMultiSceneTrackingEnabled, let operation = command as? RUMOwnedOperationStepCommand {
             guard operation.origin.isCurrent else {
                 return
