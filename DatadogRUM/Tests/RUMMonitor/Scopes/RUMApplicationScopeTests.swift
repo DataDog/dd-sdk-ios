@@ -1717,10 +1717,6 @@ extension RUMApplicationScopeTests {
         )
     }
 }
-extension RUMApplicationScopeTests {
-
-}
-
 private final class WebViewKeepAliveOwnerScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
     private let base = FeatureScopeMock()
     var owner = RUMContextHandoff.Owner()
