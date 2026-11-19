@@ -972,12 +972,16 @@ class RUMSceneViewsHandlerTests: XCTestCase {
         try assertCommands([(true, ViewIdentifier("same"), .scene(sceneA)), (true, ViewIdentifier("same"), .processRepresentative), (false, ViewIdentifier("same"), .processRepresentative)])
     }
 
-    func testMissingUIKitScene_usesProcessFallback() throws {
+    func testMissingUIKitScene_waitsForAttachment() throws {
         let handler = makeHandler()
         let view = UIViewController()
         appear(view, in: nil, using: handler)
         handler.notify_viewDidDisappear(viewController: view, animated: false)
-        try assertCommands([(true, ViewIdentifier(view), .processRepresentative), (false, ViewIdentifier(view), .processRepresentative)])
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+
+        appear(view, in: sceneA, using: handler)
+        handler.notify_viewDidDisappear(viewController: view, animated: false)
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA)), (false, ViewIdentifier(view), .scene(sceneA))])
     }
 
     func testSceneBackgroundAndForeground_doNotAffectPeerOrRepeat() throws {
