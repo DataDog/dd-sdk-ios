@@ -757,13 +757,15 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
 
         @MainActor
-        func detachDestinationReader(in scene: RUMSceneIdentifier) -> Bool {
+        func detachDestinationReader(in scene: RUMSceneIdentifier, hasOtherReader: Bool) -> Bool {
             guard predecessorStop != nil, admission?.isValid == true,
                   state.admission.map({ admission?.matches($0) == true }) == true,
                   attachment == .attached(scene) || attachment == .detached else {
                 return false
             }
-            attachment = .detached
+            if !hasOtherReader {
+                attachment = .detached
+            }
             return true
         }
 
@@ -1236,14 +1238,29 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
     }
 
     @MainActor
-    func detachPendingDestinationReader(in scene: RUMSceneIdentifier, state: RUMViewTrackingState) -> Bool {
-        guard admitsCallbacks() else {
+    func detachPendingDestinationReader(
+        _ observer: RUMSceneIdentifierReader.ObserverView,
+        in scene: RUMSceneIdentifier,
+        state: RUMViewTrackingState
+    ) -> Bool {
+        guard admitsCallbacks(), let admission = state.admission, admission.isValid,
+              let registration = observerRegistrations[ObjectIdentifier(observer)],
+              registration.observer === observer, registration.state === state,
+              registration.admission?.matches(admission) == true else {
             return false
         }
         for (key, transition) in deferredTransitions where key.sceneIdentifier == scene {
-            if transition.deferredState(for: state)?.detachDestinationReader(in: scene) == true {
-                return true
+            guard let projection = transition.deferredState(for: state) else {
+                continue
             }
+            let hasOtherReader = observerRegistrations.values.contains { candidate in
+                guard let reader = candidate.observer, reader !== observer, !reader.detachingFromWindow else {
+                    return false
+                }
+                return candidate.state === state && candidate.admission?.matches(admission) == true
+                    && reader.currentSceneIdentifier == scene
+            }
+            return projection.detachDestinationReader(in: scene, hasOtherReader: hasOtherReader)
         }
         return false
     }
