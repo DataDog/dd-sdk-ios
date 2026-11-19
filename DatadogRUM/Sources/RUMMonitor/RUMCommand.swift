@@ -34,19 +34,17 @@ internal final class RUMContinuousActionOwnership: Equatable {
 
     let sceneIdentifier: RUMSceneIdentifier?
     let owner: RUMContextHandoff.Owner
+    /// Immutable selection captured before asking the application about the input.
+    let sourceTarget: RUMCommandTarget
     private(set) var claim: Claim?
     private(set) var isClosed = false
     private var hasAppliedStart = false
     private var isApplyingStart = false
 
-    init(sceneIdentifier: RUMSceneIdentifier?, owner: RUMContextHandoff.Owner) {
+    init(sceneIdentifier: RUMSceneIdentifier?, owner: RUMContextHandoff.Owner, target: RUMCommandTarget? = nil) {
         self.sceneIdentifier = sceneIdentifier
         self.owner = owner
-    }
-
-    /// Immutable selection; reading it does not inspect queued admission state.
-    var sourceTarget: RUMCommandTarget {
-        sceneIdentifier.map(RUMCommandTarget.scene) ?? .processRepresentative
+        self.sourceTarget = target ?? sceneIdentifier.map(RUMCommandTarget.scene) ?? .processRepresentative
     }
 
     /// A dropped or deferred Start must not be retried against a later view/action.
