@@ -304,9 +304,9 @@ class MessageEmitterTests: XCTestCase {
     func testCapturedRUMKeepsOffsetPerBrowserViewWithoutBorrowingPeerContainer() throws {
         let clock = RelativeDateProvider(using: Date(timeIntervalSince1970: 1_030))
         let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
-        cache.insert(id: "native-a-history", timestamp: 1_005_000, hasReplay: true, isActive: false, sceneIdentifier: .init(rawValue: "scene-a"))
-        cache.insert(id: "native-a-current", timestamp: 1_020_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-a"))
-        cache.insert(id: "native-b", timestamp: 1_009_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-b"))
+        cache.insert(id: "native-a-history", timestamp: 1_005_000, hasReplay: true, isActive: false, sceneIdentifier: .init(rawValue: "scene-a"), sessionID: "native-session")
+        cache.insert(id: "native-a-current", timestamp: 1_020_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-a"), sessionID: "native-session")
+        cache.insert(id: "native-b", timestamp: 1_009_000, hasReplay: true, isActive: true, sceneIdentifier: .init(rawValue: "scene-b"), sessionID: "native-session")
         let original = RUMCoreContext(
             applicationID: "native-app",
             sessionID: "native-session",
