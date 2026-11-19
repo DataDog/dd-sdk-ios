@@ -176,6 +176,21 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             return
         }
 
+        if dependencies.isMultiSceneTrackingEnabled, let expiredView = (command as? RUMUserActionCommand)?.expiredUnscopedView {
+            // A different command may already have rolled the session over or replaced the original view.
+            guard actionReceipt?.owner.isValid == true,
+                  let session = activeSession, session.sessionUUID.toRUMDataFormat == expiredView.sessionID,
+                  session.soleUnscopedActionView?.viewUUID == expiredView.viewID,
+                  context.applicationStateHistory.currentState.isRunningInForeground,
+                  RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: monotonicTime)
+                    || RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: monotonicTime) else {
+                if case .continuousAction(let ownership) = command.target {
+                    ownership.close()
+                }
+                return
+            }
+        }
+
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
@@ -425,7 +440,16 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         lastActiveView = nil
         sceneRestoration?.views.removeAll()
         lastSessionEndReason = nil
-        _ = refreshedSession.process(command: command, monotonicTime: monotonicTime, context: context, writer: writer)
+        let expiredView = (command as? RUMUserActionCommand)?.expiredUnscopedView
+        let restoredActionView = expiredView?.sessionID == expiredSession.sessionUUID.toRUMDataFormat
+            ? refreshedSession.soleUnscopedActionView : nil
+        _ = refreshedSession.process(
+            command: command,
+            monotonicTime: monotonicTime,
+            context: context,
+            writer: writer,
+            restoredActionView: restoredActionView
+        )
         return refreshedSession
     }
 
