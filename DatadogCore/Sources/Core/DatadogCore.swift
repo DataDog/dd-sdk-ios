@@ -321,6 +321,8 @@ internal final class DatadogCore {
         contextProvider.flush()
         // Telemetry sent by these last writes, like a write error, is not drained: it is not app data,
         // and draining until no work is left would delay termination.
+        // A mapper or an encryption that dispatches synchronously to the main queue blocks this wait, and the app
+        // hangs on quit. Their docs advise against it, so the wait is not bounded.
         readWriteQueue.sync { }
     }
     #endif

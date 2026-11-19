@@ -119,6 +119,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         case .terminating:
             // The app exits once nothing is left to write, so spans finished during termination are flushed
             // right away instead of holding the exit until the next flush.
+            // A flush queued while the core drains may not open its write context before the drain ends, and its stats
+            // are lost. The window is a few milliseconds, like for spans that finish after the drain.
             flushQueue.async { [weak self] in
                 self?.flushStats(.appTermination)
             }
