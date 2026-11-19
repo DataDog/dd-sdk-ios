@@ -767,6 +767,53 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testOwnedSwiftUIDisappearanceUnderManualView_doesNotRestoreTheDisappearedView() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        let scene = try connectedSceneIdentifier(binding)
+        let handler = try XCTUnwrap(feature.instrumentation.viewsHandler as? RUMSceneViewsHandler)
+        let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: feature, core: core))
+        let foreignLifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: feature, core: core))
+
+        func show(_ name: String) {
+            XCTAssertTrue(handler.notify_onAppear(
+                identity: name, name: name, path: name, attributes: [:], sceneIdentifier: scene, lifetime: lifetime
+            ))
+            core.flush()
+            XCTAssertEqual(feature.monitor.rumContextSnapshot(for: .scene(scene))?.viewName, name)
+        }
+
+        show("root")
+        let initialRoot = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(scene))?.viewID)
+        show("detail")
+        handler.startView(key: "overlay", name: nil, attributes: [:], sceneIdentifier: scene)
+        core.flush()
+        let overlay = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(overlay.viewName, "overlay")
+
+        XCTAssertFalse(handler.notify_onDisappear(identity: "detail", sceneIdentifier: scene, lifetime: foreignLifetime))
+        XCTAssertTrue(handler.notify_onDisappear(identity: "detail", sceneIdentifier: scene, lifetime: lifetime))
+        XCTAssertFalse(handler.notify_onDisappear(identity: "detail", sceneIdentifier: scene, lifetime: lifetime))
+        core.flush()
+        XCTAssertEqual(feature.monitor.rumContextSnapshot(for: .scene(scene))?.viewID, overlay.viewID)
+
+        handler.stopView(key: "overlay", attributes: [:], sceneIdentifier: scene)
+        core.flush()
+        let restored = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(restored.viewName, "root")
+        XCTAssertNotEqual(restored.viewID, initialRoot)
+
+        show("detail")
+        handler.startView(key: "overlay", name: nil, attributes: [:], sceneIdentifier: scene)
+        handler.stopView(key: "overlay", attributes: [:], sceneIdentifier: scene)
+        core.flush()
+        XCTAssertEqual(feature.monitor.rumContextSnapshot(for: .scene(scene))?.viewName, "detail")
+    }
+
+    @MainActor
     func testRetiredOnFoundation_staysInstalledAndCannotReplaceItsOccupiedSlot() throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let core = makeHandoffCore()
