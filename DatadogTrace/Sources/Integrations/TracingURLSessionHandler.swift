@@ -113,24 +113,27 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             return (request, nil, nil)
         }
 
-        // Read the RUM session from its store, on this thread. Both `networkContext` and
-        // `contextReceiver.context` are fed by the message bus, which can still be empty here; a
-        // request modified in that window used to be sampled at random and injected with no RUM
-        // session ID, which is the early-request gap this closes.
-        let sessionDecision = currentSessionSnapshot()
-
-        let deliveredRUMContext: RUMCoreContext?
-        if let networkContext {
-            deliveredRUMContext = networkContext.rumContext
+        let capture = networkContext?.rumURLSessionContext
+        let requestTimeRUMContext: RUMCoreContext?
+        let sessionDecision: SessionSamplingDecision?
+        if let capture {
+            // A scoped request uses the captured session, including an explicit absence.
+            requestTimeRUMContext = capture.rumContext
+            sessionDecision = requestTimeRUMContext.map {
+                SessionSamplingDecision(sessionID: $0.sessionID, isSampled: $0.sessionSampler.combined(with: samplingRate).sample())
+            }
         } else {
-            deliveredRUMContext = contextReceiver.context.rumContext
+            // Unscoped requests can start before the message bus delivers the current RUM session.
+            sessionDecision = currentSessionSnapshot()
+            let deliveredRUMContext: RUMCoreContext?
+            if let networkContext {
+                deliveredRUMContext = networkContext.rumContext
+            } else {
+                deliveredRUMContext = contextReceiver.context.rumContext
+            }
+            // The delivered context can still describe the preceding session after a rollover.
+            requestTimeRUMContext = deliveredRUMContext?.sessionID == sessionDecision?.sessionID ? deliveredRUMContext : nil
         }
-
-        // The message bus delivers the RUM context after the session store has changed, so right after
-        // a session change or stop it can still describe the previous session. It owns the span only when
-        // it belongs to the session injected in this request; otherwise the span gets no RUM tags, rather
-        // than being linked to a different session than its request.
-        let requestTimeRUMContext = deliveredRUMContext?.sessionID == sessionDecision?.sessionID ? deliveredRUMContext : nil
 
         // Use the current active span as parent if the propagation headers support it.
         let newSpanElements = makeElementsForNewSpanContext(
@@ -222,7 +225,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             hasGraphQLHeaders: hasGraphQLHeaders,
             rumContext: requestTimeRUMContext,
             sessionDecision: sessionDecision,
-            rumURLSessionContext: networkContext?.rumURLSessionContext
+            rumURLSessionContext: capture
         )
 
         return (
