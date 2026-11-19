@@ -622,6 +622,8 @@ extension RUMFeature {
 }
 
 extension RUMFeature: RUMContextHandoffWebViewProviding {
+    var usesLegacyWebViewTracking: Bool { !isMultiSceneTrackingEnabled }
+
     func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
         guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
             return nil

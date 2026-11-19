@@ -74,16 +74,7 @@ internal class WebViewSessionRolloverHandler {
     /// The caller supplies the scene observed at native bridge receipt.
     /// Nil means legacy mode; a retained On lifetime always produces authoritative capture or absence.
     func captureRUMContext(forSceneIdentifier sceneIdentifier: String?) -> RUMContextHandoff.Capture? {
-        let owner: RUMContextHandoff.Owner
-        switch nativeOwnership {
-        case .legacy:
-            return nil
-        case .retired(let retiredOwner):
-            return emptyCapture(for: retiredOwner)
-        case .active(let activeOwner):
-            owner = activeOwner
-        }
-        return captureRUMContext(forSceneIdentifier: sceneIdentifier, owner: owner)
+        captureRUMContext(forSceneIdentifier: { sceneIdentifier })
     }
 
     private func captureRUMContext(forSceneIdentifier sceneIdentifier: String?, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture {
@@ -102,13 +93,20 @@ internal class WebViewSessionRolloverHandler {
         case .legacy:
             return nil
         case .retired(let owner):
-            return emptyCapture(for: owner)
+            return captureAfterRetirement(of: owner)
         case .active(let owner):
             guard owner.isValid else {
-                return emptyCapture(for: owner)
+                return captureAfterRetirement(of: owner)
             }
             return captureRUMContext(forSceneIdentifier: resolveSceneIdentifier(), owner: owner)
         }
+    }
+
+    private func captureAfterRetirement(of owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
+        // Keep the retired token for queued callbacks and for terminal Core shutdown. A fresh
+        // receipt can use legacy delivery while a committed legacy RUM feature is registered.
+        let allowsLegacy = (core as? RUMContextHandoffActivating)?.canResumeLegacyWebViewTracking == true
+        return allowsLegacy ? nil : emptyCapture(for: owner)
     }
 
     private func emptyCapture(for owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture {
