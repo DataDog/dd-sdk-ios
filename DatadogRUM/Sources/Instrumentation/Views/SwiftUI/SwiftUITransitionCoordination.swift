@@ -1281,6 +1281,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
 
         var disconnectedObserverIdentities: Set<ObjectIdentifier> = []
+        var recoverSurvivingReaders: [@MainActor () -> Void] = []
         observerRegistrations.forEach { observerIdentity, registration in
             guard
                 registration.admission?.isValid == true,
@@ -1291,6 +1292,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             }
             observer.markSceneDisconnected(sceneIdentifier)
             disconnectedObserverIdentities.insert(observerIdentity)
+            if registration.navigationOccurrenceSource == nil, let recover = observer.onDidDetach {
+                recoverSurvivingReaders.append(recover)
+            }
         }
         observerRegistrations.values.forEach { registration in
             guard
@@ -1319,6 +1323,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             }
             return !disconnectedObserverIdentities.contains(ObjectIdentifier(observer))
         }
+        // The disconnected reader may remain attached to its old window.
+        // Reconcile only after it no longer participates in scene ownership.
+        recoverSurvivingReaders.forEach { $0() }
     }
 
     @MainActor
