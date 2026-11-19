@@ -107,13 +107,21 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             keepRUMSessionAlive(legacyRegistration: legacyRegistration)
         }
 
-        featureScope.eventWriteContext { context, writer in
+        func write(
+            receiver: WebViewEventReceiver,
+            core: DatadogCoreProtocol,
+            context: DatadogContext,
+            writer: Writer,
+            renewedContext: RUMCoreContext?
+        ) {
             guard legacyRegistration?.isCurrent != false else {
                 return
             }
             let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
             let rum: RUMCoreContext?
-            if let capture {
+            if let renewedContext {
+                rum = renewedContext
+            } else if let capture {
                 rum = capture.rumContext(in: core, sessionID: currentRUM?.sessionID)
             } else {
                 rum = currentRUM
@@ -122,8 +130,8 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 return // Drop unavailable or unsampled native ownership without borrowing another session.
             }
 
-            if let capture {
-                self.keepRUMSessionAlive(capture: capture.capture)
+            if let capture, renewedContext == nil {
+                receiver.keepRUMSessionAlive(capture: capture.capture)
             }
             var webViewContext = context.additionalContext(ofType: RUMWebViewContext.self) ?? .init()
             var event = event
@@ -145,7 +153,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                     let offset = context.serverTimeOffset
                     webViewContext.setServerTimeOffset(offset, forView: id)
 
-                    self.featureScope.set(context: webViewContext)
+                    receiver.featureScope.set(context: webViewContext)
                     offsetMilliseconds = offset.dd.toInt64Milliseconds
                 }
 
@@ -156,7 +164,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let viewID: String?
                 if let capture {
                     viewID = capture.capture.value.sceneIdentifier.flatMap {
-                        self.viewCache.lastView(
+                        receiver.viewCache.lastView(
                             before: correctedDate,
                             hasReplay: true,
                             in: RUMSceneIdentifier(rawValue: $0),
@@ -164,7 +172,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                         )
                     }
                 } else {
-                    viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true)
+                    viewID = receiver.viewCache.lastView(before: correctedDate, hasReplay: true)
                 }
                 if let viewID {
                     event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
@@ -186,7 +194,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                     session["has_replay"] = context.hasReplay
                 }
                 session["is_main_process"] = context.applicationBundleType != .iOSAppExtension
-                session["has_timeseries"] = self.timeseriesCollector?.hasCollectedData(sessionID: rum.sessionID) ?? false
+                session["has_timeseries"] = receiver.timeseriesCollector?.hasCollectedData(sessionID: rum.sessionID) ?? false
 
                 event["session"] = session
             }
@@ -216,6 +224,24 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             }
 
             writer.write(value: AnyEncodable(event))
+        }
+        if let capture, let expiry = capture.sessionExpiry {
+            let renewal = RUMWebViewSessionRenewal(expiry: expiry, write: { [weak self, weak core] context, writer, accepted in
+                guard let self, let core else {
+                    return
+                }
+                write(receiver: self, core: core, context: context, writer: writer, renewedContext: accepted)
+            })
+            commandSubscriber.process(command: RUMKeepSessionAliveCommand(
+                time: dateProvider.now,
+                attributes: [:],
+                capture: capture.capture,
+                webViewSessionRenewal: renewal
+            ))
+        } else {
+            featureScope.eventWriteContext { context, writer in
+                write(receiver: self, core: core, context: context, writer: writer, renewedContext: nil)
+            }
         }
     }
 
