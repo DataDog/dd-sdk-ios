@@ -174,6 +174,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
         let scene: RUMSceneIdentifier?
         let target: RUMCommandTarget
         let value: RUMContextHandoff.CurrentValue?
+        var expiredUnscopedView: RUMExpiredUnscopedActionView? = nil
 
         func pending(receipt: RUMContextHandoff.ActionReceipt?) -> Capture {
             Capture(scene: scene, target: target, value: value.map {
@@ -304,6 +305,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
                 target: frame.capture.target
             )
             start.target = .continuousAction(ownership)
+            start.expiredUnscopedView = frame.capture.expiredUnscopedView
             let receipt = frame.capture.value.map {
                 RUMContextHandoff.ActionReceipt(owner: owner, context: $0.rumContext)
             }
@@ -337,15 +339,16 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
             // Source-less callbacks preserve an inherited binding without inventing one.
             return Capture(scene: nil, target: .processRepresentative, value: nil)
         }
-        let (target, context) = isOwnedSubscriber
-            ? expectedMonitor?.captureAutomaticAction(in: scene) ?? (.scene(scene), nil)
-            : (.scene(scene), nil)
-        return Capture(scene: scene, target: target, value: RUMContextHandoff.CurrentValue(
+        let (target, context, expiredUnscopedView) = isOwnedSubscriber
+            ? expectedMonitor?.captureAutomaticAction(in: scene) ?? (.scene(scene), nil, nil)
+            : (.scene(scene), nil, nil)
+        let value = RUMContextHandoff.CurrentValue(
             rumContext: context,
             sceneIdentifier: scene.rawValue,
             hasPendingUserAction: false,
             excludedUserActionID: nil
-        ))
+        )
+        return Capture(scene: scene, target: target, value: value, expiredUnscopedView: expiredUnscopedView)
     }
 
     private var isOwnedSubscriber: Bool {
