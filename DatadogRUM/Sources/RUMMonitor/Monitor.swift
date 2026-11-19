@@ -556,7 +556,7 @@ extension Monitor: RUMContextSnapshotProviding {
     }
 
     func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext? {
-        guard let snapshot = liveSceneContextSnapshot() else {
+        guard let snapshot = sceneContextSnapshots?.value else {
             return nil
         }
         let context: RUMCoreContext?
@@ -568,24 +568,36 @@ extension Monitor: RUMContextSnapshotProviding {
                 ?? snapshot.representative.flatMap { $0.viewID == identifier.toRUMDataFormat ? $0 : nil }
         case .processRepresentative, .allActiveViews: context = snapshot.representative
         }
-        guard let context, context.sessionID == snapshot.sessionID else {
+        guard let context, isLiveContext(context, in: snapshot) else {
             return nil
         }
         return context
     }
 
-    private func liveSceneContextSnapshot() -> SceneContextSnapshots.Value? {
-        guard let snapshot = sceneContextSnapshots?.value,
-              let sessionStart = snapshot.sessionStart,
-              let lastInteraction = snapshot.lastInteraction else {
+    /// A mounted browser can report to the live session before its scene has a native view.
+    func webViewContextSnapshot(for sceneIdentifier: RUMSceneIdentifier) -> RUMCoreContext? {
+        guard let snapshot = sceneContextSnapshots?.value else {
             return nil
+        }
+        let sceneContext = snapshot.contextsByScene[sceneIdentifier]
+        guard let context = sceneContext ?? snapshot.representative, isLiveContext(context, in: snapshot) else {
+            return nil
+        }
+        return sceneContext ?? RUMCoreContext(
+            applicationID: context.applicationID,
+            sessionID: context.sessionID,
+            sessionSampler: context.sessionSampler
+        )
+    }
+
+    private func isLiveContext(_ context: RUMCoreContext, in snapshot: SceneContextSnapshots.Value) -> Bool {
+        guard let sessionStart = snapshot.sessionStart, let lastInteraction = snapshot.lastInteraction,
+              context.sessionID == snapshot.sessionID else {
+            return false
         }
         let now = applicationScope.dependencies.monotonicClock.elapsedTime
-        guard !RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now),
-              !RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now) else {
-            return nil
-        }
-        return snapshot
+        return !RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now)
+            && !RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now)
     }
 }
 
