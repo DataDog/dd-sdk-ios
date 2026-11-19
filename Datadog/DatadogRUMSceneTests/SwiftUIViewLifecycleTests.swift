@@ -562,6 +562,95 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testCrossSceneReaderMountPreservesTheSourceDisappearanceOutcome() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        defer { fixture.restore() }
+        let destination = try await openAdditionalSceneForTransitionTest()
+        let core = makeSemanticCore()
+        defer { core.stop() }
+        let feature = try makeSemanticFeature(in: core, rows: SemanticHostRows())
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+
+        for keyed in [false, true] {
+            for (cancelA, cancelB, completesAFirst) in [
+                (false, true, true),
+                (false, false, true),
+                (false, false, false),
+                (false, true, false),
+                (true, true, true),
+                (true, false, true),
+            ] {
+                let holder = RUMSwiftUIViewTrackingEpoch()
+                let callback = try XCTUnwrap(holder.enter(binding))
+                defer { holder.retire(callback) }
+                let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
+                let state = try XCTUnwrap(admission.withSession { $0.trackingState })
+                let committed = configuration(generation: 1)
+                let next = configuration(generation: 2)
+                let initial = keyed
+                    ? state.reconcile(configuration: committed, attachment: .attached(fixture.identifier), isAppeared: true)
+                    : state.reconcile(attachment: .attached(fixture.identifier), isAppeared: true)
+                guard case let .start(identity, source) = try XCTUnwrap(initial.first) else {
+                    return XCTFail("The source must own the initial occurrence")
+                }
+                XCTAssertEqual(source, fixture.identifier)
+                let coordinatorA = RetainedCompletionCoordinator()
+                let coordinatorB = RetainedCompletionCoordinator()
+                let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+                    notificationCenter: NotificationCenterProvider.makeTestProvider().applicationCenter,
+                    admitsCallbacks: { binding.isValid },
+                    coordinatorProvider: { scene, _ in scene == fixture.identifier ? coordinatorA : coordinatorB }
+                )
+                var transitions: [RUMViewTrackingState.Transition] = []
+                let disappear: RUMSwiftUIInteractiveTransitionArbiter.Intent = keyed
+                    ? .reconcile(configuration: committed, attachment: nil, isAppeared: false)
+                    : .disappear
+                arbiter.process(disappear, state: state) { transitions += $0 }
+                let mount: RUMSwiftUIInteractiveTransitionArbiter.Intent = keyed
+                    ? .keyedMount(configuration: next, sceneIdentifier: destination)
+                    : .mount(destination)
+                arbiter.process(mount, state: state) { transitions += $0 }
+                XCTAssertEqual(coordinatorA.registrations, 1)
+                XCTAssertEqual(coordinatorB.registrations, 1)
+                XCTAssertTrue(transitions.isEmpty)
+
+                let sourceStop = RUMViewTrackingState.Transition.stop(identity: identity, sceneIdentifier: source)
+                if completesAFirst {
+                    coordinatorA.complete(cancelled: cancelA)
+                    await drainOwnedMainDelivery()
+                    XCTAssertEqual(transitions, cancelA ? [] : [sourceStop])
+                    coordinatorB.complete(cancelled: cancelB)
+                } else {
+                    coordinatorB.complete(cancelled: cancelB)
+                    await drainOwnedMainDelivery()
+                    XCTAssertEqual(transitions.count, cancelB ? 0 : 2)
+                    coordinatorA.complete(cancelled: cancelA)
+                }
+                await drainOwnedMainDelivery()
+
+                if !cancelB {
+                    XCTAssertEqual(transitions.count, 2)
+                    XCTAssertEqual(transitions.first, sourceStop)
+                    if case let .start(_, scene) = transitions.last {
+                        XCTAssertEqual(scene, destination)
+                    } else {
+                        XCTFail("An accepted destination must start its own occurrence")
+                    }
+                    XCTAssertEqual(state.sceneIdentifier, destination)
+                } else if cancelA {
+                    XCTAssertTrue(transitions.isEmpty)
+                    XCTAssertEqual(state.sceneIdentifier, source)
+                    XCTAssertNotNil(state.activeLifecycleGeneration)
+                } else {
+                    XCTAssertEqual(transitions, [sourceStop])
+                    XCTAssertNil(state.activeLifecycleGeneration)
+                }
+            }
+        }
+    }
+
+    @MainActor
     func testPendingSceneMoveStopsTheCommittedViewWhenDestinationDisconnects() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let fixture = try SemanticHostWindow()
