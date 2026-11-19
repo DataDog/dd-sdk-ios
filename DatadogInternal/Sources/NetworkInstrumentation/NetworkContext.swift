@@ -36,14 +36,14 @@ public protocol RUMContextHandoffContextUpdating {
 /// Optional built-in delivery capability; custom scopes retain ordinary Flags delivery.
 @_spi(Internal)
 public protocol RUMFlagEvaluationSending {
-    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage)
+    func dispatchFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage)
 }
 
 @_spi(Internal)
 public extension FeatureScope {
     func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
         if let scope = self as? RUMFlagEvaluationSending {
-            scope.sendFlagEvaluation(evaluation)
+            scope.dispatchFlagEvaluation(evaluation)
         } else {
             send(message: .payload(evaluation))
         }
