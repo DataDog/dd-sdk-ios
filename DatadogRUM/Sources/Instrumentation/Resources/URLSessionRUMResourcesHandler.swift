@@ -110,7 +110,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         capturing context: RUMURLSessionContext, reusing preparation: RUMURLSessionPreparation?
     ) -> RUMURLSessionPreparation {
         func rejected() -> RUMURLSessionPreparation {
-            RUMURLSessionPreparation(identifier: nil, capturedState: ResourcePreparationState.rejected)
+            RUMURLSessionPreparation(rejectedState: ResourcePreparationState.rejected)
         }
         guard let subscriber else {
             return rejected()
