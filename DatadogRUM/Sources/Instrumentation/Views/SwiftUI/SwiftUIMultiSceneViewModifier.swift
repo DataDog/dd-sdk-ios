@@ -264,7 +264,10 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             )
             .onChange(of: sceneIdentifier, initial: true) { _, sceneIdentifier in
                 if navigationOccurrenceSource != nil {
-                    update(attachment: attachment(for: sceneIdentifier))
+                    guard let attachment = attachment(for: sceneIdentifier) else {
+                        return
+                    }
+                    update(attachment: attachment)
                 } else if let scene = mountedOrdinaryScene {
                     update(attachment: .attached(scene))
                 }
@@ -288,7 +291,10 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 if navigationOccurrenceSource == nil {
                     requestOrdinaryAppearance()
                 } else {
-                    update(attachment: attachment(for: sceneIdentifier))
+                    guard let attachment = attachment(for: sceneIdentifier) else {
+                        return
+                    }
+                    update(attachment: attachment)
                     appear()
                 }
             }
