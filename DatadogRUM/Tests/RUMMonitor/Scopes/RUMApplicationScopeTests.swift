@@ -1391,6 +1391,7 @@ extension RUMApplicationScopeTests {
     }
 }
 
+#if os(iOS)
 extension RUMApplicationScopeTests {
     func testCapturedActionReceiptKeepsTheOriginalActionAfterReplacement() throws {
         guard #available(iOS 27.0, *) else {
@@ -1659,3 +1660,4 @@ extension RUMApplicationScopeTests {
         )
     }
 }
+#endif
