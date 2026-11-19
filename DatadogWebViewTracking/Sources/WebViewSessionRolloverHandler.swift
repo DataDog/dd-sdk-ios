@@ -41,6 +41,12 @@ internal class WebViewSessionRolloverHandler {
         case retired(RUMContextHandoff.Owner)
     }
 
+    enum RUMReceipt {
+        case unscoped
+        case native(RUMContextHandoff.Capture)
+        case legacy(RUMLegacyWebViewTrackingReceipt)
+    }
+
     private var nativeOwnership = NativeOwnership.legacy
 
     /// Whether messages belong to an active or retired native RUM lifetime.
@@ -87,26 +93,33 @@ internal class WebViewSessionRolloverHandler {
         return capture
     }
 
-    /// Resolve native UI only for a live On lifetime, before any bridge queue dispatch.
     func captureRUMContext(forSceneIdentifier resolveSceneIdentifier: () -> String?) -> RUMContextHandoff.Capture? {
+        guard case let .native(capture) = captureRUMReceipt(forSceneIdentifier: resolveSceneIdentifier) else {
+            return nil
+        }
+        return capture
+    }
+
+    /// Captures the registration before the bridge queues the callback.
+    func captureRUMReceipt(forSceneIdentifier resolveSceneIdentifier: () -> String?) -> RUMReceipt {
         switch nativeOwnership {
         case .legacy:
-            return nil
+            return .unscoped
         case .retired(let owner):
             return captureAfterRetirement(of: owner)
         case .active(let owner):
             guard owner.isValid else {
                 return captureAfterRetirement(of: owner)
             }
-            return captureRUMContext(forSceneIdentifier: resolveSceneIdentifier(), owner: owner)
+            return .native(captureRUMContext(forSceneIdentifier: resolveSceneIdentifier(), owner: owner))
         }
     }
 
-    private func captureAfterRetirement(of owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
-        // Keep the retired token for queued callbacks and for terminal Core shutdown. A fresh
-        // receipt can use legacy delivery while a committed legacy RUM feature is registered.
-        let allowsLegacy = (core as? RUMContextHandoffActivating)?.canResumeLegacyWebViewTracking == true
-        return allowsLegacy ? nil : emptyCapture(for: owner)
+    private func captureAfterRetirement(of owner: RUMContextHandoff.Owner) -> RUMReceipt {
+        if let receipt = (core as? RUMContextHandoffActivating)?.legacyWebViewTrackingReceipt {
+            return .legacy(receipt)
+        }
+        return .native(emptyCapture(for: owner))
     }
 
     private func emptyCapture(for owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture {
