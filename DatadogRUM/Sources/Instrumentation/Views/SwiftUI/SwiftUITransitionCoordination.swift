@@ -984,12 +984,14 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         let pending = deferredTransition(for: state)
         let pendingTerminalScene: RUMSceneIdentifier?
         if intent.isAppeared == false || intent.attachment == .detached,
-           let pending, pending.transition.deferredState(for: state)?.admission?.matches(admission) == true {
+           let pending,
+           pending.transition.deferredState(for: state)?.admission?.matches(admission) == true,
+           admission.admits(sceneIdentifier: pending.key.sceneIdentifier) {
             pendingTerminalScene = pending.key.sceneIdentifier
         } else {
             pendingTerminalScene = nil
         }
-        guard let sceneIdentifier = intent.sceneIdentifier ?? state.sceneIdentifier ?? pendingTerminalScene,
+        guard let sceneIdentifier = intent.sceneIdentifier ?? pendingTerminalScene ?? state.sceneIdentifier,
               admission.admits(sceneIdentifier: sceneIdentifier) else {
             return
         }
