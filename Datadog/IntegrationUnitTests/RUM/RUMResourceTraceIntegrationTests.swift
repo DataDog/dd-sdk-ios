@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 import TestUtilities
 @testable import DatadogCore
@@ -104,6 +105,63 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         let span = prepare(activeSpan: true, spanSampled: false, sessionSampled: false, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
+
+    #if os(iOS)
+    func testTraceSurvivesRejectedSceneResource_whenTraceRegistersFirst() throws {
+        try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: true)
+    }
+
+    func testTraceSurvivesRejectedSceneResource_whenRUMRegistersFirst() throws {
+        try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: false)
+    }
+
+    private func assertStandaloneTraceWhenRUMRejectsResource(traceFirst: Bool) throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
+        let hosts: [String: Set<TracingHeaderType>] = ["www.example.com": [.datadog, .tracecontext]]
+        let traceConfig = Trace.Configuration(urlSessionTracking: .init(
+            firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100)
+        ))
+        var rumConfig = RUM.Configuration(
+            applicationID: .mockAny(),
+            urlSessionTracking: .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100))
+        )
+        rumConfig.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        rumConfig.featureFlags = [.multiSceneTracking: true]
+        rumConfig.longTaskThreshold = nil
+        rumConfig.appHangThreshold = nil
+        if traceFirst {
+            Trace.enable(with: traceConfig, in: core)
+            try RUM.enableOrThrow(with: rumConfig, in: core)
+        } else {
+            try RUM.enableOrThrow(with: rumConfig, in: core)
+            Trace.enable(with: traceConfig, in: core)
+        }
+        core.flush()
+
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let context = RUMContextHandoff.CurrentValue(
+            rumContext: nil,
+            sceneIdentifier: "empty",
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+        let url = try XCTUnwrap(URL(string: "https://www.example.com/no-native-view"))
+        let request = try RUMContextHandoff.withValue(context, for: owner) {
+            try sendURLSessionRequest(to: url)
+        }
+
+        XCTAssertNil(request.value(forHTTPHeaderField: "x-datadog-origin"))
+        XCTAssertNotNil(request.value(forHTTPHeaderField: "x-datadog-trace-id"))
+        XCTAssertNotNil(request.value(forHTTPHeaderField: "traceparent"))
+        XCTAssertFalse(request.value(forHTTPHeaderField: "tracestate")?.contains("o:rum") ?? false)
+
+        let spans = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(try spans.map { try $0.operationName() }, ["urlsession.request"])
+        let rumEvents = try core.waitAndReturnRUMEventMatchers()
+        XCTAssertFalse(try rumEvents.contains { try $0.eventType() == "resource" })
+    }
+    #endif
 
     private func prepare(activeSpan: Bool, spanSampled: Bool, sessionSampled: Bool, urlSessionTrackingSampled: Bool) -> OTSpan {
         Trace.enable(
