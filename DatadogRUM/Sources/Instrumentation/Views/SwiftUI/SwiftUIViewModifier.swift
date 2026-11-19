@@ -64,19 +64,32 @@ public extension SwiftUI.View {
         let path = "\(name)/\(typeDescription.hashValue)"
         let feature = core.get(feature: RUMFeature.self)
         #if os(iOS)
-        if #available(iOS 27.0, *), feature?.isMultiSceneTrackingEnabled == true {
-            if let binding = feature?.instrumentation.swiftUIViewFoundation?.makeBinding() {
-                rumMultiSceneTrackedContent(
-                    self,
-                    binding: binding,
-                    name: name,
-                    path: path,
-                    attributes: attributes,
-                    configuration: nil,
-                    navigationOccurrenceSource: nil
-                )
-            } else {
-                self
+        if #available(iOS 27.0, *) {
+            background {
+                // Only the SDK tracking view changes when RUM becomes available.
+                let tracker = Color.clear.accessibilityHidden(true).allowsHitTesting(false)
+                if let feature, feature.isMultiSceneTrackingEnabled {
+                    if let binding = feature.instrumentation.swiftUIViewFoundation?.makeBinding() {
+                        rumMultiSceneTrackedContent(
+                            tracker,
+                            binding: binding,
+                            name: name,
+                            path: path,
+                            attributes: attributes,
+                            configuration: nil,
+                            navigationOccurrenceSource: nil
+                        )
+                    }
+                } else {
+                    tracker.modifier(
+                        RUMViewModifier(
+                            instrumentation: feature?.instrumentation,
+                            name: name,
+                            path: path,
+                            attributes: attributes
+                        )
+                    )
+                }
             }
         } else {
             modifier(
