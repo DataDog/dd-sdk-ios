@@ -68,4 +68,87 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(receivedData, [body, body])
         XCTAssertEqual(interceptedData, [body, body])
     }
+
+    // MARK: - AsyncDataTaskCompletionHandler guards
+
+    func testAsyncDataTaskHook_whenSelectorIsMissing_itIsNotBuilt() {
+        XCTAssertNil(URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(selectorName: "_ddtest_missing:delegate:completionHandler:"))
+    }
+
+    func testAsyncDataTaskHook_whenSignatureIsIncompatible_itIsNotBuilt() {
+        XCTAssertNil(
+            URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(
+                selectorName: "ddtest_incompatible:delegate:completionHandler:",
+                klass: AsyncDataTaskSessionMock.self
+            )
+        )
+    }
+
+    func testAsyncDataTaskHook_whenCompletionIsNil_itPassesItThrough() throws {
+        let hook = try XCTUnwrap(
+            URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(
+                selectorName: "ddtest_dataTaskWith:delegate:completionHandler:",
+                klass: AsyncDataTaskSessionMock.self
+            )
+        )
+        var intercepted = 0
+        hook.swizzle(interceptCompletion: { _, _, _ in intercepted += 1 }, didReceive: { _, _ in intercepted += 1 })
+        defer { hook.unswizzle() }
+
+        let session = AsyncDataTaskSessionMock()
+        _ = session.dataTask(with: URL.mockAny() as NSURL, delegate: nil, completionHandler: nil)
+
+        XCTAssertEqual(session.callCount, 1)
+        XCTAssertNil(session.receivedCompletion, "nil completion must reach the original implementation as nil")
+        XCTAssertEqual(intercepted, 0)
+    }
+
+    func testAsyncDataTaskHook_whenCompletionIsGiven_itInterceptsAndCallsOriginalOnce() throws {
+        let hook = try XCTUnwrap(
+            URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(
+                selectorName: "ddtest_dataTaskWith:delegate:completionHandler:",
+                klass: AsyncDataTaskSessionMock.self
+            )
+        )
+        let body: Data = .mock(ofSize: 10)
+        var received: [Data] = []
+        var intercepted: [Data?] = []
+        hook.swizzle(interceptCompletion: { _, data, _ in intercepted.append(data) }, didReceive: { _, data in received.append(data) })
+        defer { hook.unswizzle() }
+
+        let session = AsyncDataTaskSessionMock()
+        var calls: [Data?] = []
+        let task = session.dataTask(with: URL.mockAny() as NSURL, delegate: nil) { data, _, _ in calls.append(data) }
+        session.complete(with: body)
+
+        XCTAssertEqual(calls, [body])
+        XCTAssertEqual(received, [body])
+        XCTAssertEqual(intercepted, [body])
+        XCTAssertTrue(task.dd.hasCompletion)
+    }
+}
+
+/// Exposes selectors shaped like the private `NSURLSession` async-data entry points.
+private final class AsyncDataTaskSessionMock: NSObject {
+    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+
+    private(set) var callCount = 0
+    private(set) var receivedCompletion: CompletionHandler?
+    private let task = URLSession.shared.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+
+    @objc(ddtest_dataTaskWith:delegate:completionHandler:)
+    dynamic func dataTask(with urlOrRequest: AnyObject, delegate: AnyObject?, completionHandler: CompletionHandler?) -> URLSessionDataTask {
+        callCount += 1
+        receivedCompletion = completionHandler
+        return task
+    }
+
+    @objc(ddtest_incompatible:delegate:completionHandler:)
+    func incompatible(_ value: Int, delegate: AnyObject?, completionHandler: CompletionHandler?) -> URLSessionDataTask {
+        return task
+    }
+
+    func complete(with data: Data) {
+        receivedCompletion?(data, nil, nil)
+    }
 }
