@@ -164,6 +164,12 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 rebindNavigationOccurrenceSource(attachment: attachment)
             }
         }
+        let onDidDetach: (@MainActor () -> Void)?
+        if navigationOccurrenceSource == nil {
+            onDidDetach = reconcileSurvivingOrdinaryReader
+        } else {
+            onDidDetach = nil
+        }
         return content
             .background(
                 RUMSceneIdentifierReader(
@@ -176,6 +182,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     onInitialMount: onInitialMount,
                     onMount: onMount,
                     onReconcile: onReconcile,
+                    onDidDetach: onDidDetach,
                     onChange: { attachment in
                         readerAttachmentChanged(attachment)
                     }
@@ -285,9 +292,14 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         _ = admission.withSession { session in
             let trackingState = session.trackingState
             if navigationOccurrenceSource == nil {
-                guard transitionArbiter?.mountedSceneIdentifier(for: trackingState) == sceneIdentifier else {
+                guard let scene = transitionArbiter?.mountedSceneIdentifier(for: trackingState) else {
+                    session.shouldReconcileSurvivingOrdinaryReader = true
                     return
                 }
+                guard scene == sceneIdentifier else {
+                    return
+                }
+                session.shouldReconcileSurvivingOrdinaryReader = false
                 if session.hasPendingOrdinaryAppearance {
                     requestOrdinaryAppearance()
                     return
@@ -557,6 +569,19 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         rebindNavigationOccurrenceSource(attachment: attachment)
     }
 
+    private func reconcileSurvivingOrdinaryReader() {
+        _ = admission.withSession { session in
+            guard session.shouldReconcileSurvivingOrdinaryReader,
+                  session.trackingState.isAppeared || session.hasPendingOrdinaryAppearance,
+                  let scene = transitionArbiter?.mountedSceneIdentifier(for: session.trackingState) else {
+                return
+            }
+            // UIKit has removed the old window reference. The reader that
+            // already reported its attachment can now prove sole scene ownership.
+            mount(in: scene)
+        }
+    }
+
     private func requestOrdinaryAppearance() {
         _ = admission.withSession { session in
             let state = session.trackingState
@@ -642,6 +667,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             admission.recordLifecycleObservation("trait-disappear-admitted", state: trackingState)
             #endif
             session.hasPendingOrdinaryAppearance = false
+            session.shouldReconcileSurvivingOrdinaryReader = false
 
             if let configuration {
                 if navigationOccurrenceSource?.retainsManagedInitialOccurrence(

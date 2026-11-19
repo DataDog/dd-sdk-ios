@@ -24,6 +24,7 @@ internal final class RUMSwiftUIViewTrackingEpoch {
         let suppressionState = RUMSwiftUIAutomaticViewSuppressionState()
         var didReceiveInitialSceneIdentifier = false
         var hasPendingOrdinaryAppearance = false
+        var shouldReconcileSurvivingOrdinaryReader = false
         fileprivate var isDisappearanceCallbackActive = false
         fileprivate var registrationFence: RUMSwiftUIViewRegistrationFence?
 
