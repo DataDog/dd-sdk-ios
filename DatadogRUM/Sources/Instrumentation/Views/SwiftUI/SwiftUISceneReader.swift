@@ -129,6 +129,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
     let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)?
     let onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
     let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)?
+    let onDidDetach: (@MainActor () -> Void)?
     let onChange: @MainActor (RUMViewTrackingState.Attachment) -> Void
 
     @MainActor
@@ -140,6 +141,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)? = nil,
         onMount: (@MainActor (RUMSceneIdentifier) -> Void)? = nil,
         onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)? = nil,
+        onDidDetach: (@MainActor () -> Void)? = nil,
         onChange: @escaping @MainActor (RUMViewTrackingState.Attachment) -> Void
     ) {
         self.admission = admission
@@ -149,6 +151,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         self.onInitialMount = onInitialMount
         self.onMount = onMount
         self.onReconcile = onReconcile
+        self.onDidDetach = onDidDetach
         self.onChange = onChange
     }
 
@@ -175,6 +178,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
             return observer
         }
         observer.onMount = mountCallback(for: observer)
+        observer.onDidDetach = onDidDetach
         onCreate?(observer)
         if let initialSceneIdentifier, admission.admits(sceneIdentifier: initialSceneIdentifier) {
             onInitialMount?(initialSceneIdentifier)
@@ -199,6 +203,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         onCreate?(observer)
         observer.onMount = mountCallback(for: observer)
         observer.onChange = onChange
+        observer.onDidDetach = onDidDetach
         onReconcile?(observer.currentAttachment)
         observer.notifyCurrentAttachment()
     }
@@ -223,6 +228,8 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         private var admission: RUMSwiftUIViewCallbackAdmission?
         var onChange: @MainActor (RUMViewTrackingState.Attachment) -> Void
         var onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
+        var onDidDetach: (@MainActor () -> Void)?
+        private var detachingFromWindow = false
         private var lastAttachment: RUMViewTrackingState.Attachment?
         private var requiresMountNotification = false
         private var lastProvenSceneIdentifier: RUMSceneIdentifier?
@@ -255,11 +262,17 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
 
         override func didMoveToWindow() {
             super.didMoveToWindow()
+            let didDetach = detachingFromWindow && window == nil
+            detachingFromWindow = false
             notifyCurrentAttachment()
+            if didDetach {
+                onDidDetach?()
+            }
         }
 
         override func willMove(toWindow newWindow: UIWindow?) {
             // Report attachment after UIKit assigns window; preserve early detach.
+            detachingFromWindow = newWindow == nil && window != nil
             if newWindow == nil {
                 notify(window: nil)
             }
