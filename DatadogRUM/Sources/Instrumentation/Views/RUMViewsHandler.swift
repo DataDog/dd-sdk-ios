@@ -795,8 +795,9 @@ internal final class RUMSceneViewsHandler {
             return true
         }
 
-        // Ignore the view if it's already visible
-        if view.identity == stack.last?.identity {
+        // Repeated manual starts represent fresh occurrences, even for the same key.
+        let restartsManualView = view.instrumentationType == .manual && stack.last?.instrumentationType == .manual
+        if view.identity == stack.last?.identity && !restartsManualView {
             return true
         }
 
