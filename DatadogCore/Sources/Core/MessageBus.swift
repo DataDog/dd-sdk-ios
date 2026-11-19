@@ -71,6 +71,16 @@ internal final class MessageBus {
         queue.async { self.bus[key] = receiver }
     }
 
+    /// On-only registration: check the surviving registry entry before connection.
+    func connect(_ receiver: FeatureMessageReceiver, forKey key: String, while isRegistered: @escaping () -> Bool) {
+        queue.async {
+            guard isRegistered() else {
+                return
+            }
+            self.bus[key] = receiver
+        }
+    }
+
     /// Removes the given key and its associated receiver from the bus.
     ///
     /// - Parameter key: The key to remove along with its associated receiver.
