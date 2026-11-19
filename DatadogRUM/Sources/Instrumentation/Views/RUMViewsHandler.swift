@@ -1449,11 +1449,6 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
         guard Thread.isMainThread else {
             return
         }
-        #if canImport(SwiftUI)
-        if let swiftUIViewEligibility, !swiftUIViewEligibility(viewController) {
-            return
-        }
-        #endif
         let identity = ViewIdentifier(viewController)
         let attachedSceneIdentifier = sceneIdentifierProvider(viewController)
         let trackedView = stacks.lazy.flatMap(\ViewStack.views).first(where: { $0.identity == identity })
@@ -1473,6 +1468,9 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
             return
         }
         if let view = trackedView {
+            if view.instrumentationType == .swiftuiAutomatic && !isEligibleForAutomaticSwiftUITracking(viewController) {
+                return
+            }
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
             if view.instrumentationType == .uikit {
@@ -1520,6 +1518,7 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
             add(view: view)
         } else if let swiftUIPredicate,
                   let swiftUIViewNameExtractor,
+                  isEligibleForAutomaticSwiftUITracking(viewController),
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
                   let rumView = swiftUIPredicate.rumView(for: rumViewName) {
             add(
@@ -1534,6 +1533,14 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
                 )
             )
         }
+    }
+
+    private func isEligibleForAutomaticSwiftUITracking(_ viewController: UIViewController) -> Bool {
+        #if canImport(SwiftUI)
+        return swiftUIViewEligibility?(viewController) != false
+        #else
+        return true
+        #endif
     }
 
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
