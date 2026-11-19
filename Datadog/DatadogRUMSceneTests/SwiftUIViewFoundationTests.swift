@@ -301,6 +301,113 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testDeferredDisappearanceRetainsOnlyItsOriginalRegistrationUntilSettlement() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let foundation = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation)
+        let binding = try XCTUnwrap(foundation.makeBinding())
+        let scene = try connectedSceneIdentifier(binding)
+        for keyed in [false, true] {
+            for (cancelled, tearsDown) in [(false, false), (true, false), (false, true)] {
+                var holder: RUMSwiftUIViewTrackingEpoch? = RUMSwiftUIViewTrackingEpoch()
+                weak var originalHolder = holder
+                let callback = try XCTUnwrap(holder?.enter(binding))
+                let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: try XCTUnwrap(holder), callback: callback))
+                let state = try XCTUnwrap(admission.withSession { $0.trackingState })
+                let disappearanceAdmission = try XCTUnwrap(
+                    RUMSwiftUIViewCallbackAdmission(holder: try XCTUnwrap(holder), callback: callback)
+                )
+                XCTAssertTrue(disappearanceAdmission.matches(admission))
+                XCTAssertTrue(state.admission === admission)
+                let coordinator = RetainedCompletionCoordinator()
+                let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+                    notificationCenter: NotificationCenterProvider.makeTestProvider().applicationCenter,
+                    admitsCallbacks: { binding.isValid },
+                    coordinatorProvider: { _, _ in coordinator }
+                )
+                let view = configuration(generation: 1)
+                let initial: [RUMViewTrackingState.Transition]
+                if keyed {
+                    initial = state.reconcile(configuration: view, attachment: .attached(scene), isAppeared: true)
+                } else {
+                    _ = state.update(attachment: .attached(scene))
+                    initial = state.appear()
+                }
+                guard case let .start(identity, _) = try XCTUnwrap(initial.first) else {
+                    return XCTFail("The original view was not started")
+                }
+                var transitions: [RUMViewTrackingState.Transition] = []
+                var disappearance: (() -> Void)? = disappearanceAdmission.disappearanceCallback {
+                    let intent: RUMSwiftUIInteractiveTransitionArbiter.Intent = keyed
+                        ? .reconcile(configuration: view, attachment: nil, isAppeared: false) : .disappear
+                    arbiter.process(intent, state: state) { transitions += $0 }
+                }
+                disappearance?()
+                XCTAssertEqual(coordinator.registrations, 1)
+                XCTAssertTrue(transitions.isEmpty)
+                disappearance = nil
+                holder = nil
+                XCTAssertNotNil(originalHolder)
+                if tearsDown {
+                    arbiter.cancelPendingWithoutPublishing()
+                    XCTAssertNil(originalHolder)
+                }
+                coordinator.complete(cancelled: cancelled)
+                await drainOwnedMainDelivery()
+                XCTAssertEqual(transitions, cancelled || tearsDown ? [] : [.stop(identity: identity, sceneIdentifier: scene)])
+                XCTAssertNil(originalHolder)
+            }
+        }
+    }
+
+    @MainActor
+    func testPendingFirstAppearanceDisappearsBeforeTransitionCompletion() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let foundation = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation)
+        let binding = try XCTUnwrap(foundation.makeBinding())
+        let scene = try connectedSceneIdentifier(binding)
+        for keyed in [false, true] {
+            for detaches in [false, true] {
+                let holder = RUMSwiftUIViewTrackingEpoch()
+                let callback = try XCTUnwrap(holder.enter(binding))
+                let admission = try XCTUnwrap(RUMSwiftUIViewCallbackAdmission(holder: holder, callback: callback))
+                let state = try XCTUnwrap(admission.withSession { $0.trackingState })
+                let coordinator = RetainedCompletionCoordinator()
+                let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+                    notificationCenter: NotificationCenterProvider.makeTestProvider().applicationCenter,
+                    admitsCallbacks: { binding.isValid },
+                    coordinatorProvider: { _, _ in coordinator }
+                )
+                let view = configuration(generation: 1)
+                let first: RUMSwiftUIInteractiveTransitionArbiter.Intent = keyed
+                    ? .keyedInitialMount(configuration: view, sceneIdentifier: scene) : .initialMount(scene)
+                let terminal: RUMSwiftUIInteractiveTransitionArbiter.Intent
+                if detaches {
+                    terminal = keyed ? .reconcile(configuration: view, attachment: .detached, isAppeared: nil) : .update(.detached)
+                } else {
+                    terminal = keyed ? .reconcile(configuration: view, attachment: nil, isAppeared: false) : .disappear
+                }
+                var transitions: [RUMViewTrackingState.Transition] = []
+                arbiter.process(first, state: state) { transitions += $0 }
+                XCTAssertEqual(coordinator.registrations, 1)
+                XCTAssertNil(state.sceneIdentifier)
+                XCTAssertTrue(transitions.isEmpty)
+                arbiter.process(terminal, state: state) { transitions += $0 }
+                coordinator.complete(cancelled: false)
+                await drainOwnedMainDelivery()
+                XCTAssertTrue(transitions.isEmpty)
+                XCTAssertNil(state.activeLifecycleGeneration)
+                holder.retire(callback)
+            }
+        }
+    }
+
+    @MainActor
     func testRegistry_whenOriginalHolderRetiresOrReleases_itStopsSuppressingOnlyItsContainedSubtree() throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
         let core = makeHandoffCore()
