@@ -306,7 +306,7 @@ Unit Tests (macOS x86_64):
   stage: test
   rules:
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    - !reference [.tag-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
   # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
