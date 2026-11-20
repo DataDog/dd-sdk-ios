@@ -272,7 +272,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
                 writeLine("case none")
             }
             swiftEnum.cases.forEach { enumCase in
-                writeLine("case \(enumCase.label)")
+                writeLine("case \(enumCase.backtickLabel)")
             }
         indentLeft()
         writeLine("}")
