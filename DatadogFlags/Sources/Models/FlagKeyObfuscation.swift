@@ -44,7 +44,7 @@ internal struct FlagKeyObfuscation: Equatable, Codable {
         return SHA256.hash(data: input).map { String(format: "%02x", $0) }.joined()
     }
 
-    func validateKeys(_ keys: Dictionary<String, FlagAssignment>.Keys, codingPath: [CodingKey]) throws {
+    func validateKeys<Keys: Sequence>(_ keys: Keys, codingPath: [CodingKey]) throws where Keys.Element == String {
         guard keys.allSatisfy({ [UInt8](lowercaseHex: $0, byteCount: SHA256.byteCount) != nil }) else {
             throw DecodingError.dataCorrupted(.init(codingPath: codingPath, debugDescription: "Flag keys are not SHA-256 digests"))
         }
