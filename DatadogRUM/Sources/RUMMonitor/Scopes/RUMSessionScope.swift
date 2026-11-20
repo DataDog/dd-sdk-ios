@@ -292,7 +292,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         if sceneState != nil, context.applicationStateHistory.currentState.isRunningInForeground {
             let foregroundViews = expiredSession.foregroundViewsForRestoration
             let views = viewsToRestore(foregroundViews, on: triggeringCommand, restoreAll: transferActiveView)
-            restoreViews(views, at: startTime, context: context)
+            let tap = triggeringCommand as? RUMAddUserActionCommand
+            restoreViews(views, at: startTime, context: context, actionReceipt: tap?.actionReceipt)
             return
         }
 
@@ -777,7 +778,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return views.filter { $0.sceneIdentifier != scene }
     }
 
-    private func restoreViews(_ views: [RUMViewScope], at time: Date, context: DatadogContext) {
+    private func restoreViews(
+        _ views: [RUMViewScope],
+        at time: Date,
+        context: DatadogContext,
+        actionReceipt: RUMContextHandoff.ActionReceipt? = nil
+    ) {
         for view in views {
             startView(
                 isInitialView: false,
@@ -794,6 +800,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
             if let restored = viewScopes.last {
                 sceneState?.restoredViews.append(restored)
+                if let actionReceipt, actionReceipt.canAcceptRestoredView {
+                    actionReceipt.prepareRestoredView(
+                        fromSessionID: view.context.sessionID.toRUMDataFormat,
+                        fromViewID: view.viewUUID.toRUMDataFormat,
+                        sessionID: sessionUUID.toRUMDataFormat,
+                        viewID: restored.viewUUID.toRUMDataFormat
+                    )
+                }
             }
         }
     }
@@ -823,17 +837,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return command.target
     }
 
-    /// Applies a captured evaluation only to its original active view.
+    /// Applies a captured evaluation only to the active view selected by the application scope.
     func processCapturedFlagEvaluation(
-        _ flag: RUMAddFeatureFlagEvaluationCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer
+        _ flag: RUMAddFeatureFlagEvaluationCommand,
+        viewID: RUMUUID,
+        monotonicTime: TimeInterval,
+        context: DatadogContext,
+        writer: Writer
     ) {
         guard sceneState != nil, isActive, sampler.isSampled,
               let ownership = flag.capturedOwnership,
               ownership.owner.isValid,
               RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
-              ownership.sessionID == sessionUUID,
               !hasTimedOut(now: monotonicTime), !hasExpired(now: monotonicTime),
-              let view = viewScopes.first(where: { $0.isActiveView && $0.viewUUID == ownership.viewID }) else { return }
+              let view = viewScopes.first(where: { $0.isActiveView && $0.viewUUID == viewID }) else { return }
         if !view.process(command: flag, context: context, writer: writer) {
             viewScopes.removeAll { $0 === view }
         }

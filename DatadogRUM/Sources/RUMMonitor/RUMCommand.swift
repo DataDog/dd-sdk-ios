@@ -89,19 +89,43 @@ internal enum RUMErrorUserActionTarget: Equatable {
     case captured(RUMUUID?)
 }
 
-/// Original session/view for one captured Flags evaluation; retains no Core or UI.
+/// Identifies the active view for a captured Flags evaluation.
 internal final class RUMCapturedFlagEvaluationOwnership {
     let owner: RUMContextHandoff.Owner
-    let sessionID: RUMUUID
-    let viewID: RUMUUID
+    private let originalView: (sessionID: RUMUUID, viewID: RUMUUID)?
+    private let rolloverReceipt: RUMContextHandoff.ActionReceipt?
 
     init?(capture: RUMContextHandoff.Capture) {
-        guard capture.owner.isValid, let context = capture.value.rumContext,
-              let sessionID = UUID(uuidString: context.sessionID),
-              let viewID = context.viewID.flatMap(UUID.init(uuidString:)) else { return nil }
+        guard capture.owner.isValid else {
+            return nil
+        }
         owner = capture.owner
-        self.sessionID = RUMUUID(rawValue: sessionID)
-        self.viewID = RUMUUID(rawValue: viewID)
+        if let context = capture.value.rumContext,
+           let sessionID = UUID(uuidString: context.sessionID),
+           let viewID = context.viewID.flatMap(UUID.init(uuidString:)) {
+            originalView = (RUMUUID(rawValue: sessionID), RUMUUID(rawValue: viewID))
+            rolloverReceipt = nil
+        } else if capture.value.rumContext == nil,
+                  let receipt = capture.value.actionReceipt,
+                  receipt.owner === capture.owner, receipt.canAcceptRestoredView {
+            originalView = nil
+            rolloverReceipt = receipt
+        } else {
+            return nil
+        }
+    }
+
+    /// Resolves after the queued tap has either owned its restored view or been rejected.
+    func resolveView() -> (sessionID: RUMUUID, viewID: RUMUUID)? {
+        if let originalView {
+            return originalView
+        }
+        guard let restored = rolloverReceipt?.restoredView(for: owner),
+              let sessionID = UUID(uuidString: restored.sessionID),
+              let viewID = UUID(uuidString: restored.viewID) else {
+            return nil
+        }
+        return (RUMUUID(rawValue: sessionID), RUMUUID(rawValue: viewID))
     }
 }
 
