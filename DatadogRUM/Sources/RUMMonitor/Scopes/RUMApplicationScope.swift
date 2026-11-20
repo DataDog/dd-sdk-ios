@@ -223,9 +223,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             guard dependencies.isMultiSceneTrackingEnabled,
                   ownership.owner.isValid,
                   RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
-                  let session = activeSession, session.sessionUUID == ownership.sessionID else { return }
+                  let view = ownership.resolveView(),
+                  let session = activeSession, session.sessionUUID == view.sessionID else { return }
             // This also runs after deferred launch resolution, before creating/refreshing a session.
-            session.processCapturedFlagEvaluation(flag, monotonicTime: monotonicTime, context: context, writer: writer)
+            session.processCapturedFlagEvaluation(
+                flag, viewID: view.viewID, monotonicTime: monotonicTime, context: context, writer: writer
+            )
             return
         }
         if let error = command as? RUMAddCurrentViewErrorCommand,
