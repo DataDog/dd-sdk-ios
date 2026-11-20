@@ -5,8 +5,11 @@
  */
 
 import XCTest
+#if os(iOS)
+import UIKit
+#endif
 @_spi(Internal)
-import TestUtilities
+@testable import TestUtilities
 @_spi(Internal)
 import DatadogInternal
 
@@ -50,8 +53,13 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-    private func prepare(multiSceneTracking: Bool = false, clientBeforeRUM: Bool = false) -> FlagsClientProtocol {
+    private func prepare(
+        multiSceneTracking: Bool = false,
+        clientBeforeRUM: Bool = false,
+        configure: (inout RUM.Configuration) -> Void = { _ in }
+    ) -> FlagsClientProtocol {
         var configuration = RUM.Configuration(applicationID: "test-app-id")
+        configure(&configuration)
         if multiSceneTracking {
             configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
             configuration.featureFlags = [.multiSceneTracking: true]
@@ -206,6 +214,118 @@ final class FlagsRUMIntegrationTests: XCTestCase {
                 XCTAssertNil(flag("boolean-flag", in: view))
             }
         }
+    }
+
+    @MainActor
+    func testFirstAutomaticTapAfterTimeoutKeepsFlagOnRestoredView() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Automatic scene actions require iOS 27.") }
+        let date = Date()
+        let wallClock = DateProviderMock(now: date)
+        let monotonicClock = MonotonicClockMock(elapsedTime: 123)
+        let client = prepare(multiSceneTracking: true) {
+            $0.dateProvider = wallClock
+            $0.monotonicClock = monotonicClock
+        }
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let owner = try XCTUnwrap(core.rumContextHandoffOwner)
+        let tappedScene = RUMSceneIdentifier(rawValue: "tapped")
+        let peerScene = RUMSceneIdentifier(rawValue: "peer")
+        startView("tapped", in: tappedScene, monitor: monitor)
+        startView("peer", in: peerScene, monitor: monitor)
+        let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(tappedScene)))
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene)))
+        XCTAssertEqual(original.sessionID, peer.sessionID)
+
+        XCTAssertEqual(RUMContextHandoff.withValue(executionValue(peer, scene: peerScene), for: owner) {
+            client.getStringValue(key: "string-flag", defaultValue: "blue")
+        }, "red")
+        core.flush()
+
+        let window = UIWindow(frame: .zero)
+        let button = UIButton()
+        button.accessibilityIdentifier = "FlagAfterTimeout"
+        window.addSubview(button)
+        let factory = UITouchCommandFactory(
+            dateProvider: wallClock,
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+            uiKitPredicate: DefaultUIKitRUMActionsPredicate(),
+            swiftUIPredicate: nil,
+            swiftUIDetector: nil
+        )
+        let handler = RUMSceneActionsHandler(
+            legacyHandler: RUMActionsHandler(dateProvider: wallClock, eventCommandsFactory: factory),
+            eventCommandsFactory: factory,
+            dateProvider: wallClock,
+            owner: owner,
+            expectedMonitor: monitor,
+            sceneIdentifier: { $0 === window ? tappedScene : nil }
+        )
+        handler.publish(to: monitor)
+
+        let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
+        wallClock.now.addTimeInterval(timeout)
+        monotonicClock.advance(by: timeout)
+        XCTAssertNil(monitor.rumContextSnapshot(for: .scene(tappedScene)))
+        handler.intercept(application: .shared, event: .mockWith(touch: .mockWith(view: button))) {
+            let callback = RUMContextHandoff.current(for: owner)
+            XCTAssertEqual(callback?.sceneIdentifier, tappedScene.rawValue)
+            XCTAssertEqual(callback?.hasPendingUserAction, true)
+            XCTAssertTrue(client.getBooleanValue(key: "boolean-flag", defaultValue: false))
+        }
+
+        core.flush()
+        let restored = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(tappedScene)))
+        XCTAssertNotEqual(restored.sessionID, original.sessionID)
+        XCTAssertNotEqual(restored.viewID, original.viewID)
+        XCTAssertNotNil(restored.userActionID)
+        monitor.process(command: RUMStopViewCommand(
+            target: .scene(tappedScene), time: wallClock.now, attributes: [:], identity: ViewIdentifier("tapped")
+        ))
+        let evaluations = core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(evaluations.map { $0.flag.key }.sorted(), ["boolean-flag", "string-flag"])
+        // Keep incremental view writes. SDK telemetry shares this stream and has no session ID.
+        let rumEvents = try core.waitAndReturnRUMEventMatchers().filter { event in
+            let type = try event.eventType()
+            return type == "view" || type == "view_update" || type == "action"
+        }
+        let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEvents)
+        let views = sessions.flatMap(\.views)
+        let restoredView = try XCTUnwrap(views.first { $0.viewID == restored.viewID })
+        let peerView = try XCTUnwrap(views.first { $0.viewID == peer.viewID })
+        let resumedSession = try XCTUnwrap(sessions.first { $0.sessionID == restored.sessionID })
+        let tap = try XCTUnwrap(resumedSession.actionEvents.first { $0.action.target?.name == "UIButton(FlagAfterTimeout)" })
+        XCTAssertEqual(tap.view.id, restored.viewID)
+        XCTAssertEqual(flag("string-flag", in: peerView), "variation-123")
+        XCTAssertTrue(views.filter { $0.viewID != restored.viewID }.allSatisfy { flag("boolean-flag", in: $0) == nil })
+        XCTAssertEqual(flag("boolean-flag", in: restoredView), "variation-124", "First automatic tap lost its flag on the restored view")
+    }
+
+    func testRolloverReceiptRejectsWrongPredecessorAndWrongAcceptedView() throws {
+        try requireMultiSceneRuntime()
+        _ = prepare(multiSceneTracking: true)
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let owner = try XCTUnwrap(core.rumContextHandoffOwner)
+        let originalScene = RUMSceneIdentifier(rawValue: "original")
+        let peerScene = RUMSceneIdentifier(rawValue: "peer")
+        startView("original", in: originalScene, monitor: monitor)
+        startView("peer", in: peerScene, monitor: monitor)
+        let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(originalScene)))
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene)))
+        let originalViewID = try XCTUnwrap(original.viewID)
+        let peerViewID = try XCTUnwrap(peer.viewID)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: nil, rolloverSource: original)
+
+        receipt.prepareRestoredView(
+            fromSessionID: peer.sessionID, fromViewID: peerViewID, sessionID: "renewed", viewID: "restored-peer"
+        )
+        receipt.prepareRestoredView(
+            fromSessionID: original.sessionID, fromViewID: originalViewID, sessionID: "renewed", viewID: "restored-original"
+        )
+        XCTAssertNil(receipt.restoredView(for: owner))
+        receipt.accept(sessionID: "renewed", viewID: "restored-peer", actionID: "peer-tap")
+        XCTAssertNil(receipt.restoredView(for: owner))
+        receipt.accept(sessionID: "renewed", viewID: "restored-original", actionID: "later-tap")
+        XCTAssertNil(receipt.restoredView(for: owner))
     }
 
     private func requireMultiSceneRuntime() throws {
