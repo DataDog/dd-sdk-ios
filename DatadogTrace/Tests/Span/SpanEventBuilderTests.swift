@@ -994,3 +994,64 @@ class SpanEventBuilderTests: XCTestCase {
         }
     }
 }
+
+class SpanEventEncoderUserAnonymousIDTests: XCTestCase {
+    private func encodedMeta(_ span: SpanEvent) throws -> [String: Any] {
+        let data = try JSONEncoder().encode(span)
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    func testWhenAnonymousIDIsSet_itTakesPrecedenceOverCustomValues() throws {
+        let span: SpanEvent = .mockWith(
+            userInfo: .mockWith(anonymousId: "sdk-anon-id", extraInfo: ["anonymous_id": "extra-info-value"]),
+            tags: ["usr.anonymous_id": "tag-value"]
+        )
+
+        let json = try encodedMeta(span)
+
+        XCTAssertEqual(json["meta.usr.anonymous_id"] as? String, "sdk-anon-id")
+    }
+
+    func testWhenUserFieldsAreSet_theyTakePrecedenceOverCustomValues() throws {
+        let span: SpanEvent = .mockWith(
+            userInfo: .mockWith(
+                id: "sdk-id",
+                name: "sdk-name",
+                email: "sdk-email",
+                extraInfo: ["id": "extra-id", "name": "extra-name", "email": "extra-email"]
+            ),
+            tags: ["usr.id": "tag-id", "usr.name": "tag-name", "usr.email": "tag-email"]
+        )
+
+        let json = try encodedMeta(span)
+
+        XCTAssertEqual(json["meta.usr.id"] as? String, "sdk-id")
+        XCTAssertEqual(json["meta.usr.name"] as? String, "sdk-name")
+        XCTAssertEqual(json["meta.usr.email"] as? String, "sdk-email")
+    }
+
+    func testWhenUserFieldsAreNotSet_customValuesAreKept() throws {
+        let span: SpanEvent = .mockWith(
+            userInfo: .mockWith(id: nil, name: nil, email: nil, extraInfo: ["id": "extra-id"]),
+            tags: ["usr.email": "tag-email"]
+        )
+
+        let json = try encodedMeta(span)
+
+        XCTAssertEqual(json["meta.usr.id"] as? String, "extra-id")
+        XCTAssertEqual(json["meta.usr.email"] as? String, "tag-email")
+    }
+
+    func testWhenAnonymousIDIsNotSet_customValuesAreKept() throws {
+        let fromExtraInfo: SpanEvent = .mockWith(
+            userInfo: .mockWith(anonymousId: nil, extraInfo: ["anonymous_id": "extra-info-value"])
+        )
+        let fromTag: SpanEvent = .mockWith(
+            userInfo: .mockWith(anonymousId: nil),
+            tags: ["usr.anonymous_id": "tag-value"]
+        )
+
+        XCTAssertEqual(try encodedMeta(fromExtraInfo)["meta.usr.anonymous_id"] as? String, "extra-info-value")
+        XCTAssertEqual(try encodedMeta(fromTag)["meta.usr.anonymous_id"] as? String, "tag-value")
+    }
+}
