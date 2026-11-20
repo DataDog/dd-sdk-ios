@@ -1427,6 +1427,96 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.inuse_space, 16)
     }
 
+    func testMissingRUMBeyondFormerSamplingCutoffPreservesLaunchAndLiveObjects() {
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        record(size: 16)
+        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(61)))
+        drain()
+
+        for index in 0..<3 {
+            receive(context: context(state: .background, viewID: "unrelated-\(index)", hasRUM: false), on: profiler)
+        }
+        drain()
+
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertTrue(core.events.isEmpty)
+
+        record(address: 0x20000, size: 8)
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.ready_count, 1)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.alloc_space, 24)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        XCTAssertTrue(core.events.isEmpty)
+
+        receive(context: context(), on: profiler)
+        drain()
+        XCTAssertEqual(profiler.state, .running)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(core.events.count, 1)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testConsentRecoveryWithoutRUMBeyondFormerSamplingCutoffKeepsLiveObjects() {
+        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(61)))
+        drain()
+        receive(context: context(consent: .notGranted, state: .background, hasRUM: false), on: profiler)
+        drain()
+        XCTAssertFalse(dd_memory_profiler_is_running())
+
+        receive(context: context(consent: .pending, state: .background, hasRUM: false), on: profiler)
+        drain()
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        record(size: 16)
+        receive(context: context(consent: .granted, state: .background, lowPower: true, hasRUM: false), on: profiler)
+        drain()
+
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertTrue(core.events.isEmpty)
+
+        receive(context: context(), on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.ready_count, 1)
+        XCTAssertEqual(diagnostics.inuse_space, 16)
+        XCTAssertTrue(core.events.isEmpty)
+
+        record(address: 0x20000, size: 8)
+        let task = DurationEvent(id: "recovered-task", type: .longTask, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.ready_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        XCTAssertEqual(core.events.count, 1)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testTimerClosesPeriodicWindow() {
+        let profiler = makeRuntimeProfiler(profilingInterval: 0.02)
+        receive(context: context(), on: profiler)
+        drain()
+        record()
+        let captured = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in dd_memory_profiler_capture_diagnostics_for_testing().ready_count > 0 },
+            object: nil
+        )
+        wait(for: [captured], timeout: 3)
+        profiler.flushAndStop()
+
+        XCTAssertEqual(profiler.state, .shutDown)
+        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertGreaterThanOrEqual(diagnostics.ready_count, 1)
+    }
+
     func testConcurrentContextAndWindowRequestsShareOneNativeQueue() {
         let profiler = makeRuntimeProfiler()
         let sessionID = sessionID
@@ -1554,12 +1644,14 @@ final class MemoryProfilerTests: XCTestCase {
         let queue = queue
         let samplerProvider = profilingSamplerProvider
         let writer = ProfileWriter(featureScope: core)
+        let scheduler = ProfilingScheduler(writer: writer)
         let completed = expectation(description: "Profiler is released on its queue")
 
         queue.async {
             var profiler: MemoryProfiler? = MemoryProfiler(
                 profilingSamplerProvider: samplerProvider,
                 writer: writer,
+                scheduler: scheduler,
                 queue: queue
             )
             XCTAssertEqual(profiler?.state, .waiting)
@@ -1576,6 +1668,301 @@ final class MemoryProfilerTests: XCTestCase {
         }
 
         wait(for: [completed], timeout: 5)
+    }
+
+    func testPeriodicCaptureBeforeTTIDPreservesLaunchWindow() {
+        let profiler = makeProfiler()
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        receive(context: context(), on: profiler)
+        drain()
+        record(size: 16)
+        let completed = expectation(description: "Periodic launch capture skipped")
+        completed.assertForOverFulfill = true
+
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        drain()
+
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertTrue(core.events.isEmpty)
+
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.alloc_space, 16)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testSharedTimerPreservesLaunchThenCapturesAfterTTIDWithoutContextUpdate() {
+        let profiler = makeProfiler(profilingInterval: 0.02)
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        let launchWritten = expectation(description: "Launch profile written at TTID")
+        let periodicWritten = expectation(description: "Next periodic window written without another context")
+        let writes = ReadWriteLock<Int>(wrappedValue: 0)
+        core.onEventWriteContext = { _ in
+            var count = 0
+            writes.mutate { $0 += 1; count = $0 }
+            if count == 1 { launchWritten.fulfill() }
+            if count == 2 { periodicWritten.fulfill() }
+        }
+        receive(context: context(), on: profiler)
+        drain()
+        record(size: 16)
+        let ticksElapsed = expectation(description: "Several shared ticks pass before TTID")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { ticksElapsed.fulfill() }
+        wait(for: [ticksElapsed], timeout: 2)
+        drain()
+
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+        XCTAssertTrue(core.events.isEmpty)
+
+        receiveTTID(on: profiler)
+        wait(for: [launchWritten], timeout: 2)
+        drain()
+        record(address: 0x20000, size: 8)
+        let task = DurationEvent(id: "after-ttid", type: .longTask, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        wait(for: [periodicWritten], timeout: 3)
+
+        XCTAssertEqual(core.events.count, 2)
+        XCTAssertGreaterThanOrEqual(diagnostics.ready_count, 2)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        profiler.flushAndStop()
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testSharedTimerFallsBackWithoutTTIDAndRetainsLiveObjectsAfterLateTTID() throws {
+        let dateProvider = DateProviderMock(now: Date())
+        let clock = MemoryProfilerMonotonicClockMock()
+        let profiler = makeProfiler(profilingInterval: 0.02, dateProvider: dateProvider, monotonicClock: clock)
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        let firstWritten = expectation(description: "Missing TTID falls back on shared tick")
+        let secondWritten = expectation(description: "Next periodic profile retains earlier live objects")
+        let writes = ReadWriteLock<Int>(wrappedValue: 0)
+        core.onEventWriteContext = { _ in
+            var count = 0
+            writes.mutate { $0 += 1; count = $0 }
+            if count == 1 { firstWritten.fulfill() }
+            if count == 2 { secondWritten.fulfill() }
+        }
+        receive(context: context(), on: profiler)
+        drain()
+        record(size: 16)
+        let firstTask = DurationEvent(
+            id: "fallback-task",
+            type: .longTask,
+            start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds,
+            duration: 1.seconds.dd.toInt64Nanoseconds
+        )
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: firstTask)), from: core)
+        let ticksElapsed = expectation(description: "Shared ticks preserve launch before timeout")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { ticksElapsed.fulfill() }
+        wait(for: [ticksElapsed], timeout: 2)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+        XCTAssertTrue(core.events.isEmpty)
+
+        clock.elapsedTime = 61
+        wait(for: [firstWritten], timeout: 3)
+        record(address: 0x20000, size: 8)
+        receiveTTID(on: profiler)
+        let secondTask = DurationEvent(
+            id: "after-fallback",
+            type: .longTask,
+            start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds,
+            duration: 1.seconds.dd.toInt64Nanoseconds
+        )
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: secondTask)), from: core)
+        wait(for: [secondWritten], timeout: 3)
+
+        XCTAssertEqual(core.events.count, 2)
+        XCTAssertTrue(core.events(ofType: ProfileEvent.self).allSatisfy { $0.tags.contains("operation:continuous") })
+        let attachments = core.metadata(ofType: ProfileAttachments.self)
+        XCTAssertEqual(attachments.count, 2)
+        for (attachment, task) in zip(attachments, [firstTask, secondTask]) {
+            let events = try XCTUnwrap(JSONSerialization.jsonObject(with: attachment.rumEvents) as? [[String: Any]])
+            XCTAssertEqual(events.compactMap { $0["id"] as? String }, [task.id])
+        }
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        profiler.flushAndStop()
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testLaunchFallbackAtSixtySecondsSkipsUncorrelatedWriteAndIgnoresLateTTID() {
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        let launchDate = Date(timeIntervalSince1970: Double(origin) / 1_000_000_000)
+        let dateProvider = DateProviderMock(now: launchDate)
+        let clock = MemoryProfilerMonotonicClockMock()
+        let profiler = makeProfiler(dateProvider: dateProvider, monotonicClock: clock)
+        var profileContext = context()
+        profileContext.serverTimeOffset = 120
+        receive(context: profileContext, on: profiler)
+        drain()
+        record(size: 16)
+        clock.elapsedTime = 59
+        dateProvider.now = launchDate.addingTimeInterval(3_600)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+
+        clock.elapsedTime = 60
+        dateProvider.now = launchDate.addingTimeInterval(-3_600)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.inuse_space, 16)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+
+        let nextOrigin = dd_memory_profiler_window_start_time_nanos()
+        record(address: 0x20000, size: 8)
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), nextOrigin)
+        XCTAssertTrue(core.events.isEmpty)
+
+        let task = DurationEvent(
+            id: "after-late-ttid",
+            type: .longTask,
+            start: Date().addingTimeInterval(120).timeIntervalSince1970.dd.toInt64Nanoseconds,
+            duration: 0
+        )
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(diagnostics.alloc_space, 8)
+        XCTAssertEqual(diagnostics.inuse_space, 24)
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertTrue(core.events(ofType: ProfileEvent.self).first?.tags.contains("operation:continuous") == true)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testLateProfilerInitializationFallsBackOnFirstSharedTick() throws {
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        record(size: 16)
+        let dateProvider = DateProviderMock(
+            now: Date(timeIntervalSince1970: Double(origin) / 1_000_000_000).addingTimeInterval(61)
+        )
+        let profiler = makeProfiler(profilingInterval: 0.02, dateProvider: dateProvider)
+        let written = expectation(description: "Already expired native launch is captured")
+        core.onEventWriteContext = { _ in written.fulfill() }
+        receive(context: context(), on: profiler)
+        let task = DurationEvent(id: "late-enable", type: .longTask, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        wait(for: [written], timeout: 3)
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(event.start.timeIntervalSince1970, Double(origin) / 1_000_000_000, accuracy: 0.000001)
+        XCTAssertTrue(event.tags.contains("operation:continuous"))
+        XCTAssertEqual(diagnostics.inuse_space, 16)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        profiler.flushAndStop()
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testExpiredLaunchFallbackRespectsAdmissionAndStaleTicks() {
+        let suiteName = "MemoryProfilerTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        for blocker in ["missing-rum", "sampled-out", "suspended", "stale-tick"] {
+            dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+            defaults.set(100, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
+            dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
+            do {
+                let origin = dd_memory_profiler_window_start_time_nanos()
+                let dateProvider = DateProviderMock(
+                    now: Date(timeIntervalSince1970: Double(origin) / 1_000_000_000).addingTimeInterval(61)
+                )
+                let profiler = makeProfiler(dateProvider: dateProvider)
+                let writtenBefore = core.events.count
+                receive(context: context(
+                    sampleRate: blocker == "sampled-out" ? 0 : 100,
+                    lowPower: blocker == "suspended",
+                    hasRUM: blocker != "missing-rum"
+                ), on: profiler)
+                drain()
+                record(size: 16)
+                let completed = expectation(description: "Expired launch blocked by \(blocker)")
+                let scheduled = blocker == "stale-tick" ? DispatchTime(uptimeNanoseconds: 0) : .now()
+                profiler.captureSnapshot(scheduledFor: scheduled) { snapshot in
+                    XCTAssertNil(snapshot, blocker)
+                    completed.fulfill()
+                }
+                wait(for: [completed], timeout: 2)
+                if blocker != "stale-tick" {
+                    profiler.captureWindow()
+                }
+                drain()
+                XCTAssertEqual(diagnostics.captures_count, 0, blocker)
+                XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin, blocker)
+                XCTAssertEqual(core.events.count, writtenBefore, blocker)
+                XCTAssertTrue(dd_memory_profiler_is_running(), blocker)
+
+                receiveTTID(on: profiler)
+                drain()
+                XCTAssertEqual(diagnostics.captures_count, 1, blocker)
+                XCTAssertEqual(diagnostics.time_nanos, origin, blocker)
+                XCTAssertEqual(diagnostics.inuse_space, 16, blocker)
+                withExtendedLifetime(profiler) {}
+            }
+        }
+    }
+
+    func testPeriodicCaptureReturnsOwnedHeapSnapshotWithoutWriting() throws {
+        let profiler = makeRuntimeProfiler()
+        var capturedContext = context(viewID: "captured-view")
+        capturedContext.serverTimeOffset = 2
+        receive(context: capturedContext, on: profiler)
+        drain()
+        record()
+        let captured = ReadWriteLock<ProfileSnapshot?>(wrappedValue: nil)
+        let completed = expectation(description: "Heap snapshot captured")
+        completed.assertForOverFulfill = true
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            captured.wrappedValue = snapshot
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        drain()
+
+        let snapshot = try XCTUnwrap(captured.wrappedValue)
+        let start = diagnostics.time_nanos
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertEqual(snapshot.attachment.filename, ProfileAttachments.Constants.heapPprofFilename)
+        XCTAssertEqual(snapshot.rumContext?.sessionID, sessionID.uuidString.lowercased())
+        XCTAssertEqual(snapshot.rumContext?.viewID, "captured-view")
+
+        record(address: 0x20000, size: 32)
+        profiler.captureWindow()
+        profiler.flushAndStop()
+
+        let decoded = try XCTUnwrap(snapshot.attachment.data.withUnsafeBytes { bytes in
+            perftools__profiles__profile__unpack(nil, bytes.count, bytes.bindMemory(to: UInt8.self).baseAddress)
+        })
+        defer { perftools__profiles__profile__free_unpacked(decoded, nil) }
+        XCTAssertGreaterThan(decoded.pointee.n_sample, 0)
+        XCTAssertEqual(decoded.pointee.n_sample_type, 4)
+        XCTAssertEqual(decoded.pointee.time_nanos, start + 2_000_000_000)
+        XCTAssertEqual(snapshot.start.timeIntervalSince1970, Double(decoded.pointee.time_nanos) / 1_000_000_000, accuracy: 0.000001)
+        XCTAssertEqual(snapshot.end.timeIntervalSince(snapshot.start), Double(decoded.pointee.duration_nanos) / 1_000_000_000, accuracy: 0.000001)
+        withExtendedLifetime(profiler) {}
     }
 
     func testIndependentCaptureCorrectsServerTimeAndOwnsSerializedBytes() throws {
@@ -1706,6 +2093,33 @@ final class MemoryProfilerTests: XCTestCase {
         drain()
         XCTAssertEqual(diagnostics.ready_count, 2)
         XCTAssertEqual(core.events.count, 1)
+
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testOldPeriodicTickDoesNotCloseWindowAfterSessionChange() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record()
+        let hang = DurationEvent(id: "old-session", type: .error, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        let previousTick = DispatchTime.now()
+        receive(context: context(sessionID: UUID()), on: profiler)
+        let completed = expectation(description: "Stale heap snapshot completed")
+        completed.assertForOverFulfill = true
+        profiler.captureSnapshot(scheduledFor: previousTick) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        drain()
+
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(core.events.count, 1)
+        let oldSessionEvent = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(oldSessionEvent.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, sessionID.uuidString.lowercased())
+
         withExtendedLifetime(profiler) {}
     }
 
@@ -1819,18 +2233,43 @@ final class MemoryProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    func testPeriodicCaptureCompletesAfterProducerIsReleased() {
+        var profiler: MemoryProfiler? = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        let blockerEntered = expectation(description: "Profiler queue blocked")
+        let releaseQueue = DispatchSemaphore(value: 0)
+        queue.async {
+            blockerEntered.fulfill()
+            releaseQueue.wait()
+        }
+        wait(for: [blockerEntered], timeout: 2)
+        let completed = expectation(description: "Released heap producer completes")
+        completed.assertForOverFulfill = true
+        profiler?.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            completed.fulfill()
+        }
+        profiler = nil
+        releaseQueue.signal()
+        wait(for: [completed], timeout: 2)
+        drain()
+    }
+
     private var diagnostics: dd_memory_profiler_test_capture_diagnostics_t {
         dd_memory_profiler_capture_diagnostics_for_testing()
     }
 
     private func makeRuntimeProfiler(
         memorySampleRate: SampleRate = 100,
+        profilingInterval: TimeInterval = 3_600,
         dateProvider: DateProvider = SystemDateProvider(),
         notificationCenter: NotificationCenter = NotificationCenter()
     ) -> MemoryProfiler {
         dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
         return makeProfiler(
             memorySampleRate: memorySampleRate,
+            profilingInterval: profilingInterval,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
         )
@@ -1838,7 +2277,9 @@ final class MemoryProfilerTests: XCTestCase {
 
     private func makeProfiler(
         memorySampleRate: SampleRate = 100,
+        profilingInterval: TimeInterval = 3_600,
         dateProvider: DateProvider = SystemDateProvider(),
+        monotonicClock: MonotonicClock = SystemMonotonicClock(),
         notificationCenter: NotificationCenter = NotificationCenter()
     ) -> MemoryProfiler {
         profilingSamplerProvider = ProfilingSamplerProvider(
@@ -1849,8 +2290,10 @@ final class MemoryProfilerTests: XCTestCase {
         return MemoryProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
             writer: writer,
+            scheduler: ProfilingScheduler(writer: writer, profilingInterval: profilingInterval),
             queue: queue,
             dateProvider: dateProvider,
+            monotonicClock: monotonicClock,
             notificationCenter: notificationCenter
         )
     }
@@ -1909,6 +2352,11 @@ final class MemoryProfilerTests: XCTestCase {
     private func drain() {
         queue.sync {}
     }
+}
+
+private final class MemoryProfilerMonotonicClockMock: MonotonicClock {
+    @ReadWriteLock
+    var elapsedTime: TimeInterval = 0
 }
 
 #endif
