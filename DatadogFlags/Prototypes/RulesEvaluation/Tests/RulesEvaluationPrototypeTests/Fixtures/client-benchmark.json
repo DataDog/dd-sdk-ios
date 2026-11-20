@@ -1,0 +1,3456 @@
+{
+  "generator": "dd-sdk-reactnative/benchmarks/src/flags/fixtures.ts",
+  "fixtureVersion": 1,
+  "flaggingCore": "3.1.1",
+  "protobufES": "2.15.0",
+  "configurations": [
+    {
+      "revision": 0,
+      "protobufBase64": "EhNzeW50aGV0aWMtYmVuY2htYXJrGkIKBmZsYWctMBI4EAQaAigBGgQIASgAIhYKDGFsbG9jYXRpb24tMCIEGAAgAygBIhIKCmZhbGxiYWNrLTAiBBABIAQaRAoGZmxhZy0xEjoQBBoCKAEaBAgBKAAiGAoMYWxsb2NhdGlvbi0xEAAiBBgBIAEoASISCgpmYWxsYmFjay0xIgQQASAEGkQKBmZsYWctMhI6EAQaAigBGgQIASgAIhgKDGFsbG9jYXRpb24tMhACIgQYAiABKAEiEgoKZmFsbGJhY2stMiIEEAEgBBppCgZmbGFnLTMSXxAEGgIoARoECAEoACI9CgxhbGxvY2F0aW9uLTMaDhIMCgdzYWx0LTMtGJBOIgsKBQgAEIgnGAMgAiIOCgYIiCcQkE4QARgDIAIoASISCgpmYWxsYmFjay0zIgQQASAEGkIKBmZsYWctNBI4EAQaAigBGgQIASgAIhYKDGFsbG9jYXRpb24tNCIEGAQgAygBIhIKCmZhbGxiYWNrLTQiBBABIAQaRAoGZmxhZy01EjoQBBoCKAEaBAgBKAAiGAoMYWxsb2NhdGlvbi01EAAiBBgFIAEoASISCgpmYWxsYmFjay01IgQQASAEGkQKBmZsYWctNhI6EAQaAigBGgQIASgAIhgKDGFsbG9jYXRpb24tNhACIgQYBiABKAEiEgoKZmFsbGJhY2stNiIEEAEgBBppCgZmbGFnLTcSXxAEGgIoARoECAEoACI9CgxhbGxvY2F0aW9uLTcaDhIMCgdzYWx0LTctGJBOIgsKBQgAEIgnGAcgAiIOCgYIiCcQkE4QARgHIAIoASISCgpmYWxsYmFjay03IgQQASAEGkIKBmZsYWctOBI4EAQaAigBGgQIASgAIhYKDGFsbG9jYXRpb24tOCIEGAggAygBIhIKCmZhbGxiYWNrLTgiBBABIAQaRAoGZmxhZy05EjoQBBoCKAEaBAgBKAAiGAoMYWxsb2NhdGlvbi05EAAiBBgJIAEoASISCgpmYWxsYmFjay05IgQQASAEIgIKACIGEgQKAggCIgYSBAoCCAQqAm9uKgNvZmYqBHBsYW4qBHBhaWQqA2FnZUoHKgUIARIBA0oPGg0IAhAEGQAAAAAAADJASgYKBAoCAAE=",
+      "protoJson": "{\"environmentName\":\"synthetic-benchmark\",\"flags\":{\"flag-0\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-0\",\"splits\":[{\"serialId\":0,\"reason\":\"REASON_STATIC\"}],\"logExposureEvent\":true},{\"key\":\"fallback-0\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-1\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-1\",\"targetingConditionIndex\":0,\"splits\":[{\"serialId\":1,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-1\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-2\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-2\",\"targetingConditionIndex\":2,\"splits\":[{\"serialId\":2,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-2\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-3\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-3\",\"partitionKey\":[{\"shardMd5\":{\"salt\":\"salt-3-\",\"totalShards\":\"10000\"}}],\"splits\":[{\"ranges\":[{\"from\":\"0\",\"to\":\"5000\"}],\"serialId\":3,\"reason\":\"REASON_SPLIT\"},{\"ranges\":[{\"from\":\"5000\",\"to\":\"10000\"}],\"variationIndex\":1,\"serialId\":3,\"reason\":\"REASON_SPLIT\"}],\"logExposureEvent\":true},{\"key\":\"fallback-3\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-4\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-4\",\"splits\":[{\"serialId\":4,\"reason\":\"REASON_STATIC\"}],\"logExposureEvent\":true},{\"key\":\"fallback-4\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-5\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-5\",\"targetingConditionIndex\":0,\"splits\":[{\"serialId\":5,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-5\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-6\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-6\",\"targetingConditionIndex\":2,\"splits\":[{\"serialId\":6,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-6\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-7\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-7\",\"partitionKey\":[{\"shardMd5\":{\"salt\":\"salt-7-\",\"totalShards\":\"10000\"}}],\"splits\":[{\"ranges\":[{\"from\":\"0\",\"to\":\"5000\"}],\"serialId\":7,\"reason\":\"REASON_SPLIT\"},{\"ranges\":[{\"from\":\"5000\",\"to\":\"10000\"}],\"variationIndex\":1,\"serialId\":7,\"reason\":\"REASON_SPLIT\"}],\"logExposureEvent\":true},{\"key\":\"fallback-7\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-8\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-8\",\"splits\":[{\"serialId\":8,\"reason\":\"REASON_STATIC\"}],\"logExposureEvent\":true},{\"key\":\"fallback-8\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-9\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":true},{\"keyStringIndex\":1,\"booleanValue\":false}],\"allocations\":[{\"key\":\"allocation-9\",\"targetingConditionIndex\":0,\"splits\":[{\"serialId\":9,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-9\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]}},\"attributes\":[{\"targetingKey\":{}},{\"attributePath\":{\"segments\":[{\"objectKeyStringIndex\":2}]}},{\"attributePath\":{\"segments\":[{\"objectKeyStringIndex\":4}]}}],\"strings\":[\"on\",\"off\",\"plan\",\"paid\",\"age\"],\"conditions\":[{\"stringMembership\":{\"attributeIndex\":1,\"stringIndexes\":[3]}},{\"numeric\":{\"attributeIndex\":2,\"comparator\":\"NUMERIC_COMPARATOR_GREATER_THAN_OR_EQUAL\",\"comparand\":18}},{\"all\":{\"conditionIndexes\":[0,1]}}]}",
+      "sha256": "3ebed21de233535b5e621ed7c514aa631fbed422bba728cb503c3f6de85a4178",
+      "cases": [
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "revision": 1,
+      "protobufBase64": "EhNzeW50aGV0aWMtYmVuY2htYXJrGkIKBmZsYWctMBI4EAQaAigAGgQIASgBIhYKDGFsbG9jYXRpb24tMCIEGAAgAygBIhIKCmZhbGxiYWNrLTAiBBABIAQaRAoGZmxhZy0xEjoQBBoCKAAaBAgBKAEiGAoMYWxsb2NhdGlvbi0xEAAiBBgBIAEoASISCgpmYWxsYmFjay0xIgQQASAEGkQKBmZsYWctMhI6EAQaAigAGgQIASgBIhgKDGFsbG9jYXRpb24tMhACIgQYAiABKAEiEgoKZmFsbGJhY2stMiIEEAEgBBppCgZmbGFnLTMSXxAEGgIoABoECAEoASI9CgxhbGxvY2F0aW9uLTMaDhIMCgdzYWx0LTMtGJBOIgsKBQgAEIgnGAMgAiIOCgYIiCcQkE4QARgDIAIoASISCgpmYWxsYmFjay0zIgQQASAEGkIKBmZsYWctNBI4EAQaAigAGgQIASgBIhYKDGFsbG9jYXRpb24tNCIEGAQgAygBIhIKCmZhbGxiYWNrLTQiBBABIAQaRAoGZmxhZy01EjoQBBoCKAAaBAgBKAEiGAoMYWxsb2NhdGlvbi01EAAiBBgFIAEoASISCgpmYWxsYmFjay01IgQQASAEGkQKBmZsYWctNhI6EAQaAigAGgQIASgBIhgKDGFsbG9jYXRpb24tNhACIgQYBiABKAEiEgoKZmFsbGJhY2stNiIEEAEgBBppCgZmbGFnLTcSXxAEGgIoABoECAEoASI9CgxhbGxvY2F0aW9uLTcaDhIMCgdzYWx0LTctGJBOIgsKBQgAEIgnGAcgAiIOCgYIiCcQkE4QARgHIAIoASISCgpmYWxsYmFjay03IgQQASAEGkIKBmZsYWctOBI4EAQaAigAGgQIASgBIhYKDGFsbG9jYXRpb24tOCIEGAggAygBIhIKCmZhbGxiYWNrLTgiBBABIAQaRAoGZmxhZy05EjoQBBoCKAAaBAgBKAEiGAoMYWxsb2NhdGlvbi05EAAiBBgJIAEoASISCgpmYWxsYmFjay05IgQQASAEIgIKACIGEgQKAggCIgYSBAoCCAQqAm9uKgNvZmYqBHBsYW4qBHBhaWQqA2FnZUoHKgUIARIBA0oPGg0IAhAEGQAAAAAAADJASgYKBAoCAAE=",
+      "protoJson": "{\"environmentName\":\"synthetic-benchmark\",\"flags\":{\"flag-0\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-0\",\"splits\":[{\"serialId\":0,\"reason\":\"REASON_STATIC\"}],\"logExposureEvent\":true},{\"key\":\"fallback-0\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-1\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-1\",\"targetingConditionIndex\":0,\"splits\":[{\"serialId\":1,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-1\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-2\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-2\",\"targetingConditionIndex\":2,\"splits\":[{\"serialId\":2,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-2\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-3\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-3\",\"partitionKey\":[{\"shardMd5\":{\"salt\":\"salt-3-\",\"totalShards\":\"10000\"}}],\"splits\":[{\"ranges\":[{\"from\":\"0\",\"to\":\"5000\"}],\"serialId\":3,\"reason\":\"REASON_SPLIT\"},{\"ranges\":[{\"from\":\"5000\",\"to\":\"10000\"}],\"variationIndex\":1,\"serialId\":3,\"reason\":\"REASON_SPLIT\"}],\"logExposureEvent\":true},{\"key\":\"fallback-3\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-4\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-4\",\"splits\":[{\"serialId\":4,\"reason\":\"REASON_STATIC\"}],\"logExposureEvent\":true},{\"key\":\"fallback-4\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-5\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-5\",\"targetingConditionIndex\":0,\"splits\":[{\"serialId\":5,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-5\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-6\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-6\",\"targetingConditionIndex\":2,\"splits\":[{\"serialId\":6,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-6\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-7\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-7\",\"partitionKey\":[{\"shardMd5\":{\"salt\":\"salt-7-\",\"totalShards\":\"10000\"}}],\"splits\":[{\"ranges\":[{\"from\":\"0\",\"to\":\"5000\"}],\"serialId\":7,\"reason\":\"REASON_SPLIT\"},{\"ranges\":[{\"from\":\"5000\",\"to\":\"10000\"}],\"variationIndex\":1,\"serialId\":7,\"reason\":\"REASON_SPLIT\"}],\"logExposureEvent\":true},{\"key\":\"fallback-7\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-8\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-8\",\"splits\":[{\"serialId\":8,\"reason\":\"REASON_STATIC\"}],\"logExposureEvent\":true},{\"key\":\"fallback-8\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]},\"flag-9\":{\"variationType\":\"VARIATION_TYPE_BOOLEAN\",\"variations\":[{\"booleanValue\":false},{\"keyStringIndex\":1,\"booleanValue\":true}],\"allocations\":[{\"key\":\"allocation-9\",\"targetingConditionIndex\":0,\"splits\":[{\"serialId\":9,\"reason\":\"REASON_TARGETING_MATCH\"}],\"logExposureEvent\":true},{\"key\":\"fallback-9\",\"splits\":[{\"variationIndex\":1,\"reason\":\"REASON_DEFAULT\"}]}]}},\"attributes\":[{\"targetingKey\":{}},{\"attributePath\":{\"segments\":[{\"objectKeyStringIndex\":2}]}},{\"attributePath\":{\"segments\":[{\"objectKeyStringIndex\":4}]}}],\"strings\":[\"on\",\"off\",\"plan\",\"paid\",\"age\"],\"conditions\":[{\"stringMembership\":{\"attributeIndex\":1,\"stringIndexes\":[3]}},{\"numeric\":{\"attributeIndex\":2,\"comparator\":\"NUMERIC_COMPARATOR_GREATER_THAN_OR_EQUAL\",\"comparand\":18}},{\"all\":{\"conditionIndexes\":[0,1]}}]}",
+      "sha256": "a712e9a53beb17f5a7bb09d838cf500c30f353f425ba54e68d0955adf5e083ea",
+      "cases": [
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-0",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-1",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-2",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-3",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-4",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-5",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-6",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-7",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-8",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-9",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-10",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-11",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-12",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-2",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-2",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-13",
+              "plan": "paid",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "DEFAULT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "fallback-1",
+              "__dd_do_log": false,
+              "allocationKey": "fallback-1",
+              "variationType": "boolean",
+              "doLog": false,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-14",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "SPLIT",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-0",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "free",
+              "age": 12
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "STATIC",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-0",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 0,
+              "allocationKey": "allocation-0",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-1",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-1",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 1,
+              "allocationKey": "allocation-1",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-2",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "paid",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": false,
+            "reason": "TARGETING_MATCH",
+            "variant": "on",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-2",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 2,
+              "allocationKey": "allocation-2",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        },
+        {
+          "request": {
+            "op": "evaluate",
+            "flagKey": "flag-3",
+            "type": "boolean",
+            "defaultValue": false,
+            "context": {
+              "targetingKey": "subject-15",
+              "plan": "free",
+              "age": 25
+            }
+          },
+          "expected": {
+            "value": true,
+            "reason": "SPLIT",
+            "variant": "off",
+            "flagMetadata": {
+              "__dd_allocation_key": "allocation-3",
+              "__dd_do_log": true,
+              "__dd_split_serial_id": 3,
+              "allocationKey": "allocation-3",
+              "variationType": "boolean",
+              "doLog": true,
+              "__dd_observe_full_evaluation_data": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+version: v2
+plugins:
+  - local: protoc-gen-swift
+    out: Sources/RulesEvaluationPrototype/Generated
+    opt:
+      - Visibility=Internal
+inputs:
+  - directory: proto
