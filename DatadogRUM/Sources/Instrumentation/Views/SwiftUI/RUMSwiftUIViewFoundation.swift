@@ -245,13 +245,14 @@ internal final class RUMSwiftUIViewFoundation {
         _ intent: RUMSwiftUIInteractiveTransitionArbiter.Intent,
         state: RUMViewTrackingState,
         admission: RUMSwiftUIViewCallbackAdmission,
+        disappearanceScene: RUMSceneIdentifier?,
         send: @escaping @MainActor ([RUMViewTrackingState.Transition]) -> Void
     ) {
         guard admission.isValid, admits(admission.binding),
               state.admission?.matches(admission) == true else {
                   return
               }
-        transitionArbiter?.process(intent, state: state) { [weak admission] transitions in
+        transitionArbiter?.process(intent, state: state, disappearanceScene: disappearanceScene) { [weak admission] transitions in
             guard let admission, admission.isValid else {
                 return
             }
@@ -415,12 +416,19 @@ internal final class RUMSwiftUIViewTransitionAdmission {
     func process(
         _ intent: RUMSwiftUIInteractiveTransitionArbiter.Intent,
         state: RUMViewTrackingState,
+        disappearanceScene: RUMSceneIdentifier? = nil,
         send: @escaping @MainActor ([RUMViewTrackingState.Transition]) -> Void
     ) {
         guard admission.isValid else {
             return
         }
-        foundation?.processTransition(intent, state: state, admission: admission, send: send)
+        foundation?.processTransition(
+            intent,
+            state: state,
+            admission: admission,
+            disappearanceScene: disappearanceScene,
+            send: send
+        )
     }
 }
 #endif
