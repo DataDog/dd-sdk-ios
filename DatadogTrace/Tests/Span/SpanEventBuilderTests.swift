@@ -1012,6 +1012,36 @@ class SpanEventEncoderUserAnonymousIDTests: XCTestCase {
         XCTAssertEqual(json["meta.usr.anonymous_id"] as? String, "sdk-anon-id")
     }
 
+    func testWhenUserFieldsAreSet_theyTakePrecedenceOverCustomValues() throws {
+        let span: SpanEvent = .mockWith(
+            userInfo: .mockWith(
+                id: "sdk-id",
+                name: "sdk-name",
+                email: "sdk-email",
+                extraInfo: ["id": "extra-id", "name": "extra-name", "email": "extra-email"]
+            ),
+            tags: ["usr.id": "tag-id", "usr.name": "tag-name", "usr.email": "tag-email"]
+        )
+
+        let json = try encodedMeta(span)
+
+        XCTAssertEqual(json["meta.usr.id"] as? String, "sdk-id")
+        XCTAssertEqual(json["meta.usr.name"] as? String, "sdk-name")
+        XCTAssertEqual(json["meta.usr.email"] as? String, "sdk-email")
+    }
+
+    func testWhenUserFieldsAreNotSet_customValuesAreKept() throws {
+        let span: SpanEvent = .mockWith(
+            userInfo: .mockWith(id: nil, name: nil, email: nil, extraInfo: ["id": "extra-id"]),
+            tags: ["usr.email": "tag-email"]
+        )
+
+        let json = try encodedMeta(span)
+
+        XCTAssertEqual(json["meta.usr.id"] as? String, "extra-id")
+        XCTAssertEqual(json["meta.usr.email"] as? String, "tag-email")
+    }
+
     func testWhenAnonymousIDIsNotSet_customValuesAreKept() throws {
         let fromExtraInfo: SpanEvent = .mockWith(
             userInfo: .mockWith(anonymousId: nil, extraInfo: ["anonymous_id": "extra-info-value"])

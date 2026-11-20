@@ -293,10 +293,13 @@ internal struct SpanEventEncoder {
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
         // NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes
-        // The SDK anonymous ID wins over custom values encoded under the same key.
-        let isReservedKey: (String) -> Bool = { metaKey in
-            span.userInfo.anonymousId != nil && metaKey == StaticCodingKeys.userAnonymousId.rawValue
-        }
+        // SDK user fields win over custom values encoded under the same key.
+        var reservedKeys: Set<String> = []
+        if span.userInfo.id != nil { reservedKeys.insert(StaticCodingKeys.userId.rawValue) }
+        if span.userInfo.name != nil { reservedKeys.insert(StaticCodingKeys.userName.rawValue) }
+        if span.userInfo.email != nil { reservedKeys.insert(StaticCodingKeys.userEmail.rawValue) }
+        if span.userInfo.anonymousId != nil { reservedKeys.insert(StaticCodingKeys.userAnonymousId.rawValue) }
+        let isReservedKey: (String) -> Bool = { reservedKeys.contains($0) }
 
         try span.userInfo.extraInfo.forEach {
             let metaKey = "meta.usr.\($0.key)"
