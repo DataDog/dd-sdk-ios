@@ -159,14 +159,15 @@ internal final class DatadogCore {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        let userInfo = UserInfo(
-            anonymousId: userInfoPublisher.current.anonymousId,
-            id: id,
-            name: name,
-            email: email,
-            extraInfo: extraInfo
-        )
-        userInfoPublisher.current = userInfo
+        userInfoPublisher.update { userInfo in
+            userInfo = UserInfo(
+                anonymousId: userInfo.anonymousId,
+                id: id,
+                name: name,
+                email: email,
+                extraInfo: extraInfo
+            )
+        }
     }
 
     /// Add or override the extra info of the current user
@@ -174,9 +175,9 @@ internal final class DatadogCore {
     ///  - Parameters:
     ///    - extraInfo: The user's custom attributes to add or override
     func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        var extraInfo = userInfoPublisher.current.extraInfo
-        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-        userInfoPublisher.current.extraInfo = extraInfo
+        userInfoPublisher.update { userInfo in
+            newExtraInfo.forEach { userInfo.extraInfo[$0.key] = $0.value }
+        }
     }
 
     /// Clear the current user information
@@ -193,7 +194,9 @@ internal final class DatadogCore {
     /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
     ///
     func clearUserInfo() {
-        userInfoPublisher.current = UserInfo(anonymousId: userInfoPublisher.current.anonymousId)
+        userInfoPublisher.update { userInfo in
+            userInfo = UserInfo(anonymousId: userInfo.anonymousId)
+        }
     }
 
     /// Sets current account information.
@@ -222,7 +225,14 @@ internal final class DatadogCore {
     ///  - Parameters:
     ///    - extraInfo: The account's custom attributes to add or override
     func addAccountExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        guard let accountInfo = accountInfoPublisher.current else {
+        let updated = accountInfoPublisher.update { accountInfo in
+            guard accountInfo != nil else {
+                return false
+            }
+            newExtraInfo.forEach { accountInfo?.extraInfo[$0.key] = $0.value }
+            return true
+        }
+        guard updated else {
             DD.logger.error(
                 "Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first."
             )
@@ -231,9 +241,6 @@ internal final class DatadogCore {
             #endif
             return
         }
-        var extraInfo = accountInfo.extraInfo
-        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-        accountInfoPublisher.current?.extraInfo = extraInfo
     }
 
     /// Clear the current account information
@@ -257,11 +264,10 @@ internal final class DatadogCore {
     ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        if trackingConsent != consentPublisher.consent {
-            // Queues the context update before the migration. A write context read before the update
-            // has the previous consent, and its events are written before the migration runs. A write
-            // context read after it has the new consent.
-            consentPublisher.consent = trackingConsent
+        // Queues the context update before the migration. A write context read before the update
+        // has the previous consent, and its events are written before the migration runs. A write
+        // context read after it has the new consent.
+        consentPublisher.update(trackingConsent) {
             contextProvider.queue.async { [allStorages] in
                 // RUM-3175: To prevent race conditions with ongoing "event write" operations,
                 // data migration must be synchronized on the context queue. This guarantees that
@@ -447,7 +453,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func set(anonymousId: String?) {
-        userInfoPublisher.current.anonymousId = anonymousId
+        userInfoPublisher.update { $0.anonymousId = anonymousId }
     }
 }
 
