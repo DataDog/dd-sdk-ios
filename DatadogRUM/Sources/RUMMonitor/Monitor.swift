@@ -563,7 +563,8 @@ extension Monitor: RUMActiveContextReader {
 extension Monitor: RUMContextSnapshotProviding {
     /// Freezes both the command recipient and input context before UIKit calls the app.
     func captureAutomaticAction(
-        in scene: RUMSceneIdentifier
+        in scene: RUMSceneIdentifier,
+        onExpiredView: (RUMCoreContext) -> Void = { _ in }
     ) -> (target: RUMCommandTarget, context: RUMCoreContext?, expiredUnscopedView: RUMExpiredUnscopedActionView?) {
         let target = RUMCommandTarget.scene(scene)
         guard let snapshot = sceneContextSnapshots?.value, let sessionID = snapshot.sessionID,
@@ -573,13 +574,18 @@ extension Monitor: RUMContextSnapshotProviding {
         let now = applicationScope.dependencies.monotonicClock.elapsedTime
         let expired = RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now)
             || RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now)
-        if !expired, let context = snapshot.contextsByScene[scene], context.sessionID == sessionID {
+        if let context = snapshot.contextsByScene[scene], context.sessionID == sessionID {
+            if expired {
+                onExpiredView(context)
+                return (target, nil, nil)
+            }
             return (target, context, nil)
         }
         if let view = snapshot.soleUnscopedView, let context = snapshot.representative,
            context.sessionID == sessionID, context.viewID == view.toRUMDataFormat {
             if expired {
                 // Only the command may claim the restored view. Callback context stays empty.
+                onExpiredView(context)
                 return (target, nil, RUMExpiredUnscopedActionView(sessionID: sessionID, viewID: view))
             }
             return (.view(view), context, nil)
