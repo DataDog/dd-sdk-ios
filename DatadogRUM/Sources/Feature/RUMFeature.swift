@@ -567,6 +567,12 @@ extension RUMFeature {
     }
 }
 
+extension RUMFeature: BufferedDataWritable {
+    func writeBufferedDataSynchronously() {
+        timeseriesCollector?.stopForTermination()
+    }
+}
+
 extension RUMFeature: Flushable {
     /// Awaits completion of all asynchronous operations.
     ///

@@ -277,6 +277,8 @@ extension RUM {
         /// It can be used to modify view events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMViewEvent`, modify it, and return it. Keep the implementation fast
         /// and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Note: This mapper ensures that all views are sent by preventing the return of `nil`. To drop certain automatically
         /// collected RUM views, adjust the implementations of the view predicates (see the `uiKitViewsPredicate` and `swiftUIViewsPredicate` options).
@@ -289,6 +291,8 @@ extension RUM {
         /// It can be used to modify resource events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMResourceEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var resourceEventMapper: RUM.ResourceEventMapper?
@@ -298,6 +302,8 @@ extension RUM {
         /// It can be used to modify action events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMActionEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var actionEventMapper: RUM.ActionEventMapper?
@@ -307,6 +313,8 @@ extension RUM {
         /// It can be used to modify error events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMErrorEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var errorEventMapper: RUM.ErrorEventMapper?
@@ -316,6 +324,8 @@ extension RUM {
         /// It can be used to modify long task events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMLongTaskEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var longTaskEventMapper: RUM.LongTaskEventMapper?

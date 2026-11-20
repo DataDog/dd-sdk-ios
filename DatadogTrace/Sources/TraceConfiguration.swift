@@ -89,6 +89,8 @@ extension Trace {
         /// It can be used to modify span events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `SpanEvent`, modify it, and return it. Keep the implementation fast
         /// and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var eventMapper: EventMapper?

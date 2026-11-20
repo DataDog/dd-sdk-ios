@@ -666,6 +666,7 @@ private class TimeseriesCollectorStub: TimeseriesCollecting {
         activitySessionIDs.append(sessionID)
     }
     func flush() {}
+    func stopForTermination() {}
     func hasCollectedData(sessionID: String) -> Bool { false }
 }
 
