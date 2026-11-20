@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-11
+last_updated: 2026-11-12
 sdk_version: 3.21.0
 verified_against_commit: c5961cab1
 tracked_files:
@@ -26,7 +26,7 @@ Flags evaluates Datadog feature flags in the app. A `FlagsClient` sends the eval
 
 Call `Datadog.initialize()` before `Flags.enable()`, and `Flags.enable()` before `FlagsClient.create()`. RUM is optional: without it, the RUM integration is a no-op.
 
-**Platform**: iOS, tvOS, watchOS, visionOS. Flags has no Objective-C API.
+**Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only). Flags has no Objective-C API.
 
 ## Quick Start Example
 

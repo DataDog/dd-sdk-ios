@@ -38,7 +38,7 @@ Trace can also connect to automatic `URLSession` network instrumentation; for th
 
 Trace requires initialization via `Datadog.initialize()` before enabling.
 
-**Platform**: iOS, tvOS, watchOS, visionOS
+**Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only)
 
 ## Quick Start Example
 
@@ -273,7 +273,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Span customization**: `spanCustomization` (default: `nil`) is called for each URLSession span Trace creates, after the default tags are set and before the span is finished. Use the span's `setTag(key:value:)` or `setOperationName(_:)` to customize it based on the request, response, or error. The callback receives an `InterceptedRequest` (`url`, `httpMethod`, `httpBody`) captured when the request is intercepted, not the original `URLRequest`. It is not called for requests Trace does not create a span for, such as third-party requests or requests tracked by RUM (use RUM `resourceAttributesProvider` for those). `httpBody` is `nil` if the body is provided through `httpBodyStream` or if the task was created with `uploadTask(with:from:)` or `uploadTask(with:fromFile:)`. Keep the implementation fast and do not make any assumptions on the thread used to run it.
 - **Duration breakdown**: For DNS / SSL / TTFB timing, also call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourURLSessionDelegate.self))` after `Trace.enable()`.
 - **Duration sanitation**: automatic URLSession spans clamp their finish time so it is never earlier than their start time before computing foreground/background tags or finishing the span.
-- **Application-state timing**: `foreground_duration` measures time in states where the process cannot be suspended. On iOS, background intervals are excluded. The internal macOS path excludes sleep intervals and sets `is_background` to `false`; this does not add official macOS support. Other platforms retain start/end background-state classification.
+- **Application-state timing**: `foreground_duration` measures time in states where the process cannot be suspended. On iOS, background intervals are excluded. On macOS, sleep intervals are excluded and `is_background` is `false`. Other platforms retain start/end background-state classification.
 
 > Note: Automatic `URLSession` network instrumentation involves swizzling `URLSession` and `URLSessionTask` methods.
 
