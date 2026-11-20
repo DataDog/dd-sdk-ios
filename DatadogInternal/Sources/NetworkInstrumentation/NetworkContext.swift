@@ -99,48 +99,86 @@ public enum RUMContextHandoff {
 
     /// Acceptance of one submitted action; no Core, feature or UI object is retained.
     public final class ActionReceipt: @unchecked Sendable {
+        private struct View: Equatable {
+            let sessionID: String
+            let viewID: String
+        }
+
         private enum State {
             case pending
+            case restoring(View)
             case accepted(String)
+            case acceptedRestoration(View)
             case rejected
         }
 
         public let owner: Owner
         private let sessionID: String?
         private let viewID: String?
+        private let rolloverSource: View?
         @ReadWriteLock
         private var state = State.pending
 
-        public init(owner: Owner, context: RUMCoreContext?) {
+        public init(owner: Owner, context: RUMCoreContext?, rolloverSource: RUMCoreContext? = nil) {
             self.owner = owner
             self.sessionID = context?.sessionID
             self.viewID = context?.viewID
+            self.rolloverSource = rolloverSource.flatMap { context in
+                context.viewID.map { View(sessionID: context.sessionID, viewID: $0) }
+            }
         }
 
         public var hasCapturedView: Bool { viewID != nil }
+
+        public var canAcceptRestoredView: Bool { rolloverSource != nil }
 
         public func matchesView(sessionID: String, viewID: String) -> Bool {
             self.sessionID == sessionID && self.viewID == viewID
         }
 
+        /// Allows a tap that triggered rollover to settle only on its own restored view.
+        public func prepareRestoredView(fromSessionID: String, fromViewID: String, sessionID: String, viewID: String) {
+            guard rolloverSource == View(sessionID: fromSessionID, viewID: fromViewID) else {
+                return
+            }
+            _state.mutate { state in
+                guard owner.isValid, case .pending = state else {
+                    return
+                }
+                state = .restoring(View(sessionID: sessionID, viewID: viewID))
+            }
+        }
+
+        public func restoredView(for owner: Owner) -> (sessionID: String, viewID: String)? {
+            guard self.owner === owner, owner.isValid, case let .acceptedRestoration(view) = state else {
+                return nil
+            }
+            return (view.sessionID, view.viewID)
+        }
+
         /// Called only when processing creates this command's action scope.
         public func accept(sessionID: String, viewID: String, actionID: String) {
             _state.mutate { state in
-                guard case .pending = state else {
-                    return
+                switch state {
+                case .pending:
+                    state = owner.isValid && matchesView(sessionID: sessionID, viewID: viewID) ? .accepted(actionID) : .rejected
+                case .restoring(let view):
+                    state = owner.isValid && view == View(sessionID: sessionID, viewID: viewID) ? .acceptedRestoration(view) : .rejected
+                case .accepted, .acceptedRestoration, .rejected:
+                    break
                 }
-                guard owner.isValid, matchesView(sessionID: sessionID, viewID: viewID) else {
-                    state = .rejected
-                    return
-                }
-                state = .accepted(actionID)
             }
         }
 
         /// Known drops or completed resolved processing settle only an unclaimed command.
         public func reject() {
             _state.mutate { state in
-                if case .pending = state { state = .rejected }
+                switch state {
+                case .pending, .restoring:
+                    state = .rejected
+                case .accepted, .acceptedRestoration, .rejected:
+                    break
+                }
             }
         }
 
