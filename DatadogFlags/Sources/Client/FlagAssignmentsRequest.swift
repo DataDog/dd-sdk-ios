@@ -35,6 +35,12 @@ extension URLRequest {
             request.setValue(applicationId, forHTTPHeaderField: "dd-application-id")
         }
 
+        // Same value RUM puts on its events: the configured service, or core's default
+        // (the bundle identifier, or "ios" without one).
+        if !context.service.isEmpty {
+            request.setValue(context.service, forHTTPHeaderField: "dd-service")
+        }
+
         if let customHeaders {
             for (key, value) in customHeaders {
                 request.setValue(value, forHTTPHeaderField: key)
