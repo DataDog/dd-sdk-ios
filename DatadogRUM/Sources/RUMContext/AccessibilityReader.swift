@@ -17,6 +17,32 @@ internal protocol AccessibilityReading {
     var state: AccessibilityInfo { get }
 }
 
+#if os(macOS)
+/// The accessibility settings that macOS exposes through `NSWorkspace`.
+internal protocol MacOSAccessibilitySettings {
+    var accessibilityDisplayShouldIncreaseContrast: Bool { get }
+    var accessibilityDisplayShouldDifferentiateWithoutColor: Bool { get }
+    var accessibilityDisplayShouldReduceTransparency: Bool { get }
+    var accessibilityDisplayShouldReduceMotion: Bool { get }
+    var accessibilityDisplayShouldInvertColors: Bool { get }
+    var isVoiceOverEnabled: Bool { get }
+    var isSwitchControlEnabled: Bool { get }
+
+    /// Calls `onChange` when VoiceOver or Switch Control is turned on or off, until the returned observations are released.
+    func observeAssistiveTechnologies(_ onChange: @escaping @Sendable () -> Void) -> [NSObjectProtocol]
+}
+
+extension NSWorkspace: MacOSAccessibilitySettings {
+    func observeAssistiveTechnologies(_ onChange: @escaping @Sendable () -> Void) -> [NSObjectProtocol] {
+        // Both properties are key-value observable. Display options are posted as a notification instead.
+        [
+            observe(\.isVoiceOverEnabled) { _, _ in onChange() },
+            observe(\.isSwitchControlEnabled) { _, _ in onChange() },
+        ]
+    }
+}
+#endif
+
 #if !os(watchOS)
 internal final class AccessibilityReader: AccessibilityReading {
     @ReadWriteLock
@@ -25,12 +51,35 @@ internal final class AccessibilityReader: AccessibilityReading {
     private let notificationCenter: NotificationCenter
     private var observers: [NSObjectProtocol] = []
 
+    #if os(macOS)
+    private let settings: MacOSAccessibilitySettings
+    private let layoutDirection: @MainActor () -> NSUserInterfaceLayoutDirection?
+    private var assistiveTechnologiesObservations: [NSObjectProtocol] = []
+
+    /// - Parameters:
+    ///   - notificationCenter: The notification center where `NSWorkspace` notifications are posted.
+    ///   - settings: Provides the accessibility settings.
+    ///   - layoutDirection: Provides the app's user interface layout direction, `nil` if it is unknown.
+    init(
+        notificationCenter: NotificationCenter,
+        settings: MacOSAccessibilitySettings = NSWorkspace.shared,
+        layoutDirection: @escaping @MainActor () -> NSUserInterfaceLayoutDirection? = { NSApp?.userInterfaceLayoutDirection }
+    ) {
+        self.state = AccessibilityInfo()
+        self.notificationCenter = notificationCenter
+        self.settings = settings
+        self.layoutDirection = layoutDirection
+        startObserving()
+        updateState()
+    }
+    #else
     init(notificationCenter: NotificationCenter) {
         self.state = AccessibilityInfo()
         self.notificationCenter = notificationCenter
         startObserving()
         updateState()
     }
+    #endif
 
     deinit {
         stopObserving()
@@ -223,12 +272,28 @@ internal final class AccessibilityReader: AccessibilityReading {
             self?.updateState()
         }
         observers.append(speakSelectionObserver)
+        #elseif os(macOS)
+        let displayOptionsObserver = notificationCenter.addObserver(
+            forName: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateState()
+        }
+        observers.append(displayOptionsObserver)
+
+        assistiveTechnologiesObservations = settings.observeAssistiveTechnologies { [weak self] in
+            self?.updateState()
+        }
         #endif
     }
 
     private func stopObserving() {
         observers.forEach { notificationCenter.removeObserver($0) }
         observers.removeAll()
+        #if os(macOS)
+        assistiveTechnologiesObservations.removeAll()
+        #endif
     }
 
     @MainActor private var currentState: AccessibilityInfo {
@@ -262,6 +327,18 @@ internal final class AccessibilityReader: AccessibilityReading {
         state.rtlEnabled = UIApplication.dd.managedShared?.userInterfaceLayoutDirection == .rightToLeft
         state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
         state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
+        #elseif os(macOS)
+        // The other settings are not collected on macOS, so they stay unknown.
+        state.increaseContrastEnabled = settings.accessibilityDisplayShouldIncreaseContrast
+        state.shouldDifferentiateWithoutColor = settings.accessibilityDisplayShouldDifferentiateWithoutColor
+        state.reduceTransparencyEnabled = settings.accessibilityDisplayShouldReduceTransparency
+        state.reduceMotionEnabled = settings.accessibilityDisplayShouldReduceMotion
+        state.invertColorsEnabled = settings.accessibilityDisplayShouldInvertColors
+        state.screenReaderEnabled = settings.isVoiceOverEnabled
+        state.assistiveSwitchEnabled = settings.isSwitchControlEnabled
+        if let layoutDirection = layoutDirection() {
+            state.rtlEnabled = layoutDirection == .rightToLeft
+        }
         #endif
 
         return state
