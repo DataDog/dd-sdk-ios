@@ -142,6 +142,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
 
     func body(content: Content) -> some View {
         reconcileDormantNavigationBoundaryFromEnvironmentTrait()
+        let disappearanceScene = sceneIdentifier.map(RUMSceneIdentifier.init(rawValue:))
         let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)?
         if startsOnInitialMount, navigationOccurrenceSource != nil {
             onInitialMount = { sceneIdentifier in
@@ -232,7 +233,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 }
             }
             .onDisappear(perform: admission.disappearanceCallback {
-                disappear()
+                disappear(in: disappearanceScene)
             })
     }
 
@@ -679,7 +680,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         }
     }
 
-    private func disappear() {
+    private func disappear(in scene: RUMSceneIdentifier?) {
         #if DD_SDK_COMPILED_FOR_TESTING
         admission.recordLifecycleObservation("trait-disappear-entry")
         #endif
@@ -723,7 +724,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 #if DD_SDK_COMPILED_FOR_TESTING
                 admission.recordLifecycleObservation("trait-disappear-arbiter", state: trackingState)
                 #endif
-                transitionArbiter.process(.disappear, state: trackingState, send: apply)
+                transitionArbiter.process(.disappear, state: trackingState, disappearanceScene: scene, send: apply)
                 return
             }
             #endif
