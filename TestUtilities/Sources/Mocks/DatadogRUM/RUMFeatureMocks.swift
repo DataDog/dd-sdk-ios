@@ -1779,6 +1779,18 @@ public class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     }
 }
 
+public class TimeseriesMemoryReaderMock: TimeseriesMemoryReader {
+    /// Memory footprint in bytes. `nil` makes `readMemory()` fail.
+    public var footprint: Double?
+    /// Non-resident (compressed) memory in bytes.
+    public var nonResident: Double = 0
+
+    public init() {}
+    public func readMemory() -> TimeseriesMemoryValues? {
+        footprint.map { TimeseriesMemoryValues(footprint: $0, nonResident: nonResident) }
+    }
+}
+
 public class ContinuousVitalReaderMock: ContinuousVitalReader {
     public var vitalInfo = VitalInfo() {
         didSet {
