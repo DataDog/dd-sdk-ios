@@ -340,14 +340,14 @@ templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
 
-# Generate data models from rum-events-format ('rum', 'sr') or dd-go ('rc')
+# Generate data models from rum-events-format ('rum', 'sr') or dd-source ('rc')
 models-generate:
 	@$(call require_param,PRODUCT) # 'rum', 'sr', or 'rc'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
 	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
 
-# Validate data models against rum-events-format ('rum', 'sr') or dd-go ('rc')
+# Validate data models against rum-events-format ('rum', 'sr') or dd-source ('rc')
 models-verify:
 	@$(call require_param,PRODUCT) # 'rum', 'sr', or 'rc'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
@@ -371,12 +371,12 @@ sr-models-generate:
 sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
 
-# Generate RC data models (uses gh CLI to authenticate against the private dd-go repo)
+# Generate RC data models (uses gh CLI to authenticate against the private dd-source repo)
 rc-models-generate:
-	@:$(eval GIT_REF ?= prod)
+	@:$(eval GIT_REF ?= main)
 	GITHUB_TOKEN="$$(gh auth token)" $(MAKE) models-generate PRODUCT="rc" GIT_REF="$(GIT_REF)"
 
-# Validate RC data models (uses gh CLI to authenticate against the private dd-go repo)
+# Validate RC data models (uses gh CLI to authenticate against the private dd-source repo)
 rc-models-verify:
 	GITHUB_TOKEN="$$(gh auth token)" $(MAKE) models-verify PRODUCT="rc"
 
