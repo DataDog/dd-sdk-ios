@@ -1130,8 +1130,8 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             return
         }
 
-        // The trait comes from this callback's body. Only its matching, live
-        // reader can establish ownership of a different scene's pending mount.
+        // A live reader registered by this callback's body can identify the
+        // pending destination. The committed scene still owns unbound callbacks.
         if case .disappear = intent,
            let scene = disappearanceScene, scene != state.sceneIdentifier,
            mountedSceneIdentifier(for: state, admission: admission) == scene,
