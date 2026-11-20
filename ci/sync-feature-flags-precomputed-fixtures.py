@@ -242,11 +242,29 @@ def main():
     else:
         with tempfile.TemporaryDirectory(prefix='ffe-precompute-') as temporary:
             source = args.source
-            if source is None:
+            fetched = source is None
+            if fetched:
                 source = Path(temporary) / 'source'
                 fetch(source, ref)
                 ref = 'FETCH_HEAD'
             after = snapshot(source, ref)
+            pinned = before if current == pin else None
+            if args.update and pinned is None and json.loads(after['SOURCE.json'])['commit'] != pin:
+                # A fresh checkout has no local snapshot, so read the pinned one to compare.
+                try:
+                    if fetched:
+                        fetch(source, pin)
+                        pinned = snapshot(source, 'FETCH_HEAD')
+                    else:
+                        pinned = snapshot(source, pin)
+                except (Exception, SystemExit):  # pylint: disable=broad-except
+                    # Without a readable pinned snapshot, the new commit counts as a change.
+                    pinned = None
+        # An upstream commit that changes no imported file keeps the pin.
+        if pinned is not None and json.loads(after['SOURCE.json'])['commit'] != pin \
+                and {k: v for k, v in pinned.items() if k != 'SOURCE.json'} == \
+                {k: v for k, v in after.items() if k != 'SOURCE.json'}:
+            after = pinned
         if before != after:
             write_snapshot(destination, after)
     if config.get('unityMetadata'):
