@@ -186,20 +186,31 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
     }
 
     @available(iOS 16, tvOS 16, watchOS 8, *)
-    func testAutomaticMode_resourceAttributesProvider_asyncAwait_dataIsNil() async {
-        // Documents the known limitation: async/await tasks return data directly to the caller,
-        // bypassing all swizzled hooks, so data is always nil in the provider.
+    func testAutomaticMode_resourceAttributesProvider_asyncAwaitDataFromURL_receivesData() async {
+        await assertProviderReceivesData { session in _ = try? await session.data(from: URL.mockAny()) }
+    }
+
+    @available(iOS 16, tvOS 16, watchOS 8, *)
+    func testAutomaticMode_resourceAttributesProvider_asyncAwaitDataForRequest_receivesData() async {
+        await assertProviderReceivesData { session in _ = try? await session.data(for: URLRequest(url: URL.mockAny())) }
+    }
+
+    @available(iOS 16, tvOS 16, watchOS 8, *)
+    private func assertProviderReceivesData(sending send: (URLSession) async -> Void) async {
         core = DatadogCoreProxy(context: .mockWith(env: "test", version: "1.1.1", serverTimeOffset: 123))
 
         let providerExpectation = expectation(description: "provider called")
-        var providerData: Data? = .mockAny() // initialize non-nil to confirm it is overwritten with nil
+        var providerData: Data?
+        var providerResponse: URLResponse?
+        let body: Data = .mock(ofSize: 10)
 
         RUM.enable(
             with: .init(
                 applicationID: .mockAny(),
                 urlSessionTracking: .init(
-                    resourceAttributesProvider: { _, _, data, _ in
+                    resourceAttributesProvider: { _, response, data, _ in
                         providerData = data
+                        providerResponse = response
                         providerExpectation.fulfill()
                         return [:]
                     }
@@ -209,17 +220,18 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         )
 
         let server = ServerMock(
-            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: body),
             skipIsMainThreadCheck: true
         )
         let session = server.getInterceptedURLSession()
 
-        _ = try? await session.data(from: URL.mockAny())
+        await send(session)
 
         await dd_fulfillment(for: [providerExpectation], timeout: 5)
         _ = server.waitAndReturnRequests(count: 1)
 
-        XCTAssertNil(providerData, "Async/await tasks return data directly to the caller — the provider cannot capture it")
+        XCTAssertEqual(providerData, body)
+        XCTAssertNotNil(providerResponse)
     }
 
     func testAutomaticMode_traceEmitsSpan() throws {
