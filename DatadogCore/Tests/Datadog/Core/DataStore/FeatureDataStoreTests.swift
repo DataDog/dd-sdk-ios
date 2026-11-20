@@ -259,4 +259,34 @@ class FeatureDataStoreTests: XCTestCase {
     private func directory(for store: FeatureDataStore) -> Directory? {
         try? temporaryCoreDirectory.coreDirectory.subdirectory(path: store.directoryPath)
     }
+
+    // MARK: - Sudden Termination
+
+    #if os(macOS)
+    func testWhenValuesAreWrittenOrRemoved_suddenTerminationStaysDisabledUntilTheyAreDone() {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let store = FeatureDataStore(
+            feature: "feature",
+            directory: temporaryCoreDirectory,
+            queue: queue,
+            telemetry: TelemetryMock(),
+            suddenTermination: suddenTermination
+        )
+        let queueBlocked = DispatchSemaphore(value: 0)
+        queue.async { queueBlocked.wait() }
+
+        // When
+        store.setValue("value".utf8Data, forKey: "key")
+        store.removeValue(forKey: "other-key")
+        store.clearAllData()
+        let disableCountWhileQueued = suddenTermination.disableCount
+        queueBlocked.signal()
+        store.flush()
+
+        // Then
+        XCTAssertEqual(disableCountWhileQueued, 3)
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+    #endif
 }

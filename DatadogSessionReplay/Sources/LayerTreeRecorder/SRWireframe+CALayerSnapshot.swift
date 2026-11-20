@@ -255,7 +255,7 @@ extension SRShapeStyle {
         backgroundGradient: SRShapeGradient? = nil,
         cornerRadius: CGFloat? = nil
     ) {
-        guard layerSnapshot.backgroundColor != nil || backgroundGradient != nil else {
+        guard layerSnapshot.backgroundColor != nil || backgroundGradient != nil || layerSnapshot.hasBorder else {
             return nil
         }
         self.init(

@@ -61,7 +61,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     #if os(macOS)
     /// Reads the first window shown by the app, for the time to initial display.
-    let firstWindowReader: FirstWindowReader
+    /// It is `nil` when a cross-platform SDK reports the time to initial display itself.
+    let firstWindowReader: FirstWindowReader?
     #endif
 
     // MARK: - Initialization
@@ -109,6 +110,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         memoryWarningMonitor: MemoryWarningMonitor?,
         uuidGenerator: RUMUUIDGenerator,
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
+        reportsAppDisplayInitializedManually: Bool = false,
         isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
@@ -226,10 +228,13 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
         #if os(macOS)
-        self.firstWindowReader = FirstWindowReader(
-            dateProvider: dateProvider,
-            notificationCenter: notificationCenterProvider.applicationCenter
-        )
+        // A cross-platform SDK that reports the first frame itself replaces this reader.
+        self.firstWindowReader = reportsAppDisplayInitializedManually
+            ? nil
+            : FirstWindowReader(
+                dateProvider: dateProvider,
+                notificationCenter: notificationCenterProvider.applicationCenter
+            )
         #endif
 
         // Enable configured instrumentations:
@@ -304,7 +309,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         watchdogTermination?.stop()
         memoryWarningMonitor?.stop()
         #if os(macOS)
-        firstWindowReader.stop()
+        firstWindowReader?.stop()
         #endif
     }
 
@@ -318,7 +323,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
         memoryWarningMonitor?.reporter.publish(to: subscriber)
         #if os(macOS)
-        firstWindowReader.publish(to: subscriber)
+        firstWindowReader?.publish(to: subscriber)
         #endif
     }
 }

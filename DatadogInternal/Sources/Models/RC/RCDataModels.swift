@@ -333,4 +333,4 @@ public struct RemoteConfiguration: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/dd-go/blob/f244f7ec1a50ada7d0f8c5139917922a90f0f347/remote-config/apps/rc-schema-validation/schemas/rum-sdk-config/ios.json
+// Generated from https://github.com/ddoghq/dd-source/blob/cc93aada0854d04913ae6551702185fd05cf4a95/domains/remote-config/shared/libs/config-validator/schemas/RUM_SDK_CONFIG/ios.json
