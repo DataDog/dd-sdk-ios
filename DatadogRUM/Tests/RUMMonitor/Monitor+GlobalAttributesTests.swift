@@ -25,6 +25,38 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor = nil
     }
 
+    // MARK: - Thread Safety
+
+    func testAddingAndRemovingGlobalAttributesConcurrently_keepsEveryUpdate() throws {
+        // Given
+        let iterations = 100
+
+        // When
+        monitor.notifySDKInit()
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { [monitor] iteration in monitor?.addAttribute(forKey: "single-\(iteration)", value: iteration) },
+                { [monitor] iteration in monitor?.addAttributes(["bulk-\(iteration)": iteration]) },
+                { [monitor] iteration in
+                    monitor?.addAttribute(forKey: "temporary-\(iteration)", value: iteration)
+                    monitor?.removeAttribute(forKey: "temporary-\(iteration)")
+                }
+            ],
+            iterations: iterations
+        )
+        // swiftlint:enable opening_brace
+        monitor.startView(key: "IgnoredView")
+
+        // Then
+        let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
+        let appLaunchViewEvent = try XCTUnwrap(viewEvents.last(where: { $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName }))
+        let keys = try XCTUnwrap(appLaunchViewEvent.context?.contextInfo.keys)
+        XCTAssertEqual(keys.filter { $0.hasPrefix("single-") }.count, iterations)
+        XCTAssertEqual(keys.filter { $0.hasPrefix("bulk-") }.count, iterations)
+        XCTAssertTrue(keys.filter { $0.hasPrefix("temporary-") }.isEmpty)
+    }
+
     // MARK: - Changing Global Attributes After SDK Init
 
     func testAddingGlobalAttributeAfterSDKInit() throws {

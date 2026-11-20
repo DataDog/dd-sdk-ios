@@ -257,17 +257,17 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - attributes
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        attributes[key] = value
+        _attributes.mutate { $0[key] = value }
         self.didUpdateAttributes()
     }
 
     func addAttributes(_ attributes: [AttributeKey: AttributeValue]) {
-        self.attributes.merge(attributes) { $1 }
+        _attributes.mutate { $0.merge(attributes) { $1 } }
         self.didUpdateAttributes()
     }
 
     func removeAttribute(forKey key: AttributeKey) {
-        attributes[key] = nil
+        _attributes.mutate { $0[key] = nil }
         self.didUpdateAttributes()
     }
 

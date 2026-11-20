@@ -1182,6 +1182,7 @@ public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
             }
         }
     }
+    @ReadWriteLock
     public var globalAttributes: [String: Encodable] = [:]
     /// How many times `sessionDidStop()` was called.
     public var sessionStopCount = 0
