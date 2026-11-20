@@ -124,6 +124,33 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     }
 }
 
+/// Associates the disappearance closure with the reader registered by the same body.
+@MainActor
+private final class RUMOrdinaryDisappearanceOwner {
+    private weak var reader: RUMSceneIdentifierReader.ObserverView?
+    private var scene: RUMSceneIdentifier?
+    private var isAmbiguous = false
+
+    func register(_ observer: RUMSceneIdentifierReader.ObserverView) {
+        guard let mountedScene = observer.currentSceneIdentifier else {
+            return
+        }
+        if let scene, scene != mountedScene {
+            isAmbiguous = true
+            return
+        }
+        scene = mountedScene
+        reader = observer
+    }
+
+    var attachedScene: RUMSceneIdentifier? {
+        guard !isAmbiguous, let scene, reader?.currentSceneIdentifier == scene else {
+            return nil
+        }
+        return scene
+    }
+}
+
 @available(iOS 17.0, *)
 @MainActor
 private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifier {
@@ -142,7 +169,9 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
 
     func body(content: Content) -> some View {
         reconcileDormantNavigationBoundaryFromEnvironmentTrait()
-        let disappearanceScene = sceneIdentifier.map(RUMSceneIdentifier.init(rawValue:))
+        let disappearanceOwner = startsOnInitialMount && configuration == nil
+            ? RUMOrdinaryDisappearanceOwner()
+            : nil
         let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)?
         if startsOnInitialMount, navigationOccurrenceSource != nil {
             onInitialMount = { sceneIdentifier in
@@ -182,6 +211,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     initialSceneIdentifier: initialSceneIdentifier,
                     onCreate: { observer in
                         register(observer: observer)
+                        disappearanceOwner?.register(observer)
                     },
                     onInitialMount: onInitialMount,
                     onMount: onMount,
@@ -233,7 +263,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 }
             }
             .onDisappear(perform: admission.disappearanceCallback {
-                disappear(in: disappearanceScene)
+                disappear(in: disappearanceOwner?.attachedScene)
             })
     }
 
