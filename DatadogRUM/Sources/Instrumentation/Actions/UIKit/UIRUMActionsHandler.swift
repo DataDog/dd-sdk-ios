@@ -197,7 +197,8 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
             return
         }
 
-        let (target, context, expiredUnscopedView) = capture(for: identifier)
+        var rolloverSource: RUMCoreContext?
+        let (target, context, expiredUnscopedView) = capture(for: identifier) { rolloverSource = $0 }
         let captured = RUMContextHandoff.CurrentValue(
             rumContext: context,
             sceneIdentifier: identifier.rawValue,
@@ -211,7 +212,9 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
             }
             command.target = target
             command.expiredUnscopedView = expiredUnscopedView
-            let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured.rumContext)
+            let receipt = RUMContextHandoff.ActionReceipt(
+                owner: owner, context: captured.rumContext, rolloverSource: rolloverSource
+            )
             command.actionReceipt = receipt
             // Pending denotes a selected command awaiting processing, not an Action UUID.
             let pending = RUMContextHandoff.CurrentValue(
@@ -252,13 +255,13 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
     }
 
     private func capture(
-        for scene: RUMSceneIdentifier
+        for scene: RUMSceneIdentifier, onExpiredView: (RUMCoreContext) -> Void
     ) -> (RUMCommandTarget, RUMCoreContext?, RUMExpiredUnscopedActionView?) {
         guard owner.isValid, let monitor = expectedMonitor, subscriber === monitor,
               monitor.isMultiSceneTrackingEnabled, monitor.rumContextHandoffOwner === owner else {
             return (.scene(scene), nil, nil)
         }
-        return monitor.captureAutomaticAction(in: scene)
+        return monitor.captureAutomaticAction(in: scene, onExpiredView: onExpiredView)
     }
 
     private func publishIfOwned(_ command: RUMAddUserActionCommand) -> Bool {
