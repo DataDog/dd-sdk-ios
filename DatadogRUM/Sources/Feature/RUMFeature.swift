@@ -215,7 +215,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             let collectorReplayState = HasReplayMessageReceiver()
             replayState = collectorReplayState
             return TimeseriesSessionCollector(
-                memoryReader: VitalMemoryReader(),
+                memoryReader: TaskVMInfoMemoryReader(),
                 featureScope: featureScope,
                 collectTypes: effectiveCollectTypes,
                 ciTest: ciTest,

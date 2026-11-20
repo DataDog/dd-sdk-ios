@@ -14,7 +14,7 @@ import DatadogInternal
 
 class TimeseriesSessionCollectorTests: XCTestCase {
     private let featureScope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
-    private let memoryReader = SamplingBasedVitalReaderMock()
+    private let memoryReader = TimeseriesMemoryReaderMock()
 
     /// Blocks the test until `duration` has elapsed on a background queue, giving the collector's sampling
     /// timer time to fire before assertions run.
@@ -28,14 +28,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenBatchSizeIsReached_itWritesMemoryEvent() {
         // Given
-        memoryReader.vitalData = 1_024_000
+        memoryReader.footprint = 1_024_000
+        memoryReader.nonResident = 512_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -63,14 +63,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.schema, "object-v2")
         XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
         XCTAssertEqual(event.timeseries.data.values.memoryFootprint.count, event.timeseries.data.timestamps.count, "Number of memoryFootprint data points must match timestamps")
-        XCTAssertEqual(event.timeseries.data.values.memoryPercent.count, event.timeseries.data.timestamps.count, "Number of memoryPercent data points must match timestamps")
+        XCTAssertEqual(event.timeseries.data.values.memoryNonResident?.count, event.timeseries.data.timestamps.count, "Number of memoryNonResident data points must match timestamps")
         XCTAssertEqual(event.timeseries.data.values.memoryFootprint[0], 1_000)
-        XCTAssertEqual(event.timeseries.data.values.memoryPercent[0], 0.0256, accuracy: 0.0001)
+        XCTAssertEqual(event.timeseries.data.values.memoryNonResident?[0], 500)
     }
 
     func testWhenBatchSizeIsReached_itWritesCpuEvent() {
         // Given
-        memoryReader.vitalData = nil
+        memoryReader.footprint = nil
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -109,14 +109,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenBothReadersProvideData_itWritesBothMemoryAndCpuEvents() {
         // Given
-        memoryReader.vitalData = 2_048_000
+        memoryReader.footprint = 2_048_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 75.0 },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { 75.0 }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -136,7 +135,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let memoryEvent = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0]
         let cpuEvent = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)[0]
         XCTAssertEqual(memoryEvent.timeseries.data.values.memoryFootprint.count, memoryEvent.timeseries.data.timestamps.count, "Number of memoryFootprint data points must match timestamps")
-        XCTAssertEqual(memoryEvent.timeseries.data.values.memoryPercent.count, memoryEvent.timeseries.data.timestamps.count, "Number of memoryPercent data points must match timestamps")
+        XCTAssertEqual(memoryEvent.timeseries.data.values.memoryNonResident?.count, memoryEvent.timeseries.data.timestamps.count, "Number of memoryNonResident data points must match timestamps")
         XCTAssertEqual(cpuEvent.timeseries.data.values.cpuUsage.count, cpuEvent.timeseries.data.timestamps.count, "Number of cpuUsage data points must match timestamps")
         XCTAssertEqual(memoryEvent.timeseries.data.values.memoryFootprint[0], 2_000)
         XCTAssertEqual(cpuEvent.timeseries.data.values.cpuUsage[0], 75.0)
@@ -146,14 +145,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenCollectTypesIsDefault_itCollectsBothMemoryAndCpu() {
         // Given
-        memoryReader.vitalData = 1_024_000
+        memoryReader.footprint = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 42.5 },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { 42.5 }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -174,15 +172,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenCollectTypesIsMemory_itCollectsOnlyMemory() {
         // Given
-        memoryReader.vitalData = 1_024_000
+        memoryReader.footprint = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             collectTypes: [.memory],
             samplingInterval: 0.05,
-            cpuUsageProvider: { 42.5 },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { 42.5 }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -203,15 +200,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenCollectTypesIsCpu_itCollectsOnlyCpu() {
         // Given
-        memoryReader.vitalData = 1_024_000
+        memoryReader.footprint = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             collectTypes: [.cpu],
             samplingInterval: 0.05,
-            cpuUsageProvider: { 42.5 },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { 42.5 }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -232,15 +228,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenCollectTypesIsBothTypes_itCollectsBothMemoryAndCpu() {
         // Given
-        memoryReader.vitalData = 1_024_000
+        memoryReader.footprint = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             collectTypes: [.memory, .cpu],
             samplingInterval: 0.05,
-            cpuUsageProvider: { 42.5 },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { 42.5 }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -261,15 +256,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenServerTimeOffsetIsNonZero_itAdjustsEventDate() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let scope = FeatureScopeMock(context: .mockWith(serverTimeOffset: 5.0, additionalContext: [RUMCoreContext.mockAny()]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -295,7 +289,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenAppRunsAsAppExtension_itSendsIsMainProcessFalseOnMemoryAndCpuEvents() throws {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let scope = FeatureScopeMock(
             context: .mockWith(applicationBundleType: .iOSAppExtension, additionalContext: [RUMCoreContext.mockAny()])
         )
@@ -304,8 +298,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: scope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 42.5 },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { 42.5 }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -329,15 +322,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenContextSourceIsReactNative_itUsesContextSource() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let scope = FeatureScopeMock(context: .mockWith(source: "react-native", additionalContext: [RUMCoreContext.mockAny()]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -359,14 +351,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenSessionReplayContextNeverObserved_hasReplayStaysNilOnEvent() {
         // Given — no replay state is ever reported (Session Replay not enabled)
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             replayState: HasReplayMessageReceiver()
         )
         let contextReader = RUMActiveContextReaderMock()
@@ -389,7 +380,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenReplayStopsBeforeFlush_hasReplayStaysTrueForTheBatch() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let replayState = HasReplayMessageReceiver()
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -397,7 +388,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 100, // won't auto-flush — only `stop()` triggers the flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             replayState: replayState
         )
         collector.activeContextReader = RUMActiveContextReaderMock()
@@ -446,7 +436,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         for trigger in triggers {
             // Given — replay is off for the first tick (0.3 s) and turns on before the next one (0.6 s)
-            memoryReader.vitalData = 1_000_000
+            memoryReader.footprint = 1_000_000
             let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
             let replayState = HasReplayMessageReceiver()
             let collector = TimeseriesSessionCollector(
@@ -455,7 +445,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
                 batchSize: 100, // won't auto-flush — only the trigger flushes
                 samplingInterval: 0.3,
                 cpuUsageProvider: { nil },
-                totalRAM: 4_000_000_000,
                 replayState: replayState
             )
             collector.activeContextReader = RUMActiveContextReaderMock()
@@ -476,7 +465,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testItPopulatesSessionSampleRateFromConstructorInjectedValue() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -484,7 +473,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             sessionSampleRate: 42
         )
         let contextReader = RUMActiveContextReaderMock()
@@ -507,15 +495,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenNoActiveView_itWritesEventWithoutView() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
 
         // When — no `activeContextReader` set, so there is no active view to report
@@ -535,14 +522,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenStartIsCalledWithoutStop_itFlushesPartialBufferBeforeNewSession() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 100, // won't auto-flush
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -571,7 +557,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenStopIsCalled_itFlushesPartialMemoryBuffer() {
         // Given
-        memoryReader.vitalData = 2_000_000
+        memoryReader.footprint = 2_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -602,12 +588,12 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].application.id, "app-456")
         XCTAssertEqual(events[0].session.type, .synthetics)
         XCTAssertEqual(events[0].timeseries.data.values.memoryFootprint.count, events[0].timeseries.data.timestamps.count, "Number of memoryFootprint data points must match timestamps")
-        XCTAssertEqual(events[0].timeseries.data.values.memoryPercent.count, events[0].timeseries.data.timestamps.count, "Number of memoryPercent data points must match timestamps")
+        XCTAssertEqual(events[0].timeseries.data.values.memoryNonResident?.count, events[0].timeseries.data.timestamps.count, "Number of memoryNonResident data points must match timestamps")
     }
 
     func testWhenStopIsCalled_itFlushesPartialCpuBuffer() {
         // Given
-        memoryReader.vitalData = nil
+        memoryReader.footprint = nil
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -641,7 +627,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenReadersReturnNil_itWritesNoEvents() {
         // Given
-        memoryReader.vitalData = nil
+        memoryReader.footprint = nil
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -668,7 +654,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenStartIsCalledAgain_itUsesNewSessionMetadata() throws {
         // Given
-        memoryReader.vitalData = 512_000
+        memoryReader.footprint = 512_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -725,7 +711,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenPaused_itStopsCollectingSamples() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -764,7 +750,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenResumedAfterPause_itContinuesSampling() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -799,7 +785,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenBackgrounded_pauseAlwaysStopsSampling() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -843,7 +829,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenResumedAfterPause_reanchorsToAvoidLagOrPrecedeAlreadyFlushedSamples() {
         // Given — the media clock doesn't advance during real device sleep (unlike the wall clock), so a
         // pause spanning device sleep leaves a growing gap between the two if the anchor isn't refreshed
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MutableClock()
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -851,7 +837,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 100, // won't auto-flush — only `pause()`/`stop()` triggers the flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             now: clock.now,
             mediaTimeProvider: clock.mediaTime
         )
@@ -930,7 +915,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testItPopulatesCommonSchemaFieldsFromContextAndConstructorInjectedDependencies() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let userInfo = UserInfo(id: "user-abc", name: "Jane", email: "jane@example.com", extraInfo: [:])
         let accountInfo = AccountInfo(id: "account-abc", name: "Acme", extraInfo: [:])
         let scope = FeatureScopeMock(
@@ -950,7 +935,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest
         )
@@ -980,7 +964,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testItNeverPopulatesPrivacySensitiveOrContextualFields() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let userInfo = UserInfo(id: "user-abc", name: "Jane", email: "jane@example.com", extraInfo: [:])
         let accountInfo = AccountInfo(id: "account-abc", name: "Acme", extraInfo: [:])
         let scope = FeatureScopeMock(
@@ -995,8 +979,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: scope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -1028,7 +1011,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testTimestampsAreMonotonicallyIncreasing() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -1061,7 +1044,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenWallClockJumpsMidSession_backwardStaysMonotonicAndForwardIsHonored() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MutableClock()
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -1121,7 +1104,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenSessionExceedsMaxDuration_itSelfStopsAndFlushes() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MutableClock()
         let monotonicClock = MonotonicClockMock(elapsedTime: 123)
         let collector = TimeseriesSessionCollector(
@@ -1130,7 +1113,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 100, // won't auto-flush — only self-expiry triggers the flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             now: clock.now,
             mediaTimeProvider: clock.mediaTime
         )
@@ -1166,7 +1148,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenNoActivityWithinTimeoutWindow_itSelfStopsAndFlushes() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MutableClock()
         let monotonicClock = MonotonicClockMock(elapsedTime: 123)
         let collector = TimeseriesSessionCollector(
@@ -1175,7 +1157,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 100, // won't auto-flush — only self-expiry triggers the flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             now: clock.now,
             mediaTimeProvider: clock.mediaTime
         )
@@ -1200,7 +1181,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     }
 
     func testWhenDelayedActivityKeepsSessionAlive_itRestartsSamplingAfterSelfExpiry() {
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MonotonicClockMock()
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -1235,7 +1216,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     }
 
     func testWhenWallClockChanges_itContinuesSamplingOnTheMonotonicClock() {
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MutableClock()
         let initialDate = clock.date
         let monotonicClock = MonotonicClockMock(elapsedTime: 123)
@@ -1245,7 +1226,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             now: clock.now,
             mediaTimeProvider: clock.mediaTime
         )
@@ -1275,7 +1255,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenActivityReaderReportsRecentInteraction_preventsSelfStopWithinTimeoutWindow() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MutableClock()
         let monotonicClock = MonotonicClockMock(elapsedTime: 123)
         let collector = TimeseriesSessionCollector(
@@ -1284,7 +1264,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000,
             now: clock.now,
             mediaTimeProvider: clock.mediaTime
         )
@@ -1309,7 +1288,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     }
 
     func testWhenSessionTimesOutWhilePaused_itDoesNotCollectSamplesAfterResuming() {
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let clock = MonotonicClockMock(elapsedTime: 123)
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -1341,14 +1320,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testStaleStopCall_afterNewSessionStarted_doesNotStopNewSession() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -1373,14 +1351,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testStalePauseCall_afterNewSessionStarted_doesNotPauseNewSession() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.footprint = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
+            cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader

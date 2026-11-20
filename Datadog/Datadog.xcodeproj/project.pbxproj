@@ -999,6 +999,7 @@
 		9F068CB77F21FDCB430E8231 /* lossless_avx2.c in Sources */ = {isa = PBXBuildFile; fileRef = 40A437790F2B278907EBD845 /* lossless_avx2.c */; };
 		A01D384CBDE4FFDC49CCD424 /* HeatmapIdentifierRegistryFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9F4D5BEEE5E977A58E2034 /* HeatmapIdentifierRegistryFeature.swift */; };
 		A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */; };
+		9EC6A08AD3CC41ABFFA16C2E /* TimeseriesMemoryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4457540C93003257220BC2C6 /* TimeseriesMemoryReader.swift */; };
 		A0A0A0A0A0A0A0A0A0A00008 /* TimeseriesSessionCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */; };
 		A0A0A0A0A0A0A0A0A0A0000A /* TimeseriesConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00009 /* TimeseriesConfigurationTests.swift */; };
 		A1B2C3D42F90000100ABCDEF /* aggregation_worker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */; };
@@ -3202,6 +3203,7 @@
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		9FF11500C676B73C6526324D /* COPYING */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollector.swift; sourceTree = "<group>"; };
+		4457540C93003257220BC2C6 /* TimeseriesMemoryReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesMemoryReader.swift; sourceTree = "<group>"; };
 		A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollectorTests.swift; sourceTree = "<group>"; };
 		A0A0A0A0A0A0A0A0A0A00009 /* TimeseriesConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesConfigurationTests.swift; sourceTree = "<group>"; };
 		A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = aggregation_worker.cpp; sourceTree = "<group>"; };
@@ -6870,6 +6872,7 @@
 			isa = PBXGroup;
 			children = (
 				A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */,
+				4457540C93003257220BC2C6 /* TimeseriesMemoryReader.swift */,
 			);
 			path = Timeseries;
 			sourceTree = "<group>";
@@ -10441,6 +10444,7 @@
 			files = (
 				6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
 				A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */,
+				9EC6A08AD3CC41ABFFA16C2E /* TimeseriesMemoryReader.swift in Sources */,
 				615E2B8E2D39444300D85243 /* ViewEndedController.swift in Sources */,
 				D29A9F8029DD85BB005C54A4 /* UIViewControllerHandler.swift in Sources */,
 				D29A9F5929DD85BB005C54A4 /* RUMCommand.swift in Sources */,
