@@ -703,4 +703,15 @@ extension FlagAssignmentsResponseTests {
             XCTAssertEqual(assignment.variation(as: Double.self), double, literal)
         }
     }
+
+    func testMalformedNumberTokensRejectTheResponse() {
+        for literal in ["1e+", "1e", "1.", "1.e5", "-", "01", "-01", "1-2", "1e+-2", "0x10"] {
+            let json = #"{"data":{"attributes":{"flags":{"flag":{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}}}}}"#
+            XCTAssertThrowsError(try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: Data(json.utf8)), literal)
+        }
+        for literal in ["0", "-0", "1e400", "1e-400", "1.5E+2", "100000000000000000001"] {
+            let json = #"{"data":{"attributes":{"flags":{"flag":{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}}}}}"#
+            XCTAssertNoThrow(try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: Data(json.utf8)), literal)
+        }
+    }
 }
