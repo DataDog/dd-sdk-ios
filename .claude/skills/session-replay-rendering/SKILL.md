@@ -1,5 +1,5 @@
 ---
-name: session-replay-rendering
+name: dd-sdk-ios:session-replay-rendering
 description: Diagnose and fix visual defects in the dd-sdk-ios Core Animation Session Replay pipeline. Use when investigating interaction states, choosing which pipeline stage owns a fix, or designing rendering regression coverage.
 ---
 
