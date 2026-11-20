@@ -31,35 +31,46 @@ internal final class MemoryProfiler: @unchecked Sendable {
         case shutDown
     }
 
-    private struct Snapshot {
-        let pprof: Data
-        let timeNanos: Int64
-    }
-
     private let queue: DispatchQueue
     private let queueKey = DispatchSpecificKey<Void>()
     private let profilingSamplerProvider: ProfilingSamplerProvider
     private let profilingConditions = ProfilingConditions()
+    private let writer: ProfileWriter
     private let dateProvider: DateProvider
     private var sessionSampler: DeterministicSampler?
     // Retain the last ID through missing RUM context so returning sessions start a fresh delta.
     private var lastSessionID: String?
     /// Whether the native launch window is still open for TTID capture.
     private var isRecordingAppLaunch = false
-    private var pendingAppLaunch: Snapshot?
+    private var pendingAppLaunch: (
+        snapshot: ProfileSnapshot,
+        timeNanos: Int64
+    )?
+    private var durationEvents: [DurationEvent] = []
+    private var eventAttributes: [AttributeKey: AttributeValue] = [:]
+    private var currentContext: DatadogContext?
     private var hasForegroundTime = false
     private(set) var state: State = .stopped
 
     private var isEnabled: Bool { profilingSamplerProvider.memory.isConfigured }
 
+    private var rumContext: RUMCoreContext? {
+        guard currentContext?.trackingConsent != .notGranted else {
+            return nil
+        }
+        return currentContext?.additionalContext(ofType: RUMCoreContext.self)
+    }
+
     init(
         profilingSamplerProvider: ProfilingSamplerProvider,
+        writer: ProfileWriter,
         queue: DispatchQueue = MemoryProfiler.defaultQueue,
         dateProvider: DateProvider = SystemDateProvider(),
         notificationCenter: NotificationCenter = .default
     ) {
         self.profilingSamplerProvider = profilingSamplerProvider
         self.queue = queue
+        self.writer = writer
         self.dateProvider = dateProvider
         queue.setSpecific(key: queueKey, value: ())
         // Native startup preserves launch coverage independently of emission sampling.
@@ -101,8 +112,17 @@ extension MemoryProfiler: FeatureMessageReceiver {
         switch message {
         case .context(let context):
             receive(context: context)
-        case .payload(let payload) where payload is TTIDMessage:
-            captureAppLaunch()
+        case .payload(let payload):
+            switch payload {
+            case let message as TTIDMessage:
+                captureAppLaunch(message: message)
+            case let message as AppHangMessage:
+                append(message.hang, attributes: message.attributes)
+            case let message as LongTaskMessage:
+                append(message.longTask, attributes: message.attributes)
+            default:
+                break
+            }
         default:
             break
         }
@@ -128,6 +148,7 @@ private extension MemoryProfiler {
             guard context.trackingConsent != .notGranted else {
                 sessionSampler = nil
                 lastSessionID = nil
+                currentContext = context
                 stopNative()
                 return
             }
@@ -139,6 +160,7 @@ private extension MemoryProfiler {
                 // Keep processing until this window has established foreground eligibility.
                 if state == .running, hasForegroundTime,
                    profilingConditions.canProfileApplication(with: context) {
+                    currentContext = context
                     return
                 }
             }
@@ -158,10 +180,15 @@ private extension MemoryProfiler {
                 // The new window must establish its own foreground history. An
                 // active prior session cannot authorize a second closing emission.
                 hasForegroundTime = false
+                clearDurationEvents()
             }
             sessionSampler = rumContext?.sessionSampler
             if let rumContext {
                 lastSessionID = rumContext.sessionID
+            }
+            currentContext = context
+            if profilingSamplerProvider.memory.sampled(for: sessionSampler) == false {
+                clearDurationEvents()
             }
 
             let currentAppState = context.applicationStateHistory.currentState
@@ -179,17 +206,19 @@ private extension MemoryProfiler {
                     )
                 }
             }
-            if let pendingAppLaunch, sessionSampler != nil {
+            if let pendingAppLaunch, rumContext != nil {
                 self.pendingAppLaunch = nil
                 if canEmit {
-                    write(snapshot: pendingAppLaunch)
+                    var snapshot = pendingAppLaunch.snapshot
+                    snapshot.rumContext = rumContext
+                    writer.write([snapshot], operation: .appLaunch)
                 }
             }
             updateState(context: context)
         }
     }
 
-    func captureAppLaunch() {
+    func captureAppLaunch(message: TTIDMessage) {
         queue.async { [weak self] in
             guard let self, state != .shutDown, isRecordingAppLaunch else {
                 return
@@ -204,9 +233,13 @@ private extension MemoryProfiler {
                 // Close exactly at TTID while the first session decision is pending.
                 // Serialize now so the pending snapshot owns its bytes until resolution.
                 var capture = dd_memory_capture_t()
-                switch dd_memory_profiler_capture(&capture) {
+                let status = dd_memory_profiler_capture(&capture)
+                defer { clearDurationEvents() }
+                switch status {
                 case DD_MEMORY_CAPTURE_READY:
-                    pendingAppLaunch = serialize(capture: capture)
+                    if let snapshot = makeSnapshot(from: capture, message: message) {
+                        pendingAppLaunch = (snapshot, capture.time_nanos)
+                    }
                 case DD_MEMORY_CAPTURE_IDLE:
                     break
                 default:
@@ -214,7 +247,7 @@ private extension MemoryProfiler {
                     state = .failed
                 }
             } else {
-                capture(shouldWrite: canEmit)
+                capture(shouldWrite: canEmit, operation: .appLaunch, message: message)
             }
         }
     }
@@ -249,6 +282,23 @@ extension MemoryProfiler {
 // MARK: - Helpers
 
 private extension MemoryProfiler {
+    func append(_ event: DurationEvent, attributes: [AttributeKey: AttributeValue]) {
+        queue.async { [weak self] in
+            guard let self, state != .stopped, state != .failed, state != .shutDown,
+                  state != .emissionSuspended || isRecordingAppLaunch,
+                  profilingSamplerProvider.memory.sampled(for: sessionSampler) != false else {
+                return
+            }
+            durationEvents.append(event)
+            eventAttributes = attributes
+        }
+    }
+
+    func clearDurationEvents() {
+        durationEvents.removeAll()
+        eventAttributes.removeAll()
+    }
+
     var canEmit: Bool {
         isEnabled
             && profilingSamplerProvider.memory.sampled(for: sessionSampler) == true
@@ -266,15 +316,19 @@ private extension MemoryProfiler {
                 state = .failed
                 return
             }
-            state = sessionSampler == nil ? .waiting : .running
+            state = rumContext == nil ? .waiting : .running
         }
         let canEmitInCurrentConditions = profilingConditions.canProfileApplication(with: context)
         let isReturningToForeground = context.applicationStateHistory.currentState == .active
         guard canEmitInCurrentConditions, state != .emissionSuspended || isReturningToForeground else {
             if state == .running || state == .waiting {
                 // Preserve the launch boundary until TTID rather than closing it early.
-                if !isRecordingAppLaunch, canEmit {
-                    capture()
+                if !isRecordingAppLaunch {
+                    if canEmit {
+                        capture()
+                    } else {
+                        clearDurationEvents()
+                    }
                 }
                 if state != .failed {
                     state = .emissionSuspended
@@ -282,38 +336,70 @@ private extension MemoryProfiler {
             }
             return
         }
-        state = sessionSampler == nil ? .waiting : .running
+        state = rumContext == nil ? .waiting : .running
     }
 
-    func capture(shouldWrite: Bool = true) {
+    func capture(shouldWrite: Bool = true, operation: ProfilingOperation = .continuousProfiling, message: TTIDMessage? = nil) {
+        if let snapshot = closeWindow(shouldEncode: shouldWrite, message: message) {
+            writer.write([snapshot], operation: operation)
+        }
+    }
+
+    func closeWindow(shouldEncode: Bool = true, message: TTIDMessage? = nil) -> ProfileSnapshot? {
+        defer { clearDurationEvents() }
         var capture = dd_memory_capture_t()
-        switch dd_memory_profiler_capture(&capture) {
+        let status = dd_memory_profiler_capture(&capture)
+        switch status {
         case DD_MEMORY_CAPTURE_IDLE:
-            break
+            return nil
         case DD_MEMORY_CAPTURE_READY:
-            if shouldWrite, let snapshot = serialize(capture: capture) {
-                write(snapshot: snapshot)
-            }
+            return shouldEncode ? makeSnapshot(from: capture, message: message) : nil
         default:
             stopNative()
             state = .failed
-        }
-    }
-
-    private func serialize(capture: dd_memory_capture_t) -> Snapshot? {
-        var capture = capture
-        let encoded = dd_memory_profiler_serialize(&capture)
-        guard let data = encoded.data, encoded.size > 0 else {
             return nil
         }
-        return Snapshot(
-            pprof: Data(bytes: data, count: encoded.size),
-            timeNanos: capture.time_nanos
-        )
     }
 
-    private func write(snapshot: Snapshot) {
-        // TODO: RUM-18355 Write the serialized memory profile with its event and RUM metadata.
+    func makeSnapshot(from capture: dd_memory_capture_t, message: TTIDMessage? = nil) -> ProfileSnapshot? {
+        let offset = (message?.ttid.serverTimeOffset ?? currentContext?.serverTimeOffset ?? 0).dd.toInt64Nanoseconds
+        let (start, startOverflow) = capture.time_nanos.addingReportingOverflow(offset)
+        let (end, endOverflow) = start.addingReportingOverflow(capture.duration_nanos)
+        guard !startOverflow, !endOverflow, start >= 0, capture.duration_nanos >= 0 else {
+            return nil
+        }
+        var capture = capture
+        capture.time_nanos = start
+        let view = dd_memory_profiler_serialize(&capture)
+        guard let bytes = view.data, view.size > 0 else {
+            return nil
+        }
+        let attributes = eventAttributes.merging(message?.attributes ?? [:]) { _, launchValue in launchValue }
+        let rumEvents = durationEvents
+            .filter { event in
+                let (eventEnd, overflow) = event.start.addingReportingOverflow(event.duration)
+                let overlapsStart = overflow ? event.duration > 0 : eventEnd >= start
+                return event.start <= end && overlapsStart
+            }
+            .compactMap { event -> RUMEvent? in
+                switch event.type {
+                case .error: return .hang(event)
+                case .longTask: return .longTask(event)
+                @unknown default: return nil
+                }
+            }
+        return ProfileSnapshot(
+            start: Date(timeIntervalSince1970: Double(start) / 1_000_000_000),
+            end: Date(timeIntervalSince1970: Double(end) / 1_000_000_000),
+            attachment: PprofAttachment(
+                filename: ProfileAttachments.Constants.heapPprofFilename,
+                // The native encoder owns this view until the next serialization or stop.
+                data: Data(bytes: bytes, count: view.size)
+            ),
+            rumEvents: rumEvents + (message.map { [.vital($0.ttid)] } ?? []),
+            attributes: attributes,
+            rumContext: rumContext
+        )
     }
 
     func stopNative() {
@@ -323,6 +409,7 @@ private extension MemoryProfiler {
         hasForegroundTime = false
         isRecordingAppLaunch = false
         pendingAppLaunch = nil
+        clearDurationEvents()
     }
 
     func shutDown() {

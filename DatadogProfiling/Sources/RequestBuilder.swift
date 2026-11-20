@@ -48,21 +48,21 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             mimeType: "application/json"
         )
 
-        multipart.addFormData(
-            name: ProfileAttachments.Constants.pprofFilename,
-            filename: ProfileAttachments.Constants.pprofFilename,
-            data: attachments.pprof,
-            mimeType: "application/octet-stream"
-        )
-
-        if let rumEvents = attachments.rumEvents {
+        for attachment in attachments.pprofs {
             multipart.addFormData(
-                name: ProfileAttachments.Constants.rumEventsFilename,
-                filename: ProfileAttachments.Constants.rumEventsFilename,
-                data: rumEvents,
-                mimeType: "application/json"
+                name: attachment.filename,
+                filename: attachment.filename,
+                data: attachment.data,
+                mimeType: "application/octet-stream"
             )
         }
+
+        multipart.addFormData(
+            name: ProfileAttachments.Constants.rumEventsFilename,
+            filename: ProfileAttachments.Constants.rumEventsFilename,
+            data: attachments.rumEvents,
+            mimeType: "application/json"
+        )
 
         let builder = URLRequestBuilder(
             url: url(with: context),

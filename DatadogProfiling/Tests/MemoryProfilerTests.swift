@@ -7,7 +7,10 @@
 #if !os(watchOS) && !os(macOS)
 
 import XCTest
+// swiftlint:disable duplicate_imports
+import DatadogMachProfiler.Pprof
 import DatadogMachProfiler.Testing
+// swiftlint:enable duplicate_imports
 import DatadogInternal
 import TestUtilities
 @testable import DatadogProfiling
@@ -173,6 +176,57 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.captures_count, 3)
         XCTAssertEqual(diagnostics.alloc_space, 0)
         XCTAssertEqual(diagnostics.inuse_space, 24)
+    }
+
+    func testSampledOutSessionsDoNotRetainRUMEventAttributes() {
+        final class Attribute: Encodable {}
+
+        for (rumRate, memoryRate): (SampleRate, SampleRate) in [(0, 100), (100, 1)] {
+            let profiler = makeRuntimeProfiler(memorySampleRate: memoryRate)
+            receive(context: context(
+                sessionID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+                sampleRate: rumRate
+            ), on: profiler)
+            drain()
+            XCTAssertEqual(profilingSamplerProvider.memory.sampled, false)
+
+            var attribute: Attribute? = Attribute()
+            weak var retainedAttribute = attribute
+            let hang = DurationEvent(id: "hang", type: .error, start: 0, duration: 1)
+            let task = DurationEvent(id: "task", type: .longTask, start: 0, duration: 1)
+            _ = profiler.receive(message: .payload(AppHangMessage(attributes: ["attribute": attribute!], hang: hang)), from: core)
+            _ = profiler.receive(message: .payload(LongTaskMessage(attributes: ["attribute": attribute!], longTask: task)), from: core)
+            attribute = nil
+            drain()
+
+            XCTAssertNil(retainedAttribute)
+            XCTAssertEqual(profiler.state, .running)
+            XCTAssertTrue(dd_memory_profiler_is_running())
+            XCTAssertTrue(core.events.isEmpty)
+            withExtendedLifetime(profiler) {}
+        }
+    }
+
+    func testPendingRUMEventAttributesAreReleasedWhenFirstSessionSamplesOut() {
+        final class Attribute: Encodable {}
+
+        let profiler = makeProfiler()
+        XCTAssertEqual(profiler.state, .waiting)
+        var attribute: Attribute? = Attribute()
+        weak var retainedAttribute = attribute
+        let hang = DurationEvent(id: "pending-hang", type: .error, start: 0, duration: 1)
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: ["attribute": attribute!], hang: hang)), from: core)
+        attribute = nil
+        drain()
+        XCTAssertNotNil(retainedAttribute)
+
+        receive(context: context(sampleRate: 0), on: profiler)
+        drain()
+
+        XCTAssertNil(retainedAttribute)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        withExtendedLifetime(profiler) {}
     }
 
     func testMemorySamplerRejectsEmissionWhileRecordingContinues() {
@@ -581,6 +635,109 @@ final class MemoryProfilerTests: XCTestCase {
                 XCTAssertEqual(diagnostics.inuse_space, 8, blocker)
             }
         }
+    }
+
+    func testSuspendedEmissionSkipsRUMEventsAndResumesBufferingAfterRecovery() throws {
+        final class Attribute: Encodable {}
+
+        for blocker in ["background", "low-power", "battery"] {
+            let profiler = makeRuntimeProfiler()
+            receive(context: context(), on: profiler)
+            drain()
+            record()
+            let hang = DurationEvent(id: "foreground-hang", type: .error, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+            _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+            receive(context: context(
+                state: blocker == "background" ? .background : .active,
+                lowPower: blocker == "low-power",
+                battery: blocker == "battery" ? .mockWith(state: .unplugged, level: 0.05) : nil
+            ), on: profiler)
+            drain()
+            XCTAssertEqual(profiler.state, .emissionSuspended, blocker)
+            let writesBeforeRecovery = core.events.count
+            let closing = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            let closingEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: closing.rumEvents) as? [[String: Any]])
+            XCTAssertEqual(closingEvents.compactMap { $0["id"] as? String }, [hang.id], blocker)
+
+            record(address: 0x20000, size: 8)
+            dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x10000))
+            var attribute: Attribute? = Attribute()
+            weak var retainedAttribute = attribute
+            let skippedHang = DurationEvent(id: "suspended-hang", type: .error, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+            let skippedTask = DurationEvent(id: "suspended-task", type: .longTask, start: skippedHang.start, duration: 0)
+            _ = profiler.receive(message: .payload(AppHangMessage(attributes: ["attribute": attribute!], hang: skippedHang)), from: core)
+            _ = profiler.receive(message: .payload(LongTaskMessage(attributes: ["attribute": attribute!], longTask: skippedTask)), from: core)
+            attribute = nil
+            drain()
+            XCTAssertNil(retainedAttribute, blocker)
+            XCTAssertTrue(dd_memory_profiler_is_running(), blocker)
+            XCTAssertEqual(core.events.count, writesBeforeRecovery, blocker)
+
+            receive(context: context(), on: profiler)
+            let resumed = DurationEvent(id: "resumed-task", type: .longTask, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+            _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: resumed)), from: core)
+            profiler.captureWindow()
+            drain()
+            XCTAssertEqual(core.events.count, writesBeforeRecovery + 1, blocker)
+            XCTAssertEqual(diagnostics.alloc_space, 8, blocker)
+            XCTAssertEqual(diagnostics.inuse_space, 8, blocker)
+            let attachments = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            let events = try XCTUnwrap(JSONSerialization.jsonObject(with: attachments.rumEvents) as? [[String: Any]])
+            XCTAssertEqual(events.compactMap { $0["id"] as? String }, [resumed.id], blocker)
+            withExtendedLifetime(profiler) {}
+        }
+    }
+
+    func testSuspensionReleasesUnresolvedRuntimeCorrelations() {
+        final class Attribute: Encodable {}
+
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(hasRUM: false), on: profiler)
+        drain()
+        var attribute: Attribute? = Attribute()
+        weak var retainedAttribute = attribute
+        let task = DurationEvent(id: "pending-task", type: .longTask, start: 0, duration: 1)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: ["attribute": attribute!], longTask: task)), from: core)
+        attribute = nil
+        drain()
+        XCTAssertNotNil(retainedAttribute)
+
+        receive(context: context(lowPower: true, hasRUM: false), on: profiler)
+        drain()
+
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+        XCTAssertNil(retainedAttribute)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testSuspendedLaunchKeepsCorrelationsUntilTTIDOnly() throws {
+        final class Attribute: Encodable {}
+
+        let profiler = makeProfiler()
+        receive(context: context(lowPower: true, hasRUM: false), on: profiler)
+        drain()
+        record()
+        let hang = DurationEvent(id: "launch-hang", type: .error, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertTrue(core.events.isEmpty)
+        receive(context: context(lowPower: true), on: profiler)
+        drain()
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let events = try XCTUnwrap(JSONSerialization.jsonObject(with: attachments.rumEvents) as? [[String: Any]])
+        XCTAssertEqual(events.compactMap { $0["id"] as? String }.first, hang.id)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(profiler.state, .emissionSuspended)
+
+        var attribute: Attribute? = Attribute()
+        weak var retainedAttribute = attribute
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: ["attribute": attribute!], hang: hang)), from: core)
+        attribute = nil
+        drain()
+        XCTAssertNil(retainedAttribute)
+        withExtendedLifetime(profiler) {}
     }
 
     func testInactiveTransitionDoesNotRearmBackgroundEmission() {
@@ -1396,11 +1553,13 @@ final class MemoryProfilerTests: XCTestCase {
     func testInitializationAndDeinitializationOnProfilerQueueStopWithoutFlushing() {
         let queue = queue
         let samplerProvider = profilingSamplerProvider
+        let writer = ProfileWriter(featureScope: core)
         let completed = expectation(description: "Profiler is released on its queue")
 
         queue.async {
             var profiler: MemoryProfiler? = MemoryProfiler(
                 profilingSamplerProvider: samplerProvider,
+                writer: writer,
                 queue: queue
             )
             XCTAssertEqual(profiler?.state, .waiting)
@@ -1417,6 +1576,247 @@ final class MemoryProfilerTests: XCTestCase {
         }
 
         wait(for: [completed], timeout: 5)
+    }
+
+    func testIndependentCaptureCorrectsServerTimeAndOwnsSerializedBytes() throws {
+        let profiler = makeRuntimeProfiler()
+        var capturedContext = context(viewID: "captured-view")
+        capturedContext.serverTimeOffset = 2
+        receive(context: capturedContext, on: profiler)
+        drain()
+        let localStart = dd_memory_profiler_window_start_time_nanos()
+        record()
+        let task = DurationEvent(
+            id: "captured-task",
+            type: .longTask,
+            start: Date().addingTimeInterval(2).timeIntervalSince1970.dd.toInt64Nanoseconds,
+            duration: 0
+        )
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        profiler.captureWindow()
+        drain()
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let attachment = try XCTUnwrap(attachments.pprofs.first)
+        let events = try XCTUnwrap(JSONSerialization.jsonObject(with: attachments.rumEvents) as? [[String: Any]])
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(attachment.filename, ProfileAttachments.Constants.heapPprofFilename)
+        XCTAssertEqual(events.compactMap { $0["id"] as? String }, [task.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["captured-view"])
+
+        // A later serialization and native stop cannot invalidate the first attachment's bytes.
+        var laterContext = context(viewID: "later-view")
+        laterContext.serverTimeOffset = 5
+        receive(context: laterContext, on: profiler)
+        record(address: 0x20000, size: 32)
+        profiler.captureWindow()
+        drain()
+        profiler.flushAndStop()
+
+        let decoded = try XCTUnwrap(attachment.data.withUnsafeBytes { bytes in
+            perftools__profiles__profile__unpack(nil, bytes.count, bytes.bindMemory(to: UInt8.self).baseAddress)
+        })
+        defer { perftools__profiles__profile__free_unpacked(decoded, nil) }
+        XCTAssertGreaterThan(decoded.pointee.n_sample, 0)
+        XCTAssertEqual(decoded.pointee.n_sample_type, 4)
+        XCTAssertEqual(decoded.pointee.time_nanos, localStart + 2_000_000_000)
+        XCTAssertEqual(event.start.timeIntervalSince1970, Double(decoded.pointee.time_nanos) / 1_000_000_000, accuracy: 0.000001)
+        XCTAssertEqual(event.end.timeIntervalSince(event.start), Double(decoded.pointee.duration_nanos) / 1_000_000_000, accuracy: 0.000001)
+        XCTAssertFalse(dd_memory_profiler_is_running())
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testIndependentCaptureWithoutRUMEventsDoesNotWrite() {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(viewID: "heap-view"), on: profiler)
+        drain()
+        record()
+        profiler.captureWindow()
+        drain()
+
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testLastFreeUploadsZeroSampleHeapWithRUMContext() throws {
+        let profiler = makeRuntimeProfiler()
+        var capturedContext = context(viewID: "empty-heap-view")
+        capturedContext.serverTimeOffset = 2
+        receive(context: capturedContext, on: profiler)
+        drain()
+        record()
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.sample_count, 1)
+        XCTAssertTrue(core.events.isEmpty)
+
+        let localStart = dd_memory_profiler_window_start_time_nanos()
+        dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x10000))
+        let task = DurationEvent(
+            id: "last-free-task",
+            type: .longTask,
+            start: Date().addingTimeInterval(2).timeIntervalSince1970.dd.toInt64Nanoseconds,
+            duration: 0
+        )
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        profiler.captureWindow()
+        drain()
+
+        XCTAssertEqual(diagnostics.ready_count, 2)
+        XCTAssertEqual(diagnostics.sample_count, 0)
+        XCTAssertEqual(core.events.count, 1)
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let encoder = JSONEncoder.dd.default()
+        let storedEvent = try Event(data: encoder.encode(event), metadata: encoder.encode(attachments))
+        let multipart = MultipartBuilderSpy()
+        _ = try RequestBuilder(multipartBuilder: multipart).request(for: [storedEvent], with: capturedContext, execution: .mockAny())
+        XCTAssertEqual(multipart.formFiles.map(\.filename), ["event.json", "heap.pprof", "rum-mobile-events.json"])
+        let heap = try XCTUnwrap(multipart.formFiles.first { $0.filename == "heap.pprof" })
+        let decoded = try XCTUnwrap(heap.data.withUnsafeBytes { bytes in
+            perftools__profiles__profile__unpack(nil, bytes.count, bytes.bindMemory(to: UInt8.self).baseAddress)
+        })
+        defer { perftools__profiles__profile__free_unpacked(decoded, nil) }
+        XCTAssertEqual(decoded.pointee.n_sample, 0)
+        XCTAssertEqual(decoded.pointee.n_location, 0)
+        XCTAssertEqual(decoded.pointee.n_mapping, 0)
+        XCTAssertEqual(decoded.pointee.n_sample_type, 4)
+        XCTAssertEqual(decoded.pointee.time_nanos, localStart + 2_000_000_000)
+        XCTAssertEqual(event.start.timeIntervalSince1970, Double(decoded.pointee.time_nanos) / 1_000_000_000, accuracy: 0.000001)
+        XCTAssertEqual(event.end.timeIntervalSince(event.start), Double(decoded.pointee.duration_nanos) / 1_000_000_000, accuracy: 0.000001)
+        let uploadedEvent = try XCTUnwrap(JSONSerialization.jsonObject(with: multipart.formFiles[0].data) as? [String: Any])
+        let rum = try XCTUnwrap(capturedContext.additionalContext(ofType: RUMCoreContext.self))
+        XCTAssertEqual(uploadedEvent[RUMCoreContext.IDs.applicationID] as? String, rum.applicationID)
+        XCTAssertEqual(uploadedEvent[RUMCoreContext.IDs.sessionID] as? String, rum.sessionID)
+        XCTAssertEqual(uploadedEvent[RUMCoreContext.IDs.viewID] as? [String], ["empty-heap-view"])
+        XCTAssertEqual(uploadedEvent[RUMCoreContext.IDs.longTaskID] as? [String], [task.id])
+        let rumEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: multipart.formFiles[2].data) as? [[String: Any]])
+        XCTAssertEqual(rumEvents.compactMap { $0["id"] as? String }, [task.id])
+        for file in multipart.formFiles {
+            let attachment = XCTAttachment(data: file.data, uniformTypeIdentifier: "public.data")
+            attachment.name = file.filename
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.ready_count, 2)
+        XCTAssertEqual(core.events.count, 1)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testPendingLaunchWritesCapturedTTIDWithHeapAttachment() throws {
+        let profiler = makeProfiler()
+        record()
+        let beforeTTID = Vital.mockWith(id: "before-ttid", name: "before", stepType: nil, date: Date())
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: beforeTTID)), from: core)
+        let hang = DurationEvent(id: "launch-hang", type: .error, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(AppHangMessage(attributes: [:], hang: hang)), from: core)
+        let vital = Vital.mockWith(stepType: nil)
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: [:], ttid: vital)), from: core)
+        drain()
+        XCTAssertTrue(core.events.isEmpty)
+        let afterTTID = Vital.mockWith(id: "after-ttid", name: "after", stepType: nil, date: Date())
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: afterTTID)), from: core)
+        let task = DurationEvent(id: "next-task", type: .longTask, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        receive(context: context(), on: profiler)
+        drain()
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumData = metadata.rumEvents
+        let rumEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: rumData) as? [[String: Any]])
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(metadata.pprofs.map(\.filename), [ProfileAttachments.Constants.heapPprofFilename])
+        XCTAssertEqual(rumEvents.compactMap { $0["id"] as? String }, [hang.id, vital.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], [vital.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], [hang.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [])
+        XCTAssertEqual(diagnostics.captures_count, 1)
+
+        record(address: 0x20000)
+        profiler.captureWindow()
+        drain()
+        let next = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+        let nextEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: next.rumEvents) as? [[String: Any]])
+        XCTAssertEqual(core.events.count, 2)
+        XCTAssertEqual(nextEvents.compactMap { $0["id"] as? String }, [task.id])
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testPendingLaunchPreservesSerializedTimeAndLocalForegroundHistory() throws {
+        let profiler = makeProfiler()
+        let localStart = dd_memory_profiler_window_start_time_nanos()
+        record()
+        let vital = Vital.mockWith(stepType: nil, date: Date(), serverTimeOffset: 2)
+        _ = profiler.receive(message: .payload(TTIDMessage(
+            attributes: [RUMCoreContext.IDs.viewID: ["launch-view"]],
+            ttid: vital
+        )), from: core)
+        drain()
+        XCTAssertTrue(core.events.isEmpty)
+
+        var firstContext = context(state: .background, viewID: "later-view", hadForeground: true)
+        firstContext.serverTimeOffset = 5
+        receive(context: firstContext, on: profiler)
+        drain()
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let pprof = try XCTUnwrap(attachments.pprofs.first?.data)
+        let decoded = try XCTUnwrap(pprof.withUnsafeBytes { bytes in
+            perftools__profiles__profile__unpack(nil, bytes.count, bytes.bindMemory(to: UInt8.self).baseAddress)
+        })
+        defer { perftools__profiles__profile__free_unpacked(decoded, nil) }
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(decoded.pointee.time_nanos, localStart + 2_000_000_000)
+        XCTAssertEqual(event.start.timeIntervalSince1970, Double(decoded.pointee.time_nanos) / 1_000_000_000, accuracy: 0.000001)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["launch-view"])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, sessionID.uuidString.lowercased())
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testHeapOnlyCaptureIncludesHangAndLongTaskButIgnoresOperations() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record()
+        let now = Date()
+        let start = Vital.mockWith(id: "operation", name: "load", operationKey: "load", stepType: .start, date: now)
+        let hang = DurationEvent(id: "hang", type: .error, start: now.timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        let task = DurationEvent(id: "task", type: .longTask, start: now.timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
+        for message: Any in [
+            OperationMessage(attributes: [:], operation: start),
+            AppHangMessage(attributes: [:], hang: hang),
+            LongTaskMessage(attributes: [:], longTask: task)
+        ] {
+            XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        }
+        profiler.captureWindow()
+        drain()
+
+        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let events = try XCTUnwrap(JSONSerialization.jsonObject(with: attachments.rumEvents) as? [[String: Any]])
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(events.compactMap { $0["id"] as? String }, [hang.id, task.id])
+        XCTAssertEqual(attachments.pprofs.map(\.filename), [ProfileAttachments.Constants.heapPprofFilename])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, sessionID.uuidString.lowercased())
+        XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.vitalID])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], [hang.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [task.id])
+
+        record(address: 0x20000)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 2)
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(core.metadata.count, 1)
+        withExtendedLifetime(profiler) {}
     }
 
     private var diagnostics: dd_memory_profiler_test_capture_diagnostics_t {
@@ -1445,8 +1845,10 @@ final class MemoryProfilerTests: XCTestCase {
             continuousSampleRate: 0,
             memorySampleRate: memorySampleRate
         )
+        let writer = ProfileWriter(featureScope: core)
         return MemoryProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
+            writer: writer,
             queue: queue,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
