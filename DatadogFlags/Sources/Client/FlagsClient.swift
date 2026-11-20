@@ -437,7 +437,7 @@ extension FlagsClient: FlagsClientProtocol {
 extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
     public func getFlagAssignments() -> [String: FlagAssignment]? {
-        return repository.flagAssignments()
+        return repository.flagAssignments()?.filter { $0.value.hasRepresentableValue }
     }
 
     @_spi(Internal)
@@ -514,6 +514,6 @@ extension FlagsClient {
         guard let snapshot = repository.assignmentsSnapshot() else {
             return nil
         }
-        return (snapshot.flags, snapshot.observeFullEvaluationData)
+        return (snapshot.flags.filter { $0.value.hasRepresentableValue }, snapshot.observeFullEvaluationData)
     }
 }

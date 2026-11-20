@@ -197,7 +197,8 @@ extension FlagsClientProtocol {
     /// Returns a side-effect-free snapshot of cached precomputed feature flag assignments.
     ///
     /// Use this method for diagnostics and export use cases, such as attaching the cached
-    /// assignment set to support logs. The snapshot may include assignments that have not
+    /// assignment set to support logs. Unrepresentable numeric assignments are omitted.
+    /// The snapshot may include assignments that have not
     /// been evaluated through ``getValue(key:defaultValue:)`` or ``getDetails(key:defaultValue:)``.
     /// Calling this method does not record evaluations,
     /// exposures, or RUM feature flag evaluations. Use ``getValue(key:defaultValue:)`` or
