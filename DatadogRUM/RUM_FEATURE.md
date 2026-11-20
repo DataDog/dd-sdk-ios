@@ -288,7 +288,7 @@ Event mappers allow modifying or dropping events before upload:
 - `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true, .viewUpdates: true]`.
 - Flags omitted from a custom dictionary fall back to their entry in `.defaults`, or `false` if no default is declared. An empty dictionary therefore still enables scroll/swipe tracking and view updates; set a flag explicitly to `false` to disable it.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
-- `.viewUpdates`: defaults to `true`. When `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit. Set to `false` to opt out and always send full view events.
+- `.viewUpdates`: defaults to `true`. When `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 10th update so the view state can be fully reconstructed even if some updates are lost in transit. Set to `false` to opt out and always send full view events.
 - `.none`: no-op feature flag case kept in the public enum.
 
 ### Timeseries Collection (Experimental)
