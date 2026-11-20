@@ -53,6 +53,8 @@ Feature-specific docs (in each module directory):
 | Add a new feature, command, or provider | `docs/DEVELOPMENT.md` |
 | Write or fix tests | `docs/TESTING.md` |
 | Check naming, lint, commit format | `docs/CONVENTIONS.md` |
+| Open a development PR | `.claude/skills/open-pr/SKILL.md` |
+| Follow CI, address PR feedback or arrange human review | `.claude/skills/follow-up-pr/SKILL.md` |
 | Touch swizzling code | `docs/SWIZZLING.md` |
 | Report an error to internal telemetry | `docs/ERROR_HANDLING.md` |
 | Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
@@ -76,6 +78,7 @@ Feature-specific docs (in each module directory):
 - **Do NOT introduce new public API** without RFC review.
 - **Do NOT edit build scripts** unless instructed.
 - **Do NOT name branches with `codex`.** Use repo branch naming conventions instead.
+- **Validate changes locally before publishing.** Pass the affected builds and tests; documentation-only edits use document and link checks. See `docs/TESTING.md`.
 - **Never mention AI assistant names** (Claude, ChatGPT, Cursor, Copilot, etc.) in commit messages, PR descriptions, code comments, or co-author tags.
 - **Never write or modify a swizzle without reading `docs/SWIZZLING.md` first.** Past incidents have caused production crashes.
 - **Never report a raw `Error` to internal telemetry.** `"\(error)"` can embed customer data (e.g. `EncodingError.invalidValue` embeds the offending value). Always go through `Telemetry.error(_:)`, which sanitizes via `TelemetrySanitizableError`; see `docs/ERROR_HANDLING.md`. Past incidents have leaked customer PII and auth tokens this way.
