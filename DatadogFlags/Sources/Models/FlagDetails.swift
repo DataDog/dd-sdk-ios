@@ -21,6 +21,9 @@ public enum FlagEvaluationError: Error {
 
     /// The evaluation context is invalid, for example an invalid experimentation opt-out timestamp.
     case invalidContext
+
+    /// The provider cannot evaluate the flag because the current subject has no authorized assignments.
+    case general
 }
 
 /// Detailed information about a feature flag evaluation.
