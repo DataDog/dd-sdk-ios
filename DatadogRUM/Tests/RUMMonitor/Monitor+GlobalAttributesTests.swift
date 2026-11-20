@@ -54,7 +54,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let keys = try XCTUnwrap(appLaunchViewEvent.context?.contextInfo.keys)
         XCTAssertEqual(keys.filter { $0.hasPrefix("single-") }.count, iterations)
         XCTAssertEqual(keys.filter { $0.hasPrefix("bulk-") }.count, iterations)
-        XCTAssertTrue(keys.filter { $0.hasPrefix("temporary-") }.isEmpty)
+        XCTAssertFalse(keys.contains { $0.hasPrefix("temporary-") })
     }
 
     // MARK: - Changing Global Attributes After SDK Init
