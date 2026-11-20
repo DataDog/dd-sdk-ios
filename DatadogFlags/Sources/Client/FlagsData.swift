@@ -55,3 +55,7 @@ internal struct FlagsData: Equatable, Codable {
         )
     }
 }
+
+extension FlagsData: FlagNumericTokenRoot {
+    static var flagAssignmentsPath: [String] { ["flags"] }
+}

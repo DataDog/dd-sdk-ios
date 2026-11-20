@@ -3738,6 +3738,95 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testNumericMetadataUsesACacheVersionThatLegacyReadersReject() throws {
+        for literal in ["1e400", "1e-400", "100000000000000000001", "1.00000000000000001"] {
+            let json = #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}"#
+            let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+            let flagsData = FlagsData(flags: ["flag": assignment], context: .mockAny(), date: .mockAny())
+            let scope = FeatureScopeMock()
+            scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "numeric")
+            let stored = try XCTUnwrap(scope.dataStoreMock.storage["numeric"])
+            for version: DataStoreKeyVersion in [1, 2, 3] {
+                XCTAssertNil(stored.data(expectedVersion: version), literal)
+            }
+            XCTAssertNotNil(stored.data(expectedVersion: 4), literal)
+            let completed = expectation(description: "restored numeric metadata")
+            scope.flagsDataStore.flagsData(forClientNamed: "numeric") {
+                XCTAssertEqual($0, flagsData, literal)
+                XCTAssertNil($0?.flags["flag"]?.variation(as: Int.self), literal)
+                completed.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+    }
+
+    func testCacheRestoreWithoutNumericTokensKeepsEveryRead() throws {
+        let literals = [
+            "0", "-0.0", "5", "5.0", "1.5", "-2.25", "1e20", "1.20000000000000001", "1.00000000000000001",
+            "4503599627370497.5", "9007199254740993", "9007199254740993.5", "100000000000000000001",
+            "1e400", "1e-400", "0e999999"
+        ]
+        var flags: [String: FlagAssignment] = [:]
+        for label in ["number", "integer", "float"] {
+            for (index, literal) in literals.enumerated() {
+                let json = #"{"allocationKey":"a","variationKey":"v","variationType":"\#(label)","variationValue":\#(literal),"reason":"STATIC","doLog":false}"#
+                flags["\(label)-\(index)"] = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+            }
+        }
+        let flagsData = FlagsData(flags: flags, context: .mockAny(), date: .mockAny())
+        let scope = FeatureScopeMock()
+        scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "numeric")
+        let completed = expectation(description: "restored numeric cache")
+        scope.flagsDataStore.flagsData(forClientNamed: "numeric") { restored in
+            XCTAssertEqual(restored, flagsData)
+            for (key, assignment) in flags {
+                XCTAssertEqual(restored?.flags[key]?.variation(as: Int.self), assignment.variation(as: Int.self), key)
+                XCTAssertEqual(restored?.flags[key]?.variation(as: Double.self), assignment.variation(as: Double.self), key)
+            }
+            completed.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+    }
+
+    func testCacheRestoreReadsReleasedSDKNumericCaches() throws {
+        // Released SDKs write numbers as "integer" or "float", without `_numericLiteral`.
+        let cases: [(String, String, FlagAssignment.Variation)] = [
+            ("integer", "4503599627370498", .integer(4_503_599_627_370_498)),
+            ("integer", "-7", .integer(-7)),
+            ("float", "1.5", .double(1.5)),
+            ("float", "5", .double(5)),
+            ("float", "1e+20", .double(1e20))
+        ]
+        for (label, value, expected) in cases {
+            let assignment = #"{"allocationKey":"a","variationKey":"v","variationType":"\#(label)","variationValue":\#(value),"reason":"STATIC","doLog":false}"#
+            let cache = try JSONEncoder().encode(FlagsData(flags: ["flag": .mockAnyBoolean()], context: .mockAny(), date: .mockAny()))
+            var object = try XCTUnwrap(JSONSerialization.jsonObject(with: cache) as? [String: Any])
+            object["flags"] = ["flag": try JSONSerialization.jsonObject(with: Data(assignment.utf8))]
+            let scope = FeatureScopeMock()
+            try scope.dataStoreMock.setValue(JSONSerialization.data(withJSONObject: object), forKey: "legacy", version: dataStoreDefaultKeyVersion)
+            let completed = expectation(description: "restored released cache")
+            scope.flagsDataStore.flagsData(forClientNamed: "legacy") { restored in
+                XCTAssertEqual(restored?.flags["flag"]?.variation, expected, value)
+                XCTAssertNil(restored?.flags["flag"]?.numericConversion, value)
+                completed.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+    }
+
+    func testOrdinaryNumericCacheKeepsItsExistingVersion() throws {
+        for literal in ["0", "5", "1.5", "1e20"] {
+            let json = #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}"#
+            let assignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(json.utf8))
+            let flagsData = FlagsData(flags: ["flag": assignment], context: .mockAny(), date: .mockAny())
+            let scope = FeatureScopeMock()
+            scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "numeric")
+            let stored = try XCTUnwrap(scope.dataStoreMock.storage["numeric"]?.data())
+            let restored = try FlagsNumericJSON.decode(FlagsData.self, from: stored, cached: true)
+            XCTAssertEqual(restored, flagsData, literal)
+        }
+    }
+
     func testFlagsDataStoredAtAnUnknownVersionIsNotLoadedAndNotReported() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -3749,7 +3838,7 @@ final class FlagsRepositoryTests: XCTestCase {
             date: .mockAny(),
             flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
         )
-        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 4)
+        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 5)
         let completed = expectation(description: "unknown version skipped")
 
         // When

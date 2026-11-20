@@ -138,3 +138,7 @@ extension FlagAssignmentsResponse: Codable {
         }
     }
 }
+
+extension FlagAssignmentsResponse: FlagNumericTokenRoot {
+    static var flagAssignmentsPath: [String] { ["data", "attributes", "flags"] }
+}

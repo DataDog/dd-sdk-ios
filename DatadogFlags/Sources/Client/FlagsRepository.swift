@@ -177,7 +177,7 @@ internal final class FlagsRepository {
 
         func cachedAssignment(for key: String, supportsObfuscation: Bool) -> LookupResult {
             guard data.obfuscation != nil else {
-                return .resolved(data.flags[key])
+                return .resolved(plaintextAssignment(for: key))
             }
             guard supportsObfuscation else {
                 return .resolved(nil)
@@ -190,7 +190,7 @@ internal final class FlagsRepository {
 
         mutating func flagAssignment(for key: String) -> FlagAssignment? {
             guard let obfuscation = data.obfuscation else {
-                return data.flags[key]
+                return plaintextAssignment(for: key)
             }
             let keyBytes = Data(key.utf8)
             if let lookupKey = lookupKeys[keyBytes] {
@@ -200,6 +200,15 @@ internal final class FlagsRepository {
             if lookupKeys.count >= Self.lookupCacheLimit { lookupKeys.removeAll(keepingCapacity: true) }
             lookupKeys[keyBytes] = lookupKey
             return data.flags[lookupKey]
+        }
+
+        /// Plaintext keys match byte for byte, like encoded keys. A `String` dictionary lookup alone would also
+        /// return the assignment of a canonically equivalent spelling.
+        private func plaintextAssignment(for key: String) -> FlagAssignment? {
+            guard let index = data.flags.index(forKey: key), data.flags[index].key.utf8.elementsEqual(key.utf8) else {
+                return nil
+            }
+            return data.flags[index].value
         }
     }
 
