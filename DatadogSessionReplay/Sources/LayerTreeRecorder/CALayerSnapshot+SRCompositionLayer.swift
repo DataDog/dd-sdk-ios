@@ -50,9 +50,7 @@ extension CALayerSnapshot {
             return .passthrough
         }
 
-        if observation.semantics == .visualEffect(.glassGroup),
-           inheritedEffects.contains(.liquidLens),
-           cornerRadii != .zero {
+        if isRoundedGlassGroupInLiquidLens(inheritedEffects: inheritedEffects) {
             // Liquid lens glass groups need a composition layer for their shadow.
             return .layer
         }
@@ -126,6 +124,14 @@ extension CALayerSnapshot {
         )
     }
 
+    private func isRoundedGlassGroupInLiquidLens(
+        inheritedEffects: [SemanticObservation.VisualEffect]
+    ) -> Bool {
+        observation.semantics == .visualEffect(.glassGroup)
+            && inheritedEffects.contains(.liquidLens)
+            && cornerRadii != .zero
+    }
+
     private var requiresGlassGroupClip: Bool {
         // Glass group wireframes need a clip when one scalar radius cannot represent their corners
         observation.semantics == .visualEffect(.glassGroup)
@@ -157,9 +163,7 @@ extension CALayerSnapshot {
                 },
                 radius: Double(shadowRadius)
             )
-        } else if observation.semantics == .visualEffect(.glassGroup),
-                  inheritedEffects.contains(.liquidLens),
-                  cornerRadii != .zero,
+        } else if isRoundedGlassGroupInLiquidLens(inheritedEffects: inheritedEffects),
                   !masksToBounds {
             .glassApproximation
         } else {
