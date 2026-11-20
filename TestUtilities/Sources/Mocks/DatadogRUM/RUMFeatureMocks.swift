@@ -808,6 +808,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         time: Date = Date(),
         message: String = .mockAny(),
         type: String? = .mockAny(),
+        stack: String? = nil,
         source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
@@ -818,6 +819,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
             time: time,
             message: message,
             type: type,
+            stack: stack,
             source: source,
             httpStatusCode: httpStatusCode,
             globalAttributes: globalAttributes,
@@ -1231,6 +1233,7 @@ public class TimeseriesCollectorMock: TimeseriesCollecting {
     public func stop(sessionID: String) {}
     public func noteActivity(sessionID: String) {}
     public func flush() {}
+    public func stopForTermination() {}
     public func hasCollectedData(sessionID: String) -> Bool { hasData }
 }
 

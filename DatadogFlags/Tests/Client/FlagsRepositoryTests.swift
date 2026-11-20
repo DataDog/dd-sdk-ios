@@ -438,6 +438,65 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testNumericVariationsCachedByEarlierVersionsReadWithoutLoss() throws {
+        // SDK 3.21.0 and earlier write whole "number" values to the cache as "integer" and decimal values as "float".
+        // Every version writes a stored `.double` as "float", and the cache restores it as `.double`: above
+        // 2^53 - 1, its `Int` read stays rejected after a restore.
+        let cases: [(variationType: String, variationValue: Any, integer: Int?, double: Double)] = [
+            ("integer", 5, 5, 5.0),
+            ("float", 5.0, 5, 5.0),
+            ("float", 1.2, nil, 1.2),
+            ("float", 9_007_199_254_740_994.0, nil, 9_007_199_254_740_994.0)
+        ]
+        for (index, entry) in cases.enumerated() {
+            // Given
+            let label = "\(entry.variationType) \(entry.variationValue)"
+            let clientName = "legacy-\(index)"
+            let data = FlagsData(flags: ["flag": .mockAnyBoolean()], context: .init(targetingKey: "subject"), date: .mockAny())
+            var object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(data)) as? [String: Any])
+            var flags = try XCTUnwrap(object["flags"] as? [String: Any])
+            var flag = try XCTUnwrap(flags["flag"] as? [String: Any])
+            flag["variationType"] = entry.variationType
+            flag["variationValue"] = entry.variationValue
+            flags["flag"] = flag
+            object["flags"] = flags
+            let scope = FeatureScopeMock()
+            scope.dataStoreMock.setValue(try JSONSerialization.data(withJSONObject: object), forKey: clientName)
+            let repository = FlagsRepository(
+                clientName: clientName,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.failure(.invalidResponse)) },
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                flagSelection: nil
+            )
+            let completed = expectation(description: "cache restored \(label)")
+            repository.setEvaluationContext(data.context) { _ in completed.fulfill() }
+            wait(for: [completed], timeout: 2)
+            let client = FlagsClient(
+                repository: repository,
+                exposureLogger: ExposureLoggerMock(),
+                evaluationLogger: EvaluationLoggerMock(),
+                rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+            )
+
+            // When
+            let doubleDetails = client.getDoubleDetails(key: "flag", defaultValue: -1)
+            let integerDetails = client.getIntegerDetails(key: "flag", defaultValue: -1)
+
+            // Then
+            XCTAssertEqual(doubleDetails.value, entry.double, label)
+            XCTAssertNil(doubleDetails.error, label)
+            XCTAssertEqual(doubleDetails.reason, "CACHED", label)
+            if let integer = entry.integer {
+                XCTAssertEqual(integerDetails.value, integer, label)
+                XCTAssertNil(integerDetails.error, label)
+            } else {
+                XCTAssertEqual(integerDetails.value, -1, label)
+                XCTAssertEqual(integerDetails.error, .typeMismatch, label)
+            }
+        }
+    }
+
     func testEnabledPendingSubjectDoesNotInheritPreviousSubjectsTelemetryOptOut() {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             var responses: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
@@ -3986,5 +4045,51 @@ private final class ClosureFlagsStateListener: FlagsStateListener {
 
     func flagsStateDidChange(_ newState: FlagsClientState) {
         onStateChange(newState)
+    }
+}
+
+extension FlagsRepositoryTests {
+    func testConsentSurvivesRefreshOfflineAndDelayedBridgeEmission() throws {
+        for initialConsent in [false, true] {
+            let scope = FeatureScopeMock()
+            let context = FlagsEvaluationContext(targetingKey: "jane.doe@datadoghq.com", attributes: ["private": .string("CANARY")])
+            let assignment = FlagAssignment.mockAnyBoolean(doLog: false)
+            let disk = FlagsData(flags: ["flag": assignment], context: context, date: .mockAny(), observeFullEvaluationData: initialConsent)
+            scope.dataStoreMock.setValue(try JSONEncoder().encode(disk), forKey: "privacy")
+            let fetcher = FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            }
+            let repository = FlagsRepository(clientName: "privacy", flagAssignmentsFetcher: fetcher, dateProvider: DateProviderMock(), featureScope: scope, flagSelection: nil)
+            scope.dataStore.flush()
+            let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+            let client = FlagsClient(repository: repository, exposureLogger: ExposureLoggerMock(), evaluationLogger: EvaluationLogger(aggregator: aggregator), rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock())
+            let captured = try XCTUnwrap(client.getFlagAssignmentsWithConsent())
+            XCTAssertEqual(captured.observeFullEvaluationData, initialConsent)
+            let offline = expectation(description: "offline")
+            client.setEvaluationContext(context) { _ in offline.fulfill() }
+            waitForExpectations(timeout: 1)
+            XCTAssertEqual(repository.state.currentState, .stale)
+            XCTAssertEqual(client.getBooleanDetails(key: "flag", defaultValue: false).observeFullEvaluationData, initialConsent)
+            XCTAssertEqual(client.getBooleanDetails(key: "missing", defaultValue: false).observeFullEvaluationData, initialConsent)
+            XCTAssertEqual(client.getStringDetails(key: "flag", defaultValue: "fallback").observeFullEvaluationData, initialConsent)
+            fetcher.flagAssignmentsStub = { _, completion in
+                completion(.success(.init(flags: ["flag": assignment], observeFullEvaluationData: !initialConsent)))
+            }
+            let refreshed = expectation(description: "refresh")
+            client.setEvaluationContext(context) { _ in refreshed.fulfill() }
+            waitForExpectations(timeout: 1)
+            client.sendFlagEvaluationEvent(key: "bridge", assignment: assignment, context: context, telemetryTargetingKey: context.targetingKey, observeFullEvaluationData: captured.observeFullEvaluationData, errorCode: "HOSTILE_ERROR")
+            aggregator.sendEvaluations()
+            let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+            XCTAssertEqual(events.count, 4)
+            XCTAssertTrue(events.allSatisfy { ($0.context != nil) == initialConsent })
+            XCTAssertTrue(events.allSatisfy { $0.targetingKey == (initialConsent ? context.targetingKey : "sha256_b4698f9b6d186781fa8dc59e533578fa2d8379a46b1cf6db85cda6aa9c99e51b") })
+            XCTAssertEqual(events.first { $0.flag.key == "bridge" }?.error?.message, "GENERAL")
+            XCTAssertEqual(client.getBooleanDetails(key: "flag", defaultValue: false).observeFullEvaluationData, !initialConsent)
+            repository.reset()
+            XCTAssertFalse(client.getBooleanDetails(key: "flag", defaultValue: false).observeFullEvaluationData)
+            aggregator.sendEvaluations()
+            XCTAssertEqual(scope.eventsWritten(ofType: FlagEvaluationEvent.self).filter { $0.error?.message == "PROVIDER_NOT_READY" }.count, 1)
+        }
     }
 }

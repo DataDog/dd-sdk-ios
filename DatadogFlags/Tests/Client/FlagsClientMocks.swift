@@ -98,13 +98,6 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             doLog: doLog
         )
     }
-
-    /// Returns a copy marked as served with `"variationType": "number"`.
-    func servedAsNumber() -> FlagAssignment {
-        var assignment = self
-        assignment.isNumberType = true
-        return assignment
-    }
 }
 
 extension FlagAssignment.Variation: AnyMockable, RandomMockable {
@@ -192,7 +185,8 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         FlagEvaluationSnapshot(
             context: flagsData?.context,
             assignment: flagAssignment(for: key),
-            telemetryOptedOut: telemetry.isOptedOut(evaluating: flagsData?.context)
+            telemetryOptedOut: telemetry.isOptedOut(evaluating: flagsData?.context),
+            observeFullEvaluationData: flagsData?.observeFullEvaluationData ?? false
         )
     }
 
@@ -201,6 +195,10 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
             return nil
         }
         return data.flags
+    }
+
+    func assignmentsSnapshot() -> FlagsData? {
+        flagsData?.obfuscation == nil ? flagsData : nil
     }
 
     func reset() {

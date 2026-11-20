@@ -127,7 +127,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 url: url(with: context),
                 evaluationContext: evaluationContext,
                 context: context,
-                customHeaders: customHeaders,
+                // Custom headers can carry proxy credentials, so only the custom endpoint receives them.
+                customHeaders: customEndpoint != nil ? customHeaders : nil,
                 flagSelection: flagSelection,
                 experimentationOptOut: experimentationOptOut,
                 diagnostics: diagnostics
