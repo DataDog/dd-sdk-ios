@@ -149,3 +149,7 @@ The raw targeting key and the evaluation context are sent only when the flags co
 Evaluation errors are reported only as `PROVIDER_NOT_READY`, `PROVIDER_FATAL`, `FLAG_NOT_FOUND`, `PARSE_ERROR`, `TYPE_MISMATCH`, `TARGETING_KEY_MISSING`, `INVALID_CONTEXT`, or `GENERAL`. Any other error is reported as `GENERAL`.
 
 These rules apply to evaluation telemetry only. They do not change assignment requests, targeting, or exposure events. The [evaluation telemetry control](#evaluation-telemetry-control) still suppresses evaluation telemetry for opted-out subjects.
+
+## Usage attribution
+
+Flag requests send the SDK's `service` in the `dd-service` header, so Usage Attribution can split Feature Flags usage by `service`. It is the same service RUM reports: the one set in `Datadog.Configuration`, or else the bundle identifier (or `ios` without one).

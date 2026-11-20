@@ -26,7 +26,7 @@ Flags evaluates Datadog feature flags in the app. A `FlagsClient` sends the eval
 
 Call `Datadog.initialize()` before `Flags.enable()`, and `Flags.enable()` before `FlagsClient.create()`. RUM is optional: without it, the RUM integration is a no-op.
 
-**Platform**: iOS, tvOS, watchOS, visionOS. Flags has no Objective-C API.
+**Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only). Flags has no Objective-C API.
 
 ## Quick Start Example
 
@@ -131,7 +131,7 @@ flowchart LR
 ```
 
 - `Flags.enable()` registers `FlagsFeature` and, when `trackEvaluations` is `true`, a separate `FlagsEvaluationFeature` for evaluation uploads. Both run on the main thread synchronously.
-- `setEvaluationContext` sends one request with the targeting key, attributes, `env`, SDK version, the optional flag selection, and the opt-out policy. When RUM is enabled, the RUM application ID is sent as the `dd-application-id` header.
+- `setEvaluationContext` sends one request with the targeting key, attributes, `env`, SDK version, the optional flag selection, and the opt-out policy. When RUM is enabled, the RUM application ID is sent as the `dd-application-id` header. The service is sent as the `dd-service` header: the same value RUM reports, which is `Datadog.Configuration.service` or else the bundle identifier (or `ios`).
 - The reserved `dd_assignment_token` attribute is removed before the context enters targeting, storage, or telemetry. A usable token is sent only in the `DD-Assignment-Token` request header.
 - `getDetails` reads the in-memory assignment for the key. Until the initial disk cache read finishes, each call waits up to 100 ms for it.
 

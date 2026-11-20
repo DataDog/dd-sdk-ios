@@ -68,6 +68,13 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testRoundedBorders() async throws {
+        try await takeLayerSnapshotFor(
+            RoundedBordersFixtureView(),
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testSteppers() async throws {
         try await takeLayerSnapshotFor(
             StepperFixtureView(),

@@ -5,6 +5,9 @@
  */
 
 import XCTest
+#if os(macOS)
+import AppKit
+#endif
 import TestUtilities
 @testable import DatadogInternal
 @_spi(Experimental)
@@ -117,6 +120,49 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
 
+    #if !os(watchOS)
+    func testWhenAccessibilityCollectionIsEnabled_itReadsAccessibilitySettings() throws {
+        // Given
+        config.collectAccessibility = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.accessibilityReader is AccessibilityReader)
+    }
+
+    #if os(macOS)
+    func testWhenAccessibilityCollectionIsEnabled_itObservesDisplayOptionsOnTheWorkspaceNotificationCenter() throws {
+        // Given
+        let applicationCenter = MockNotificationCenter()
+        let workspaceCenter = MockNotificationCenter()
+        config.notificationCenterProvider = NotificationCenterProvider(applicationCenter: applicationCenter, workspaceCenter: workspaceCenter)
+        config.collectAccessibility = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        XCTAssertTrue(workspaceCenter.getObserverNames().contains(NSWorkspace.accessibilityDisplayOptionsDidChangeNotification))
+        XCTAssertFalse(applicationCenter.getObserverNames().contains(NSWorkspace.accessibilityDisplayOptionsDidChangeNotification))
+    }
+    #endif
+
+    func testWhenAccessibilityCollectionIsDisabled_itDoesNotReadAccessibilitySettings() throws {
+        // Given
+        config.collectAccessibility = false
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertNil(monitor.applicationScope.dependencies.accessibilityReader)
+    }
+    #endif
+
     func testWhenSlowFramesTrackingIsEnabled_itCollectsHitchesOnlyWithRenderLoopObserver() throws {
         // Given
         #if !os(macOS)
@@ -202,7 +248,7 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
         #if os(macOS)
-        XCTAssertIdentical(monitor, rum.instrumentation.firstWindowReader.subscriber)
+        XCTAssertIdentical(monitor, rum.instrumentation.firstWindowReader?.subscriber)
         XCTAssertNil(monitor.applicationScope.dependencies.firstFrameReader, "macOS reads the first window instead of the first frame")
         #else
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
@@ -493,6 +539,32 @@ class RUMTests: XCTestCase {
         let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 42)
     }
+
+    #if !os(macOS)
+    func testWhenEnabledWithManualAppDisplayInitializedReporting_itDoesNotReadTheFirstFrame() throws {
+        // Given
+        config._internal_mutation { $0.reportsAppDisplayInitializedManually = true }
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertNil(monitor.applicationScope.dependencies.firstFrameReader)
+    }
+    #else
+    func testWhenEnabledWithManualAppDisplayInitializedReporting_itDoesNotReadTheFirstWindow() throws {
+        // Given
+        config._internal_mutation { $0.reportsAppDisplayInitializedManually = true }
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        XCTAssertNil(rum.instrumentation.firstWindowReader)
+    }
+    #endif
 
     func testWhenEnabledWithNoOverwritingConfigurationTelemetrySampleRate() throws {
         // When

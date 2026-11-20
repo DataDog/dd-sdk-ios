@@ -76,6 +76,7 @@ internal struct SpanEventBuilder: Sendable {
             id: context.userInfo?.id,
             name: context.userInfo?.name,
             email: context.userInfo?.email,
+            anonymousId: context.userInfo?.anonymousId,
             extraInfo: context.userInfo.map { castValuesToString($0.extraInfo, context: .userInfo) } ?? [:]
         )
 

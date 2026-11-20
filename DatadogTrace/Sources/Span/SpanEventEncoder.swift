@@ -87,6 +87,8 @@ public struct SpanEvent: Encodable {
         public let name: String?
         /// User email, if any.
         public let email: String?
+        /// User anonymous ID, if any. When set, it takes precedence over custom `meta.usr.anonymous_id` values.
+        internal var anonymousId: String? = nil
         /// User custom attributes, if any.
         public var extraInfo: [String: String]
     }
@@ -159,6 +161,7 @@ internal struct SpanEventEncoder {
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
         case userEmail = "meta.usr.email"
+        case userAnonymousId = "meta.usr.anonymous_id"
 
         case accountId = "meta.account.id"
         case accountName = "meta.account.name"
@@ -241,6 +244,7 @@ internal struct SpanEventEncoder {
         try span.userInfo.id.dd.ifNotNil { try container.encode($0, forKey: .userId) }
         try span.userInfo.name.dd.ifNotNil { try container.encode($0, forKey: .userName) }
         try span.userInfo.email.dd.ifNotNil { try container.encode($0, forKey: .userEmail) }
+        try span.userInfo.anonymousId.dd.ifNotNil { try container.encode($0, forKey: .userAnonymousId) }
 
         if let accountInfo = span.accountInfo {
             try container.encode(accountInfo.id, forKey: .accountId)
@@ -289,8 +293,19 @@ internal struct SpanEventEncoder {
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
         // NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes
+        // SDK user fields win over custom values encoded under the same key.
+        var reservedKeys: Set<String> = []
+        if span.userInfo.id != nil { reservedKeys.insert(StaticCodingKeys.userId.rawValue) }
+        if span.userInfo.name != nil { reservedKeys.insert(StaticCodingKeys.userName.rawValue) }
+        if span.userInfo.email != nil { reservedKeys.insert(StaticCodingKeys.userEmail.rawValue) }
+        if span.userInfo.anonymousId != nil { reservedKeys.insert(StaticCodingKeys.userAnonymousId.rawValue) }
+        let isReservedKey: (String) -> Bool = { reservedKeys.contains($0) }
+
         try span.userInfo.extraInfo.forEach {
             let metaKey = "meta.usr.\($0.key)"
+            guard !isReservedKey(metaKey) else {
+                return
+            }
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
 
@@ -300,6 +315,9 @@ internal struct SpanEventEncoder {
         }
         try span.tags.forEach {
             let metaKey = "meta.\($0.key)"
+            guard !isReservedKey(metaKey) else {
+                return
+            }
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
     }

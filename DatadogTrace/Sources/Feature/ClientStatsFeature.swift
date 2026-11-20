@@ -13,7 +13,7 @@ import DatadogInternal
 /// Registered as a separate `DatadogRemoteFeature` alongside `TraceFeature`
 /// so that it has its own storage and upload pipeline.
 // `@unchecked Sendable`: finished spans are recorded from any thread. The only mutable state is the
-// flush timer, set once in `init`, and the two lock-protected suspension flags.
+// flush timer, set once in `init`, and the lock-protected recording mode and suspendable flush flag.
 internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendable {
     static let name = "tracing-client-stats"
 
@@ -46,6 +46,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     /// completed bucket's sketches.
     private let flushQueue = DispatchQueue(label: "com.datadoghq.client-stats-flush", qos: .utility)
     private var flushTimer: DispatchSourceTimer?
+    /// Disables sudden termination while exported buckets are on their way to storage.
+    private let suddenTermination: SuddenTerminationControl
 
     /// Interval between periodic flushes (default: 30 seconds).
     let flushInterval: TimeInterval
@@ -54,8 +56,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         core: DatadogCoreProtocol,
         configuration: Trace.Configuration,
         dateProvider: DateProvider,
-        flushInterval: TimeInterval = 30
+        flushInterval: TimeInterval = 30,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
+        self.suddenTermination = suddenTermination
         self.requestBuilder = StatsRequestBuilder(
             customIntakeURL: configuration.customStatsEndpoint,
             telemetry: core.telemetry
@@ -67,7 +71,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         self.metricController = TraceClientStatsMetricController(telemetry: featureScope.telemetry)
 
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
-        let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry)
+        let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry, suddenTermination: suddenTermination)
         self.concentrator = concentrator
 
         // Observe context changes through the message bus. The core delivers the current context
@@ -95,6 +99,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         case appMayBeSuspended
         /// SDK teardown through `Flushable`, which flushes every buffered bucket.
         case teardown
+        /// The app is terminating, on macOS, so every buffered bucket is flushed.
+        case appTermination
     }
 
     /// The longest a span finished while the app may be suspended stays only in memory. Spans finished
@@ -102,16 +108,32 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     static let suspendableFlushDelay: TimeInterval = 1
 
     /// Records a finished span. While the app may be suspended, it is also flushed to storage within
-    /// `suspendableFlushDelay`.
+    /// `suspendableFlushDelay`. Once the app is terminating, it is flushed right away.
     func record(_ snapshot: SpanSnapshot) {
         concentrator.add(snapshot, now: dateProvider.now.timeIntervalSince1970.dd.toNanoseconds)
-        if appMayBeSuspended {
+        switch recordingMode {
+        case .periodic:
+            break
+        case .suspendable:
             scheduleSuspendableFlush()
+        case .terminating:
+            // The app exits once nothing is left to write, so spans finished during termination are flushed
+            // right away instead of holding the exit until the next flush.
+            // A flush queued while the core drains may not open its write context before the drain ends, and its stats
+            // are lost. The window is a few milliseconds, like for spans that finish after the drain.
+            flushQueue.async { [weak self] in
+                self?.flushStats(.appTermination)
+            }
         }
     }
 
     /// Flushes buffered buckets and writes them to the feature storage for upload.
     func flushStats(_ reason: FlushReason = .periodic) {
+        // Exported buckets leave the concentrator before the event write context opens, so sudden
+        // termination stays disabled until then.
+        suddenTermination.disableSuddenTermination()
+        defer { suddenTermination.enableSuddenTermination() }
+
         let force = reason != .periodic
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
         let (exportedBuckets, clearGeneration) = concentrator.flushForStorage(now: now, force: force)
@@ -151,15 +173,30 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
         }
     }
 
-    /// Whether the app may currently be suspended, as last reported by the context receiver.
+    /// When a finished span is flushed, depending on the app state.
+    private enum RecordingMode {
+        /// With the next periodic flush.
+        case periodic
+        /// Within `suspendableFlushDelay`, because the app may be suspended, as last reported by the context receiver.
+        case suspendable
+        /// Right away, because the app is terminating, as reported by `writeBufferedDataSynchronously()`.
+        case terminating
+    }
+
+    /// A single state, so that recording a span reads one lock.
     @ReadWriteLock
-    private var appMayBeSuspended = false
+    private var recordingMode: RecordingMode = .periodic
     /// Whether a flush of spans finished while the app may be suspended is already scheduled.
     @ReadWriteLock
     private var isSuspendableFlushScheduled = false
 
     private func appMayBeSuspendedDidChange(_ mayBeSuspended: Bool) {
-        appMayBeSuspended = mayBeSuspended
+        _recordingMode.mutate { mode in
+            // Termination is final.
+            if mode != .terminating {
+                mode = mayBeSuspended ? .suspendable : .periodic
+            }
+        }
         if mayBeSuspended {
             // Flush on the feature's queue, not the message bus queue this is called on: flushing waits
             // for pending aggregation and exports every buffered sketch.
@@ -202,6 +239,17 @@ extension ClientStatsFeature: DataClearable {
     // its write context runs later. The span itself is stored after the clear too, so this is not specific to stats.
     func clearAllData() {
         concentrator.clearAllData()
+    }
+}
+
+extension ClientStatsFeature: BufferedDataWritable {
+    func writeBufferedDataSynchronously() {
+        recordingMode = .terminating
+        // On the flush queue, so it waits for a periodic flush that exported buckets but has not
+        // opened its event write context yet.
+        flushQueue.sync {
+            flushStats(.appTermination)
+        }
     }
 }
 
