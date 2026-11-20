@@ -51,6 +51,7 @@ internal final class EvaluationAggregator {
             : nil
         // AnyValue, Array and Dictionary are value types: this is an owned copy-on-write value.
         let context = observeFullEvaluationData ? evaluationContext.attributes : [:]
+        let features = errorMessage == nil ? assignment.features.values(for: .evaluation) : [:]
         let now = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
 
         let key = AggregationKey(
@@ -60,7 +61,8 @@ internal final class EvaluationAggregator {
             targetingKey: targetingKey,
             errorMessage: errorMessage,
             context: context,
-            observeFullEvaluationData: observeFullEvaluationData
+            observeFullEvaluationData: observeFullEvaluationData,
+            features: features
         )
 
         var shouldFlush = false
@@ -84,7 +86,8 @@ internal final class EvaluationAggregator {
                     firstEvaluation: now,
                     lastEvaluation: now,
                     evaluationCount: 1,
-                    runtimeDefaultUsed: runtimeDefaultUsed ? true : nil
+                    runtimeDefaultUsed: runtimeDefaultUsed ? true : nil,
+                    features: features
                 )
 
                 aggregations[key] = aggregated
@@ -197,6 +200,8 @@ private struct AggregationKey: Hashable {
     let errorMessage: String?
     let context: [String: AnyValue]
     let observeFullEvaluationData: Bool
+    /// `EVALUATION` features split buckets, next to the consent dimension.
+    let features: [String: AnyValue]
 
     init(
         flagKey: String,
@@ -205,7 +210,8 @@ private struct AggregationKey: Hashable {
         targetingKey: String?,
         errorMessage: String?,
         context: [String: AnyValue],
-        observeFullEvaluationData: Bool
+        observeFullEvaluationData: Bool,
+        features: [String: AnyValue]
     ) {
         self.flagKey = flagKey
         self.variantKey = variantKey
@@ -214,6 +220,7 @@ private struct AggregationKey: Hashable {
         self.errorMessage = errorMessage
         self.context = context
         self.observeFullEvaluationData = observeFullEvaluationData
+        self.features = features
     }
 }
 
@@ -230,6 +237,7 @@ private struct AggregatedEvaluation {
     var lastEvaluation: Int64
     var evaluationCount: Int
     let runtimeDefaultUsed: Bool?
+    let features: [String: AnyValue]
 
     func toFlagEvaluationEvent() -> FlagEvaluationEvent {
         let eventContext: FlagEvaluationEvent.EvaluationEventContext? = context.isEmpty ? nil : .init(
@@ -249,7 +257,8 @@ private struct AggregatedEvaluation {
             targetingKey: targetingKey,
             runtimeDefaultUsed: runtimeDefaultUsed,
             error: errorMessage.map { .init(message: $0) },
-            context: eventContext
+            context: eventContext,
+            features: features.isEmpty ? nil : features
         )
     }
 }

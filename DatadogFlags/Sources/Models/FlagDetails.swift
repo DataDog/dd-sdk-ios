@@ -85,6 +85,13 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     @_spi(Internal)
     public var observeFullEvaluationData: Bool = false
 
+    /// Metadata of the split that served the value.
+    ///
+    /// Holds one `__dd_feature.<key>` entry, for example `__dd_feature.holdout.key`, for each feature that the
+    /// split sends to customer code. Values are `.string`, `.double` or `.bool`. The `__dd_feature.` prefix
+    /// is the stable contract. A failed evaluation has an empty dictionary.
+    public var flagMetadata: [String: AnyValue] = [:]
+
     /// Creates detailed flag evaluation information.
     ///
     /// - Parameters:
@@ -108,6 +115,17 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
         self.reason = reason
         self.error = error
         self.allocationKey = allocationKey
+    }
+
+    /// Compares the public evaluation result: key, value, variant, reason, error, allocation key and flag metadata.
+    public static func == (lhs: FlagDetails<T>, rhs: FlagDetails<T>) -> Bool {
+        lhs.key == rhs.key
+            && lhs.value == rhs.value
+            && lhs.variant == rhs.variant
+            && lhs.reason == rhs.reason
+            && lhs.error == rhs.error
+            && lhs.allocationKey == rhs.allocationKey
+            && lhs.flagMetadata == rhs.flagMetadata
     }
 }
 

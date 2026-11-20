@@ -49,12 +49,10 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         messageReceiver = NOPFeatureMessageReceiver()
         clientRegistry = FlagsClientRegistry()
         makeExposureLogger = { featureScope in
-            guard configuration.trackExposures else {
-                return NOPExposureLogger()
-            }
-            return ExposureLogger(
+            ExposureLogger(
                 dateProvider: SystemDateProvider(),
-                featureScope: featureScope
+                featureScope: featureScope,
+                sendsExposures: configuration.trackExposures
             )
         }
 

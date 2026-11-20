@@ -326,3 +326,117 @@ extension EvaluationAggregatorTests {
         XCTAssertEqual(events.first { $0.flag.key == "error" }?.error?.message, "GENERAL")
     }
 }
+
+final class EvaluationFeaturesAggregationTests: XCTestCase {
+    private func assignment(features: [SplitFeature], serialID: Int? = 1) -> FlagAssignment {
+        var assignment = FlagAssignment(allocationKey: "allocation", variationKey: "on", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: true, serialID: serialID)
+        assignment.features = features
+        return assignment
+    }
+
+    func testEvaluationFeaturesSplitBucketsAndAppearOnRows() throws {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        let control = [
+            SplitFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"]),
+            SplitFeature(key: "group", value: .string("control"), destinations: ["EVALUATION"]),
+        ]
+        let treatment = [SplitFeature(key: "group", value: .string("treatment"), destinations: ["EVALUATION", "EXPOSURE"])]
+
+        for features in [control, control, treatment] {
+            aggregator.recordEvaluation(for: "flag", assignment: assignment(features: features), evaluationContext: .mockAny(), flagError: nil)
+        }
+        aggregator.recordEvaluation(for: "flag", assignment: assignment(features: []), evaluationContext: .mockAny(), flagError: nil)
+        aggregator.sendEvaluations()
+
+        let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 3)
+        XCTAssertEqual(events.first { $0.features?["group"] == .string("control") }?.evaluationCount, 2)
+        XCTAssertEqual(events.first { $0.features?["group"] == .string("treatment") }?.evaluationCount, 1)
+        let plain = try XCTUnwrap(events.first { $0.features == nil })
+        XCTAssertEqual(plain.evaluationCount, 1)
+        XCTAssertFalse(events.contains { $0.features?["holdout.key"] != nil }, "only EVALUATION features reach counts")
+    }
+
+    func testEvaluationFeaturesAndConsentEachSplitBuckets() throws {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        let control = [SplitFeature(key: "group", value: .string("control"), destinations: ["EVALUATION"])]
+        let treatment = [SplitFeature(key: "group", value: .string("treatment"), destinations: ["EVALUATION"])]
+        for (features, consent) in [(control, false), (control, true), (treatment, false), (control, false)] {
+            var evaluated = assignment(features: features)
+            evaluated.observeFullEvaluationData = consent
+            aggregator.recordEvaluation(for: "flag", assignment: evaluated, evaluationContext: .init(targetingKey: "user"), flagError: nil)
+        }
+        aggregator.sendEvaluations()
+
+        let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 3)
+        let protectedControl = try XCTUnwrap(events.first { $0.features?["group"] == .string("control") && $0.targetingKey != "user" })
+        XCTAssertEqual(protectedControl.evaluationCount, 2)
+        XCTAssertEqual(events.first { $0.features?["group"] == .string("control") && $0.targetingKey == "user" }?.evaluationCount, 1)
+        XCTAssertEqual(events.first { $0.features?["group"] == .string("treatment") }?.evaluationCount, 1)
+    }
+
+    func testSerialIDIsNotPartOfTheBucketKey() {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        let features = [SplitFeature(key: "group", value: .string("control"), destinations: ["EVALUATION"])]
+        aggregator.recordEvaluation(for: "flag", assignment: assignment(features: features, serialID: 1), evaluationContext: .mockAny(), flagError: nil)
+        aggregator.recordEvaluation(for: "flag", assignment: assignment(features: features, serialID: 2), evaluationContext: .mockAny(), flagError: nil)
+        aggregator.sendEvaluations()
+        XCTAssertEqual(scope.eventsWritten(ofType: FlagEvaluationEvent.self).map(\.evaluationCount), [2])
+    }
+
+    func testFailedEvaluationsCarryNoFeatures() throws {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        let features = [SplitFeature(key: "group", value: .string("control"), destinations: ["EVALUATION"])]
+        aggregator.recordEvaluation(for: "flag", assignment: assignment(features: features), evaluationContext: .mockAny(), flagError: "TYPE_MISMATCH")
+        aggregator.sendEvaluations()
+        XCTAssertNil(try XCTUnwrap(scope.eventsWritten(ofType: FlagEvaluationEvent.self).first).features)
+    }
+
+    func testEvaluationEventEncodesFeaturesOnlyWhenPresent() throws {
+        func encoded(_ features: [String: AnyValue]?) throws -> [String: Any] {
+            let event = FlagEvaluationEvent(
+                timestamp: 1,
+                flag: .init(key: "f"),
+                firstEvaluation: 1,
+                lastEvaluation: 1,
+                evaluationCount: 1,
+                variant: nil,
+                allocation: nil,
+                targetingRule: nil,
+                targetingKey: nil,
+                runtimeDefaultUsed: nil,
+                error: nil,
+                context: nil,
+                features: features
+            )
+            return try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(event)) as? [String: Any])
+        }
+        XCTAssertNil(try encoded(nil)["features"])
+        XCTAssertEqual(try encoded(["group": .string("control")])["features"] as? [String: String], ["group": "control"])
+    }
+}
+
+extension EvaluationAggregatorTests {
+    func testProtectedAndFullBucketsStaySeparateWhenWireFieldsCollide() {
+        let scope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+        var protected = FlagAssignment.mockAnyBoolean(doLog: false)
+        protected.observeFullEvaluationData = false
+        var full = protected
+        full.observeFullEvaluationData = true
+        aggregator.recordEvaluation(for: "flag", assignment: protected, evaluationContext: .init(targetingKey: "jane.doe@datadoghq.com"), flagError: nil)
+        aggregator.recordEvaluation(
+            for: "flag",
+            assignment: full,
+            evaluationContext: .init(targetingKey: "sha256_b4698f9b6d186781fa8dc59e533578fa2d8379a46b1cf6db85cda6aa9c99e51b"),
+            flagError: nil
+        )
+        aggregator.sendEvaluations()
+        XCTAssertEqual(scope.eventsWritten(ofType: FlagEvaluationEvent.self).count, 2)
+    }
+}

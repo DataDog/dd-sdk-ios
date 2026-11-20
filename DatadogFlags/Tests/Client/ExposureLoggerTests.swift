@@ -325,3 +325,97 @@ extension FeatureScopeMock {
         }
     }
 }
+
+final class ExposureDecisionTests: XCTestCase {
+    private let featureScope = FeatureScopeMock()
+    private let context = FlagsEvaluationContext(targetingKey: "user", attributes: [:])
+
+    private func assignment(variant: String = "on", serialID: Int? = 1, doLog: Bool = true) -> FlagAssignment {
+        FlagAssignment(allocationKey: "allocation", variationKey: variant, variation: .boolean(true), reason: "TARGETING_MATCH", doLog: doLog, serialID: serialID)
+    }
+
+    func testFirstEvaluationIsAnExposureAndARepeatIsACacheHit() {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope)
+
+        let first = logger.logExposure(for: "flag", assignment: assignment(), evaluationContext: context)
+        let repeated = logger.logExposure(for: "flag", assignment: assignment(), evaluationContext: context)
+        let newVariant = logger.logExposure(for: "flag", assignment: assignment(variant: "off"), evaluationContext: context)
+        let newSerial = logger.logExposure(for: "flag", assignment: assignment(variant: "off", serialID: 2), evaluationContext: context)
+
+        XCTAssertEqual(first, ExposureDecision(isExposure: true, isCacheHit: false))
+        XCTAssertTrue(first.shouldSend)
+        XCTAssertEqual(repeated, ExposureDecision(isExposure: true, isCacheHit: true))
+        XCTAssertFalse(repeated.shouldSend)
+        XCTAssertEqual(newVariant, ExposureDecision(isExposure: true, isCacheHit: false))
+        XCTAssertEqual(newSerial, ExposureDecision(isExposure: true, isCacheHit: false))
+        XCTAssertEqual(featureScope.eventsWritten(ofType: ExposureEvent.self).count, 3)
+    }
+
+    func testAllocationWithoutDoLogIsNotAnExposure() {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope)
+        let decision = logger.logExposure(for: "flag", assignment: assignment(doLog: false), evaluationContext: context)
+        XCTAssertEqual(decision, .notAnExposure)
+        XCTAssertFalse(decision.shouldSend)
+        XCTAssertTrue(featureScope.eventsWritten.isEmpty)
+    }
+
+    func testWithSendingDisabledTheCacheStillRecordsButNothingIsSent() {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope, sendsExposures: false)
+
+        let first = logger.logExposure(for: "flag", assignment: assignment(), evaluationContext: context)
+        let repeated = logger.logExposure(for: "flag", assignment: assignment(), evaluationContext: context)
+
+        XCTAssertTrue(first.shouldSend)
+        XCTAssertTrue(repeated.isCacheHit)
+        XCTAssertTrue(featureScope.eventsWritten.isEmpty)
+    }
+
+    func testExposureFeaturesAreSentButAreNotPartOfTheCacheKey() throws {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope)
+        var withFeatures = assignment()
+        withFeatures.features = [
+            SplitFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"]),
+            SplitFeature(key: "cohort", value: .string("c"), destinations: ["EXPOSURE"]),
+            SplitFeature(key: "score", value: .double(3), destinations: ["EXPOSURE", "EVALUATION"]),
+        ]
+        var otherFeatures = withFeatures
+        otherFeatures.features = [SplitFeature(key: "cohort", value: .string("other"), destinations: ["EXPOSURE"])]
+
+        logger.logExposure(for: "flag", assignment: withFeatures, evaluationContext: context)
+        let featuresOnlyChange = logger.logExposure(for: "flag", assignment: otherFeatures, evaluationContext: context)
+
+        let event = try XCTUnwrap(featureScope.eventsWritten(ofType: ExposureEvent.self).first)
+        XCTAssertEqual(event.features, ["cohort": .string("c"), "score": .double(3)])
+        XCTAssertTrue(featuresOnlyChange.isCacheHit)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: ExposureEvent.self).count, 1)
+    }
+
+    func testExposureEventOmitsFeaturesWhenThereAreNone() throws {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope)
+        var hookOnly = assignment()
+        hookOnly.features = [SplitFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"])]
+        logger.logExposure(for: "flag", assignment: hookOnly, evaluationContext: context)
+
+        let event = try XCTUnwrap(featureScope.eventsWritten(ofType: ExposureEvent.self).first)
+        XCTAssertNil(event.features)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(event)) as? [String: Any])
+        XCTAssertNil(object["features"])
+    }
+
+    func testExposureEventEncodesFeaturesAsAFlatObject() throws {
+        let event = ExposureEvent(
+            timestamp: 1,
+            allocation: .init(key: "a"),
+            flag: .init(key: "f"),
+            variant: .init(key: "v"),
+            serialID: nil,
+            subject: .init(id: "s", attributes: [:]),
+            features: ["cohort": .string("c"), "score": .double(1.5), "on": .bool(true)]
+        )
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(event)) as? [String: Any])
+        let features = try XCTUnwrap(object["features"] as? [String: Any])
+        XCTAssertEqual(features["cohort"] as? String, "c")
+        XCTAssertEqual(features["score"] as? Double, 1.5)
+        XCTAssertEqual(features["on"] as? Bool, true)
+    }
+}

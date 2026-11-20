@@ -62,11 +62,14 @@ final class ExposureLoggerMock: ExposureLogging {
         context: FlagsEvaluationContext
     )] = []
 
+    var decision: ExposureDecision?
+
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
         evaluationContext: FlagsEvaluationContext
-    ) {
+    ) -> ExposureDecision {
         logExposureCalls.append((flagKey, assignment, evaluationContext))
+        return decision ?? ExposureDecision(isExposure: assignment.doLog, isCacheHit: false)
     }
 }

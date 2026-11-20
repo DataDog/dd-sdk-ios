@@ -107,13 +107,31 @@ Client configuration is fixed for each client name. Creating a client with an ex
 
 ## Evaluation telemetry privacy
 
-Evaluation telemetry is protected by default. Each event sends the targeting key as `sha256_` followed by the lowercase hex SHA-256 of its UTF-8 bytes, and omits the evaluation context. An empty targeting key is sent as an empty string. Evaluations made before any context is set have no targeting key. A targeting key that is not valid UTF-16 is omitted, and the evaluation is still counted.
+Evaluation telemetry is protected by default. Each event sends the targeting key as `sha256_` followed by the lowercase hex SHA-256 of its UTF-8 bytes, and omits the evaluation context. An empty targeting key is sent as an empty string. With the default experimentation opt-out mode (`.disabled`), an evaluation made before a flags configuration is available sends its event with the targeting key omitted. With `.immediate` or `.futureExperimentsOnly`, an evaluation for a requested context whose configuration is still loading sends that context's targeting key in protected form. In both consent modes, the SDK omits a targeting key that fails strict UTF-8 encoding, such as one with an unpaired UTF-16 surrogate, and still counts the evaluation.
 
 The raw targeting key and the evaluation context are sent only when the flags configuration for the evaluated context enables full evaluation data. The SDK keeps that setting with the configuration it applies to, including when the configuration is restored from disk. A refresh changes later evaluations only. Events that are waiting to be sent keep the setting that applied when the flag was evaluated.
 
 Evaluation errors are reported only as `PROVIDER_NOT_READY`, `PROVIDER_FATAL`, `FLAG_NOT_FOUND`, `PARSE_ERROR`, `TYPE_MISMATCH`, `TARGETING_KEY_MISSING`, `INVALID_CONTEXT`, or `GENERAL`. Any other error is reported as `GENERAL`.
 
 These rules apply to evaluation telemetry only. They do not change assignment requests, targeting, or exposure events. The [evaluation telemetry control](#evaluation-telemetry-control) still suppresses evaluation telemetry for opted-out subjects.
+
+## Split features and exposures
+
+The flags configuration can carry `features` for the split that serves a flag. Each feature has a key, a value (string, number or boolean) and destinations:
+
+| Destination | Where the SDK puts the feature |
+| --- | --- |
+| `HOOK` | `FlagDetails.flagMetadata`, as `__dd_feature.<key>` (for example `__dd_feature.holdout.key`), and the exposure hook of the Datadog OpenFeature provider |
+| `EXPOSURE` | A `features` object on the exposure event |
+| `EVALUATION` | The evaluation-count bucket and its row |
+
+- Values in `flagMetadata` are `.string`, `.double` or `.bool`. The `__dd_feature.` prefix is the stable contract. A failed evaluation has an empty dictionary.
+- To record exposures in your own data store, use the `ExposureHook` of the Datadog OpenFeature provider ([dd-openfeature-provider-swift](https://github.com/DataDog/dd-openfeature-provider-swift)). It receives each evaluation with the exposure decision that the SDK uses for Datadog.
+- The SDK makes one exposure decision for each evaluation. An exposure is a successful evaluation of an allocation that logs exposures. The provider's hook also requires a non-blank allocation key and variant.
+- Each client deduplicates exposures in memory, for up to 5,000 subject and flag pairs. The cache keeps the latest assignment for each subject and flag. After an exposure of another assignment, after an eviction, or after the app restarts, the next exposure is new.
+- With `trackExposures` set to `false`, the SDK stops sending exposures to Datadog and keeps deduplicating them, so the provider's hook keeps correct decisions. Evaluation counts keep their usual behaviour.
+- The SDK records an exposure when the flag resolves in the native client. OpenFeature Swift hooks are non-throwing, so the result that the provider returns is final. Inside an OpenFeature `MultiProvider`, the SDK records exposures for every evaluation of the Datadog provider. A strategy that evaluates every provider and picks one, such as a comparison strategy, can make the SDK record an exposure for a result that the app discards.
+- Evaluations through the internal bridge (React Native) record exposures in the same cache.
 
 ## Usage attribution
 

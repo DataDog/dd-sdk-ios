@@ -1,6 +1,6 @@
 # Unreleased
 
-- [IMPROVEMENT] Flags: Protect evaluation telemetry by default. Targeting keys are hashed and the evaluation context is omitted unless the flags configuration enables full evaluation data. Only stable error codes are reported. See [#3340][]
+- [IMPROVEMENT] Flags: Protect evaluation telemetry by default. Evaluation telemetry sends targeting keys as `sha256_` hashes and omits the evaluation context, and a flags configuration that enables full evaluation data sends both raw. Queries on raw targeting keys or context fields in evaluation telemetry need full evaluation data enabled. Error codes are limited to the stable OpenFeature set. Assignment requests and exposures keep their current behavior. See [#3340][]
 
 # 3.22.0 / 12-11-2026
 

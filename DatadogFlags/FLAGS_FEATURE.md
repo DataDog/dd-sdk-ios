@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-12
+last_updated: 2026-11-17
 sdk_version: 3.21.0
 verified_against_commit: c5961cab1
 tracked_files:
@@ -94,7 +94,7 @@ client.setEvaluationContext(
 // Evaluate anywhere, synchronously. A failed evaluation returns `defaultValue`.
 let enabled = FlagsClient.shared().getBooleanValue(key: "new-checkout", defaultValue: false)
 let details = client.getStringDetails(key: "button-text", defaultValue: "Buy")
-// details.value, details.variant, details.reason, details.allocationKey, details.error
+// details.value, details.variant, details.reason, details.allocationKey, details.error, details.flagMetadata
 ```
 
 ### Evaluation API
@@ -104,7 +104,7 @@ All methods are on `FlagsClientProtocol`:
 | Method | Returns |
 |---|---|
 | `getBooleanValue` / `getStringValue` / `getIntegerValue` / `getDoubleValue` / `getObjectValue` | The value, or `defaultValue` on any error |
-| `getBooleanDetails` / `getStringDetails` / `getIntegerDetails` / `getDoubleDetails` / `getObjectDetails` | `FlagDetails<T>` with value, variant, reason, allocation key, error |
+| `getBooleanDetails` / `getStringDetails` / `getIntegerDetails` / `getDoubleDetails` / `getObjectDetails` | `FlagDetails<T>` with value, variant, reason, allocation key, error, and `flagMetadata` (split features as `__dd_feature.<key>`) |
 | `getValue(key:defaultValue:)` / `getDetails(key:defaultValue:)` | Generic over `FlagValue` (`Bool`, `String`, `Int`, `Double`, `AnyValue`) |
 | `setEvaluationContext(_:)` / `setEvaluationContext(_:completion:)` / `try await setEvaluationContext(_:)` | Fire-and-forget, callback, or async throwing |
 | `state` | `FlagsStateObservable`: `currentState`, `addListener(_:)`, `removeListener(_:)` |
@@ -148,7 +148,7 @@ flowchart LR
 - `DatadogFlags/Sources/Models/FlagsClientEvent.swift` — `onFirstFlags` event, listener and subscription types.
 - `DatadogFlags/Sources/Models/FlagValue.swift`, `DatadogFlags/Sources/Models/AnyValue.swift` — Supported value types.
 - `DatadogFlags/Sources/Client/FlagsClientInternal.swift` — `@_spi(Internal)` methods for cross-platform bridges.
-- `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods.
+- `DatadogFlags/Sources/Models/FlagAssignment.swift` — `FlagAssignment`, the assignment type exposed by the bridge methods, and the lenient parser for split `features`.
 
 ### Implementation
 - `DatadogFlags/Sources/Client/FlagsRepository.swift` — Context requests, cache restore, state transitions, initialization timeout.
@@ -162,7 +162,7 @@ flowchart LR
 - `DatadogFlags/Sources/Feature/FlagsFeature.swift` — Feature wiring and flush interval clamping.
 - `DatadogFlags/Sources/Feature/IssueReporter.swift` — Graceful mode behavior.
 - `DatadogRUM/Sources/Integrations/FlagEvaluationReceiver.swift` — RUM side of the integration.
-- `DatadogFlags/README.md` — Detailed rules for the evaluation telemetry opt-out and experimentation opt-out.
+- `DatadogFlags/README.md` — Detailed rules for the evaluation telemetry opt-out, experimentation opt-out, evaluation telemetry privacy, and split features and exposures.
 
 ## Configuration Categories
 
@@ -200,7 +200,10 @@ Listeners are held weakly and called with the current state when added. A state 
 ### Exposures and Evaluation Telemetry
 - **Exposures** are written only for allocations whose assignment has `doLog` set (experiments). They are deduplicated in memory per client by targeting key and flag key, and logged again when the allocation, variant or serial ID changes. They include the targeting key and all context attributes.
 - **Evaluations** are aggregated and flushed every `evaluationFlushInterval` seconds, or when 1,000 aggregations accumulate. Failed evaluations are also counted, with an error code.
+- **Evaluation telemetry privacy:** by default, evaluation events send the targeting key as `sha256_` plus the lowercase hex SHA-256 of its UTF-8 bytes, and omit the evaluation context. A flags configuration that sets `observeFullEvaluationData: true` sends the raw key and the context. The consent travels with the configuration, including when it is restored from disk, and splits evaluation buckets. A key that fails strict UTF-8 encoding is omitted in both modes. Error codes are limited to the stable OpenFeature set; any other code becomes `GENERAL`. See `DatadogFlags/README.md`.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
+- **Split features:** each assignment can carry `features` with `HOOK`, `EXPOSURE` or `EVALUATION` destinations. `HOOK` features appear in `FlagDetails.flagMetadata` and reach the OpenFeature provider's exposure hook, `EXPOSURE` features in a `features` object on exposure events, and `EVALUATION` features in the evaluation bucket key and rows.
+- **Exposure decisions:** the SDK makes one decision per evaluation and gives it to the Datadog OpenFeature provider through `@_spi(Internal)` `getDetailsWithExposure(key:defaultValue:)`. The provider's `ExposureHook` passes it to customer code. With `trackExposures` set to `false`, the SDK stops sending exposures and keeps deduplicating them.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
 
 ### Experimentation Opt-Out
@@ -253,7 +256,7 @@ Listeners are held weakly and called with the current state when added. A state 
 - The same subject already saw that variant in this process (deduplication).
 - Tracking consent is not `.granted`.
 
-**Solutions:** Confirm `trackExposures`, that the flag runs an experiment allocation, and the tracking consent value.
+**Solutions:** Confirm `trackExposures`, that the flag runs an experiment allocation, and the tracking consent value. The OpenFeature provider's `ExposureHook` shows the decision for each evaluation: `isExposure` and `isCacheHit`.
 
 ### "No RUM annotations or evaluation data for some users"
 **Causes:** `enableEvaluationTelemetryOptOutParameter` is `true` and the context has `dd_evaluation_telemetry_opt_out: .bool(true)`. Until the cached policy loads at startup, evaluation telemetry is also suppressed.
@@ -270,7 +273,7 @@ Listeners are held weakly and called with the current state when added. A state 
 - **RUM**: optional. With `rumIntegrationEnabled`, each successful evaluation adds `feature_flags.<key> = <variant key>` to the active view. RUM must be enabled for this; without it, messages are ignored. When RUM is enabled before the fetch, the request also carries the RUM application ID.
 - **Tracking consent**: exposures and evaluation events are stored and uploaded like other events, following the SDK's tracking consent. Assignment fetching does not depend on consent.
 - **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Obfuscated flag keys are supported only when the SDK source is `ios`.
-- **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status.
+- **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status. Exposures are recorded when the native client resolves the flag, so an OpenFeature `MultiProvider` records exposures for every evaluation of the Datadog provider. The provider's `ExposureHook` reads the decision through `getDetailsWithExposure(key:defaultValue:)`.
 
 ## Additional Context
 

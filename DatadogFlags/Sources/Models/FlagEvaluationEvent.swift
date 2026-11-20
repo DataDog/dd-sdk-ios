@@ -116,6 +116,7 @@ internal struct FlagEvaluationEvent: Equatable, Codable {
     let runtimeDefaultUsed: Bool?
     let error: ErrorInfo?
     let context: EvaluationEventContext?
+    var features: [String: AnyValue]? = nil
 
     enum CodingKeys: String, CodingKey {
         case timestamp
@@ -130,5 +131,6 @@ internal struct FlagEvaluationEvent: Equatable, Codable {
         case runtimeDefaultUsed = "runtime_default_used"
         case error
         case context
+        case features
     }
 }
