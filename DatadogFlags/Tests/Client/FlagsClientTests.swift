@@ -1248,6 +1248,69 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(exposures.first.map { Array($0.flag.key.utf8) }, Array(nfc.utf8))
     }
 
+    func testPlaintextLookupKeepsBothServedSpellingsOfAFlagKey() throws {
+        let nfc = "caf\u{00E9}"
+        let nfd = "cafe\u{0301}"
+        let assignment = { (value: String) in
+            #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(value),"reason":"STATIC","doLog":true}"#
+        }
+        // The decomposed key uses a `\u` escape, and the composed key uses raw UTF-8 bytes.
+        let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(assignment("1")),"cafe\u0301":\#(assignment("2.5"))}}}}"#
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: scope,
+            fetch: { _, complete in complete(.success((Data(body.utf8), .mockAny()))) }
+        )
+        let fetched = expectation(description: "response fetched")
+        var result: Result<FlagAssignmentsResponse, FlagsError>?
+        fetcher.flagAssignments(for: .init(targetingKey: "subject")) { value in
+            result = value
+            fetched.fulfill()
+        }
+        wait(for: [fetched], timeout: 2)
+        let response = try XCTUnwrap(result).get()
+        XCTAssertEqual(response.flags.count + response.keySpellings.count, 2)
+
+        let date = DateProviderMock()
+        let repository = FlagsRepository(
+            clientName: UUID().uuidString,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(.success(response)) },
+            dateProvider: date,
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+        let loaded = expectation(description: "plaintext configuration loaded")
+        client.setEvaluationContext(.init(targetingKey: "subject")) { _ in loaded.fulfill() }
+        wait(for: [loaded], timeout: 2)
+        XCTAssertEqual(client.getIntegerValue(key: nfc, defaultValue: 0), 1)
+        XCTAssertEqual(client.getDoubleValue(key: nfd, defaultValue: 0), 2.5)
+        XCTAssertEqual(client.getIntegerDetails(key: nfd, defaultValue: 0).error, .typeMismatch)
+
+        let flagsData = FlagsData(flags: response.flags, context: .mockAny(), date: .mockAny(), keySpellings: response.keySpellings)
+        let store = FeatureScopeMock()
+        store.flagsDataStore.setFlagsData(flagsData, forClientNamed: "spellings")
+        let restored = expectation(description: "cache restored")
+        store.flagsDataStore.flagsData(forClientNamed: "spellings") { data in
+            XCTAssertEqual(data, flagsData)
+            let cached = data.map { FlagsRepository.CachedFlagsData(data: $0) }
+            XCTAssertEqual(cached?.cachedAssignment(for: nfc, supportsObfuscation: false), .resolved(response.flags[nfc]))
+            XCTAssertEqual(cached?.cachedAssignment(for: nfd, supportsObfuscation: false), .resolved(response.keySpellings.first?.assignment))
+            XCTAssertNotEqual(response.flags[nfc], response.keySpellings.first?.assignment)
+            restored.fulfill()
+        }
+        wait(for: [restored], timeout: 2)
+    }
+
     func testSnapshotWhenNoCachedAssignments() {
         // Given
         let client: FlagsClientProtocol = FlagsClient(

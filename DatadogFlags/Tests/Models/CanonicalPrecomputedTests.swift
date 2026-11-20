@@ -59,7 +59,8 @@ final class CanonicalPrecomputedTests: XCTestCase {
                         context: context,
                         date: Date(),
                         obfuscation: response.obfuscation,
-                        observeFullEvaluationData: response.observeFullEvaluationData
+                        observeFullEvaluationData: response.observeFullEvaluationData,
+                        keySpellings: response.keySpellings
                     )
                     let restored = try restoreThroughDataStore(initial)
                     for (label, state) in [("network-decoded", initial), ("serialized-state", restored)] {

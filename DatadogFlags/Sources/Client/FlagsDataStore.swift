@@ -73,7 +73,8 @@ internal struct FlagsDataStore {
     }
 
     private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
-        if flagsData.flags.values.contains(where: { $0.numericConversion != nil }) {
+        if flagsData.flags.values.contains(where: { $0.numericConversion != nil })
+            || flagsData.keySpellings.contains(where: { $0.assignment.numericConversion != nil }) {
             return numericAssignmentsVersion
         }
         // Protect both key encodings from readers that would ignore the persisted selection or policy.

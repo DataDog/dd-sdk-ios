@@ -178,7 +178,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 ? reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader))
                 : nil
             do {
-                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data)
+                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
                 guard response.obfuscation == nil || supportsObfuscation else {
                     throw FlagsError.invalidResponse
                 }

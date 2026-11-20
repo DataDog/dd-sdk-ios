@@ -3790,13 +3790,16 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testCacheRestoreReadsReleasedSDKNumericCaches() throws {
         // Released SDKs write numbers as "integer" or "float", without `_numericLiteral`.
-        let cases: [(String, String, FlagAssignment.Variation)] = [
-            ("integer", "4503599627370498", .integer(4_503_599_627_370_498)),
+        var cases: [(String, String, FlagAssignment.Variation)] = [
             ("integer", "-7", .integer(-7)),
             ("float", "1.5", .double(1.5)),
             ("float", "5", .double(5)),
             ("float", "1e+20", .double(1e20))
         ]
+        // `Int` cannot hold this value on 32-bit targets such as arm64_32.
+        if let value = Int("4503599627370498") {
+            cases.append(("integer", "4503599627370498", .integer(value)))
+        }
         for (label, value, expected) in cases {
             let assignment = #"{"allocationKey":"a","variationKey":"v","variationType":"\#(label)","variationValue":\#(value),"reason":"STATIC","doLog":false}"#
             let cache = try JSONEncoder().encode(FlagsData(flags: ["flag": .mockAnyBoolean()], context: .mockAny(), date: .mockAny()))
