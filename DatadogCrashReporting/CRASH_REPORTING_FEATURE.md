@@ -51,7 +51,7 @@ RUM.enable(
         applicationID: "<rum_application_id>",
         // Optional: report App Hangs; their stack traces come from Crash Reporting
         appHangThreshold: 0.25,
-        // Optional: report Watchdog Terminations; requires Crash Reporting (unavailable on macOS)
+        // Optional, unavailable on macOS since it has no watchdog: report Watchdog Terminations; requires Crash Reporting
         trackWatchdogTerminations: true
     )
 )
