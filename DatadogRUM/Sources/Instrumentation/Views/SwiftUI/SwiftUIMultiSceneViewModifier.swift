@@ -147,7 +147,7 @@ private final class RUMOrdinaryDisappearanceOwner {
                 return
             }
             movedAcrossScenes = true
-        } else if scene == nil {
+        } else if scene == nil || (reader === observer && hosts.isEmpty) {
             var controller = observer.nearestViewController
             while let host = controller {
                 hosts.append(HostController(controller: host))
