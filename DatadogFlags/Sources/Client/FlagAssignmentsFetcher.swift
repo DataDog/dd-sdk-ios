@@ -288,6 +288,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     experimentationOptOut: experimentationOptOut,
                     cacheScope: cacheScope,
                     supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
+                    requestCarriedAssignmentToken: assignmentToken != nil,
                     completion: completion
                 )
                 return
@@ -318,6 +319,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         experimentationOptOut: ExperimentationOptOut?,
         cacheScope: String?,
         supportsObfuscation: Bool,
+        requestCarriedAssignmentToken: Bool,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         let prepared: URLRequest?
@@ -355,13 +357,28 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         experimentationOptOut: experimentationOptOut,
                         supportsObfuscation: supportsObfuscation,
                         requestCarriedFlagSelection: self.flagSelection != nil,
+                        requestCarriedAssignmentToken: requestCarriedAssignmentToken,
                         featureScope: self.featureScope,
                         completion: completion
                     )
                 case .success(let (data, response)):
                     // Redirect failures are transport failures, never optional verification failures.
-                    guard response.url == effective.url, (200..<300).contains(response.statusCode) else {
+                    guard response.url == effective.url else {
                         completion(.failure(.networkError(URLError(.badServerResponse))))
+                        return
+                    }
+                    // An error status carries no assignments, so it is not verified. The shared handler maps it,
+                    // for example to `assignmentAuthorizationFailed`, and never returns assignments for it.
+                    guard (200..<300).contains(response.statusCode) else {
+                        Self.handleFetchResult(
+                            .success((data, response)),
+                            experimentationOptOut: experimentationOptOut,
+                            supportsObfuscation: supportsObfuscation,
+                            requestCarriedFlagSelection: self.flagSelection != nil,
+                            requestCarriedAssignmentToken: requestCarriedAssignmentToken,
+                            featureScope: self.featureScope,
+                            completion: completion
+                        )
                         return
                     }
                     var proof: FlagsResponseVerification?
@@ -391,6 +408,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         experimentationOptOut: experimentationOptOut,
                         supportsObfuscation: supportsObfuscation,
                         requestCarriedFlagSelection: self.flagSelection != nil,
+                        requestCarriedAssignmentToken: requestCarriedAssignmentToken,
                         featureScope: self.featureScope,
                         verification: proof,
                         cacheScope: cacheScope,
@@ -622,9 +640,8 @@ private extension URLSession {
                 completion(.failure(error))
                 return
             }
-            guard let data, let response = response as? HTTPURLResponse,
-                (200..<300).contains(response.statusCode)
-            else {
+            // Pass every HTTP status through, like the ordinary transport, so error bodies reach the shared handler.
+            guard let data, let response = response as? HTTPURLResponse else {
                 completion(.failure(URLError(.badServerResponse)))
                 return
             }

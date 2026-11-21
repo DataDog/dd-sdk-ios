@@ -294,6 +294,32 @@ final class FlagsResponseSigningTests: XCTestCase {
         }
     }
 
+    func testSignedRequestMapsAssignmentAuthorizationRejection() throws {
+        let staging = try XCTUnwrap(URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"))
+        let body = Data(#"{"errors":[{"status":"401","code":"ASSIGNMENT_AUTHORIZATION_FAILED"}]}"#.utf8)
+        for mode in [Flags.ResponseSigningMode.required, .observe] {
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: staging,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+                responseSigning: .init(mode: mode),
+                signingFetch: { request, complete in
+                    complete(.success((body, HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: [:])!)))
+                },
+                fetch: { _, _ in XCTFail("Signing must use the signing transport") }
+            )
+            let done = expectation(description: "\(mode)")
+            fetcher.flagAssignments(for: FlagsEvaluationContext(targetingKey: "subject")) { result in
+                defer { done.fulfill() }
+                guard case .failure(.assignmentAuthorizationFailed) = result else {
+                    return XCTFail("\(mode): \(result)")
+                }
+            }
+            wait(for: [done], timeout: 1)
+        }
+    }
+
     func testNoModeSendsXStream() throws {
         let staging = try XCTUnwrap(URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"))
         for mode in [Flags.ResponseSigningMode.off, .observe, .required] {
@@ -1828,6 +1854,7 @@ private final class SigningLifecycleFetcher: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
         diagnostics: FlagsRequestDiagnostics.Snapshot?,
+        assignmentToken: String?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         completions.append(completion)
