@@ -36,21 +36,23 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         flagAssignmentsFetcher: (any FlagAssignmentsFetching)? = nil
     ) {
         flagSelection = CanonicalFlagSelection.resolve(configuration.flagSelection, telemetry: featureScope.telemetry)
+        // Outside staging, opt-in is a no-op and every signing component stays off.
+        let responseSigning = configuration.responseSigning.effective(customFlagsEndpoint: configuration.customFlagsEndpoint)
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
             flagSelection: flagSelection,
             featureScope: featureScope,
-            responseSigning: configuration.responseSigning
+            responseSigning: responseSigning
         )
-        signingLifetime = configuration.responseSigning.mode == .off ? nil : FlagsSigningLifetime(fetcher: fetcher)
+        signingLifetime = responseSigning.mode == .off ? nil : FlagsSigningLifetime(fetcher: fetcher)
         self.flagAssignmentsFetcher = flagAssignmentsFetcher ?? fetcher
         initializationTimeout = configuration.initializationTimeout
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry
         )
-        if configuration.responseSigning.mode == .off {
+        if responseSigning.mode == .off {
             messageReceiver = NOPFeatureMessageReceiver()
         } else {
             messageReceiver = FlagsSigningScopeReceiver(fetcher: fetcher)

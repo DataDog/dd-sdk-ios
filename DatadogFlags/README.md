@@ -38,7 +38,7 @@ Both observe and required modes apply this override. Signing-off requests keep t
 
 The first public response-signing protocol is v1. The SDK advertises `response-signing-v1`, sends signature version `1`, and verifies the `datadog.feature-flags.precomputed-assignments.v1` transcript. A v1 response carries the leaf in `x-datadog-feature-flags-signing-certificate` and 1 to 3 intermediates in `x-datadog-feature-flags-signing-chain`. The chain header joins standard base64 DER entries with `,` and no spaces. Index 0 issued the leaf, and a pinned root issued the last entry. The SDK rejects a response that has only the earlier `x-datadog-feature-flags-signing-intermediate` header. The transcript ends with `SHA256(leaf)`, one byte with the intermediate count, and the SHA-256 digest of each intermediate in header order. Earlier POC v1/v2 and draft v3 labels are not supported public versions; public v1 does not accept their proofs. X.509 v3 certificate encoding is unchanged.
 
-Response signing is disabled by default. This draft enables a staging-only mobile pilot using the same public root as the browser SDK. Production endpoints have no bundled root. Signing protects response integrity; subject authorization remains separate.
+Response signing is disabled by default. It is available only for the staging assignment endpoint. `DatadogSite` has no staging case, so set `customFlagsEndpoint` to the staging endpoint. For every other endpoint, opt-in is a no-op: the SDK logs a warning and sends the ordinary request. Signing protects response integrity; subject authorization remains separate.
 
 ```swift
 Flags.enable(with: .init(
@@ -47,16 +47,15 @@ Flags.enable(with: .init(
 ))
 ```
 
-The bundled root applies only to `https://preview.ff-cdn.datad0g.com` on port 443.
-The effective request endpoint selects trust, including a custom endpoint. The application's `env` value does not select a root.
-A nonempty `trustedRootCertificates` list replaces bundled trust. No roots are downloaded.
+The SDK pins one built-in anchor: `CN=Datadog Customer Signing Root CA - staging` (SHA-256 `0e469f3cecc9cd51fd64373879636540512d56e99eecd70361c78b98c47ea934`, key ID `aa5e91e52cdb130d175eed1010a501c0ef45d60d`). It applies only to `https://preview.ff-cdn.datad0g.com` on port 443.
+The application's `env` value does not select a root. There is no public API to add roots, and no roots are downloaded. Tests inject their own roots through an internal initializer.
 Use required mode for the staging pilot; keep production signing off. Fresh sessions provide observations across rotations without adding polling.
 
 `observe` attempts verification and records a bounded outcome, then accepts otherwise-valid responses when proof is absent, invalid or expired. Authentication, HTTP, redirect and JSON errors retain their ordinary failure behavior. Observation data uses a separate cache namespace hashed from the effective token, endpoint/query, environment, app ID, custom headers, mode and root pins; it never becomes a verified cache entry. The SDK waits for the current core scope before reading that namespace and never promotes client-name-only legacy data. A separately retained verified response remains available for same-context failure fallback until its original expiry.
 
-`required` accepts only a complete, valid public v1 response with a certificate chain under the endpoint-specific or explicitly configured root. It never retries an unsigned request. Verified fallback is memory-only, tied to this feature instance, the complete current request configuration scope and the exact evaluation context, and expires at the original signed deadline (at most five minutes). No disk entry is trusted or written in this mode; evaluation returns defaults after expiry, a context change without a fresh response, or restart. Core context messages invalidate the old scope before further reads; reset, scope changes and superseded requests cannot restore old assignments. Stopping the SDK releases a feature-owned lifetime guard, permanently invalidating signing on retained clients and fetchers. Pending responses and later context messages cannot reactivate that instance. Configure the mode and roots when enabling Flags; replace the feature instance through the ordinary SDK lifecycle to change trust configuration.
+`required` accepts only a complete, valid public v1 response with a certificate chain under the pinned staging root. It never retries an unsigned request. Verified fallback is memory-only, tied to this feature instance, the complete current request configuration scope and the exact evaluation context, and expires at the original signed deadline (at most five minutes). No disk entry is trusted or written in this mode; evaluation returns defaults after expiry, a context change without a fresh response, or restart. Core context messages invalidate the old scope before further reads; reset, scope changes and superseded requests cannot restore old assignments. Stopping the SDK releases a feature-owned lifetime guard, permanently invalidating signing on retained clients and fetchers. Pending responses and later context messages cannot reactivate that instance. Configure the mode when enabling Flags; replace the feature instance through the ordinary SDK lifecycle to change trust configuration.
 
-The staging root remains fixed while responses carry the current leaf and intermediate certificates. An intermediate can rotate under the same parent without an SDK update. Routine certificate rotation does not require an SDK update or a record of earlier rotations. Root validity still bounds support for unchanged SDKs. The restricted DER parser enforces the certificate profile and does not fetch issuer certificates, system roots, AIA or OCSP.
+The staging root remains fixed while responses carry the current leaf and intermediate certificates. The server rotates the leaf daily (previous, current and next leaves, each valid for 120 hours). The SDK never pins or caches a leaf or intermediate; any valid leaf under the root passes. An intermediate can rotate under the same parent without an SDK update. The SDK checks `notBefore <= now < notAfter` and validity nesting for every certificate, including the root. It adds no issuance freshness rule. Routine certificate rotation does not require an SDK update or a record of earlier rotations. Root validity still bounds support for unchanged SDKs. The restricted DER parser enforces the certificate profile and does not fetch issuer certificates, system roots, AIA or OCSP.
 
 Certificate profile:
 
@@ -69,7 +68,7 @@ The FFE OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Datadog must assign the pr
 
 Signing-enabled requests reject redirects, use a fresh 16-byte nonce and bind the exact emitted URL/query, request body, effective client token, semantic headers, response bytes and complete public chain. Verification runs before JSON decoding and cache admission, with expiry checked again at admission and evaluation. Response verification is bounded to 2 MiB and request signing to 1 MiB. Responses are buffered application bytes after HTTP decompression; this draft does not add a signed streaming or critical-flags protocol.
 
-Disabling edge signing cannot weaken `required` in an installed SDK. A required client uses verified memory only until its signed expiry, then returns defaults. Restore valid signed delivery to recover. Mobile rotation and application lifecycle validation remain required before rollout beyond staging.
+At signing cutover, the staging edge can serve unsigned 200 responses until the credential rotator republishes the credential. `observe` accepts such a response unverified and reports a `missingProof` outcome. `required` rejects it with `invalidResponse` and does not retry unsigned. Disabling edge signing cannot weaken `required` in an installed SDK. A required client uses verified memory only until its signed expiry, then returns defaults. Restore valid signed delivery to recover. Mobile rotation and application lifecycle validation remain required before rollout beyond staging.
 
 ## Validation and shared fixtures
 
@@ -83,12 +82,12 @@ Server-only signing cases are excluded.
 `Tests/Fixtures/response-signing-chain` holds repo-local test-CA-issued chains and OpenSSL root variants.
 It is outside the imported snapshot, so the importer checks stay valid.
 
-Refresh and verify signing fixtures through the existing snapshot importer and weekly workflow:
+Refresh and verify signing fixtures with the signing importer and the weekly `Response signing fixtures` workflow:
 
 ```shell
-python3 ci/sync-precomputed-fixtures.py --signing --ref <full-upstream-sha>
-python3 ci/sync-precomputed-fixtures.py --signing --verify
-python3 ci/sync-precomputed-fixtures.py --signing --check
+python3 ci/sync-response-signing-fixtures.py --ref <full-upstream-sha>
+python3 ci/sync-response-signing-fixtures.py --verify
+python3 ci/sync-response-signing-fixtures.py --check
 ```
 
 The implementation profile is SHA-256 `a32c6919d1f730b076994f89317ef441fa4c4b4556c093edf0216632a882f783`, with applicability profile `response-signing-public-v1`. The FFE LEAN spreadsheet remains decision authority; this implementation has no Lean proof claim.

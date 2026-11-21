@@ -64,6 +64,7 @@ public enum Flags {
         public var customFlagsHeaders: [String: String]?
 
         /// Optional assignment response verification. Default: off.
+        /// Available only when `customFlagsEndpoint` is the staging endpoint. Other endpoints ignore it.
         /// Required mode uses verified memory only and defaults after expiry or restart.
         public var responseSigning: ResponseSigningConfiguration
 
@@ -146,7 +147,7 @@ public enum Flags {
         ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
         ///   - flagSelection: Loads only the flags that match these tags or key patterns. Default: `nil`.
-        ///   - responseSigning: Optional verification with endpoint-specific or explicit roots. Default: off.
+        ///   - responseSigning: Optional verification for the staging endpoint only. Default: off.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,

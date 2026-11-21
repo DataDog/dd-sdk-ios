@@ -7,6 +7,7 @@
 import Foundation
 import CryptoKit
 import Security
+import DatadogInternal
 
 extension Flags {
     /// Controls optional verification of assignment responses.
@@ -19,44 +20,75 @@ extension Flags {
         case required
     }
 
-    /// Trust configuration for optional response signing.
+    /// Optional response signing. Available only for the staging assignment endpoint.
+    ///
+    /// The SDK pins one built-in root: the staging root. For any other endpoint, opt-in has no effect:
+    /// the SDK logs a warning and sends the ordinary request.
     public struct ResponseSigningConfiguration {
         public var mode: ResponseSigningMode
-        /// Locally provisioned public root certificates in DER form. Never populate from a response.
-        /// An empty list uses the bundled root only for the exact staging endpoint.
-        /// Explicit roots replace bundled trust. No production root is bundled.
-        public var trustedRootCertificates: [Data]
+        /// Test-only trust anchors in DER form. Production code never sets them, and a response never supplies them.
+        internal var trustedRootCertificates: [Data]
 
-        public init(mode: ResponseSigningMode = .off, trustedRootCertificates: [Data] = []) {
+        public init(mode: ResponseSigningMode = .off) {
+            self.init(mode: mode, trustedRootCertificates: [])
+        }
+
+        internal init(mode: ResponseSigningMode, trustedRootCertificates: [Data]) {
             self.mode = mode
             self.trustedRootCertificates = trustedRootCertificates
+        }
+
+        /// The only endpoint that serves signed assignments: the staging (`datad0g.com`) assignment edge.
+        /// `DatadogSite` has no staging case, so staging is selected with `customFlagsEndpoint`.
+        internal static func isStagingEndpoint(_ endpoint: URL?) -> Bool {
+            guard let endpoint = endpoint,
+                let parts = URLComponents(url: endpoint, resolvingAgainstBaseURL: false),
+                parts.scheme?.lowercased() == "https", parts.host?.lowercased() == "preview.ff-cdn.datad0g.com",
+                parts.port == nil || parts.port == 443, parts.user == nil, parts.password == nil
+            else {
+                return false
+            }
+            return true
+        }
+
+        /// Returns the configuration that the feature applies to `customFlagsEndpoint`.
+        /// Outside staging, opt-in is a no-op: the result is `off`, so requests and responses stay unchanged.
+        internal func effective(customFlagsEndpoint: URL?) -> ResponseSigningConfiguration {
+            guard mode != .off, !Self.isStagingEndpoint(customFlagsEndpoint) else {
+                return self
+            }
+            DD.logger.warn(
+                """
+                Flags response signing is available only for the staging endpoint \
+                `https://preview.ff-cdn.datad0g.com`. Response signing is disabled for this configuration.
+                """
+            )
+            return ResponseSigningConfiguration()
         }
 
         internal func roots(for endpoint: URL?) -> [Data] {
             if !trustedRootCertificates.isEmpty {
                 return trustedRootCertificates
             }
-            guard let endpoint = endpoint,
-                let parts = URLComponents(url: endpoint, resolvingAgainstBaseURL: false),
-                parts.scheme?.lowercased() == "https", parts.host?.lowercased() == "preview.ff-cdn.datad0g.com",
-                parts.port == nil || parts.port == 443, parts.user == nil, parts.password == nil
-            else {
-                return []
-            }
-            return Self.stagingRoot.map { [$0] } ?? []
+            return Self.isStagingEndpoint(endpoint) ? [Self.stagingRoot] : []
         }
 
-        // Public staging root shared with browser SDK 493572e24936303cb60b5963c70a8425e3b681fb.
-        // Trust follows the effective endpoint, never the application's environment label.
-        private static let stagingRoot = Data(
-            base64Encoded:
-            "MIIBpTCCAUugAwIBAgIQKsPLOMisev8X0XQFpshjkTAKBggqhkjOPQQDAjAxMS8wLQYDVQQDEyZTVEFHSU5HIE9OTFkgRkZFIHJl" +
-            "c3BvbnNlIHNpZ25pbmcgcm9vdDAeFw0yNjExMDQxOTQ5NTlaFw0zNjEwMzEwMDAwMDBaMDExLzAtBgNVBAMTJlNUQUdJTkcgT05M" +
-            "WSBGRkUgcmVzcG9uc2Ugc2lnbmluZyByb290MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5WCwmxXE/POEOIwmzAPNWA+p9Tj8" +
-            "5d0vGWgUBKZ2n2ahzacUTa1MNAJqhFbErodKBOUxZL91ce0hNd3CREXO+qNFMEMwDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQI" +
-            "MAYBAf8CAQEwHQYDVR0OBBYEFGwi5EY0Qjo1O4IeocR1YFDZ6saYMAoGCCqGSM49BAMCA0gAMEUCIECTtDqZk0HqFTTPGsGXCkzG" +
-            "CHFQkBh6CD6HUc7H1u+pAiEA67aMjoptLka70k0EIGc5cg3ShIUs48JwJ4z8qilqEHY="
-        )
+        /// `CN=Datadog Customer Signing Root CA - staging`, the only built-in anchor.
+        /// SHA-256 of the DER: `0e469f3cecc9cd51fd64373879636540512d56e99eecd70361c78b98c47ea934`.
+        /// Subject key identifier: `aa5e91e52cdb130d175eed1010a501c0ef45d60d`. Valid until 2036-11-16.
+        /// Leaf and intermediate certificates rotate on the server and are never pinned.
+        internal static let stagingRoot: Data = {
+            let base64 =
+                "MIIB0TCCAXigAwIBAgIUeuKLTmp+6/G7at2Gdr8kEvQXr+MwCgYIKoZIzj0EAwIwNTEzMDEGA1UEAxMqRGF0YWRvZyBDdXN0b21l" +
+                "ciBTaWduaW5nIFJvb3QgQ0EgLSBzdGFnaW5nMB4XDTI2MTExOTIzNTYzOVoXDTM2MTExNjIzNTcwOVowNTEzMDEGA1UEAxMqRGF0" +
+                "YWRvZyBDdXN0b21lciBTaWduaW5nIFJvb3QgQ0EgLSBzdGFnaW5nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEnqgqgmas0ot4" +
+                "6nCUq418zkd+SCG5EzGmtxKAFSAT4rGTtmylNee/9Asw5nKeV5eLN5Ki7zZ/3wBgIBL/owvov6NmMGQwDgYDVR0PAQH/BAQDAgEG" +
+                "MBIGA1UdEwEB/wQIMAYBAf8CAQIwHQYDVR0OBBYEFKpekeUs2xMNF17tEBClAcDvRdYNMB8GA1UdIwQYMBaAFKpekeUs2xMNF17t" +
+                "EBClAcDvRdYNMAoGCCqGSM49BAMCA0cAMEQCIC6R3Cx6TgUbrKOr+jG2wvrbmNLt97tVUqEOne3nKrdtAiAXfSsjQefOVfiEFg+5" +
+                "G3ksGZzZTkfOPxf0Zl1WOqmrgA=="
+            // swiftlint:disable:next force_unwrapping
+            return Data(base64Encoded: base64)!
+        }()
     }
 }
 
@@ -360,7 +392,7 @@ internal final class FlagsResponseVerifier {
         return try entries.map { try base64(String($0), limit: 4_096) }
     }
 
-    private static func verifyChild(_ child: FlagsSigningCertificate, parent: FlagsSigningCertificate) throws {
+    static func verifyChild(_ child: FlagsSigningCertificate, parent: FlagsSigningCertificate) throws {
         try child.validateLink(to: parent)
         try verifySignature(child.signature, bytes: child.tbs, key: parent.publicKey)
     }

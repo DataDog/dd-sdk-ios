@@ -1672,8 +1672,7 @@ public enum FlagsClientState: Sendable
         case required
     public struct ResponseSigningConfiguration
         public var mode: ResponseSigningMode
-        public var trustedRootCertificates: [Data]
-        public init(mode: ResponseSigningMode = .off, trustedRootCertificates: [Data] = [])
+        public init(mode: ResponseSigningMode = .off)
 public protocol FlagsStateListener: AnyObject
     func flagsStateDidChange(_ newState: FlagsClientState)
 public protocol FlagsStateObservable: AnyObject
