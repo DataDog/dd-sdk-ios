@@ -149,6 +149,21 @@ struct CALayerSnapshotFilterTests {
         // Then
         #expect(snapshotFilter == .unknown(name))
     }
+
+    @Test("Captures compositing filters stored as names or filter objects")
+    func capturesCompositingFiltersStoredAsNamesOrFilterObjects() throws {
+        // Given
+        let filterName = "destOut"
+        let filterObject = try NSObject.makeCAFilter(type: filterName)
+
+        // When
+        let fromName = CALayerSnapshot.CompositingFilter(filterName)
+        let fromFilterObject = CALayerSnapshot.CompositingFilter(filterObject)
+
+        // Then
+        #expect(fromName == .init(rawValue: filterName))
+        #expect(fromFilterObject == .init(rawValue: filterName))
+    }
 }
 
 private extension CALayerSnapshot.ColorMatrix {

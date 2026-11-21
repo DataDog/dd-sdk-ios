@@ -60,7 +60,7 @@ extension CALayerSnapshot {
             || opacity < 1
             || hasShadow
             || requiresGlassApproximation
-            || requiresGlassGroupClip
+            || requiresNonuniformCornerClip
             || filters.contains(
                 where: { SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil }
             )
@@ -113,7 +113,7 @@ extension CALayerSnapshot {
     }
 
     func svgClipPath(using formatter: ClipPathFormatter = .shared) -> String? {
-        guard requiresGlassApproximation || masksToBounds || requiresGlassGroupClip else {
+        guard requiresGlassApproximation || masksToBounds || requiresNonuniformCornerClip else {
             return nil
         }
 
@@ -132,10 +132,14 @@ extension CALayerSnapshot {
             && cornerRadii != .zero
     }
 
-    private var requiresGlassGroupClip: Bool {
-        // Glass group wireframes need a clip when one scalar radius cannot represent their corners
-        observation.semantics == .visualEffect(.glassGroup)
-            && cornerRadii.uniformCornerRadius == nil
+    private var requiresNonuniformCornerClip: Bool {
+        // Glass group and backdrop wireframes need a clip when one scalar radius cannot represent their corners
+        switch observation.semantics {
+        case .visualEffect(.glassGroup), .visualEffect(.backdrop):
+            return cornerRadii.uniformCornerRadius == nil
+        default:
+            return false
+        }
     }
 
     private var clipModifier: SRCompositionLayerModifier? {

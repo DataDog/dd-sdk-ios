@@ -166,7 +166,15 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let snapshot = CALayerSnapshot.mockWith(
             absoluteFrame: CGRect(x: 0, y: 0, width: 100, height: 50),
             observation: .init(semantics: semantics),
-            cornerRadii: .init(topLeft: CGSize(width: 12, height: 12))
+            cornerRadii: .init(
+                cornerRadius: 12,
+                maskedCorners: [
+                    .layerMinXMinYCorner,
+                    .layerMaxXMinYCorner,
+                    .layerMinXMaxYCorner,
+                    .layerMaxXMaxYCorner
+                ]
+            )
         )
 
         // When
