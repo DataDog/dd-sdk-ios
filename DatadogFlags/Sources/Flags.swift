@@ -63,11 +63,13 @@ public enum Flags {
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
 
+        /// Experimental. Response signing is in preview and works only on the Datadog staging endpoint. The API can change or be removed in a minor release, based on customer feedback.
+        ///
         /// Optional assignment response verification. Default: off.
         /// Staging only; production is not supported yet. Set `customFlagsEndpoint` to the staging endpoint.
         /// On other endpoints, `observe` is ignored with a warning, and `required` fails closed with an error.
         /// Required mode uses verified memory only and defaults after expiry or restart.
-        public var responseSigning: ResponseSigningConfiguration
+        public var experimentalResponseSigning: ResponseSigningConfiguration
 
         /// The maximum time to wait for the first evaluation context to become ready.
         ///
@@ -148,7 +150,7 @@ public enum Flags {
         ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
         ///   - flagSelection: Loads only the flags that match these tags or key patterns. Default: `nil`.
-        ///   - responseSigning: Optional verification. Staging only; production is not supported yet. Default: off.
+        ///   - experimentalResponseSigning: Experimental. Optional verification. Staging only; production is not supported yet. Default: off.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
@@ -161,7 +163,7 @@ public enum Flags {
             evaluationFlushInterval: TimeInterval = 10.0,
             rumIntegrationEnabled: Bool = true,
             flagSelection: FlagSelection? = nil,
-            responseSigning: ResponseSigningConfiguration = .init()
+            experimentalResponseSigning: ResponseSigningConfiguration = .init()
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
@@ -173,7 +175,7 @@ public enum Flags {
             self.trackEvaluations = trackEvaluations
             self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
-            self.responseSigning = responseSigning
+            self.experimentalResponseSigning = experimentalResponseSigning
             self.flagSelection = flagSelection
         }
 
@@ -203,7 +205,7 @@ public enum Flags {
                 evaluationFlushInterval: evaluationFlushInterval,
                 rumIntegrationEnabled: rumIntegrationEnabled,
                 flagSelection: flagSelection,
-                responseSigning: .init()
+                experimentalResponseSigning: .init()
             )
         }
 

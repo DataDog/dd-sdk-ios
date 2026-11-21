@@ -210,7 +210,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             XCTAssertTrue(warning.contains("Production support comes in a later release"))
             XCTAssertTrue(warning.contains("flags are not verified"))
             let feature = FlagsFeature(
-                configuration: .init(customFlagsEndpoint: endpoint, responseSigning: configuration),
+                configuration: .init(customFlagsEndpoint: endpoint, experimentalResponseSigning: configuration),
                 featureScope: FeatureScopeMock(),
                 core: FeatureRegistrationCoreMock()
             )
@@ -236,7 +236,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             defer { dd.reset() }
             let configuration = Flags.ResponseSigningConfiguration(mode: .required)
             let feature = FlagsFeature(
-                configuration: .init(customFlagsEndpoint: endpoint, responseSigning: configuration),
+                configuration: .init(customFlagsEndpoint: endpoint, experimentalResponseSigning: configuration),
                 featureScope: FeatureScopeMock(),
                 core: FeatureRegistrationCoreMock()
             )
@@ -330,7 +330,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             XCTAssertEqual(configuration.effective(customFlagsEndpoint: staging).mode, mode)
             XCTAssertTrue(dd.logger.warnLogs.isEmpty)
             let feature = FlagsFeature(
-                configuration: .init(customFlagsEndpoint: staging, responseSigning: configuration),
+                configuration: .init(customFlagsEndpoint: staging, experimentalResponseSigning: configuration),
                 featureScope: FeatureScopeMock(),
                 core: FeatureRegistrationCoreMock()
             )

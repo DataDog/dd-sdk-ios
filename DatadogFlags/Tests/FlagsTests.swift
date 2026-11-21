@@ -111,7 +111,7 @@ final class FlagsTests: XCTestCase {
                 with: .init(
                     customFlagsEndpoint: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"),
                     trackEvaluations: false,
-                    responseSigning: .init(mode: mode)
+                    experimentalResponseSigning: .init(mode: mode)
                 ),
                 in: core
             )

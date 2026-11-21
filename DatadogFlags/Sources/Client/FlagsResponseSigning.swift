@@ -10,6 +10,8 @@ import Security
 import DatadogInternal
 
 extension Flags {
+    /// Experimental. Response signing is in preview and works only on the Datadog staging endpoint. The API can change or be removed in a minor release, based on customer feedback.
+    ///
     /// Controls optional verification of assignment responses.
     public enum ResponseSigningMode {
         /// Preserve ordinary request and cache behavior without signing work.
@@ -20,6 +22,8 @@ extension Flags {
         case required
     }
 
+    /// Experimental. Response signing is in preview and works only on the Datadog staging endpoint. The API can change or be removed in a minor release, based on customer feedback.
+    ///
     /// Optional response signing. Staging only; production is not supported yet.
     ///
     /// The SDK pins one built-in root: the staging root. Production support comes in a later release.

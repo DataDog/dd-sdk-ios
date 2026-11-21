@@ -31,7 +31,9 @@ Each client keeps its own configuration and current policy. If a client name alr
 This option controls evaluation telemetry only. Exposure events can still contain subject data. It does not replace the SDK tracking-consent API.
 
 
-# Assignment response signing (draft)
+# Response signing (experimental)
+
+Experimental. Response signing is in preview and works only on the Datadog staging endpoint. The API can change or be removed in a minor release, based on customer feedback. The configuration property is `Flags.Configuration.experimentalResponseSigning`.
 
 Staging only; production is not supported yet. Production support comes in a later release.
 
@@ -44,7 +46,7 @@ Response signing is disabled by default. It is available only for the staging as
 ```swift
 Flags.enable(with: .init(
     customFlagsEndpoint: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"),
-    responseSigning: .init(mode: .required)
+    experimentalResponseSigning: .init(mode: .required)
 ))
 ```
 

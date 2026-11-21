@@ -37,7 +37,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     ) {
         flagSelection = CanonicalFlagSelection.resolve(configuration.flagSelection, telemetry: featureScope.telemetry)
         // Outside staging, opt-in is a no-op and every signing component stays off.
-        let responseSigning = configuration.responseSigning.effective(customFlagsEndpoint: configuration.customFlagsEndpoint)
+        let responseSigning = configuration.experimentalResponseSigning.effective(customFlagsEndpoint: configuration.customFlagsEndpoint)
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
