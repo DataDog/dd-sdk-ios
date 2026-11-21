@@ -26,7 +26,7 @@ struct CompositionLayerBuilderTests {
         let builder = CompositionLayerBuilder(maskSnapshots: [:])
 
         // When
-        let output = builder.build(from: snapshot, children: children)
+        let output = builder.build(from: snapshot, children: children, inheritedEffects: [])
 
         // Then
         #expect(output.layer.id == snapshot.replayID)
@@ -68,7 +68,7 @@ struct CompositionLayerBuilderTests {
         )
 
         // When
-        let output = builder.build(from: snapshot, children: [])
+        let output = builder.build(from: snapshot, children: [], inheritedEffects: [])
 
         // Then
         let resource = try #require(output.resource)

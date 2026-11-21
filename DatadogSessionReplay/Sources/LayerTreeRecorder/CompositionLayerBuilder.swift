@@ -23,7 +23,8 @@ internal struct CompositionLayerBuilder {
 
     func build(
         from snapshot: CALayerSnapshot,
-        children: [SRCompositionLayerChild]
+        children: [SRCompositionLayerChild],
+        inheritedEffects: [CALayerSnapshot.SemanticObservation.VisualEffect]
     ) -> Output {
         let resource = maskResource(for: snapshot)
         let layer = SRCompositionLayer(
@@ -34,7 +35,10 @@ internal struct CompositionLayerBuilder {
             ),
             height: Int64.ddWithNoOverflow(dimension: snapshot.absoluteFrame.height),
             id: snapshot.replayID,
-            modifiers: snapshot.modifiers(maskImageResourceID: resource?.calculateIdentifier()),
+            modifiers: snapshot.modifiers(
+                inheritedEffects: inheritedEffects,
+                maskImageResourceID: resource?.calculateIdentifier()
+            ),
             width: Int64.ddWithNoOverflow(dimension: snapshot.absoluteFrame.width),
             x: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minX),
             y: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minY)

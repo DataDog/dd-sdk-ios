@@ -1,10 +1,10 @@
 ### What and why?
 
-Refresh precomputed response fixtures to `SOURCE_COMMIT` to keep mobile behavior consistent. Ref: FFL-3568.
+Refresh the shared feature flags fixtures to keep mobile behavior consistent. Changed sources: `SOURCE_COMMIT`. Ref: FFL-3568.
 
 ### How?
 
-Move the pin in `ci/feature-flags-precomputed-fixtures.json`; CI fetches the new snapshot before tests. The existing fixture loop runs new cases in normal SDK CI.
+Move the changed pins in `ci/feature-flags-precomputed-fixtures.json`; CI fetches the new snapshots before tests. The existing fixture loop runs new cases in normal SDK CI.
 
 ### Review checklist
 - [ ] Feature or bugfix MUST have appropriate tests (unit, integration)

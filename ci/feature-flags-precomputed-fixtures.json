@@ -1,4 +1,17 @@
 {
-  "destination": "DatadogFlags/Fixtures/precomputed",
-  "commit": "9afc3f75c3fef9643a9c1b5e2b1e5a9adac48177"
+  "sources": [
+    {
+      "name": "precomputed-assignments",
+      "kind": "precomputed-assignments",
+      "prefix": "precomputed-assignments/",
+      "destination": "DatadogFlags/Fixtures/precomputed",
+      "commit": "9afc3f75c3fef9643a9c1b5e2b1e5a9adac48177",
+      "files": {
+        "schemas/precomputed-assignment.schema.json": "schema.json",
+        "precomputed-assignments/README.md": "README.md",
+        "LICENSE": "LICENSE",
+        "NOTICE": "NOTICE"
+      }
+    }
+  ]
 }

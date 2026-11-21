@@ -124,6 +124,12 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             : FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
         #endif
 
+        #if os(macOS)
+        if configuration.collectAccessibility {
+            accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenterProvider.workspaceCenter)
+        }
+        #endif
+
         #if !os(watchOS) && !os(macOS)
         if configuration.collectAccessibility {
             accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenterProvider.applicationCenter)
@@ -558,6 +564,12 @@ extension RUMFeature {
 
     func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
         sessionSamplingStore.decision(for: policy, rate: rate)
+    }
+}
+
+extension RUMFeature: BufferedDataWritable {
+    func writeBufferedDataSynchronously() {
+        timeseriesCollector?.stopForTermination()
     }
 }
 

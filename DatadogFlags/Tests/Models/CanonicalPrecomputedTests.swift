@@ -270,6 +270,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
         case .flagNotFound: return "FLAG_NOT_FOUND"
         case .typeMismatch: return "TYPE_MISMATCH"
         case .invalidContext: return "INVALID_CONTEXT"
+        case .general: return "GENERAL"
         }
     }
 

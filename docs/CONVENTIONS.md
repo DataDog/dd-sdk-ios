@@ -64,7 +64,7 @@ Do not disable lint rules except where the rule is incorrect and a Jira ticket e
 - `SPM_BUILD` — defined when building via Swift Package Manager
 - `DD_BENCHMARK` — defined for benchmark builds
 - `DD_COMPILED_FOR_INTEGRATION_TESTS` — toggles `@testable` imports for integration tests
-- Platform checks: `#if os(iOS)`, `#if canImport(UIKit)`, `#if os(tvOS)`
+- Platform checks: `#if os(iOS)`, `#if canImport(UIKit)`, `#if os(tvOS)`, `#if os(macOS)`
 
 ## Generated Models — DO NOT EDIT
 

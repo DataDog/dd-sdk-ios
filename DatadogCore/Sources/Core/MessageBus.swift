@@ -42,20 +42,47 @@ internal final class MessageBus {
     @ReadWriteLock
     private var isDisconnected = false
 
+    /// Keeps sudden termination disabled while a message is queued, as it can carry data to write.
+    private let suddenTermination: SuddenTerminationControl
+
+    /// Whether the configuration telemetry was delivered. It is delivered once.
+    ///
+    /// It **must** be accessed within the queue.
+    private var isConfigurationDispatched = false
+
     /// Creates a bus for the given core.
     ///
     /// The message-bus keeps a weak reference to the core.
-    /// - Parameter configurationDispatchTime: The delay to dispatch the
-    /// configuration telemetry
-    init(configurationDispatchTime: DispatchTimeInterval = .seconds(5)) {
+    /// - Parameters:
+    ///   - configurationDispatchTime: The delay to dispatch the configuration telemetry
+    ///   - suddenTermination: Disables sudden termination until queued messages are delivered.
+    init(
+        configurationDispatchTime: DispatchTimeInterval = .seconds(5),
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
+    ) {
+        self.suddenTermination = suddenTermination
         queue.asyncAfter(deadline: .now() + configurationDispatchTime) {
-            guard !self.isDisconnected, let core = self.core, let configuration = self.configuration else {
-                return
-            }
+            self.dispatchConfiguration()
+        }
+    }
 
-            self.bus.values.forEach {
-                $0.receive(message: .telemetry(.configuration(configuration)), from: core)
-            }
+    /// Delivers the configuration telemetry now, if it was not delivered yet, because the app terminates
+    /// before the dispatch delay ends. **Blocks the caller thread.**
+    func dispatchPendingConfiguration() {
+        queue.sync {
+            dispatchConfiguration()
+        }
+    }
+
+    /// Delivers the configuration telemetry once. Runs on the queue.
+    private func dispatchConfiguration() {
+        guard !isConfigurationDispatched, !isDisconnected, let core = core, let configuration = configuration else {
+            return
+        }
+        isConfigurationDispatched = true
+
+        bus.values.forEach {
+            $0.receive(message: .telemetry(.configuration(configuration)), from: core)
         }
     }
 
@@ -127,7 +154,9 @@ internal final class MessageBus {
             return save(configuration: configuration)
         }
 
-        queue.async {
+        // A receiver that writes the message opens its event write context while handling it,
+        // which keeps sudden termination disabled until the write.
+        suddenTermination.async(on: queue) {
             guard !self.isDisconnected, let core = self.core else {
                 return fallback() // no feature can process the message
             }
@@ -149,6 +178,8 @@ internal final class MessageBus {
     ///
     /// - Parameter configuration: The SDK configuration.
     private func save(configuration: ConfigurationTelemetry) {
+        // It does not hold sudden termination: a hold would disable it for the first seconds of every launch,
+        // and only this telemetry is lost when the app terminates suddenly before the dispatch delay ends.
         queue.async {
             // merge with the current configuration if any
             self.configuration = self.configuration.map {

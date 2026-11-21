@@ -279,12 +279,14 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
         id: String? = .mockAny(),
         name: String? = .mockAny(),
         email: String? = .mockAny(),
+        anonymousId: String? = nil,
         extraInfo: [String: String] = [:]
     ) -> SpanEvent.UserInfo {
         return SpanEvent.UserInfo(
             id: id,
             name: name,
             email: email,
+            anonymousId: anonymousId,
             extraInfo: extraInfo
         )
     }
@@ -296,6 +298,7 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
             id: .mockRandom(),
             name: .mockRandom(),
             email: .mockRandom(),
+            anonymousId: .mockRandom(),
             extraInfo: .mockRandom()
         )
     }

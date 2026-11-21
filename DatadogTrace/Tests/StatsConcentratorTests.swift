@@ -20,7 +20,8 @@ class StatsConcentratorTests: XCTestCase {
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys,
         maxGroupsPerBucket: Int = StatsConcentrator.defaultMaxGroupsPerBucket,
         maxOverflowGroupsPerBucket: Int = StatsConcentrator.defaultMaxOverflowGroupsPerBucket,
-        telemetry: Telemetry = NOPTelemetry()
+        telemetry: Telemetry = NOPTelemetry(),
+        suddenTermination: SuddenTerminationControl = SuddenTerminationControlMock()
     ) -> StatsConcentrator {
         return StatsConcentrator(
             now: now,
@@ -30,7 +31,8 @@ class StatsConcentratorTests: XCTestCase {
             peerTagKeys: peerTagKeys,
             maxGroupsPerBucket: maxGroupsPerBucket,
             maxOverflowGroupsPerBucket: maxOverflowGroupsPerBucket,
-            telemetry: telemetry
+            telemetry: telemetry,
+            suddenTermination: suddenTermination
         )
     }
 
@@ -400,6 +402,50 @@ class StatsConcentratorTests: XCTestCase {
 
         let buckets = concentrator.flush(now: 0, force: true)
         XCTAssertEqual(buckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
+    // MARK: - Sudden Termination
+
+    func testWhenStatsAreBuffered_suddenTerminationStaysDisabledUntilEveryBucketIsFlushed() {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let concentrator = makeConcentrator(now: 0, suddenTermination: suddenTermination)
+        concentrator.add(makeEligibleSnapshot(), now: 0)
+
+        // When
+        _ = concentrator.flush(now: 0, force: false)
+        let isDisabledWhileBuffered = suddenTermination.isDisabled
+        _ = concentrator.flush(now: 0, force: true)
+
+        // Then
+        XCTAssertTrue(isDisabledWhileBuffered)
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
+    func testWhenAllDataIsCleared_suddenTerminationIsEnabled() {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let concentrator = makeConcentrator(now: 0, suddenTermination: suddenTermination)
+        concentrator.add(makeEligibleSnapshot(), now: 0)
+
+        // When
+        concentrator.clearAllData()
+
+        // Then
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
+    func testWhenConsentIsNotGranted_spansDoNotDisableSuddenTermination() {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let concentrator = makeConcentrator(now: 0, initialConsent: .notGranted, suddenTermination: suddenTermination)
+
+        // When
+        concentrator.add(makeEligibleSnapshot(), now: 0)
+        _ = concentrator.flush(now: 0, force: false)
+
+        // Then
+        XCTAssertEqual(suddenTermination.disableCount, 0)
     }
 
     // MARK: - Eligibility

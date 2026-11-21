@@ -1738,6 +1738,7 @@ public enum FlagEvaluationError: Error
     case flagNotFound
     case typeMismatch
     case invalidContext
+    case general
 public struct FlagDetails<T>: Equatable where T: Equatable
     public var key: String
     public var value: T
@@ -1772,6 +1773,7 @@ public enum FlagsError: Error
     case invalidConfiguration
     case invalidContext
     case initializationTimedOut
+    case assignmentAuthorizationFailed
 public struct FlagsEvaluationContext: Equatable, Codable
     public let targetingKey: String
     public let attributes: [String: AnyValue]

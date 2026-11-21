@@ -219,6 +219,12 @@ internal final class FlagsRepository {
         var experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
         var requestedOptOut: ExperimentationOptOut?
         var hasInvalidContext = false
+        /// A usable token or explicit authorization rejection requires assignments to match the requested subject.
+        /// The boundary survives failures until an eligible fallback or fresh response is installed.
+        var assignmentSubjectIsolationRequired = false
+        /// Tokens can change without changing the sanitized targeting context. Once authorization
+        /// is observed, only the latest request may install assignments, even after recovery.
+        var hasObservedAssignmentAuthorization = false
         var telemetry = SubjectTelemetryPolicy()
         var activeFlagsData: CachedFlagsData?
         var flagsData: FlagsData? {
@@ -246,6 +252,10 @@ internal final class FlagsRepository {
             } else if data.experimentationOptOutPolicy != nil {
                 return nil
             }
+            if assignmentSubjectIsolationRequired {
+                guard let requestedContext = latestRequestedContext,
+                      data.context.targetingKey.utf8.elementsEqual(requestedContext.targetingKey.utf8) else { return nil }
+            }
             return data
         }
         /// Advances on accepted fetches and reset; zero means the initial disk read can still apply.
@@ -271,8 +281,10 @@ internal final class FlagsRepository {
                 cachedFlagsData = data
 
                 let isInitialReadStillAuthoritative = !hasStartedEvaluationContextRequest
-                let isReconcilingSameContext = data.map {
-                    latestRequestedContext == $0.context
+                let isReconcilingSameContext = data.map { data in
+                    latestRequestedContext.map {
+                        isEligible(data, for: $0, allowingSameSubject: assignmentSubjectIsolationRequired)
+                    } ?? false
                 } ?? false
 
                 if isInitialReadStillAuthoritative || isReconcilingSameContext {
@@ -292,16 +304,33 @@ internal final class FlagsRepository {
             return callbacks
         }
 
-        func flagsData(matching context: FlagsEvaluationContext) -> FlagsData? {
-            if let data = flagsData, data.context == context,
-               data.experimentationOptOutPolicy == requestedOptOut {
+        func flagsData(matching context: FlagsEvaluationContext, allowingSameSubject: Bool = false) -> FlagsData? {
+            if let data = flagsData, isEligible(data, for: context, allowingSameSubject: allowingSameSubject) {
                 return data
             }
-            if let data = cachedFlagsData, data.context == context,
-               data.experimentationOptOutPolicy == requestedOptOut {
+            if let data = cachedFlagsData, isEligible(data, for: context, allowingSameSubject: allowingSameSubject) {
                 return data
             }
             return nil
+        }
+
+        private func isEligible(
+            _ data: FlagsData,
+            for context: FlagsEvaluationContext,
+            allowingSameSubject: Bool
+        ) -> Bool {
+            guard data.experimentationOptOutPolicy == requestedOptOut else {
+                return false
+            }
+            if allowingSameSubject {
+                // Subject identities are opaque: Swift's canonical Unicode equivalence must not
+                // merge distinct targeting keys accepted by the assignment service.
+                guard data.context.targetingKey.utf8.elementsEqual(context.targetingKey.utf8) else {
+                    return false
+                }
+                return experimentationOptOutMode == .disabled || data.context == context
+            }
+            return data.context == context
         }
     }
 
@@ -397,7 +426,10 @@ internal final class FlagsRepository {
                 guard contextUpdateID == state.contextUpdateID else {
                     return
                 }
-                let timeoutState: FlagsClientState = state.readableFlagsData?.context == context ? .stale : .error
+                let hasEligibleAssignments = state.assignmentSubjectIsolationRequired
+                    ? state.readableFlagsData != nil
+                    : state.readableFlagsData?.context == context
+                let timeoutState: FlagsClientState = hasEligibleAssignments ? .stale : .error
                 notifyListeners = self.stateManager.updateStateWithoutNotifying(
                     timeoutState,
                     unlessCurrentStateIs: [.ready, .stale]
@@ -464,6 +496,9 @@ internal final class FlagsRepository {
         // Retain the read lifecycle, not the repository, so the group is balanced after deallocation.
         let finish: (FlagsData?) -> Void = { [_repositoryState, weak firstFlags, flagSelection] data in
             var cachedData = data?.flagSelection == flagSelection ? data : nil
+            if let context = cachedData?.context {
+                cachedData?.context = context.extractingAssignmentAuthorization().context
+            }
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
                 cachedAssignment.reason = "CACHED"
@@ -604,6 +639,7 @@ internal final class FlagsRepository {
 
     private func applyFailedContextUpdate(
         for context: FlagsEvaluationContext,
+        error: FlagsError,
         contextUpdateID: UInt64,
         versionAtStart: UInt64
     ) -> (() -> Void)? {
@@ -612,8 +648,20 @@ internal final class FlagsRepository {
         var notifyListeners: (() -> Void)?
         var publish: (() -> Void)?
         _repositoryState.mutate { state in
-            guard contextUpdateID == state.contextUpdateID, state.flagsDataVersion == versionAtStart else {
+            guard contextUpdateID == state.contextUpdateID else {
                 return
+            }
+            if state.flagsDataVersion != versionAtStart {
+                // A no-token success for the same context can precede the first typed rejection.
+                // That rejection still needs to select a stale fallback and publish its state.
+                guard case .assignmentAuthorizationFailed = error else {
+                    return
+                }
+            }
+
+            if case .assignmentAuthorizationFailed = error {
+                state.assignmentSubjectIsolationRequired = true
+                state.hasObservedAssignmentAuthorization = true
             }
 
             let newState: FlagsClientState
@@ -625,10 +673,15 @@ internal final class FlagsRepository {
                     && flagAssignmentsFetcher.isTrusted(data.verification, at: dateProvider.now)
                     ? data : nil
             }
-            if let matchingFlagsData = verified ?? state.flagsData(matching: context),
+            if let matchingFlagsData = verified ?? state.flagsData(
+                matching: context,
+                allowingSameSubject: state.assignmentSubjectIsolationRequired
+            ),
                 canUseSigned(matchingFlagsData, matching: context),
                 matchingFlagsData.obfuscation == nil || state.supportsFlagKeyObfuscation {
                 state.flagsData = matchingFlagsData
+                // An eligible fallback re-establishes a usable assignment set.
+                state.assignmentSubjectIsolationRequired = false
                 publish = firstFlags.reserve(keys: matchingFlagsData.allFlagKeys)
                 newState = .stale
             } else {
@@ -679,6 +732,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             let readable = !hasError && state.readableFlagsData != nil
                 && canUseSigned(state.readableFlagsData, matching: state.latestRequestedContext)
             let context = readable ? state.flagsData?.context : nil
+            let authorizationError = state.assignmentSubjectIsolationRequired && !readable
             // Until a context is requested, a pending cache read may still contain an opt-out.
             let isPolicyLoading = state.shouldWaitForFlagsDataRead && state.latestRequestedContext == nil
             let telemetryContext = state.experimentationOptOutMode == .disabled
@@ -689,8 +743,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 // Unreadable assignments must not discard the stored subject's reporting policy.
                 telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: telemetryContext),
                 observeFullEvaluationData: readable ? (state.flagsData?.observeFullEvaluationData ?? false) : false,
-                requestedContext: state.experimentationOptOutMode == .disabled ? nil : state.latestRequestedContext,
-                error: state.hasInvalidContext ? .invalidContext : nil
+                requestedContext: state.experimentationOptOutMode == .disabled && !authorizationError
+                    ? nil : state.latestRequestedContext,
+                error: state.hasInvalidContext ? .invalidContext : (authorizationError ? .general : nil)
             )
         }
 
@@ -737,6 +792,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        let authorization = context.extractingAssignmentAuthorization()
+        let context = authorization.context
+        if authorization.shouldWarn {
+            DD.logger.warn(AssignmentAuthorization.unusableTokenWarning)
+        }
         let parsedPolicy = Result { try context.experimentationOptOut(mode: experimentationOptOutMode) }
         let policy = try? parsedPolicy.get()
         let invalidContext = if case .failure = parsedPolicy { true } else { false }
@@ -760,15 +820,26 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.latestRequestedContext = context
             state.requestedOptOut = policy
             state.hasInvalidContext = invalidContext
+            state.hasObservedAssignmentAuthorization = state.hasObservedAssignmentAuthorization || authorization.token != nil
+            state.assignmentSubjectIsolationRequired = state.assignmentSubjectIsolationRequired || authorization.token != nil
             if invalidContext {
                 // Retain the last successful snapshot for a later valid context or offline restart.
                 state.telemetry.finish(context.targetingKey, installed: state.flagsData?.context)
                 notifyReconciling = stateManager.updateStateWithoutNotifying(.error)
                 return
             }
-            // Apply the same context check whether the initial disk read wins or loses the race.
-            if state.flagsDataVersion == 0 {
-                state.flagsData = state.flagsData(matching: context)
+            // Once authorization isolation is active, immediately install only an eligible retained
+            // subject. This lets a return to that subject recover during the network request while
+            // keeping another subject's assignments unreadable.
+            if state.assignmentSubjectIsolationRequired {
+                state.flagsData = state.flagsData(matching: context, allowingSameSubject: true)
+                publish = state.readableFlagsData.flatMap { firstFlags.reserve(keys: $0.allFlagKeys) }
+            } else if state.flagsDataVersion == 0 {
+                // Apply the same context check whether the initial disk read wins or loses the race.
+                state.flagsData = state.flagsData(
+                    matching: context,
+                    allowingSameSubject: false
+                )
                 publish = state.readableFlagsData.flatMap { firstFlags.reserve(keys: $0.allFlagKeys) }
             }
             notifyReconciling = stateManager.updateStateWithoutNotifying(.reconciling)
@@ -811,7 +882,12 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             }
         }
 
-        flagAssignmentsFetcher.flagAssignments(for: context, experimentationOptOut: policy, diagnostics: diagnostics) { [weak self] result in
+        flagAssignmentsFetcher.flagAssignments(
+            for: context,
+            experimentationOptOut: policy,
+            diagnostics: diagnostics,
+            assignmentToken: authorization.token
+        ) { [weak self] result in
             guard let self else {
                 complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
                 return
@@ -865,7 +941,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     let isLatestRequest = contextUpdateID == state.contextUpdateID
                     let isFreshForLatestContext = state.latestRequestedContext == context
                         && state.flagsDataVersion == versionAtStart
-                    guard isLatestRequest || isFreshForLatestContext else {
+                    guard isLatestRequest || (!state.hasObservedAssignmentAuthorization && isFreshForLatestContext) else {
                         // A newer success for the same context and policy still satisfies this request.
                         isServingRequestedContext = state.readableFlagsData?.context == context
                         return
@@ -880,6 +956,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     if self.flagAssignmentsFetcher.isVerified(flagsData.verification, at: self.dateProvider.now) {
                         state.verifiedFlagsData = flagsData
                     }
+                    state.assignmentSubjectIsolationRequired = false
                     publish = state.readableFlagsData.flatMap { self.firstFlags.reserve(keys: $0.allFlagKeys) }
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
@@ -908,6 +985,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     pendingCompletions: pendingCompletions
                 )
             case .failure(let error):
+                if case .assignmentAuthorizationFailed = error {
+                    // Establish the subject boundary as soon as the rejection is known, even if
+                    // fallback selection is waiting for the initial disk read to complete.
+                    self._repositoryState.mutate { state in
+                        guard contextUpdateID == state.contextUpdateID else {
+                            return
+                        }
+                        state.assignmentSubjectIsolationRequired = true
+                        state.hasObservedAssignmentAuthorization = true
+                    }
+                }
                 self.whenCacheReady(PendingCacheReadCallback(takeCompletion: takeCompletion) { [weak self] operationCompletion in
                     guard let self else {
                         complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: operationCompletion)
@@ -916,6 +1004,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
                     let notifyListeners = self.applyFailedContextUpdate(
                         for: context,
+                        error: error,
                         contextUpdateID: contextUpdateID,
                         versionAtStart: versionAtStart
                     )
@@ -946,6 +1035,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.latestRequestedContext = nil
             state.requestedOptOut = nil
             state.hasInvalidContext = false
+            state.assignmentSubjectIsolationRequired = false
             callbacks = state.finishWaitingForInitialFlagsData()
             notifyListeners = stateManager.updateStateWithoutNotifying(.notReady)
             // Order removal with reset so newer successes enqueue their writes after it.

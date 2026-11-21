@@ -151,6 +151,8 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     var flagsData: FlagsData?
     let state: FlagsStateObservable = NOPStateObservable.notReady
     var setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
+    var evaluationError: FlagEvaluationError?
+    var requestedContext: FlagsEvaluationContext?
     private var telemetry = SubjectTelemetryPolicy()
     var flushCallsCount = 0
 
@@ -186,7 +188,9 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
             context: flagsData?.context,
             assignment: flagAssignment(for: key),
             telemetryOptedOut: telemetry.isOptedOut(evaluating: flagsData?.context),
-            observeFullEvaluationData: flagsData?.observeFullEvaluationData ?? false
+            observeFullEvaluationData: flagsData?.observeFullEvaluationData ?? false,
+            requestedContext: requestedContext,
+            error: evaluationError
         )
     }
 
@@ -212,6 +216,7 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
 
 final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
     var experimentationOptOutPolicies: [ExperimentationOptOut?] = []
+    var assignmentTokens: [String?] = []
     var flagAssignmentsStub: (
         (
             FlagsEvaluationContext,
@@ -234,9 +239,11 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
         diagnostics: FlagsRequestDiagnostics.Snapshot?,
+        assignmentToken: String?,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         experimentationOptOutPolicies.append(experimentationOptOut)
+        assignmentTokens.append(assignmentToken)
         flagAssignmentsStub?(evaluationContext, completion)
     }
 }
