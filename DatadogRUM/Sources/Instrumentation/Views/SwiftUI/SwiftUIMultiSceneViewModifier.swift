@@ -127,27 +127,57 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 /// Associates the disappearance closure with the reader registered by the same body.
 @MainActor
 private final class RUMOrdinaryDisappearanceOwner {
+    private struct HostController {
+        weak var controller: UIViewController?
+    }
+
     private weak var reader: RUMSceneIdentifierReader.ObserverView?
     private var scene: RUMSceneIdentifier?
+    private var hosts: [HostController] = []
+    private var movedAcrossScenes = false
     private var isAmbiguous = false
 
     func register(_ observer: RUMSceneIdentifierReader.ObserverView) {
-        guard let mountedScene = observer.currentSceneIdentifier else {
+        guard !isAmbiguous, let mountedScene = observer.currentSceneIdentifier else {
             return
         }
         if let scene, scene != mountedScene {
-            isAmbiguous = true
-            return
+            // Moving only the reader leaves the old body in its source host.
+            // A reader and its SwiftUI host can also move together.
+            guard reader === observer, stillInOriginalHost(observer) else {
+                isAmbiguous = true
+                return
+            }
+            movedAcrossScenes = true
+        } else if scene == nil {
+            var controller = observer.nearestViewController
+            while let host = controller {
+                hosts.append(HostController(controller: host))
+                controller = host.parent
+            }
         }
         scene = mountedScene
         reader = observer
     }
 
     var attachedScene: RUMSceneIdentifier? {
-        guard !isAmbiguous, let scene, reader?.currentSceneIdentifier == scene else {
+        guard !isAmbiguous, let scene, let reader, reader.currentSceneIdentifier == scene,
+              !movedAcrossScenes || stillInOriginalHost(reader) else {
             return nil
         }
         return scene
+    }
+
+    private func stillInOriginalHost(_ observer: RUMSceneIdentifierReader.ObserverView) -> Bool {
+        guard let window = observer.window else {
+            return false
+        }
+        return hosts.contains { host in
+            guard let view = host.controller?.viewIfLoaded else {
+                return false
+            }
+            return view.window === window && observer.isDescendant(of: view)
+        }
     }
 }
 
