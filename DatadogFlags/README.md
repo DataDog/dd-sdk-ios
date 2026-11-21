@@ -33,12 +33,13 @@ This option controls evaluation telemetry only. Exposure events can still contai
 
 # Assignment response signing (draft)
 
-Signing-enabled requests set `X-stream: false` because whole-body proofs require buffered delivery.
-Both observe and required modes apply this override. Signing-off requests keep their ordinary transport selection.
+Staging only; production is not supported yet. Production support comes in a later release.
+
+The SDK does not send `X-stream`. The edge buffers the responses that it signs. Until the edge buffering build is on staging, `required` on staging fails closed and `observe` reports `missingProof`.
 
 The first public response-signing protocol is v1. The SDK advertises `response-signing-v1`, sends signature version `1`, and verifies the `datadog.feature-flags.precomputed-assignments.v1` transcript. A v1 response carries the leaf in `x-datadog-feature-flags-signing-certificate` and 1 to 3 intermediates in `x-datadog-feature-flags-signing-chain`. The chain header joins standard base64 DER entries with `,` and no spaces. Index 0 issued the leaf, and a pinned root issued the last entry. The SDK rejects a response that has only the earlier `x-datadog-feature-flags-signing-intermediate` header. The transcript ends with `SHA256(leaf)`, one byte with the intermediate count, and the SHA-256 digest of each intermediate in header order. Earlier POC v1/v2 and draft v3 labels are not supported public versions; public v1 does not accept their proofs. X.509 v3 certificate encoding is unchanged.
 
-Response signing is disabled by default. It is available only for the staging assignment endpoint. `DatadogSite` has no staging case, so set `customFlagsEndpoint` to the staging endpoint. For every other endpoint, opt-in is a no-op: the SDK logs a warning and sends the ordinary request. Signing protects response integrity; subject authorization remains separate.
+Response signing is disabled by default. It is available only for the staging assignment endpoint. `DatadogSite` has no staging case, so set `customFlagsEndpoint` to the staging endpoint. For every other endpoint, `observe` is a no-op: the SDK logs a warning, sends the ordinary request, and does not verify flags. For every other endpoint, `required` fails closed: the SDK logs an error once when Flags is enabled, sends no assignment request, puts the client in its error state, and returns `FlagsError.invalidConfiguration` on every fetch. To use Flags outside staging, remove `required` or use `observe`. Signing protects response integrity; subject authorization remains separate.
 
 ```swift
 Flags.enable(with: .init(

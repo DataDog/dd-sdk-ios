@@ -20,10 +20,12 @@ extension Flags {
         case required
     }
 
-    /// Optional response signing. Available only for the staging assignment endpoint.
+    /// Optional response signing. Staging only; production is not supported yet.
     ///
-    /// The SDK pins one built-in root: the staging root. For any other endpoint, opt-in has no effect:
-    /// the SDK logs a warning and sends the ordinary request.
+    /// The SDK pins one built-in root: the staging root. Production support comes in a later release.
+    /// For any other endpoint, `observe` has no effect: the SDK logs a warning and sends the ordinary request.
+    /// For any other endpoint, `required` fails closed: the SDK logs an error, sends no assignment request,
+    /// and returns `FlagsError.invalidConfiguration` on every fetch.
     public struct ResponseSigningConfiguration {
         public var mode: ResponseSigningMode
         /// Test-only trust anchors in DER form. Production code never sets them, and a response never supplies them.
@@ -52,15 +54,28 @@ extension Flags {
         }
 
         /// Returns the configuration that the feature applies to `customFlagsEndpoint`.
-        /// Outside staging, opt-in is a no-op: the result is `off`, so requests and responses stay unchanged.
+        /// Outside staging, `observe` is a no-op: the result is `off`, so requests and responses stay unchanged.
+        /// Outside staging, `required` stays `required`. No root applies, so every fetch fails closed before a request.
         internal func effective(customFlagsEndpoint: URL?) -> ResponseSigningConfiguration {
             guard mode != .off, !Self.isStagingEndpoint(customFlagsEndpoint) else {
                 return self
             }
+            if mode == .required {
+                DD.logger.error(
+                    """
+                    Flags response signing is supported only on the Datadog staging endpoint \
+                    `https://preview.ff-cdn.datad0g.com` in this SDK version. Production support comes in a later release. \
+                    The `required` mode fails closed: the SDK sends no assignment request and evaluations return defaults. \
+                    Remove `required`, or use `observe`.
+                    """
+                )
+                return self
+            }
             DD.logger.warn(
                 """
-                Flags response signing is available only for the staging endpoint \
-                `https://preview.ff-cdn.datad0g.com`. Response signing is disabled for this configuration.
+                Flags response signing is supported only on the Datadog staging endpoint \
+                `https://preview.ff-cdn.datad0g.com` in this SDK version. Production support comes in a later release. \
+                Response signing is disabled for this configuration, and flags are not verified.
                 """
             )
             return ResponseSigningConfiguration()
@@ -196,8 +211,6 @@ internal final class FlagsResponseVerifier {
         guard status == errSecSuccess else {
             throw FlagsSigningError.unsupportedRequest
         }
-        // Whole-body proofs require buffered delivery, regardless of the server rollout.
-        request.setValue("false", forHTTPHeaderField: "X-stream")
         request.setValue(Self.signatureVersion, forHTTPHeaderField: Self.prefix + "signature-version")
         request.setValue(Self.hex(Data(nonce)), forHTTPHeaderField: Self.prefix + "request-nonce")
         let existing = (request.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities") ?? "")
