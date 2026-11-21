@@ -21,9 +21,11 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - name: Fetch the pinned snapshot
+      - name: Test the sync script
+        run: python3 -m unittest discover -s ci -p 'test_*.py'
+      - name: Fetch the pinned snapshots
         run: python3 ci/sync-feature-flags-precomputed-fixtures.py
-      - name: Verify it against the pin
+      - name: Verify them against the pins
         run: python3 ci/sync-feature-flags-precomputed-fixtures.py --verify
   update:
     # Forks cannot get the write token, so run only in the upstream repository.

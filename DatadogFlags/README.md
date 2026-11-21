@@ -146,7 +146,7 @@ The Flags module uses the JSON contract from [ffe-system-test-data](https://gith
 This keeps response behavior consistent across mobile SDKs. The snapshot is test data only.
 It adds no runtime dependency and requires no Git submodule.
 
-`ci/feature-flags-precomputed-fixtures.json` pins an upstream commit. Tests read the snapshot from the git-ignored `DatadogFlags/Fixtures/precomputed` folder, outside every SwiftPM target, so fixtures never reach a customer checkout. `SOURCE.json` records the source commit and file digests.
+`ci/feature-flags-precomputed-fixtures.json` lists the fixture sources. Each source has its own upstream path prefix, destination folder, commit pin and file map, so later fixture sets reuse the same pipeline. The `precomputed-assignments` source pins an upstream commit. Tests read the snapshot from the git-ignored `DatadogFlags/Fixtures/precomputed` folder, outside every SwiftPM target, so fixtures never reach a customer checkout. `SOURCE.json` records the source commit and file digests.
 The runner discovers all nested JSON cases.
 Adding a case requires an upstream fixture change and a pin update. It requires no runner or filename-list change.
 Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
@@ -173,9 +173,9 @@ make feature-flags-fixtures-pull
 xcodebuild -workspace Datadog.xcworkspace -scheme DatadogFlags -destination '<installed simulator>' -only-testing:DatadogFlagsTests/CanonicalPrecomputedTests test
 ```
 
-`make feature-flags-fixtures-pull` fetches the pinned commit and records file digests in `SOURCE.json`. When the local snapshot already matches the pin, it only verifies, without networking. `make test` runs it first for the `DatadogFlags` and `UnitTests-*` schemes, whose test plans include `DatadogFlagsTests`. The fetch has a time limit and retries 3 times.
+`make feature-flags-fixtures-pull` fetches the pinned commit of each source and records file digests in its `SOURCE.json`. When a local snapshot already matches its pin, it only verifies, without networking. `make test` runs it first for the `DatadogFlags` and `UnitTests-*` schemes, whose test plans include `DatadogFlagsTests`. The fetch has a time limit and retries 3 times.
 
-Move the pin to a reviewed upstream commit:
+Move the pins to a reviewed upstream commit. A source keeps its pin when the new commit changes none of its files:
 
 ```sh
 python3 ci/sync-feature-flags-precomputed-fixtures.py --update --ref <full-upstream-sha>
