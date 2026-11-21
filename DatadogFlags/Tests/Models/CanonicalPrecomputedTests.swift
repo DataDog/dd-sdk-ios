@@ -50,6 +50,9 @@ final class CanonicalPrecomputedTests: XCTestCase {
                     if fixture["expectedResponseError"] != nil {
                         XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
                         try runRejected(fixture, responseData: responseData)
+                        if case .failure(.invalidResponse) = try signedResponse(responseData) {} else {
+                            XCTFail("A valid signature must not admit an invalid canonical response")
+                        }
                         return
                     }
                     let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
@@ -63,7 +66,18 @@ final class CanonicalPrecomputedTests: XCTestCase {
                         keySpellings: response.keySpellings
                     )
                     let restored = try restoreThroughDataStore(initial)
-                    for (label, state) in [("network-decoded", initial), ("serialized-state", restored)] {
+                    let verified = try signedResponse(responseData).get()
+                    XCTAssertNotNil(verified.verification)
+                    let signed = FlagsData(
+                        flags: verified.flags,
+                        context: context,
+                        date: Date(),
+                        obfuscation: verified.obfuscation,
+                        observeFullEvaluationData: verified.observeFullEvaluationData,
+                        keySpellings: verified.keySpellings
+                    )
+                    let states = [("network-decoded", initial), ("serialized-state", restored), ("required-verified", signed)]
+                    for (label, state) in states {
                         try XCTContext.runActivity(named: label) { _ in try run(fixture, state: state) }
                     }
                 }
@@ -72,7 +86,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
             }
         }
         XCTAssertGreaterThan(executed, 0, "All canonical fixtures were excluded (\(excluded))")
-        print("Canonical precompute \(source["commit"] as? String ?? "unknown"): \(executed) fixtures executed, \(excluded) excluded, \(executedEvaluations) evaluations executed across both states")
+        print("Canonical precompute \(source["commit"] as? String ?? "unknown"): \(executed) fixtures executed, \(excluded) excluded, \(executedEvaluations) evaluations executed across all states")
     }
 
     func testRunnerMatchesBooleansOnlyWithBooleans() throws {
@@ -119,6 +133,38 @@ final class CanonicalPrecomputedTests: XCTestCase {
         }
         wait(for: [fetched], timeout: 2)
         return try XCTUnwrap(result).get()
+    }
+
+    /// Verifies the same fixture bytes through the required signing path.
+    private func signedResponse(_ body: Data) throws -> Result<FlagAssignmentsResponse, FlagsError> {
+        let now = SigningChainFixture.now
+        let anchor = try SigningChainFixture.root("root-a")
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        let completed = expectation(description: "Verify canonical response bytes")
+        var result: Result<FlagAssignmentsResponse, FlagsError>?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+            responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
+            dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
+            signingFetch: { request, completion in
+                do {
+                    let fields = try fixture.signedHeaders(request: request, body: body, now: now)
+                    let url = try XCTUnwrap(request.url)
+                    let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: fields))
+                    completion(.success((body, response)))
+                } catch { completion(.failure(error)) }
+            },
+            fetch: { _, _ in XCTFail("Required verification must not retry unsigned") }
+        )
+        fetcher.flagAssignments(for: .init(targetingKey: "canonical")) {
+            result = $0
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        return try XCTUnwrap(result)
     }
 
     /// Persists and restores through the production store, including its version selection and version check.

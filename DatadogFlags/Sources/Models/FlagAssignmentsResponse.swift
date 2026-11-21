@@ -12,6 +12,8 @@ internal struct FlagAssignmentsResponse: Equatable {
     var keySpellings: [FlagKeySpelling] = []
     private(set) var failedFlags: [String: String] // key -> error description
     let obfuscation: FlagKeyObfuscation?
+    var verification: FlagsResponseVerification? = nil
+    var responseSigningCacheScope: String? = nil
     let experimentationOptOut: Bool?
     let hasMalformedOptOutMetadata: Bool
     let experimentationOptOutMode: String?

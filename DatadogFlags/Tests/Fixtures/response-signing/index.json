@@ -1,0 +1,8 @@
+[
+  "corpus.json",
+  "extension-profile.json",
+  "isolated-certificate-rules.json",
+  "near-expiry.json",
+  "nested-der.json",
+  "subject-der.json"
+]
