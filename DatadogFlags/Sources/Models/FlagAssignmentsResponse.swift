@@ -8,6 +8,8 @@ import Foundation
 
 internal struct FlagAssignmentsResponse: Equatable {
     let flags: [String: FlagAssignment]
+    /// Assignments whose keys are canonically equivalent to, but not byte-equal to, a key in `flags`.
+    var keySpellings: [FlagKeySpelling] = []
     let failedFlags: [String: String] // key -> error description
     let obfuscation: FlagKeyObfuscation?
     var verification: FlagsResponseVerification? = nil
@@ -16,6 +18,7 @@ internal struct FlagAssignmentsResponse: Equatable {
     let hasMalformedOptOutMetadata: Bool
     let experimentationOptOutMode: String?
     let experimentationOptOutAt: String?
+    let observeFullEvaluationData: Bool
 
     init(
         flags: [String: FlagAssignment],
@@ -24,15 +27,21 @@ internal struct FlagAssignmentsResponse: Equatable {
         experimentationOptOut: Bool? = nil,
         experimentationOptOutMode: String? = nil,
         experimentationOptOutAt: String? = nil,
-        hasMalformedOptOutMetadata: Bool = false
+        hasMalformedOptOutMetadata: Bool = false,
+        observeFullEvaluationData: Bool = false
     ) {
-        self.flags = flags
+        self.flags = flags.mapValues { assignment in
+            var assignment = assignment
+            assignment.observeFullEvaluationData = observeFullEvaluationData
+            return assignment
+        }
         self.failedFlags = failedFlags
         self.obfuscation = obfuscation
         self.experimentationOptOut = experimentationOptOut
         self.experimentationOptOutMode = experimentationOptOutMode
         self.experimentationOptOutAt = experimentationOptOutAt
         self.hasMalformedOptOutMetadata = hasMalformedOptOutMetadata
+        self.observeFullEvaluationData = observeFullEvaluationData
     }
 }
 
@@ -41,6 +50,7 @@ extension FlagAssignmentsResponse: Codable {
         case data
         case attributes
         case flags
+        case observeFullEvaluationData
         case obfuscated
         case obfuscation
         case evaluationOptions = "evaluation_options"
@@ -75,6 +85,9 @@ extension FlagAssignmentsResponse: Codable {
             experimentationOptOutAt = nil
         }
 
+        // Only a literal boolean true opts in. Old or malformed fields fail closed.
+        observeFullEvaluationData = (try? attributesContainer.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
+
         // Decode all flags (including those with unknown variation types)
         let allFlags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
         let isObfuscated = attributesContainer.contains(.obfuscated)
@@ -101,6 +114,8 @@ extension FlagAssignmentsResponse: Codable {
             if case .unknown(let typeName) = assignment.variation {
                 failedFlags[key] = "Unrecognized variation type \(typeName)"
             } else {
+                var assignment = assignment
+                assignment.observeFullEvaluationData = observeFullEvaluationData
                 successfulFlags[key] = assignment
             }
         }
@@ -120,9 +135,181 @@ extension FlagAssignmentsResponse: Codable {
             try options.encodeIfPresent(experimentationOptOutMode, forKey: .experimentationOptOutMode)
             try options.encodeIfPresent(experimentationOptOutAt, forKey: .experimentationOptOutAt)
         }
+        try attributesContainer.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
         if let obfuscation {
             try attributesContainer.encode(true, forKey: .obfuscated)
             try attributesContainer.encode(obfuscation, forKey: .obfuscation)
+        }
+    }
+}
+
+extension FlagAssignmentsResponse: FlagNumericTokenRoot {
+    static var flagAssignmentsPath: [String] { ["data", "attributes", "flags"] }
+}
+
+/// A plaintext assignment kept outside `[String: FlagAssignment]`, which can hold only one of two canonically
+/// equivalent keys such as `caf\u{00E9}` and `cafe\u{0301}`.
+internal struct FlagKeySpelling: Equatable, Codable {
+    let key: String
+    var assignment: FlagAssignment
+}
+
+extension FlagAssignmentsResponse {
+    /// Adds the served plaintext keys that decoding merged into a canonically equivalent key.
+    func addingKeySpellings(from data: Data) -> FlagAssignmentsResponse {
+        let bytes = Array(data)
+        guard obfuscation == nil,
+              Self.mayContainNonASCIIKeys(bytes),
+              let members = JSONObjectMembers.members(at: Self.flagAssignmentsPath, in: bytes) else {
+            return self
+        }
+        var response = self
+        for member in members where !Self.containsBytes(of: member.key, in: flags) && !Self.containsBytes(of: member.key, in: failedFlags) {
+            guard var assignment = try? FlagsNumericJSON.decode(FlagAssignment.self, from: Data(bytes[member.value])) else {
+                continue
+            }
+            if case .unknown = assignment.variation {
+                continue
+            }
+            assignment.observeFullEvaluationData = observeFullEvaluationData
+            response.keySpellings.append(FlagKeySpelling(key: member.key, assignment: assignment))
+        }
+        return response
+    }
+
+    private static func containsBytes<Value>(of key: String, in dictionary: [String: Value]) -> Bool {
+        dictionary.index(forKey: key).map { dictionary[$0].key.utf8.elementsEqual(key.utf8) } ?? false
+    }
+
+    /// Only non-ASCII bytes or `\u` escapes can spell two keys that Swift compares as equal.
+    private static func mayContainNonASCIIKeys(_ bytes: [UInt8]) -> Bool {
+        for index in bytes.indices {
+            if bytes[index] >= 0x80 {
+                return true
+            }
+            if bytes[index] == UInt8(ascii: "\\"), index + 1 < bytes.count, bytes[index + 1] == UInt8(ascii: "u") {
+                return true
+            }
+        }
+        return false
+    }
+}
+
+/// Lists the members of a JSON object from its bytes, so that every served key keeps its own spelling.
+private enum JSONObjectMembers {
+    typealias Member = (key: String, value: Range<Int>)
+
+    static func members(at path: [String], in bytes: [UInt8]) -> [Member]? {
+        var start = 0
+        for key in path {
+            guard let member = members(ofObjectAt: start, in: bytes)?.first(where: { $0.key == key }) else {
+                return nil
+            }
+            start = member.value.lowerBound
+        }
+        return members(ofObjectAt: start, in: bytes)
+    }
+
+    private static func members(ofObjectAt start: Int, in bytes: [UInt8]) -> [Member]? {
+        var index = skipWhitespace(from: start, in: bytes)
+        guard index < bytes.count, bytes[index] == UInt8(ascii: "{") else {
+            return nil
+        }
+        var members: [Member] = []
+        index = skipWhitespace(from: index + 1, in: bytes)
+        if index < bytes.count, bytes[index] == UInt8(ascii: "}") {
+            return members
+        }
+        while index < bytes.count {
+            guard bytes[index] == UInt8(ascii: "\""),
+                  let keyEnd = stringEnd(from: index, in: bytes),
+                  let key = try? JSONDecoder().decode([String].self, from: Data([UInt8(ascii: "[")] + bytes[index..<keyEnd] + [UInt8(ascii: "]")])).first else {
+                return nil
+            }
+            index = skipWhitespace(from: keyEnd, in: bytes)
+            guard index < bytes.count, bytes[index] == UInt8(ascii: ":") else {
+                return nil
+            }
+            let valueStart = skipWhitespace(from: index + 1, in: bytes)
+            guard let valueEnd = valueEnd(from: valueStart, in: bytes) else {
+                return nil
+            }
+            members.append((key, valueStart..<valueEnd))
+            index = skipWhitespace(from: valueEnd, in: bytes)
+            guard index < bytes.count else {
+                return nil
+            }
+            if bytes[index] == UInt8(ascii: "}") {
+                return members
+            }
+            guard bytes[index] == UInt8(ascii: ",") else {
+                return nil
+            }
+            index = skipWhitespace(from: index + 1, in: bytes)
+        }
+        return nil
+    }
+
+    private static func skipWhitespace(from start: Int, in bytes: [UInt8]) -> Int {
+        var index = start
+        while index < bytes.count, [0x20, 0x09, 0x0A, 0x0D].contains(bytes[index]) {
+            index += 1
+        }
+        return index
+    }
+
+    /// Returns the index after the closing quote of the string that starts at `start`.
+    private static func stringEnd(from start: Int, in bytes: [UInt8]) -> Int? {
+        var index = start + 1
+        while index < bytes.count {
+            if bytes[index] == UInt8(ascii: "\\") {
+                index += 2
+            } else if bytes[index] == UInt8(ascii: "\"") {
+                return index + 1
+            } else {
+                index += 1
+            }
+        }
+        return nil
+    }
+
+    private static func valueEnd(from start: Int, in bytes: [UInt8]) -> Int? {
+        guard start < bytes.count else {
+            return nil
+        }
+        switch bytes[start] {
+        case UInt8(ascii: "\""):
+            return stringEnd(from: start, in: bytes)
+        case UInt8(ascii: "{"), UInt8(ascii: "["):
+            var depth = 0
+            var index = start
+            while index < bytes.count {
+                switch bytes[index] {
+                case UInt8(ascii: "\""):
+                    guard let end = stringEnd(from: index, in: bytes) else {
+                        return nil
+                    }
+                    index = end
+                    continue
+                case UInt8(ascii: "{"), UInt8(ascii: "["):
+                    depth += 1
+                case UInt8(ascii: "}"), UInt8(ascii: "]"):
+                    depth -= 1
+                    if depth == 0 {
+                        return index + 1
+                    }
+                default:
+                    break
+                }
+                index += 1
+            }
+            return nil
+        default:
+            var index = start
+            while index < bytes.count, ![UInt8(ascii: ","), UInt8(ascii: "}"), UInt8(ascii: "]"), 0x20, 0x09, 0x0A, 0x0D].contains(bytes[index]) {
+                index += 1
+            }
+            return index
         }
     }
 }

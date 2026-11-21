@@ -1,10 +1,11 @@
 ---
-last_updated: 2026-11-07
-sdk_version: 3.21.0
-verified_against_commit: 2654f0234
+last_updated: 2026-11-18
+sdk_version: 3.22.0
+verified_against_commit: 960683aab
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
+  - DatadogProfiling/Sources/Profiling+objc.swift
   - DatadogInternal/Sources/Models/Profiling/ProfilingOptions.swift
 ---
 
@@ -98,6 +99,22 @@ monitor.succeedOperation(
 )
 ```
 
+### Objective-C
+
+After initializing Core and enabling RUM, configure and enable Profiling through the Objective-C façade:
+
+```objc
+@import DatadogProfiling;
+
+DDProfilingConfiguration *configuration = [[DDProfilingConfiguration alloc] init];
+configuration.applicationLaunchSampleRate = 5.0;
+configuration.continuousSampleRate = 5.0;
+// configuration.customEndpoint defaults to nil (Datadog intake).
+[DDProfiling enableWith:configuration];
+```
+
+The configuration also supports `initWithCustomEndpoint:applicationLaunchSampleRate:continuousSampleRate:`. Both sample rates default to `5.0`, matching Swift. Use `[DDProfiling enableWith:configuration instanceName:@"my-instance"]` to select a named SDK instance; a `nil` name selects the default. Profiling still supports only one instance per process, so later enable calls preserve the existing feature.
+
 ## Architecture Overview
 
 Profiling is a `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with:in:)` registers `ProfilerFeature`, which builds a request builder, session sampler provider, quota checker, and a single `DatadogProfiler` message receiver.
@@ -128,6 +145,7 @@ flowchart TD
 
 ### Feature Entry Point
 - **`DatadogProfiling/Sources/Profiling.swift`** - Main entry point. Call `Profiling.enable(with:in:)` to register the feature with core.
+- **`DatadogProfiling/Sources/Profiling+objc.swift`** - Objective-C entry point (`DDProfiling`) and configuration wrapper (`DDProfilingConfiguration`). Both enable methods forward to the Swift entry point.
 
 ### Configuration
 - **`DatadogProfiling/Sources/ProfilingConfiguration.swift`** - Customer-facing configuration: `customEndpoint`, `applicationLaunchSampleRate`, and `continuousSampleRate`. Also defines `apply(remoteConfiguration:)` (see [Remote Configuration](#remote-configuration)).

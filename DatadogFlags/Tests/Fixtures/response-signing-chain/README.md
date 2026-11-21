@@ -1,7 +1,7 @@
 # Response signing v1 certificate-chain fixtures
 
 These repo-local fixtures test the v1 certificate-chain format. They are test data only.
-They are separate from the imported `ffe-system-test-data` snapshot in `../response-signing`, so `ci/sync-precomputed-fixtures.py --signing --verify` stays valid.
+They are separate from the imported `ffe-system-test-data` snapshot in `../response-signing`, so `ci/sync-response-signing-fixtures.py --verify` stays valid.
 
 ## Test CA credentials
 

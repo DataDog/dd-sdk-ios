@@ -24,11 +24,23 @@ public struct FlagAssignment: Equatable {
     public var serialID: Int?
     internal var numericConversion: FlagNumericConversion?
 
+    /// Whether a decoded number has a value that snapshots and bridge consumers can represent.
+    internal var hasRepresentableValue: Bool {
+        guard let numericConversion else {
+            return true
+        }
+        return numericConversion.integer != nil || numericConversion.double != nil
+    }
+
+    /// Consent captured with this assignment, including when bridged or restored from disk.
+    @_spi(Internal)
+    public var observeFullEvaluationData: Bool = false
+
     /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
     private static let maxSafeInteger: Double = 9_007_199_254_740_991
 
-    /// Returns the variation as `T`. Original numeric tokens control decoded reads; values without tokens
-    /// use conservative conversion rules.
+    /// Returns the variation as `T`. Numeric getters use `numericConversion` when present. Otherwise they
+    /// convert the stored variation with conservative rules.
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         if let numericConversion {
             if T.self == Int.self {
@@ -84,6 +96,7 @@ extension FlagAssignment: Codable {
         case doLog
         case serialID = "serialId"
         case numericLiteral = "_numericLiteral"
+        case observeFullEvaluationData
     }
 
     public init(from decoder: any Decoder) throws {
@@ -95,6 +108,7 @@ extension FlagAssignment: Codable {
         self.doLog = try container.decode(Bool.self, forKey: .doLog)
         // A malformed serial id decodes as absent so it cannot fail the whole response.
         self.serialID = try? container.decodeIfPresent(Int.self, forKey: .serialID)
+        self.observeFullEvaluationData = (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
 
         let variationType = try container.decode(String.self, forKey: .variationType)
 
@@ -111,8 +125,8 @@ extension FlagAssignment: Codable {
             let rawLiteral = FlagsNumericJSON.literal(in: decoder, key: "variationValue")
             // A string on the wire remains invalid, even if it contains digits.
             if FlagsNumericJSON.isCache(decoder), variationType == "float", cachedLiteral == nil {
-                // Older caches contain the rounded Double text, not the original response token.
-                // Preserve their representation and conservative Integer reads.
+                // Restore a cached "float" without `_numericLiteral` as `.double`. Earlier and current SDK
+                // versions both write this form. Integer reads stay conservative.
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             } else if let literal = cachedLiteral ?? rawLiteral,
                (try? container.decode(String.self, forKey: .variationValue)) == nil {
@@ -128,6 +142,8 @@ extension FlagAssignment: Codable {
                     }
                 }
             } else if let number = try? container.decode(Int.self, forKey: .variationValue) {
+                // Without `FlagsNumericJSON`, `JSONDecoder` can decode a fractional number as `Int`, for
+                // example `9007199254740993.5`.
                 self.variation = .integer(number)
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
@@ -148,6 +164,7 @@ extension FlagAssignment: Codable {
         try container.encode(doLog, forKey: .doLog)
         try container.encodeIfPresent(serialID, forKey: .serialID)
         try container.encodeIfPresent(numericConversion?.literal, forKey: .numericLiteral)
+        try container.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
 
         switch variation {
         case .boolean(let value):
@@ -173,22 +190,55 @@ extension FlagAssignment: Codable {
     }
 }
 
+/// A decodable whose JSON holds flag assignments at a fixed path.
+internal protocol FlagNumericTokenRoot: Decodable {
+    /// JSON keys from the document root to the object that maps flag keys to assignments.
+    /// Empty when the document is a single assignment.
+    static var flagAssignmentsPath: [String] { get }
+}
+
+extension FlagAssignment: FlagNumericTokenRoot {
+    static var flagAssignmentsPath: [String] { [] }
+}
+
 /// Retains numeric tokens before Foundation can round them during decoding.
 internal enum FlagsNumericJSON {
     private static let tokensKey = CodingUserInfoKey(rawValue: "flags.numericTokens")
     private static let cacheKey = CodingUserInfoKey(rawValue: "flags.numericCache")
+    /// Bytes that can continue a JSON number: digits, sign, decimal point, and exponent marker.
+    private static let numberBytes = Set("0123456789+-.eE".utf8)
 
-    static func decode<T: Decodable>(_ type: T.Type, from data: Data, cached: Bool = false) throws -> T {
+    static func decode<T: FlagNumericTokenRoot>(_ type: T.Type, from data: Data, cached: Bool = false) throws -> T {
         guard let tokensKey, let cacheKey else {
             throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Invalid numeric decoder configuration"))
         }
+        let decoder = JSONDecoder()
+        decoder.userInfo[cacheKey] = cached
+        // The cache stores `_numericLiteral` whenever a read differs from the decoded number, and writes every
+        // other number as exact `JSONEncoder` output. Only network responses need their original tokens.
+        if !cached {
+            var tokens = try numericTokens(in: data)
+            for key in T.flagAssignmentsPath {
+                guard case .object(let object) = tokens, let next = object[key] else {
+                    tokens = .other
+                    break
+                }
+                tokens = next
+            }
+            decoder.userInfo[tokensKey] = tokens
+        }
+        return try decoder.decode(type, from: data)
+    }
+
+    /// Copies `data` with every number token quoted, and decodes the string leaves of the result.
+    private static func numericTokens(in data: Data) throws -> FlagNumericTokenTree {
         let bytes = Array(data)
         var quoted: [UInt8] = []
         quoted.reserveCapacity(bytes.count)
         var index = 0
         while index < bytes.count {
             let byte = bytes[index]
-            if byte == 34 {
+            if byte == UInt8(ascii: "\"") {
                 // Copy JSON strings verbatim, including escaped quotes and backslashes.
                 quoted.append(byte)
                 index += 1
@@ -196,48 +246,41 @@ internal enum FlagsNumericJSON {
                     let next = bytes[index]
                     quoted.append(next)
                     index += 1
-                    if next == 92, index < bytes.count {
+                    if next == UInt8(ascii: "\\"), index < bytes.count {
                         quoted.append(bytes[index])
                         index += 1
-                    } else if next == 34 {
+                    } else if next == UInt8(ascii: "\"") {
                         break
                     }
                 }
-            } else if byte == 45 || (48...57).contains(byte) {
-                quoted.append(34)
+            } else if byte == UInt8(ascii: "-") || (UInt8(ascii: "0")...UInt8(ascii: "9")).contains(byte) {
+                quoted.append(UInt8(ascii: "\""))
                 repeat {
                     quoted.append(bytes[index])
                     index += 1
-                } while index < bytes.count && (bytes[index] == 45 || bytes[index] == 43 || bytes[index] == 46 || bytes[index] == 69 || bytes[index] == 101 || (48...57).contains(bytes[index]))
-                quoted.append(34)
+                } while index < bytes.count && Self.numberBytes.contains(bytes[index])
+                quoted.append(UInt8(ascii: "\""))
             } else {
                 quoted.append(byte)
                 index += 1
             }
         }
-        let decoder = JSONDecoder()
-        decoder.userInfo[tokensKey] = try JSONDecoder().decode(FlagNumericTokenTree.self, from: Data(quoted))
-        decoder.userInfo[cacheKey] = cached
-        return try decoder.decode(type, from: data)
+        return try JSONDecoder().decode(FlagNumericTokenTree.self, from: Data(quoted))
     }
 
     static func literal(in decoder: Decoder, key: String) -> String? {
-        guard let tokensKey else {
+        guard let tokensKey, var tokens = decoder.userInfo[tokensKey] as? FlagNumericTokenTree else {
             return nil
         }
-        var value = decoder.userInfo[tokensKey] as? FlagNumericTokenTree
-        for component in decoder.codingPath {
-            switch value {
-            case .object(let object): value = object[component.stringValue]
-            case .array(let array):
-                guard let index = component.intValue, array.indices.contains(index) else {
-                    return nil
-                }
-                value = array[index]
-            default: return nil
+        // Older `JSONDecoder` implementations can drop nested container keys from `codingPath`. Only its last
+        // component, the flag key, is reliable, so `decode` resolves the assignments object first.
+        if let flagKey = decoder.codingPath.last?.stringValue {
+            guard case .object(let assignments) = tokens, let assignment = assignments[flagKey] else {
+                return nil
             }
+            tokens = assignment
         }
-        guard case .object(let object) = value, case .string(let literal) = object[key] else {
+        guard case .object(let object) = tokens, case .string(let literal) = object[key] else {
             return nil
         }
         return literal
@@ -300,7 +343,7 @@ internal struct FlagNumericConversion: Equatable {
     }
 }
 
-private indirect enum FlagNumericTokenTree: Decodable {
+private enum FlagNumericTokenTree: Decodable {
     case string(String)
     case object([String: FlagNumericTokenTree])
     case array([FlagNumericTokenTree])
@@ -308,8 +351,13 @@ private indirect enum FlagNumericTokenTree: Decodable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let string = try? container.decode(String.self) {
+        // Check the common leaves first, so Booleans and nulls do not throw through every container attempt.
+        if container.decodeNil() {
+            self = .other
+        } else if let string = try? container.decode(String.self) {
             self = .string(string)
+        } else if (try? container.decode(Bool.self)) != nil {
+            self = .other
         } else if let object = try? container.decode([String: FlagNumericTokenTree].self) {
             self = .object(object)
         } else if let array = try? container.decode([FlagNumericTokenTree].self) {

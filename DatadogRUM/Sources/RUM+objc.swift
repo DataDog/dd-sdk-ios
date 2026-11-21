@@ -1000,6 +1000,16 @@ public class objc_RUMMonitor: NSObject {
     }
 
     public func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: objc_RUMErrorSource,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.addError(message: message, type: type, stack: stack, source: source.swiftType, attributes: attributes.dd.swiftAttributes)
+    }
+
+    public func addError(
         error: Error,
         source: objc_RUMErrorSource,
         attributes: [String: Any]
@@ -1081,6 +1091,24 @@ public class objc_RUMMonitor: NSObject {
         attributes: [String: Any]
     ) {
         swiftRUMMonitor.stopResourceWithError(resourceKey: resourceKey, message: message, response: response, attributes: attributes.dd.swiftAttributes)
+    }
+
+    public func stopResourceWithError(
+        resourceKey: String,
+        message: String,
+        type: String?,
+        stack: String?,
+        response: URLResponse?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.stopResourceWithError(
+            resourceKey: resourceKey,
+            message: message,
+            type: type,
+            stack: stack,
+            response: response,
+            attributes: attributes.dd.swiftAttributes
+        )
     }
 
     public func startAction(
@@ -1229,5 +1257,26 @@ extension objc_RUMMonitor {
         )
 
         _ = semaphore.wait(timeout: .now() + .seconds(2))
+    }
+
+    /// **For Datadog internal use only. Subject to changes.**
+    ///
+    /// Adds RUM long task to current RUM view.
+    ///
+    /// - Parameters:
+    ///   - time: the time at which the long task ended.
+    ///   - duration: the duration of the long task, in seconds.
+    ///   - attributes: custom attributes to attach to this long task.
+    @objc
+    public func _internal_addLongTask(
+        at time: Date,
+        duration: TimeInterval,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor._internal?.addLongTask(
+            at: time,
+            duration: duration,
+            attributes: attributes.dd.swiftAttributes
+        )
     }
 }

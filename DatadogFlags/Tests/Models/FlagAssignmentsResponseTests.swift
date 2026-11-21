@@ -18,7 +18,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             ("1.00000000000000001", nil, 1),
             ("4503599627370497.5", nil, 4_503_599_627_370_498),
             ("9007199254740993.5", nil, 9_007_199_254_740_994),
-            ("9007199254740993", 9_007_199_254_740_993, nil),
+            ("9007199254740993", Int("9007199254740993"), nil),
             ("1e-400", nil, nil), ("1e400", nil, nil),
             ("0e999999", 0, 0), ("-0.0", 0, 0)
         ]
@@ -57,7 +57,8 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             { $0.variation = .boolean(false) },
             { $0.reason = "other" },
             { $0.doLog = false },
-            { $0.serialID = 43 }
+            { $0.serialID = 43 },
+            { $0.observeFullEvaluationData = true }
         ]
         for change in changes {
             var changed = cached
@@ -67,7 +68,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         let encoded = try JSONEncoder().encode(cached)
         let object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
         XCTAssertEqual(Set(object.keys), [
-            "allocationKey", "variationKey", "variationType", "variationValue", "reason", "doLog", "serialId"
+            "allocationKey", "variationKey", "variationType", "variationValue", "reason", "doLog", "serialId", "observeFullEvaluationData"
         ])
         XCTAssertEqual(object["reason"] as? String, "CACHED")
         let decoded = try JSONDecoder().decode(FlagAssignment.self, from: encoded)
@@ -555,12 +556,14 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         #if _pointerBitWidth(_64)
         XCTAssertEqual(built(.double(9_007_199_254_740_991)).variation(as: Int.self), 9_007_199_254_740_991)
         XCTAssertEqual(built(.double(-9_007_199_254_740_991)).variation(as: Int.self), -9_007_199_254_740_991)
+        #endif
         XCTAssertNil(built(.double(9_007_199_254_740_992)).variation(as: Int.self))
         XCTAssertNil(built(.double(-9_007_199_254_740_992)).variation(as: Int.self))
-        #endif
         XCTAssertNil(built(.double(1e20)).variation(as: Int.self))
         XCTAssertNil(built(.double(.infinity)).variation(as: Int.self))
         XCTAssertNil(built(.double(.nan)).variation(as: Int.self))
+        XCTAssertNil(built(.double(.infinity)).variation(as: Double.self))
+        XCTAssertNil(built(.double(.nan)).variation(as: Double.self))
 
         // An Int converts to Double only when the Double represents it exactly
         #if _pointerBitWidth(_64)
@@ -612,5 +615,92 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         let whole = try decoded(type: "number", value: "5")
         XCTAssertNil(whole.variation(as: String.self))
         XCTAssertNil(whole.variation(as: Bool.self))
+    }
+}
+
+extension FlagAssignmentsResponseTests {
+    func testConsentIsTolerantAndPersistedWithTheWholeConfiguration() throws {
+        let fields = [
+            "", ", \"observeFullEvaluationData\": true", ", \"observeFullEvaluationData\": false",
+            ", \"observeFullEvaluationData\": null", ", \"observeFullEvaluationData\": \"true\"",
+            ", \"observeFullEvaluationData\": 1", ", \"observeFullEvaluationData\": {}"
+        ]
+        for field in fields {
+            let json = """
+            {"data":{"attributes":{"flags":{"flag":{"allocationKey":"a","variationKey":"v",
+            "variationType":"boolean","variationValue":true,"reason":"MATCH","doLog":false,
+            "observeFullEvaluationData":true}}\(field)}}}
+            """
+            let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(json.utf8))
+            let expected = field == ", \"observeFullEvaluationData\": true"
+            XCTAssertEqual(response.observeFullEvaluationData, expected)
+            XCTAssertEqual(response.flags["flag"]?.observeFullEvaluationData, expected)
+            let data = FlagsData(flags: response.flags, context: .mockAny(), date: .mockAny(), observeFullEvaluationData: expected)
+            let encoded = try JSONEncoder().encode(data)
+            XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: encoded), data)
+            var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+            legacy.removeValue(forKey: "observeFullEvaluationData")
+            let restored = try JSONDecoder().decode(FlagsData.self, from: JSONSerialization.data(withJSONObject: legacy))
+            XCTAssertFalse(restored.observeFullEvaluationData)
+            XCTAssertEqual(restored.flags["flag"]?.observeFullEvaluationData, false)
+        }
+    }
+}
+
+extension FlagAssignmentsResponseTests {
+    /// Older `JSONDecoder` implementations report `["flags", key]` inside a flag assignment, because they do not
+    /// keep the `data` and `attributes` container keys. This decoder reports that same short path.
+    private struct ShortCodingPathDecoder: Decoder {
+        let base: Decoder
+        let codingPath: [CodingKey]
+        var userInfo: [CodingUserInfoKey: Any] { base.userInfo }
+        func container<Key: CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> { try base.container(keyedBy: type) }
+        func unkeyedContainer() throws -> UnkeyedDecodingContainer { try base.unkeyedContainer() }
+        func singleValueContainer() throws -> SingleValueDecodingContainer { try base.singleValueContainer() }
+    }
+
+    private struct ShortCodingPathResponse: FlagNumericTokenRoot {
+        static var flagAssignmentsPath: [String] { ["data", "attributes", "flags"] }
+
+        struct Key: CodingKey {
+            let stringValue: String
+            var intValue: Int? { nil }
+            init(stringValue: String) { self.stringValue = stringValue }
+            init?(intValue: Int) { nil }
+        }
+
+        var flags: [String: FlagAssignment] = [:]
+
+        init(from decoder: Decoder) throws {
+            let flagsContainer = try decoder.container(keyedBy: Key.self)
+                .nestedContainer(keyedBy: Key.self, forKey: Key(stringValue: "data"))
+                .nestedContainer(keyedBy: Key.self, forKey: Key(stringValue: "attributes"))
+                .nestedContainer(keyedBy: Key.self, forKey: Key(stringValue: "flags"))
+            for key in flagsContainer.allKeys {
+                let shortPath = ShortCodingPathDecoder(
+                    base: try flagsContainer.superDecoder(forKey: key),
+                    codingPath: [Key(stringValue: "flags"), key]
+                )
+                flags[key.stringValue] = try FlagAssignment(from: shortPath)
+            }
+        }
+    }
+
+    func testNumericTokensResolveByFlagKeyWhenTheDecoderDropsNestedContainerKeys() throws {
+        let cases: [(String, Int?, Double?)] = [
+            ("4503599627370497.5", nil, 4_503_599_627_370_498),
+            ("1.00000000000000001", nil, 1),
+            ("5.0", 5, 5)
+        ]
+        for (literal, integer, double) in cases {
+            let json = """
+            {"data":{"attributes":{"flags":{"my-flag":{"allocationKey":"a","variationKey":"v","variationType":"number",
+            "variationValue":\(literal),"reason":"STATIC","doLog":false}}}}}
+            """
+            let response = try FlagsNumericJSON.decode(ShortCodingPathResponse.self, from: Data(json.utf8))
+            let assignment = try XCTUnwrap(response.flags["my-flag"], literal)
+            XCTAssertEqual(assignment.variation(as: Int.self), integer, literal)
+            XCTAssertEqual(assignment.variation(as: Double.self), double, literal)
+        }
     }
 }

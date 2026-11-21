@@ -1,4 +1,0 @@
-{
-  "destination": "DatadogFlags/Tests/Fixtures/precomputed",
-  "signing_destination": "DatadogFlags/Tests/Fixtures/response-signing"
-}

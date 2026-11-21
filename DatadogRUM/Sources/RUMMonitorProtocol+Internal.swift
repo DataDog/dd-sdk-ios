@@ -114,6 +114,15 @@ public struct DatadogInternalInterface {
         monitor.process(command: attributeCommand)
     }
 
+    /// Reports the time the app's first frame was displayed, used to compute Time to Initial Display (TTID).
+    ///
+    /// Cross-platform SDKs call this when `reportsAppDisplayInitializedManually` is enabled in `RUM.Configuration._internal`.
+    /// TTID is computed from the process launch to `time`, with the same rules as the TTID detected by the SDK.
+    /// - Parameter time: the time the first frame was displayed
+    public func reportAppDisplayInitialized(at time: Date) {
+        monitor.process(command: RUMTimeToInitialDisplayCommand(time: time))
+    }
+
     /// Adds temporal metrics to given RUM resource.
     ///
     /// It must be called before the resource is stopped.

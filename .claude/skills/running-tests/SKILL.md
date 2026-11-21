@@ -32,9 +32,11 @@ grep "DEFAULT_" Makefile
 
 Always pass `DEVICE=` explicitly if the default simulator is not installed locally. Check `xcrun simctl list devices available` first.
 
-**Module scheme names:** schemes are multiplatform and named after the module (`DatadogCore`, `DatadogRUM`, …) — no platform suffix. Read the `Makefile` for the authoritative list:
+**Module scheme names:** schemes are multiplatform and named after the module (`DatadogCore`, `DatadogRUM`, …) — no platform suffix.
+
+**All-module runs:** `make test-<platform>-all` runs one scheme per platform, `UnitTests-<platform>` (`UnitTests-iOS`, `UnitTests-tvOS`, …). Its test plans in `Datadog/TestPlans/` list the test targets each platform runs in CI:
 ```bash
-grep "test-ios-all" Makefile -A 20  # shows all iOS schemes used in CI
+ls Datadog/TestPlans/   # `UnitTests-<platform>` plans plus the shared Thread Sanitizer and IntegrationTests plans
 ```
 
 ### 2. Xcode MCP — selective, fast, single test or class
@@ -97,13 +99,13 @@ GetBuildLog(workspaceIdentifier: <id>, severity: "error")
 ```
 For the full build-and-fix loop, see the `dd-sdk-ios:build-and-diagnose` skill.
 
-**Test plans:** module schemes don't use test plans (`XcodeListTestPlans` → `usesTestPlans: false`). If a scheme does, switch with `XcodeSwitchTestPlan` before running.
+**Test plans:** module schemes don't use test plans (`XcodeListTestPlans` → `usesTestPlans: false`). `UnitTests-<platform>` schemes do: switch with `XcodeSwitchTestPlan` to the plan that contains the test target before running.
 
 **6. Restore the user's state.** Switches persist in Xcode. Switch back to the recorded scheme, **then** the recorded destination — the scheme switch carries the current destination over.
 
 ### UI integration tests — separate workspace
 
-Tests under `IntegrationTests/IntegrationScenarios/` are **not** in `Datadog.xcworkspace`. They live in `IntegrationTests/IntegrationTests.xcworkspace` (CocoaPods — run `make ui-test-podinstall` first), scheme `IntegrationScenarios`, with test plans in `IntegrationTests/xctestplans/` (`Default`, `RUM`, `CrashReporting`, `NetworkInstrumentation`).
+Tests under `IntegrationTests/IntegrationScenarios/` are **not** in `Datadog.xcworkspace`. They live in `IntegrationTests/IntegrationTests.xcworkspace`, which uses the SDK as a local Swift package (open it with `make ui-tests-open`), scheme `IntegrationScenarios`, with test plans in `IntegrationTests/xctestplans/` (`Default`, `RUM`, `CrashReporting`, `NetworkInstrumentation`).
 
 | Goal | Command |
 |------|---------|
@@ -111,9 +113,9 @@ Tests under `IntegrationTests/IntegrationScenarios/` are **not** in `Datadog.xcw
 | Anything in the `CrashReporting` plan | `make ui-test TEST_PLAN="CrashReporting"` — never raw `xcodebuild` |
 | One non-crashing test | `xcodebuild` below |
 
-`make ui-test` runs `tools/ui-test.sh`, which does setup a raw `xcodebuild` skips: `pod install`, generating the mock-server config, and unloading macOS `ReportCrash` so the "Runner quit unexpectedly" alert doesn't block tests that crash the app. Before a raw `xcodebuild` run, do the first two yourself:
+`make ui-test` runs `tools/ui-test.sh`, which does setup a raw `xcodebuild` skips: exporting `DD_SDK_COMPILED_FOR_TESTING` and `DD_TEST_UTILITIES_ENABLED` (the local package then compiles its testing hooks and exposes `TestUtilities`), generating the mock-server config, and unloading macOS `ReportCrash` so the "Runner quit unexpectedly" alert doesn't block tests that crash the app. Before a raw `xcodebuild` run, do the first two yourself:
 ```bash
-(cd IntegrationTests && bundle exec pod install)
+export DD_SDK_COMPILED_FOR_TESTING=1 DD_TEST_UTILITIES_ENABLED=1
 ./tools/config/generate-http-server-mock-config.sh
 ```
 

@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import CryptoKit
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -15,9 +14,18 @@ import DatadogInternal
 
 final class CanonicalPrecomputedTests: XCTestCase {
     private let decoder = JSONDecoder()
+    private var executedEvaluations = 0
 
     func testCanonicalResponses() throws {
-        let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "precomputed", withExtension: nil))
+        // Fixtures are git-ignored and fetched by `make feature-flags-fixtures-pull`, like SR snapshots.
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // Models
+            .deletingLastPathComponent() // Tests
+            .deletingLastPathComponent() // DatadogFlags
+            .appendingPathComponent("Fixtures/precomputed")
+        guard FileManager.default.fileExists(atPath: root.appendingPathComponent("SOURCE.json").path) else {
+            return XCTFail("Shared fixtures are missing. Run `make feature-flags-fixtures-pull`.")
+        }
         let cases = root.appendingPathComponent("cases")
         let enumerator = try XCTUnwrap(FileManager.default.enumerator(atPath: cases.path))
         let files = enumerator.allObjects.compactMap { $0 as? String }.filter { $0.hasSuffix(".json") }.sorted()
@@ -47,14 +55,29 @@ final class CanonicalPrecomputedTests: XCTestCase {
                         }
                         return
                     }
-                    let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: responseData)
                     let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
-                    let initial = FlagsData(flags: response.flags, context: context, date: Date(), obfuscation: response.obfuscation)
-                    let restored = try FlagsNumericJSON.decode(FlagsData.self, from: JSONEncoder().encode(initial), cached: true)
+                    let response = try fetchAccepted(responseData, context: context)
+                    let initial = FlagsData(
+                        flags: response.flags,
+                        context: context,
+                        date: Date(),
+                        obfuscation: response.obfuscation,
+                        observeFullEvaluationData: response.observeFullEvaluationData,
+                        keySpellings: response.keySpellings
+                    )
+                    let restored = try restoreThroughDataStore(initial)
                     let verified = try signedResponse(responseData).get()
                     XCTAssertNotNil(verified.verification)
-                    let signed = FlagsData(flags: verified.flags, context: context, date: Date(), obfuscation: verified.obfuscation)
-                    for (label, state) in [("network-decoded", initial), ("serialized-state", restored), ("required-verified", signed)] {
+                    let signed = FlagsData(
+                        flags: verified.flags,
+                        context: context,
+                        date: Date(),
+                        obfuscation: verified.obfuscation,
+                        observeFullEvaluationData: verified.observeFullEvaluationData,
+                        keySpellings: verified.keySpellings
+                    )
+                    let states = [("network-decoded", initial), ("serialized-state", restored), ("required-verified", signed)]
+                    for (label, state) in states {
                         try XCTContext.runActivity(named: label) { _ in try run(fixture, state: state) }
                     }
                 }
@@ -63,9 +86,56 @@ final class CanonicalPrecomputedTests: XCTestCase {
             }
         }
         XCTAssertGreaterThan(executed, 0, "All canonical fixtures were excluded (\(excluded))")
-        print("Canonical precompute: \(executed) fixtures executed, \(excluded) excluded")
+        print("Canonical precompute \(source["commit"] as? String ?? "unknown"): \(executed) fixtures executed, \(excluded) excluded, \(executedEvaluations) evaluations executed across all states")
     }
 
+    func testRunnerMatchesBooleansOnlyWithBooleans() throws {
+        let events = try object(Data(#"{"runtime_default_used":1,"flag":{"enabled":true}}"#.utf8))
+        XCTAssertFalse(matches(events["runtime_default_used"], true))
+        XCTAssertFalse(matches(events, ["flag": ["enabled": 1]]))
+        XCTAssertTrue(matches(events, ["runtime_default_used": 1, "flag": ["enabled": true]]))
+    }
+
+    func testRunnerReportsMatchersWithoutAPositiveIntegerCount() throws {
+        let event = try object(Data(#"{"flag":"f"}"#.utf8))
+        let counts = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(#"[0,-1,true,"1",1.5,null]"#.utf8)) as? [Any])
+        for count in counts {
+            XCTExpectFailure("`_count` \(count) is not a positive integer")
+            assertEvents([event], matchers: [["flag": "f", "_count": count]], exact: false)
+        }
+        XCTExpectFailure("A missing `_count` is not a positive integer")
+        assertEvents([event], matchers: [["flag": "f"]], exact: false)
+    }
+
+    private struct FixtureMetadata: Codable {
+        let context: AnyValue
+        let evaluations: AnyValue
+        let expectations: AnyValue
+        let expectedResponseError: String?
+        let _include: AnyValue?
+        let _skip: AnyValue?
+    }
+
+    /// Decodes accepted fixture bytes through the production fetcher.
+    private func fetchAccepted(_ responseData: Data, context: FlagsEvaluationContext) throws -> FlagAssignmentsResponse {
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+            fetch: { _, complete in complete(.success((responseData, .mockAny()))) }
+        )
+        let fetched = expectation(description: "Accepted canonical response")
+        var result: Result<FlagAssignmentsResponse, FlagsError>?
+        fetcher.flagAssignments(for: context) { value in
+            result = value
+            fetched.fulfill()
+        }
+        wait(for: [fetched], timeout: 2)
+        return try XCTUnwrap(result).get()
+    }
+
+    /// Verifies the same fixture bytes through the required signing path.
     private func signedResponse(_ body: Data) throws -> Result<FlagAssignmentsResponse, FlagsError> {
         let now = SigningChainFixture.now
         let anchor = try SigningChainFixture.root("root-a")
@@ -82,7 +152,9 @@ final class CanonicalPrecomputedTests: XCTestCase {
             signingFetch: { request, completion in
                 do {
                     let fields = try fixture.signedHeaders(request: request, body: body, now: now)
-                    completion(.success((body, try XCTUnwrap(HTTPURLResponse(url: XCTUnwrap(request.url), statusCode: 200, httpVersion: nil, headerFields: fields)))))
+                    let url = try XCTUnwrap(request.url)
+                    let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: fields))
+                    completion(.success((body, response)))
                 } catch { completion(.failure(error)) }
             },
             fetch: { _, _ in XCTFail("Required verification must not retry unsigned") }
@@ -95,13 +167,18 @@ final class CanonicalPrecomputedTests: XCTestCase {
         return try XCTUnwrap(result)
     }
 
-    private struct FixtureMetadata: Codable {
-        let context: AnyValue
-        let evaluations: AnyValue
-        let expectations: AnyValue
-        let expectedResponseError: String?
-        let _include: AnyValue?
-        let _skip: AnyValue?
+    /// Persists and restores through the production store, including its version selection and version check.
+    private func restoreThroughDataStore(_ flagsData: FlagsData) throws -> FlagsData {
+        let scope = FeatureScopeMock()
+        scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "canonical")
+        let read = expectation(description: "Canonical cache restored")
+        var restored: FlagsData?
+        scope.flagsDataStore.flagsData(forClientNamed: "canonical") { value in
+            restored = value
+            read.fulfill()
+        }
+        wait(for: [read], timeout: 2)
+        return try XCTUnwrap(restored, "FlagsDataStore rejected the cache it wrote")
     }
 
     private func runRejected(_ fixture: [String: Any], responseData: Data) throws {
@@ -177,6 +254,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
         let fallback = try decoder.decode(T.self, from: data(evaluation["defaultValue"]!))
         let expected = try XCTUnwrap(evaluation["expectedResult"] as? [String: Any])
         let details = client.getDetails(key: key, defaultValue: fallback)
+        executedEvaluations += 1
         XCTAssertEqual(details.value, try decoder.decode(T.self, from: data(expected["value"]!)), key)
         if expected.keys.contains("reason") {
             XCTAssertEqual(details.error == nil ? details.reason : "ERROR", expected["reason"] as? String, key)
@@ -204,7 +282,10 @@ final class CanonicalPrecomputedTests: XCTestCase {
         var remaining = events
         for matcher in matchers where applies(matcher) {
             let fields = matcher.filter { !$0.key.hasPrefix("_") }
-            let count = matcher["_count"] as! Int
+            guard let count = matcher["_count"] as? Int, count > 0, !isBoolean(matcher["_count"]) else {
+                XCTFail("Matcher without a positive integer _count: \(matcher)")
+                continue
+            }
             for _ in 0..<count {
                 guard let index = remaining.firstIndex(where: { matches($0, fields) }) else {
                     XCTFail("Missing event for \(matcher); remaining: \(remaining)"); return
@@ -225,9 +306,29 @@ final class CanonicalPrecomputedTests: XCTestCase {
             }
             return expected.allSatisfy { matches(actual[$0.key], $0.value) }
         }
+        // NSNumber equality treats `true` as `1`, so Booleans must match Booleans.
+        if isBoolean(expected) != isBoolean(actual) {
+            return false
+        }
         return (actual as? NSObject)?.isEqual(expected) == true
+    }
+
+    private func isBoolean(_ value: Any?) -> Bool {
+        guard let number = value as? NSNumber else {
+            return false
+        }
+        return CFGetTypeID(number) == CFBooleanGetTypeID()
     }
 
     private func data(_ value: Any) throws -> Data { try JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed]) }
     private func object(_ data: Data) throws -> [String: Any] { try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any]) }
 }
+
+#if canImport(DatadogSDKTesting)
+// This suite reads fetched fixture JSON at run time. Run it even when Swift coverage is unchanged.
+extension CanonicalPrecomputedTests: FinalTaggedType {
+    static var finalTypeTags: FinalTypeTags<CanonicalPrecomputedTests> {
+        withTagger { $0.set(type: .tiaSkippable, to: false) }
+    }
+}
+#endif

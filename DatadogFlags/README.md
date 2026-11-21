@@ -159,7 +159,7 @@ With either enabled mode, context isolation also applies when the timestamp attr
 Before the first context update, and while a different context is pending, evaluations return defaults with `providerNotReady`.
 A malformed timestamp returns `invalidContext`. Disabled mode keeps previous assignments available while a refresh is pending.
 An invalid context does not overwrite or delete the last successful disk snapshot.
-Snapshots with an opt-out policy use cache version 3. Older SDKs that support only versions 1 or 2 cannot restore them.
+Snapshots with an opt-out policy use cache version 3, or version 4 when they also need original numeric tokens. Older SDKs that support only versions 1 or 2 cannot restore them.
 The current SDK still reads unfiltered snapshots in versions 1 and 2. Filtered snapshots from earlier development builds using those versions are rejected.
 
 Experimentation opt-out does not disable evaluation telemetry or RUM flag annotations.
@@ -176,11 +176,16 @@ The Flags module uses the JSON contract from [ffe-system-test-data](https://gith
 This keeps response behavior consistent across mobile SDKs. The snapshot is test data only.
 It adds no runtime dependency and requires no Git submodule.
 
-The generated snapshot is at `DatadogFlags/Tests/Fixtures/precomputed`. `SOURCE.json` records the source commit and file digests.
+`ci/feature-flags-precomputed-fixtures.json` pins an upstream commit. Tests read the snapshot from the git-ignored `DatadogFlags/Fixtures/precomputed` folder, outside every SwiftPM target, so fixtures never reach a customer checkout. `SOURCE.json` records the source commit and file digests.
 The runner discovers all nested JSON cases.
-Adding a case requires an upstream fixture change and snapshot refresh. It requires no runner or filename-list change.
+Adding a case requires an upstream fixture change and a pin update. It requires no runner or filename-list change.
 Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
 Do not add local exclusions to hide failures.
+
+Diagnostic snapshots and native bridge exports omit numeric assignments with no representable Integer or Double value.
+Native typed getters still report `TYPE_MISMATCH` for these assignments. Valid zero values remain present.
+Caches that require original numeric metadata use version 4. Older readers ignore these caches and must refetch assignments;
+getters use application defaults until assignments become available. Other caches keep their existing versions.
 
 Numeric behavior follows the [shared numeric contract](https://github.com/DataDog/ffe-system-test-data/blob/main/precomputed-assignments/README.md#mobile-conformance-and-numeric-types).
 The native context API requires a string targeting key. Fixtures with `targetingKey: null` must declare this platform in `_skip` upstream; the runner reports an actionable fixture error if an applicable case violates that requirement.
@@ -194,24 +199,35 @@ The suite tests network decoding, serialized state, and required signature verif
 Run from the repository root:
 
 ```sh
-python3 ci/sync-precomputed-fixtures.py --verify
+make feature-flags-fixtures-pull
 xcodebuild -workspace Datadog.xcworkspace -scheme DatadogFlags -destination '<installed simulator>' -only-testing:DatadogFlagsTests/CanonicalPrecomputedTests test
 ```
 
-Refresh the snapshot from a reviewed upstream commit:
+`make feature-flags-fixtures-pull` fetches the pinned commit and records file digests in `SOURCE.json`. When the local snapshot already matches the pin, it only verifies, without networking. `make test` runs it first for the `DatadogFlags` and `UnitTests-*` schemes, whose test plans include `DatadogFlagsTests`. The fetch has a time limit and retries 3 times.
+
+Move the pin to a reviewed upstream commit:
 
 ```sh
-python3 ci/sync-precomputed-fixtures.py --ref <full-upstream-sha>
-python3 ci/sync-precomputed-fixtures.py --check
+python3 ci/sync-feature-flags-precomputed-fixtures.py --update --ref <full-upstream-sha>
 ```
 
 The importer copies committed bytes, regenerates the index, and removes deleted cases.
-It preserves Unity asset GUIDs where applicable. Do not edit imported JSON or its checksums.
-Use `--source <local-checkout> --ref <commit>` to test an upstream fixture branch before publication.
-`--verify` checks local integrity without networking. `--check` also compares the recorded upstream commit.
+It preserves Unity asset GUIDs where applicable. Do not edit fetched JSON or its checksums.
+Use `--update --source <local-checkout> --ref <commit>` to test an upstream fixture branch before publication.
+`--verify` checks that the local snapshot matches the pin without networking.
 
-The weekly `Precomputed flag fixtures` workflow opens a draft update PR when fixture content changes.
+The weekly `Feature flags precomputed fixtures` workflow opens a draft update PR that proposes the latest ffe-system-test-data `main` commit.
 It uses a short-lived token restricted to the default branch and this workflow.
 It waits when an update PR is already open. Normal SDK CI must pass before merge.
 Merge the upstream fixture contract before merging its consumer PRs.
 The update workflow never merges or publishes an SDK release.
+
+## Evaluation telemetry privacy
+
+Evaluation telemetry is protected by default. Each event sends the targeting key as `sha256_` followed by the lowercase hex SHA-256 of its UTF-8 bytes, and omits the evaluation context. An empty targeting key is sent as an empty string. Evaluations made before any context is set have no targeting key. A targeting key that is not valid UTF-16 is omitted, and the evaluation is still counted.
+
+The raw targeting key and the evaluation context are sent only when the flags configuration for the evaluated context enables full evaluation data. The SDK keeps that setting with the configuration it applies to, including when the configuration is restored from disk. A refresh changes later evaluations only. Events that are waiting to be sent keep the setting that applied when the flag was evaluated.
+
+Evaluation errors are reported only as `PROVIDER_NOT_READY`, `PROVIDER_FATAL`, `FLAG_NOT_FOUND`, `PARSE_ERROR`, `TYPE_MISMATCH`, `TARGETING_KEY_MISSING`, `INVALID_CONTEXT`, or `GENERAL`. Any other error is reported as `GENERAL`.
+
+These rules apply to evaluation telemetry only. They do not change assignment requests, targeting, or exposure events. The [evaluation telemetry control](#evaluation-telemetry-control) still suppresses evaluation telemetry for opted-out subjects.

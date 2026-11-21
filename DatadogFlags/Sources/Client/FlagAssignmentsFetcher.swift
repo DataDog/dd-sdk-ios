@@ -400,7 +400,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 ? reportedFlagSelectionIgnoredReason(httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader))
                 : nil
             do {
-                var response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data)
+                var response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
                 response.verification = verification
                 response.responseSigningCacheScope = cacheScope
                 guard response.obfuscation == nil || supportsObfuscation else {

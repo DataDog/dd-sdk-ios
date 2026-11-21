@@ -56,6 +56,36 @@ struct LayerWireframeBuilderTests {
         #expect(output.resource == nil)
     }
 
+    @Test("Build preserves border-only corner radii without adding a fill", arguments: [0.0, 8.0, 20.5])
+    func buildPreservesBorderOnlyCornerRadii(cornerRadius: Double) throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 41, height: 41)
+        layer.cornerRadius = CGFloat(cornerRadius)
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.black.withAlphaComponent(0.25).cgColor
+
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        var builder = LayerWireframeBuilder(contentSnapshots: [:], webViewSlotIDs: [])
+
+        // When
+        let result = builder.build(from: snapshot, textInput: nil, cornerRadius: nil)
+        let output = try #require(result)
+
+        // Then
+        guard case .shapeWireframe(let wireframe) = output.wireframe else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(wireframe.border?.width == 1)
+        #expect(wireframe.border?.color == "#00000040")
+        #expect((wireframe.shapeStyle?.cornerRadius ?? 0) == cornerRadius)
+        #expect(wireframe.shapeStyle?.backgroundColor == nil)
+        #expect(wireframe.shapeStyle?.backgroundGradient == nil)
+        #expect(output.resource == nil)
+    }
+
     @Test("Build creates text wireframe for label")
     func buildCreatesTextWireframeForLabel() throws {
         // Given
