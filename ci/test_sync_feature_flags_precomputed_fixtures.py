@@ -38,6 +38,10 @@ class LoadSourcesTests(unittest.TestCase):
             {'sources': [source(prefix='../escape/')]},
             {'sources': [source(commit='abc')]},
             {'sources': [source(files=['LICENSE'])]},
+            {'sources': [source(files={'LICENSE': '/tmp/LICENSE'})]},
+            {'sources': [source(files={'LICENSE': '../LICENSE'})]},
+            {'sources': [source(files={'LICENSE': 'nested/../../LICENSE'})]},
+            {'sources': [source(files={'LICENSE': ''})]},
             {'sources': [source(), source()]},
             {'sources': [source(), source(name='other')]},
         ]
