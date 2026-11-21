@@ -107,7 +107,14 @@ final class FlagsTests: XCTestCase {
             let core = DatadogCoreProxy()
             var didStop = false
             defer { if !didStop { try? core.flushAndTearDown() } }
-            Flags.enable(with: .init(trackEvaluations: false, responseSigning: .init(mode: mode)), in: core)
+            Flags.enable(
+                with: .init(
+                    customFlagsEndpoint: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"),
+                    trackEvaluations: false,
+                    responseSigning: .init(mode: mode)
+                ),
+                in: core
+            )
             // Keep only the fetcher/client, not a copy of the feature that owns the lifetime marker.
             let fetcher = try XCTUnwrap(
                 core.get(feature: FlagsFeature.self)?.flagAssignmentsFetcher as? FlagAssignmentsFetcher

@@ -78,7 +78,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             XCTAssertEqual(roots.count, 1)
             XCTAssertEqual(
                 SHA256.hash(data: try XCTUnwrap(roots.first)).map { String(format: "%02x", $0) }.joined(),
-                "6e83e91905e966b37a4eaf30961143cba6027ead0affc207ae6edc012390171e"
+                "0e469f3cecc9cd51fd64373879636540512d56e99eecd70361c78b98c47ea934"
             )
             var request = URLRequest(url: try XCTUnwrap(URL(string: endpoint)))
             request.httpMethod = "POST"
@@ -113,6 +113,248 @@ final class FlagsResponseSigningTests: XCTestCase {
             [root]
         )
         XCTAssertEqual(Flags.ResponseSigningConfiguration().mode, .off)
+    }
+
+    // MARK: - Contract: opt-in, staging gate, pinned anchor and rotation
+
+    private func capturedRequest(
+        responseSigning: Flags.ResponseSigningConfiguration?,
+        endpoint: URL? = nil
+    ) throws -> (request: URLRequest, response: FlagAssignmentsResponse) {
+        var captured: URLRequest?
+        let fetch: (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void = { request, complete in
+            captured = request
+            complete(.success((.mockAnyFlagAssignmentsResponse(), .mockAny())))
+        }
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let fetcher: FlagAssignmentsFetcher
+        if let responseSigning {
+            fetcher = FlagAssignmentsFetcher(
+                customEndpoint: endpoint,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: scope,
+                responseSigning: responseSigning,
+                signingFetch: { _, _ in XCTFail("An opted-out client must not use the signing transport") },
+                fetch: fetch
+            )
+        } else {
+            fetcher = FlagAssignmentsFetcher(
+                customEndpoint: endpoint,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: scope,
+                fetch: fetch
+            )
+        }
+        let completed = expectation(description: "Fetched")
+        var result: Result<FlagAssignmentsResponse, FlagsError>?
+        fetcher.flagAssignments(for: .init(targetingKey: "subject")) {
+            result = $0
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        return (try XCTUnwrap(captured), try XCTUnwrap(result).get())
+    }
+
+    /// The body encodes a dictionary, so compare decoded JSON instead of key order.
+    private func jsonBody(_ request: URLRequest) throws -> NSDictionary {
+        try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? NSDictionary)
+    }
+
+    func testOptedOutClientSendsTodaysRequestAndHandlesResponsesAsToday() throws {
+        let today = try capturedRequest(responseSigning: nil)
+        for configuration in [Flags.ResponseSigningConfiguration(), .init(mode: .off)] {
+            let optedOut = try capturedRequest(responseSigning: configuration)
+            XCTAssertEqual(optedOut.request.url, today.request.url)
+            XCTAssertEqual(optedOut.request.httpMethod, today.request.httpMethod)
+            XCTAssertEqual(try jsonBody(optedOut.request), try jsonBody(today.request))
+            XCTAssertEqual(optedOut.request.allHTTPHeaderFields, today.request.allHTTPHeaderFields)
+            XCTAssertEqual(optedOut.response.flags, today.response.flags)
+            XCTAssertNil(optedOut.response.verification)
+            XCTAssertNil(optedOut.response.responseSigningCacheScope)
+        }
+        let headers = today.request.allHTTPHeaderFields ?? [:]
+        XCTAssertNil(today.request.value(forHTTPHeaderField: "X-stream"))
+        XCTAssertFalse(headers.keys.contains { $0.lowercased().hasPrefix(FlagsResponseVerifier.prefix) })
+        XCTAssertFalse(
+            (today.request.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities") ?? "")
+                .contains(FlagsResponseVerifier.capability)
+        )
+
+        // The default feature configuration installs no signing component.
+        let feature = FlagsFeature(configuration: .init(), featureScope: FeatureScopeMock(), core: FeatureRegistrationCoreMock())
+        XCTAssertEqual(feature.flagAssignmentsFetcher.responseSigningMode, .off)
+        XCTAssertTrue(feature.messageReceiver is NOPFeatureMessageReceiver)
+    }
+
+    func testOptInOutsideStagingIsANoOpThatLogs() throws {
+        let nonStaging: [URL?] = [
+            nil,
+            URL(string: "https://preview.ff-cdn.datadoghq.com/precompute-assignments"),
+            URL(string: "https://preview.ff-cdn.datadoghq.eu/precompute-assignments"),
+            URL(string: "https://proxy.example.test/precompute-assignments"),
+            URL(string: "https://attacker-preview.ff-cdn.datad0g.com/precompute-assignments"),
+            URL(string: "http://preview.ff-cdn.datad0g.com/precompute-assignments")
+        ]
+        for endpoint in nonStaging {
+            for mode in [Flags.ResponseSigningMode.observe, .required] {
+                let dd = DD.mockWith(logger: CoreLoggerMock())
+                defer { dd.reset() }
+                let configuration = Flags.ResponseSigningConfiguration(mode: mode)
+                XCTAssertEqual(configuration.effective(customFlagsEndpoint: endpoint).mode, .off, "\(String(describing: endpoint))")
+                XCTAssertEqual(dd.logger.warnLogs.count, 1)
+                let feature = FlagsFeature(
+                    configuration: .init(customFlagsEndpoint: endpoint, responseSigning: configuration),
+                    featureScope: FeatureScopeMock(),
+                    core: FeatureRegistrationCoreMock()
+                )
+                XCTAssertEqual(feature.flagAssignmentsFetcher.responseSigningMode, .off)
+                XCTAssertTrue(feature.messageReceiver is NOPFeatureMessageReceiver)
+                // The gated configuration sends exactly the opted-out request.
+                let gated = try capturedRequest(responseSigning: configuration.effective(customFlagsEndpoint: endpoint), endpoint: endpoint)
+                let today = try capturedRequest(responseSigning: nil, endpoint: endpoint)
+                XCTAssertEqual(gated.request.allHTTPHeaderFields, today.request.allHTTPHeaderFields)
+                XCTAssertEqual(try jsonBody(gated.request), try jsonBody(today.request))
+            }
+        }
+        // An opted-out configuration logs nothing.
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        XCTAssertEqual(Flags.ResponseSigningConfiguration().effective(customFlagsEndpoint: nil).mode, .off)
+        XCTAssertTrue(dd.logger.warnLogs.isEmpty)
+    }
+
+    func testOptInOnStagingSendsTheSigningRequest() throws {
+        let staging = try XCTUnwrap(URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"))
+        for mode in [Flags.ResponseSigningMode.observe, .required] {
+            let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
+            let configuration = Flags.ResponseSigningConfiguration(mode: mode)
+            XCTAssertEqual(configuration.effective(customFlagsEndpoint: staging).mode, mode)
+            XCTAssertTrue(dd.logger.warnLogs.isEmpty)
+            let feature = FlagsFeature(
+                configuration: .init(customFlagsEndpoint: staging, responseSigning: configuration),
+                featureScope: FeatureScopeMock(),
+                core: FeatureRegistrationCoreMock()
+            )
+            XCTAssertEqual(feature.flagAssignmentsFetcher.responseSigningMode, mode)
+            XCTAssertTrue(feature.messageReceiver is FlagsSigningScopeReceiver)
+        }
+        var request = URLRequest(url: staging)
+        request.httpMethod = "POST"
+        request.httpBody = Data("{}".utf8)
+        request.setValue("token", forHTTPHeaderField: "dd-client-token")
+        let verifier = FlagsResponseVerifier(configuration: .init(mode: .required))
+        let first = try verifier.prepare(request)
+        let second = try verifier.prepare(request)
+        XCTAssertEqual(first.value(forHTTPHeaderField: "X-stream"), "false")
+        XCTAssertEqual(first.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities"), "response-signing-v1")
+        XCTAssertEqual(first.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "signature-version"), "1")
+        let nonce = try XCTUnwrap(first.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "request-nonce"))
+        XCTAssertNotNil(nonce.range(of: "^[0-9a-f]{32}$", options: .regularExpression))
+        XCTAssertNotEqual(nonce, second.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "request-nonce"))
+        XCTAssertNil(first.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "signing-intermediate"))
+    }
+
+    func testStagingRootIsTheOnlyBuiltInAnchorAndAnchorsTheStagingIntermediate() throws {
+        let staging = URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments")
+        let builtIn = Flags.ResponseSigningConfiguration(mode: .required).roots(for: staging)
+        XCTAssertEqual(builtIn, [Flags.ResponseSigningConfiguration.stagingRoot])
+        let root = try FlagsSigningCertificate(der: Flags.ResponseSigningConfiguration.stagingRoot, role: .anchor)
+        XCTAssertEqual(root.pathLength, 2)
+        XCTAssertEqual(
+            root.subjectKeyID.map { $0.map { String(format: "%02x", $0) }.joined() },
+            "aa5e91e52cdb130d175eed1010a501c0ef45d60d"
+        )
+        // The us1 staging DC intermediate, index 1 in the served chain, chains to the built-in root.
+        let intermediate = try FlagsSigningCertificate(der: SigningChainFixture.root("staging-dc-intermediate"), role: .intermediate)
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(intermediate.pathLength), 1)
+        XCTAssertNoThrow(try FlagsResponseVerifier.verifyChild(intermediate, parent: root))
+        // A test root never anchors the staging intermediate.
+        let other = try FlagsSigningCertificate(der: SigningChainFixture.root("root-a"), role: .anchor)
+        XCTAssertThrowsError(try FlagsResponseVerifier.verifyChild(intermediate, parent: other))
+    }
+
+    func testRotatedLeavesAndIntermediatesUnderOneRootAllVerifyWithoutPinning() throws {
+        // Previous, current and next leaves rotate on the server. One verifier must accept every valid leaf under
+        // the pinned root, in any order, without remembering an earlier leaf or intermediate.
+        let anchor = try SigningChainFixture.root("root-a")
+        let verifier = FlagsResponseVerifier(configuration: .init(mode: .required, trustedRootCertificates: [anchor]))
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let now = Date(timeIntervalSince1970: SigningChainFixture.now)
+        let sequence = ["two-intermediates", "rotated-lower-intermediate", "one-intermediate", "two-intermediates", "rotated-lower-intermediate"]
+        var leaves = Set<Data>()
+        var lowerIntermediates = Set<Data>()
+        for name in sequence {
+            var request = URLRequest(url: URL(string: "https://flags.example.test/precompute-assignments")!)
+            request.httpMethod = "POST"
+            request.httpBody = Data("{}".utf8)
+            request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+            let prepared = try verifier.prepare(request)
+            let fixture = try SigningChainFixture.credential(name)
+            leaves.insert(fixture.leaf)
+            lowerIntermediates.insert(try XCTUnwrap(fixture.intermediates.first))
+            let response = try response(prepared, fixture.signedHeaders(request: prepared, body: body))
+            XCTAssertNoThrow(try verifier.verify(request: prepared, response: response, body: body, now: now), name)
+        }
+        XCTAssertEqual(leaves.count, 3)
+        XCTAssertGreaterThanOrEqual(lowerIntermediates.count, 2)
+    }
+
+    /// At cutover the staging edge can serve unsigned 200 responses until the rotator republishes the credential.
+    /// `observe` accepts the unverified response and reports `missingProof`. `required` fails closed and never retries unsigned.
+    func testUnsignedStagingResponseAtCutoverByMode() throws {
+        let staging = try XCTUnwrap(URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"))
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        for mode in [Flags.ResponseSigningMode.observe, .required] {
+            let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+            var signedRequests = 0
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: staging,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: scope,
+                responseSigning: .init(mode: mode),
+                dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now)),
+                signingFetch: { request, complete in
+                    signedRequests += 1
+                    XCTAssertTrue(
+                        (request.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities") ?? "")
+                            .split(separator: ",").contains("response-signing-v1")
+                    )
+                    XCTAssertEqual(request.value(forHTTPHeaderField: "X-stream"), "false")
+                    // An ordinary 200 with no proof headers.
+                    let response = HTTPURLResponse(url: staging, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: [:])!
+                    complete(.success((body, response)))
+                },
+                fetch: { _, _ in XCTFail("Signing never retries with an unsigned request") }
+            )
+            let completed = expectation(description: "Unsigned cutover response")
+            var result: Result<FlagAssignmentsResponse, FlagsError>?
+            fetcher.flagAssignments(for: .init(targetingKey: "subject")) {
+                result = $0
+                completed.fulfill()
+            }
+            wait(for: [completed], timeout: 2)
+            XCTAssertEqual(signedRequests, 1)
+            let reports = scope.telemetryMock.messages.compactMap { message -> String? in
+                guard case let .debug(id, text, _) = message, text == "Flags response signing" else {
+                    return nil
+                }
+                return id
+            }
+            XCTAssertEqual(reports, ["flags-response-signing-missingProof"], "\(mode)")
+            switch (mode, try XCTUnwrap(result)) {
+            case (.observe, .success(let response)):
+                XCTAssertFalse(response.flags.isEmpty)
+                XCTAssertNil(response.verification, "An unsigned response is never verified")
+            case (.required, .failure(.invalidResponse)):
+                break
+            default:
+                XCTFail("Unexpected \(mode) outcome: \(String(describing: result))")
+            }
+        }
     }
 
     private struct Corpus: Decodable {
