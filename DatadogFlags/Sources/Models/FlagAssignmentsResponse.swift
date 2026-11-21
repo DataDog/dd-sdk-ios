@@ -7,10 +7,10 @@
 import Foundation
 
 internal struct FlagAssignmentsResponse: Equatable {
-    let flags: [String: FlagAssignment]
+    private(set) var flags: [String: FlagAssignment]
     /// Assignments whose keys are canonically equivalent to, but not byte-equal to, a key in `flags`.
     var keySpellings: [FlagKeySpelling] = []
-    let failedFlags: [String: String] // key -> error description
+    private(set) var failedFlags: [String: String] // key -> error description
     let obfuscation: FlagKeyObfuscation?
     var verification: FlagsResponseVerification? = nil
     var responseSigningCacheScope: String? = nil
@@ -155,7 +155,10 @@ internal struct FlagKeySpelling: Equatable, Codable {
 }
 
 extension FlagAssignmentsResponse {
-    /// Adds the served plaintext keys that decoding merged into a canonically equivalent key.
+    /// Rebuilds the served plaintext keys that decoding merged into one canonically equivalent key.
+    ///
+    /// Decoding keeps one key of each group, but its value can come from another spelling in the group.
+    /// So every member of a group is decoded again from its own bytes.
     func addingKeySpellings(from data: Data) -> FlagAssignmentsResponse {
         let bytes = Array(data)
         guard obfuscation == nil,
@@ -163,22 +166,44 @@ extension FlagAssignmentsResponse {
               let members = JSONObjectMembers.members(at: Self.flagAssignmentsPath, in: bytes) else {
             return self
         }
+        var groups: [String: [JSONObjectMembers.Member]] = [:]
+        for member in members {
+            groups[member.key, default: []].append(member)
+        }
         var response = self
-        for member in members where !Self.containsBytes(of: member.key, in: flags) && !Self.containsBytes(of: member.key, in: failedFlags) {
-            guard var assignment = try? FlagsNumericJSON.decode(FlagAssignment.self, from: Data(bytes[member.value])) else {
-                continue
+        for group in groups.values where Set(group.map { Array($0.key.utf8) }).count > 1 {
+            response.flags.removeValue(forKey: group[0].key)
+            response.failedFlags.removeValue(forKey: group[0].key)
+            for member in group {
+                guard var assignment = try? FlagsNumericJSON.decode(FlagAssignment.self, from: Data(bytes[member.value])) else {
+                    continue
+                }
+                if case .unknown(let typeName) = assignment.variation {
+                    if response.failedFlags[member.key] == nil {
+                        response.failedFlags[member.key] = "Unrecognized variation type \(typeName)"
+                    }
+                    continue
+                }
+                assignment.observeFullEvaluationData = observeFullEvaluationData
+                response.place(assignment, for: member.key)
             }
-            if case .unknown = assignment.variation {
-                continue
-            }
-            assignment.observeFullEvaluationData = observeFullEvaluationData
-            response.keySpellings.append(FlagKeySpelling(key: member.key, assignment: assignment))
         }
         return response
     }
 
-    private static func containsBytes<Value>(of key: String, in dictionary: [String: Value]) -> Bool {
-        dictionary.index(forKey: key).map { dictionary[$0].key.utf8.elementsEqual(key.utf8) } ?? false
+    /// Stores `assignment` under the exact bytes of `key`. A later duplicate of the same bytes replaces it.
+    private mutating func place(_ assignment: FlagAssignment, for key: String) {
+        if let index = flags.index(forKey: key) {
+            if flags[index].key.utf8.elementsEqual(key.utf8) {
+                flags[key] = assignment
+            } else if let spelling = keySpellings.firstIndex(where: { $0.key.utf8.elementsEqual(key.utf8) }) {
+                keySpellings[spelling].assignment = assignment
+            } else {
+                keySpellings.append(FlagKeySpelling(key: key, assignment: assignment))
+            }
+        } else {
+            flags[key] = assignment
+        }
     }
 
     /// Only non-ASCII bytes or `\u` escapes can spell two keys that Swift compares as equal.

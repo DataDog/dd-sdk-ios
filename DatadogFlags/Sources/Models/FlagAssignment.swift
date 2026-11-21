@@ -254,11 +254,16 @@ internal enum FlagsNumericJSON {
                     }
                 }
             } else if byte == UInt8(ascii: "-") || (UInt8(ascii: "0")...UInt8(ascii: "9")).contains(byte) {
+                let numberStart = index
                 quoted.append(UInt8(ascii: "\""))
                 repeat {
                     quoted.append(bytes[index])
                     index += 1
                 } while index < bytes.count && Self.numberBytes.contains(bytes[index])
+                // Quoting would turn an invalid JSON number into a valid string, so reject it here.
+                guard FlagNumericConversion.hasValidSyntax(String(decoding: bytes[numberStart..<index], as: UTF8.self)) else {
+                    throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Invalid numeric literal"))
+                }
                 quoted.append(UInt8(ascii: "\""))
             } else {
                 quoted.append(byte)
@@ -299,9 +304,14 @@ internal struct FlagNumericConversion: Equatable {
     let integer: Int?
     let double: Double?
 
+    /// Matches the JSON number grammar.
+    static func hasValidSyntax(_ literal: String) -> Bool {
+        literal.range(of: #"^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$"#, options: .regularExpression) != nil
+    }
+
     init(_ literal: String) {
         self.literal = literal
-        guard literal.range(of: #"^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$"#, options: .regularExpression) != nil else {
+        guard Self.hasValidSyntax(literal) else {
             integer = nil
             double = nil
             return

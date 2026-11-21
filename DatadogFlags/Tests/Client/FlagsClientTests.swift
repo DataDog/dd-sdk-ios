@@ -1303,12 +1303,36 @@ final class FlagsClientTests: XCTestCase {
         store.flagsDataStore.flagsData(forClientNamed: "spellings") { data in
             XCTAssertEqual(data, flagsData)
             let cached = data.map { FlagsRepository.CachedFlagsData(data: $0) }
-            XCTAssertEqual(cached?.cachedAssignment(for: nfc, supportsObfuscation: false), .resolved(response.flags[nfc]))
-            XCTAssertEqual(cached?.cachedAssignment(for: nfd, supportsObfuscation: false), .resolved(response.keySpellings.first?.assignment))
-            XCTAssertNotEqual(response.flags[nfc], response.keySpellings.first?.assignment)
+            // The decoder can keep either spelling in `flags`, so select the expected assignment by UTF-8 bytes.
+            let expected = { (key: String) in
+                response.flags.first { $0.key.utf8.elementsEqual(key.utf8) }?.value
+                    ?? response.keySpellings.first { $0.key.utf8.elementsEqual(key.utf8) }?.assignment
+            }
+            XCTAssertEqual(cached?.cachedAssignment(for: nfc, supportsObfuscation: false), .resolved(expected(nfc)))
+            XCTAssertEqual(cached?.cachedAssignment(for: nfd, supportsObfuscation: false), .resolved(expected(nfd)))
+            XCTAssertNotNil(expected(nfc))
+            XCTAssertNotEqual(expected(nfc), expected(nfd))
             restored.fulfill()
         }
         wait(for: [restored], timeout: 2)
+    }
+
+    func testKeySpellingsRebuildTheAssignmentThatDecodingKept() throws {
+        let nfc = "caf\u{00E9}"
+        let nfd = "cafe\u{0301}"
+        let assignment = { (value: String) in
+            #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(value),"reason":"STATIC","doLog":true}"#
+        }
+        let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(assignment("1")),"cafe\u0301":\#(assignment("2.5"))}}}}"#
+        let composed = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(assignment("1").utf8))
+        let decomposed = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(assignment("2.5").utf8))
+        // Some decoders keep the composed key with the decomposed key's value.
+        let merged = FlagAssignmentsResponse(flags: [nfc: decomposed])
+        let response = merged.addingKeySpellings(from: Data(body.utf8))
+        let assignments = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
+        XCTAssertEqual(assignments.count, 2)
+        XCTAssertEqual(assignments.first { $0.0.utf8.elementsEqual(nfc.utf8) }?.1, composed)
+        XCTAssertEqual(assignments.first { $0.0.utf8.elementsEqual(nfd.utf8) }?.1, decomposed)
     }
 
     func testSnapshotWhenNoCachedAssignments() {
