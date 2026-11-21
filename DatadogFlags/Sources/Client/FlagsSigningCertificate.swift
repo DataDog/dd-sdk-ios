@@ -9,6 +9,8 @@ import Foundation
 internal enum FlagsSigningError: String, Error {
     case unsupportedRequest, missingAnchor, missingProof, invalidProof
     case invalidCertificate, invalidSignature, expiredProof, responseTooLarge
+    /// DRAFT wire: a certificate in the chain is older than the stored minimum not-before value.
+    case revokedCertificate = "revoked-certificate"
 }
 
 /// Bounded DER for the deliberately restricted assignment-signing certificate profile.

@@ -12,6 +12,8 @@ internal protocol FlagAssignmentsFetching {
     var responseSigningCacheScope: String? { get }
     func resolveResponseSigningCacheScope(_ completion: @escaping (String?) -> Void)
     func isVerified(_ proof: FlagsResponseVerification?, at now: Date) -> Bool
+    /// Like `isVerified`, but in `required` mode an expired proof stays usable unless `expireVerifiedFlags` is set.
+    func isTrusted(_ proof: FlagsResponseVerification?, at now: Date) -> Bool
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         experimentationOptOut: ExperimentationOptOut?,
@@ -27,6 +29,7 @@ internal extension FlagAssignmentsFetching {
         completion(responseSigningCacheScope)
     }
     func isVerified(_ proof: FlagsResponseVerification?, at now: Date) -> Bool { false }
+    func isTrusted(_ proof: FlagsResponseVerification?, at now: Date) -> Bool { isVerified(proof, at: now) }
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
@@ -134,6 +137,16 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         return proof?.isValid(at: now, scope: verifier.scope) == true
     }
 
+    func isTrusted(_ proof: FlagsResponseVerification?, at now: Date) -> Bool {
+        guard let verifier else {
+            return false
+        }
+        guard let current = responseSigningCacheScope, proof?.cacheScope == current else {
+            return false
+        }
+        return proof?.isValid(at: now, scope: verifier.scope, allowExpired: !verifier.configuration.expireVerifiedFlags) == true
+    }
+
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
@@ -170,6 +183,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         ),
         responseSigning: Flags.ResponseSigningConfiguration = .init(),
         dateProvider: any DateProvider = SystemDateProvider(),
+        minimumNotBeforeStore: (any FlagsMinimumNotBeforeStore)? = nil,
         signingFetch: ((URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void)? = nil,
         fetch: @escaping (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
     ) {
@@ -180,7 +194,12 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         self.assignmentFetchQueue = assignmentFetchQueue
         self.fetch = fetch
         self.dateProvider = dateProvider
-        self.verifier = responseSigning.mode == .off ? nil : FlagsResponseVerifier(configuration: responseSigning)
+        self.verifier = responseSigning.mode == .off
+            ? nil
+            : FlagsResponseVerifier(
+                configuration: responseSigning,
+                minimumNotBeforeStore: minimumNotBeforeStore ?? DataStoreMinimumNotBeforeStore(dataStore: featureScope.dataStore)
+            )
         self.signingFetch = signingFetch
     }
 
@@ -336,6 +355,9 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                             )
                             proof?.cacheScope = cacheScope
                             self.reportSigning(nil)
+                            if proof?.ignoredMinimumNotBefore == true {
+                                self.reportSigningReason("minimum-not-before-ignored")
+                            }
                         } catch {
                             self.reportSigning(error as? FlagsSigningError ?? .invalidProof)
                             guard self.responseSigningMode == .observe else {
@@ -360,7 +382,10 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     }
 
     private func reportSigning(_ error: FlagsSigningError?) {
-        let outcome = error?.rawValue ?? "verified"
+        reportSigningReason(error?.rawValue ?? "verified")
+    }
+
+    private func reportSigningReason(_ outcome: String) {
         guard reportedSigningOutcomes.insert(outcome).inserted else {
             return
         }

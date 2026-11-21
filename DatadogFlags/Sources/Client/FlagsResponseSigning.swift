@@ -32,15 +32,26 @@ extension Flags {
     /// and returns `FlagsError.invalidConfiguration` on every fetch.
     public struct ResponseSigningConfiguration {
         public var mode: ResponseSigningMode
+        /// Experimental. Controls what `required` mode does when the proof of the last verified response expires.
+        ///
+        /// - `false` (default): the client keeps serving the last verified flags, and its state changes to `stale`.
+        ///   A network attacker can block refreshes and keep the flags at their last verified values.
+        ///   The attacker cannot forge values. The guarantee is "verified once", not "fresh".
+        /// - `true`: the client state changes to `error`, and evaluations return defaults. This is the strict guarantee.
+        ///
+        /// A new verified response returns the state to `ready` in both settings. `required` mode persists no flag data,
+        /// so after a restart evaluations return defaults until the first verified response. No effect in `observe` or `off`.
+        public var expireVerifiedFlags: Bool
         /// Test-only trust anchors in DER form. Production code never sets them, and a response never supplies them.
         internal var trustedRootCertificates: [Data]
 
-        public init(mode: ResponseSigningMode = .off) {
-            self.init(mode: mode, trustedRootCertificates: [])
+        public init(mode: ResponseSigningMode = .off, expireVerifiedFlags: Bool = false) {
+            self.init(mode: mode, trustedRootCertificates: [], expireVerifiedFlags: expireVerifiedFlags)
         }
 
-        internal init(mode: ResponseSigningMode, trustedRootCertificates: [Data]) {
+        internal init(mode: ResponseSigningMode, trustedRootCertificates: [Data], expireVerifiedFlags: Bool = false) {
             self.mode = mode
+            self.expireVerifiedFlags = expireVerifiedFlags
             self.trustedRootCertificates = trustedRootCertificates
         }
 
@@ -117,9 +128,88 @@ internal struct FlagsResponseVerification: Equatable {
     let verifiedAt: TimeInterval
     let expiresAt: TimeInterval
     var cacheScope: String? = nil
+    /// The verified response carried a minimum not-before value that the SDK ignored.
+    var ignoredMinimumNotBefore = false
 
-    func isValid(at now: Date, scope: UUID) -> Bool {
-        self.scope == scope && verifiedAt <= now.timeIntervalSince1970 && expiresAt > now.timeIntervalSince1970
+    /// `allowExpired` keeps a proof usable after `expiresAt`: it was verified once in this scope, but it is not fresh.
+    func isValid(at now: Date, scope: UUID, allowExpired: Bool = false) -> Bool {
+        self.scope == scope && verifiedAt <= now.timeIntervalSince1970
+            && (allowExpired || expiresAt > now.timeIntervalSince1970)
+    }
+}
+
+/// DRAFT wire. Persists the highest accepted minimum not-before value per trust anchor.
+/// This is the only data that `required` mode persists. It holds no flag data.
+internal protocol FlagsMinimumNotBeforeStore: AnyObject {
+    func value(forAnchor anchor: String) -> UInt64?
+    func store(_ value: UInt64, forAnchor anchor: String)
+}
+
+/// Keeps values in memory only. The verifier uses it when no persistent store is given.
+internal final class InMemoryMinimumNotBeforeStore: FlagsMinimumNotBeforeStore {
+    @ReadWriteLock
+    private var values: [String: UInt64] = [:]
+
+    func value(forAnchor anchor: String) -> UInt64? { values[anchor] }
+
+    func store(_ value: UInt64, forAnchor anchor: String) {
+        _values.mutate { $0[anchor] = max($0[anchor] ?? 0, value) }
+    }
+}
+
+/// Persists values in the Flags feature data store, so they survive a restart.
+internal final class DataStoreMinimumNotBeforeStore: FlagsMinimumNotBeforeStore {
+    static let keyPrefix = "response-signing-minimum-not-before-"
+    private let dataStore: any DataStore
+    private let readTimeout: TimeInterval
+    private let lock = NSLock()
+    /// Anchors that were read from disk or written, with their value. `nil` means "read, no value".
+    private var values: [String: UInt64?] = [:]
+
+    init(dataStore: any DataStore, readTimeout: TimeInterval = 0.5) {
+        self.dataStore = dataStore
+        self.readTimeout = readTimeout
+    }
+
+    func value(forAnchor anchor: String) -> UInt64? {
+        lock.lock()
+        if let cached = values[anchor] {
+            lock.unlock()
+            return cached
+        }
+        lock.unlock()
+        // Verification runs on the assignment fetch queue, so a short wait for the first read is safe.
+        let group = DispatchGroup()
+        group.enter()
+        var read: UInt64??
+        dataStore.value(forKey: Self.keyPrefix + anchor) { [lock] result in
+            let value = result.data().flatMap { String(data: $0, encoding: .utf8) }.flatMap(UInt64.init)
+            lock.lock()
+            read = .some(value)
+            lock.unlock()
+            group.leave()
+        }
+        _ = group.wait(timeout: .now() + readTimeout)
+        lock.lock()
+        defer { lock.unlock() }
+        guard let read else {
+            // The read did not finish in time. Try again on the next verification.
+            return values[anchor] ?? nil
+        }
+        let merged = [values[anchor] ?? nil, read].compactMap { $0 }.max()
+        values[anchor] = .some(merged)
+        return merged
+    }
+
+    func store(_ value: UInt64, forAnchor anchor: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        // Keep the highest value: a lower value never replaces a stored one.
+        if let stored = values[anchor] ?? nil, stored >= value {
+            return
+        }
+        values[anchor] = .some(value)
+        dataStore.setValue(Data(String(value).utf8), forKey: Self.keyPrefix + anchor, version: dataStoreDefaultKeyVersion)
     }
 }
 
@@ -132,8 +222,15 @@ internal final class FlagsResponseVerifier {
     static let maximumResponseBytes = 2 * 1_024 * 1_024
     let scope = UUID()
     let configuration: Flags.ResponseSigningConfiguration
+    let minimumNotBeforeStore: any FlagsMinimumNotBeforeStore
 
-    init(configuration: Flags.ResponseSigningConfiguration) { self.configuration = configuration }
+    init(
+        configuration: Flags.ResponseSigningConfiguration,
+        minimumNotBeforeStore: any FlagsMinimumNotBeforeStore = InMemoryMinimumNotBeforeStore()
+    ) {
+        self.configuration = configuration
+        self.minimumNotBeforeStore = minimumNotBeforeStore
+    }
 
     /// Hash only configuration/identity, excluding nonce and subject. Subject matching is a separate repository gate.
     func cacheScope(
@@ -248,6 +345,8 @@ internal final class FlagsResponseVerifier {
         }
         let issuedAt = try Self.seconds(Self.header(response, "issued-at"))
         let expiresAt = try Self.seconds(Self.header(response, "expires-at"))
+        // DRAFT wire: optional, and bound in the transcript when present.
+        let minimumNotBefore = try Self.optionalHeader(response, "minimum-not-before").map(Self.seconds)
         let seconds = now.timeIntervalSince1970
         guard Double(issuedAt) <= seconds + 30, Double(expiresAt) > seconds,
             expiresAt > issuedAt, expiresAt - issuedAt <= 300
@@ -268,7 +367,7 @@ internal final class FlagsResponseVerifier {
         guard let last = intermediates.last else {
             throw FlagsSigningError.invalidProof
         }
-        var anchored = false
+        var anchor: Data?
         for data in roots {
             guard let root = try? FlagsSigningCertificate(der: data, role: .anchor),
                 root.pathLength.map({ $0 >= intermediates.count }) ?? true,
@@ -276,10 +375,10 @@ internal final class FlagsResponseVerifier {
                 root.notBefore <= seconds, seconds < root.notAfter,
                 Double(issuedAt) >= root.notBefore, Double(expiresAt) <= root.notAfter
             else { continue }
-            anchored = true
+            anchor = data
             break
         }
-        guard anchored else {
+        guard let anchor else {
             throw FlagsSigningError.invalidCertificate
         }
         for certificate in [leaf] + intermediates {
@@ -297,10 +396,26 @@ internal final class FlagsResponseVerifier {
             issuedAt: issuedAt,
             expiresAt: expiresAt,
             leaf: leafDER,
-            intermediates: intermediateDERs
+            intermediates: intermediateDERs,
+            minimumNotBefore: minimumNotBefore
         )
         try Self.verifySignature(signature, bytes: transcript, key: leaf.publicKey)
-        return FlagsResponseVerification(scope: scope, verifiedAt: seconds, expiresAt: Double(expiresAt))
+        let chain = [leaf] + intermediates
+        let anchorKey = Self.hex(Self.digest(anchor))
+        if let stored = minimumNotBeforeStore.value(forAnchor: anchorKey),
+            chain.contains(where: { $0.notBefore < Double(stored) }) {
+            throw FlagsSigningError.revokedCertificate
+        }
+        var verification = FlagsResponseVerification(scope: scope, verifiedAt: seconds, expiresAt: Double(expiresAt))
+        if let minimumNotBefore {
+            // A response must never revoke its own chain.
+            if chain.contains(where: { Double(minimumNotBefore) > $0.notBefore }) {
+                verification.ignoredMinimumNotBefore = true
+            } else {
+                minimumNotBeforeStore.store(minimumNotBefore, forAnchor: anchorKey)
+            }
+        }
+        return verification
     }
 
     static func transcript(
@@ -310,7 +425,8 @@ internal final class FlagsResponseVerifier {
         issuedAt: UInt64,
         expiresAt: UInt64,
         leaf: Data,
-        intermediates: [Data]
+        intermediates: [Data],
+        minimumNotBefore: UInt64? = nil
     ) throws -> Data {
         let components = try requestComponents(request)
         guard let status = UInt16(exactly: status), body.count <= maximumResponseBytes,
@@ -358,6 +474,11 @@ internal final class FlagsResponseVerifier {
         result.append(digest(leaf))
         result.append(UInt8(intermediates.count))
         for intermediate in intermediates { result.append(digest(intermediate)) }
+        // DRAFT wire: absent keeps the v1 transcript unchanged.
+        if let minimumNotBefore {
+            result.append(1)
+            appendInteger(minimumNotBefore, to: &result)
+        }
         return result
     }
 
@@ -430,6 +551,14 @@ internal final class FlagsResponseVerifier {
             throw FlagsSigningError.invalidProof
         }
         return value
+    }
+
+    private static func optionalHeader(_ response: HTTPURLResponse, _ suffix: String) throws -> String? {
+        let name = prefix + suffix
+        guard response.allHeaderFields.keys.contains(where: { ($0 as? String)?.lowercased() == name }) else {
+            return nil
+        }
+        return try header(response, suffix)
     }
 
     private static func singleHeader(_ response: HTTPURLResponse, _ suffix: String) throws -> String {

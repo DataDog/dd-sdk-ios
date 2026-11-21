@@ -1421,6 +1421,299 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 }
 
+extension FlagsResponseSigningTests {
+    // MARK: - Proof expiry (`expireVerifiedFlags`)
+
+    func testExpireVerifiedFlagsDefaultsToFalse() {
+        XCTAssertFalse(Flags.ResponseSigningConfiguration(mode: .required).expireVerifiedFlags)
+        XCTAssertTrue(Flags.ResponseSigningConfiguration(mode: .required, expireVerifiedFlags: true).expireVerifiedFlags)
+        let proof = FlagsResponseVerification(scope: UUID(), verifiedAt: 100, expiresAt: 200)
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 200), scope: proof.scope))
+        XCTAssertTrue(proof.isValid(at: Date(timeIntervalSince1970: 200), scope: proof.scope, allowExpired: true))
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 200), scope: UUID(), allowExpired: true))
+    }
+
+    func testRequiredProofExpiryIsStaleByDefaultAndErrorWhenStrict() {
+        for strict in [false, true] {
+            let fetcher = SigningLifecycleFetcher(mode: .required)
+            fetcher.trustExpired = !strict
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: 100))
+            let store = SigningDataStoreSpy()
+            var scheduled: [(delay: TimeInterval, work: () -> Void)] = []
+            func makeRepository() -> FlagsRepository {
+                FlagsRepository(
+                    clientName: "signed",
+                    flagAssignmentsFetcher: fetcher,
+                    dateProvider: clock,
+                    featureScope: FeatureScopeMock(dataStore: store),
+                    flagSelection: nil,
+                    initializationTimeout: nil,
+                    scheduleExpiry: { scheduled.append(($0, $1)) }
+                )
+            }
+            let repository = makeRepository()
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { _ in }
+            fetcher.completeVerified(index: 0, expiry: 200)
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+            XCTAssertEqual(scheduled.map(\.delay), [100])
+
+            // The expiry timer fires at `expires-at`.
+            clock.now = Date(timeIntervalSince1970: 200)
+            scheduled[0].work()
+            if strict {
+                XCTAssertEqual(repository.state.currentState, .error)
+                XCTAssertNil(repository.flagAssignment(for: "flag"))
+            } else {
+                XCTAssertEqual(repository.state.currentState, .stale)
+                XCTAssertNotNil(repository.flagAssignment(for: "flag"), "The last verified flags stay in use")
+            }
+
+            // A new verified response returns the state to ready.
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { _ in }
+            fetcher.completeVerified(index: 1, expiry: 500)
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+            XCTAssertEqual(scheduled.map(\.delay), [100, 300])
+            repository.flush()
+
+            // Required mode persists no flag data, so a restart starts with defaults.
+            XCTAssertTrue(store.keys.isEmpty)
+            let restarted = makeRepository()
+            XCTAssertNil(restarted.flagAssignment(for: "flag"))
+            restarted.flush()
+        }
+    }
+
+    func testRequiredProofExpiryIsAppliedOnReadWithoutTheTimer() {
+        for strict in [false, true] {
+            let fetcher = SigningLifecycleFetcher(mode: .required)
+            fetcher.trustExpired = !strict
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: 100))
+            let repository = FlagsRepository(
+                clientName: "signed",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: clock,
+                featureScope: FeatureScopeMock(),
+                flagSelection: nil,
+                initializationTimeout: nil,
+                scheduleExpiry: { _, _ in }
+            )
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { _ in }
+            fetcher.completeVerified(index: 0, expiry: 200)
+            clock.now = Date(timeIntervalSince1970: 250)
+            XCTAssertEqual(repository.flagAssignment(for: "flag") != nil, !strict)
+            XCTAssertEqual(repository.state.currentState, strict ? .error : .stale)
+            repository.flush()
+        }
+    }
+
+    // MARK: - Minimum not-before revocation (DRAFT wire)
+
+    private func signedFixtureResponse(
+        _ verifier: FlagsResponseVerifier,
+        _ name: String,
+        minimumNotBefore: UInt64? = nil,
+        changeHeader: ((inout [String: String]) -> Void)? = nil
+    ) throws -> (URLRequest, HTTPURLResponse, Data) {
+        var request = URLRequest(url: URL(string: "https://flags.example.test/precompute-assignments")!)
+        request.httpMethod = "POST"
+        request.httpBody = Data("{}".utf8)
+        request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+        let prepared = try verifier.prepare(request)
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        var headers = try SigningChainFixture.credential(name)
+            .signedHeaders(request: prepared, body: body, minimumNotBefore: minimumNotBefore)
+        changeHeader?(&headers)
+        return (prepared, try response(prepared, headers), body)
+    }
+
+    private func verify(_ verifier: FlagsResponseVerifier, _ signed: (URLRequest, HTTPURLResponse, Data)) throws -> FlagsResponseVerification {
+        try verifier.verify(
+            request: signed.0,
+            response: signed.1,
+            body: signed.2,
+            now: Date(timeIntervalSince1970: SigningChainFixture.now)
+        )
+    }
+
+    func testMinimumNotBeforeRevokesAnOlderChainAndSurvivesARestart() throws {
+        let anchor = try SigningChainFixture.root("root-a")
+        let anchorKey = SHA256.hash(data: anchor).map { String(format: "%02x", $0) }.joined()
+        let store = MinimumNotBeforeStoreMock()
+        let configuration = Flags.ResponseSigningConfiguration(mode: .required, trustedRootCertificates: [anchor])
+        let verifier = FlagsResponseVerifier(configuration: configuration, minimumNotBeforeStore: store)
+        let newChain = try SigningChainFixture.credential("one-intermediate")
+        let oldChain = try SigningChainFixture.credential("two-intermediates")
+        let value = try newChain.oldestNotBefore()
+        XCTAssertGreaterThan(value, try oldChain.oldestNotBefore(), "The fixtures must have an older chain")
+
+        // Without a stored value, both chains verify.
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates")))
+        // The new chain carries the value, and the SDK stores it.
+        let proof = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value))
+        XCTAssertFalse(proof.ignoredMinimumNotBefore)
+        XCTAssertEqual(store.values[anchorKey], value)
+        // The old chain is now revoked. The new chain still verifies.
+        XCTAssertThrowsError(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates"))) {
+            XCTAssertEqual($0 as? FlagsSigningError, .revokedCertificate)
+        }
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate")))
+
+        // A restart creates a new verifier with the same persisted store.
+        let restarted = FlagsResponseVerifier(configuration: configuration, minimumNotBeforeStore: store)
+        XCTAssertThrowsError(try verify(restarted, signedFixtureResponse(restarted, "two-intermediates"))) {
+            XCTAssertEqual($0 as? FlagsSigningError, .revokedCertificate)
+        }
+    }
+
+    func testMinimumNotBeforeDataStoreKeepsTheHighestValueAcrossARestart() throws {
+        let dataStore = DataStoreMock()
+        let first = DataStoreMinimumNotBeforeStore(dataStore: dataStore)
+        XCTAssertNil(first.value(forAnchor: "anchor"))
+        first.store(20, forAnchor: "anchor")
+        first.store(10, forAnchor: "anchor")
+        XCTAssertEqual(first.value(forAnchor: "anchor"), 20)
+        XCTAssertNil(first.value(forAnchor: "other"))
+        // A restart reads the persisted value from the feature data store.
+        let restarted = DataStoreMinimumNotBeforeStore(dataStore: dataStore)
+        XCTAssertEqual(restarted.value(forAnchor: "anchor"), 20)
+        restarted.store(15, forAnchor: "anchor")
+        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor"), 20)
+        restarted.store(30, forAnchor: "anchor")
+        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor"), 30)
+    }
+
+    /// Intermediates are older than every leaf. A value between an old leaf and a new leaf would revoke
+    /// the shared intermediates, so the SDK ignores it, and later responses on both chains still verify.
+    func testMinimumNotBeforeBetweenTwoLeavesWithOlderIntermediatesIsIgnored() throws {
+        let anchor = try SigningChainFixture.root("root-a")
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
+            minimumNotBeforeStore: store
+        )
+        let oldLeafChain = try SigningChainFixture.credential("two-intermediates")
+        let newLeafChain = try SigningChainFixture.credential("rotated-lower-intermediate")
+        XCTAssertEqual(oldLeafChain.intermediates.last, newLeafChain.intermediates.last, "The chains share the upper intermediate")
+        let value = try newLeafChain.leafNotBefore()
+        XCTAssertGreaterThan(value, try oldLeafChain.leafNotBefore())
+        XCTAssertLessThanOrEqual(try newLeafChain.oldestNotBefore(), try oldLeafChain.leafNotBefore())
+        let proof = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: value))
+        XCTAssertTrue(proof.ignoredMinimumNotBefore)
+        XCTAssertTrue(store.values.isEmpty)
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate")))
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates")))
+    }
+
+    func testMinimumNotBeforeLowerThanTheStoredValueIsIgnored() throws {
+        let anchor = try SigningChainFixture.root("root-a")
+        let anchorKey = SHA256.hash(data: anchor).map { String(format: "%02x", $0) }.joined()
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
+            minimumNotBeforeStore: store
+        )
+        let value = try SigningChainFixture.credential("one-intermediate").oldestNotBefore()
+        _ = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value))
+        _ = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value - 1))
+        XCTAssertEqual(store.values[anchorKey], value)
+    }
+
+    func testMinimumNotBeforeGreaterThanAnyCertificateInTheChainIsIgnored() throws {
+        let anchor = try SigningChainFixture.root("root-a")
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
+            minimumNotBeforeStore: store
+        )
+        let chain = try SigningChainFixture.credential("one-intermediate")
+        // Greater than the leaf, and between the intermediate and the leaf: a response never revokes its own chain.
+        for value in [try chain.leafNotBefore() + 1, try chain.oldestNotBefore() + 1] {
+            let proof = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value))
+            XCTAssertTrue(proof.ignoredMinimumNotBefore, "\(value)")
+        }
+        XCTAssertTrue(store.values.isEmpty)
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate")))
+    }
+
+    func testChangedMinimumNotBeforeHeaderFailsTheSignature() throws {
+        let anchor = try SigningChainFixture.root("root-a")
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
+            minimumNotBeforeStore: store
+        )
+        let value = try SigningChainFixture.credential("one-intermediate").oldestNotBefore()
+        let name = FlagsResponseVerifier.prefix + "minimum-not-before"
+        let changes: [(inout [String: String]) -> Void] = [
+            { $0[name] = String(value - 1) }, // changed
+            { $0[name] = nil }, // removed
+        ]
+        for change in changes {
+            XCTAssertThrowsError(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value, changeHeader: change))) {
+                XCTAssertEqual($0 as? FlagsSigningError, .invalidSignature)
+            }
+        }
+        // Added to a response that was signed without it.
+        XCTAssertThrowsError(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", changeHeader: { $0[name] = String(value) }))) {
+            XCTAssertEqual($0 as? FlagsSigningError, .invalidSignature)
+        }
+        // A malformed value is rejected before the signature.
+        for malformed in ["", "01", "-1", "1.5", "9007199254740992", "1,2"] {
+            XCTAssertThrowsError(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value, changeHeader: { $0[name] = malformed })), malformed)
+        }
+        XCTAssertTrue(store.values.isEmpty)
+    }
+
+    func testRevokedChainFailsClosedInRequiredAndIsReportedInObserve() throws {
+        let anchor = try SigningChainFixture.root("root-a")
+        let anchorKey = SHA256.hash(data: anchor).map { String(format: "%02x", $0) }.joined()
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let value = try SigningChainFixture.credential("one-intermediate").oldestNotBefore()
+        for mode in [Flags.ResponseSigningMode.required, .observe] {
+            let store = MinimumNotBeforeStoreMock()
+            store.values[anchorKey] = value
+            let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+            let telemetry = scope.telemetryMock
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: scope,
+                responseSigning: .init(mode: mode, trustedRootCertificates: [anchor]),
+                dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now)),
+                minimumNotBeforeStore: store,
+                signingFetch: { request, complete in
+                    do {
+                        let headers = try SigningChainFixture.credential("two-intermediates").signedHeaders(request: request, body: body)
+                        complete(.success((body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headers)!)))
+                    } catch {
+                        XCTFail("\(error)")
+                    }
+                },
+                fetch: { _, _ in XCTFail("Signing must use the signing transport") }
+            )
+            let done = expectation(description: "\(mode)")
+            fetcher.flagAssignments(for: FlagsEvaluationContext(targetingKey: "subject")) { result in
+                defer { done.fulfill() }
+                switch (mode, result) {
+                case (.required, .failure(.invalidResponse)): break
+                case (.observe, .success(let response)): XCTAssertNil(response.verification)
+                default: XCTFail("\(mode): \(result)")
+                }
+            }
+            wait(for: [done], timeout: 1)
+            XCTAssertTrue(telemetry.messages.contains { message in
+                guard case .debug(let id, _, _) = message else {
+                    return false
+                }
+                return id == "flags-response-signing-revoked-certificate"
+            }, "\(mode)")
+        }
+    }
+}
+
 /// Test-CA-issued certificate-chain credentials and pinned roots in `response-signing-chain`.
 internal struct SigningChainFixture {
     /// Within every fixture leaf's 72-hour validity (2026-11-18T04:20:54Z to 2026-11-21T04:20:52Z).
@@ -1463,7 +1756,12 @@ internal struct SigningChainFixture {
     }
 
     /// Edge-equivalent v1 proof headers for `request` and `body`, signed with the fixture key.
-    func signedHeaders(request: URLRequest, body: Data, now: TimeInterval = now) throws -> [String: String] {
+    func signedHeaders(
+        request: URLRequest,
+        body: Data,
+        now: TimeInterval = now,
+        minimumNotBefore: UInt64? = nil
+    ) throws -> [String: String] {
         let prefix = FlagsResponseVerifier.prefix
         let transcript = try FlagsResponseVerifier.transcript(
             request: request,
@@ -1472,9 +1770,10 @@ internal struct SigningChainFixture {
             issuedAt: UInt64(now),
             expiresAt: UInt64(now + 300),
             leaf: leaf,
-            intermediates: intermediates
+            intermediates: intermediates,
+            minimumNotBefore: minimumNotBefore
         )
-        return [
+        var headers = [
             prefix + "signature-version": "1",
             prefix + "signing-certificate": leaf.base64EncodedString(),
             prefix + "signing-chain": intermediates.map { $0.base64EncodedString() }.joined(separator: ","),
@@ -1483,6 +1782,29 @@ internal struct SigningChainFixture {
             prefix + "expires-at": String(UInt64(now + 300)),
             prefix + "signature": try key.signature(for: transcript).derRepresentation.base64EncodedString()
         ]
+        if let minimumNotBefore {
+            headers[prefix + "minimum-not-before"] = String(minimumNotBefore)
+        }
+        return headers
+    }
+
+    /// The lowest `notBefore` of the leaf and the intermediates.
+    func oldestNotBefore() throws -> UInt64 {
+        let chain = try [FlagsSigningCertificate(der: leaf, role: .leaf)]
+            + intermediates.map { try FlagsSigningCertificate(der: $0, role: .intermediate) }
+        return UInt64(chain.map(\.notBefore).min() ?? 0)
+    }
+
+    func leafNotBefore() throws -> UInt64 {
+        UInt64(try FlagsSigningCertificate(der: leaf, role: .leaf).notBefore)
+    }
+}
+
+private final class MinimumNotBeforeStoreMock: FlagsMinimumNotBeforeStore {
+    var values: [String: UInt64] = [:]
+    func value(forAnchor anchor: String) -> UInt64? { values[anchor] }
+    func store(_ value: UInt64, forAnchor anchor: String) {
+        values[anchor] = max(values[anchor] ?? 0, value)
     }
 }
 
@@ -1494,8 +1816,13 @@ private final class SigningLifecycleFetcher: FlagAssignmentsFetching {
     var responseSigningCacheScope: String? = "scope-a"
     var completions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
     init(mode: Flags.ResponseSigningMode) { responseSigningMode = mode }
+    var trustExpired = false
     func isVerified(_ proof: FlagsResponseVerification?, at now: Date) -> Bool {
         proof?.cacheScope == responseSigningCacheScope && proof?.isValid(at: now, scope: scope) == true
+    }
+    func isTrusted(_ proof: FlagsResponseVerification?, at now: Date) -> Bool {
+        proof?.cacheScope == responseSigningCacheScope
+            && proof?.isValid(at: now, scope: scope, allowExpired: trustExpired) == true
     }
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,

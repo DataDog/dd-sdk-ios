@@ -159,6 +159,7 @@ internal final class FlagsRepository {
     )
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
+    private let scheduleExpiry: (TimeInterval, @escaping () -> Void) -> Void
     private let experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode
 
     @ReadWriteLock
@@ -313,7 +314,8 @@ internal final class FlagsRepository {
         readTimeout: TimeInterval = 0.1,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil,
-        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
+        experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled,
+        scheduleExpiry: ((TimeInterval, @escaping () -> Void) -> Void)? = nil
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
@@ -325,6 +327,10 @@ internal final class FlagsRepository {
         self.experimentationOptOutMode = experimentationOptOutMode
         self.repositoryState = RepositoryState(experimentationOptOutMode: experimentationOptOutMode)
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
+        // Wall time keeps counting while the device sleeps.
+        self.scheduleExpiry = scheduleExpiry ?? { delay, work in
+            DispatchQueue.global(qos: .utility).asyncAfter(wallDeadline: .now() + delay, execute: work)
+        }
         featureScope.context { [weak self] context in
             guard let self else {
                 return
@@ -419,7 +425,36 @@ internal final class FlagsRepository {
         guard data.context == context else {
             return false
         }
-        return flagAssignmentsFetcher.isVerified(data.verification, at: dateProvider.now)
+        return flagAssignmentsFetcher.isTrusted(data.verification, at: dateProvider.now)
+    }
+
+    /// Required mode only. When the installed proof expires, `ready` becomes `stale`,
+    /// or `error` when `expireVerifiedFlags` is set. Reads and an expiry timer call this.
+    private func applyVerifiedExpiry() {
+        guard flagAssignmentsFetcher.responseSigningMode == .required else {
+            return
+        }
+        let now = dateProvider.now
+        var notifyListeners: (() -> Void)?
+        _repositoryState.mutate { state in
+            guard stateManager.currentState == .ready, let data = state.flagsData,
+                data.verification != nil,
+                !flagAssignmentsFetcher.isVerified(data.verification, at: now)
+            else {
+                return
+            }
+            let newState: FlagsClientState = flagAssignmentsFetcher.isTrusted(data.verification, at: now) ? .stale : .error
+            notifyListeners = stateManager.updateStateWithoutNotifying(newState)
+        }
+        notifyListeners?()
+    }
+
+    private func scheduleVerifiedExpiry(for data: FlagsData) {
+        guard flagAssignmentsFetcher.responseSigningMode == .required, let verification = data.verification else {
+            return
+        }
+        let delay = max(0, verification.expiresAt - dateProvider.now.timeIntervalSince1970)
+        scheduleExpiry(delay) { [weak self] in self?.applyVerifiedExpiry() }
     }
 
     private func readState() {
@@ -587,7 +622,7 @@ internal final class FlagsRepository {
             // serving flags from a different user/context.
             let verified = state.verifiedFlagsData.flatMap { data in
                 data.context == context && data.experimentationOptOutPolicy == state.requestedOptOut
-                    && flagAssignmentsFetcher.isVerified(data.verification, at: dateProvider.now)
+                    && flagAssignmentsFetcher.isTrusted(data.verification, at: dateProvider.now)
                     ? data : nil
             }
             if let matchingFlagsData = verified ?? state.flagsData(matching: context),
@@ -619,6 +654,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
+        applyVerifiedExpiry()
         guard stateManager.currentState != .error else {
             return nil
         }
@@ -635,6 +671,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot {
         waitForFlagsDataRead()
+        applyVerifiedExpiry()
         let hasError = stateManager.currentState == .error
         let snapshot = repositoryState
 
@@ -684,6 +721,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     func assignmentsSnapshot() -> FlagsData? {
         waitForFlagsDataRead()
+        applyVerifiedExpiry()
         let snapshot = repositoryState
         guard stateManager.currentState != .error,
             let data = snapshot.readableFlagsData,
@@ -861,6 +899,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 }
                 let pendingCompletions = callbacks.map { $0.prepare() }
                 Self.publishFirstFlags(publish)
+                self.scheduleVerifiedExpiry(for: flagsData)
                 self.writeState(flagsData, version: versionAfterSuccess, contextUpdateID: contextUpdateID)
                 complete(
                     .success(()),
