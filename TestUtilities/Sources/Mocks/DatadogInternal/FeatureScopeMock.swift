@@ -33,6 +33,8 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     private var deferredEventWriteContexts: [DeferredEventWriteContext] = []
     private let shouldDeferEventWriteContext: Bool
     public let dataStore: DataStore
+    /// Called when an event write context is requested, before its block runs.
+    public var onEventWriteContext: (() -> Void)?
 
     public init(
         context: DatadogContext = .mockAny(),
@@ -45,6 +47,7 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     }
 
     public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        onEventWriteContext?()
         guard shouldDeferEventWriteContext else {
             block(contextMock, EventWriterMock(scope: self, bypassConsent: bypassConsent))
             return

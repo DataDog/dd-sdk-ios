@@ -151,7 +151,7 @@ struct CompositionTreeBuilderTests {
             cornerRadii: cornerRadii,
             cornerCurve: .circular
         ).dd.svgString
-        #expect(glass.compositionTreeRepresentation == .layer)
+        #expect(glass.compositionTreeRepresentation(inheritedEffects: []) == .layer)
         #expect(layer.modifiers == [
             .compositionLayerClipModifier(value: .init(path: clipPath)),
             .compositionLayerShadowModifier(value: .init(
@@ -174,6 +174,145 @@ struct CompositionTreeBuilderTests {
             backgroundColor: hexString(from: UIColor.systemBackground.cgColor),
             cornerRadius: cornerRadii.uniformCornerRadius.map(Double.init)
         ))
+    }
+
+    @Test(
+        "Build clips nonuniform glass groups outside liquid lenses",
+        arguments: [
+            CALayerSnapshot.CornerRadii(
+                topLeft: CGSize(width: 18.5, height: 18.5),
+                topRight: CGSize(width: 18.5, height: 18.5),
+                bottomLeft: CGSize(width: 18.4, height: 18.4),
+                bottomRight: CGSize(width: 18.4, height: 18.4)
+            ),
+            CALayerSnapshot.CornerRadii(
+                topLeft: CGSize(width: 19.166666666666664, height: 19.166666666666664),
+                topRight: CGSize(width: 19.166666666666664, height: 19.166666666666664),
+                bottomLeft: CGSize(width: 19.16666666666666, height: 19.16666666666666),
+                bottomRight: CGSize(width: 19.16666666666666, height: 19.16666666666666)
+            )
+        ]
+    )
+    func buildClipsNonuniformGlassGroupsOutsideLiquidLenses(cornerRadii: CALayerSnapshot.CornerRadii) throws {
+        // Given
+        let frame = CGRect(x: 10, y: 20, width: 58, height: 38)
+        let glass = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.glassGroup), ignoresSublayers: true),
+            cornerRadii: cornerRadii,
+            masksToBounds: false
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [glass]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children == [.init(id: glass.replayID, type: .layer)])
+        let layer = try #require(output.compositionTree.layers?.first { $0.id == glass.replayID })
+        let expectedPath = SwiftUI.Path(
+            roundedRect: CGRect(origin: .zero, size: frame.size),
+            cornerRadii: cornerRadii,
+            cornerCurve: .circular
+        ).dd.svgString
+        #expect(layer.modifiers == [.compositionLayerClipModifier(value: .init(path: expectedPath))])
+        #expect(layer.children == [
+            .init(id: .init(namespace: .shape, replayID: glass.replayID), type: .wireframe)
+        ])
+        #expect(output.wireframes.count == 1)
+        let background = try #require(output.wireframes.first)
+        guard case .shapeWireframe(let wireframe) = background else {
+            Issue.record("Expected a glass background wireframe")
+            return
+        }
+        #expect(wireframe.shapeStyle == .init(
+            backgroundColor: hexString(from: UIColor.systemBackground.cgColor),
+            cornerRadius: nil
+        ))
+        #expect(output.resources.isEmpty)
+    }
+
+    @Test("Build adds a shadow to glass groups only inside liquid lenses", arguments: [true, false])
+    func buildAddsGlassGroupShadowsInsideLiquidLenses(hasUniformCorners: Bool) throws {
+        // Given
+        let frame = CGRect(x: 10, y: 20, width: 58, height: 38)
+        let bottomRadius: CGFloat = hasUniformCorners ? 18.5 : 18.4
+        let cornerRadii = CALayerSnapshot.CornerRadii(
+            topLeft: CGSize(width: 18.5, height: 18.5),
+            topRight: CGSize(width: 18.5, height: 18.5),
+            bottomLeft: CGSize(width: bottomRadius, height: bottomRadius),
+            bottomRight: CGSize(width: bottomRadius, height: bottomRadius)
+        )
+        let observation = CALayerSnapshot.SemanticObservation(
+            semantics: .visualEffect(.glassGroup),
+            ignoresSublayers: true
+        )
+        let thumb = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: frame,
+            observation: observation,
+            cornerRadii: cornerRadii
+        )
+        let outsideLensGlass = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: CGRect(x: 10, y: 100, width: 58, height: 38),
+            observation: observation,
+            cornerRadii: cornerRadii
+        )
+        let lens = CALayerSnapshot.mockWith(
+            replayID: 4,
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.liquidLens)),
+            sublayers: [.mockWith(replayID: 5, absoluteFrame: frame, sublayers: [thumb])]
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [lens, outsideLensGlass]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let layer = try #require(output.compositionTree.layers?.first { $0.id == thumb.replayID })
+        let expectedPath = SwiftUI.Path(
+            roundedRect: CGRect(origin: .zero, size: frame.size),
+            cornerRadii: cornerRadii,
+            cornerCurve: .circular
+        ).dd.svgString
+        #expect(output.compositionTree.root.children.first == .init(id: lens.replayID, type: .layer))
+        let clip = SRCompositionLayerModifier.compositionLayerClipModifier(value: .init(path: expectedPath))
+        let expectedShadow = SRCompositionLayerModifier.compositionLayerShadowModifier(
+            value: .init(color: "#00000020", offsetX: 0, offsetY: 0, radius: 8)
+        )
+        let expectedModifiers: [SRCompositionLayerModifier] = hasUniformCorners
+            ? [expectedShadow]
+            : [clip, expectedShadow]
+        #expect(layer.modifiers == expectedModifiers)
+        #expect(layer.children == [
+            .init(id: .init(namespace: .shape, replayID: thumb.replayID), type: .wireframe)
+        ])
+        let background = try #require(output.wireframes.first { $0.id == Int64(namespace: .shape, replayID: thumb.replayID) })
+        guard case .shapeWireframe(let shape) = background else {
+            Issue.record("Expected a glass background")
+            return
+        }
+        #expect(shape.shapeStyle == .init(
+            backgroundColor: hexString(from: UIColor.systemBackground.cgColor),
+            cornerRadius: hasUniformCorners ? 18.5 : nil
+        ))
+        let outsideLensModifiers = output.compositionTree.layers?
+            .first { $0.id == outsideLensGlass.replayID }?.modifiers ?? []
+        #expect(outsideLensModifiers == (hasUniformCorners ? [] : [clip]))
+        #expect(output.wireframes.count == 2)
     }
 
     @Test("Build preserves descendant clipping for platform glass without corners")

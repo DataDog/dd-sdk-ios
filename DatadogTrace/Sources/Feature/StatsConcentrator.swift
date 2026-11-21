@@ -610,7 +610,14 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// Serial queue protecting `buckets` and `oldestTs`.
     private let queue = DispatchQueue(label: "com.datadoghq.stats-concentrator", qos: .utility)
 
-    private var buckets: [UInt64: StatsBucket] = [:]
+    private var buckets: [UInt64: StatsBucket] = [:] {
+        didSet { suddenTerminationHold.isHeld = !buckets.isEmpty }
+    }
+    /// Disables sudden termination while a span is on its way to a bucket.
+    private let suddenTermination: SuddenTerminationControl
+    /// Keeps sudden termination disabled while buckets hold stats, so they are written when the app terminates.
+    /// Confined to `queue`, like `buckets`.
+    private let suddenTerminationHold: SuddenTerminationHold
     /// Incremented by `clearAllData()` and by consent revocation, so buckets exported before either
     /// can be told apart.
     private var clearGeneration: UInt64 = 0
@@ -652,6 +659,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
     ///     Overflow groups are additional to this limit.
     ///   - maxOverflowGroupsPerBucket: Maximum overflow groups per time bucket, clamped to at least one.
     ///   - telemetry: Receives collapsed and dropped span counts when an overflowing bucket is flushed.
+    ///   - suddenTermination: Disables sudden termination while stats are buffered.
     init(
         now: Nanoseconds,
         initialConsent: TrackingConsent = .pending,
@@ -660,8 +668,11 @@ internal final class StatsConcentrator: @unchecked Sendable {
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys,
         maxGroupsPerBucket: Int = StatsConcentrator.defaultMaxGroupsPerBucket,
         maxOverflowGroupsPerBucket: Int = StatsConcentrator.defaultMaxOverflowGroupsPerBucket,
-        telemetry: Telemetry = NOPTelemetry()
+        telemetry: Telemetry = NOPTelemetry(),
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
+        self.suddenTermination = suddenTermination
+        self.suddenTerminationHold = SuddenTerminationHold(control: suddenTermination)
         self.bucketDuration = bucketDuration
         self.bufferLen = bufferLen
         self.peerTagKeys = peerTagKeys
@@ -696,7 +707,11 @@ internal final class StatsConcentrator: @unchecked Sendable {
         let aggregationKey = makeAggregationKey(from: snapshot, peerTags: matchingPeerTags)
         let peerTagStrings = matchingPeerTags.map { "\($0.key):\($0.value)" }
 
+        suddenTermination.disableSuddenTermination()
         queue.async { [self] in
+            // The bucket holds sudden termination from here.
+            defer { suddenTermination.enableSuddenTermination() }
+
             // Drop the span when consent is not granted. Checking on the serial queue (rather than
             // off-queue) keeps the decision ordered with consent changes and the revoke clear, so a
             // span recorded around a revocation cannot slip past or be re-added after the buffer is

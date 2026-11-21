@@ -55,7 +55,7 @@ Every feature doc contains these core sections, in order. Optional sections are 
 
 ### Overview
 - Brief description of feature purpose
-- Platform availability — use the format `**Platform**: iOS, tvOS, watchOS, visionOS` (list only platforms declared in the podspec; add a note for platforms where functionality is limited or absent)
+- Platform availability — use the format `**Platform**: iOS, tvOS, watchOS, visionOS` (list only platforms declared in the podspec, plus macOS (Swift Package Manager only) where the module supports it; add a note for platforms where functionality is limited or absent)
 - Key dependencies (e.g. "requires RUM")
 
 ### Quick Start Example

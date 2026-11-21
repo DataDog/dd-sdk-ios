@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the Datadog SDK for iOS and tvOS — a modular Swift/Objective-C library for observability (Logs, Traces, RUM, Session Replay, Crash Reporting, WebView Tracking, and Feature Flags).
+This is the Datadog SDK for iOS, tvOS, and macOS — a modular Swift/Objective-C library for observability (Logs, Traces, RUM, Session Replay, Crash Reporting, WebView Tracking, and Feature Flags).
 
 **Start with `AGENTS.md`** — it is the entry point to all SDK documentation. Follow its pointers to `docs/` for deeper context on architecture, conventions, testing, and development recipes.
 
