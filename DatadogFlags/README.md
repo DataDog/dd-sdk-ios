@@ -95,22 +95,26 @@ DRAFT: the edge and the shared fixtures do not send this header yet. The name an
 
 ## Validation and shared fixtures
 
-`Tests/Fixtures/response-signing/SOURCE.json` pins the central repository commit and file checksums.
+`ci/feature-flags-precomputed-fixtures.json` pins two signing sources from ffe-system-test-data, in the same pipeline as the precomputed corpus. `make feature-flags-fixtures-pull` fetches them into git-ignored folders outside every SwiftPM target:
+
+- `response-signing-v1` (`response-signing/v1/`) into `DatadogFlags/Fixtures/response-signing-v1`;
+- `response-signing-chain` (`response-signing/chain/`) into `DatadogFlags/Fixtures/response-signing-chain`.
+
+Each folder has a `SOURCE.json` with the commit and the file checksums.
 The native test reads every suite in the upstream manifest, checks counts and checksums,
 and verifies acceptance decisions and exact transcripts. The current snapshot has 97 response
 vectors across wire, nested DER, subject DER, certificate-rule, extension-profile, and expiry suites.
 A case can supply its own `anchor_der_base64`, which replaces the file anchor for that case.
 The test asserts only acceptance or rejection; `rejection_reason` is a fixture code, not a native error.
 Server-only signing cases are excluded.
-`Tests/Fixtures/response-signing-chain` holds repo-local test-CA-issued chains and OpenSSL root variants.
-It is outside the imported snapshot, so the importer checks stay valid.
+The chain folder holds test-CA-issued chains, the OpenSSL root variants and `staging-us1-dc-intermediate.pem`.
 
-Refresh and verify signing fixtures with the signing importer and the weekly `Response signing fixtures` workflow:
+The weekly `Feature flags precomputed fixtures` workflow proposes the latest upstream commit for each source. Refresh or verify all sources locally:
 
 ```shell
-python3 ci/sync-response-signing-fixtures.py --ref <full-upstream-sha>
-python3 ci/sync-response-signing-fixtures.py --verify
-python3 ci/sync-response-signing-fixtures.py --check
+python3 ci/sync-feature-flags-precomputed-fixtures.py
+python3 ci/sync-feature-flags-precomputed-fixtures.py --verify
+python3 ci/sync-feature-flags-precomputed-fixtures.py --update --ref <full-upstream-sha>
 ```
 
 The implementation profile is SHA-256 `a32c6919d1f730b076994f89317ef441fa4c4b4556c093edf0216632a882f783`, with applicability profile `response-signing-public-v1`. The FFE LEAN spreadsheet remains decision authority; this implementation has no Lean proof claim.

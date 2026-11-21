@@ -273,8 +273,7 @@ let package = Package(
                 .target(name: "DatadogFlags"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogFlags/Tests",
-            resources: [.copy("Fixtures/response-signing"), .copy("Fixtures/response-signing-chain")]
+            path: "DatadogFlags/Tests"
         ),
 
         .target(

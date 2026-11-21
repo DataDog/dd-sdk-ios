@@ -12,6 +12,29 @@
         "LICENSE": "LICENSE",
         "NOTICE": "NOTICE"
       }
+    },
+    {
+      "name": "response-signing-v1",
+      "kind": "files",
+      "prefix": "response-signing/v1/",
+      "destination": "DatadogFlags/Fixtures/response-signing-v1",
+      "commit": "8dfd544b1a2e8e3a06ca78a31568003a15c7ecae",
+      "files": {
+        "response-signing/README.md": "README.md",
+        "LICENSE": "LICENSE",
+        "NOTICE": "NOTICE"
+      }
+    },
+    {
+      "name": "response-signing-chain",
+      "kind": "files",
+      "prefix": "response-signing/chain/",
+      "destination": "DatadogFlags/Fixtures/response-signing-chain",
+      "commit": "8dfd544b1a2e8e3a06ca78a31568003a15c7ecae",
+      "files": {
+        "LICENSE": "LICENSE",
+        "NOTICE": "NOTICE"
+      }
     }
   ]
 }

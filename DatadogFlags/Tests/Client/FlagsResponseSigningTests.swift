@@ -390,7 +390,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             "aa5e91e52cdb130d175eed1010a501c0ef45d60d"
         )
         // The us1 staging DC intermediate, index 1 in the served chain, chains to the built-in root.
-        let intermediate = try FlagsSigningCertificate(der: SigningChainFixture.root("staging-dc-intermediate"), role: .intermediate)
+        let intermediate = try FlagsSigningCertificate(der: SigningChainFixture.root("staging-us1-dc-intermediate"), role: .intermediate)
         XCTAssertGreaterThanOrEqual(try XCTUnwrap(intermediate.pathLength), 1)
         XCTAssertNoThrow(try FlagsResponseVerifier.verifyChild(intermediate, parent: root))
         // A test root never anchors the staging intermediate.
@@ -506,12 +506,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     }
 
     private func corpus(name: String, hash: String) throws -> Corpus {
-        #if SWIFT_PACKAGE
-        let bundle = Bundle.module
-        #else
-        let bundle = Bundle(for: Self.self)
-        #endif
-        let url = try XCTUnwrap(bundle.url(forResource: name, withExtension: "json", subdirectory: "response-signing"))
+        let url = try SharedSigningFixtures.url("response-signing-v1", name, "json")
         let raw = try Data(contentsOf: url)
         XCTAssertEqual(SHA256.hash(data: raw).map { String(format: "%02x", $0) }.joined(), hash, name)
         return try JSONDecoder().decode(Corpus.self, from: raw)
@@ -536,12 +531,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             let schema_version: Int
             let files: [String: Suite]
         }
-        #if SWIFT_PACKAGE
-        let bundle = Bundle.module
-        #else
-        let bundle = Bundle(for: Self.self)
-        #endif
-        let url = try XCTUnwrap(bundle.url(forResource: "manifest", withExtension: "json", subdirectory: "response-signing"))
+        let url = try SharedSigningFixtures.url("response-signing-v1", "manifest", "json")
         let manifest = try JSONDecoder().decode(Manifest.self, from: Data(contentsOf: url))
         XCTAssertEqual(manifest.schema_version, 1)
         XCTAssertFalse(manifest.files.isEmpty)
@@ -1740,7 +1730,7 @@ extension FlagsResponseSigningTests {
     }
 }
 
-/// Test-CA-issued certificate-chain credentials and pinned roots in `response-signing-chain`.
+/// Test-CA-issued certificate-chain credentials and pinned roots from the shared `response-signing-chain` source.
 internal struct SigningChainFixture {
     /// Within every fixture leaf's 72-hour validity (2026-11-18T04:20:54Z to 2026-11-21T04:20:52Z).
     static let now: TimeInterval = 1_795_000_000
@@ -1756,12 +1746,7 @@ internal struct SigningChainFixture {
     }
 
     private static func url(_ name: String, _ ext: String) throws -> URL {
-        #if SWIFT_PACKAGE
-        let bundle = Bundle.module
-        #else
-        let bundle = Bundle(for: BundleToken.self)
-        #endif
-        return try XCTUnwrap(bundle.url(forResource: name, withExtension: ext, subdirectory: "response-signing-chain"))
+        try SharedSigningFixtures.url("response-signing-chain", name, ext)
     }
 
     static func credential(_ name: String) throws -> SigningChainFixture {
@@ -1834,7 +1819,23 @@ private final class MinimumNotBeforeStoreMock: FlagsMinimumNotBeforeStore {
     }
 }
 
-private final class BundleToken {}
+/// Shared signing fixtures are git-ignored and fetched by `make feature-flags-fixtures-pull`, like the precomputed corpus.
+private enum SharedSigningFixtures {
+    static func url(_ folder: String, _ name: String, _ ext: String) throws -> URL {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // Client
+            .deletingLastPathComponent() // Tests
+            .deletingLastPathComponent() // DatadogFlags
+            .appendingPathComponent("Fixtures")
+            .appendingPathComponent(folder)
+            .appendingPathComponent(name + "." + ext)
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            XCTFail("Shared fixture \(folder)/\(name).\(ext) is missing. Run `make feature-flags-fixtures-pull`.")
+            throw CocoaError(.fileNoSuchFile)
+        }
+        return url
+    }
+}
 
 private final class SigningLifecycleFetcher: FlagAssignmentsFetching {
     let responseSigningMode: Flags.ResponseSigningMode

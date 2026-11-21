@@ -1594,8 +1594,6 @@
 		F3A031202610270000000011 /* FlagsResponseSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000001 /* FlagsResponseSigning.swift */; };
 		F3A031202610270000000012 /* FlagsSigningCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000002 /* FlagsSigningCertificate.swift */; };
 		F3A031202610270000000013 /* FlagsResponseSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000003 /* FlagsResponseSigningTests.swift */; };
-		F3A031202610270000000014 /* response-signing in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000004 /* response-signing */; };
-		F3A031202610270000000015 /* response-signing-chain in Resources */ = {isa = PBXBuildFile; fileRef = F3A031202610270000000005 /* response-signing-chain */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3720,8 +3718,6 @@
 		F3A031202610270000000001 /* FlagsResponseSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsResponseSigning.swift; sourceTree = "<group>"; };
 		F3A031202610270000000002 /* FlagsSigningCertificate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsSigningCertificate.swift; sourceTree = "<group>"; };
 		F3A031202610270000000003 /* FlagsResponseSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsResponseSigningTests.swift; sourceTree = "<group>"; };
-		F3A031202610270000000004 /* response-signing */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "response-signing"; path = "../DatadogFlags/Tests/Fixtures/response-signing"; sourceTree = SOURCE_ROOT; };
-		F3A031202610270000000005 /* response-signing-chain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "response-signing-chain"; path = "../DatadogFlags/Tests/Fixtures/response-signing-chain"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4704,8 +4700,6 @@
 				F1A600000000000000000003 /* FirstFlagsCallbackTests.swift */,
 				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
 				F3A031202610270000000003 /* FlagsResponseSigningTests.swift */,
-				F3A031202610270000000004 /* response-signing */,
-				F3A031202610270000000005 /* response-signing-chain */,
 				D1A600001000000000000003 /* FlagsRequestDiagnosticsTests.swift */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
 				11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */,
@@ -8919,8 +8913,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A031202610270000000014 /* response-signing in Resources */,
-				F3A031202610270000000015 /* response-signing-chain in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
