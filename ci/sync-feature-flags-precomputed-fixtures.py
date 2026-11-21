@@ -219,6 +219,9 @@ def load_sources(config):
         if not isinstance(spec['files'], dict) or not all(isinstance(k, str) and isinstance(v, str)
                                                           for k, v in spec['files'].items()):
             raise ValueError(f'Source {name} has an invalid file map')
+        if any(not Path(path).parts or Path(path).is_absolute() or '..' in Path(path).parts
+               for path in spec['files'].values()):
+            raise ValueError(f'Source {name} file map must stay inside the snapshot')
         if spec.get('destination') in destinations:
             raise ValueError(f'Source {name} reuses a destination')
         names.add(name)
