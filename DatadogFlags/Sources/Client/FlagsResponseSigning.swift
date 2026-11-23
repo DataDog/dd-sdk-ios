@@ -128,7 +128,7 @@ internal struct FlagsResponseVerification: Equatable {
     let verifiedAt: TimeInterval
     let expiresAt: TimeInterval
     var cacheScope: String? = nil
-    /// The verified response carried a minimum not-before value that the SDK ignored.
+    /// The verified response carried a minimum leaf not-before value that the SDK ignored.
     var ignoredMinimumNotBefore = false
 
     /// `allowExpired` keeps a proof usable after `expiresAt`: it was verified once in this scope, but it is not fresh.
@@ -138,10 +138,11 @@ internal struct FlagsResponseVerification: Equatable {
     }
 }
 
-/// DRAFT wire. Persists the highest accepted minimum not-before value per trust anchor.
+/// DRAFT wire. Persists the highest accepted minimum leaf not-before value (the leaf floor) per trust anchor.
 /// This is the only data that `required` mode persists. It holds no flag data.
 internal protocol FlagsMinimumNotBeforeStore: AnyObject {
-    func value(forAnchor anchor: String) -> UInt64?
+    /// `waitForRead` waits for the first persistent read with no time limit, so the floor is never skipped.
+    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64?
     func store(_ value: UInt64, forAnchor anchor: String)
 }
 
@@ -150,7 +151,7 @@ internal final class InMemoryMinimumNotBeforeStore: FlagsMinimumNotBeforeStore {
     @ReadWriteLock
     private var values: [String: UInt64] = [:]
 
-    func value(forAnchor anchor: String) -> UInt64? { values[anchor] }
+    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64? { values[anchor] }
 
     func store(_ value: UInt64, forAnchor anchor: String) {
         _values.mutate { $0[anchor] = max($0[anchor] ?? 0, value) }
@@ -159,7 +160,7 @@ internal final class InMemoryMinimumNotBeforeStore: FlagsMinimumNotBeforeStore {
 
 /// Persists values in the Flags feature data store, so they survive a restart.
 internal final class DataStoreMinimumNotBeforeStore: FlagsMinimumNotBeforeStore {
-    static let keyPrefix = "response-signing-minimum-not-before-"
+    static let keyPrefix = "response-signing-minimum-leaf-not-before-"
     private let dataStore: any DataStore
     private let readTimeout: TimeInterval
     private let lock = NSLock()
@@ -171,14 +172,15 @@ internal final class DataStoreMinimumNotBeforeStore: FlagsMinimumNotBeforeStore 
         self.readTimeout = readTimeout
     }
 
-    func value(forAnchor anchor: String) -> UInt64? {
+    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64? {
         lock.lock()
         if let cached = values[anchor] {
             lock.unlock()
             return cached
         }
         lock.unlock()
-        // Verification runs on the assignment fetch queue, so a short wait for the first read is safe.
+        // Verification runs on the assignment fetch queue, never on the data store queue, so waiting is safe.
+        // `required` waits for the read: it must never skip the floor. `observe` waits a short time.
         let group = DispatchGroup()
         group.enter()
         var read: UInt64??
@@ -189,11 +191,15 @@ internal final class DataStoreMinimumNotBeforeStore: FlagsMinimumNotBeforeStore 
             lock.unlock()
             group.leave()
         }
-        _ = group.wait(timeout: .now() + readTimeout)
+        if waitForRead {
+            group.wait()
+        } else {
+            _ = group.wait(timeout: .now() + readTimeout)
+        }
         lock.lock()
         defer { lock.unlock() }
         guard let read else {
-            // The read did not finish in time. Try again on the next verification.
+            // `observe` only: the read did not finish in time. Try again on the next verification.
             return values[anchor] ?? nil
         }
         let merged = [values[anchor] ?? nil, read].compactMap { $0 }.max()
@@ -349,7 +355,7 @@ internal final class FlagsResponseVerifier {
         let issuedAt = try Self.seconds(Self.header(response, "issued-at"))
         let expiresAt = try Self.seconds(Self.header(response, "expires-at"))
         // DRAFT wire: optional, and bound in the transcript when present.
-        let minimumNotBefore = try Self.optionalHeader(response, "minimum-not-before").map(Self.seconds)
+        let minimumNotBefore = try Self.optionalHeader(response, "minimum-leaf-not-before").map(Self.seconds)
         let seconds = now.timeIntervalSince1970
         guard Double(issuedAt) <= seconds + 30, Double(expiresAt) > seconds,
             expiresAt > issuedAt, expiresAt - issuedAt <= 300
@@ -403,16 +409,16 @@ internal final class FlagsResponseVerifier {
             minimumNotBefore: minimumNotBefore
         )
         try Self.verifySignature(signature, bytes: transcript, key: leaf.publicKey)
-        let chain = [leaf] + intermediates
+        // The floor applies to the leaf only. It is never compared with an intermediate.
         let anchorKey = Self.hex(Self.digest(anchor))
-        if let stored = minimumNotBeforeStore.value(forAnchor: anchorKey),
-            chain.contains(where: { $0.notBefore < Double(stored) }) {
+        if let stored = minimumNotBeforeStore.value(forAnchor: anchorKey, waitForRead: configuration.mode == .required),
+            leaf.notBefore < Double(stored) {
             throw FlagsSigningError.revokedCertificate
         }
         var verification = FlagsResponseVerification(scope: scope, verifiedAt: seconds, expiresAt: Double(expiresAt))
         if let minimumNotBefore {
-            // A response must never revoke its own chain.
-            if chain.contains(where: { Double(minimumNotBefore) > $0.notBefore }) {
+            // A response must never revoke its own leaf.
+            if Double(minimumNotBefore) > leaf.notBefore {
                 verification.ignoredMinimumNotBefore = true
             } else {
                 minimumNotBeforeStore.store(minimumNotBefore, forAnchor: anchorKey)

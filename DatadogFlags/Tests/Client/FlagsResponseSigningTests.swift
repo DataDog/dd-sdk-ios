@@ -1749,104 +1749,133 @@ extension FlagsResponseSigningTests {
         )
     }
 
-    func testMinimumNotBeforeRevokesAnOlderChainAndSurvivesARestart() throws {
-        let anchor = try SigningChainFixture.root("root-a")
-        let anchorKey = SHA256.hash(data: anchor).map { String(format: "%02x", $0) }.joined()
-        let store = MinimumNotBeforeStoreMock()
-        let configuration = Flags.ResponseSigningConfiguration(mode: .required, trustedRootCertificates: [anchor])
-        let verifier = FlagsResponseVerifier(configuration: configuration, minimumNotBeforeStore: store)
-        let newChain = try SigningChainFixture.credential("one-intermediate")
-        let oldChain = try SigningChainFixture.credential("two-intermediates")
-        let value = try newChain.oldestNotBefore()
-        XCTAssertGreaterThan(value, try oldChain.oldestNotBefore(), "The fixtures must have an older chain")
+    private func requiredVerifier(store: any FlagsMinimumNotBeforeStore) throws -> FlagsResponseVerifier {
+        FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
+            minimumNotBeforeStore: store
+        )
+    }
 
-        // Without a stored value, both chains verify.
+    private func anchorKey() throws -> String {
+        SHA256.hash(data: try SigningChainFixture.root("root-a")).map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// `two-intermediates` has an older leaf than `rotated-lower-intermediate`. Both chains share the upper intermediate,
+    /// and every intermediate is older than both leaves.
+    func testLeafFloorRevokesAnOlderLeafAndSurvivesARestart() throws {
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = try requiredVerifier(store: store)
+        let oldLeaf = try SigningChainFixture.credential("two-intermediates")
+        let newLeaf = try SigningChainFixture.credential("rotated-lower-intermediate")
+        XCTAssertEqual(oldLeaf.intermediates.last, newLeaf.intermediates.last, "The chains share the upper intermediate")
+        let floor = try newLeaf.leafNotBefore()
+        XCTAssertGreaterThan(floor, try oldLeaf.leafNotBefore())
+
+        // Without a stored floor, both leaves verify.
         XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates")))
-        // The new chain carries the value, and the SDK stores it.
-        let proof = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value))
+        let proof = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor))
         XCTAssertFalse(proof.ignoredMinimumNotBefore)
-        XCTAssertEqual(store.values[anchorKey], value)
-        // The old chain is now revoked. The new chain still verifies.
+        XCTAssertEqual(store.values[try anchorKey()], floor)
+        // The old leaf is now revoked. The new leaf still verifies.
         XCTAssertThrowsError(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates"))) {
             XCTAssertEqual($0 as? FlagsSigningError, .revokedCertificate)
         }
-        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate")))
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate")))
 
         // A restart creates a new verifier with the same persisted store.
-        let restarted = FlagsResponseVerifier(configuration: configuration, minimumNotBeforeStore: store)
+        let restarted = try requiredVerifier(store: store)
         XCTAssertThrowsError(try verify(restarted, signedFixtureResponse(restarted, "two-intermediates"))) {
             XCTAssertEqual($0 as? FlagsSigningError, .revokedCertificate)
+        }
+    }
+
+    /// The old rule ignored a floor that was later than any certificate in the chain, so it could not pass
+    /// the oldest intermediate. The leaf-only floor never compares with intermediates.
+    func testNewLeafWithOlderIntermediatesIsAccepted() throws {
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = try requiredVerifier(store: store)
+        let newLeaf = try SigningChainFixture.credential("rotated-lower-intermediate")
+        let floor = try newLeaf.leafNotBefore()
+        let intermediates = try newLeaf.intermediates.map { try FlagsSigningCertificate(der: $0, role: .intermediate) }
+        XCTAssertTrue(intermediates.allSatisfy { $0.notBefore < Double(floor) }, "Every intermediate is older than the floor")
+        let proof = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor))
+        XCTAssertFalse(proof.ignoredMinimumNotBefore)
+        XCTAssertEqual(store.values[try anchorKey()], floor)
+        for _ in 0..<2 {
+            XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate")))
         }
     }
 
     func testMinimumNotBeforeDataStoreKeepsTheHighestValueAcrossARestart() throws {
         let dataStore = DataStoreMock()
         let first = DataStoreMinimumNotBeforeStore(dataStore: dataStore)
-        XCTAssertNil(first.value(forAnchor: "anchor"))
+        for wait in [true, false] {
+            XCTAssertNil(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor", waitForRead: wait))
+        }
         first.store(20, forAnchor: "anchor")
         first.store(10, forAnchor: "anchor")
-        XCTAssertEqual(first.value(forAnchor: "anchor"), 20)
-        XCTAssertNil(first.value(forAnchor: "other"))
+        XCTAssertEqual(first.value(forAnchor: "anchor", waitForRead: true), 20)
+        XCTAssertNil(first.value(forAnchor: "other", waitForRead: true))
         // A restart reads the persisted value from the feature data store.
         let restarted = DataStoreMinimumNotBeforeStore(dataStore: dataStore)
-        XCTAssertEqual(restarted.value(forAnchor: "anchor"), 20)
+        XCTAssertEqual(restarted.value(forAnchor: "anchor", waitForRead: true), 20)
         restarted.store(15, forAnchor: "anchor")
-        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor"), 20)
+        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor", waitForRead: false), 20)
         restarted.store(30, forAnchor: "anchor")
-        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor"), 30)
+        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor", waitForRead: true), 30)
     }
 
-    /// Intermediates are older than every leaf. A value between an old leaf and a new leaf would revoke
-    /// the shared intermediates, so the SDK ignores it, and later responses on both chains still verify.
-    func testMinimumNotBeforeBetweenTwoLeavesWithOlderIntermediatesIsIgnored() throws {
+    /// iOS only: a slow first read must not skip the floor in `required` mode.
+    func testRequiredWaitsForASlowFloorReadAndNeverSkipsTheCheck() throws {
+        let persisted = DataStoreMock()
+        let floor = try SigningChainFixture.credential("rotated-lower-intermediate").leafNotBefore()
+        DataStoreMinimumNotBeforeStore(dataStore: persisted).store(floor, forAnchor: try anchorKey())
+        let slow = SlowDataStore(wrapping: persisted, delay: 1)
         let anchor = try SigningChainFixture.root("root-a")
-        let store = MinimumNotBeforeStoreMock()
-        let verifier = FlagsResponseVerifier(
+
+        let required = FlagsResponseVerifier(
             configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
-            minimumNotBeforeStore: store
+            minimumNotBeforeStore: DataStoreMinimumNotBeforeStore(dataStore: slow, readTimeout: 0.1)
         )
-        let oldLeafChain = try SigningChainFixture.credential("two-intermediates")
-        let newLeafChain = try SigningChainFixture.credential("rotated-lower-intermediate")
-        XCTAssertEqual(oldLeafChain.intermediates.last, newLeafChain.intermediates.last, "The chains share the upper intermediate")
-        let value = try newLeafChain.leafNotBefore()
-        XCTAssertGreaterThan(value, try oldLeafChain.leafNotBefore())
-        XCTAssertLessThanOrEqual(try newLeafChain.oldestNotBefore(), try oldLeafChain.leafNotBefore())
-        let proof = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: value))
-        XCTAssertTrue(proof.ignoredMinimumNotBefore)
-        XCTAssertTrue(store.values.isEmpty)
-        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate")))
-        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates")))
+        XCTAssertThrowsError(try verify(required, signedFixtureResponse(required, "two-intermediates"))) {
+            XCTAssertEqual($0 as? FlagsSigningError, .revokedCertificate)
+        }
+
+        // `observe` waits only for the short read timeout. The next verification uses the finished read.
+        let observeStore = DataStoreMinimumNotBeforeStore(dataStore: slow, readTimeout: 0.1)
+        let observe = FlagsResponseVerifier(
+            configuration: .init(mode: .observe, trustedRootCertificates: [anchor]),
+            minimumNotBeforeStore: observeStore
+        )
+        XCTAssertNoThrow(try verify(observe, signedFixtureResponse(observe, "two-intermediates")))
+        XCTAssertEqual(observeStore.value(forAnchor: try anchorKey(), waitForRead: true), floor)
+        XCTAssertThrowsError(try verify(observe, signedFixtureResponse(observe, "two-intermediates")))
     }
 
     func testMinimumNotBeforeLowerThanTheStoredValueIsIgnored() throws {
-        let anchor = try SigningChainFixture.root("root-a")
-        let anchorKey = SHA256.hash(data: anchor).map { String(format: "%02x", $0) }.joined()
         let store = MinimumNotBeforeStoreMock()
-        let verifier = FlagsResponseVerifier(
-            configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
-            minimumNotBeforeStore: store
-        )
-        let value = try SigningChainFixture.credential("one-intermediate").oldestNotBefore()
-        _ = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value))
-        _ = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value - 1))
-        XCTAssertEqual(store.values[anchorKey], value)
+        let verifier = try requiredVerifier(store: store)
+        let floor = try SigningChainFixture.credential("rotated-lower-intermediate").leafNotBefore()
+        _ = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor))
+        _ = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor - 1))
+        XCTAssertEqual(store.values[try anchorKey()], floor)
     }
 
-    func testMinimumNotBeforeGreaterThanAnyCertificateInTheChainIsIgnored() throws {
-        let anchor = try SigningChainFixture.root("root-a")
+    func testLeafFloorGreaterThanTheLeafIsIgnored() throws {
         let store = MinimumNotBeforeStoreMock()
-        let verifier = FlagsResponseVerifier(
-            configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
-            minimumNotBeforeStore: store
-        )
+        let verifier = try requiredVerifier(store: store)
         let chain = try SigningChainFixture.credential("one-intermediate")
-        // Greater than the leaf, and between the intermediate and the leaf: a response never revokes its own chain.
-        for value in [try chain.leafNotBefore() + 1, try chain.oldestNotBefore() + 1] {
-            let proof = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: value))
-            XCTAssertTrue(proof.ignoredMinimumNotBefore, "\(value)")
-        }
+        // A response never revokes its own leaf.
+        let proof = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: try chain.leafNotBefore() + 1))
+        XCTAssertTrue(proof.ignoredMinimumNotBefore)
         XCTAssertTrue(store.values.isEmpty)
         XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate")))
+        // A value later than the intermediate but not later than the leaf is accepted: intermediates are not compared.
+        let between = try chain.oldestNotBefore() + 1
+        XCTAssertLessThanOrEqual(between, try chain.leafNotBefore())
+        let accepted = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: between))
+        XCTAssertFalse(accepted.ignoredMinimumNotBefore)
+        XCTAssertEqual(store.values[try anchorKey()], between)
     }
 
     func testChangedMinimumNotBeforeHeaderFailsTheSignature() throws {
@@ -1856,8 +1885,8 @@ extension FlagsResponseSigningTests {
             configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
             minimumNotBeforeStore: store
         )
-        let value = try SigningChainFixture.credential("one-intermediate").oldestNotBefore()
-        let name = FlagsResponseVerifier.prefix + "minimum-not-before"
+        let value = try SigningChainFixture.credential("one-intermediate").leafNotBefore()
+        let name = FlagsResponseVerifier.prefix + "minimum-leaf-not-before"
         let changes: [(inout [String: String]) -> Void] = [
             { $0[name] = String(value - 1) }, // changed
             { $0[name] = nil }, // removed
@@ -1882,7 +1911,8 @@ extension FlagsResponseSigningTests {
         let anchor = try SigningChainFixture.root("root-a")
         let anchorKey = SHA256.hash(data: anchor).map { String(format: "%02x", $0) }.joined()
         let body = Data.mockAnyFlagAssignmentsResponse()
-        let value = try SigningChainFixture.credential("one-intermediate").oldestNotBefore()
+        // The floor is the newer leaf, so the older `two-intermediates` leaf is revoked.
+        let value = try SigningChainFixture.credential("rotated-lower-intermediate").leafNotBefore()
         for mode in [Flags.ResponseSigningMode.required, .observe] {
             let store = MinimumNotBeforeStoreMock()
             store.values[anchorKey] = value
@@ -1990,7 +2020,7 @@ internal struct SigningChainFixture {
             prefix + "signature": try key.signature(for: transcript).derRepresentation.base64EncodedString()
         ]
         if let minimumNotBefore {
-            headers[prefix + "minimum-not-before"] = String(minimumNotBefore)
+            headers[prefix + "minimum-leaf-not-before"] = String(minimumNotBefore)
         }
         return headers
     }
@@ -2007,9 +2037,34 @@ internal struct SigningChainFixture {
     }
 }
 
+/// Answers reads after a delay on another queue, like a slow disk.
+private final class SlowDataStore: DataStore {
+    private let wrapped: DataStoreMock
+    private let delay: TimeInterval
+
+    init(wrapping wrapped: DataStoreMock, delay: TimeInterval) {
+        self.wrapped = wrapped
+        self.delay = delay
+    }
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        wrapped.setValue(value, forKey: key, version: version)
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + delay) { [wrapped] in
+            wrapped.value(forKey: key, callback: callback)
+        }
+    }
+
+    func removeValue(forKey key: String) { wrapped.removeValue(forKey: key) }
+    func clearAllData() { wrapped.clearAllData() }
+    func flush() { wrapped.flush() }
+}
+
 private final class MinimumNotBeforeStoreMock: FlagsMinimumNotBeforeStore {
     var values: [String: UInt64] = [:]
-    func value(forAnchor anchor: String) -> UInt64? { values[anchor] }
+    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64? { values[anchor] }
     func store(_ value: UInt64, forAnchor anchor: String) {
         values[anchor] = max(values[anchor] ?? 0, value)
     }

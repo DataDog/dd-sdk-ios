@@ -18,7 +18,7 @@ internal enum FlagsSigningError: String, Error {
     case invalidSignature = "invalid-signature"
     case expiredProof = "expired-proof"
     case unsupportedSite = "unsupported-site"
-    /// DRAFT wire: a certificate in the chain is older than the stored minimum not-before value.
+    /// DRAFT wire: the leaf is older than the stored minimum leaf not-before value (the leaf floor).
     case revokedCertificate = "revoked-certificate"
 
     /// What failed, for the user log.
@@ -35,7 +35,7 @@ internal enum FlagsSigningError: String, Error {
         case .invalidSignature: return "the signature does not match the request and response"
         case .expiredProof: return "the proof is expired or not yet valid"
         case .unsupportedSite: return "signing is not available on this Datadog site"
-        case .revokedCertificate: return "a certificate in the chain is older than the minimum not-before value"
+        case .revokedCertificate: return "the leaf certificate is older than the minimum leaf not-before value"
         }
     }
 

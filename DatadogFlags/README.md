@@ -106,16 +106,18 @@ When `required` rejects a response, or the SDK cannot sign a request, the contex
 
 The verified-flags cache scope does not include the RUM application ID or the RUM session. A RUM start, a RUM stop or an application ID change does not invalidate verified flags or discard an in-flight response. Each response transcript still binds `dd-application-id`.
 
-## Minimum not-before revocation (draft wire)
+## Minimum leaf not-before revocation (draft wire)
 
 DRAFT: the edge and the shared fixtures do not send this header yet. The name and the transcript rule can change.
 
-- A verified response can carry `x-datadog-feature-flags-minimum-not-before`: unix seconds, a decimal integer with no sign and no leading zeros, from 0 to 2^53-1, in one header line.
+- A verified response can carry `x-datadog-feature-flags-minimum-leaf-not-before` (the leaf floor): unix seconds, a decimal integer with no sign and no leading zeros, from 0 to 2^53-1, in one header line.
 - When the header is present, the transcript ends with `0x01` and the value as a big-endian `u64`. When it is absent, the v1 transcript does not change. So a change, an addition or a removal of the header fails the signature.
-- The SDK accepts the value only from a fully verified response. It ignores a value that is greater than the `notBefore` of any certificate in the response chain, because a response must never revoke its own chain. It reports `minimum-not-before-ignored`. It also ignores a value that is lower than the stored value.
+- The floor applies to the leaf only. The SDK never compares it with an intermediate.
+- The SDK accepts the value only from a fully verified response. It ignores a value that is greater than the `notBefore` of the leaf in the same response, because a response must never revoke its own leaf. It reports `minimum-not-before-ignored`. It also ignores a value that is lower than the stored value.
 - The SDK stores the highest value for each trust anchor (key: SHA-256 of the root DER) in the Flags feature data store, so it survives a restart. This is the only data that `required` mode persists. It holds no flag data.
-- On each verification, the SDK rejects a chain if the leaf or any intermediate has a `notBefore` lower than the stored value, with the reason `revoked-certificate`. `required` fails closed. `observe` accepts the response and reports the reason. Both modes store new values.
-- One value revokes all older certificates at every level below the root. To revoke an intermediate, the edge must reissue every certificate below the root that is older than the value.
+- On each verification, the SDK rejects a leaf with a `notBefore` lower than the stored value, with the reason `revoked-certificate`. `required` fails closed. `observe` accepts the response and reports the reason. Both modes store new values.
+- `required` waits for the first read of the stored value, so it never skips the floor. `observe` waits up to 0.5 s, and if the read is not done, that verification uses no stored value.
+- A new leaf under older intermediates is accepted. The floor cannot revoke an intermediate.
 
 ## Validation and shared fixtures
 
