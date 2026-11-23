@@ -45,6 +45,9 @@ bool dd_memory_profiler_is_running(void);
 bool dd_memory_profiler_is_paused(void);
 /// Current window origin, or zero while stopped.
 int64_t dd_memory_profiler_window_start_time_nanos(void);
+/// Sleep-inclusive elapsed age of the current window, including time paused.
+/// Returns zero while stopped or when no valid elapsed age is available.
+int64_t dd_memory_profiler_window_age_nanos(void);
 
 /// Rejects new sampled allocations and drains admitted allocation observers.
 /// Frees remain observed and the live set survives. Capture after pausing uses

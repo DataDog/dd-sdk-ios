@@ -134,6 +134,14 @@ public:
         std::lock_guard<std::mutex> lock(lifecycle_mutex);
         return is_running() ? window_start_wall : 0;
     }
+    int64_t window_age() {
+        std::lock_guard<std::mutex> lock(lifecycle_mutex);
+        if (!is_running() || window_start_monotonic <= 0) {
+            return 0;
+        }
+        const int64_t now = static_cast<int64_t>(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW));
+        return now >= window_start_monotonic ? now - window_start_monotonic : 0;
+    }
     dd_memory_capture_status_t capture(dd_memory_capture_t *capture);
     dd_memory_pprof_view_t serialize(const dd_memory_capture_t *capture);
     void allocation(const void *address, uint64_t size, const char *class_name,
@@ -618,6 +626,11 @@ extern "C" bool dd_memory_profiler_is_paused(void) {
 extern "C" int64_t dd_memory_profiler_window_start_time_nanos(void) {
     auto *owner = profiler();
     return owner == nullptr ? 0 : owner->window_start_time();
+}
+
+extern "C" int64_t dd_memory_profiler_window_age_nanos(void) {
+    auto *owner = profiler();
+    return owner == nullptr ? 0 : owner->window_age();
 }
 
 extern "C" void dd_memory_profiler_pause(void) {

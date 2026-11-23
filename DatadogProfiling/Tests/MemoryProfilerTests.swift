@@ -1430,7 +1430,9 @@ final class MemoryProfilerTests: XCTestCase {
     func testMissingRUMBeyondFormerSamplingCutoffPreservesLaunchAndLiveObjects() {
         let origin = dd_memory_profiler_window_start_time_nanos()
         record(size: 16)
-        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(61)))
+        let clock = MemoryProfilerMonotonicClockMock()
+        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(61)), monotonicClock: clock)
+        clock.elapsedTime = 61
         drain()
 
         for index in 0..<3 {
@@ -1463,7 +1465,9 @@ final class MemoryProfilerTests: XCTestCase {
     }
 
     func testConsentRecoveryWithoutRUMBeyondFormerSamplingCutoffKeepsLiveObjects() {
-        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(61)))
+        let clock = MemoryProfilerMonotonicClockMock()
+        let profiler = makeProfiler(dateProvider: DateProviderMock(now: Date().addingTimeInterval(61)), monotonicClock: clock)
+        clock.elapsedTime = 61
         drain()
         receive(context: context(consent: .notGranted, state: .background, hasRUM: false), on: profiler)
         drain()
@@ -1852,18 +1856,28 @@ final class MemoryProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
-    func testLateProfilerInitializationFallsBackOnFirstSharedTick() throws {
+    func testForwardClockBeforeProfilerInitializationDoesNotExpireLaunch() throws {
         let origin = dd_memory_profiler_window_start_time_nanos()
         record(size: 16)
         let dateProvider = DateProviderMock(
-            now: Date(timeIntervalSince1970: Double(origin) / 1_000_000_000).addingTimeInterval(61)
+            now: Date(timeIntervalSince1970: Double(origin) / 1_000_000_000).addingTimeInterval(3_600)
         )
-        let profiler = makeProfiler(profilingInterval: 0.02, dateProvider: dateProvider)
-        let written = expectation(description: "Already expired native launch is captured")
-        core.onEventWriteContext = { _ in written.fulfill() }
+        let clock = MemoryProfilerMonotonicClockMock()
+        let profiler = makeProfiler(profilingInterval: 0.02, dateProvider: dateProvider, monotonicClock: clock)
+        let unexpectedWrite = invertedExpectation(description: "Wall-clock correction does not expire the launch")
+        core.onEventWriteContext = { _ in unexpectedWrite.fulfill() }
         receive(context: context(), on: profiler)
         let task = DurationEvent(id: "late-enable", type: .longTask, start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds, duration: 0)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
+        wait(for: [unexpectedWrite], timeout: 0.1)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+        XCTAssertTrue(core.events.isEmpty)
+
+        let written = expectation(description: "Elapsed launch grace expires on a shared tick")
+        core.onEventWriteContext = { _ in written.fulfill() }
+        clock.elapsedTime = 61
         wait(for: [written], timeout: 3)
 
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
@@ -1873,6 +1887,42 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertEqual(diagnostics.inuse_space, 16)
         XCTAssertTrue(dd_memory_profiler_is_running())
         profiler.flushAndStop()
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testBackwardClockBeforeProfilerInitializationPreservesNativeLaunchAge() {
+        let origin = dd_memory_profiler_window_start_time_nanos()
+        let nativeAge = Double(dd_memory_profiler_window_age_nanos()) / 1_000_000_000
+        XCTAssertGreaterThan(nativeAge, 0)
+        XCTAssertLessThan(nativeAge, ProfilingScheduler.Constants.profilingInterval)
+        let dateProvider = DateProviderMock(
+            now: Date(timeIntervalSince1970: Double(origin) / 1_000_000_000).addingTimeInterval(-3_600)
+        )
+        let clock = MemoryProfilerMonotonicClockMock()
+        let profiler = makeProfiler(dateProvider: dateProvider, monotonicClock: clock)
+        receive(context: context(), on: profiler)
+        drain()
+        record(size: 16)
+
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 0)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), origin)
+
+        clock.elapsedTime = max(0, ProfilingScheduler.Constants.profilingInterval - nativeAge)
+        profiler.captureWindow()
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(diagnostics.time_nanos, origin)
+        XCTAssertEqual(diagnostics.inuse_space, 16)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+
+        let nextOrigin = dd_memory_profiler_window_start_time_nanos()
+        receiveTTID(on: profiler)
+        drain()
+        XCTAssertEqual(diagnostics.captures_count, 1)
+        XCTAssertEqual(dd_memory_profiler_window_start_time_nanos(), nextOrigin)
         withExtendedLifetime(profiler) {}
     }
 
@@ -1887,10 +1937,9 @@ final class MemoryProfilerTests: XCTestCase {
             dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
             do {
                 let origin = dd_memory_profiler_window_start_time_nanos()
-                let dateProvider = DateProviderMock(
-                    now: Date(timeIntervalSince1970: Double(origin) / 1_000_000_000).addingTimeInterval(61)
-                )
-                let profiler = makeProfiler(dateProvider: dateProvider)
+                let clock = MemoryProfilerMonotonicClockMock()
+                let profiler = makeProfiler(monotonicClock: clock)
+                clock.elapsedTime = 61
                 let writtenBefore = core.events.count
                 receive(context: context(
                     sampleRate: blocker == "sampled-out" ? 0 : 100,
