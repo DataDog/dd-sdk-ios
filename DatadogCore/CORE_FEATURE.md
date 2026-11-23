@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-09
-sdk_version: 3.21.0
-verified_against_commit: ad5ed83d9
+last_updated: 2026-11-23
+sdk_version: 3.22.0
+verified_against_commit: dd806d0fe
 tracked_files:
   - DatadogCore/Sources/Datadog.swift
   - DatadogCore/Sources/DatadogConfiguration.swift
@@ -28,7 +28,7 @@ Core (`DatadogCore`) is the SDK entry point. `Datadog.initialize()` creates an S
 
 Core must be initialized before enabling any product. Products enabled before `Datadog.initialize()`, or in an instance name that was never initialized, do nothing.
 
-**Platform**: iOS, tvOS, watchOS, visionOS. macOS and Mac Catalyst builds compile but are not officially supported; `Datadog.initialize()` prints a warning on them.
+**Platform**: iOS, tvOS, watchOS, visionOS, and macOS 12.0+ (Swift Package Manager only; Session Replay and Profiling are not available). Mac Catalyst is not officially supported; `Datadog.initialize()` prints a warning on it.
 
 ## Quick Start Example
 
@@ -190,9 +190,10 @@ flowchart LR
 - Uploads are skipped while the network is unreachable (not checked on watchOS), when battery is at 10% or below and not charging, or in Low Power Mode.
 - Responses 408, 429, 500, 502, 503, 504, 507 and network errors keep the batch for retry. 202, 400, 401, 403, 413 and any other status (for example 404 from a proxy) delete it. 401 and 403 also log "Make sure that the provided token still exists and you're targeting the relevant Datadog site."
 - `backgroundTasksEnabled` lets uploads continue in the background, with `UIApplication.beginBackgroundTask` in apps and `ProcessInfo.beginActivity` in app extensions and on watchOS. Tasks end when nothing is left to upload or an upload is blocked.
+- On macOS, when the app terminates, Core makes products write the data they hold in memory (such as RUM timeseries samples) and waits until it is stored, so it uploads on the next launch.
 
 ### Encryption
-`encryption` encrypts each event before it is written to disk and decrypts it before upload. Decryption must work across launches: events that fail to decrypt are not uploaded, and the SDK logs "Failed to decrypt data".
+`encryption` encrypts each event before it is written to disk and decrypts it before upload. Decryption must work across launches: events that fail to decrypt are not uploaded, and the SDK logs "Failed to decrypt data". Don't dispatch to other queues in `encrypt` or `decrypt`: dispatching synchronously to the main queue, for example with `DispatchQueue.main.sync`, may cause a deadlock.
 
 ### Time Synchronization
 By default the SDK computes a server time offset with Datadog NTP pools (`0-3.datadog.pool.ntp.org`, via Kronos) and applies it to event dates. If a sync fails, the SDK keeps the offset from earlier samples or the one stored by a previous session, as long as the device hasn't rebooted since. A custom `serverDateProvider` replaces this; a no-op provider leaves device time uncorrected, which can shift RUM sessions and traces.
