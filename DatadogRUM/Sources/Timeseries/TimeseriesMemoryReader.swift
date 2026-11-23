@@ -22,22 +22,9 @@ internal protocol TimeseriesMemoryReader {
 
 /// Reads `phys_footprint` and `compressed` from `task_info(TASK_VM_INFO)` in a single call.
 internal final class TaskVMInfoMemoryReader: TimeseriesMemoryReader {
-    private let TASK_VM_INFO_COUNT = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
-    private let TASK_VM_INFO_REV1_COUNT = mach_msg_type_number_t((MemoryLayout.offset(of: \task_vm_info_data_t.min_address) ?? 0) / MemoryLayout<integer_t>.size)
-
     func readMemory() -> TimeseriesMemoryValues? {
-        var info = task_vm_info_data_t()
-        var count = TASK_VM_INFO_COUNT
-        let kernelReturn = withUnsafeMutablePointer(to: &info) { infoPtr in
-            infoPtr.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { intPtr in
-                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), intPtr, &count)
-            }
+        return VitalMemoryReader.readTaskVMInfo().map {
+            TimeseriesMemoryValues(footprint: Double($0.phys_footprint), nonResident: Double($0.compressed))
         }
-
-        guard kernelReturn == KERN_SUCCESS, count >= TASK_VM_INFO_REV1_COUNT else {
-            return nil
-        }
-
-        return TimeseriesMemoryValues(footprint: Double(info.phys_footprint), nonResident: Double(info.compressed))
     }
 }
