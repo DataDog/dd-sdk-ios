@@ -152,6 +152,9 @@ internal struct FlagsSigningDER {
                     guard length == 0 else {
                         throw FlagsSigningError.invalidCertificate
                     }
+                case 23, 24:
+                    // Every UTCTime and GeneralizedTime must be valid, not only the Validity dates.
+                    _ = try FlagsSigningCertificate.time(tag: tag, content: Data(bytes[start..<end]))
                 case 6:
                     guard length > 0, bytes[end - 1] & 128 == 0 else {
                         throw FlagsSigningError.invalidCertificate
@@ -267,6 +270,7 @@ internal struct FlagsSigningCertificate {
             guard let value = item.children.last, value.tag == 4, extensions[oid] == nil else {
                 throw FlagsSigningError.invalidCertificate
             }
+            // Extension values are DER. The parse also checks every time value inside them.
             _ = try FlagsSigningDER.parse(value.content)
             guard ![Data([85, 29, 30]), Data([85, 29, 33]), Data([85, 29, 36]), Data([85, 29, 54])].contains(oid) else {
                 throw FlagsSigningError.invalidCertificate
@@ -409,15 +413,31 @@ internal struct FlagsSigningCertificate {
     }
 
     private static func date(_ value: FlagsSigningDER) throws -> TimeInterval {
-        guard let string = String(data: value.content, encoding: .ascii),
-            string.last == "Z", value.tag == 23 || value.tag == 24,
-            string.count == (value.tag == 23 ? 13 : 15),
+        try time(tag: value.tag, content: value.content)
+    }
+
+    /// One shared formatter: `DateFormatter` is thread-safe for parsing and formatting.
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyyMMddHHmmss'Z'"
+        formatter.isLenient = false
+        return formatter
+    }()
+
+    /// Parses a UTCTime (tag 23) or GeneralizedTime (tag 24) in the strict DER `Z` form.
+    static func time(tag: UInt8, content: Data) throws -> TimeInterval {
+        guard let string = String(data: content, encoding: .ascii),
+            string.last == "Z", tag == 23 || tag == 24,
+            string.count == (tag == 23 ? 13 : 15),
             string.dropLast().allSatisfy({ $0.isASCII && $0.isNumber })
         else {
             throw FlagsSigningError.invalidCertificate
         }
         let full: String
-        if value.tag == 23 {
+        if tag == 23 {
             guard let year = Int(string.prefix(2)) else {
                 throw FlagsSigningError.invalidCertificate
             }
@@ -425,12 +445,7 @@ internal struct FlagsSigningCertificate {
         } else {
             full = string
         }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = "yyyyMMddHHmmss'Z'"
-        formatter.isLenient = false
+        let formatter = timeFormatter
         guard let date = formatter.date(from: full), formatter.string(from: date) == full else {
             throw FlagsSigningError.invalidCertificate
         }

@@ -454,7 +454,8 @@ internal final class FlagsRepository {
         guard flagAssignmentsFetcher.responseSigningMode == .required else {
             return true
         }
-        guard data.context == context else {
+        // A proof binds the request bytes, so required mode matches contexts by their wire identity.
+        guard let context, data.context.hasSameWireIdentity(as: context) else {
             return false
         }
         return flagAssignmentsFetcher.isTrusted(data.verification, at: dateProvider.now)
@@ -673,7 +674,8 @@ internal final class FlagsRepository {
             // Only use cached flags if they match the requested context to avoid
             // serving flags from a different user/context.
             let verified = state.verifiedFlagsData.flatMap { data in
-                data.context == context && data.experimentationOptOutPolicy == state.requestedOptOut
+                data.context.hasSameWireIdentity(as: context)
+                    && data.experimentationOptOutPolicy == state.requestedOptOut
                     && flagAssignmentsFetcher.isTrusted(data.verification, at: dateProvider.now)
                     ? data : nil
             }

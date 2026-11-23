@@ -69,10 +69,21 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private let dateProvider: any DateProvider
     private let signingFetch: ((URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void)?
     private var reportedSigningOutcomes = Set<String>()
+    /// The only context values that the signing scope reads. RUM and other context changes do not change them.
+    private struct ScopeInputs: Equatable {
+        let site: DatadogSite
+        let env: String
+        let clientToken: String
+        let source: String
+    }
     private struct SigningLifecycleState {
         var cacheScope: String?
+        var scopeInputs: ScopeInputs?
         var stopped = false
+        var sessionInvalidated = false
     }
+    /// Invalidated when the feature lifetime ends, so it releases its delegate.
+    private let signingSession: URLSession?
     @ReadWriteLock
     private var signingState = SigningLifecycleState()
 
@@ -90,14 +101,27 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         _signingState.mutate { state in
             state.stopped = true
             state.cacheScope = nil
+            state.scopeInputs = nil
+            state.sessionInvalidated = signingSession != nil
         }
+        signingSession?.finishTasksAndInvalidate()
     }
+
+    /// For tests: the signing session that the feature lifetime invalidates.
+    var responseSigningSession: URLSession? { signingSession }
+    var hasInvalidatedSigningSession: Bool { signingState.sessionInvalidated }
 
     /// Called on the core context bus before queued network work. Completion cannot restore an older scope.
     @discardableResult
     func updateResponseSigningCacheScope(_ context: DatadogContext) -> String? {
         guard let verifier, !signingState.stopped else {
             return nil
+        }
+        let inputs = ScopeInputs(site: context.site, env: context.env, clientToken: context.clientToken, source: context.source)
+        // Core sends a context message for each context write. Skip the work when no scope input changed.
+        let current = signingState
+        if current.scopeInputs == inputs, let scope = current.cacheScope {
+            return scope
         }
         let request = try? URLRequest.flagAssignmentsRequest(
             url: url(with: context),
@@ -120,6 +144,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 return
             }
             state.cacheScope = scope
+            state.scopeInputs = scope == nil ? nil : inputs
             activeScope = scope
         }
         return activeScope
@@ -174,6 +199,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             flagSelection: flagSelection,
             featureScope: featureScope,
             responseSigning: responseSigning,
+            signingSession: responseSigning.mode == .off ? nil : urlSession,
             signingFetch: urlSession.fetchSigning,
             fetch: urlSession.fetch
         )
@@ -192,6 +218,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         responseSigning: Flags.ResponseSigningConfiguration = .init(),
         dateProvider: any DateProvider = SystemDateProvider(),
         minimumNotBeforeStore: (any FlagsMinimumNotBeforeStore)? = nil,
+        signingSession: URLSession? = nil,
         signingFetch: ((URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void)? = nil,
         fetch: @escaping (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
     ) {
@@ -208,6 +235,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 configuration: responseSigning,
                 minimumNotBeforeStore: minimumNotBeforeStore ?? DataStoreMinimumNotBeforeStore(dataStore: featureScope.dataStore)
             )
+        self.signingSession = signingSession
         self.signingFetch = signingFetch
     }
 
@@ -289,6 +317,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     cacheScope: cacheScope,
                     supportsObfuscation: FlagKeyObfuscation.isSupported(source: context.source),
                     requestCarriedAssignmentToken: assignmentToken != nil,
+                    telemetry: SigningTelemetryContext(sdkVersion: context.sdkVersion, site: Self.signingSite(request.url)),
                     completion: completion
                 )
                 return
@@ -320,12 +349,13 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         cacheScope: String?,
         supportsObfuscation: Bool,
         requestCarriedAssignmentToken: Bool,
+        telemetry: SigningTelemetryContext,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         let prepared: URLRequest?
         do { prepared = try verifier.prepare(request) } catch {
             let reason = error as? FlagsSigningError ?? .unsupportedRequest
-            reportSigning(reason)
+            reportSigning(reason, telemetry: telemetry)
             guard responseSigningMode == .observe else {
                 completion(.failure(.responseSigningFailed(reason: reason.rawValue)))
                 return
@@ -392,13 +422,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                                 now: self.dateProvider.now
                             )
                             proof?.cacheScope = cacheScope
-                            self.reportSigning(nil)
+                            self.reportSigning(nil, telemetry: telemetry)
                             if proof?.ignoredMinimumNotBefore == true {
-                                self.reportSigningReason("minimum-not-before-ignored")
+                                // Not a failure, so it is not a signing telemetry reason.
+                                DD.logger.debug("Flag response signing: minimum-not-before-ignored.")
                             }
                         } catch {
                             let reason = error as? FlagsSigningError ?? .invalidProof
-                            self.reportSigning(reason)
+                            self.reportSigning(reason, telemetry: telemetry)
                             guard self.responseSigningMode == .observe else {
                                 completion(.failure(.responseSigningFailed(reason: reason.rawValue)))
                                 return
@@ -421,8 +452,35 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         }
     }
 
-    private func reportSigning(_ error: FlagsSigningError?) {
-        if let error, !reportedSigningOutcomes.contains(error.rawValue) {
+    /// The SDK version and the Datadog site of a signed request, for signing telemetry.
+    struct SigningTelemetryContext {
+        let sdkVersion: String
+        let site: String
+    }
+
+    /// The Datadog site of a flags endpoint, for example `datad0g.com`. Other hosts report `custom`,
+    /// so telemetry never carries a URL.
+    static func signingSite(_ url: URL?) -> String {
+        let host = url?.host?.lowercased() ?? ""
+        let prefix = "preview.ff-cdn."
+        guard host.hasPrefix(prefix) else {
+            return "custom"
+        }
+        let site = String(host.dropFirst(prefix.count))
+        return site == "datad0g.com" || site.hasSuffix("datadoghq.com") || site.hasSuffix("datadoghq.eu") ? site : "custom"
+    }
+
+    /// One `flags.response_signing` event for each distinct (mode, result, reason) in the process.
+    @ReadWriteLock
+    private static var reportedSigningEvents = Set<String>()
+
+    /// For tests only.
+    static func resetSigningTelemetry() {
+        _reportedSigningEvents.mutate { $0.removeAll() }
+    }
+
+    private func reportSigning(_ error: FlagsSigningError?, telemetry: SigningTelemetryContext) {
+        if let error, reportedSigningOutcomes.insert(error.rawValue).inserted {
             // One user log for each code. `required` fails closed, so it logs an error; `observe` only warns.
             if responseSigningMode == .required {
                 DD.logger.error(error.logMessage)
@@ -430,18 +488,33 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 DD.logger.warn(error.logMessage + " Flags are not verified.")
             }
         }
-        reportSigningReason(error?.rawValue ?? "verified")
-    }
-
-    private func reportSigningReason(_ outcome: String) {
-        guard reportedSigningOutcomes.insert(outcome).inserted else {
+        let mode: String
+        switch responseSigningMode {
+        case .off: return
+        case .observe: mode = "observe"
+        case .required: mode = "required"
+        }
+        // `required` reports failures only. `observe` reports every result.
+        if responseSigningMode == .required && error == nil {
             return
         }
-        featureScope.telemetry.debug(
-            id: "flags-response-signing-\(outcome)",
-            message: "Flags response signing",
-            attributes: ["outcome": outcome]
-        )
+        let result = error == nil ? "verified" : "unverified"
+        let key = "\(mode):\(result):\(error?.rawValue ?? "")"
+        var inserted = false
+        Self._reportedSigningEvents.mutate { inserted = $0.insert(key).inserted }
+        guard inserted else {
+            return
+        }
+        var attributes: [String: Encodable] = [
+            "mode": mode,
+            "result": result,
+            "sdk_version": telemetry.sdkVersion,
+            "site": telemetry.site
+        ]
+        if let error {
+            attributes["reason"] = error.rawValue
+        }
+        featureScope.telemetry.debug(id: "flags.response_signing:" + key, message: "flags.response_signing", attributes: attributes)
     }
 
     /// Returns the reason to report for a `DD-Flag-Selection-Ignored` value, or `nil` when the header is absent or empty.

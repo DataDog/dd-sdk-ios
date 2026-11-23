@@ -31,7 +31,7 @@ Each client keeps its own configuration and current policy. If a client name alr
 This option controls evaluation telemetry only. Exposure events can still contain subject data. It does not replace the SDK tracking-consent API.
 
 
-# Response signing (experimental)
+## Response signing (experimental)
 
 Experimental. Response signing is in preview and works only on the Datadog staging endpoint. The API can change or be removed in a minor release, based on customer feedback. The configuration property is `Flags.Configuration.experimentalResponseSigning`.
 
@@ -54,7 +54,7 @@ The SDK pins one built-in anchor: `CN=Datadog Customer Signing Root CA - staging
 The application's `env` value does not select a root. There is no public API to add roots, and no roots are downloaded. Tests inject their own roots through an internal initializer.
 Use required mode for the staging pilot; keep production signing off. Fresh sessions provide observations across rotations without adding polling.
 
-`observe` attempts verification and records a bounded outcome, then accepts otherwise-valid responses when proof is absent, invalid or expired. Authentication, HTTP, redirect and JSON errors retain their ordinary failure behavior. Observation data uses a separate cache namespace hashed from the effective token, endpoint/query, environment, app ID, custom headers, mode and root pins; it never becomes a verified cache entry. The SDK waits for the current core scope before reading that namespace and never promotes client-name-only legacy data. A separately retained verified response remains available for same-context failure fallback until its original expiry.
+`observe` attempts verification and records a bounded outcome, then accepts otherwise-valid responses when proof is absent, invalid or expired. Authentication, HTTP and JSON errors retain their ordinary failure behavior. Redirects fail the request in observe and required modes. Signing-off requests still follow redirects. If observe mode cannot prepare a signed request, it sends the ordinary request. Observation data uses a separate cache namespace hashed from the effective token, endpoint/query, environment, custom headers, mode and root pins; it never becomes a verified cache entry. The SDK waits for the current core scope before reading that namespace and never promotes client-name-only legacy data. A separately retained verified response remains available for same-context failure fallback until its original expiry.
 
 `required` accepts only a complete, valid public v1 response with a certificate chain under the pinned staging root. It never retries an unsigned request. Verified fallback is memory-only, tied to this feature instance, the complete current request configuration scope and the exact evaluation context, and expires at the original signed deadline (at most five minutes). No flag data is trusted or written to disk in this mode; evaluation returns defaults after a context change without a fresh response, or after a restart. Proof expiry depends on `expireVerifiedFlags` (see below). Core context messages invalidate the old scope before further reads; reset, scope changes and superseded requests cannot restore old assignments. Stopping the SDK releases a feature-owned lifetime guard, permanently invalidating signing on retained clients and fetchers. Pending responses and later context messages cannot reactivate that instance. Configure the mode when enabling Flags; replace the feature instance through the ordinary SDK lifecycle to change trust configuration.
 
@@ -143,9 +143,8 @@ python3 ci/sync-feature-flags-precomputed-fixtures.py --verify
 python3 ci/sync-feature-flags-precomputed-fixtures.py --update --ref <full-upstream-sha>
 ```
 
-The implementation profile is SHA-256 `a32c6919d1f730b076994f89317ef441fa4c4b4556c093edf0216632a882f783`, with applicability profile `response-signing-public-v1`. The FFE LEAN spreadsheet remains decision authority; this implementation has no Lean proof claim.
+The implementation profile is SHA-256 `a32c6919d1f730b076994f89317ef441fa4c4b4556c093edf0216632a882f783`, with applicability profile `response-signing-public-v1`.
 
-Before merge, run `make test-ios SCHEME=DatadogFlags USE_TEST_VISIBILITY=0`, `make lint`, and `make api-surface` on the supported Xcode/macOS toolchain. Review and commit the generated API surface. Native tests cover all manifest-listed response cases, a noncanonical leaf KeyUsage regression, exact transcripts, effective custom token/query binding, unsigned observation, required rejection, redirects, expiry, context/reset races, disk isolation and verified fallback retention. Linux syntax checks and explicit OpenSSL/environment-backed Swift verifier/lifecycle harnesses do not establish Apple runtime or device conformance.
 
 ## Subject authorization for assignment downloads
 

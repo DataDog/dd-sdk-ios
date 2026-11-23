@@ -16,6 +16,7 @@ tracked_files:
   - DatadogFlags/Sources/Models/AnyValue.swift
   - DatadogFlags/Sources/Client/FlagsClientInternal.swift
   - DatadogFlags/Sources/Models/FlagAssignment.swift
+  - DatadogFlags/Sources/Client/FlagsResponseSigning.swift
 ---
 
 # Flags Feature
@@ -66,7 +67,9 @@ Flags.enable(
         // Add evaluated flags to the active RUM view. Default: true.
         rumIntegrationEnabled: true,
         // Load only flags matching these tags or whole-key patterns (`*` wildcard). Default: nil (all flags).
-        flagSelection: Flags.FlagSelection(tags: ["checkout"], keyPatterns: ["checkout-*"])
+        flagSelection: Flags.FlagSelection(tags: ["checkout"], keyPatterns: ["checkout-*"]),
+        // Experimental. Verify signed assignment responses. Staging endpoint only. Default: off.
+        experimentalResponseSigning: .init(mode: .off)
     )
 )
 
@@ -177,6 +180,7 @@ flowchart LR
 - `customExposureEndpoint` and `customEvaluationEndpoint` replace the intake URLs for exposures and evaluations.
 
 ### Startup and Caching
+- With `experimentalResponseSigning` in `observe` mode, the disk cache uses a separate hashed key and never becomes a verified entry. In `required` mode, the SDK writes no flag data to disk; it persists only the draft leaf floor. See `DatadogFlags/README.md`.
 - Assignments are saved per client name after each successful fetch. On the next launch, the cached assignments load at client creation and can be evaluated **before** `setEvaluationContext` is called. Their `reason` is `"CACHED"`. With an experimentation opt-out mode enabled, cached assignments are served only after `setEvaluationContext` with the same context.
 - Startup cache selection and failed-refresh fallback normally require an identical context (same targeting key and attributes). An active subject-authorization boundary permits eligible assignments for the same targeting key when other attributes differ. Experimentation opt-out modes still require the full context and policy to match.
 - When a later context replaces a context that already has fresh assignments, the previous assignments stay readable while the new fetch is in flight (state `.reconciling`). An experimentation opt-out mode or an active subject-authorization boundary can make them ineligible.

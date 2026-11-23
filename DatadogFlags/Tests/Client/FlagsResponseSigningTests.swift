@@ -13,6 +13,12 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsResponseSigningTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        // Signing telemetry is deduplicated per process. Each test starts with an empty set.
+        FlagAssignmentsFetcher.resetSigningTelemetry()
+    }
+
     func testObserveCacheRemainsBoundedAcrossContextsAndTrustScopes() throws {
         let store = SigningDataStoreSpy()
         let fetcher = SigningLifecycleFetcher(mode: .observe)
@@ -461,12 +467,12 @@ final class FlagsResponseSigningTests: XCTestCase {
             wait(for: [completed], timeout: 2)
             XCTAssertEqual(signedRequests, 1)
             let reports = scope.telemetryMock.messages.compactMap { message -> String? in
-                guard case let .debug(id, text, _) = message, text == "Flags response signing" else {
+                guard case let .debug(id, text, _) = message, text == "flags.response_signing" else {
                     return nil
                 }
                 return id
             }
-            XCTAssertEqual(reports, ["flags-response-signing-missing-proof"], "\(mode)")
+            XCTAssertEqual(reports, ["flags.response_signing:\(mode):unverified:missing-proof"], "\(mode)")
             switch (mode, try XCTUnwrap(result)) {
             case (.observe, .success(let response)):
                 XCTAssertFalse(response.flags.isEmpty)
@@ -727,13 +733,13 @@ final class FlagsResponseSigningTests: XCTestCase {
             wait(for: [rejected], timeout: 2)
         }
         let reports = scope.telemetryMock.messages.compactMap { message -> String? in
-            guard case let .debug(id, text, _) = message, text == "Flags response signing" else {
+            guard case let .debug(id, text, _) = message, text == "flags.response_signing" else {
                 return nil
             }
             return id
         }
-        XCTAssertEqual(reports.count, 2)
-        XCTAssertEqual(Set(reports).count, 2, "Each bounded outcome must survive downstream ID deduplication")
+        // required reports failures only, once for each distinct reason.
+        XCTAssertEqual(reports, ["flags.response_signing:required:unverified:missing-proof"])
     }
 
     func testFetcherModesAndRedirectFailures() throws {
@@ -1964,9 +1970,316 @@ extension FlagsResponseSigningTests {
                 guard case .debug(let id, _, _) = message else {
                     return false
                 }
-                return id == "flags-response-signing-revoked-certificate"
+                return id == "flags.response_signing:\(mode):unverified:revoked-certificate"
             }, "\(mode)")
         }
+    }
+}
+
+extension FlagsResponseSigningTests {
+    // MARK: - Signing telemetry (`flags.response_signing`)
+
+    private func signingEvents(_ scope: FeatureScopeMock) -> [(id: String, attributes: [String: String])] {
+        scope.telemetryMock.messages.compactMap { message in
+            guard case let .debug(id, text, attributes) = message, text == "flags.response_signing" else {
+                return nil
+            }
+            let values = (attributes ?? [:]).mapValues { "\($0)" }
+            return (id, values)
+        }
+    }
+
+    /// A fetcher whose transport answers with `respond` for each signed request.
+    private func telemetryFetcher(
+        mode: Flags.ResponseSigningMode,
+        scope: FeatureScopeMock,
+        body: Data = Data.mockAnyFlagAssignmentsResponse(),
+        respond: @escaping (URLRequest) throws -> [String: String]
+    ) throws -> FlagAssignmentsFetcher {
+        FlagAssignmentsFetcher(
+            customEndpoint: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"),
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: scope,
+            responseSigning: .init(mode: mode, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
+            dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now)),
+            signingFetch: { request, complete in
+                do {
+                    let headers = try respond(request)
+                    complete(.success((body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headers)!)))
+                } catch {
+                    complete(.failure(error))
+                }
+            },
+            fetch: { request, complete in
+                complete(.success((body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: [:])!)))
+            }
+        )
+    }
+
+    private func fetchOnce(_ fetcher: FlagAssignmentsFetcher) {
+        let done = expectation(description: "fetch")
+        fetcher.flagAssignments(for: FlagsEvaluationContext(targetingKey: "subject")) { _ in done.fulfill() }
+        wait(for: [done], timeout: 2)
+    }
+
+    func testSigningTelemetrySendsOneEventForIdenticalFailures() throws {
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios", sdkVersion: "1.2.3"))
+        let fetcher = try telemetryFetcher(mode: .observe, scope: scope) { _ in [:] }
+        fetchOnce(fetcher)
+        fetchOnce(fetcher)
+        let events = signingEvents(scope)
+        XCTAssertEqual(events.map(\.id), ["flags.response_signing:observe:unverified:missing-proof"])
+        // The event has only the fields of the shared table.
+        XCTAssertEqual(
+            events.first?.attributes,
+            ["mode": "observe", "result": "unverified", "reason": "missing-proof", "sdk_version": "1.2.3", "site": "datad0g.com"]
+        )
+    }
+
+    func testSigningTelemetrySendsOneEventForEachReasonAndVerifiedInObserve() throws {
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios", sdkVersion: "1.2.3"))
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        var answers: [(URLRequest) throws -> [String: String]] = [
+            { _ in [:] }, // missing-proof
+            { try fixture.signedHeaders(request: $0, body: Data("{}".utf8)) }, // invalid-signature
+            { try fixture.signedHeaders(request: $0, body: body) }, // verified
+        ]
+        let fetcher = try telemetryFetcher(mode: .observe, scope: scope, body: body) { request in try answers.removeFirst()(request) }
+        for _ in 0..<3 {
+            fetchOnce(fetcher)
+        }
+        let events = signingEvents(scope)
+        XCTAssertEqual(events.map(\.id), [
+            "flags.response_signing:observe:unverified:missing-proof",
+            "flags.response_signing:observe:unverified:invalid-signature",
+            "flags.response_signing:observe:verified:",
+        ])
+        XCTAssertEqual(events.last?.attributes, ["mode": "observe", "result": "verified", "sdk_version": "1.2.3", "site": "datad0g.com"])
+    }
+
+    func testSigningTelemetryInRequiredSendsFailuresOnly() throws {
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        var fail = false
+        let fetcher = try telemetryFetcher(mode: .required, scope: scope, body: body) { request in
+            fail ? [:] : try fixture.signedHeaders(request: request, body: body)
+        }
+        fetchOnce(fetcher)
+        XCTAssertTrue(signingEvents(scope).isEmpty, "A verified response in required mode sends nothing")
+        fail = true
+        fetchOnce(fetcher)
+        XCTAssertEqual(signingEvents(scope).map(\.id), ["flags.response_signing:required:unverified:missing-proof"])
+    }
+
+    func testSigningTelemetryInOffSendsNothing() throws {
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let fetcher = try telemetryFetcher(mode: .off, scope: scope) { _ in [:] }
+        fetchOnce(fetcher)
+        XCTAssertTrue(signingEvents(scope).isEmpty)
+    }
+
+    func testSigningTelemetrySiteNeverCarriesAURL() {
+        let cases: [(String?, String)] = [
+            ("https://preview.ff-cdn.datad0g.com/precompute-assignments", "datad0g.com"),
+            ("https://preview.ff-cdn.datadoghq.com/precompute-assignments", "datadoghq.com"),
+            ("https://preview.ff-cdn.us3.datadoghq.com/x", "us3.datadoghq.com"),
+            ("https://preview.ff-cdn.datadoghq.eu/x", "datadoghq.eu"),
+            ("https://proxy.example.test/precompute-assignments", "custom"),
+            ("https://preview.ff-cdn.example.test/x", "custom"),
+            (nil, "custom"),
+        ]
+        for (url, site) in cases {
+            XCTAssertEqual(FlagAssignmentsFetcher.signingSite(url.flatMap(URL.init(string:))), site, url ?? "nil")
+        }
+    }
+
+    // MARK: - Required mode matches contexts by wire identity
+
+    func testRequiredDoesNotServeAContextWithADifferentWireIdentity() {
+        let precomposed = FlagsEvaluationContext(targetingKey: "caf\u{E9}")
+        let decomposed = FlagsEvaluationContext(targetingKey: "cafe\u{301}")
+        XCTAssertEqual(precomposed, decomposed, "Swift strings compare by canonical equivalence")
+        XCTAssertFalse(precomposed.hasSameWireIdentity(as: decomposed))
+        XCTAssertTrue(precomposed.hasSameWireIdentity(as: FlagsEvaluationContext(targetingKey: "caf\u{E9}")))
+
+        let fetcher = SigningLifecycleFetcher(mode: .required)
+        let repository = FlagsRepository(
+            clientName: "signed",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: 100)),
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        defer { repository.flush() }
+        repository.setEvaluationContext(precomposed) { _ in }
+        fetcher.completeVerified(index: 0, expiry: 200)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        // While the decomposed context is pending, and after its request fails, the precomposed proof is not used.
+        repository.setEvaluationContext(decomposed) { _ in }
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        fetcher.completions[1](.failure(.networkError(URLError(.notConnectedToInternet))))
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.state.currentState, .error)
+    }
+
+    // MARK: - Verifier rules that no shared vector pins
+
+    private func fixtureRequest(_ verifier: FlagsResponseVerifier) throws -> URLRequest {
+        var request = URLRequest(url: URL(string: "https://flags.example.test/precompute-assignments")!)
+        request.httpMethod = "POST"
+        request.httpBody = Data("{}".utf8)
+        request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+        return try verifier.prepare(request)
+    }
+
+    func testCertificateIDMustMatchTheLeaf() throws {
+        let verifier = try requiredVerifier(store: MinimumNotBeforeStoreMock())
+        let prepared = try fixtureRequest(verifier)
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        var headers = try SigningChainFixture.credential("two-intermediates").signedHeaders(request: prepared, body: body)
+        // The certificate id is not in the transcript, so only this check rejects another valid-looking id.
+        headers[FlagsResponseVerifier.prefix + "certificate-id"] = String(repeating: "0", count: 64)
+        XCTAssertThrowsError(try verifier.verify(
+            request: prepared, response: try response(prepared, headers), body: body, now: Date(timeIntervalSince1970: SigningChainFixture.now)
+        )) { XCTAssertEqual($0 as? FlagsSigningError, .invalidProof) }
+    }
+
+    func testIssuedAtUpToThirtySecondsInTheFutureIsAccepted() throws {
+        let verifier = try requiredVerifier(store: MinimumNotBeforeStoreMock())
+        let prepared = try fixtureRequest(verifier)
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let issued = SigningChainFixture.now
+        let headers = try SigningChainFixture.credential("two-intermediates").signedHeaders(request: prepared, body: body, now: issued)
+        let signed = try response(prepared, headers)
+        XCTAssertNoThrow(try verifier.verify(request: prepared, response: signed, body: body, now: Date(timeIntervalSince1970: issued - 30)))
+        XCTAssertThrowsError(try verifier.verify(request: prepared, response: signed, body: body, now: Date(timeIntervalSince1970: issued - 31))) {
+            XCTAssertEqual($0 as? FlagsSigningError, .expiredProof)
+        }
+    }
+
+    func testOnlyHTTP200IsVerified() throws {
+        let verifier = try requiredVerifier(store: MinimumNotBeforeStoreMock())
+        let prepared = try fixtureRequest(verifier)
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        // Signed for status 201, so only the status rule rejects it.
+        let headers = try SigningChainFixture.credential("two-intermediates").signedHeaders(request: prepared, body: body, status: 201)
+        let created = try XCTUnwrap(HTTPURLResponse(url: prepared.url!, statusCode: 201, httpVersion: "HTTP/1.1", headerFields: headers))
+        XCTAssertThrowsError(try verifier.verify(request: prepared, response: created, body: body, now: Date(timeIntervalSince1970: SigningChainFixture.now))) {
+            XCTAssertEqual($0 as? FlagsSigningError, .invalidProof)
+        }
+    }
+
+    func testBodyLargerThanTheSignedLimitIsRejected() throws {
+        let verifier = try requiredVerifier(store: MinimumNotBeforeStoreMock())
+        let prepared = try fixtureRequest(verifier)
+        let body = Data(repeating: 32, count: FlagsResponseVerifier.maximumResponseBytes + 1)
+        let headers = try SigningChainFixture.credential("two-intermediates").signedHeaders(request: prepared, body: Data("{}".utf8))
+        XCTAssertThrowsError(try verifier.verify(
+            request: prepared, response: try response(prepared, headers), body: body, now: Date(timeIntervalSince1970: SigningChainFixture.now)
+        )) { XCTAssertEqual($0 as? FlagsSigningError, .responseTooLarge) }
+    }
+
+    func testMoreThanFourRootsFailPrepareClosedInRequiredAndUnsignedInObserve() throws {
+        let roots = try Array(repeating: SigningChainFixture.root("root-a"), count: 5)
+        for mode in [Flags.ResponseSigningMode.required, .observe] {
+            var sent: [URLRequest] = []
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: URL(string: "https://flags.example.test/precompute-assignments"),
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+                responseSigning: .init(mode: mode, trustedRootCertificates: roots),
+                signingFetch: { request, complete in
+                    sent.append(request)
+                    complete(.success((.mockAnyFlagAssignmentsResponse(), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: [:])!)))
+                },
+                fetch: { _, _ in XCTFail("Signing must use the signing transport") }
+            )
+            let done = expectation(description: "\(mode)")
+            fetcher.flagAssignments(for: FlagsEvaluationContext(targetingKey: "subject")) { result in
+                defer { done.fulfill() }
+                switch (mode, result) {
+                case (.required, .failure(.responseSigningFailed(reason: "invalid-certificate"))): XCTAssertTrue(sent.isEmpty)
+                case (.observe, .success(let response)):
+                    XCTAssertNil(response.verification)
+                    // observe sends the ordinary request, with no signing headers.
+                    XCTAssertEqual(sent.count, 1)
+                    XCTAssertNil(sent.first?.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "request-nonce"))
+                default: XCTFail("\(mode): \(result)")
+                }
+            }
+            wait(for: [done], timeout: 2)
+        }
+    }
+
+    // MARK: - Verifier parity with the browser
+
+    func testCertificateNotSignedByItsIssuerIsAnInvalidCertificate() throws {
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        var leafDER = fixture.leaf
+        leafDER[leafDER.count - 1] ^= 0x01 // the last byte of the leaf signature
+        let leaf = try FlagsSigningCertificate(der: leafDER, role: .leaf)
+        let issuer = try FlagsSigningCertificate(der: XCTUnwrap(fixture.intermediates.first), role: .intermediate)
+        XCTAssertThrowsError(try FlagsResponseVerifier.verifyChild(leaf, parent: issuer)) {
+            XCTAssertEqual($0 as? FlagsSigningError, .invalidCertificate)
+        }
+    }
+
+    func testMalformedTimeValuesAreRejectedAnywhereInTheDER() {
+        func sequence(_ tag: UInt8, _ value: String) -> Data {
+            let time = [tag, UInt8(value.utf8.count)] + Array(value.utf8)
+            return Data([48, UInt8(time.count)] + time)
+        }
+        XCTAssertNoThrow(try FlagsSigningDER.parse(sequence(23, "261121000000Z")))
+        XCTAssertNoThrow(try FlagsSigningDER.parse(sequence(24, "20261121000000Z")))
+        for (tag, value) in [(UInt8(23), "26112100000Z"), (23, "2611210000a0Z"), (23, "261321000000Z"), (24, "20261121000000"), (24, "2026112100000+Z")] {
+            XCTAssertThrowsError(try FlagsSigningDER.parse(sequence(tag, value)), value)
+        }
+    }
+
+    // MARK: - Scope update work and session lifetime
+
+    func testScopeUpdateSkipsWorkWhenNoInputChanged() {
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(),
+            responseSigning: .init(mode: .observe),
+            fetch: { _, _ in XCTFail("no network expected") }
+        )
+        let base = DatadogContext.mockWith(clientToken: "token", env: "staging", source: "ios")
+        let first = fetcher.updateResponseSigningCacheScope(base)
+        XCTAssertNotNil(first)
+        var rum = base
+        rum.set(additionalContext: RUMCoreContext.mockWith(applicationID: "app-a"))
+        XCTAssertEqual(fetcher.updateResponseSigningCacheScope(rum), first)
+        // A real input change still computes a new scope.
+        XCTAssertNotEqual(fetcher.updateResponseSigningCacheScope(.mockWith(clientToken: "token", env: "prod", source: "ios")), first)
+        XCTAssertEqual(fetcher.updateResponseSigningCacheScope(base), first)
+    }
+
+    func testFeatureLifetimeInvalidatesTheSigningSession() throws {
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments"),
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(),
+            responseSigning: .init(mode: .required)
+        )
+        XCTAssertNotNil(fetcher.responseSigningSession)
+        var lifetime: FlagsSigningLifetime? = FlagsSigningLifetime(fetcher: fetcher)
+        XCTAssertNotNil(lifetime)
+        XCTAssertFalse(fetcher.hasInvalidatedSigningSession)
+        lifetime = nil
+        XCTAssertTrue(fetcher.hasInvalidatedSigningSession)
+        XCTAssertNil(FlagAssignmentsFetcher(
+            customEndpoint: nil, customHeaders: nil, flagSelection: nil, featureScope: FeatureScopeMock()
+        ).responseSigningSession, "Signing off has no signing session")
     }
 }
 
@@ -2011,12 +2324,13 @@ internal struct SigningChainFixture {
         request: URLRequest,
         body: Data,
         now: TimeInterval = now,
-        minimumNotBefore: UInt64? = nil
+        minimumNotBefore: UInt64? = nil,
+        status: Int = 200
     ) throws -> [String: String] {
         let prefix = FlagsResponseVerifier.prefix
         let transcript = try FlagsResponseVerifier.transcript(
             request: request,
-            status: 200,
+            status: status,
             body: body,
             issuedAt: UInt64(now),
             expiresAt: UInt64(now + 300),

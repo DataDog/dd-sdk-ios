@@ -79,6 +79,19 @@ public struct FlagsEvaluationContext: Equatable, Codable {
 }
 
 extension FlagsEvaluationContext {
+    /// Compares the encoded bytes. `==` compares strings by canonical equivalence, so a precomposed and a
+    /// decomposed targeting key are equal, but the requests carry different bytes. A signed proof binds the bytes.
+    internal func hasSameWireIdentity(as other: FlagsEvaluationContext) -> Bool {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        guard let lhs = try? encoder.encode(self), let rhs = try? encoder.encode(other) else {
+            return false
+        }
+        return lhs == rhs
+    }
+}
+
+extension FlagsEvaluationContext {
     /// Removes the reserved assignment credential before the context enters targeting, storage, or telemetry.
     internal func extractingAssignmentAuthorization() -> AssignmentAuthorization {
         var targetingAttributes = attributes

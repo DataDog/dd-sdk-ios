@@ -541,7 +541,12 @@ internal final class FlagsResponseVerifier {
 
     static func verifyChild(_ child: FlagsSigningCertificate, parent: FlagsSigningCertificate) throws {
         try child.validateLink(to: parent)
-        try verifySignature(child.signature, bytes: child.tbs, key: parent.publicKey)
+        do {
+            try verifySignature(child.signature, bytes: child.tbs, key: parent.publicKey)
+        } catch FlagsSigningError.invalidSignature {
+            // A certificate that its issuer did not sign is a chain failure, as in the browser verifier.
+            throw FlagsSigningError.invalidCertificate
+        }
     }
 
     private static func verifySignature(_ signature: Data, bytes: Data, key: Data) throws {
