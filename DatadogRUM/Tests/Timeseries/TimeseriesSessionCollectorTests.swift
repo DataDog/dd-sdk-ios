@@ -29,7 +29,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenBatchSizeIsReached_itWritesMemoryEvent() {
         // Given
         memoryReader.footprint = 1_024_000
-        memoryReader.nonResident = 512_000
+        memoryReader.nonResident = 510_976 // 1 KiB below 500 KiB: the first read moves it to 500 KiB
+        memoryReader.onReadMemory = { [memoryReader] in memoryReader.nonResident += 1_024 } // distinct value per sample
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -65,7 +66,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.data.values.memoryFootprint.count, event.timeseries.data.timestamps.count, "Number of memoryFootprint data points must match timestamps")
         XCTAssertEqual(event.timeseries.data.values.memoryNonResident?.count, event.timeseries.data.timestamps.count, "Number of memoryNonResident data points must match timestamps")
         XCTAssertEqual(event.timeseries.data.values.memoryFootprint[0], 1_000)
-        XCTAssertEqual(event.timeseries.data.values.memoryNonResident?[0], 500)
+        XCTAssertEqual(event.timeseries.data.values.memoryNonResident, [500, 501], "Values must stay in sample order, aligned with timestamps")
     }
 
     func testWhenBatchSizeIsReached_itWritesCpuEvent() {

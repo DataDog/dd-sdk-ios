@@ -1785,10 +1785,12 @@ public class TimeseriesMemoryReaderMock: TimeseriesMemoryReader {
     public var footprint: Double?
     /// Non-resident (compressed) memory in bytes.
     public var nonResident: Double = 0
+    public var onReadMemory: (() -> Void)?
 
     public init() {}
     public func readMemory() -> TimeseriesMemoryValues? {
-        footprint.map { TimeseriesMemoryValues(footprint: $0, nonResident: nonResident) }
+        onReadMemory?()
+        return footprint.map { TimeseriesMemoryValues(footprint: $0, nonResident: nonResident) }
     }
 }
 
