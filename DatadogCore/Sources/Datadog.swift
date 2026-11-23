@@ -254,10 +254,6 @@ public enum Datadog {
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
-        #if os(macOS)
-        consolePrint("⚠️ macOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
-        #endif
-
         do {
             // To safely instrument the application lifecycle observer and other providers,
             // SDK initialization must occur on the main thread. This enforcement is also present
@@ -494,6 +490,10 @@ extension DatadogCore {
             isRunFromExtension: isRunFromExtension,
             remoteConfigurationProvider: remoteConfigurationProvider
         )
+
+        #if os(macOS)
+        startObservingAppTermination(in: configuration.notificationCenterProvider.applicationCenter)
+        #endif
 
         telemetry.configuration(
             backgroundTasksEnabled: backgroundTasksEnabled,

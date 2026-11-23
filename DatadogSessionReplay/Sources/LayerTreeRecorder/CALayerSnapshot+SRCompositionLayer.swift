@@ -42,10 +42,17 @@ extension CALayerSnapshot {
     }
 
     /// How this snapshot contributes to its parent's composition tree.
-    var compositionTreeRepresentation: CompositionTreeRepresentation {
+    func compositionTreeRepresentation(
+        inheritedEffects: [SemanticObservation.VisualEffect]
+    ) -> CompositionTreeRepresentation {
         if observation.semantics == .visualEffect(.scrollPocketGroup) {
             // Pockets must composite with the scroll content in the same parent layer.
             return .passthrough
+        }
+
+        if isRoundedGlassGroupInLiquidLens(inheritedEffects: inheritedEffects) {
+            // Liquid lens glass groups need a composition layer for their shadow.
+            return .layer
         }
 
         if !sublayers.isEmpty
@@ -53,6 +60,7 @@ extension CALayerSnapshot {
             || opacity < 1
             || hasShadow
             || requiresGlassApproximation
+            || requiresNonuniformCornerClip
             || filters.contains(
                 where: { SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil }
             )
@@ -66,7 +74,10 @@ extension CALayerSnapshot {
         return .wireframe
     }
 
-    func modifiers(maskImageResourceID: String? = nil) -> [SRCompositionLayerModifier] {
+    func modifiers(
+        inheritedEffects: [SemanticObservation.VisualEffect],
+        maskImageResourceID: String? = nil
+    ) -> [SRCompositionLayerModifier] {
         var result: [SRCompositionLayerModifier] = []
 
         // Modifiers order determines the final appearance in the player
@@ -84,7 +95,7 @@ extension CALayerSnapshot {
         )
 
         // Shadow
-        if let shadowModifier {
+        if let shadowModifier = shadowModifier(inheritedEffects: inheritedEffects) {
             result.append(shadowModifier)
         }
 
@@ -102,14 +113,32 @@ extension CALayerSnapshot {
     }
 
     func svgClipPath(using formatter: ClipPathFormatter = .shared) -> String? {
-        let cornerRadii = requiresGlassApproximation ? glassCornerRadii : (masksToBounds ? self.cornerRadii : nil)
+        guard requiresGlassApproximation || masksToBounds || requiresNonuniformCornerClip else {
+            return nil
+        }
 
-        return cornerRadii.map {
-            formatter.svgString(
-                for: absoluteFrame.size,
-                cornerRadii: $0,
-                cornerCurve: cornerCurve
-            )
+        return formatter.svgString(
+            for: absoluteFrame.size,
+            cornerRadii: glassCornerRadii ?? cornerRadii,
+            cornerCurve: cornerCurve
+        )
+    }
+
+    private func isRoundedGlassGroupInLiquidLens(
+        inheritedEffects: [SemanticObservation.VisualEffect]
+    ) -> Bool {
+        observation.semantics == .visualEffect(.glassGroup)
+            && inheritedEffects.contains(.liquidLens)
+            && cornerRadii != .zero
+    }
+
+    private var requiresNonuniformCornerClip: Bool {
+        // Glass group and backdrop wireframes need a clip when one scalar radius cannot represent their corners
+        switch observation.semantics {
+        case .visualEffect(.glassGroup), .visualEffect(.backdrop):
+            return cornerRadii.uniformCornerRadius == nil
+        default:
+            return false
         }
     }
 
@@ -119,14 +148,11 @@ extension CALayerSnapshot {
         }
     }
 
-    private var shadowModifier: SRCompositionLayerModifier? {
+    private func shadowModifier(
+        inheritedEffects: [SemanticObservation.VisualEffect]
+    ) -> SRCompositionLayerModifier? {
         let shadow: SRCompositionLayerShadowModifier? = if requiresGlassApproximation {
-            .init(
-                color: hexString(from: UIColor.black.withAlphaComponent(0.125).cgColor) ?? .fallbackColor,
-                offsetX: 0,
-                offsetY: 0,
-                radius: 8
-            )
+            .glassApproximation
         } else if !masksToBounds, hasShadow, let shadowColor {
             .init(
                 color: shadowColor
@@ -141,6 +167,9 @@ extension CALayerSnapshot {
                 },
                 radius: Double(shadowRadius)
             )
+        } else if isRoundedGlassGroupInLiquidLens(inheritedEffects: inheritedEffects),
+                  !masksToBounds {
+            .glassApproximation
         } else {
             nil
         }
@@ -148,6 +177,17 @@ extension CALayerSnapshot {
         return shadow.map {
             .compositionLayerShadowModifier(value: $0)
         }
+    }
+}
+
+extension SRCompositionLayerShadowModifier {
+    fileprivate static var glassApproximation: Self {
+        .init(
+            color: hexString(from: UIColor.black.withAlphaComponent(0.125).cgColor) ?? .fallbackColor,
+            offsetX: 0,
+            offsetY: 0,
+            radius: 8
+        )
     }
 }
 

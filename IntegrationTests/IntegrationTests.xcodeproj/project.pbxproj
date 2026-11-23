@@ -17,7 +17,6 @@
 		09CD7F0C2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 09CD7F0B2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard */; };
 		09CD7F102F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CD7F0E2F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift */; };
 		09CDF4C02F5F4B9000DC3C91 /* URLSessionTestsHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CDF4BF2F5F4B8B00DC3C91 /* URLSessionTestsHelpers.swift */; };
-		1BF467D307888D99A296D958 /* libPods-Runner iOS-IntegrationScenarios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E93021D28790F380B3C63C4B /* libPods-Runner iOS-IntegrationScenarios.a */; };
 		61098D2B27FEE3F00021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
 		61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
 		61098D2F27FF16A20021237A /* RUMSessionEndView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2E27FF16A20021237A /* RUMSessionEndView.swift */; };
@@ -95,7 +94,6 @@
 		61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */; };
 		61F9CA8025125C01000A5E61 /* RUMNCSScreen3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */; };
 		61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */; };
-		638925C797CD9A7F6A08AC6B /* libPods-Runner iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E0F3607A83689002423C29E4 /* libPods-Runner iOS.a */; };
 		961611382DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 961611372DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard */; };
 		963F6B112DB79B5700F9425A /* ExampleApplication+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F6B102DB79B5300F9425A /* ExampleApplication+Extensions.swift */; };
 		963F72412DB0FD4C00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */; };
@@ -133,6 +131,14 @@
 		D2FCA7532B4D84EE0014DC87 /* CustomURLSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7522B4D84EE0014DC87 /* CustomURLSessionDelegate.swift */; };
 		D2FCA7552B4D87110014DC87 /* StopCoreScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7542B4D87110014DC87 /* StopCoreScenarioTests.swift */; };
 		D2FCA7582B4DA8720014DC87 /* CSRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7572B4DA8720014DC87 /* CSRootViewController.swift */; };
+		187820000000000000000201 /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000100 /* DatadogCore */; };
+		187820000000000000000202 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000101 /* DatadogLogs */; };
+		187820000000000000000203 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000102 /* DatadogTrace */; };
+		187820000000000000000204 /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000103 /* DatadogRUM */; };
+		187820000000000000000205 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000104 /* DatadogCrashReporting */; };
+		187820000000000000000206 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000105 /* DatadogSessionReplay */; };
+		187820000000000000000207 /* DatadogWebViewTracking in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000106 /* DatadogWebViewTracking */; };
+		187820000000000000000208 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 187820000000000000000107 /* TestUtilities */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -169,9 +175,6 @@
 		09CD7F0B2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMAndTracingScenarios.storyboard; sourceTree = "<group>"; };
 		09CD7F0E2F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceActiveSpanAugmentationViewController.swift; sourceTree = "<group>"; };
 		09CDF4BF2F5F4B8B00DC3C91 /* URLSessionTestsHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTestsHelpers.swift; sourceTree = "<group>"; };
-		1BEBA949C1D3B47541B73E76 /* Pods-Runner iOS.integration.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.integration.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.integration.xcconfig"; sourceTree = "<group>"; };
-		4EA131351F31A6F6914EA836 /* Pods-Runner iOS-IntegrationScenarios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.debug.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.debug.xcconfig"; sourceTree = "<group>"; };
-		5CBCD72B9911706B47601F5D /* Pods-Runner iOS-IntegrationScenarios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.release.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.release.xcconfig"; sourceTree = "<group>"; };
 		61098D2A27FEE3F00021237A /* MessagePortChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePortChannel.swift; sourceTree = "<group>"; };
 		61098D2E27FF16A20021237A /* RUMSessionEndView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionEndView.swift; sourceTree = "<group>"; };
 		6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingScenarios.swift; sourceTree = "<group>"; };
@@ -265,7 +268,6 @@
 		96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationTests.swift; sourceTree = "<group>"; };
 		96F48F442DF9723F000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationActionView.swift; sourceTree = "<group>"; };
 		96F48F462DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard; sourceTree = "<group>"; };
-		9A2B176DAB4566F41D745DE6 /* Pods-Runner iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.debug.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.debug.xcconfig"; sourceTree = "<group>"; };
 		9EA95C192791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTrackingFixtureViewController.swift; sourceTree = "<group>"; };
 		9EA95C1A2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = WebViewTrackingScenario.storyboard; sourceTree = "<group>"; };
 		9EA95C1B2791C9BE00F6C1F3 /* WebViewScenarios.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewScenarios.swift; sourceTree = "<group>"; };
@@ -303,10 +305,6 @@
 		D2FCA7522B4D84EE0014DC87 /* CustomURLSessionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomURLSessionDelegate.swift; sourceTree = "<group>"; };
 		D2FCA7542B4D87110014DC87 /* StopCoreScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopCoreScenarioTests.swift; sourceTree = "<group>"; };
 		D2FCA7572B4DA8720014DC87 /* CSRootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSRootViewController.swift; sourceTree = "<group>"; };
-		E0F3607A83689002423C29E4 /* libPods-Runner iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Runner iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E6057106F868E6C529F89BE9 /* Pods-Runner iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.release.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.release.xcconfig"; sourceTree = "<group>"; };
-		E93021D28790F380B3C63C4B /* libPods-Runner iOS-IntegrationScenarios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Runner iOS-IntegrationScenarios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F428192CAACD145A1C5C7C51 /* Pods-Runner iOS-IntegrationScenarios.integration.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.integration.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.integration.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -314,8 +312,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				638925C797CD9A7F6A08AC6B /* libPods-Runner iOS.a in Frameworks */,
 				612C13772A9E1BA40086B5D1 /* SRFixtures in Frameworks */,
+				187820000000000000000201 /* DatadogCore in Frameworks */,
+				187820000000000000000202 /* DatadogLogs in Frameworks */,
+				187820000000000000000203 /* DatadogTrace in Frameworks */,
+				187820000000000000000204 /* DatadogRUM in Frameworks */,
+				187820000000000000000205 /* DatadogCrashReporting in Frameworks */,
+				187820000000000000000206 /* DatadogSessionReplay in Frameworks */,
+				187820000000000000000207 /* DatadogWebViewTracking in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,26 +328,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				61441C44246174CE003D8BB8 /* HTTPServerMock in Frameworks */,
-				1BF467D307888D99A296D958 /* libPods-Runner iOS-IntegrationScenarios.a in Frameworks */,
+				187820000000000000000208 /* TestUtilities in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		08A5C71A211C083EC4A08FBA /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				9A2B176DAB4566F41D745DE6 /* Pods-Runner iOS.debug.xcconfig */,
-				E6057106F868E6C529F89BE9 /* Pods-Runner iOS.release.xcconfig */,
-				1BEBA949C1D3B47541B73E76 /* Pods-Runner iOS.integration.xcconfig */,
-				4EA131351F31A6F6914EA836 /* Pods-Runner iOS-IntegrationScenarios.debug.xcconfig */,
-				5CBCD72B9911706B47601F5D /* Pods-Runner iOS-IntegrationScenarios.release.xcconfig */,
-				F428192CAACD145A1C5C7C51 /* Pods-Runner iOS-IntegrationScenarios.integration.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		0904FAB52EE82B7300ED9A22 /* AlertInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -407,11 +398,9 @@
 				61441C0324616DE9003D8BB8 /* Runner */,
 				61441C3524617013003D8BB8 /* IntegrationScenarios */,
 				61133B83242393DE00786299 /* Products */,
-				61133C6F2423993200786299 /* Frameworks */,
 				D2AEFF1929925BEC00A28997 /* xctestplans */,
 				D2A401C82992560700B230A3 /* xcconfigs */,
 				D29495F329967780003518CD /* Packages */,
-				08A5C71A211C083EC4A08FBA /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -422,15 +411,6 @@
 				61441C2A24616F1D003D8BB8 /* IntegrationScenarios.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		61133C6F2423993200786299 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				E0F3607A83689002423C29E4 /* libPods-Runner iOS.a */,
-				E93021D28790F380B3C63C4B /* libPods-Runner iOS-IntegrationScenarios.a */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		611EA12B2580F40E00BC0E56 /* TrackingConsent */ = {
@@ -900,12 +880,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 61441C1324616DEC003D8BB8 /* Build configuration list for PBXNativeTarget "Runner iOS" */;
 			buildPhases = (
-				2F63E4FCA705BE2516A2FEB7 /* [CP] Check Pods Manifest.lock */,
 				61441BFE24616DE9003D8BB8 /* Sources */,
 				61441BFF24616DE9003D8BB8 /* Frameworks */,
 				61441C0024616DE9003D8BB8 /* Resources */,
 				D240687A27CF982B00C04F44 /* Embed Frameworks */,
-				5DAD8F2510CB09A5BA7723B9 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -914,6 +892,13 @@
 			name = "Runner iOS";
 			packageProductDependencies = (
 				612C13762A9E1BA40086B5D1 /* SRFixtures */,
+				187820000000000000000100 /* DatadogCore */,
+				187820000000000000000101 /* DatadogLogs */,
+				187820000000000000000102 /* DatadogTrace */,
+				187820000000000000000103 /* DatadogRUM */,
+				187820000000000000000104 /* DatadogCrashReporting */,
+				187820000000000000000105 /* DatadogSessionReplay */,
+				187820000000000000000106 /* DatadogWebViewTracking */,
 			);
 			productName = Example;
 			productReference = 61441C0224616DE9003D8BB8 /* Integration Tests Runner.app */;
@@ -923,11 +908,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 61441C3124616F1D003D8BB8 /* Build configuration list for PBXNativeTarget "IntegrationScenarios" */;
 			buildPhases = (
-				8CA44A44BB7E45A38F2BEC24 /* [CP] Check Pods Manifest.lock */,
 				61441C2624616F1D003D8BB8 /* Sources */,
 				61441C2724616F1D003D8BB8 /* Frameworks */,
 				61441C2824616F1D003D8BB8 /* Resources */,
-				7F6DA13A8C70117DE98BAFD7 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -937,6 +920,7 @@
 			name = IntegrationScenarios;
 			packageProductDependencies = (
 				61441C43246174CE003D8BB8 /* HTTPServerMock */,
+				187820000000000000000107 /* TestUtilities */,
 			);
 			productName = DatadogIntegrationTests;
 			productReference = 61441C2A24616F1D003D8BB8 /* IntegrationScenarios.xctest */;
@@ -971,6 +955,11 @@
 				Base,
 			);
 			mainGroup = 61133B78242393DE00786299;
+			packageReferences = (
+				187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */,
+				187820000000000000000002 /* XCLocalSwiftPackageReference "SRFixtures" */,
+				187820000000000000000003 /* XCLocalSwiftPackageReference "http-server-mock" */,
+			);
 			productRefGroup = 61133B83242393DE00786299 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1023,87 +1012,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		2F63E4FCA705BE2516A2FEB7 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Runner iOS-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		5DAD8F2510CB09A5BA7723B9 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		7F6DA13A8C70117DE98BAFD7 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		8CA44A44BB7E45A38F2BEC24 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Runner iOS-IntegrationScenarios-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		61441BFE24616DE9003D8BB8 /* Sources */ = {
@@ -1573,14 +1481,71 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+		187820000000000000000002 /* XCLocalSwiftPackageReference "SRFixtures" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../DatadogSessionReplay/SRSnapshotTests/SRFixtures;
+		};
+		187820000000000000000003 /* XCLocalSwiftPackageReference "http-server-mock" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../tools/http-server-mock";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		612C13762A9E1BA40086B5D1 /* SRFixtures */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000002 /* XCLocalSwiftPackageReference "SRFixtures" */;
 			productName = SRFixtures;
 		};
 		61441C43246174CE003D8BB8 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000003 /* XCLocalSwiftPackageReference "http-server-mock" */;
 			productName = HTTPServerMock;
+		};
+		187820000000000000000100 /* DatadogCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = DatadogCore;
+		};
+		187820000000000000000101 /* DatadogLogs */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = DatadogLogs;
+		};
+		187820000000000000000102 /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = DatadogTrace;
+		};
+		187820000000000000000103 /* DatadogRUM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = DatadogRUM;
+		};
+		187820000000000000000104 /* DatadogCrashReporting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = DatadogCrashReporting;
+		};
+		187820000000000000000105 /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = DatadogSessionReplay;
+		};
+		187820000000000000000106 /* DatadogWebViewTracking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = DatadogWebViewTracking;
+		};
+		187820000000000000000107 /* TestUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 187820000000000000000001 /* XCLocalSwiftPackageReference "Datadog" */;
+			productName = TestUtilities;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

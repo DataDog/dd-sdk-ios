@@ -42,4 +42,10 @@ public enum FlagsError: Error {
 
     /// The first evaluation context did not become ready before the configured initialization timeout.
     case initializationTimedOut
+
+    /// The flags service rejected subject authorization for the assignment download.
+    ///
+    /// This is returned only for an HTTP 401 response containing the JSON:API error code
+    /// `ASSIGNMENT_AUTHORIZATION_FAILED`. The assignment token and response body are never exposed.
+    case assignmentAuthorizationFailed
 }

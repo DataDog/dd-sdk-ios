@@ -58,6 +58,10 @@ extension CALayer {
         delegate?.isKind(of: Classes.tabBarPlatterView) == true
     }
 
+    var isTabAccessoryContainer: Bool {
+        delegate?.isKind(of: Classes.tabAccessoryContainer) == true
+    }
+
     var isScrollPocket: Bool {
         delegate?.isKind(of: Classes.scrollPocket) == true
     }
@@ -161,6 +165,7 @@ private enum Classes {
     static let sdfElementLayer: AnyClass? = NSClassFromString("CASDFElementLayer")
     static let navigationBarPlatterView: AnyClass? = NSClassFromString("_UINavigationBarPlatterView")
     static let tabBarPlatterView: AnyClass? = NSClassFromString("UIKit._UITabBarPlatterView")
+    static let tabAccessoryContainer: AnyClass? = NSClassFromString("UIKit._UITabAccessoryContainer")
     static let scrollPocket: AnyClass? = NSClassFromString("_UIScrollPocket")
     static let scrollEdgeEffectView: AnyClass? = NSClassFromString("UIKit.ScrollEdgeEffectView")
     static let backdropLayer: AnyClass? = NSClassFromString("CABackdropLayer")

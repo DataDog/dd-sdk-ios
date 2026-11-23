@@ -14,6 +14,7 @@ internal struct FlagsData: Equatable, Codable {
     let flagSelection: CanonicalFlagSelection?
     // Optional so snapshots written before opt-out support remain readable.
     let experimentationOptOutPolicy: ExperimentationOptOut?
+    let observeFullEvaluationData: Bool
 
     init(
         flags: [String: FlagAssignment],
@@ -21,13 +22,36 @@ internal struct FlagsData: Equatable, Codable {
         date: Date,
         obfuscation: FlagKeyObfuscation? = nil,
         flagSelection: CanonicalFlagSelection? = nil,
-        experimentationOptOutPolicy: ExperimentationOptOut? = nil
+        experimentationOptOutPolicy: ExperimentationOptOut? = nil,
+        observeFullEvaluationData: Bool = false
     ) {
-        self.flags = flags
+        self.flags = flags.mapValues { assignment in
+            var assignment = assignment
+            assignment.observeFullEvaluationData = observeFullEvaluationData
+            return assignment
+        }
         self.context = context
         self.date = date
         self.obfuscation = obfuscation
         self.flagSelection = flagSelection
         self.experimentationOptOutPolicy = experimentationOptOutPolicy
+        self.observeFullEvaluationData = observeFullEvaluationData
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case flags, context, date, obfuscation, flagSelection, experimentationOptOutPolicy, observeFullEvaluationData
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            flags: try container.decode([String: FlagAssignment].self, forKey: .flags),
+            context: try container.decode(FlagsEvaluationContext.self, forKey: .context),
+            date: try container.decode(Date.self, forKey: .date),
+            obfuscation: try container.decodeIfPresent(FlagKeyObfuscation.self, forKey: .obfuscation),
+            flagSelection: try container.decodeIfPresent(CanonicalFlagSelection.self, forKey: .flagSelection),
+            experimentationOptOutPolicy: try container.decodeIfPresent(ExperimentationOptOut.self, forKey: .experimentationOptOutPolicy),
+            observeFullEvaluationData: (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
+        )
     }
 }

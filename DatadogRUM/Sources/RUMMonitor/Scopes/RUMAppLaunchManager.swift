@@ -21,6 +21,8 @@ internal class RUMAppLaunchManager {
         let attributes: [AttributeKey: AttributeValue]
         let view: RUMVitalAppLaunchEvent.View
         let context: DatadogContext
+        /// The RUM context of the session that received the TTFD.
+        let rumContext: RUMContext
         let profiling: DDProfiling?
     }
     // MARK: - Properties
@@ -99,6 +101,8 @@ private extension RUMAppLaunchManager {
 
         let ttidVitalId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
+        // Captured now: the `parent` session can be deallocated before the async app state lookups below complete.
+        let rumContext = parent.context
 
         // There is a pending TTFD here only if TTID didn't exist yet. In that situation we know
         // the TTFD was not yet reported to the profiler, so report it here.
@@ -139,6 +143,7 @@ private extension RUMAppLaunchManager {
                     startupType: startupType,
                     attributes: attributes,
                     context: context,
+                    rumContext: rumContext,
                     writer: writer,
                     view: .init(activeView: activeView),
                     profiling: profiling
@@ -154,6 +159,7 @@ private extension RUMAppLaunchManager {
                         startupType: startupType,
                         attributes: timeToFullDisplay.attributes,
                         context: timeToFullDisplay.context,
+                        rumContext: timeToFullDisplay.rumContext,
                         writer: writer,
                         view: timeToFullDisplay.view,
                         profiling: timeToFullDisplay.profiling
@@ -220,6 +226,7 @@ private extension RUMAppLaunchManager {
         startupType: RUMVitalAppLaunchEvent.Vital.StartupType,
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
+        rumContext: RUMContext,
         writer: Writer,
         view: RUMVitalAppLaunchEvent.View,
         profiling: DDProfiling? = nil
@@ -236,7 +243,7 @@ private extension RUMAppLaunchManager {
         let vitalEvent = RUMVitalAppLaunchEvent(
             dd: .init(profiling: profiling),
             account: .init(context: context),
-            application: .init(id: parent.context.rumApplicationID),
+            application: .init(id: rumContext.rumApplicationID),
             buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
@@ -251,8 +258,8 @@ private extension RUMAppLaunchManager {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
-                hasTimeseries: dependencies.timeseriesCollector?.hasCollectedData(sessionID: parent.context.sessionID.toRUMDataFormat) ?? false,
-                id: parent.context.sessionID.toRUMDataFormat,
+                hasTimeseries: dependencies.timeseriesCollector?.hasCollectedData(sessionID: rumContext.sessionID.toRUMDataFormat) ?? false,
+                id: rumContext.sessionID.toRUMDataFormat,
                 isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
@@ -290,6 +297,7 @@ private extension RUMAppLaunchManager {
             // Captured now so a TTFD held until the TTID completes keeps its own view and context.
             view: RUMVitalAppLaunchEvent.View(activeView: activeView),
             context: context,
+            rumContext: parent.context,
             profiling: context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling,
         )
 
@@ -313,6 +321,7 @@ private extension RUMAppLaunchManager {
                     startupType: startupType,
                     attributes: timeToFullDisplay.attributes,
                     context: timeToFullDisplay.context,
+                    rumContext: timeToFullDisplay.rumContext,
                     writer: writer,
                     view: timeToFullDisplay.view,
                     profiling: timeToFullDisplay.profiling
