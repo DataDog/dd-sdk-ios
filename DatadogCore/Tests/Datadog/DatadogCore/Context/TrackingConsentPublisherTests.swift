@@ -26,7 +26,7 @@ class TrackingConsentPublisherTests: XCTestCase {
             expectation.fulfill()
         }
 
-        publisher.consent = .notGranted
+        publisher.update(.notGranted) {}
 
         // TrackingConsentPublisher publishes in sync
         waitForExpectations(timeout: 0)
@@ -39,10 +39,39 @@ class TrackingConsentPublisherTests: XCTestCase {
         publisher.publish { published.append($0) }
 
         // When
-        publisher.consent = .notGranted
-        publisher.consent = .pending
+        publisher.update(.notGranted) {}
+        publisher.update(.pending) {}
 
         // Then
         XCTAssertEqual(published, [.init(consent: .notGranted, revision: 1), .init(consent: .pending, revision: 2)])
+    }
+
+    func testWhenConsentDoesNotChange_itDoesNotPublish() {
+        // Given
+        let publisher = TrackingConsentPublisher(consent: .granted)
+        var published: [TrackingConsentPublisher.Value] = []
+        var changes = 0
+        publisher.publish { published.append($0) }
+
+        // When
+        publisher.update(.granted) { changes += 1 }
+
+        // Then
+        XCTAssertEqual(published, [])
+        XCTAssertEqual(changes, 0)
+    }
+
+    func testWhenConsentChanges_itCallsWhenChangedAfterPublishing() {
+        // Given
+        let publisher = TrackingConsentPublisher(consent: .granted)
+        var calls: [String] = []
+        publisher.publish { _ in calls.append("publish") }
+
+        // When
+        publisher.update(.notGranted) { calls.append("whenChanged") }
+
+        // Then
+        XCTAssertEqual(calls, ["publish", "whenChanged"])
+        XCTAssertEqual(publisher.consent, .notGranted)
     }
 }
