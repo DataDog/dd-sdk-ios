@@ -37,11 +37,11 @@ Experimental. Response signing is in preview and works only on the Datadog stagi
 
 Staging only; production is not supported yet. Production support comes in a later release.
 
-The SDK does not send `X-stream`. The edge buffers the responses that it signs. Until the edge buffering build is on staging, `required` on staging fails closed and `observe` reports `missingProof`.
+The SDK does not send `X-stream`. The edge buffers the responses that it signs. Until the edge buffering build is on staging, `required` on staging fails closed and `observe` reports `missing-proof`.
 
 The first public response-signing protocol is v1. The SDK advertises `response-signing-v1`, sends signature version `1`, and verifies the `datadog.feature-flags.precomputed-assignments.v1` transcript. A v1 response carries the leaf in `x-datadog-feature-flags-signing-certificate` and 1 to 3 intermediates in `x-datadog-feature-flags-signing-chain`. The chain header joins standard base64 DER entries with `,` and no spaces. Index 0 issued the leaf, and a pinned root issued the last entry. The SDK rejects a response that has only the earlier `x-datadog-feature-flags-signing-intermediate` header. The transcript ends with `SHA256(leaf)`, one byte with the intermediate count, and the SHA-256 digest of each intermediate in header order. Earlier POC v1/v2 and draft v3 labels are not supported public versions; public v1 does not accept their proofs. X.509 v3 certificate encoding is unchanged.
 
-Response signing is disabled by default. It is available only for the staging assignment endpoint. `DatadogSite` has no staging case, so set `customFlagsEndpoint` to the staging endpoint. For every other endpoint, `observe` is a no-op: the SDK logs a warning, sends the ordinary request, and does not verify flags. For every other endpoint, `required` fails closed: the SDK logs an error once when Flags is enabled, sends no assignment request, puts the client in its error state, and returns `FlagsError.invalidConfiguration` on every fetch. To use Flags outside staging, remove `required` or use `observe`. Signing protects response integrity; subject authorization remains separate.
+Response signing is disabled by default. It is available only for the staging assignment endpoint. `DatadogSite` has no staging case, so set `customFlagsEndpoint` to the staging endpoint. For every other endpoint, `observe` is a no-op: the SDK logs a warning, sends the ordinary request, and does not verify flags. For every other endpoint, `required` fails closed: the SDK logs an error once when Flags is enabled, sends no assignment request, puts the client in its error state, and returns `FlagsError.responseSigningFailed(reason: "unsupported-site")` on every fetch. To use Flags outside staging, remove `required` or use `observe`. Signing protects response integrity; subject authorization remains separate.
 
 ```swift
 Flags.enable(with: .init(
@@ -71,7 +71,7 @@ The FFE OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Datadog must assign the pr
 
 Signing-enabled requests reject redirects, use a fresh 16-byte nonce and bind the exact emitted URL/query, request body, effective client token, semantic headers, response bytes and complete public chain. Verification runs before JSON decoding and cache admission, with expiry checked again at admission and evaluation. Response verification is bounded to 2 MiB and request signing to 1 MiB. Responses are buffered application bytes after HTTP decompression; this draft does not add a signed streaming or critical-flags protocol.
 
-At signing cutover, the staging edge can serve unsigned 200 responses until the credential rotator republishes the credential. `observe` accepts such a response unverified and reports a `missingProof` outcome. `required` rejects it with `invalidResponse` and does not retry unsigned. Disabling edge signing cannot weaken `required` in an installed SDK. A required client uses verified memory only until its signed expiry, then returns defaults. Restore valid signed delivery to recover. Mobile rotation and application lifecycle validation remain required before rollout beyond staging.
+At signing cutover, the staging edge can serve unsigned 200 responses until the credential rotator republishes the credential. `observe` accepts such a response unverified and reports a `missing-proof` outcome. `required` rejects it with `FlagsError.responseSigningFailed(reason: "missing-proof")` and does not retry unsigned. Disabling edge signing cannot weaken `required` in an installed SDK. A required client uses verified memory only until its signed expiry, then returns defaults. Restore valid signed delivery to recover. Mobile rotation and application lifecycle validation remain required before rollout beyond staging.
 
 ## Proof expiry (`expireVerifiedFlags`)
 
@@ -80,7 +80,31 @@ At signing cutover, the staging edge can serve unsigned 200 responses until the 
 - `false` (default): the client keeps serving the last verified flags, and its state changes to `stale`. The application decides whether to refetch. A network attacker can block refreshes and keep the flags at their last verified values. The attacker cannot forge values. The guarantee is "verified once", not "fresh".
 - `true`: the client state changes to `error`, and evaluations return defaults. This is the strict guarantee.
 
-A new verified response returns the state to `ready` in both settings. The state changes at the expiry time, and again when the application reads a flag.
+A new verified response returns the state to `ready` in both settings. With `expireVerifiedFlags: true`, the state changes to `error` from `ready` and from `stale` (for example after a failed refresh). The state changes at the expiry time, and again when the application reads a flag. State listeners get each change.
+
+## Signing errors and reason codes
+
+When `required` rejects a response, or the SDK cannot sign a request, the context completion returns `FlagsError.responseSigningFailed(reason:)`. The reason is one of the codes below. The same codes appear in telemetry as `flags-response-signing-<code>`, and in the user log, once for each code:
+
+`Flag response signing failed (<code>): <what failed>. <fix hint>.`
+
+`required` logs an error. `observe` accepts the response, logs a warning and adds "Flags are not verified."
+
+| Code | What failed | Fix hint |
+| --- | --- | --- |
+| `unsupported-request` | The SDK cannot sign this request shape. | Use the default flags endpoint and request options. |
+| `unavailable-crypto` | The platform crypto API is not available. | Use a supported OS version. |
+| `missing-anchor` | No trusted root is configured for this site. | Response signing supports only the staging site in this release. |
+| `missing-proof` | The response has no signature headers. | A proxy, CDN or custom endpoint removed the signature headers, or the organization is not enrolled. |
+| `invalid-proof` | The signature headers are present but not valid. | A proxy or CDN changed the response headers. |
+| `response-too-large` | The body is larger than the signed size limit. | Contact Datadog support. |
+| `invalid-certificate` | The certificate chain does not chain to the pinned root, or a chain rule fails. | The response did not come from Datadog, or the network intercepts TLS. Contact Datadog support. |
+| `invalid-signature` | The signature does not match the request and response. | The response changed in transit. |
+| `expired-proof` | The proof is expired or not yet valid. | Check the device clock. |
+| `unsupported-site` | Signing is not available on this Datadog site. | Response signing supports only the staging site in this release. Production is not supported yet. |
+| `revoked-certificate` | Draft revocation rule. | See the draft section below. |
+
+The verified-flags cache scope does not include the RUM application ID or the RUM session. A RUM start, a RUM stop or an application ID change does not invalidate verified flags or discard an in-flight response. Each response transcript still binds `dd-application-id`.
 
 ## Minimum not-before revocation (draft wire)
 

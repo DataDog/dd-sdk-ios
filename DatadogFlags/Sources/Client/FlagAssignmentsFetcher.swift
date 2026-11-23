@@ -324,9 +324,10 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     ) {
         let prepared: URLRequest?
         do { prepared = try verifier.prepare(request) } catch {
-            reportSigning(error as? FlagsSigningError ?? .invalidProof)
+            let reason = error as? FlagsSigningError ?? .unsupportedRequest
+            reportSigning(reason)
             guard responseSigningMode == .observe else {
-                completion(.failure(.invalidConfiguration))
+                completion(.failure(.responseSigningFailed(reason: reason.rawValue)))
                 return
             }
             prepared = nil
@@ -396,9 +397,10 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                                 self.reportSigningReason("minimum-not-before-ignored")
                             }
                         } catch {
-                            self.reportSigning(error as? FlagsSigningError ?? .invalidProof)
+                            let reason = error as? FlagsSigningError ?? .invalidProof
+                            self.reportSigning(reason)
                             guard self.responseSigningMode == .observe else {
-                                completion(.failure(.invalidResponse))
+                                completion(.failure(.responseSigningFailed(reason: reason.rawValue)))
                                 return
                             }
                         }
@@ -420,6 +422,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     }
 
     private func reportSigning(_ error: FlagsSigningError?) {
+        if let error, !reportedSigningOutcomes.contains(error.rawValue) {
+            // One user log for each code. `required` fails closed, so it logs an error; `observe` only warns.
+            if responseSigningMode == .required {
+                DD.logger.error(error.logMessage)
+            } else {
+                DD.logger.warn(error.logMessage + " Flags are not verified.")
+            }
+        }
         reportSigningReason(error?.rawValue ?? "verified")
     }
 

@@ -29,7 +29,7 @@ extension Flags {
     /// The SDK pins one built-in root: the staging root. Production support comes in a later release.
     /// For any other endpoint, `observe` has no effect: the SDK logs a warning and sends the ordinary request.
     /// For any other endpoint, `required` fails closed: the SDK logs an error, sends no assignment request,
-    /// and returns `FlagsError.invalidConfiguration` on every fetch.
+    /// and returns `FlagsError.responseSigningFailed(reason: "unsupported-site")` on every fetch.
     public struct ResponseSigningConfiguration {
         public var mode: ResponseSigningMode
         /// Experimental. Controls what `required` mode does when the proof of the last verified response expires.
@@ -254,12 +254,14 @@ internal final class FlagsResponseVerifier {
                 for value in values { append(Data(value.utf8)) }
             }
         }
+        // The RUM application ID is not in the scope: RUM can start, stop or change during a session.
+        // Each response transcript still binds `dd-application-id`.
         let names = Set(
             customHeaderNames.map { $0.lowercased() } + [
-                "dd-client-token", "authorization", "content-type", "dd-application-id", "x-rkyv", "x-use-cache",
+                "dd-client-token", "authorization", "content-type", "x-rkyv", "x-use-cache",
                 "x-dd-feature-flags-capabilities"
             ]
-        ).subtracting([Self.prefix + "request-nonce", Self.prefix + "signature-version"]).sorted()
+        ).subtracting([Self.prefix + "request-nonce", Self.prefix + "signature-version", "dd-application-id"]).sorted()
         for name in names {
             append(Data(name.utf8))
             if let value = request.value(forHTTPHeaderField: name) {
@@ -283,7 +285,8 @@ internal final class FlagsResponseVerifier {
     func prepare(_ original: URLRequest) throws -> URLRequest {
         let roots = configuration.roots(for: original.url)
         if configuration.mode == .required && roots.isEmpty {
-            throw FlagsSigningError.missingAnchor
+            // Only the staging endpoint has a built-in root.
+            throw FlagsSigningError.unsupportedSite
         }
         guard roots.count <= 4,
             roots.allSatisfy({ !$0.isEmpty && $0.count <= 4_096 })
@@ -310,7 +313,7 @@ internal final class FlagsResponseVerifier {
             return SecRandomCopyBytes(kSecRandomDefault, bytes.count, address)
         }
         guard status == errSecSuccess else {
-            throw FlagsSigningError.unsupportedRequest
+            throw FlagsSigningError.unavailableCrypto
         }
         request.setValue(Self.signatureVersion, forHTTPHeaderField: Self.prefix + "signature-version")
         request.setValue(Self.hex(Data(nonce)), forHTTPHeaderField: Self.prefix + "request-nonce")

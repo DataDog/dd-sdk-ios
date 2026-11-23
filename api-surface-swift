@@ -1774,6 +1774,7 @@ public enum FlagsError: Error
     case invalidContext
     case initializationTimedOut
     case assignmentAuthorizationFailed
+    case responseSigningFailed(reason: String)
 public struct FlagsEvaluationContext: Equatable, Codable
     public let targetingKey: String
     public let attributes: [String: AnyValue]

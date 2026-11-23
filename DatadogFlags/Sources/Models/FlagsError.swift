@@ -48,4 +48,11 @@ public enum FlagsError: Error {
     /// This is returned only for an HTTP 401 response containing the JSON:API error code
     /// `ASSIGNMENT_AUTHORIZATION_FAILED`. The assignment token and response body are never exposed.
     case assignmentAuthorizationFailed
+
+    /// Experimental. Response signing rejected the assignment response, or could not sign the request.
+    ///
+    /// `reason` is a stable kebab-case code, for example `invalid-signature`, `missing-proof` or `unsupported-site`.
+    /// The SDK also logs `Flag response signing failed (<reason>): <what failed>. <fix hint>.`
+    /// The client applies no flags from the rejected response.
+    case responseSigningFailed(reason: String)
 }

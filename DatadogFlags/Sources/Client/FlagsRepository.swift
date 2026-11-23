@@ -460,8 +460,8 @@ internal final class FlagsRepository {
         return flagAssignmentsFetcher.isTrusted(data.verification, at: dateProvider.now)
     }
 
-    /// Required mode only. When the installed proof expires, `ready` becomes `stale`,
-    /// or `error` when `expireVerifiedFlags` is set. Reads and an expiry timer call this.
+    /// Required mode only. When the installed proof expires, `ready` becomes `stale`, or `ready` and `stale`
+    /// become `error` when `expireVerifiedFlags` is set. Reads and an expiry timer call this.
     private func applyVerifiedExpiry() {
         guard flagAssignmentsFetcher.responseSigningMode == .required else {
             return
@@ -469,13 +469,17 @@ internal final class FlagsRepository {
         let now = dateProvider.now
         var notifyListeners: (() -> Void)?
         _repositoryState.mutate { state in
-            guard stateManager.currentState == .ready, let data = state.flagsData,
+            let current = stateManager.currentState
+            guard current == .ready || current == .stale, let data = state.flagsData,
                 data.verification != nil,
                 !flagAssignmentsFetcher.isVerified(data.verification, at: now)
             else {
                 return
             }
             let newState: FlagsClientState = flagAssignmentsFetcher.isTrusted(data.verification, at: now) ? .stale : .error
+            guard newState != current else {
+                return
+            }
             notifyListeners = stateManager.updateStateWithoutNotifying(newState)
         }
         notifyListeners?()
@@ -909,7 +913,13 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     || response.responseSigningCacheScope != self.flagAssignmentsFetcher.responseSigningCacheScope
                     || (self.flagAssignmentsFetcher.responseSigningMode == .required
                         && !self.flagAssignmentsFetcher.isVerified(response.verification, at: self.dateProvider.now)) {
-                admittedResult = .failure(.invalidResponse)
+                // A proof that expired before admission is a signing failure. A changed request scope is not.
+                let expired = self.flagAssignmentsFetcher.responseSigningMode == .required
+                    && response.verification != nil
+                    && response.responseSigningCacheScope == self.flagAssignmentsFetcher.responseSigningCacheScope
+                admittedResult = .failure(
+                    expired ? .responseSigningFailed(reason: FlagsSigningError.expiredProof.rawValue) : .invalidResponse
+                )
             } else {
                 admittedResult = validated
             }

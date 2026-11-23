@@ -6,11 +6,61 @@
 
 import Foundation
 
+/// Response-signing reason codes. The raw values are the shared kebab-case codes of all Datadog flags SDKs.
 internal enum FlagsSigningError: String, Error {
-    case unsupportedRequest, missingAnchor, missingProof, invalidProof
-    case invalidCertificate, invalidSignature, expiredProof, responseTooLarge
+    case unsupportedRequest = "unsupported-request"
+    case unavailableCrypto = "unavailable-crypto"
+    case missingAnchor = "missing-anchor"
+    case missingProof = "missing-proof"
+    case invalidProof = "invalid-proof"
+    case responseTooLarge = "response-too-large"
+    case invalidCertificate = "invalid-certificate"
+    case invalidSignature = "invalid-signature"
+    case expiredProof = "expired-proof"
+    case unsupportedSite = "unsupported-site"
     /// DRAFT wire: a certificate in the chain is older than the stored minimum not-before value.
     case revokedCertificate = "revoked-certificate"
+
+    /// What failed, for the user log.
+    var failure: String {
+        switch self {
+        case .unsupportedRequest: return "the SDK cannot sign this request shape"
+        case .unavailableCrypto: return "the platform crypto API is not available"
+        case .missingAnchor: return "no trusted root is configured for this site"
+        case .missingProof: return "the response has no signature headers"
+        case .invalidProof: return "the signature headers are present but not valid"
+        case .responseTooLarge: return "the body is larger than the signed size limit"
+        case .invalidCertificate:
+            return "the certificate chain does not chain to the pinned root, or a chain rule fails"
+        case .invalidSignature: return "the signature does not match the request and response"
+        case .expiredProof: return "the proof is expired or not yet valid"
+        case .unsupportedSite: return "signing is not available on this Datadog site"
+        case .revokedCertificate: return "a certificate in the chain is older than the minimum not-before value"
+        }
+    }
+
+    /// How to fix it, for the user log.
+    var hint: String {
+        switch self {
+        case .unsupportedRequest: return "Use the default flags endpoint and request options"
+        case .unavailableCrypto: return "Use a supported OS version"
+        case .missingAnchor: return "Response signing supports only the staging site in this release"
+        case .missingProof:
+            return "A proxy, CDN or custom endpoint removed the signature headers, or the organization is not enrolled"
+        case .invalidProof: return "A proxy or CDN changed the response headers"
+        case .responseTooLarge: return "Contact Datadog support"
+        case .invalidCertificate:
+            return "The response did not come from Datadog, or the network intercepts TLS. Contact Datadog support"
+        case .invalidSignature: return "The response changed in transit"
+        case .expiredProof: return "Check the device clock"
+        case .unsupportedSite:
+            return "Response signing supports only the staging site in this release. Production is not supported yet"
+        case .revokedCertificate: return "The draft revocation rule rejected this certificate"
+        }
+    }
+
+    /// `Flag response signing failed (<code>): <what failed>. <fix hint>.`
+    var logMessage: String { "Flag response signing failed (\(rawValue)): \(failure). \(hint)." }
 }
 
 /// Bounded DER for the deliberately restricted assignment-signing certificate profile.
