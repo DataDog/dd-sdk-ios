@@ -69,7 +69,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private var activeView: RUMViewScope?
 
     /// Allocated only for the resolved On path; the legacy metric remains process-wide.
-    private enum NavigationDestination {
+    enum NavigationDestination {
         case ownedScene(RUMSceneIdentifier?)
         case unresolved
     }
@@ -78,6 +78,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var navigationDestination: NavigationDestination?
         var representativeViewID: RUMUUID?
         var interactionMetrics: [RUMSceneIdentifier: INVMetricTracking?] = [:]
+        var restoredViews: [RUMViewScope] = []
     }
 
     private let sceneState: SceneState?
@@ -167,6 +168,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies: RUMScopeDependencies,
         applicationState: RUMApplicationState,
         resumingViewScope: RUMViewScope? = nil,
+        resumingViewScopes: [RUMViewScope]? = nil,
+        navigationDestination: NavigationDestination? = nil,
         presetSessionUUID: RUMUUID? = nil
     ) {
         // `presetSessionUUID` is created synchronously in `RUM.enable()` for the initial session, so the
@@ -177,6 +180,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.sceneState = dependencies.isMultiSceneTrackingEnabled ? SceneState() : nil
+        self.sceneState?.navigationDestination = navigationDestination
         self.applicationState = applicationState
         self.sampler = DeterministicSampler(
             uuid: sessionUUID.rawValue,
@@ -226,6 +230,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
         }
 
+        if let resumingViewScopes, sceneState != nil {
+            restoreViews(resumingViewScopes, at: startTime, context: context)
+        }
+
         // Update fatal error context with recent RUM session state:
         dependencies.fatalErrorContext.sessionState = state
 
@@ -249,8 +257,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         transferActiveView: Bool,
-        applicationState: RUMApplicationState
+        applicationState: RUMApplicationState,
+        triggeringCommand: RUMCommand? = nil
     ) {
+        let navigationDestination = expiredSession.sceneState == nil ? nil : Self.resolveNavigationDestination(
+            on: triggeringCommand,
+            representative: expiredSession.activeView?.sceneIdentifier,
+            cache: expiredSession.dependencies.viewCache
+        )
         self.init(
             // If the expired session was marked as "initial" but didn’t track any views, mark this new session as the new "initial".
             isInitialSession: expiredSession.state.isInitialSession && !expiredSession.state.hasTrackedAnyView,
@@ -260,8 +274,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             startPrecondition: startPrecondition,
             context: context,
             dependencies: expiredSession.dependencies,
-            applicationState: applicationState
+            applicationState: applicationState,
+            navigationDestination: navigationDestination
         )
+
+        // Multi-scene rollover restores peers independently of the triggering navigation.
+        if sceneState != nil, context.applicationStateHistory.currentState.isRunningInForeground {
+            let foregroundViews = expiredSession.foregroundViewsForRestoration
+            let views = viewsToRestore(foregroundViews, on: triggeringCommand, restoreAll: transferActiveView)
+            restoreViews(views, at: startTime, context: context)
+            return
+        }
 
         // Transfer active View to new `RUMViewScope`:
         if transferActiveView {
@@ -364,7 +387,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
         }
 
-        if let sceneState {
+        if let sceneState, sceneState.navigationDestination == nil {
             sceneState.navigationDestination = Self.resolveNavigationDestination(
                 on: command,
                 representative: activeView?.sceneIdentifier,
@@ -431,6 +454,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Keep the legacy fanout and expiry position unchanged when the flag is Off.
         if sceneState != nil {
+            emitRestoredViews(on: command, context: context, writer: writer)
             propagateOwned(command, context: context, writer: writer)
         } else {
             viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
@@ -486,7 +510,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         hasReplay: Bool?,
-        sceneIdentifier: RUMSceneIdentifier? = nil
+        sceneIdentifier: RUMSceneIdentifier? = nil,
+        didReceiveStartCommand: Bool = false
     ) {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
@@ -500,7 +525,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             serverTimeOffset: serverTimeOffset,
             interactionToNextViewMetric: metric(for: sceneIdentifier),
             viewIndexInSession: nextViewIndex,
-            sceneIdentifier: sceneIdentifier
+            sceneIdentifier: sceneIdentifier,
+            didReceiveStartCommand: didReceiveStartCommand
         )
         nextViewIndex += 1
 
@@ -568,8 +594,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return nil
     }
 
-    /// Resolve ownership before starting a view can change the cache.
-    private static func resolveNavigationDestination(
+    /// Freeze ownership before restoration or cache insertion can change its lookup.
+    static func resolveNavigationDestination(
         on command: RUMCommand?,
         representative: RUMSceneIdentifier?,
         cache: ViewCache
@@ -591,6 +617,81 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         case .none, .allActiveViews:
             return .unresolved
         }
+    }
+
+    /// A navigation replaces its own scene; unrelated foreground peers are restored.
+    var foregroundViewsForRestoration: [RUMViewScope] {
+        let views = viewScopes.filter {
+            $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        }
+        guard let activeView, views.contains(where: { $0 === activeView }) else {
+            return views
+        }
+        // Preserve deterministic order while keeping the last-interacted representative last.
+        return views.filter { $0 !== activeView } + [activeView]
+    }
+
+    private func viewsToRestore(_ views: [RUMViewScope], on command: RUMCommand?, restoreAll: Bool) -> [RUMViewScope] {
+        guard sceneState != nil else {
+            return []
+        }
+        if let command, command is RUMStartViewCommand || command is RUMStopViewCommand {
+            guard let destination = sceneState?.navigationDestination, case .ownedScene(let scene) = destination else {
+                return views
+            }
+            return Self.restoringViews(views, after: command, in: scene)
+        }
+        return restoreAll ? views : []
+    }
+
+    /// A start replaces the selected scene's view. A stop only replaces the identity it can end.
+    static func restoringViews(
+        _ views: [RUMViewScope],
+        after navigation: RUMCommand,
+        in scene: RUMSceneIdentifier?
+    ) -> [RUMViewScope] {
+        if let stop = navigation as? RUMStopViewCommand {
+            return views.filter { $0.sceneIdentifier != scene || $0.identity != stop.identity }
+        }
+        return views.filter { $0.sceneIdentifier != scene }
+    }
+
+    private func restoreViews(_ views: [RUMViewScope], at time: Date, context: DatadogContext) {
+        for view in views {
+            startView(
+                isInitialView: false,
+                dependencies: dependencies,
+                identity: view.identity,
+                path: view.viewPath,
+                name: view.viewName,
+                customTimings: view.customTimings,
+                startTime: time,
+                serverTimeOffset: context.serverTimeOffset,
+                hasReplay: context.hasReplay,
+                sceneIdentifier: view.sceneIdentifier,
+                didReceiveStartCommand: true
+            )
+            if let restored = viewScopes.last {
+                sceneState?.restoredViews.append(restored)
+            }
+        }
+    }
+
+    private func emitRestoredViews(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard let sceneState, !sceneState.restoredViews.isEmpty else {
+            return
+        }
+        // The index0 initial-view filter intentionally drops a zero-duration baseline.
+        // Emit at a representable positive duration without forwarding the trigger to peers.
+        let baseline = RUMKeepSessionAliveCommand(
+            time: command.time.addingTimeInterval(0.000001),
+            globalAttributes: command.globalAttributes,
+            attributes: [:]
+        )
+        for view in sceneState.restoredViews {
+            view.emitRestoredBaseline(on: baseline, context: context, writer: writer)
+        }
+        sceneState.restoredViews.removeAll()
     }
 
     private func activeRecipients(for target: RUMCommandTarget) -> [RUMViewScope] {
