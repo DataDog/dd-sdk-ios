@@ -46,10 +46,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         didSet {
             let previousActiveViewUUID = activeView?.viewUUID
             let nextActiveView = viewScopes.last(where: { $0.isActiveView })
-            if previousActiveViewUUID != nextActiveView?.viewUUID, let previousActiveViewUUID {
+            if !dependencies.isMultiSceneTrackingEnabled, previousActiveViewUUID != nextActiveView?.viewUUID, let previousActiveViewUUID {
                 dependencies.viewCache.markInactive(id: previousActiveViewUUID.toRUMDataFormat)
             }
-            activeView = nextActiveView
+            activeView = sceneState?.representativeViewID.flatMap { id in
+                viewScopes.last(where: { $0.isActiveView && $0.viewUUID == id })
+            } ?? nextActiveView
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
                 state = RUMSessionState(
                     sessionUUID: state.sessionUUID,
@@ -65,6 +67,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     /// Current active view.
     private var activeView: RUMViewScope?
+
+    /// Allocated only for the resolved On path; the legacy metric remains process-wide.
+    private enum NavigationDestination {
+        case ownedScene(RUMSceneIdentifier?)
+        case unresolved
+    }
+
+    private final class SceneState {
+        var navigationDestination: NavigationDestination?
+        var representativeViewID: RUMUUID?
+        var interactionMetrics: [RUMSceneIdentifier: INVMetricTracking?] = [:]
+    }
+
+    private let sceneState: SceneState?
 
     /// If there is an active view.
     private var hasActiveView: Bool { activeView != nil }
@@ -139,7 +155,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Counter to track the index of views in this session. Starts at 0 for the first view.
     private var nextViewIndex: Int = 0
 
-    private let interactionToNextViewMetric: INVMetricTracking?
+    private lazy var interactionToNextViewMetric = dependencies.interactionToNextViewMetricFactory()
 
     init(
         isInitialSession: Bool,
@@ -160,6 +176,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         self.parent = parent
         self.dependencies = dependencies
+        self.sceneState = dependencies.isMultiSceneTrackingEnabled ? SceneState() : nil
         self.applicationState = applicationState
         self.sampler = DeterministicSampler(
             uuid: sessionUUID.rawValue,
@@ -182,7 +199,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             hasTrackedAnyView: false,
             didStartWithReplay: context.hasReplay
         )
-        self.interactionToNextViewMetric = dependencies.interactionToNextViewMetricFactory()
+        if !dependencies.isMultiSceneTrackingEnabled {
+            _ = interactionToNextViewMetric
+        }
 
         if sampler.isSampled {
             // Start tracking "RUM Session Ended" metric for this session
@@ -345,6 +364,15 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
         }
 
+        if let sceneState {
+            sceneState.navigationDestination = Self.resolveNavigationDestination(
+                on: command,
+                representative: activeView?.sceneIdentifier,
+                cache: dependencies.viewCache
+            )
+        }
+        defer { sceneState?.navigationDestination = nil }
+
         var deactivating = false
         if isActive {
             switch command {
@@ -360,7 +388,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
             case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
-                startView(on: startViewCommand, context: context)
+                if sceneState == nil || canStartView {
+                    startView(on: startViewCommand, context: context)
+                }
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
                 dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
@@ -393,14 +423,18 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 // command doesn't need to be propagated to other scopes
                 return true
             default:
-                if !hasActiveView {
+                if !hasActiveView && (sceneState == nil || command.target == .processRepresentative) {
                     handleOffViewCommand(command: command, context: context, writer: writer)
                 }
             }
         }
 
-        // Propagate command
-        viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
+        // Keep the legacy fanout and expiry position unchanged when the flag is Off.
+        if sceneState != nil {
+            propagateOwned(command, context: context, writer: writer)
+        } else {
+            viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
+        }
 
         if (isActive || deactivating) && !hasActiveView {
             // If this session is active and there is no active view, update fatal error context accordingly, so eventual
@@ -437,7 +471,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             customTimings: [:],
             startTime: command.time,
             serverTimeOffset: context.serverTimeOffset,
-            hasReplay: context.hasReplay
+            hasReplay: context.hasReplay,
+            sceneIdentifier: sceneState == nil ? nil : navigationScene
         )
     }
 
@@ -450,7 +485,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        hasReplay: Bool?
+        hasReplay: Bool?,
+        sceneIdentifier: RUMSceneIdentifier? = nil
     ) {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
@@ -462,8 +498,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             customTimings: customTimings,
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
-            interactionToNextViewMetric: interactionToNextViewMetric,
-            viewIndexInSession: nextViewIndex
+            interactionToNextViewMetric: metric(for: sceneIdentifier),
+            viewIndexInSession: nextViewIndex,
+            sceneIdentifier: sceneIdentifier
         )
         nextViewIndex += 1
 
@@ -480,7 +517,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             id: id,
             timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: hasReplay,
-            isActive: true
+            isActive: true,
+            sceneIdentifier: sceneIdentifier
         )
     }
 
@@ -490,10 +528,142 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func deactivateActiveView() {
+        if sceneState != nil {
+            for view in viewScopes where view.isActiveView {
+                dependencies.viewCache.markInactive(id: view.viewUUID.toRUMDataFormat)
+            }
+            return
+        }
         guard let activeView else {
             return
         }
         dependencies.viewCache.markInactive(id: activeView.viewUUID.toRUMDataFormat)
+    }
+
+    // MARK: - Flagged scene ownership
+
+    private func metric(for scene: RUMSceneIdentifier?) -> INVMetricTracking? {
+        guard let sceneState, let scene else {
+            return interactionToNextViewMetric
+        }
+        if let metric = sceneState.interactionMetrics[scene] {
+            return metric
+        }
+        let metric = dependencies.interactionToNextViewMetricFactory()
+        sceneState.interactionMetrics.updateValue(metric, forKey: scene)
+        return metric
+    }
+
+    private var canStartView: Bool {
+        if let destination = sceneState?.navigationDestination, case .ownedScene = destination {
+            return true
+        }
+        return false
+    }
+
+    private var navigationScene: RUMSceneIdentifier? {
+        if let destination = sceneState?.navigationDestination, case .ownedScene(let scene) = destination {
+            return scene
+        }
+        return nil
+    }
+
+    /// Resolve ownership before starting a view can change the cache.
+    private static func resolveNavigationDestination(
+        on command: RUMCommand?,
+        representative: RUMSceneIdentifier?,
+        cache: ViewCache
+    ) -> NavigationDestination? {
+        guard let command, command is RUMStartViewCommand || command is RUMStopViewCommand else {
+            return nil
+        }
+        switch command.target {
+        case .scene(let scene):
+            return .ownedScene(scene)
+        case .processRepresentative:
+            return .ownedScene(representative)
+        case .view(let id):
+            switch cache.ownership(forViewID: id.toRUMDataFormat) {
+            case .scene(let scene): return .ownedScene(scene)
+            case .legacy: return .ownedScene(representative)
+            case .unknown: return .unresolved
+            }
+        case .none, .allActiveViews:
+            return .unresolved
+        }
+    }
+
+    private func activeRecipients(for target: RUMCommandTarget) -> [RUMViewScope] {
+        switch target {
+        case .none:
+            return []
+        case .allActiveViews:
+            return viewScopes.filter { $0.isActiveView }
+        case .processRepresentative:
+            return activeView.map { [$0] } ?? []
+        case .scene(let scene):
+            return viewScopes.filter { $0.isActiveView && $0.sceneIdentifier == scene }
+        case .view(let id):
+            if let view = viewScopes.last(where: { $0.isActiveView && $0.viewUUID == id }) {
+                return [view]
+            }
+            switch dependencies.viewCache.ownership(forViewID: id.toRUMDataFormat) {
+            case .scene(let scene):
+                return viewScopes.filter { $0.isActiveView && $0.sceneIdentifier == scene }
+            case .legacy:
+                return activeView.map { [$0] } ?? []
+            case .unknown:
+                return []
+            }
+        }
+    }
+
+    private func recipients(for command: RUMCommand) -> [RUMViewScope] {
+        if let completion = command as? RUMResourceCompletionCommand {
+            switch completion.ownership {
+            case .views(let ids):
+                return viewScopes.filter { ids.contains($0.viewUUID) }
+            case .expiredSession:
+                return []
+            case .untracked, nil:
+                return completion.isAutomatic ? [] : (activeView.map { [$0] } ?? [])
+            }
+        }
+        if let resource = command as? RUMResourceCommand, !(command is RUMStartResourceCommand) {
+            return viewScopes.filter { $0.resourceScopes[resource.resourceKey] != nil }
+        }
+        if command is RUMStopSessionCommand || command is RUMHandleAppLifecycleEventCommand || command is RUMOperationStepVitalCommand {
+            return viewScopes
+        }
+        if command is RUMStartViewCommand || command is RUMStopViewCommand {
+            guard let destination = sceneState?.navigationDestination, case .ownedScene(let scene) = destination else {
+                return []
+            }
+            return viewScopes.filter {
+                $0.sceneIdentifier == scene
+                    || (command is RUMStartViewCommand && $0.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL)
+            }
+        }
+        if command is RUMStopUserActionCommand, case .view(let id) = command.target {
+            return viewScopes.filter { $0.viewUUID == id && $0.userActionScope != nil }
+        }
+        return activeRecipients(for: command.target)
+    }
+
+    private func propagateOwned(_ command: RUMCommand, context: DatadogContext, writer: Writer) {
+        let selected = recipients(for: command)
+        let selectedIDs = Set(selected.map { $0.viewUUID })
+        if command.isUserInteraction, let recipient = selected.last(where: { $0.isActiveView }) {
+            sceneState?.representativeViewID = recipient.viewUUID
+        }
+        viewScopes = viewScopes.compactMap { view in
+            if selectedIDs.contains(view.viewUUID) {
+                return view.process(command: command, context: context, writer: writer) ? view : nil
+            }
+            // A peer's time advances, but the foreign command cannot change its attributes/counters.
+            view.expireActionIfNeeded(on: command, context: context, writer: writer)
+            return view
+        }
     }
 
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
