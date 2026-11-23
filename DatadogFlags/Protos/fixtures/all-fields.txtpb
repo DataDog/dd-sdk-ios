@@ -1,0 +1,81 @@
+# A rules-based configuration that uses every message, field, oneof case and enum of `ufc.proto`.
+# `RulesConfigurationDecoderTests` decodes the binary form of this file. To regenerate it, run from the repository root:
+#
+#   protoc --proto_path=DatadogFlags/Protos --encode=datadog.ffe.flagging.ufc.v1.FlagsConfiguration ufc.proto \
+#     < DatadogFlags/Protos/fixtures/all-fields.txtpb | base64
+#
+# and paste the output into `allFieldsFixture`.
+
+created_at { seconds: 1790000000 nanos: 123 }
+environment_name: "staging"
+environment_id: "6f9619ff-8b86-d011-b42d-00c04fc964ff"
+observe_full_evaluation_data: true
+evaluator_params { max_dependency_depth: 8 }
+
+strings: "on"
+strings: "off"
+strings: "country"
+strings: "US"
+strings: "plan"
+strings: "ünïcödé-旗"
+regexes: "^user-[0-9]+$"
+json_strings: "{\"enabled\":true}"
+versions { components: "1" components: "2" components: "3" prerelease: "beta" prerelease: "1" }
+
+attributes { targeting_key {} }
+attributes { attribute_path { segments { object_key_string_index: 2 } segments { array_index: 0 } } }
+
+conditions { all { condition_indexes: 1 condition_indexes: 2 } }
+conditions { any { condition_indexes: 3 } }
+conditions { numeric { attribute_index: 1 comparator: NUMERIC_COMPARATOR_GREATER_THAN_OR_EQUAL comparand: 2.5 } }
+conditions { regex { attribute_index: 0 regex_index: 0 negate: true } }
+conditions { string_membership { attribute_index: 1 string_indexes: 3 string_indexes: 5 } }
+conditions { sha256_membership { attribute_index: 0 salt: "salt" sha256: "\x01\x02\x03" sha256: "\xff" negate: true } }
+conditions { attribute_presence { attribute_index: 1 expect_null: true } }
+conditions { version { attribute_index: 1 comparator: VERSION_COMPARATOR_LESS_THAN version_index: 0 } }
+conditions { string_comparison { attribute_index: 1 comparator: STRING_COMPARATOR_ENDS_WITH string_index: 4 negate: true } }
+conditions { sha256_string_comparison { attribute_index: 0 salt: "s" comparator: SHA256_STRING_COMPARATOR_STARTS_WITH length: 4 sha256: "\xaa\xbb" } }
+conditions { flag_evaluation_string_membership { flag_key_string_index: 0 variant_key_string_indexes: 0 variant_key_string_indexes: 1 negate: true } }
+
+flags {
+  key: "all-variations"
+  value {
+    minimum_feature_level: 2
+    variation_type: VARIATION_TYPE_JSON
+    variations { key_string_index: 0 string_value_index: 1 }
+    variations { key_string_index: 1 integer_value: -9007199254740993 }
+    variations { key_string_index: 2 numeric_value: -0.125 }
+    variations { key_string_index: 3 boolean_value: true }
+    variations { key_string_index: 4 json_string_index: 0 }
+    allocations {
+      key: "targeted"
+      targeting_condition_index: 0
+      partition_key { time {} }
+      partition_key { shard_md5 { salt: "salt" attribute_index: 0 total_shards: 10000 } }
+      splits {
+        ranges { from: 0 to: 5000 }
+        ranges { to: 10000 }
+        variation_index: 4
+        serial_id: -3
+        reason: REASON_TARGETING_MATCH
+        features { key: "team" string_value: "growth" destinations: "rum" destinations: "exposures" }
+        features { key: "weight" number_value: 0.5 }
+        features { key: "beta" bool_value: true }
+      }
+      log_exposure_event: true
+      randomization_activated_at { seconds: 1780000000 nanos: 999 }
+    }
+    allocations {
+      key: "fallback"
+      splits { variation_index: 0 reason: REASON_STATIC }
+    }
+  }
+}
+
+flags {
+  key: "unknown-enums"
+  value {
+    variation_type: 42
+    allocations { key: "a" splits { reason: 77 } }
+  }
+}
