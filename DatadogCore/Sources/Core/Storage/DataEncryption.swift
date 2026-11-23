@@ -9,6 +9,9 @@ import Foundation
 /// Interface that allows storing data in encrypted format. Encryption/decryption round should
 /// return exactly the same data as it given for the encryption originally (even if decryption
 /// happens in another process/app launch).
+///
+/// Do not dispatch to other queues in its methods: dispatching synchronously to the main queue, for example with
+/// `DispatchQueue.main.sync`, may cause a deadlock.
 public protocol DataEncryption {
     /// Encrypts given `Data` with user-chosen encryption.
     ///

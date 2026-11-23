@@ -30,6 +30,40 @@ Each client keeps its own configuration and current policy. If a client name alr
 
 This option controls evaluation telemetry only. Exposure events can still contain subject data. It does not replace the SDK tracking-consent API.
 
+## Subject authorization for assignment downloads
+
+Subject authorization prevents the SDK from returning retained assignments for one subject while the app requests assignments for another subject. If your environment requires subject authorization, obtain a JWT for the subject from your backend and include it in the complete evaluation context update:
+
+```swift
+client.setEvaluationContext(
+    FlagsEvaluationContext(
+        targetingKey: "user-123",
+        attributes: [
+            "country": .string("US"),
+            "dd_assignment_token": .string(jwtFromYourBackend)
+        ]
+    )
+)
+```
+
+Your backend signs the token for the requested subject and environment. Keep the private key on your backend. Before the token expires, call `setEvaluationContext` again with the complete context and a new token. Changing only the token still triggers an assignment download. To remove the token, omit `dd_assignment_token` or set it to an empty string. The SDK does not restore an earlier token.
+
+The SDK treats the JWT as opaque and sends it only in the `DD-Assignment-Token` request header. The assignment endpoint validates its signature, expiration, and other claims. The SDK removes `dd_assignment_token` from targeting attributes, disk snapshots, evaluation and exposure telemetry, RUM annotations, and SDK diagnostics. A custom flags header with the reserved name, in any letter case, is ignored so that the evaluation context remains the only credential source.
+
+A usable token is a nonempty string containing only printable ASCII characters without whitespace (`0x21...0x7e`). Missing, `null`, empty, and unusable values send no header and do not establish a subject boundary by themselves. An unusable value produces a fixed warning that does not contain the supplied value. The assignment request still proceeds so that the endpoint can decide whether authorization is required.
+
+A usable token creates a subject boundary as soon as the context update begins:
+
+- Retained assignments for a different targeting key are unavailable while the download is in progress and after it fails. Evaluation returns the application default with `.general`.
+- Retained assignments for the same targeting key remain eligible as a fallback. After a failed refresh, the client becomes stale and the assignments retain their original downloaded context for evaluation and telemetry.
+- Experimentation opt-out modes continue to require their stricter full-context and policy match.
+
+The same boundary is established when the endpoint returns HTTP 401 with a JSON:API `errors` entry whose `code` is exactly `ASSIGNMENT_AUTHORIZATION_FAILED`, even if no token was sent. Without eligible assignments, evaluations return the application default with `.general`. Removing the token or retrying does not restore another subject's retained assignments while this failure remains unresolved.
+
+A successful download or eligible same-subject stale fallback recovers the client and ends this boundary, matching the browser provider. Without a usable token or an `ASSIGNMENT_AUTHORIZATION_FAILED` rejection, the SDK does not establish a boundary, and evaluation follows the ordinary iOS behavior. With experimentation opt-out disabled, previous assignments may remain available while a later download is pending; if the download fails, only an exact-context fallback is eligible. Applications using subject authorization should include the appropriate token in each complete context update that requires it. Overlapping requests still cannot install superseded authorization results after recovery.
+
+Customer proxies must forward `DD-Assignment-Token`. Assignment requests follow HTTP redirects. Configure `customFlagsEndpoint` with its final HTTPS URL to avoid forwarding `DD-Assignment-Token` to a redirect destination. The SDK does not automatically refresh tokens, retry context updates, or verify signed assignment response payloads.
+
 ## Per-subject experimentation opt-out
 
 Select an opt-out mode in `FlagsClient.Configuration` when creating the client. The default is disabled.
@@ -91,7 +125,8 @@ A missing acknowledgement reports `invalidResponse` through the context completi
 A later `setEvaluationContext` call can fetch assignments again.
 
 With either enabled mode, context isolation also applies when the timestamp attribute is absent.
-Before the first context update, and while a different context is pending, evaluations return defaults with `providerNotReady`.
+Before the first context update, evaluations return defaults with `providerNotReady`. During a valid context update or after a fetch failure,
+evaluations without readable assignments return `general` when a subject-authorization boundary is active and `providerNotReady` otherwise.
 A malformed timestamp returns `invalidContext`. Disabled mode keeps previous assignments available while a refresh is pending.
 An invalid context does not overwrite or delete the last successful disk snapshot.
 Snapshots with an opt-out policy use cache version 3. Older SDKs that support only versions 1 or 2 cannot restore them.
@@ -104,3 +139,17 @@ Older allocations retained by future mode still produce their normal exposures. 
 Immediate withdrawal can change an enrolled subject's experience. Account for that change in experiment analysis.
 
 Client configuration is fixed for each client name. Creating a client with an existing name returns the existing client, which keeps its original configuration.
+
+## Evaluation telemetry privacy
+
+Evaluation telemetry is protected by default. Each event sends the targeting key as `sha256_` followed by the lowercase hex SHA-256 of its UTF-8 bytes, and omits the evaluation context. An empty targeting key is sent as an empty string. Evaluations made before any context is set have no targeting key. A targeting key that is not valid UTF-16 is omitted, and the evaluation is still counted.
+
+The raw targeting key and the evaluation context are sent only when the flags configuration for the evaluated context enables full evaluation data. The SDK keeps that setting with the configuration it applies to, including when the configuration is restored from disk. A refresh changes later evaluations only. Events that are waiting to be sent keep the setting that applied when the flag was evaluated.
+
+Evaluation errors are reported only as `PROVIDER_NOT_READY`, `PROVIDER_FATAL`, `FLAG_NOT_FOUND`, `PARSE_ERROR`, `TYPE_MISMATCH`, `TARGETING_KEY_MISSING`, `INVALID_CONTEXT`, or `GENERAL`. Any other error is reported as `GENERAL`.
+
+These rules apply to evaluation telemetry only. They do not change assignment requests, targeting, or exposure events. The [evaluation telemetry control](#evaluation-telemetry-control) still suppresses evaluation telemetry for opted-out subjects.
+
+## Usage attribution
+
+Flag requests send the SDK's `service` in the `dd-service` header, so Usage Attribution can split Feature Flags usage by `service`. It is the same service RUM reports: the one set in `Datadog.Configuration`, or else the bundle identifier (or `ios` without one).

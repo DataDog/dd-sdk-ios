@@ -65,6 +65,34 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertEqual(recordedRequests[1].httpHeaders["Header2"], "Value2")
     }
 
+    func testItClearsRequestsRecordedInTheSessionOnly() throws {
+        let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
+        guard let serverProcess = runner.waitUntilServerIsReachable() else {
+            XCTFail("Failed to connect with the server.")
+            return
+        }
+
+        // Given
+        let server = ServerMock(serverProcess: serverProcess)
+        let session1 = server.obtainUniqueRecordingSession()
+        let session2 = server.obtainUniqueRecordingSession()
+
+        var request1 = URLRequest(url: session1.recordingURL.appendingPathComponent("/resource/1"))
+        request1.httpMethod = "POST"
+        var request2 = URLRequest(url: session2.recordingURL.appendingPathComponent("/resource/2"))
+        request2.httpMethod = "POST"
+
+        sendSynchronously(request: request1)
+        sendSynchronously(request: request2)
+
+        // When
+        session1.clearRecordedRequests()
+
+        // Then
+        XCTAssertEqual(try session1.getRecordedRequests().count, 0)
+        XCTAssertEqual(try session2.getRecordedRequests().count, 1)
+    }
+
     func testItPullsRecordedRequests() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
         guard let serverProcess = runner.waitUntilServerIsReachable() else {

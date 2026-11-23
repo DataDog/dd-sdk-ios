@@ -757,6 +757,7 @@ private let swiftReservedKeywords = [
     "deinit",
     "enum",
     "extension",
+    "false",
     "fileprivate",
     "func",
     "import",
@@ -764,6 +765,7 @@ private let swiftReservedKeywords = [
     "inout",
     "internal",
     "let",
+    "nil",
     "nonisolated",
     "open",
     "operator",
@@ -775,6 +777,7 @@ private let swiftReservedKeywords = [
     "static",
     "struct",
     "subscript",
+    "true",
     "typealias",
     "var"
 ]

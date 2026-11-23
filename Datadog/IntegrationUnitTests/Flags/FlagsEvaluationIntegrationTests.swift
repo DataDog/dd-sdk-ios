@@ -102,13 +102,15 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
             return
         }
         XCTAssertFalse(evaluations.isEmpty, "Experimentation opt-out does not disable evaluation telemetry")
+        // The assignments response does not enable full evaluation data, so the subject is hashed.
+        let protectedSubject = "sha256_a9491f4c1bf7b0cffbadcba2db8f028e4b3f2867cb59e1f3a0bc1968f3c51242"
         let rejected = try XCTUnwrap(evaluations.first { $0.flag.key == "flag" && $0.error?.message == "INVALID_CONTEXT" })
-        XCTAssertEqual(rejected.targetingKey, "subject")
+        XCTAssertEqual(rejected.targetingKey, protectedSubject)
         for key in ["flag", "string", "integer", "double", "object"] {
             let evaluation = try XCTUnwrap(evaluations.first { $0.flag.key == key && $0.allocation?.key == "ordinary" })
             XCTAssertNil(evaluation.error)
             XCTAssertNil(evaluation.runtimeDefaultUsed)
-            XCTAssertEqual(evaluation.targetingKey, "subject")
+            XCTAssertEqual(evaluation.targetingKey, protectedSubject)
             XCTAssertEqual(evaluation.evaluationCount, 1)
         }
         if mode == .futureExperimentsOnly {

@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-10
 sdk_version: 3.21.0
 verified_against_commit: 2eaafaeb9
 tracked_files:
@@ -14,11 +14,12 @@ tracked_files:
 
 ## Overview
 
-RUM tracks user interactions, views, resources, errors, and performance metrics in iOS applications. It requires initialization via `Datadog.initialize()` before enabling.
+RUM tracks user interactions, views, resources, errors, and performance metrics in applications on Apple platforms. It requires initialization via `Datadog.initialize()` before enabling.
 
-**Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
+**Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only) — with platform-specific limitations:
 - **iOS / visionOS**: Full feature set.
 - **tvOS**: UIKit and SwiftUI view tracking, press-based action tracking for both frameworks through `uiKitActionsPredicate`, app hangs, long tasks, vitals, slow frames, memory warnings, and watchdog terminations. `swiftUIActionsPredicate` is accepted in configuration but is not used by tvOS action instrumentation. Scroll and swipe tracking is not supported.
+- **macOS**: automatic `NSViewController` views through `appKitViewsPredicate`, and left-click, menu, and toolbar actions through `macOSActionsPredicate`; menu actions include keyboard shortcuts. SwiftUI views are tracked with `.trackRUMView()` (`swiftUIViewsPredicate` is experimental). `swiftUIActionsPredicate`, `trackBackgroundEvents`, `trackWatchdogTerminations`, `trackMemoryWarnings`, and `trackSlowFrames` are not available. Once a view was tracked, events with no active view go to a "NoActiveView" view. Views tracked through the views handler stop when the Mac sleeps and restart on wake; only sleep counts as suspension. Views are tracked in one application-level stack, not per window.
 - **watchOS**: No automatic view/action tracking predicates (UIKit and SwiftUI), no memory warnings. URLSession tracking, event mappers, manual RUM instrumentation, session callbacks, and CPU/memory vitals are available. Refresh-rate and slow-frame data are unavailable (no DisplayLink on watchOS).
 
 ## Quick Start Example
@@ -268,6 +269,7 @@ Requires configuration to be set, otherwise disabled by default:
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
 - **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
+- **Accessibility**: `collectAccessibility` (default: false) — adds the device accessibility settings to view events. On macOS, only increase contrast, differentiate without color, reduce transparency, reduce motion, invert colors, VoiceOver, Switch Control and right-to-left layout are collected; the other settings are not collected on macOS and stay unknown. Unavailable on watchOS
 - **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view. Unavailable on macOS, where rendering is not measured yet
 
 ### Sampling
@@ -306,6 +308,7 @@ Event mappers allow modifying or dropping events before upload:
 - `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
 - `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
 - Timeseries are not collected in app extensions (e.g. widgets): `RUMFeature` creates no collector when the bundle type is not `.iOSApp`, because extensions receive no app lifecycle notifications to pause collection and write buffered samples.
+- Samples are buffered in memory and written in batches of 120, and when the session is paused, stopped, or the SDK is flushed. On macOS, buffered samples are also written when the app terminates, and sudden termination stays disabled while samples are buffered, which is most of the session.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 
 ## Remote Configuration

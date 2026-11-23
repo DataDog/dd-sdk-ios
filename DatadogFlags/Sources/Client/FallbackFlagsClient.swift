@@ -89,6 +89,17 @@ extension FallbackFlagsClient: FlagsClientInternal {
         )
     }
 
+    func sendFlagEvaluationEvent(
+        key: String,
+        assignment: FlagAssignment?,
+        context: FlagsEvaluationContext,
+        telemetryTargetingKey: String?,
+        observeFullEvaluationData: Bool,
+        errorCode: String?
+    ) {
+        sendFlagEvaluationEvent(key: key, assignment: assignment, context: context, errorCode: errorCode)
+    }
+
     func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
         DD.logger.error(
             """

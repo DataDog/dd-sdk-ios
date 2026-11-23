@@ -34,13 +34,14 @@ internal final class FirstFlagsCallbacks {
         registrations.forEach { $0.cancel() }
     }
 
-    func reserve(keys: [String]) -> (() -> Void)? {
+    /// The key supplier must only enumerate accepted assignments. It runs under the state lock.
+    func reserve(keys: @autoclosure () -> [String]) -> (() -> Void)? {
         var reserved = false
         _state.mutate { state in
             guard !state.isInvalidated, state.event == nil else {
                 return
             }
-            state.event = FlagsClientEvent(type: .configurationChanged, flagsChanged: keys)
+            state.event = FlagsClientEvent(type: .configurationChanged, flagsChanged: keys())
             reserved = true
         }
         guard reserved else {

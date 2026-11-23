@@ -105,6 +105,14 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         core.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
     }
 
+    public func clearUserInfo() {
+        core.clearUserInfo()
+    }
+
+    public func set(anonymousId: String?) {
+        core.set(anonymousId: anonymousId)
+    }
+
     public func addUserExtraInfo(
         _ newExtraInfo: [AttributeKey: AttributeValue?]
     ) {
