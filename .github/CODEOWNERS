@@ -11,3 +11,8 @@
 ## Feature Flags
 
 /DatadogFlags/ @DataDog/rum-mobile @DataDog/rum-mobile-ios @DataDog/feature-flagging-and-experimentation-sdk
+
+# Shared FFE fixture pin and importer. FFE updates the pin without other team approval.
+/ci/feature-flags-precomputed-fixtures.json @DataDog/feature-flagging-and-experimentation-sdk
+/ci/feature-flags-precomputed-fixtures-pr.md @DataDog/feature-flagging-and-experimentation-sdk
+/ci/sync-feature-flags-precomputed-fixtures.py @DataDog/feature-flagging-and-experimentation-sdk
