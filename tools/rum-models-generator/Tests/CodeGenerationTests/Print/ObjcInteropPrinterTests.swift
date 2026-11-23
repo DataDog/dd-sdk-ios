@@ -570,6 +570,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
                     SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     SwiftEnum.Case(label: "case3", rawValue: .string(value: "case3")),
+                    SwiftEnum.Case(label: "true", rawValue: .string(value: "true")),
                 ],
                 conformance: []
             )
@@ -641,24 +642,28 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case case1 = "case1"
                 case case2 = "case2"
                 case case3 = "case3"
+                case `true` = "true"
             }
 
             public enum Enumeration2: String {
                 case case1 = "case1"
                 case case2 = "case2"
                 case case3 = "case3"
+                case `true` = "true"
             }
 
             public enum Enumeration3: String {
                 case case1 = "case1"
                 case case2 = "case2"
                 case case3 = "case3"
+                case `true` = "true"
             }
 
             public enum Enumeration4: String {
                 case case1 = "case1"
                 case case2 = "case2"
                 case case3 = "case3"
+                case `true` = "true"
             }
         }
 
@@ -702,6 +707,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1: self = .case1
                 case .case2: self = .case2
                 case .case3: self = .case3
+                case .`true`: self = .`true`
                 }
             }
 
@@ -710,12 +716,14 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1: return .case1
                 case .case2: return .case2
                 case .case3: return .case3
+                case .`true`: return .`true`
                 }
             }
 
             case case1
             case case2
             case case3
+            case `true`
         }
 
         @objc(DDFooEnumeration2)
@@ -727,6 +735,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1?: self = .case1
                 case .case2?: self = .case2
                 case .case3?: self = .case3
+                case .`true`?: self = .`true`
                 }
             }
 
@@ -736,6 +745,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1: return .case1
                 case .case2: return .case2
                 case .case3: return .case3
+                case .`true`: return .`true`
                 }
             }
 
@@ -743,6 +753,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
             case case1
             case case2
             case case3
+            case `true`
         }
 
         @objc(DDFooEnumeration3)
@@ -753,6 +764,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1: self = .case1
                 case .case2: self = .case2
                 case .case3: self = .case3
+                case .`true`: self = .`true`
                 }
             }
 
@@ -761,12 +773,14 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1: return .case1
                 case .case2: return .case2
                 case .case3: return .case3
+                case .`true`: return .`true`
                 }
             }
 
             case case1
             case case2
             case case3
+            case `true`
         }
 
         @objc(DDFooEnumeration4)
@@ -778,6 +792,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1?: self = .case1
                 case .case2?: self = .case2
                 case .case3?: self = .case3
+                case .`true`?: self = .`true`
                 }
             }
 
@@ -787,6 +802,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 case .case1: return .case1
                 case .case2: return .case2
                 case .case3: return .case3
+                case .`true`: return .`true`
                 }
             }
 
@@ -794,6 +810,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
             case case1
             case case2
             case case3
+            case `true`
         }
 
         """
