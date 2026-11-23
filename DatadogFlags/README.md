@@ -84,7 +84,7 @@ A new verified response returns the state to `ready` in both settings. With `exp
 
 ## Signing errors and reason codes
 
-When `required` rejects a response, or the SDK cannot sign a request, the context completion returns `FlagsError.responseSigningFailed(reason:)`. The reason is one of the codes below. The same codes appear in telemetry as `flags-response-signing-<code>`, and in the user log, once for each code:
+When `required` rejects a response, or the SDK cannot sign a request, the context completion returns `FlagsError.responseSigningFailed(reason:)`. The reason is one of the codes below. The same codes appear in the user log, once for each code:
 
 `Flag response signing failed (<code>): <what failed>. <fix hint>.`
 
@@ -103,6 +103,16 @@ When `required` rejects a response, or the SDK cannot sign a request, the contex
 | `expired-proof` | The proof is expired or not yet valid. | Check the device clock. |
 | `unsupported-site` | Signing is not available on this Datadog site. | Response signing supports only the staging site in this release. Production is not supported yet. |
 | `revoked-certificate` | Draft revocation rule. | See the draft section below. |
+
+### Telemetry
+
+The SDK sends one `flags.response_signing` event through the core telemetry for each distinct `(mode, result, reason)` in the process:
+
+- `observe` sends `verified` and `unverified` results.
+- `required` sends `unverified` results only.
+- `off` sends nothing.
+
+The event has only these fields: `mode` (`observe` or `required`), `result` (`verified` or `unverified`), `reason` (a code from the table, absent when verified), `sdk_version`, and `site` (for example `datad0g.com`, or `custom` for another host). It never carries flag keys or values, headers, tokens, nonces, certificate bytes, serials, URLs or the targeting context.
 
 The verified-flags cache scope does not include the RUM application ID or the RUM session. A RUM start, a RUM stop or an application ID change does not invalidate verified flags or discard an in-flight response. Each response transcript still binds `dd-application-id`.
 
