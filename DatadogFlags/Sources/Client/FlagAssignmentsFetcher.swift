@@ -32,6 +32,13 @@ extension FlagAssignmentsFetching {
     }
 }
 
+/// A decoded response together with the raw body it was decoded from and the response `ETag`, if any.
+internal struct FetchedFlagAssignments {
+    let response: FlagAssignmentsResponse
+    let body: Data
+    let etag: String?
+}
+
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
@@ -43,6 +50,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private static let decoder = JSONDecoder()
     private static let flagSelectionIgnoredHeader = "DD-Flag-Selection-Ignored"
+    private static let etagHeader = "ETag"
     // The reasons the server sends in `DD-Flag-Selection-Ignored`. Any other value, for example one set by a proxy
     // behind `customFlagsEndpoint`, is reported as `unknown`, so header content never reaches logs or telemetry.
     private static let flagSelectionIgnoredReasons = [
@@ -100,6 +108,24 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         assignmentToken: String? = nil,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
+        fetchedFlagAssignments(
+            for: evaluationContext,
+            experimentationOptOut: experimentationOptOut,
+            diagnostics: diagnostics,
+            assignmentToken: assignmentToken
+        ) { result in
+            completion(result.map(\.response))
+        }
+    }
+
+    /// Same request and validation as `flagAssignments`, but the result also keeps the raw body and the `ETag`.
+    func fetchedFlagAssignments(
+        for evaluationContext: FlagsEvaluationContext,
+        experimentationOptOut: ExperimentationOptOut?,
+        diagnostics: FlagsRequestDiagnostics.Snapshot? = nil,
+        assignmentToken: String? = nil,
+        completion: @escaping (Result<FetchedFlagAssignments, FlagsError>) -> Void
+    ) {
         let authorization = evaluationContext.extractingAssignmentAuthorization()
         let evaluationContext = authorization.context
         let suppliedToken = assignmentToken ?? authorization.token
@@ -108,7 +134,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             DD.logger.warn(AssignmentAuthorization.unusableTokenWarning)
         }
         // Repository callbacks can invoke application code; keep them off shared SDK work queues.
-        let completion: (Result<FlagAssignmentsResponse, FlagsError>) -> Void = { result in
+        let completion: (Result<FetchedFlagAssignments, FlagsError>) -> Void = { result in
             DispatchQueue.global(qos: .utility).async {
                 completion(result)
             }
@@ -138,7 +164,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         diagnostics: FlagsRequestDiagnostics.Snapshot?,
         assignmentToken: String?,
         context: DatadogContext,
-        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
+        completion: @escaping (Result<FetchedFlagAssignments, FlagsError>) -> Void
     ) {
         do {
             let request = try URLRequest.flagAssignmentsRequest(
@@ -195,7 +221,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         requestCarriedFlagSelection: Bool,
         requestCarriedAssignmentToken: Bool,
         featureScope: any FeatureScope,
-        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
+        completion: @escaping (Result<FetchedFlagAssignments, FlagsError>) -> Void
     ) {
         switch result {
         case let .success((data, httpResponse)):
@@ -261,7 +287,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     }
                 }
 
-                completion(.success(response))
+                let etag = httpResponse.value(forHTTPHeaderField: etagHeader).flatMap { $0.isEmpty ? nil : $0 }
+                completion(.success(FetchedFlagAssignments(response: response, body: data, etag: etag)))
             } catch {
                 let message = "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response"
                 if requestCarriedAssignmentToken {
