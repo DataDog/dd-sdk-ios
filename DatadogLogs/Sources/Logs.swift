@@ -24,6 +24,8 @@ public enum Logs {
         ///
         /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
         /// with dropping the Log event entirely, so it won't be send to Datadog.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         public var eventMapper: EventMapper?
 
         /// Overrides the custom server endpoint where Logs are sent.

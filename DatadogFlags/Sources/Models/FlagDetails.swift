@@ -21,6 +21,9 @@ public enum FlagEvaluationError: Error {
 
     /// The evaluation context is invalid, for example an invalid experimentation opt-out timestamp.
     case invalidContext
+
+    /// The provider cannot evaluate the flag because the current subject has no authorized assignments.
+    case general
 }
 
 /// Detailed information about a feature flag evaluation.
@@ -80,6 +83,10 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     /// Identifies the allocation bucket used when evaluating the flag. `nil` if the flag
     /// was not found, evaluation failed, or no allocation was associated with this evaluation.
     public var allocationKey: String?
+
+    /// Internal evaluation-time consent for adapters. Never reconstructed from live configuration.
+    @_spi(Internal)
+    public var observeFullEvaluationData: Bool = false
 
     /// Creates detailed flag evaluation information.
     ///

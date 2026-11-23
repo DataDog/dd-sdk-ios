@@ -497,6 +497,83 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(event5.error.message, #"Error Domain=abc Code=0 "(null)""#)
     }
 
+    func testSendingErrorEventsWithType() throws {
+        RUM.enable(with: config)
+        let objcRUMMonitor = objc_RUMMonitor.shared()
+
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: [:])
+
+        objcRUMMonitor.addError(
+            message: "error message 1",
+            type: "error type",
+            stack: "error stack",
+            source: .source,
+            attributes: ["event-attribute1": "foo1"]
+        )
+        objcRUMMonitor.addError(message: "error message 2", type: nil, stack: "error stack", source: .custom, attributes: [:])
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errorEvents.count, 2)
+
+        let event1Matcher = errorEvents[0]
+        let event1: RUMErrorEvent = try event1Matcher.model()
+        XCTAssertEqual(event1.error.message, "error message 1")
+        XCTAssertEqual(event1.error.type, "error type")
+        XCTAssertEqual(event1.error.stack, "error stack")
+        XCTAssertEqual(event1.error.source, .source)
+        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+
+        let event2: RUMErrorEvent = try errorEvents[1].model()
+        XCTAssertEqual(event2.error.message, "error message 2")
+        XCTAssertNil(event2.error.type)
+        XCTAssertEqual(event2.error.source, .custom)
+    }
+
+    func testSendingResourceErrorEventsWithTypeAndStack() throws {
+        RUM.enable(with: config)
+        let objcRUMMonitor = objc_RUMMonitor.shared()
+
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: [:])
+
+        let request: URLRequest = .mockAny()
+        objcRUMMonitor.startResource(resourceKey: "/resource1", request: request, attributes: [:])
+        objcRUMMonitor.stopResourceWithError(
+            resourceKey: "/resource1",
+            message: "error message 1",
+            type: "error type",
+            stack: "error stack",
+            response: HTTPURLResponse.mockResponseWith(statusCode: 503),
+            attributes: ["event-attribute1": "foo1"]
+        )
+
+        objcRUMMonitor.startResource(resourceKey: "/resource2", request: request, attributes: [:])
+        objcRUMMonitor.stopResourceWithError(
+            resourceKey: "/resource2", message: "error message 2", type: nil, stack: nil, response: nil, attributes: [:]
+        )
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errorEvents.count, 2)
+
+        let event1Matcher = errorEvents[0]
+        let event1: RUMErrorEvent = try event1Matcher.model()
+        XCTAssertEqual(event1.error.message, "error message 1")
+        XCTAssertEqual(event1.error.type, "error type")
+        XCTAssertEqual(event1.error.stack, "error stack")
+        XCTAssertEqual(event1.error.source, .network)
+        XCTAssertEqual(event1.error.resource?.url, request.url!.absoluteString)
+        XCTAssertEqual(event1.error.resource?.statusCode, 503)
+        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+
+        let event2: RUMErrorEvent = try errorEvents[1].model()
+        XCTAssertEqual(event2.error.message, "error message 2")
+        XCTAssertNil(event2.error.type)
+        XCTAssertNil(event2.error.stack)
+    }
+
     func testSendingLongTaskEvents() throws {
         // Disable automatic long task tracking so only the manually added long task is reported
         config.longTaskThreshold = nil

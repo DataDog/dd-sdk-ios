@@ -4197,6 +4197,7 @@ public class objc_RUMMonitor: NSObject
     public func addViewLoadingTime(overwrite: Bool)
     public func addTiming(name: String)
     public func addError(message: String,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
+    public func addError(message: String,type: String?,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
     public func addError(error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
     public func startResource(resourceKey: String,request: URLRequest,attributes: [String: Any])
     public func startResource(resourceKey: String,url: URL,attributes: [String: Any])
@@ -4206,6 +4207,7 @@ public class objc_RUMMonitor: NSObject
     public func stopResource(resourceKey: String,statusCode: NSNumber?,kind: objc_ResourceType,size: NSNumber?,attributes: [String: Any])
     public func stopResourceWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
     public func stopResourceWithError(resourceKey: String,message: String,response: URLResponse?,attributes: [String: Any])
+    public func stopResourceWithError(resourceKey: String,message: String,type: String?,stack: String?,response: URLResponse?,attributes: [String: Any])
     public func startAction(type: objc_RUMActionType,name: String,attributes: [String: Any])
     public func stopAction(type: objc_RUMActionType,name: String?,attributes: [String: Any])
     public func addAction(type: objc_RUMActionType,name: String,attributes: [String: Any])
@@ -4305,4 +4307,12 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject
 # API surface for DatadogProfiling:
 # ----------------------------------
 
-
+public final class objc_ProfilingConfiguration: NSObject
+    public var customEndpoint: URL?
+    public var applicationLaunchSampleRate: Float
+    public var continuousSampleRate: Float
+    override public init()
+    public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: Float = 5,continuousSampleRate: Float = 5)
+public final class objc_Profiling: NSObject
+    public static func enable(with configuration: objc_ProfilingConfiguration = .init())
+    public static func enable(with configuration: objc_ProfilingConfiguration, instanceName: String?)
