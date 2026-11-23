@@ -264,7 +264,9 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     }
                 }
 
-                unknownDestinationWarnings.warn(about: response.flags)
+                if !requestCarriedAssignmentToken {
+                    unknownDestinationWarnings.warn(about: response.flags)
+                }
 
                 completion(.success(response))
             } catch {
