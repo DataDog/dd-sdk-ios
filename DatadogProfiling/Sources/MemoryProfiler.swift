@@ -80,9 +80,9 @@ internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendabl
         self.scheduler = scheduler
         self.dateProvider = dateProvider
         self.monotonicClock = monotonicClock
-        let origin = dd_memory_profiler_window_start_time_nanos()
-        let age = origin > 0 ? max(0, dateProvider.now.timeIntervalSince1970 - Double(origin) / 1_000_000_000) : 0
-        self.appLaunchDeadline = monotonicClock.elapsedTime + max(0, ProfilingScheduler.Constants.profilingInterval - age)
+        let now = monotonicClock.elapsedTime
+        let age = Double(dd_memory_profiler_window_age_nanos()) / 1_000_000_000
+        self.appLaunchDeadline = now + max(0, ProfilingScheduler.Constants.profilingInterval - age)
         queue.setSpecific(key: queueKey, value: ())
         // Native startup preserves launch coverage independently of emission sampling.
         if isEnabled, dd_memory_profiler_is_running() {

@@ -35,6 +35,7 @@ internal final class DatadogProfiler: ProfileSnapshotProvider, @unchecked Sendab
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
+    private let monotonicClock: MonotonicClock
     private let writer: ProfileWriter
     private let scheduler: ProfilingScheduler
     private var isCaptureScheduled = false
@@ -63,8 +64,9 @@ internal final class DatadogProfiler: ProfileSnapshotProvider, @unchecked Sendab
     private var hangs: [DurationEvent] = []
     // Long tasks to attach to profiles.
     private var longTasks: [DurationEvent] = []
-    /// Start of the current native profile cycle.
-    private var profileStartDate: Date
+    /// Monotonic start of the current native profile cycle.
+    private var profileStartTime: TimeInterval
+    private var profileElapsedTime: TimeInterval { monotonicClock.elapsedTime - profileStartTime }
     private var hasConditionsToProfile = true
     /// Whether this profiler instance may collect RUM-linked profiling data.
     /// Consent remains fail-open while `.pending`; only `.notGranted` disables collection.
@@ -95,7 +97,8 @@ internal final class DatadogProfiler: ProfileSnapshotProvider, @unchecked Sendab
         profilingConditions: ProfilingConditions = .init(),
         profilingInterval: TimeInterval = Constants.maxProfileDuration,
         minProfileDuration: TimeInterval = Constants.minProfileDuration,
-        dateProvider: DateProvider = SystemDateProvider()
+        dateProvider: DateProvider = SystemDateProvider(),
+        monotonicClock: MonotonicClock = SystemMonotonicClock()
     ) {
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.queue = queue
@@ -107,8 +110,9 @@ internal final class DatadogProfiler: ProfileSnapshotProvider, @unchecked Sendab
         self.scheduler = scheduler
         self.profilingInterval = profilingInterval
         self.minProfileDuration = minProfileDuration
+        self.monotonicClock = monotonicClock
         self.dateProvider = dateProvider
-        self.profileStartDate = dateProvider.now
+        self.profileStartTime = monotonicClock.elapsedTime
         self.operation = profilingSamplerProvider.isContinuousProfilingConfigured ? .continuousProfiling : .appLaunch
         self.isContinuousProfilingGraceAvailable = profilingSamplerProvider.isContinuousProfilingConfigured
             && profilingSamplerProvider.continuousProfilingSampled == nil
@@ -181,17 +185,16 @@ extension DatadogProfiler {
                 return
             }
             isContinuousProfilingGraceAvailable = false
-            let canProfile = shouldKeepProfilerRunning()
+            let shouldContinueProfiling = shouldKeepProfilerRunning()
             // An early shared tick must preserve an eligible recording window and its RUM events.
-            let elapsed = Double(DispatchTime.now().uptimeNanoseconds - captureScheduleStart.uptimeNanoseconds) / 1_000_000_000
-            guard !canProfile || elapsed >= minProfileDuration else {
+            guard !shouldContinueProfiling || profileElapsedTime >= minProfileDuration else {
                 completion(nil)
                 return
             }
             captureDeadline?.cancel()
             captureDeadline = nil
             var snapshot: ProfileSnapshot?
-            updateProfilerState(canProfile: canProfile, shouldSendProfile: true) {
+            updateProfilerState(canProfile: shouldContinueProfiling, shouldSendProfile: true) {
                 snapshot = $0
             }
             completion(snapshot)
@@ -245,8 +248,7 @@ private extension DatadogProfiler {
 
     func scheduleCustomProfileDeadline() {
         captureScheduleStart = .now()
-        let elapsed = dateProvider.now.timeIntervalSince(profileStartDate)
-        scheduleDeadline(after: max(0, profilingInterval - elapsed))
+        scheduleDeadline(after: max(0, profilingInterval - profileElapsedTime))
     }
 
     func stopScheduling() {
@@ -261,9 +263,8 @@ private extension DatadogProfiler {
             return
         }
         captureScheduleStart = .now()
-        let delay = dateProvider.now.addingTimeInterval(interval).timeIntervalSinceNow
         scheduler.stopPeriodic(for: self)
-        scheduleDeadline(after: max(0, delay))
+        scheduleDeadline(after: interval)
     }
 }
 
@@ -399,7 +400,7 @@ private extension DatadogProfiler {
                     if currentRUMVitals.hasCompletedAllOperations(),
                        isCustomProfiling,
                        hasProcessedAppLaunchVital || !shouldWaitForAppLaunchVital {
-                        let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
+                        let customProfilingDuration = profileElapsedTime
                         let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
                         scheduleCapture(after: fireInterval)
                     }
@@ -478,7 +479,7 @@ private extension DatadogProfiler {
                 cleanUpState(preservingOngoingOperations: false)
             } else if canProfile, dd_profiler_start() == 1 {
                 captureScheduleStart = .now()
-                profileStartDate = dateProvider.now
+                profileStartTime = monotonicClock.elapsedTime
                 startScheduling()
             }
         case .running:
@@ -492,9 +493,10 @@ private extension DatadogProfiler {
     }
 
     func captureProfileSnapshot() -> ProfileSnapshot? {
+        let profile = dd_profiler_flush_and_get_profile()
         captureScheduleStart = .now()
-        profileStartDate = dateProvider.now
-        guard let profile = dd_profiler_flush_and_get_profile() else {
+        profileStartTime = monotonicClock.elapsedTime
+        guard let profile else {
             if shouldReportProfileAbsence {
                 telemetryController.sendNoProfile(for: operation)
             }
@@ -577,7 +579,7 @@ private extension DatadogProfiler {
                 if shouldKeepProfilerRunning() {
                     updateProfilerState(canProfile: true)
                 } else if currentRUMVitals.hasCompletedAllOperations(), isCustomProfiling {
-                    let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
+                    let customProfilingDuration = profileElapsedTime
                     let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
                     scheduleCapture(after: fireInterval)
                 }
@@ -772,7 +774,7 @@ private extension DatadogProfiler {
             && !quotaChecker.isRejectedByQuota
             && hasConditionsToProfile
             && hasProcessedAppLaunchVital == false
-            && dateProvider.now.timeIntervalSince(profileStartDate) < Constants.cutOffTime
+            && profileElapsedTime < Constants.cutOffTime
     }
 
     var isCustomProfiling: Bool {

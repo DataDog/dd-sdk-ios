@@ -1397,11 +1397,13 @@ extension DatadogProfilerTests {
     func testReceiveContext_discardsLaunchSamples_whenTTIDGracePeriodHasExpired() {
         // Given
         let dateProvider = DateProviderMock()
+        let clock = CPUProfilerMonotonicClockMock()
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         let profiler = customProfiler(
             isAppLaunchProfilingEnabled: true,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            monotonicClock: clock
         )
 
         let launchTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
@@ -1415,6 +1417,7 @@ extension DatadogProfilerTests {
         XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
 
         dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.cutOffTime + 1)
+        clock.elapsedTime = DatadogProfiler.Constants.cutOffTime + 1
 
         // When
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
@@ -1703,7 +1706,8 @@ extension DatadogProfilerTests {
 
     func testPeriodicCapturePreservesShortWindowUntilMinimumDurationDespiteWallClockJump() throws {
         let dateProvider = DateProviderMock()
-        let profiler = continuousProfiler(continuousProfilingSampled: true, dateProvider: dateProvider)
+        let clock = CPUProfilerMonotonicClockMock()
+        let profiler = continuousProfiler(continuousProfilingSampled: true, dateProvider: dateProvider, monotonicClock: clock)
         let rumContext = RUMCoreContext.mockWith(sessionSampleRate: 100)
         core.context = .mockWith(
             serverTimeOffset: 0,
@@ -1739,13 +1743,12 @@ extension DatadogProfilerTests {
         let completed = expectation(description: "CPU window reaches its minimum duration")
         completed.assertForOverFulfill = true
 
-        DispatchQueue.global().asyncAfter(deadline: .now() + DatadogProfiler.Constants.minProfileDuration) {
-            profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
-                captured.wrappedValue = snapshot
-                completed.fulfill()
-            }
+        clock.elapsedTime = DatadogProfiler.Constants.minProfileDuration
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            captured.wrappedValue = snapshot
+            completed.fulfill()
         }
-        wait(for: [completed], timeout: DatadogProfiler.Constants.minProfileDuration + 2)
+        wait(for: [completed], timeout: 1)
         flushQueue()
 
         let snapshot = try XCTUnwrap(captured.wrappedValue)
@@ -1766,6 +1769,10 @@ extension DatadogProfilerTests {
         XCTAssertTrue(core.events.isEmpty)
         XCTAssertTrue(core.metadata.isEmpty)
 
+        let nextVital = Vital.mockWith(stepType: nil)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: nextVital)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
         let nextWindowSkipped = expectation(description: "next CPU window also respects its minimum duration")
         nextWindowSkipped.assertForOverFulfill = true
         profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
@@ -1773,17 +1780,19 @@ extension DatadogProfilerTests {
             nextWindowSkipped.fulfill()
         }
         wait(for: [nextWindowSkipped], timeout: 1)
+        XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
         withExtendedLifetime(profiler) {}
     }
 
     func testPeriodicCaptureMeasuresMinimumDurationFromDelayedNativeStart() throws {
         let minProfileDuration: TimeInterval = 1
-        let profiler = continuousProfiler(continuousProfilingSampled: true, minProfileDuration: minProfileDuration)
-        let initialContextDelayed = expectation(description: "schedule predates native recording by its minimum duration")
-        DispatchQueue.global().asyncAfter(deadline: .now() + minProfileDuration) {
-            initialContextDelayed.fulfill()
-        }
-        wait(for: [initialContextDelayed], timeout: minProfileDuration + 2)
+        let clock = CPUProfilerMonotonicClockMock()
+        let profiler = continuousProfiler(
+            continuousProfilingSampled: true,
+            minProfileDuration: minProfileDuration,
+            monotonicClock: clock
+        )
+        clock.elapsedTime = minProfileDuration
         XCTAssertFalse(dd_profiler_is_running())
         let rumContext = RUMCoreContext.mockWith(sessionSampleRate: 100)
         core.context = .mockWith(
@@ -1820,13 +1829,12 @@ extension DatadogProfilerTests {
         let completed = expectation(description: "delayed native recording reaches its minimum duration")
         completed.assertForOverFulfill = true
 
-        DispatchQueue.global().asyncAfter(deadline: .now() + minProfileDuration) {
-            profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
-                captured.wrappedValue = snapshot
-                completed.fulfill()
-            }
+        clock.elapsedTime += minProfileDuration
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            captured.wrappedValue = snapshot
+            completed.fulfill()
         }
-        wait(for: [completed], timeout: minProfileDuration + 2)
+        wait(for: [completed], timeout: 1)
         flushQueue()
 
         let snapshot = try XCTUnwrap(captured.wrappedValue)
@@ -2060,9 +2068,11 @@ extension DatadogProfilerTests {
         // Given - the native launch profiler is running before the first custom operation.
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         let dateProvider = DateProviderMock()
-        let profiler = customProfiler(profilingInterval: 0.2, dateProvider: dateProvider)
+        let clock = CPUProfilerMonotonicClockMock()
+        let profiler = customProfiler(profilingInterval: 0.2, dateProvider: dateProvider, monotonicClock: clock)
         addSampleToCurrentProfile()
         dateProvider.now = dateProvider.now.addingTimeInterval(5)
+        clock.elapsedTime = 5
         let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
 
         // When - custom scheduling starts after an idle period longer than its interval.
@@ -2120,12 +2130,14 @@ extension DatadogProfilerTests {
     func testContinuousToCustomSamplingChangeKeepsCurrentWindowDeadline() {
         // Given - an ongoing operation has nearly filled its current CPU window.
         let dateProvider = DateProviderMock()
+        let clock = CPUProfilerMonotonicClockMock()
         let profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: 50)
         profilingSamplerProvider.updateWith(deterministicSampler: DeterministicSampler(seed: 0, samplingRate: 100))
         let profiler = continuousProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
             profilingInterval: 60,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            monotonicClock: clock
         )
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
@@ -2136,7 +2148,7 @@ extension DatadogProfilerTests {
         )
         flushQueue()
         addSampleToCurrentProfile()
-        dateProvider.now = dateProvider.now.addingTimeInterval(59.95)
+        clock.elapsedTime = 59.95
 
         // When - CPU samples out while RUM and the operation remain eligible.
         let rum = RUMCoreContext.mockWith(
@@ -2156,6 +2168,53 @@ extension DatadogProfilerTests {
         XCTAssertEqual(profilingSamplerProvider.continuousProfilingSampled, false)
         XCTAssertFalse(core.metadata.isEmpty)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testContinuousToCustomSamplingChangeKeepsDeadlineAfterBackwardWallClockJump() throws {
+        let dateProvider = DateProviderMock(now: Date())
+        let clock = CPUProfilerMonotonicClockMock()
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 50)
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 0, samplingRate: 100))
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: provider,
+            profilingInterval: 60,
+            dateProvider: dateProvider,
+            monotonicClock: clock
+        )
+        shareCurrentContext(with: profiler)
+        let start = Vital.mockWith(stepType: .start, date: dateProvider.now)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: start)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
+
+        // A wall-clock correction alone must not make the CPU window old enough to capture.
+        dateProvider.now = dateProvider.now.addingTimeInterval(-3_600)
+        let skipped = expectation(description: "wall-clock correction keeps the short CPU window open")
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            skipped.fulfill()
+        }
+        wait(for: [skipped], timeout: 1)
+        XCTAssertTrue(core.metadata.isEmpty)
+
+        // The mode transition must use the elapsed native window, even when Date moved backwards.
+        clock.elapsedTime = 59.95
+        let sampledOut = RUMCoreContext.mockWith(
+            sessionID: UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!,
+            sessionSampleRate: 100
+        )
+        provider.updateWith(deterministicSampler: sampledOut.sessionSampler)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(since: dateProvider.now.addingTimeInterval(-1)),
+            additionalContext: [sampledOut]
+        )
+        waitForProfileWrite(timeout: 1) { shareCurrentContext(with: profiler) }
+
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(try eventIDs(ofType: "vital", from: metadata), [start.id])
+        XCTAssertEqual(provider.continuousProfilingSampled, false)
+        XCTAssertTrue(dd_profiler_is_running())
         withExtendedLifetime(profiler) {}
     }
 
@@ -2229,6 +2288,7 @@ extension DatadogProfilerTests {
         // Given
         let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
         let dateProvider = DateProviderMock(now: initialDate)
+        let clock = CPUProfilerMonotonicClockMock()
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
 
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
@@ -2237,7 +2297,8 @@ extension DatadogProfilerTests {
         )
         let profiler = continuousProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            monotonicClock: clock
         )
         core.context = .mockWith(
             applicationStateHistory: .mockAppInForeground(),
@@ -2257,6 +2318,7 @@ extension DatadogProfilerTests {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
+        clock.elapsedTime = DatadogProfiler.Constants.minProfileDuration + 1
 
         let endOperation = Vital.mockWith(
             name: startOperation.name,
@@ -2647,13 +2709,12 @@ extension DatadogProfilerTests {
 
     func testCustomProfiler_writesProfile_whenRUMOperationsAccumulated() {
         // Given
-        // Start dateProvider 8 seconds in the past so that after advancing by minProfileDuration+1,
-        // the resulting fireDate is still in the past and the timer fires immediately.
         let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
         let dateProvider = DateProviderMock(now: initialDate)
+        let clock = CPUProfilerMonotonicClockMock()
         // Ensure core.context has an active state that falls within dateProvider.now's range
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
-        let profiler = customProfiler(dateProvider: dateProvider)
+        let profiler = customProfiler(dateProvider: dateProvider, monotonicClock: clock)
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
@@ -2664,9 +2725,9 @@ extension DatadogProfilerTests {
         flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
-        // Advance dateProvider by minProfileDuration+1 — the result is still in the past,
-        // so fireTimer(after: 0) sets a past fireDate and the timer fires immediately.
+        // Advance the native CPU window beyond its minimum duration.
         dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
+        clock.elapsedTime = DatadogProfiler.Constants.minProfileDuration + 1
 
         let endOp: Vital = .mockWith(name: startOp.name, operationKey: startOp.operationKey, stepType: .end)
 
@@ -2686,8 +2747,9 @@ extension DatadogProfilerTests {
         // Given
         let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
         let dateProvider = DateProviderMock(now: initialDate)
+        let clock = CPUProfilerMonotonicClockMock()
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
-        let profiler = customProfiler(dateProvider: dateProvider)
+        let profiler = customProfiler(dateProvider: dateProvider, monotonicClock: clock)
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
@@ -2699,6 +2761,7 @@ extension DatadogProfilerTests {
         flushQueue()
 
         dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
+        clock.elapsedTime = DatadogProfiler.Constants.minProfileDuration + 1
 
         let launchVital = Vital.mockWith(id: "ttid-id", name: "time_to_initial_display", stepType: nil)
         _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: launchVital)), from: core)
@@ -2759,6 +2822,34 @@ extension DatadogProfilerTests {
 
         // Then - profiler is still running because minProfileDuration has not elapsed yet
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCustomProfiler_writesCompletedOperationDespiteForwardWallClockJump() throws {
+        let dateProvider = DateProviderMock(now: Date())
+        let clock = CPUProfilerMonotonicClockMock()
+        let profiler = customProfiler(dateProvider: dateProvider, monotonicClock: clock)
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let start = Vital.mockWith(stepType: .start, date: dateProvider.now)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: start)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
+
+        clock.elapsedTime = DatadogProfiler.Constants.minProfileDuration + 1
+        dateProvider.now = dateProvider.now.addingTimeInterval(3_600)
+        let end = Vital.mockWith(name: start.name, operationKey: start.operationKey, stepType: .end, date: dateProvider.now)
+
+        // A completed window must capture immediately, regardless of the corrected wall-clock time.
+        waitForProfileWrite(timeout: 1) {
+            _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: end)), from: core)
+        }
+        flushQueue()
+
+        XCTAssertEqual(core.metadata.count, 1)
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(try eventIDs(ofType: "vital", from: metadata), [start.id])
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         withExtendedLifetime(profiler) {}
     }
 
@@ -3072,8 +3163,9 @@ extension DatadogProfilerTests {
         let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
         let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
         let dateProvider = DateProviderMock(now: initialDate)
+        let clock = CPUProfilerMonotonicClockMock()
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
-        let profiler = customProfiler(telemetryController: telemetryController, dateProvider: dateProvider)
+        let profiler = customProfiler(telemetryController: telemetryController, dateProvider: dateProvider, monotonicClock: clock)
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         addSampleToCurrentProfile()
@@ -3083,6 +3175,7 @@ extension DatadogProfilerTests {
         flushQueue()
 
         dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
+        clock.elapsedTime = DatadogProfiler.Constants.minProfileDuration + 1
         let endOperation = Vital.mockWith(
             name: startOperation.name,
             operationKey: startOperation.operationKey,
@@ -4248,6 +4341,7 @@ private extension DatadogProfilerTests {
         queue: DispatchQueue? = nil,
         telemetryController: ProfilingTelemetryController = .init(),
         dateProvider: DateProvider = DateProviderMock(),
+        monotonicClock: MonotonicClock = SystemMonotonicClock(),
         quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock()
     ) -> DatadogProfiler {
         let profilingSamplerProvider = profilingSamplerProvider ?? ProfilingSamplerProvider(
@@ -4276,7 +4370,8 @@ private extension DatadogProfilerTests {
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
             minProfileDuration: minProfileDuration,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            monotonicClock: monotonicClock
         )
     }
 
@@ -4290,6 +4385,7 @@ private extension DatadogProfilerTests {
         queue: DispatchQueue? = nil,
         telemetryController: ProfilingTelemetryController = .init(),
         dateProvider: DateProvider = DateProviderMock(),
+        monotonicClock: MonotonicClock = SystemMonotonicClock(),
         quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock()
     ) -> DatadogProfiler {
         let profilingSamplerProvider = profilingSamplerProvider(
@@ -4313,7 +4409,8 @@ private extension DatadogProfilerTests {
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            monotonicClock: monotonicClock
         )
     }
 
@@ -4403,6 +4500,11 @@ private final class EmptyProfileSnapshotProvider: ProfileSnapshotProvider {
     func captureSnapshot(scheduledFor time: DispatchTime, completion: @escaping @Sendable (ProfileSnapshot?) -> Void) {
         completion(nil)
     }
+}
+
+private final class CPUProfilerMonotonicClockMock: MonotonicClock {
+    @ReadWriteLock
+    var elapsedTime: TimeInterval = 0
 }
 
 #endif // !os(watchOS) && !os(macOS)
