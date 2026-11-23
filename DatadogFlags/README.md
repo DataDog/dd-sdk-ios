@@ -146,7 +146,7 @@ The Flags module uses the JSON contract from [ffe-system-test-data](https://gith
 This keeps response behavior consistent across mobile SDKs. The snapshot is test data only.
 It adds no runtime dependency and requires no Git submodule.
 
-`ci/feature-flags-precomputed-fixtures.json` lists the fixture sources. Each source has its own upstream path prefix, destination folder, commit pin and file map, so later fixture sets reuse the same pipeline. The `precomputed-assignments` source pins an upstream commit. Tests read the snapshot from the git-ignored `DatadogFlags/Fixtures/precomputed` folder, outside every SwiftPM target, so fixtures never reach a customer checkout. `SOURCE.json` records the source commit and file digests.
+`ci/feature-flags-precomputed-fixtures.json` lists the fixture sources. Each source has its own upstream path prefix, destination folder, commit pin and file map, so later fixture sets reuse the same pipeline. The `precomputed-assignments` source pins an upstream commit. Tests read the snapshot from the git-ignored `DatadogFlags/Fixtures/precomputed` folder, outside every SwiftPM target, so fixtures never reach a customer checkout. `SOURCE.json` records the source commit, the source prefix and file map, and the file digests. If the prefix or file map changes, the next run imports the source again.
 The runner discovers all nested JSON cases.
 Adding a case requires an upstream fixture change and a pin update. It requires no runner or filename-list change.
 Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
