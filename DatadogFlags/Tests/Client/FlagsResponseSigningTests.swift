@@ -546,6 +546,20 @@ final class FlagsResponseSigningTests: XCTestCase {
         XCTAssertEqual(executed, manifest.files.values.map(\.response_cases).reduce(0, +))
     }
 
+    /// The empty query binds as `?`, and a high-S ECDSA signature is accepted (no low-S rule).
+    func testSharedEmptyQueryAndHighSSignatureVectorsAreAccepted() throws {
+        let url = try SharedSigningFixtures.url("response-signing-v1", "corpus", "json")
+        let corpus = try JSONDecoder().decode(Corpus.self, from: Data(contentsOf: url))
+        for id in ["valid-empty-query", "valid-high-s-signature"] {
+            let vector = try XCTUnwrap(corpus.cases.first { $0.id == id }, id)
+            XCTAssertTrue(vector.expected_accept, id)
+            if id == "valid-empty-query" {
+                XCTAssertTrue(vector.request.url.hasSuffix("?"), id)
+            }
+            XCTAssertEqual(try assertCorpus(Corpus(anchor_der_base64: corpus.anchor_der_base64, cases: [vector]), suite: id), 1)
+        }
+    }
+
     private func assertCorpus(_ corpus: Corpus, suite: String) throws -> Int {
         var executed = 0
         for vector in corpus.cases {

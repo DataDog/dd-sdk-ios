@@ -18,7 +18,7 @@
       "kind": "files",
       "prefix": "response-signing/v1/",
       "destination": "DatadogFlags/Fixtures/response-signing-v1",
-      "commit": "8dfd544b1a2e8e3a06ca78a31568003a15c7ecae",
+      "commit": "7497e366bc4614cbf0e2293f32070381fdb77f1d",
       "files": {
         "response-signing/README.md": "README.md",
         "LICENSE": "LICENSE",
@@ -30,7 +30,7 @@
       "kind": "files",
       "prefix": "response-signing/chain/",
       "destination": "DatadogFlags/Fixtures/response-signing-chain",
-      "commit": "8dfd544b1a2e8e3a06ca78a31568003a15c7ecae",
+      "commit": "7497e366bc4614cbf0e2293f32070381fdb77f1d",
       "files": {
         "LICENSE": "LICENSE",
         "NOTICE": "NOTICE"
