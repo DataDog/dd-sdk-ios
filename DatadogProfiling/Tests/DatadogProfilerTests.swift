@@ -1776,6 +1776,75 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
+    func testPeriodicCaptureMeasuresMinimumDurationFromDelayedNativeStart() throws {
+        let minProfileDuration: TimeInterval = 1
+        let profiler = continuousProfiler(continuousProfilingSampled: true, minProfileDuration: minProfileDuration)
+        let initialContextDelayed = expectation(description: "schedule predates native recording by its minimum duration")
+        DispatchQueue.global().asyncAfter(deadline: .now() + minProfileDuration) {
+            initialContextDelayed.fulfill()
+        }
+        wait(for: [initialContextDelayed], timeout: minProfileDuration + 2)
+        XCTAssertFalse(dd_profiler_is_running())
+        let rumContext = RUMCoreContext.mockWith(sessionSampleRate: 100)
+        core.context = .mockWith(
+            serverTimeOffset: 0,
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [rumContext]
+        )
+        shareCurrentContext(with: profiler)
+        XCTAssertTrue(dd_profiler_is_running())
+        let vital = Vital.mockWith(stepType: nil)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: [:], operation: vital)), from: core)
+        flushQueue()
+        addSampleToCurrentProfile()
+        let nativeProfile = try XCTUnwrap(dd_profiler_get_profile())
+        let sampleCount = dd_pprof_sample_count(nativeProfile)
+        let start = dd_pprof_get_start_timestamp_s(nativeProfile)
+        let skipped = expectation(description: "new native recording remains shorter than its minimum duration")
+        skipped.assertForOverFulfill = true
+
+        profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+            XCTAssertNil(snapshot)
+            skipped.fulfill()
+        }
+        wait(for: [skipped], timeout: 1)
+        flushQueue()
+
+        XCTAssertTrue(dd_profiler_is_running())
+        let retainedProfile = try XCTUnwrap(dd_profiler_get_profile())
+        XCTAssertEqual(retainedProfile, nativeProfile)
+        XCTAssertGreaterThanOrEqual(dd_pprof_sample_count(retainedProfile), sampleCount)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        let captured = ReadWriteLock<ProfileSnapshot?>(wrappedValue: nil)
+        let completed = expectation(description: "delayed native recording reaches its minimum duration")
+        completed.assertForOverFulfill = true
+
+        DispatchQueue.global().asyncAfter(deadline: .now() + minProfileDuration) {
+            profiler.captureSnapshot(scheduledFor: .now()) { snapshot in
+                captured.wrappedValue = snapshot
+                completed.fulfill()
+            }
+        }
+        wait(for: [completed], timeout: minProfileDuration + 2)
+        flushQueue()
+
+        let snapshot = try XCTUnwrap(captured.wrappedValue)
+        XCTAssertEqual(snapshot.start.timeIntervalSince1970, start, accuracy: 0.000001)
+        XCTAssertFalse(snapshot.attachment.data.isEmpty)
+        XCTAssertEqual(snapshot.rumContext?.sessionID, rumContext.sessionID)
+        XCTAssertEqual(snapshot.rumEvents.compactMap { event -> String? in
+            guard case .vital(let vital) = event else {
+                return nil
+            }
+            return vital.id
+        }, [vital.id])
+        XCTAssertTrue(dd_profiler_is_running())
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
     func testPeriodicCaptureCompletesOnceWhenItsScheduleIsStale() {
         let profiler = continuousProfiler(continuousProfilingSampled: true)
         shareCurrentContext(with: profiler)

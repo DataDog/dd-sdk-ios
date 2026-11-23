@@ -477,6 +477,7 @@ private extension DatadogProfiler {
             if isCustomProfiling {
                 cleanUpState(preservingOngoingOperations: false)
             } else if canProfile, dd_profiler_start() == 1 {
+                captureScheduleStart = .now()
                 profileStartDate = dateProvider.now
                 startScheduling()
             }
