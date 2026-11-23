@@ -16,3 +16,4 @@
 /ci/feature-flags-precomputed-fixtures.json @DataDog/feature-flagging-and-experimentation-sdk
 /ci/feature-flags-precomputed-fixtures-pr.md @DataDog/feature-flagging-and-experimentation-sdk
 /ci/sync-feature-flags-precomputed-fixtures.py @DataDog/feature-flagging-and-experimentation-sdk
+/ci/test_sync_feature_flags_precomputed_fixtures.py @DataDog/feature-flagging-and-experimentation-sdk

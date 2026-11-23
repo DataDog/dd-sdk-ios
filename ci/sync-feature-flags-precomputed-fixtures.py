@@ -85,6 +85,11 @@ def indexed(spec, result):
                   and not p.endswith('.meta'))
 
 
+def source_spec(spec):
+    """Returns the source fields that select and shape the imported files."""
+    return {'kind': spec['kind'], 'prefix': spec['prefix'], 'files': spec['files']}
+
+
 def snapshot(source, ref, spec):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', ref) or '..' in ref:
         raise ValueError('Invalid fixture revision')
@@ -98,12 +103,14 @@ def snapshot(source, ref, spec):
             continue
         metadata, raw_path = entry.split(b'\t', 1)
         path = raw_path.decode()
+        # An explicit file mapping wins over the target that the prefix gives.
         target = spec['files'].get(path)
-        if spec['kind'] == 'precomputed-assignments':
-            if path.startswith(prefix + 'cases/') and path.endswith('.json'):
+        if target is None:
+            if spec['kind'] == 'precomputed-assignments':
+                if path.startswith(prefix + 'cases/') and path.endswith('.json'):
+                    target = path[len(prefix):]
+            elif path.startswith(prefix):
                 target = path[len(prefix):]
-        elif target is None and path.startswith(prefix):
-            target = path[len(prefix):]
         if target is None:
             continue
         if target in {'index.json', 'SOURCE.json'} or target.startswith('responses/'):
@@ -127,6 +134,7 @@ def snapshot(source, ref, spec):
     result['SOURCE.json'] = (json.dumps({
         'repository': REPOSITORY,
         'commit': sha,
+        'source': source_spec(spec),
         'files': {p: hashlib.sha256(v).hexdigest() for p, v in sorted(result.items())},
     }, indent=2) + '\n').encode()
     return result
@@ -149,6 +157,9 @@ def verify(destination, spec):
     metadata = json.loads(content.pop('SOURCE.json'))
     if metadata['repository'] != REPOSITORY or not re.fullmatch(r'[0-9a-f]{40}', metadata['commit']):
         raise ValueError('Invalid source provenance')
+    if metadata.get('source') != source_spec(spec):
+        raise ValueError(f"Snapshot was imported with a different {spec['name']} source specification; "
+                         'run without --verify')
     hashes = {p: hashlib.sha256(v).hexdigest() for p, v in sorted(content.items())}
     if hashes != metadata['files']:
         raise ValueError('Snapshot content differs from its recorded checksums')
@@ -265,8 +276,16 @@ def sync(root, spec, args):
     pin = spec['commit']
     destination = destination_for(root, spec)
     before = read_snapshot(destination)
-    current = json.loads(before['SOURCE.json'])['commit'] if 'SOURCE.json' in before else None
+    current = None
+    if 'SOURCE.json' in before:
+        metadata = json.loads(before['SOURCE.json'])
+        # A snapshot from a different prefix or file map does not match the pin, so import it again.
+        if metadata.get('source') == source_spec(spec):
+            current = metadata['commit']
     if args.verify:
+        if 'SOURCE.json' in before and current is None:
+            raise ValueError(f"Fetched {spec['name']} snapshot was imported with a different source specification; "
+                             'run without --verify')
         if current != pin:
             raise ValueError(f"Fetched {spec['name']} snapshot ({current}) does not match the pin ({pin}); "
                              'run without --verify')
