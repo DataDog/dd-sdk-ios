@@ -31,6 +31,7 @@ function files {
 		-not -path "*/BenchmarkTests/CatalogSwiftUI/*" \
 		-not -path "*/DatadogProfiling/Mach/include/profile.pb-c.h" \
 		-not -path "*/DatadogProfiling/Mach/include/protobuf-c.h" \
+		-not -path "*/DatadogFlags/Sources/Rules/Generated/*.pb.swift" \
 		-not -path "*/DatadogSessionReplay/WebP/src/*" \
 		-not -path "*/DatadogSessionReplay/WebP/sharpyuv/*" \
 		-not -name "__init__.py"

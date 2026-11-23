@@ -1,0 +1,9 @@
+// Base configuration for DatadogFlags target.
+// Note: all configuration here will be applied to `DatadogFlags.framework` produced by Carthage.
+
+// Include base config
+#include "../xcconfigs/Base.xcconfig"
+
+// SPM dependencies don't automatically build for arm64e, so we need to exclude it
+// to avoid build errors when using SwiftProtobuf from SPM (same workaround as DatadogCrashReporting)
+ARCHS[sdk=iphoneos*]=$(ARCHS_STANDARD)
