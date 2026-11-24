@@ -199,19 +199,23 @@ public enum RUMContextHandoff {
         public let hasPendingUserAction: Bool
         public let excludedUserActionID: String?
         public let actionReceipt: ActionReceipt?
+        /// Keeps Flags attribution when a terminal callback deliberately hides its RUM context.
+        public let flagEvaluationContext: RUMCoreContext?
 
         public init(
             rumContext: RUMCoreContext?,
             sceneIdentifier: String?,
             hasPendingUserAction: Bool,
             excludedUserActionID: String?,
-            actionReceipt: ActionReceipt? = nil
+            actionReceipt: ActionReceipt? = nil,
+            flagEvaluationContext: RUMCoreContext? = nil
         ) {
             self.rumContext = rumContext
             self.sceneIdentifier = sceneIdentifier
             self.hasPendingUserAction = hasPendingUserAction
             self.excludedUserActionID = excludedUserActionID
             self.actionReceipt = actionReceipt
+            self.flagEvaluationContext = flagEvaluationContext
         }
 
         /// Resolves only this captured action while preserving the captured RUM view.
