@@ -153,6 +153,10 @@ internal protocol RUMCommand {
 
 extension RUMCommand {
     var target: RUMCommandTarget { .processRepresentative }
+
+    var explicitViewTarget: RUMCommandTarget? {
+        (self as? RUMExplicitViewTargetCommand)?.explicitTarget ?? (self as? RUMUserActionCommand)?.explicitTarget
+    }
 }
 
 internal struct RUMSDKInitCommand: RUMCommand {
