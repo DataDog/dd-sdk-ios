@@ -170,6 +170,41 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertEqual(captured.capture.value.rumContext?.sessionID, context.sessionID)
     }
 
+    func testLegacyReplayRecordForwardsItsRegistrationReceipt() throws {
+        let receiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
+        var isCurrent = true
+        let receipt = RUMLegacyWebViewTrackingReceipt(isCurrent: { isCurrent }, setRUMContext: { _ in })
+
+        emitter.send(
+            body: """
+            {
+              "eventType": "record",
+              "event": { "timestamp": 123 },
+              "view": { "id": "legacy-view" }
+            }
+            """,
+            slotId: "legacy-slot",
+            legacyRegistration: receipt
+        )
+
+        let registered = try XCTUnwrap(receiver.messages.compactMap { message -> WebViewMessageWithLegacyRUMRegistration? in
+            guard case let .payload(value as WebViewMessageWithLegacyRUMRegistration) = message else {
+                return nil
+            }
+            return value
+        }.first)
+        guard case let .record(event, view) = registered.message else {
+            return XCTFail("Expected a Replay record")
+        }
+        XCTAssertEqual(view.id, "legacy-view")
+        XCTAssertEqual(event["slotId"] as? String, "legacy-slot")
+        XCTAssertTrue(registered.receipt.isCurrent)
+        isCurrent = false
+        XCTAssertFalse(registered.receipt.isCurrent)
+    }
+
     // MARK: - Parsing
 
     func testWhenMessageIsInvalid_itReportTheError() throws {
