@@ -22,12 +22,25 @@ internal struct ExposureDecision: Equatable {
 
 internal protocol ExposureLogging {
     /// Records the exposure in the cache and returns the verdict. Call it for successful evaluations.
+    /// - Parameter sendsToDatadog: `false` records in the cache and writes no event, whatever exposure tracking is set to.
+    @discardableResult
+    func logExposure(
+        for flagKey: String,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext,
+        sendsToDatadog: Bool
+    ) -> ExposureDecision
+}
+
+extension ExposureLogging {
     @discardableResult
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
         evaluationContext: FlagsEvaluationContext
-    ) -> ExposureDecision
+    ) -> ExposureDecision {
+        logExposure(for: flagKey, assignment: assignment, evaluationContext: evaluationContext, sendsToDatadog: true)
+    }
 }
 
 internal final class ExposureLogger: ExposureLogging {
@@ -47,7 +60,8 @@ internal final class ExposureLogger: ExposureLogging {
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
-        evaluationContext: FlagsEvaluationContext
+        evaluationContext: FlagsEvaluationContext,
+        sendsToDatadog: Bool
     ) -> ExposureDecision {
         guard assignment.doLog else {
             return .notAnExposure
@@ -66,7 +80,7 @@ internal final class ExposureLogger: ExposureLogging {
         }
 
         let decision = ExposureDecision(isExposure: true, isCacheHit: false)
-        guard sendsExposures else {
+        guard sendsExposures, sendsToDatadog else {
             return decision
         }
 

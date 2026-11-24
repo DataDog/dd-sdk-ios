@@ -419,3 +419,39 @@ final class ExposureDecisionTests: XCTestCase {
         XCTAssertEqual(features["on"] as? Bool, true)
     }
 }
+
+final class RecordOnlyExposureTests: XCTestCase {
+    private let featureScope = FeatureScopeMock()
+
+    private func assignment(variation: String = "on", serialID: Int? = 1) -> FlagAssignment {
+        FlagAssignment(allocationKey: "allocation", variationKey: variation, variation: .boolean(true), reason: "STATIC", doLog: true, serialID: serialID)
+    }
+
+    func testARecordOnlyCallSharesTheCacheWithSendingCalls() {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope)
+        let context = FlagsEvaluationContext(targetingKey: "subject", attributes: [:])
+
+        let recorded = logger.logExposure(for: "flag", assignment: assignment(), evaluationContext: context, sendsToDatadog: false)
+        XCTAssertEqual(recorded, ExposureDecision(isExposure: true, isCacheHit: false))
+        XCTAssertEqual(featureScope.eventsWritten.count, 0)
+
+        let repeated = logger.logExposure(for: "flag", assignment: assignment(), evaluationContext: context, sendsToDatadog: true)
+        XCTAssertEqual(repeated, ExposureDecision(isExposure: true, isCacheHit: true))
+        XCTAssertEqual(featureScope.eventsWritten.count, 0)
+
+        logger.logExposure(for: "flag", assignment: assignment(variation: "off"), evaluationContext: context, sendsToDatadog: true)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        logger.logExposure(for: "flag", assignment: assignment(variation: "off"), evaluationContext: context)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+    }
+
+    func testDisabledExposureTrackingWritesNothingForASendingCall() {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope, sendsExposures: false)
+        let context = FlagsEvaluationContext(targetingKey: "subject", attributes: [:])
+
+        let decision = logger.logExposure(for: "flag", assignment: assignment(), evaluationContext: context, sendsToDatadog: true)
+
+        XCTAssertEqual(decision, ExposureDecision(isExposure: true, isCacheHit: false))
+        XCTAssertEqual(featureScope.eventsWritten.count, 0)
+    }
+}
