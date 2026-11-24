@@ -369,7 +369,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
         guard let value = capture.value else {
             return operation()
         }
-        return RUMContextHandoff.withValue(value, for: owner, operation: operation)
+        return RUMContextHandoff.withUIKitCallbackValue(value, for: owner, operation: operation)
     }
 }
 
