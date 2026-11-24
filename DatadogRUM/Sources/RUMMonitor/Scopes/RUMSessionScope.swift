@@ -1030,6 +1030,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
         viewScopes = viewScopes.compactMap { view in
             if selectedIDs.contains(view.viewUUID) {
+                if let start = command as? RUMStartViewCommand, start.replacesTrackedControllerOwner,
+                   view.identity == start.identity, view.sceneIdentifier != navigationScene {
+                    // The new start's attributes belong only to the new occurrence.
+                    let stop = RUMStopViewCommand(
+                        time: start.time,
+                        globalAttributes: start.globalAttributes,
+                        attributes: [:],
+                        identity: start.identity
+                    )
+                    return view.process(command: stop, context: context, writer: writer) ? view : nil
+                }
                 return view.process(command: command, context: context, writer: writer) ? view : nil
             }
             // A peer's time advances, but the foreign command cannot change its attributes/counters.
