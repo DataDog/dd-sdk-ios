@@ -13,8 +13,8 @@ import ArgumentParser
 private let ssh = "git@github.com:DataDog/dd-mobile-session-replay-snapshots.git"
 /// GitHub owner/repo identifier (used with token authentication on CI via gh CLI over HTTPS).
 private let repo = "DataDog/dd-mobile-session-replay-snapshots"
-/// Default branch in snapshots repo.
-private let defaultBranch = "main"
+/// Branch that stores snapshot images in snapshots repo.
+private let defaultBranch = "snapshots"
 
 internal struct Options: ParsableArguments {
     @Option(help: "The path to snapshots folder in local repo")
