@@ -140,6 +140,7 @@ internal class Monitor: RUMCommandSubscriber {
         struct Value {
             var representative: RUMCoreContext?
             var contextsByScene: [RUMSceneIdentifier: RUMCoreContext] = [:]
+            var contextsByView: [RUMUUID: RUMCoreContext] = [:]
             var soleUnscopedView: RUMUUID?
             var sessionID: String?
             var sessionStart: TimeInterval?
@@ -212,7 +213,8 @@ internal class Monitor: RUMCommandSubscriber {
     #endif
 
     func process(command: RUMCommand) {
-        guard !isMultiSceneTrackingEnabled || command.target != .none else {
+        guard !isMultiSceneTrackingEnabled
+                || (command.target != .none && command.explicitViewTarget != RUMCommandTarget.none) else {
             (command as? RUMUserActionCommand)?.actionReceipt?.reject()
             (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
             return
@@ -338,8 +340,10 @@ internal class Monitor: RUMCommandSubscriber {
         var activeViewCount = 0
         for view in activeSession.viewScopes where view.isActiveView {
             activeViewCount += 1
+            let context = makeCoreContext(session: activeSession, view: view)
+            snapshot.contextsByView[view.viewUUID] = context
             if let sceneIdentifier = view.sceneIdentifier {
-                snapshot.contextsByScene[sceneIdentifier] = makeCoreContext(session: activeSession, view: view)
+                snapshot.contextsByScene[sceneIdentifier] = context
             }
         }
         if activeViewCount == 1, let representativeView, representativeView.sceneIdentifier == nil,
@@ -439,9 +443,7 @@ extension Monitor: RUMContextSnapshotProviding {
         switch target {
         case .none, .continuousAction: return nil
         case .scene(let identifier): context = snapshot.contextsByScene[identifier]
-        case .view(let identifier):
-            context = snapshot.contextsByScene.values.first { $0.viewID == identifier.toRUMDataFormat }
-                ?? snapshot.representative.flatMap { $0.viewID == identifier.toRUMDataFormat ? $0 : nil }
+        case .view(let identifier): context = snapshot.contextsByView[identifier]
         case .processRepresentative, .allActiveViews: context = snapshot.representative
         }
         guard let context, context.sessionID == snapshot.sessionID else {
