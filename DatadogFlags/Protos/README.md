@@ -9,5 +9,4 @@ The browser SDK keeps the same file in `openfeature-js-client` (`packages/core/p
 
 1. Copy the new `ufc.proto` here.
 2. Update `UFCModels.swift`: each message has a Swift type, and each field a `case <field number>:` in its decoder.
-3. Add the new fields to `fixtures/all-fields.txtpb` and to `RulesConfigurationDecoderTests`.
-4. Run `./tools/ufc-decoder-check/run.sh`. It compares the decoder with SwiftProtobuf field by field.
+3. Add the new fields to `fixtures/all-fields.txtpb`, encode it again with `protoc` (see the command in the file), and check the new fields in `RulesConfigurationDecoderTests`.
