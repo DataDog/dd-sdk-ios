@@ -92,6 +92,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         var representativeViewID: RUMUUID?
         var interactionMetrics: [RUMSceneIdentifier: INVMetricTracking?] = [:]
         var restoredViews: [RUMViewScope] = []
+        var lifecycleEndedLaunchView: RUMViewScope?
         var mappedViewEvents: [RUMUUID: RUMViewEvent] = [:]
         var projectedViewID: RUMUUID?
         var projectedViewVersion: Int64?
@@ -428,6 +429,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
 
         var deactivating = false
         if isActive {
+            if let stopView = command as? RUMStopViewCommand,
+               case .some(.ownedScene(nil)) = sceneState?.navigationDestination,
+               sceneState?.lifecycleEndedLaunchView?.identity == stopView.identity {
+                sceneState?.lifecycleEndedLaunchView = nil
+            }
             switch command {
             case _ as RUMStopSessionCommand:
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
@@ -445,7 +451,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
                     startView(on: startViewCommand, context: context)
                 }
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
-                hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+                let launchView = activeView.flatMap { view in
+                    view.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL ? view : nil
+                }
+                hadApplicationLaunchViewWhenEnteringBackground = launchView != nil
+                if let launchView {
+                    sceneState?.lifecycleEndedLaunchView = launchView
+                }
                 dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
@@ -642,6 +654,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         }
         nextViewIndex += 1
 
+        if path != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL {
+            sceneState?.lifecycleEndedLaunchView = nil
+        }
         if path != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
             applicationState.numberOfNonApplicationLaunchViewsCreated += 1
         }
@@ -761,6 +776,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         let views = viewScopes.filter {
             $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
         }
+        if views.isEmpty, let lifecycleEndedLaunchView = sceneState?.lifecycleEndedLaunchView {
+            return [lifecycleEndedLaunchView]
+        }
         guard let activeView, views.contains(where: { $0 === activeView }) else {
             return views
         }
@@ -790,7 +808,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         if let stop = navigation as? RUMStopViewCommand {
             return views.filter { $0.sceneIdentifier != scene || $0.identity != stop.identity }
         }
-        return views.filter { $0.sceneIdentifier != scene }
+        return views.filter {
+            $0.sceneIdentifier != scene && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+        }
     }
 
     private func restoreViews(
@@ -806,7 +826,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
                 identity: view.identity,
                 path: view.viewPath,
                 name: view.viewName,
-                customTimings: view.customTimings,
+                customTimings: startPrecondition == .explicitStop ? [:] : view.customTimings,
                 startTime: time,
                 serverTimeOffset: context.serverTimeOffset,
                 hasReplay: context.hasReplay,
