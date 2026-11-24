@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-10
-sdk_version: 3.20.0
-verified_against_commit: 56ffa64c5
+last_updated: 2026-11-24
+sdk_version: 3.23.0
+verified_against_commit: 1f00346a6
 tracked_files:
   - DatadogLogs/Sources/Logs.swift
   - DatadogLogs/Sources/Logger.swift
@@ -155,7 +155,7 @@ logger.error(
 - **Log level filter**: `remoteLogThreshold` (default: `.debug`) — logs below this level are not sent remotely. Console output is unaffected by this threshold.
 
 ### Event Modification
-- **`Logs.Configuration.eventMapper`** — `(LogEvent) -> LogEvent?`. Modify or drop log events before upload. Return `nil` to drop. Runs on a background thread; keep it fast.
+- **`Logs.Configuration.eventMapper`** — `(LogEvent) -> LogEvent?`. Modify or drop log events before upload. Return `nil` to drop. Runs on a background thread; keep it fast. Do not dispatch to other queues from it: dispatching synchronously to the main queue (e.g. `DispatchQueue.main.sync`) may cause a deadlock.
 - **Error fingerprint**: Set `Logs.Attributes.errorFingerprint` (`"_dd.error.fingerprint"`) as a log attribute to set `error.fingerprint` on the log event. Requires an `Error` to be passed to the log call.
 
 ### Logger Enrichment
