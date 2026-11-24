@@ -76,7 +76,12 @@ let client = FlagsClient.create(
         // Honor the `dd_evaluation_telemetry_opt_out` context attribute. Default: false.
         enableEvaluationTelemetryOptOutParameter: false,
         // How to apply the `dd_experimentation_opt_out_at` context attribute. Default: .disabled.
-        experimentationOptOutMode: .disabled
+        experimentationOptOutMode: .disabled,
+        // Log exposures for this client. Can only narrow `Flags.Configuration.trackExposures`. Default: true.
+        trackExposures: true,
+        // Report evaluations and RUM flag evaluations for this client. Can only narrow
+        // `Flags.Configuration.trackEvaluations` and `rumIntegrationEnabled`. Default: true.
+        trackEvaluations: true
     ),
     name: FlagsClient.defaultName // "default"
 )
@@ -235,6 +240,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - Evaluation errors are limited to stable OpenFeature codes. Any other string becomes `GENERAL`, so customer data from an error cannot enter telemetry.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
+- `FlagsClient.Configuration.trackExposures` and `trackEvaluations` turn tracking off for one client, for example to read a flag without recording it and record the exposure later through another client. They only narrow the SDK-wide `Flags.Configuration` settings. A client with `trackExposures: false` gets a no-op exposure logger, so it never writes the deduplication cache and another client still logs its exposure for the same subject and flag. A client with `trackEvaluations: false` sends no evaluation events and no RUM flag evaluations. Flag values are unchanged.
 
 ### Experimentation Opt-Out
 - `experimentationOptOutMode` reads the context attribute `dd_experimentation_opt_out_at`, an RFC3339 timestamp string. `.immediate` excludes the subject from all experiment allocations; `.futureExperimentsOnly` excludes experiments activated at or after the timestamp.
@@ -288,7 +294,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 
 ### "No exposures in Datadog"
 **Causes:**
-- `trackExposures` is `false`.
+- `trackExposures` is `false` in `Flags.Configuration` or in the client's `FlagsClient.Configuration`.
 - The allocation is not an experiment (no `doLog`). Plain rollouts log no exposures.
 - The same subject already saw that variant in this process (deduplication).
 - Tracking consent is not `.granted`.
@@ -314,7 +320,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 
 ## Additional Context
 
-- `FlagsClient.Configuration` has a second initializer, `init(enableEvaluationTelemetryOptOutParameter:)`, kept for binary compatibility. `Flags.Configuration` also keeps an initializer without `flagSelection`.
+- `FlagsClient.Configuration` keeps `init(enableEvaluationTelemetryOptOutParameter:)` and `init(enableEvaluationTelemetryOptOutParameter:experimentationOptOutMode:)` for binary compatibility. `Flags.Configuration` also keeps an initializer without `flagSelection`.
 - `FlagsSnapshot`, `FlagSnapshot` and `snapshot()` are marked as preview and may change.
 - `FlagsClientState` documentation mentions `reset()`, but reset is internal and not available to apps.
 - `onFirstFlags` listeners run on a background queue, or on the calling thread if the first configuration was already published. `flagsChanged` lists configuration keys, which may be obfuscated rather than plaintext names. The no-op fallback client calls the listener immediately with an empty list.

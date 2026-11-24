@@ -1597,7 +1597,10 @@ public final class FlagsClient
     public struct Configuration
         public var experimentationOptOutMode: ExperimentationOptOutMode
         public var enableEvaluationTelemetryOptOutParameter: Bool
-        public init(enableEvaluationTelemetryOptOutParameter: Bool = false,experimentationOptOutMode: ExperimentationOptOutMode = .disabled)
+        public var trackExposures: Bool
+        public var trackEvaluations: Bool
+        public init(enableEvaluationTelemetryOptOutParameter: Bool = false,experimentationOptOutMode: ExperimentationOptOutMode = .disabled,trackExposures: Bool = true,trackEvaluations: Bool = true)
+        public init(enableEvaluationTelemetryOptOutParameter: Bool,experimentationOptOutMode: ExperimentationOptOutMode)
         public init(enableEvaluationTelemetryOptOutParameter: Bool)
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol

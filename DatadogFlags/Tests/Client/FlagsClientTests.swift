@@ -1031,6 +1031,157 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
     }
 
+    // MARK: - Per-client tracking
+
+    private static let cachedAssignment = FlagAssignment(
+        allocationKey: "allocation",
+        variationKey: "variant",
+        variation: .string("cached"),
+        reason: "TARGETING_MATCH",
+        doLog: true
+    )
+
+    private func coreWithCachedFlags(
+        forClientsNamed names: [String],
+        messageReceiver: FeatureMessageReceiver
+    ) throws -> SingleFeatureCoreMock<FlagsFeature> {
+        let data = try JSONEncoder().encode(
+            FlagsData(
+                flags: ["test": Self.cachedAssignment],
+                context: FlagsEvaluationContext(targetingKey: "subject"),
+                date: .mockAny()
+            )
+        )
+        return SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(
+                storage: Dictionary(uniqueKeysWithValues: names.map { ($0, DataStoreValueResult.value(data, dataStoreDefaultKeyVersion)) })
+            ),
+            messageReceiver: messageReceiver
+        )
+    }
+
+    func testClientTrackingConfigurationDefaultsToEnabled() {
+        let configurations: [FlagsClient.Configuration] = [
+            .init(),
+            .init(enableEvaluationTelemetryOptOutParameter: true),
+            .init(enableEvaluationTelemetryOptOutParameter: true, experimentationOptOutMode: .immediate),
+            .init(experimentationOptOutMode: .futureExperimentsOnly)
+        ]
+        for configuration in configurations {
+            XCTAssertTrue(configuration.trackExposures)
+            XCTAssertTrue(configuration.trackEvaluations)
+        }
+    }
+
+    func testClientTrackingOptionsControlExposuresAndRUMWithoutChangingValues() throws {
+        for trackExposures in [false, true] {
+            for trackEvaluations in [false, true] {
+                // Given
+                let messageReceiver = FeatureMessageReceiverMock()
+                let core = try coreWithCachedFlags(forClientsNamed: ["client"], messageReceiver: messageReceiver)
+                Flags.enable(in: core)
+                let client = FlagsClient.create(
+                    configuration: .init(trackExposures: trackExposures, trackEvaluations: trackEvaluations),
+                    name: "client",
+                    in: core
+                )
+
+                // When
+                let details = client.getDetails(key: "test", defaultValue: "default")
+
+                // Then
+                let configuration = "trackExposures=\(trackExposures), trackEvaluations=\(trackEvaluations)"
+                XCTAssertNil(details.error, configuration)
+                XCTAssertEqual(details.value, "cached", configuration)
+                XCTAssertEqual(details.variant, "variant", configuration)
+                XCTAssertEqual(details.allocationKey, "allocation", configuration)
+                XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, trackExposures ? 1 : 0, configuration)
+                XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, trackEvaluations ? 1 : 0, configuration)
+            }
+        }
+    }
+
+    func testClientTrackingOptionsControlEvaluationEvents() throws {
+        for trackExposures in [false, true] {
+            for trackEvaluations in [false, true] {
+                // Given
+                let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
+                defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
+
+                Flags.enable(in: core)
+                let client = try XCTUnwrap(
+                    FlagsClient.create(
+                        configuration: .init(trackExposures: trackExposures, trackEvaluations: trackEvaluations),
+                        name: "client",
+                        in: core
+                    ) as? FlagsClientInternal
+                )
+                let context = FlagsEvaluationContext(targetingKey: "subject")
+
+                // When
+                client.sendFlagEvaluation(key: "flag", assignment: .mockAnyBoolean(doLog: true), context: context)
+                client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: context, errorCode: "FLAG_NOT_FOUND")
+                core.get(feature: FlagsFeature.self)?.flush()
+
+                // Then
+                let configuration = "trackExposures=\(trackExposures), trackEvaluations=\(trackEvaluations)"
+                let exposures = core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self)
+                let evaluations = core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self)
+                XCTAssertEqual(exposures.count, trackExposures ? 1 : 0, configuration)
+                XCTAssertEqual(evaluations.count, trackEvaluations ? 2 : 0, configuration)
+            }
+        }
+    }
+
+    func testClientWithoutExposuresDoesNotSuppressLaterExposureFromDefaultClient() throws {
+        // Given
+        let core = try coreWithCachedFlags(
+            forClientsNamed: [FlagsClient.defaultName, "peek"],
+            messageReceiver: FeatureMessageReceiverMock()
+        )
+        Flags.enable(in: core)
+        let peekClient = FlagsClient.create(
+            configuration: .init(trackExposures: false, trackEvaluations: false),
+            name: "peek",
+            in: core
+        )
+        let defaultClient = FlagsClient.create(in: core)
+
+        // When
+        let peeked = peekClient.getDetails(key: "test", defaultValue: "default")
+        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty, "Peeking must not log an exposure")
+        let recorded = defaultClient.getDetails(key: "test", defaultValue: "default")
+        _ = defaultClient.getDetails(key: "test", defaultValue: "default")
+
+        // Then
+        XCTAssertEqual(peeked, recorded)
+        let exposures = core.events(ofType: ExposureEvent.self)
+        XCTAssertEqual(exposures.count, 1, "The default client logs the exposure once, unaffected by the earlier peek")
+        XCTAssertEqual(exposures.first?.flag.key, "test")
+        XCTAssertEqual(exposures.first?.subject.id, "subject")
+        XCTAssertEqual(exposures.first?.variant.key, "variant")
+    }
+
+    func testClientTrackingOptionsCannotReenableSDKWideTracking() throws {
+        // Given
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = try coreWithCachedFlags(forClientsNamed: ["client"], messageReceiver: messageReceiver)
+        Flags.enable(with: .init(trackExposures: false, trackEvaluations: false, rumIntegrationEnabled: false), in: core)
+        let client = FlagsClient.create(
+            configuration: .init(trackExposures: true, trackEvaluations: true),
+            name: "client",
+            in: core
+        )
+
+        // When
+        let details = client.getDetails(key: "test", defaultValue: "default")
+
+        // Then
+        XCTAssertEqual(details.value, "cached")
+        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
+        XCTAssertTrue(messageReceiver.messages.filter(\.isRUMMessage).isEmpty)
+    }
+
     func testClientsCreatedAfterEnableUseTheConfiguredFlagSelectionForTheirCache() throws {
         // Given
         func encodedCache(selectedTags tags: [String]) throws -> Data {
