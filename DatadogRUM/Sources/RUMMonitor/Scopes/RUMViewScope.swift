@@ -39,6 +39,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// The index of this view within its session (0 for the first view).
     private let viewIndexInSession: Int
+    private let isRestored: Bool
 
     /// If this view ever had session replay
     private var hasReplay: Bool
@@ -163,7 +164,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         interactionToNextViewMetric: INVMetricTracking?,
         viewIndexInSession: Int,
         sceneIdentifier: RUMSceneIdentifier? = nil,
-        didReceiveStartCommand: Bool = false
+        isRestored: Bool = false
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -180,7 +181,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
         self.viewIndexInSession = viewIndexInSession
-        self.didReceiveStartCommand = didReceiveStartCommand
+        self.isRestored = isRestored
+        self.didReceiveStartCommand = isRestored
         self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
@@ -742,21 +744,14 @@ extension RUMViewScope {
                 consecutiveViewUpdatesCount += 1
                 writer.write(value: update, metadata: update.metadata(), completion: completionHandler)
             } else {
-                writer.write(
-                    value: event,
-                    metadata: event.metadata(
-                        viewIndexInSession: viewIndexInSession,
-                        isDeltaBaseline: dependencies.featureFlags[.viewUpdates]
-                    ),
-                    completion: completionHandler
+                let metadata = event.metadata(
+                    viewIndexInSession: viewIndexInSession,
+                    isDeltaBaseline: dependencies.featureFlags[.viewUpdates],
+                    isRestored: isRestored
                 )
-                // Only promote to baseline if the event will not be dropped by RUMViewEventsFilter.
-                // The filter discards events where indexInSession == 0 AND duration == 1ns — the initial
-                // view's placeholder written when command.time == viewStartTime. Storing that dropped event
-                // as baseline would produce deltas against an event the backend never received.
-                // Subsequent views' 1ns start event is kept by the filter, so it is safe as baseline.
-                if dependencies.featureFlags[.viewUpdates],
-                   viewIndexInSession != 0 || event.view.timeSpent > Constants.minimumTimeSpent.dd.toInt64Nanoseconds {
+                writer.write(value: event, metadata: metadata, completion: completionHandler)
+                // A discarded placeholder cannot become a delta baseline.
+                if dependencies.featureFlags[.viewUpdates], !metadata.isInitialPlaceholder {
                     lastSentViewEvent = event
                     consecutiveViewUpdatesCount = 0
                 }
