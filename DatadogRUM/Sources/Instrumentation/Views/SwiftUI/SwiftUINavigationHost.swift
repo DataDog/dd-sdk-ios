@@ -421,8 +421,8 @@ internal final class RUMSemanticNavigationHostState {
             return
         }
         observer?.markSceneDisconnected(scene)
-        // The handler owns the scene's stop; this only releases local resources.
-        finish(stopOccurrence: false)
+        // The handler owns the scene's stop. Keep the last destination for a reader that remounts without publisher replay.
+        finish(stopOccurrence: false, retainObservedDestination: true)
     }
 
     private var sceneIdentifier: RUMSceneIdentifier? {
