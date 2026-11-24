@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal struct WebViewRecordReceiver: FeatureMessageReceiver {
@@ -23,16 +24,31 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
     let scope: FeatureScope
 
     func receive(message: DatadogInternal.FeatureMessage, from core: DatadogInternal.DatadogCoreProtocol) -> Bool {
-        guard case let .webview(.record(event, view)) = message else {
+        let record: WebViewMessage
+        let receipt: WebViewMessageWithRUMContext?
+        switch message {
+        case .webview(let message):
+            record = message
+            receipt = nil
+        case let .payload(message as WebViewMessageWithRUMContext):
+            record = message.message
+            receipt = message
+        default:
+            return false
+        }
+        guard case let .record(event, view) = record else {
             return false
         }
 
         scope.eventWriteContext { context, writer in
-            // Extract the `RUMContext` or `nil` if RUM session is not sampled:
-            guard
-                let rumContext = context.additionalContext(ofType: RUMCoreContext.self),
-                rumContext.sessionSampler.isSampled
-            else {
+            let current = context.additionalContext(ofType: RUMCoreContext.self)
+            let rumContext: RUMCoreContext?
+            if let receipt {
+                rumContext = receipt.rumContext(in: core, sessionID: current?.sessionID)
+            } else {
+                rumContext = current
+            }
+            guard let rumContext, rumContext.sessionSampler.isSampled else {
                 return
             }
 
