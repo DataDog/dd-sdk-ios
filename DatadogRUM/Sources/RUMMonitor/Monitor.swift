@@ -226,7 +226,7 @@ internal class Monitor: RUMCommandSubscriber {
         command.globalAttributes = attributes
         // process command in event context
         let completesDroppedErrors = isMultiSceneTrackingEnabled
-        featureScope.eventWriteContext { [weak self] context, writer in
+        let write: (DatadogContext, Writer) -> Void = { [weak self] context, writer in
             guard let self = self else {
                 if completesDroppedErrors {
                     (command as? RUMUserActionCommand)?.actionReceipt?.reject()
@@ -289,6 +289,12 @@ internal class Monitor: RUMCommandSubscriber {
                 self.sessionActivitySnapshot = (nil, nil, nil)
                 self.sceneContextSnapshots?.value = SceneContextSnapshots.Value()
             }
+        }
+        if completesDroppedErrors, let error = command as? RUMAddCurrentViewErrorCommand,
+           let scope = featureScope as? any FeatureScopeWriteAdmission {
+            scope.eventWriteContext(bypassConsent: false, onUnavailable: error.completionHandler, write)
+        } else {
+            featureScope.eventWriteContext(write)
         }
 
         // update the core context with rum context
@@ -1017,7 +1023,8 @@ extension Monitor: RUMMonitorViewProtocol {
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentationType: .manual,
-                target: sceneTarget(for: viewController)
+                target: sceneTarget(for: viewController),
+                replacesTrackedControllerOwner: isMultiSceneTrackingEnabled
             )
         )
     }
