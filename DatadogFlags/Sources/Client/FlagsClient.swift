@@ -114,6 +114,7 @@ public final class FlagsClient {
     private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
     private let configuration: Configuration
+    private let trackingConsent: () -> TrackingConsent?
 
     private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
     private static let defaultAssignment = FlagAssignment(
@@ -129,13 +130,15 @@ public final class FlagsClient {
         exposureLogger: any ExposureLogging,
         evaluationLogger: any EvaluationLogging,
         rumFlagEvaluationReporter: any RUMFlagEvaluationReporting,
-        configuration: Configuration = .init()
+        configuration: Configuration = .init(),
+        trackingConsent: @escaping () -> TrackingConsent? = { nil }
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
         self.evaluationLogger = evaluationLogger
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
         self.configuration = configuration
+        self.trackingConsent = trackingConsent
     }
 
     /// Creates a new `FlagsClient` instance.
@@ -300,7 +303,8 @@ public final class FlagsClient {
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
             rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope),
-            configuration: configuration
+            configuration: configuration,
+            trackingConsent: { [observer = feature.trackingConsentObserver] in observer.trackingConsent }
         )
 
         feature.clientRegistry.register(client, named: name)
@@ -501,6 +505,30 @@ extension FlagsClient: FlagsClientInternal {
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         let context = context.extractingAssignmentAuthorization().context
         exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
+    }
+
+    @_spi(Internal)
+    public func admitSnapshotExposure(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext?,
+        sendToDatadog: Bool
+    ) -> FlagSnapshotExposureDecision {
+        guard let context, context.hasTargetingKey, assignment.doLog, assignment.hasExposureKeys else {
+            return .ineligible
+        }
+        let subject = context.extractingAssignmentAuthorization().context
+        // The caller evaluated this assignment, so only granted consent and the native context policy permit a record.
+        guard trackingConsent() == .granted, repository.acceptsCapturedExposure(for: subject) else {
+            return .unavailable
+        }
+        let decision = exposureLogger.logExposure(
+            for: key,
+            assignment: assignment,
+            evaluationContext: subject,
+            sendsToDatadog: sendToDatadog
+        )
+        return decision.isCacheHit ? .duplicate : .admitted
     }
 
     @_spi(Internal)

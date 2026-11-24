@@ -28,6 +28,9 @@ internal protocol FlagsRepositoryProtocol {
     func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
     func assignmentsSnapshot() -> FlagsData?
 
+    /// Whether the native context policy accepts an exposure for a context the caller captured with its own assignment.
+    func acceptsCapturedExposure(for context: FlagsEvaluationContext) -> Bool
+
     func reset()
 
     func flush()
@@ -644,6 +647,24 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     func flagAssignments() -> [String: FlagAssignment]? {
         assignmentsSnapshot()?.flags
+    }
+
+    func acceptsCapturedExposure(for context: FlagsEvaluationContext) -> Bool {
+        let state = repositoryState
+        if state.experimentationOptOutMode != .disabled {
+            // The caller cannot attest that the server authorized an assignment for an opted-out subject.
+            guard context.attributes[ExperimentationOptOut.contextAttribute] == nil,
+                  state.latestRequestedContext == context else {
+                return false
+            }
+        }
+        if state.assignmentSubjectIsolationRequired {
+            guard let requested = state.latestRequestedContext,
+                  requested.targetingKey.utf8.elementsEqual(context.targetingKey.utf8) else {
+                return false
+            }
+        }
+        return true
     }
 
     func assignmentsSnapshot() -> FlagsData? {

@@ -947,3 +947,58 @@ private final class FirstFlagsLoopbackServer {
         }
     }
 }
+
+final class SnapshotExposureIntegrationTests: XCTestCase {
+    private let context = FlagsEvaluationContext(targetingKey: "subject", attributes: [:])
+    private let assignment = FlagAssignment(
+        allocationKey: "allocation",
+        variationKey: "on",
+        variation: .boolean(true),
+        reason: "TARGETING_MATCH",
+        doLog: true,
+        serialID: 3,
+        observeFullEvaluationData: false,
+        snapshotFeatures: [
+            FlagSnapshotFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"]),
+            FlagSnapshotFeature(key: "holdout.assignment_group", value: .string("treatment"), destinations: ["EXPOSURE"]),
+        ]
+    )
+
+    private func makeClient(consent: TrackingConsent, trackExposures: Bool = true) throws -> (DatadogCoreProxy, FlagsClientInternal) {
+        let core = DatadogCoreProxy(context: .mockWith(trackingConsent: consent))
+        Flags.enable(with: .init(trackExposures: trackExposures, trackEvaluations: false), in: core)
+        let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+        let observer = try XCTUnwrap(core.feature(named: FlagsFeature.name, type: FlagsFeature.self)?.trackingConsentObserver)
+        let delivered = expectation(for: NSPredicate { _, _ in observer.trackingConsent == consent }, evaluatedWith: nil)
+        wait(for: [delivered], timeout: 5)
+        return (core, client)
+    }
+
+    func testGrantedConsentAdmitsAndSendsTheSuppliedAssignmentOnce() throws {
+        let (core, client) = try makeClient(consent: .granted)
+        defer { try? core.flushAndTearDown() }
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment, context: context, sendToDatadog: true), .admitted)
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment, context: context, sendToDatadog: true), .duplicate)
+
+        let exposures = core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self)
+        XCTAssertEqual(exposures.count, 1)
+        XCTAssertEqual(exposures.first?.serialID, 3)
+        XCTAssertEqual(exposures.first?.features, ["holdout.assignment_group": .string("treatment")])
+    }
+
+    func testPendingConsentIsUnavailable() throws {
+        let (core, client) = try makeClient(consent: .pending)
+        defer { try? core.flushAndTearDown() }
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment, context: context, sendToDatadog: true), .unavailable)
+    }
+
+    func testDisabledExposureTrackingAdmitsWithoutSending() throws {
+        let (core, client) = try makeClient(consent: .granted, trackExposures: false)
+        defer { try? core.flushAndTearDown() }
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment, context: context, sendToDatadog: true), .admitted)
+        XCTAssertEqual(core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self).count, 0)
+    }
+}

@@ -102,7 +102,7 @@ extension FlagsEvaluationContext {
         guard mode != .disabled else {
             return nil
         }
-        guard let value = attributes["dd_experimentation_opt_out_at"] else {
+        guard let value = attributes[ExperimentationOptOut.contextAttribute] else {
             return nil
         }
         guard case .string(let timestamp) = value else { throw FlagsError.invalidContext }
@@ -132,6 +132,8 @@ internal struct AssignmentAuthorization {
 }
 
 internal enum ExperimentationOptOut: Equatable, Codable {
+    static let contextAttribute = "dd_experimentation_opt_out_at"
+
     case immediate
     case futureExperimentsOnly(cutoff: OptOutInstant)
 

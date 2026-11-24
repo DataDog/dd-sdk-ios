@@ -4680,3 +4680,60 @@ extension FlagsRepositoryTests {
         }
     }
 }
+
+final class CapturedExposurePolicyTests: XCTestCase {
+    private func makeRepository(mode: FlagsClient.ExperimentationOptOutMode) -> FlagsRepository {
+        FlagsRepository(
+            clientName: UUID().uuidString,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            experimentationOptOutMode: mode
+        )
+    }
+
+    private let subject = FlagsEvaluationContext(targetingKey: "subject", attributes: ["plan": .string("pro")])
+    private let other = FlagsEvaluationContext(targetingKey: "other", attributes: [:])
+
+    func testWithoutOptOutEnforcementOrIsolationAnyCapturedContextIsAccepted() {
+        let repository = makeRepository(mode: .disabled)
+        defer { repository.flush() }
+        let marked = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")])
+
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: subject))
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: marked))
+        repository.setEvaluationContext(subject) { _ in }
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: other))
+    }
+
+    func testOptOutEnforcementAcceptsOnlyTheCurrentValidUnmarkedRequest() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let repository = makeRepository(mode: mode)
+            defer { repository.flush() }
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: subject), "\(mode): no request")
+
+            repository.setEvaluationContext(subject) { _ in }
+            XCTAssertTrue(repository.acceptsCapturedExposure(for: subject), "\(mode)")
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: other), "\(mode)")
+
+            let marked = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")])
+            repository.setEvaluationContext(marked) { _ in }
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: marked), "\(mode): opt-out marker")
+
+            let invalid = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .string("not a time")])
+            repository.setEvaluationContext(invalid) { _ in }
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: subject), "\(mode): invalid request")
+        }
+    }
+
+    func testSubjectIsolationAcceptsOnlyTheRequestedSubject() {
+        let repository = makeRepository(mode: .disabled)
+        defer { repository.flush() }
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_assignment_token": .string("token")])) { _ in }
+
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: subject))
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: FlagsEvaluationContext(targetingKey: "subject", attributes: [:])))
+        XCTAssertFalse(repository.acceptsCapturedExposure(for: other))
+    }
+}

@@ -66,6 +66,19 @@ public protocol FlagsClientInternal: AnyObject {
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext)
+
+    /// Records the exposure of an assignment that the caller evaluated, in the cache that native evaluations use.
+    /// `context` is the context the caller captured with the assignment; `nil` means the evaluation has no subject.
+    /// With `sendToDatadog` set to `false`, the call records in the cache and writes no event.
+    /// Does not read the client's assignments, record an evaluation event, or report to RUM.
+    /// > Warning: This is an internal method and can break in the future.
+    @_spi(Internal)
+    func admitSnapshotExposure(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext?,
+        sendToDatadog: Bool
+    ) -> FlagSnapshotExposureDecision
 }
 
 extension FlagsClientInternal {
@@ -99,6 +112,16 @@ extension FlagsClientInternal {
     public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
         // no-op
     }
+
+    @_spi(Internal)
+    public func admitSnapshotExposure(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext?,
+        sendToDatadog: Bool
+    ) -> FlagSnapshotExposureDecision {
+        .unavailable
+    }
 }
 
 extension FlagsClientInternal {
@@ -118,6 +141,20 @@ extension FlagsClientInternal {
     ) {
         // no-op
     }
+}
+
+/// The result of `admitSnapshotExposure(key:assignment:context:sendToDatadog:)`.
+@_spi(Internal)
+public enum FlagSnapshotExposureDecision: Equatable {
+    /// The cache recorded a new or changed assignment for the subject and flag. A record-only call is admitted too.
+    case admitted
+    /// The cache already held this allocation, variant and serial ID for the subject and flag.
+    case duplicate
+    /// The evaluation has no subject, logs no exposures, or has a blank allocation key or variant.
+    case ineligible
+    /// The client cannot decide: it lacks support, the tracking consent is other than granted,
+    /// or the native context policy rejects the captured context.
+    case unavailable
 }
 
 /// The exposure decision of one evaluation, for the Datadog OpenFeature provider.
