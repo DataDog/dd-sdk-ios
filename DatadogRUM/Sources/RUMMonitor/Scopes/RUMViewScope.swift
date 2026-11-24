@@ -418,6 +418,13 @@ extension RUMViewScope {
         }
     }
 
+    func emitRestoredBaseline(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled else {
+            return
+        }
+        sendViewUpdateEvent(on: command, context: context, writer: writer)
+    }
+
     private func addViewLoadingTime(on command: RUMAddViewLoadingTime) {
         if viewLoadingTime == nil {
             let time = command.time.timeIntervalSince(viewStartTime)
