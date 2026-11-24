@@ -133,6 +133,43 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
     }
 
+    func testCapturedReplayRecordForwardsItsOriginalRUMReceipt() throws {
+        let receiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
+        let owner = RUMContextHandoff.Owner()
+        let context = RUMCoreContext.mockWith(sessionID: UUID(), viewID: nil)
+        let capture = RUMContextHandoff.Capture(owner: owner, value: .init(
+            rumContext: context, sceneIdentifier: "original", hasPendingUserAction: false, excludedUserActionID: nil
+        ))
+
+        emitter.send(
+            body: """
+            {
+              "eventType": "record",
+              "event": { "timestamp": 123 },
+              "view": { "id": "browser-view" }
+            }
+            """,
+            slotId: "slot-1",
+            capture: capture
+        )
+
+        let captured = try XCTUnwrap(receiver.messages.compactMap { message -> WebViewMessageWithRUMContext? in
+            guard case let .payload(payload as WebViewMessageWithRUMContext) = message else {
+                return nil
+            }
+            return payload
+        }.first)
+        guard case let .record(event, view) = captured.message else {
+            return XCTFail("Expected a captured Replay record")
+        }
+        XCTAssertEqual(event["slotId"] as? String, "slot-1")
+        XCTAssertEqual(view.id, "browser-view")
+        XCTAssertTrue(captured.capture.owner === owner)
+        XCTAssertEqual(captured.capture.value.rumContext?.sessionID, context.sessionID)
+    }
+
     // MARK: - Parsing
 
     func testWhenMessageIsInvalid_itReportTheError() throws {

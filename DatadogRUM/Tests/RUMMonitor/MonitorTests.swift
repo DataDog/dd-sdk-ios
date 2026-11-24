@@ -11,7 +11,6 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogCore
-import DatadogCore
 @testable import DatadogRUM
 @testable import TestUtilities
 
@@ -715,6 +714,79 @@ extension MonitorTests {
         XCTAssertEqual(published?.userActionID, representative.userActionID)
     }
 
+    func testBrowserCallbacksSharingAnExpiredSessionUseItsSingleBrowserSuccessor() throws {
+        let elapsed = MonotonicClockMock()
+        let clock = DateProviderMock(now: snapshotDate)
+        let scope = MonitorOwnerScope(deferEventWriteContext: true)
+        scope.base.contextMock = .mockWith(
+            sdkInitDate: snapshotDate,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: snapshotDate),
+            applicationStateHistory: .mockAppInForeground(since: snapshotDate)
+        )
+        let monitor = sceneMonitor(scope: scope, clock: clock, monotonicClock: elapsed)
+        startSnapshotView(monitor, key: "scene-owner", target: .scene(sceneA))
+        scope.base.flushDeferredEventWriteContexts()
+        let predecessor = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        elapsed.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+        let observation = monitor.webViewSessionObservation(for: sceneA)
+        let expiry = try XCTUnwrap(observation.expiry)
+        let capture = RUMContextHandoff.Capture(owner: try XCTUnwrap(scope.rumContextHandoffOwner), value: .init(
+            rumContext: observation.context, sceneIdentifier: sceneA.rawValue, hasPendingUserAction: false, excludedUserActionID: nil
+        ))
+        var written: [String] = []
+        let renewal = RUMWebViewSessionRenewal(expiry: expiry, write: { _, _, context in written.append(context.sessionID) })
+
+        monitor.process(command: RUMKeepSessionAliveCommand(time: snapshotDate, attributes: [:], capture: capture, webViewSessionRenewal: renewal))
+        monitor.process(command: RUMKeepSessionAliveCommand(time: snapshotDate, attributes: [:], capture: capture, webViewSessionRenewal: renewal))
+        scope.base.flushDeferredEventWriteContexts()
+
+        let successor = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+        XCTAssertNotEqual(successor, predecessor.sessionID)
+        XCTAssertEqual(written, [successor, successor])
+
+        monitor.stopSession()
+        scope.base.flushDeferredEventWriteContexts()
+        startSnapshotView(monitor, key: "independent-session", target: .scene(sceneA))
+        scope.base.flushDeferredEventWriteContexts()
+        XCTAssertNotEqual(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat, successor)
+        monitor.process(command: RUMKeepSessionAliveCommand(time: snapshotDate, attributes: [:], capture: capture, webViewSessionRenewal: renewal))
+        scope.base.flushDeferredEventWriteContexts()
+        XCTAssertEqual(written, [successor, successor])
+    }
+
+    func testBrowserExpiryObservationUsesTheOriginalSceneWhenQueuedNativeActivityKeepsItAlive() throws {
+        let elapsed = MonotonicClockMock()
+        let clock = DateProviderMock(now: snapshotDate)
+        let scope = MonitorOwnerScope(deferEventWriteContext: true)
+        scope.base.contextMock = .mockWith(
+            sdkInitDate: snapshotDate,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: snapshotDate),
+            applicationStateHistory: .mockAppInForeground(since: snapshotDate)
+        )
+        let monitor = sceneMonitor(scope: scope, clock: clock, monotonicClock: elapsed)
+        startSnapshotView(monitor, key: "scene-owner", target: .scene(sceneA))
+        startSnapshotView(monitor, key: "peer", target: .scene(sceneB))
+        scope.base.flushDeferredEventWriteContexts()
+        let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        elapsed.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        monitor.addAction(type: .custom, name: "already queued in the peer", attributes: [:], explicitTarget: .scene(sceneB))
+        elapsed.advance(by: 2)
+
+        let observation = monitor.webViewSessionObservation(for: sceneA)
+        let expiry = try XCTUnwrap(observation.expiry)
+        let capture = RUMContextHandoff.Capture(owner: try XCTUnwrap(scope.rumContextHandoffOwner), value: .init(
+            rumContext: observation.context, sceneIdentifier: sceneA.rawValue, hasPendingUserAction: false, excludedUserActionID: nil
+        ))
+        var written: [RUMCoreContext] = []
+        let renewal = RUMWebViewSessionRenewal(expiry: expiry, write: { _, _, context in written.append(context) })
+        monitor.process(command: RUMKeepSessionAliveCommand(time: snapshotDate, attributes: [:], capture: capture, webViewSessionRenewal: renewal))
+        scope.base.flushDeferredEventWriteContexts()
+
+        XCTAssertEqual(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat, original.sessionID)
+        XCTAssertEqual(written.map(\.sessionID), [original.sessionID])
+        XCTAssertEqual(written.map(\.viewID), [original.viewID])
+    }
+
     func testSceneSnapshots_publishOnlyAfterDeferredCommandProcessing() throws {
         let scope = FeatureScopeMock(deferEventWriteContext: true)
         let monitor = sceneMonitor(scope: scope, clock: DateProviderMock(now: snapshotDate))
@@ -1305,7 +1377,12 @@ extension MonitorTests {
 }
 
 private final class MonitorOwnerScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
-    let base = FeatureScopeMock()
+    let base: FeatureScopeMock
+
+    init(deferEventWriteContext: Bool = false) {
+        base = FeatureScopeMock(deferEventWriteContext: deferEventWriteContext)
+    }
+
     private let owner = RUMContextHandoff.Owner()
     var ownerReads = 0
     var writes = 0
