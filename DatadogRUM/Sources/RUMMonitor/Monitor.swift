@@ -638,15 +638,16 @@ extension Monitor: RUMContextSnapshotProviding {
         guard let context = sceneContext ?? snapshot.representative, context.sessionID == snapshot.sessionID else {
             return (nil, nil)
         }
-        if RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now)
-            || RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now) {
-            return (nil, .init(sessionID: context.sessionID, observedAt: now))
-        }
         let sessionContext = sceneContext ?? RUMCoreContext(
             applicationID: context.applicationID,
             sessionID: context.sessionID,
             sessionSampler: context.sessionSampler
         )
+        if RUMSessionScope.hasExpired(sessionStart: sessionStart, now: now)
+            || RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now) {
+            // The Core queue may already contain native work that keeps this exact session live.
+            return (sessionContext, .init(sessionID: context.sessionID, observedAt: now))
+        }
         return (sessionContext, nil)
     }
 
