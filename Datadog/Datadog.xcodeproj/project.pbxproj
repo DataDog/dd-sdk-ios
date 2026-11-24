@@ -102,7 +102,7 @@
 		1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */; };
 		1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
 		1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD042F00000000297156 /* ProfilingSessionMetric.swift */; };
-		1121FD072F00000100297156 /* AggregationDiagnosticsMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD062F00000100297156 /* AggregationDiagnosticsMetric.swift */; };
+		1121FD072F00000100297156 /* ProfilingDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD062F00000100297156 /* ProfilingDiagnostics.swift */; };
 		1124D5302EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5322EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */; };
 		1124D5382EA6D4390002E053 /* RUMAppLaunchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */; };
@@ -129,13 +129,14 @@
 		1150CB04308BB910007338C7 /* MemoryProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150CB03308BB910007338C7 /* MemoryProfilerTests.swift */; };
 		1150CB0A308E1D0D007338C7 /* ThreadingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150CB09308E1D0D007338C7 /* ThreadingTests.swift */; };
 		11522CC72F8B90E000752E87 /* DatadogProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */; };
+		1152B72D30AA196300694EC8 /* ProfileSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B72C30AA196300694EC8 /* ProfileSnapshot.swift */; };
+		1152B72F30AA614900694EC8 /* ProfilingScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */; };
+		1152B73130AA614D00694EC8 /* ProfilingSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */; };
 		1152B73330AB984300694EC8 /* Profiling+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73230AB984300694EC8 /* Profiling+objc.swift */; };
 		1152B73530AB985200694EC8 /* DDProfilingConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73430AB985200694EC8 /* DDProfilingConfigurationTests.swift */; };
 		1152B73730AB987900694EC8 /* DDProfilingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73630AB987900694EC8 /* DDProfilingTests.swift */; };
 		1152B73930AB988600694EC8 /* DDProfiling+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73830AB988600694EC8 /* DDProfiling+apiTests.m */; };
-		1152B72D30AA196300694EC8 /* ProfileSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B72C30AA196300694EC8 /* ProfileSnapshot.swift */; };
-		1152B72F30AA614900694EC8 /* ProfilingScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */; };
-		1152B73130AA614D00694EC8 /* ProfilingSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */; };
+		1152B73B30B20BF900694EC8 /* MemoryDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1152B73A30B20BF900694EC8 /* MemoryDiagnostics.swift */; };
 		115624BD3067CF10007FBEB2 /* ProfilingRequestBuilderError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115624BC3067CF0F007FBEB2 /* ProfilingRequestBuilderError.swift */; };
 		115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 115792E12F4504E900AEE829 /* binary_image_resolver.cpp */; };
 		115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 115792E42F4504F700AEE829 /* binary_image_resolver.h */; };
@@ -447,6 +448,7 @@
 		4BDA9ACABD194508802E4600 /* HasReplayMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5720D67B13FE4984A00AE45A /* HasReplayMessageReceiverTests.swift */; };
 		5312D4AA15DFCC53337FEAE6 /* yuv.c in Sources */ = {isa = PBXBuildFile; fileRef = F17266C1918588ABF3D9B85A /* yuv.c */; };
 		550C6C1ADC59057C0C2DBEA8 /* upsampling_neon.c in Sources */ = {isa = PBXBuildFile; fileRef = 9DEDBABDB2767A31D3BA1080 /* upsampling_neon.c */; };
+		58D82F9D278643F93029F85F /* TaskVMInfoMemoryReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4226F7487F7346047E8FD295 /* TaskVMInfoMemoryReaderTests.swift */; };
 		5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */; };
 		5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */; };
 		5B0E0626300637B5004CF4D3 /* NSObject+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E0625300637A8004CF4D3 /* NSObject+SessionReplay.swift */; };
@@ -1033,11 +1035,10 @@
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9EC6A08AD3CC41ABFFA16C2E /* TimeseriesMemoryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4457540C93003257220BC2C6 /* TimeseriesMemoryReader.swift */; };
 		9F068CB77F21FDCB430E8231 /* lossless_avx2.c in Sources */ = {isa = PBXBuildFile; fileRef = 40A437790F2B278907EBD845 /* lossless_avx2.c */; };
 		A01D384CBDE4FFDC49CCD424 /* HeatmapIdentifierRegistryFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9F4D5BEEE5E977A58E2034 /* HeatmapIdentifierRegistryFeature.swift */; };
 		A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */; };
-		9EC6A08AD3CC41ABFFA16C2E /* TimeseriesMemoryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4457540C93003257220BC2C6 /* TimeseriesMemoryReader.swift */; };
-		58D82F9D278643F93029F85F /* TaskVMInfoMemoryReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4226F7487F7346047E8FD295 /* TaskVMInfoMemoryReaderTests.swift */; };
 		A0A0A0A0A0A0A0A0A0A00008 /* TimeseriesSessionCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */; };
 		A0A0A0A0A0A0A0A0A0A0000A /* TimeseriesConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00009 /* TimeseriesConfigurationTests.swift */; };
 		A1B2C3D42F90000100ABCDEF /* aggregation_worker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */; };
@@ -2229,7 +2230,7 @@
 		1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryController.swift; sourceTree = "<group>"; };
 		1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMetric.swift; sourceTree = "<group>"; };
 		1121FD042F00000000297156 /* ProfilingSessionMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingSessionMetric.swift; sourceTree = "<group>"; };
-		1121FD062F00000100297156 /* AggregationDiagnosticsMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregationDiagnosticsMetric.swift; sourceTree = "<group>"; };
+		1121FD062F00000100297156 /* ProfilingDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingDiagnostics.swift; sourceTree = "<group>"; };
 		1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandler.swift; sourceTree = "<group>"; };
 		1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManagerTests.swift; sourceTree = "<group>"; };
 		1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManager.swift; sourceTree = "<group>"; };
@@ -2256,13 +2257,14 @@
 		1150CB03308BB910007338C7 /* MemoryProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryProfilerTests.swift; sourceTree = "<group>"; };
 		1150CB09308E1D0D007338C7 /* ThreadingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadingTests.swift; sourceTree = "<group>"; };
 		11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfilerTests.swift; sourceTree = "<group>"; };
+		1152B72C30AA196300694EC8 /* ProfileSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSnapshot.swift; sourceTree = "<group>"; };
+		1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingScheduler.swift; sourceTree = "<group>"; };
+		1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingSchedulerTests.swift; sourceTree = "<group>"; };
 		1152B73230AB984300694EC8 /* Profiling+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Profiling+objc.swift"; sourceTree = "<group>"; };
 		1152B73430AB985200694EC8 /* DDProfilingConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDProfilingConfigurationTests.swift; sourceTree = "<group>"; };
 		1152B73630AB987900694EC8 /* DDProfilingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDProfilingTests.swift; sourceTree = "<group>"; };
 		1152B73830AB988600694EC8 /* DDProfiling+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDProfiling+apiTests.m"; sourceTree = "<group>"; };
-		1152B72C30AA196300694EC8 /* ProfileSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSnapshot.swift; sourceTree = "<group>"; };
-		1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingScheduler.swift; sourceTree = "<group>"; };
-		1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */ = {isa = PBXFileReference; path = ProfilingSchedulerTests.swift; sourceTree = "<group>"; };
+		1152B73A30B20BF900694EC8 /* MemoryDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDiagnostics.swift; sourceTree = "<group>"; };
 		115624BC3067CF0F007FBEB2 /* ProfilingRequestBuilderError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingRequestBuilderError.swift; sourceTree = "<group>"; };
 		115792E12F4504E900AEE829 /* binary_image_resolver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = binary_image_resolver.cpp; sourceTree = "<group>"; };
 		115792E42F4504F700AEE829 /* binary_image_resolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_image_resolver.h; sourceTree = "<group>"; };
@@ -2528,7 +2530,9 @@
 		3F4479EB0ECDBB1B19C92159 /* mux_types.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = mux_types.h; sourceTree = "<group>"; };
 		4005D278E688BF6C2B2D71B1 /* cpu.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = cpu.h; sourceTree = "<group>"; };
 		40A437790F2B278907EBD845 /* lossless_avx2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = lossless_avx2.c; sourceTree = "<group>"; };
+		4226F7487F7346047E8FD295 /* TaskVMInfoMemoryReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskVMInfoMemoryReaderTests.swift; sourceTree = "<group>"; };
 		42F610A698379D300D06E515 /* HeatmapIdentifierComputationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierComputationTests.swift; sourceTree = "<group>"; };
+		4457540C93003257220BC2C6 /* TimeseriesMemoryReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesMemoryReader.swift; sourceTree = "<group>"; };
 		490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSketchTests.swift; sourceTree = "<group>"; };
 		49164B1875ABC5BEE582BF49 /* dec.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = dec.c; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalProxyTests.swift; sourceTree = "<group>"; };
@@ -3278,8 +3282,6 @@
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		9FF11500C676B73C6526324D /* COPYING */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollector.swift; sourceTree = "<group>"; };
-		4457540C93003257220BC2C6 /* TimeseriesMemoryReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesMemoryReader.swift; sourceTree = "<group>"; };
-		4226F7487F7346047E8FD295 /* TaskVMInfoMemoryReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskVMInfoMemoryReaderTests.swift; sourceTree = "<group>"; };
 		A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollectorTests.swift; sourceTree = "<group>"; };
 		A0A0A0A0A0A0A0A0A0A00009 /* TimeseriesConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesConfigurationTests.swift; sourceTree = "<group>"; };
 		A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = aggregation_worker.cpp; sourceTree = "<group>"; };
@@ -4182,10 +4184,11 @@
 		1121FCFA2EE305D900297156 /* SDKMetrics */ = {
 			isa = PBXGroup;
 			children = (
-				1121FD062F00000100297156 /* AggregationDiagnosticsMetric.swift */,
+				1121FD062F00000100297156 /* ProfilingDiagnostics.swift */,
 				1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */,
 				1121FD042F00000000297156 /* ProfilingSessionMetric.swift */,
 				1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */,
+				1152B73A30B20BF900694EC8 /* MemoryDiagnostics.swift */,
 			);
 			path = SDKMetrics;
 			sourceTree = "<group>";
@@ -10144,7 +10147,7 @@
 				D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
 				115624BD3067CF10007FBEB2 /* ProfilingRequestBuilderError.swift in Sources */,
-				1121FD072F00000100297156 /* AggregationDiagnosticsMetric.swift in Sources */,
+				1121FD072F00000100297156 /* ProfilingDiagnostics.swift in Sources */,
 				1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */,
 				1150CAF4308283DF007338C7 /* memory_pprof.cpp in Sources */,
 				1150CAFC308BB7FE007338C7 /* memory_profiler.cpp in Sources */,
@@ -10166,6 +10169,7 @@
 				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* dd_profiler.cpp in Sources */,
 				1152B73330AB984300694EC8 /* Profiling+objc.swift in Sources */,
+				1152B73B30B20BF900694EC8 /* MemoryDiagnostics.swift in Sources */,
 				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
 				1188486F2F717EEF008D2919 /* ProfilingConditions.swift in Sources */,
 				115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */,

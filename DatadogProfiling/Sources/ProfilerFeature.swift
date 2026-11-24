@@ -63,7 +63,8 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         let memoryProfiler = MemoryProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
             writer: writer,
-            scheduler: profilingScheduler
+            scheduler: profilingScheduler,
+            telemetryController: telemetryController
         )
         self.memoryProfiler = memoryProfiler
 
