@@ -11,7 +11,6 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogCore
-import DatadogCore
 @testable import DatadogRUM
 @testable import TestUtilities
 
