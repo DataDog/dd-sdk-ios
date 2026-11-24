@@ -222,7 +222,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 customTimings: [:],
                 startTime: startTime,
                 serverTimeOffset: viewScope.serverTimeOffset,
-                hasReplay: context.hasReplay
+                hasReplay: context.hasReplay,
+                sceneIdentifier: sceneState == nil ? nil : viewScope.sceneIdentifier
             )
         }
 
@@ -266,6 +267,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Transfer active View to new `RUMViewScope`:
         if transferActiveView {
             if let lastActiveView = expiredSession.viewScopes.last(where: { $0.isActiveView }) {
+                let scene = sceneState == nil ? nil : lastActiveView.sceneIdentifier
                 let activeView = RUMViewScope(
                     isInitialView: false,
                     parent: self,
@@ -276,8 +278,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     customTimings: lastActiveView.customTimings,
                     startTime: startTime,
                     serverTimeOffset: context.serverTimeOffset,
-                    interactionToNextViewMetric: interactionToNextViewMetric,
-                    viewIndexInSession: nextViewIndex
+                    interactionToNextViewMetric: metric(for: scene),
+                    viewIndexInSession: nextViewIndex,
+                    sceneIdentifier: scene
                 )
                 self.viewScopes = [activeView]
                 self.activeView = activeView
@@ -285,7 +288,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     id: activeView.viewUUID.toRUMDataFormat,
                     timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
                     hasReplay: context.hasReplay,
-                    isActive: true
+                    isActive: true,
+                    sceneIdentifier: scene
                 )
                 nextViewIndex += 1
             } else {
