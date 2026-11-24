@@ -986,8 +986,8 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         self.notificationCenter = notificationCenter
         self.coordinatorProvider = coordinatorProvider
         self.admitsCallbacks = admitsCallbacks
-        let discardDisconnectedScene: @MainActor @Sendable (@MainActor () -> UIWindowScene?) -> Void = { [weak self] sceneProvider in
-            guard let self, self.admitsCallbacks(), let scene = sceneProvider() else {
+        let discardDisconnectedScene: @MainActor @Sendable (UIWindowScene) -> Void = { [weak self] scene in
+            guard let self, self.admitsCallbacks() else {
                 return
             }
             self.discard(sceneIdentifier: RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier))
@@ -998,9 +998,11 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             queue: .main
         ) { notification in
             // Notification delivery is not actor proof. UIKit inspection occurs in owned main delivery.
-            weak var scene = notification.object as? UIWindowScene
-            DispatchQueue.main.async { [weak scene] in
-                discardDisconnectedScene { scene }
+            guard let scene = notification.object as? UIWindowScene else {
+                return
+            }
+            DispatchQueue.main.async {
+                discardDisconnectedScene(scene)
             }
         }
     }
