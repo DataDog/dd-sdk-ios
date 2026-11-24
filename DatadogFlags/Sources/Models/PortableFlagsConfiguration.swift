@@ -78,7 +78,9 @@ internal struct PortableFlagsConfiguration {
                 experimentationOptOut: parsed.experimentationOptOut,
                 experimentationOptOutMode: parsed.experimentationOptOutMode,
                 experimentationOptOutAt: parsed.experimentationOptOutAt,
-                hasMalformedOptOutMetadata: parsed.hasMalformedOptOutMetadata
+                hasMalformedOptOutMetadata: parsed.hasMalformedOptOutMetadata,
+                // Keeps evaluation telemetry consent, as the network parser does.
+                observeFullEvaluationData: parsed.observeFullEvaluationData
             )
         }
 

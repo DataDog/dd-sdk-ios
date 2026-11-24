@@ -45,6 +45,8 @@ final class PortableFlagsConfigurationTests: XCTestCase {
             XCTAssertEqual(precomputed.assignments.flags["flag"]?.reason, "TARGETING_MATCH")
             XCTAssertEqual(precomputed.assignments.flags["flag"]?.doLog, true)
             XCTAssertEqual(precomputed.assignments.experimentationOptOut, true)
+            XCTAssertTrue(precomputed.assignments.observeFullEvaluationData)
+            XCTAssertEqual(precomputed.assignments.flags["flag"]?.observeFullEvaluationData, true)
             XCTAssertEqual(output.precomputed?.assignments, precomputed.assignments)
             XCTAssertEqual(output.precomputed?.context, precomputed.context)
             XCTAssertEqual(output.precomputed?.response, precomputed.response)
