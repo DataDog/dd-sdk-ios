@@ -1116,6 +1116,39 @@ extension MonitorTests {
     }
 
     @MainActor
+    func testControllerRestart_movesItsViewToTheNewOwnerAndStopsThere() throws {
+        for afterSessionStop in [false, true] {
+            let clock = DateProviderMock(now: snapshotDate)
+            let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+            var inferred: RUMContextHandoff.CurrentValue?
+            let monitor = navigationMonitor(clock: clock, cache: cache) { inferred }
+            let controller = MonitorControllerReadSpy()
+            monitor.startView(viewController: controller, name: "detached", attributes: [:])
+            let detached = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+            let oldID = RUMUUID(rawValue: try XCTUnwrap(UUID(uuidString: detached)))
+            startSnapshotView(monitor, key: "peer", target: .scene(sceneB))
+            if afterSessionStop {
+                monitor.stopSession()
+                clock.now = clock.now.addingTimeInterval(1)
+            }
+
+            inferred = .init(rumContext: nil, sceneIdentifier: sceneA.rawValue, hasPendingUserAction: false, excludedUserActionID: nil)
+            monitor.startView(viewController: controller, name: "attached", attributes: [:])
+
+            let current = try XCTUnwrap(monitor.applicationScope.activeSession)
+            XCTAssertEqual(current.viewScopes.filter { $0.isActiveView && $0.identity == ViewIdentifier(controller) }.map(\.sceneIdentifier), [sceneA])
+            XCTAssertNil(monitor.rumContextSnapshot(for: .view(oldID)))
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "attached")
+
+            inferred = nil
+            monitor.stopView(viewController: controller, attributes: [:])
+
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewName, "peer")
+        }
+    }
+
+    @MainActor
     func testControllerStop_whenDetached_finishesOnlyItsTrackedScene() throws {
         for afterSessionStop in [false, true] {
             let clock = DateProviderMock(now: snapshotDate)

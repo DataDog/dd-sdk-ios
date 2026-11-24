@@ -948,7 +948,8 @@ extension Monitor: RUMMonitorViewProtocol {
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentationType: .manual,
-                target: sceneTarget(for: viewController)
+                target: sceneTarget(for: viewController),
+                replacesTrackedControllerOwner: isMultiSceneTrackingEnabled
             )
         )
     }
