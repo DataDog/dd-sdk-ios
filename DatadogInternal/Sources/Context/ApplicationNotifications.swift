@@ -75,9 +75,11 @@ public enum ApplicationNotifications {
     public static var didUnhide: Notification.Name {
         NSApplication.didUnhideNotification
     }
+    #endif
 
+    #if !os(watchOS)
     public static var willTerminate: Notification.Name {
-        NSApplication.willTerminateNotification
+        DDApplication.willTerminateNotification
     }
     #endif
 }

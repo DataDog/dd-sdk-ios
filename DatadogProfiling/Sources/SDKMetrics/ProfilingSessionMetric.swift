@@ -26,6 +26,11 @@ internal final class ProfilingSessionMetric {
         static let quotaErrorMessage = "Profile was not written because profiling quota rejected the session."
     }
 
+    enum ProfileType: String {
+        case cpu
+        case memory
+    }
+
     enum StartReason: String {
         case applicationLaunch = "application_launch"
         case continuous = "continuous"
@@ -118,7 +123,7 @@ internal final class ProfilingSessionMetric {
         self.appStartInfo = appStartInfo
     }
 
-    func asMetricAttributes() -> [String: Encodable]? {
+    func asMetricAttributes(profileTypes: [ProfileType] = [.cpu]) -> [String: Encodable]? {
         var stoppedReason: String?
         var errorMessage = self.errorMessage
 
@@ -138,6 +143,7 @@ internal final class ProfilingSessionMetric {
         return [
             SDKMetricFields.typeKey: Constants.typeValue,
             Constants.sessionKey: Attributes(
+                profileTypes: profileTypes.map(\.rawValue),
                 startReason: startReason.rawValue,
                 duration: durationMs,
                 errorCode: errorCode.rawValue,
@@ -226,6 +232,7 @@ extension ProfilingSessionMetric {
 extension ProfilingSessionMetric {
     /// Container to encode Profiling Session data according to the spec.
     internal struct Attributes: Encodable {
+        let profileTypes: [String]
         let startReason: String
         /// Profile duration in milliseconds.
         let duration: Int64?
@@ -237,6 +244,7 @@ extension ProfilingSessionMetric {
         let appStartInfo: String?
 
         enum CodingKeys: String, CodingKey {
+            case profileTypes = "profile_types"
             case startReason = "start_reason"
             case duration = "duration"
             case errorCode = "error_code"

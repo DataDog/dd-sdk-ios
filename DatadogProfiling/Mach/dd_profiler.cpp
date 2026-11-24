@@ -254,7 +254,6 @@ public:
     ~dd_profiler() {
         delete profiler;
         delete profile;
-        delete image_cache;
     }
 
     /**
@@ -264,12 +263,7 @@ public:
         // Create and populate the binary image cache early, before sampling starts.
         // This pre-loads binary image metadata (UUID, filename) for all currently
         // loaded images and watches for new ones via dyld notifications.
-        image_cache = new (std::nothrow) binary_image_cache();
-        // if cache allocation/start fails, keep profiling running
-        if (!image_cache || !image_cache->load()) {
-            delete image_cache;
-            image_cache = nullptr;
-        }
+        image_cache = shared_binary_image_cache();
 
         if (is_prewarming) {
             status = DD_PROFILER_STATUS_PREWARMED;
@@ -312,7 +306,6 @@ public:
             profiler = nullptr;
             delete profile;
             profile = nullptr;
-            delete image_cache;
             image_cache = nullptr;
         }
     }
@@ -459,6 +452,10 @@ private:
 
         if (profiler) return true;
 
+        // Manual starts after teardown also reuse the process-wide cache.
+        // A cache initialization failure retains the existing uncached fallback.
+        if (!image_cache) image_cache = shared_binary_image_cache();
+
         profile = new (std::nothrow) dd::profiler::profile(
             sampling_interval_ns,
             DD_PROFILER_RECORD_CPU_TIME
@@ -486,7 +483,7 @@ private:
 
     mach_sampling_profiler* profiler = nullptr;
     profile* profile = nullptr;
-    binary_image_cache* image_cache = nullptr;
+    binary_image_cache* image_cache = nullptr; // Borrowed process-wide image metadata.
     double sample_rate = 0.0;
     bool is_prewarming = false;
     int64_t timeout_ns = DD_PROFILER_TIMEOUT_NS;

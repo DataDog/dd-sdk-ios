@@ -8,10 +8,147 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+import DatadogMachProfiler
 @testable import DatadogProfiling
 
 final class ProfilingTelemetryControllerTests: XCTestCase {
     private let telemetry = TelemetryMock()
+
+    func testContinuousReportsAdvanceTelemetryCycleIndex() throws {
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        controller.sendMemoryDiagnostics(.init(result: .idle, diagnostics: .init()), for: .continuousProfiling)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling, profileTypes: [.memory])
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling, profileTypes: [.cpu, .memory])
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .appLaunch)
+        controller.sendProfileDropped(for: .customProfiling)
+        controller.sendNoData(durationMs: nil, for: .continuousProfiling, profileTypes: [.memory])
+
+        let sessions = telemetry.messages.compactMap {
+            $0.asMetric?.attributes["profiling_session"] as? ProfilingSessionMetric.Attributes
+        }
+        XCTAssertEqual(sessions.map(\.cycleIndex), [0, 1, 2, nil, nil, 3])
+    }
+
+    func testTelemetryResetsMemoryCycleIndexOnlyForANewRUMSession() throws {
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        let firstSession = DatadogContext.mockWith(additionalContext: [RUMCoreContext.mockWith(sessionID: .mockAny())])
+        let secondSession = DatadogContext.mockWith(additionalContext: [RUMCoreContext.mockWith(sessionID: .mockAny())])
+        for context in [firstSession, firstSession, secondSession] {
+            controller.register(context: context)
+            controller.sendMemoryDiagnostics(.init(result: .idle, diagnostics: .init()), for: .continuousProfiling)
+        }
+        let sessions = telemetry.messages.compactMap {
+            $0.asMetric?.attributes["profiling_session"] as? ProfilingSessionMetric.Attributes
+        }
+        XCTAssertEqual(sessions.map(\.cycleIndex), [0, 1, 0])
+    }
+
+    func testExpectedMemoryOutcomesDoNotSendAnErrorMessage() throws {
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        for result: MemoryDiagnostics.CaptureResult in [.idle, .discarded, .stopped] {
+            controller.sendMemoryDiagnostics(.init(result: result, diagnostics: .init()), for: .continuousProfiling)
+            let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
+            XCTAssertNil(metric.errorMessage)
+            XCTAssertEqual(metric.errorCode, 0)
+        }
+    }
+
+    func testCPUConfigurationIsIncludedOnlyForReportsContainingCPU() throws {
+        let configuration = ConfigurationMetric(bufferSize: 123)
+        let controller = ProfilingTelemetryController(telemetry: telemetry, configMetric: configuration)
+        let profileTypes: [[ProfilingSessionMetric.ProfileType]] = [[.cpu], [.memory], [.cpu, .memory]]
+
+        for types in profileTypes {
+            controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling, profileTypes: types)
+            let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+            let encodedConfiguration = metric.attributes[ConfigurationMetric.Constants.configurationKey] as? ConfigurationMetric
+            if types.contains(.cpu) {
+                XCTAssertEqual(encodedConfiguration?.bufferSize, 123)
+            } else {
+                XCTAssertNil(encodedConfiguration)
+            }
+        }
+    }
+
+    func testMemoryDiagnosticsEnrichProfilingSessionWithNumericFields() throws {
+        var native = dd_memory_profiler_diagnostics_t()
+        native.sampled_allocations = 11
+        native.reentrant_skips = 12
+        native.window.recorded_allocations = 13
+        native.window.dropped_alloc_records = 14
+        native.window.peak_recorded_allocations = 15
+        native.window.live_set.occupancy = 16
+        native.window.live_set.peak_occupancy = 17
+        native.window.live_set.dropped_samples = 18
+        native.window.live_set.tombstones = 19
+        native.window.live_set.max_probe_length = 20
+        native.window.live_set.table_bytes = 21
+        native.window.live_set.snapshot_bytes_high_water = 22
+        native.recorder_storage_bytes = 23
+        native.encoder_storage_bytes = 24
+        native.swift_install_result = 25
+        native.objc_install_result = 26
+        native.window.live_set.probe_count = 2
+        native.window.live_set.total_probe_length = 7
+        let memory = MemoryDiagnostics(result: .idle, diagnostics: native)
+        let controller = ProfilingTelemetryController(sampleRate: 37, telemetry: telemetry)
+        controller.sendMemoryDiagnostics(memory, for: .continuousProfiling)
+
+        let sent = try XCTUnwrap(telemetry.messages.lastMetric(named: "Profiling Session"))
+        XCTAssertEqual(sent.sampleRate, 37)
+        XCTAssertNil(sent.attributes[ConfigurationMetric.Constants.configurationKey])
+        let session = try XCTUnwrap(sent.attributes["profiling_session"] as? ProfilingSessionMetric.Attributes)
+        XCTAssertEqual(session.profileTypes, ["memory"])
+        let diagnostics = try XCTUnwrap(sent.attributes["profiling_diagnostics"] as? ProfilingDiagnostics)
+        XCTAssertNil(diagnostics.cpu)
+        let encoded = try JSONEncoder().encode(XCTUnwrap(diagnostics.memory))
+        let values = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        let expected: [String: UInt64] = [
+            "sampled_allocations": 11,
+            "reentrant_skips": 12,
+            "recorded_allocations": 13,
+            "dropped_alloc_records": 14,
+            "live_occupancy": 16,
+            "peak_live_occupancy": 17,
+            "dropped_samples": 18,
+            "tombstones": 19,
+            "max_probe_length": 20,
+            "recorder_storage_bytes": 23,
+            "encoder_storage_bytes": 24,
+            "swift_install_result": 25,
+            "objc_install_result": 26,
+            "payload_bytes": 0
+        ]
+        for (key, value) in expected {
+            XCTAssertEqual((values[key] as? NSNumber)?.uint64Value, value, key)
+        }
+        XCTAssertEqual(values["capture_result"] as? String, "idle")
+        XCTAssertNil(values["total_allocations"])
+        for key in ["outcome", "sampled", "peak_recorded_allocations", "table_bytes", "snapshot_bytes_high_water"] {
+            XCTAssertNil(values[key], key)
+        }
+        XCTAssertEqual(values["average_probe_length"] as? Double, 3.5)
+        XCTAssertTrue(values.filter { $0.key != "capture_result" }.values.allSatisfy { $0 is NSNumber })
+        XCTAssertEqual(telemetry.messages.count, 1)
+    }
+
+    func testMemoryFailureDoesNotUseCPUStatusAndAdvancesTelemetryCycleIndex() throws {
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        controller.sendMemoryDiagnostics(
+            .init(result: .startFailed, diagnostics: .init()),
+            for: .continuousProfiling
+        )
+        let failure = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
+        XCTAssertEqual(failure.profileTypes, ["memory"])
+        XCTAssertEqual(failure.errorCode, ProfilingSessionMetric.ErrorCode.executionFailed.rawValue)
+        XCTAssertEqual(failure.cycleIndex, 0)
+        XCTAssertEqual(failure.errorMessage, "Memory profile: start_failed.")
+
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling)
+        let cpu = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
+        XCTAssertEqual(cpu.profileTypes, ["cpu"])
+        XCTAssertEqual(cpu.cycleIndex, 1)
+    }
 
     func testTrackingAllocationFailure_sendsExecutionFailedWithTelemetryMetadata() throws {
         // Given
@@ -45,7 +182,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         )
         XCTAssertEqual(configuration.bufferSize, 123)
         XCTAssertNotNil(
-            metricTelemetry.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey] as? AggregationDiagnosticsMetric.Attributes
+            metricTelemetry.attributes[ProfilingDiagnostics.Constants.diagnosticsKey] as? ProfilingDiagnostics
         )
     }
 
@@ -238,10 +375,10 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
     }
 
-    func testTrackingProfilingSessionMetric_attachesAggregationDiagnostics() throws {
+    func testTrackingProfilingSessionMetric_attachesCPUDiagnostics() throws {
         // Given
         let controller = ProfilingTelemetryController(telemetry: telemetry)
-        let diagnosticsKey = AggregationDiagnosticsMetric.Constants.diagnosticsKey
+        let diagnosticsKey = ProfilingDiagnostics.Constants.diagnosticsKey
 
         // When
         controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling)
@@ -249,12 +386,16 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
 
         // Then
         let diagnostics = telemetry.messages.compactMap { message in
-            message.asMetric?.attributes[diagnosticsKey] as? AggregationDiagnosticsMetric.Attributes
+            message.asMetric?.attributes[diagnosticsKey] as? ProfilingDiagnostics
         }
         XCTAssertEqual(diagnostics.count, 2)
-        XCTAssertEqual(diagnostics.first?.aggregation.droppedBatchCount, 0)
-        XCTAssertEqual(diagnostics.first?.aggregation.droppedSampleCount, 0)
-        XCTAssertEqual(diagnostics.first?.aggregation.maxPendingBytes, 0)
+        XCTAssertEqual(diagnostics.first?.cpu?.droppedBatchCount, 0)
+        XCTAssertEqual(diagnostics.first?.cpu?.droppedSampleCount, 0)
+        XCTAssertEqual(diagnostics.first?.cpu?.maxPendingBytes, 0)
+        let encoded = try JSONEncoder().encode(XCTUnwrap(diagnostics.first))
+        let fields = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        XCTAssertNotNil(fields["cpu"])
+        XCTAssertNil(fields["aggregation"])
     }
 
     func testSendProfile_usesContinuousStartReason_forContinuousOperation() throws {

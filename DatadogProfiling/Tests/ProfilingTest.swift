@@ -65,7 +65,7 @@ class ProfilingTest: XCTestCase {
         defer { dd_delete_profiling_defaults() }
 
         // Given a remote `profiling` namespace overriding both in-code sample rates
-        let configuration = Profiling.Configuration(applicationLaunchSampleRate: 5, continuousSampleRate: 0)
+        let configuration = Profiling.Configuration(applicationLaunchSampleRate: 5, cpuSampleRate: 0)
         let receiver = FeatureMessageReceiverMock()
         let core = SingleFeatureCoreMock<ProfilerFeature>(messageReceiver: receiver)
         core.remoteConfiguration = .mockWith(profiling: .mockWith(applicationLaunchSampleRate: 100, continuousSampleRate: 37.5))
@@ -94,7 +94,7 @@ class ProfilingTest: XCTestCase {
         let core = SingleFeatureCoreMock<ProfilerFeature>(messageReceiver: receiver)
 
         Profiling.enable(
-            with: .init(applicationLaunchSampleRate: -10, continuousSampleRate: 200),
+            with: .init(applicationLaunchSampleRate: -10, cpuSampleRate: 200),
             in: core
         )
 
