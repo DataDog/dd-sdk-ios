@@ -255,6 +255,19 @@ public enum RUMContextHandoff {
         return try $scope.withValue(Scope(primary: primary, peers: [:], delivery: delivery), operation: operation)
     }
 
+    /// Updates one owner during a UIKit callback while preserving the other owners in that delivery.
+    /// A callback outside a UIKit delivery uses the same isolation as a regular synchronous handoff.
+    public static func withUIKitCallbackValue<T>(
+        _ value: CurrentValue,
+        for owner: Owner,
+        operation: () throws -> T
+    ) rethrows -> T {
+        guard let delivery = scope?.delivery, delivery.isOpen, let event = delivery.event else {
+            return try withValue(value, for: owner, operation: operation)
+        }
+        return try withUIKitDeliveryValue(value, for: owner, event: event, operation: operation)
+    }
+
     /// Binds an asynchronous operation using the caller's isolation and restores the prior binding.
     /// Unsupported systems and absent or invalid owners execute the operation directly.
     /// Automatic customer-callback integration requires separate qualification.
