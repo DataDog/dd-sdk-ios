@@ -293,8 +293,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         if sceneState != nil, context.applicationStateHistory.currentState.isRunningInForeground {
             let foregroundViews = expiredSession.foregroundViewsForRestoration
             let views = viewsToRestore(foregroundViews, on: triggeringCommand, restoreAll: transferActiveView)
-            let tap = triggeringCommand as? RUMAddUserActionCommand
-            restoreViews(views, at: startTime, context: context, actionReceipt: tap?.actionReceipt)
+            let action = triggeringCommand as? RUMUserActionCommand
+            restoreViews(views, at: startTime, context: context, actionReceipt: action?.actionReceipt)
             return
         }
 
