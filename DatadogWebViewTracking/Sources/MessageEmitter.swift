@@ -52,9 +52,10 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
     }
 
     func send(body: Any, slotId: String?, legacyRegistration: RUMLegacyWebViewTrackingReceipt) {
-        send(body: body, slotId: slotId, makeMessage: { message in
+        func registeredMessage(_ message: WebViewMessage) -> FeatureMessage {
             .payload(WebViewMessageWithLegacyRUMRegistration(message: message, receipt: legacyRegistration))
-        })
+        }
+        send(body: body, slotId: slotId, makeRecordMessage: registeredMessage, makeMessage: registeredMessage)
     }
 
     private func send(
