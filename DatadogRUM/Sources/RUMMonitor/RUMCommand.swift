@@ -100,7 +100,7 @@ internal final class RUMCapturedFlagEvaluationOwnership {
             return nil
         }
         owner = capture.owner
-        if let context = capture.value.rumContext,
+        if let context = capture.value.rumContext ?? capture.value.flagEvaluationContext,
            let sessionID = UUID(uuidString: context.sessionID),
            let viewID = context.viewID.flatMap(UUID.init(uuidString:)) {
             originalView = (RUMUUID(rawValue: sessionID), RUMUUID(rawValue: viewID))
@@ -115,7 +115,7 @@ internal final class RUMCapturedFlagEvaluationOwnership {
         }
     }
 
-    /// Resolves after the queued tap has either owned its restored view or been rejected.
+    /// Resolves after the queued action has either owned its restored view or been rejected.
     func resolveView() -> (sessionID: RUMUUID, viewID: RUMUUID)? {
         if let originalView {
             return originalView

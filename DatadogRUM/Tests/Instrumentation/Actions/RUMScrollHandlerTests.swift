@@ -405,6 +405,60 @@ final class SceneScrollOwnershipTests: XCTestCase {
         XCTAssertNil(RUMContextHandoff.current(for: peer))
     }
 
+    func testSceneScrollFlagOwnership_resolvesTheFreshViewAtBeginAfterTimeout() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
+        let fixture = SceneScrollFixture()
+        let scene = RUMCommandTarget.scene(.init(rawValue: "a"))
+        let predecessor = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: scene))
+        fixture.expireSession()
+        let scroll = fixture.scroll(in: fixture.windowA)
+        var ownership: RUMCapturedFlagEvaluationOwnership?
+
+        fixture.handler.interceptWillBeginDragging(scroll) {
+            ownership = RUMContextHandoff.current(for: fixture.owner).flatMap {
+                RUMCapturedFlagEvaluationOwnership(capture: .init(owner: fixture.owner, value: $0))
+            }
+        }
+
+        let restored = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: scene))
+        let resolved = try XCTUnwrap(ownership?.resolveView())
+        XCTAssertNotEqual(restored.sessionID, predecessor.sessionID)
+        XCTAssertNotEqual(restored.viewID, predecessor.viewID)
+        XCTAssertEqual(resolved.sessionID.toRUMDataFormat, restored.sessionID)
+        XCTAssertEqual(resolved.viewID.toRUMDataFormat, restored.viewID)
+    }
+
+    func testSceneScrollFlagOwnership_preservesTheViewAcrossBothTerminalCallbacks() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
+        let fixture = SceneScrollFixture()
+        let scene = RUMCommandTarget.scene(.init(rawValue: "a"))
+        let original = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: scene))
+        let scroll = fixture.scroll(in: fixture.windowA)
+        fixture.handler.interceptWillBeginDragging(scroll) {}
+        var terminalOwners: [String?] = []
+
+        func captureTerminal() {
+            let value = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertNil(value?.resolvedRUMContext(for: fixture.owner))
+            let ownership = value.flatMap {
+                RUMCapturedFlagEvaluationOwnership(capture: .init(owner: fixture.owner, value: $0))
+            }
+            let resolved = ownership?.resolveView()
+            XCTAssertEqual(resolved?.sessionID.toRUMDataFormat, original.sessionID)
+            terminalOwners.append(resolved?.viewID.toRUMDataFormat)
+        }
+        fixture.handler.interceptDidEndDragging(scroll, willDecelerate: true, operation: captureTerminal)
+        fixture.handler.interceptDidEndDecelerating(scroll, operation: captureTerminal)
+
+        XCTAssertEqual(terminalOwners, [original.viewID, original.viewID])
+    }
+
     func testSceneScroll_restartStopsOldOwnerBeforeFreshStart() throws {
         guard #available(iOS 27.0, *) else {
             assertLegacyScrollDelivery()
@@ -754,6 +808,7 @@ final class SceneScrollOwnershipTests: XCTestCase {
 private final class SceneScrollFixture {
     let owner = RUMContextHandoff.Owner()
     let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_600_000_000))
+    let elapsedClock = MonotonicClockMock()
     let windowA = UIWindow(frame: .zero)
     let windowB = UIWindow(frame: .zero)
     let predicate = SceneScrollPredicate()
@@ -763,7 +818,7 @@ private final class SceneScrollFixture {
     var events: [RUMActionEvent] { monitor.scope.eventsWritten(ofType: RUMActionEvent.self) }
 
     init(startA: Bool = true) {
-        monitor = SceneScrollMonitor(owner: owner, clock: clock)
+        monitor = SceneScrollMonitor(owner: owner, clock: clock, monotonicClock: elapsedClock)
         let a = ObjectIdentifier(windowA), b = ObjectIdentifier(windowB), probe = sourceProbe
         handler = RUMSceneScrollHandler(legacyHandler: RUMScrollHandler(dateProvider: clock, predicate: predicate), dateProvider: clock, owner: owner, expectedMonitor: monitor, sceneIdentifier: { window in
             probe.reads += 1
@@ -774,6 +829,12 @@ private final class SceneScrollFixture {
         startView("b", scene: "b")
         monitor.ownerReads = 0
     }
+    func expireSession() {
+        let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
+        elapsedClock.advance(by: timeout)
+        clock.now.addTimeInterval(timeout)
+    }
+
     func scroll(in window: UIWindow?) -> SceneScrollView {
         let scroll = SceneScrollView()
         window?.addSubview(scroll)
@@ -818,10 +879,10 @@ private final class SceneScrollMonitor: Monitor {
         onOwnerRead?()
         return owner
     }
-    init(owner: RUMContextHandoff.Owner, clock: DateProvider) {
+    init(owner: RUMContextHandoff.Owner, clock: DateProvider, monotonicClock: MonotonicClock = MonotonicClockMock()) {
         currentOwner = owner
         scope = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now, launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: clock.now), applicationStateHistory: .mockWith(initialState: .active, date: clock.now)))
-        super.init(dependencies: .mockWith(featureScope: scope, viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true), featureFlags: [.multiSceneTracking: true]), dateProvider: clock, executionContextProvider: RUMContextHandoff.current(for:))
+        super.init(dependencies: .mockWith(featureScope: scope, viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true), featureFlags: [.multiSceneTracking: true], monotonicClock: monotonicClock), dateProvider: clock, executionContextProvider: RUMContextHandoff.current(for:))
     }
     override func process(command: RUMCommand) {
         if command is RUMStartUserActionCommand || command is RUMStopUserActionCommand {
