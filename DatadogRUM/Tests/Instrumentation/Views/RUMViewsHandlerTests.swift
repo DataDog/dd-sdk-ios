@@ -1182,6 +1182,43 @@ class RUMSceneViewsHandlerTests: XCTestCase {
         XCTAssertEqual((subscriber.receivedCommands[1] as? RUMStopViewCommand)?.time, removedAt)
     }
 
+    func testManualAuthority_doesNotRestorePendingSplitDisappearanceAfterReconciliation() throws {
+        try assertManualAuthorityDiscardsPendingSplitDisappearance(reconcileBeforeStop: true)
+    }
+
+    func testManualAuthority_doesNotRestorePendingSplitDisappearanceBeforeReconciliation() throws {
+        try assertManualAuthorityDiscardsPendingSplitDisappearance(reconcileBeforeStop: false)
+    }
+
+    private func assertManualAuthorityDiscardsPendingSplitDisappearance(reconcileBeforeStop: Bool) throws {
+        let handler = makeHandler()
+        let outgoing = UIViewController()
+        let split = UIViewController()
+        contexts[ObjectIdentifier(outgoing)] = .init(splitViewController: ObjectIdentifier(split), column: 2)
+        appear(outgoing, in: sceneA, using: handler)
+        let removedAt = date.now
+        handler.notify_viewDidDisappear(viewController: outgoing, animated: false)
+        date.advance(bySeconds: 1)
+        handler.startView(key: "manual", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        if reconcileBeforeStop {
+            scheduled.forEach { $0() }
+        }
+        handler.stopView(key: "manual", attributes: [:], sceneIdentifier: sceneA)
+        if !reconcileBeforeStop {
+            scheduled.forEach { $0() }
+        }
+
+        let manual = ViewIdentifier("manual")
+        try assertCommands([
+            (true, ViewIdentifier(outgoing), .scene(sceneA)),
+            (false, ViewIdentifier(outgoing), .scene(sceneA)),
+            (true, manual, .scene(sceneA)),
+            (false, manual, .scene(sceneA)),
+        ])
+        let stop = try XCTUnwrap(subscriber.receivedCommands[1] as? RUMStopViewCommand)
+        XCTAssertEqual(stop.time, removedAt)
+    }
+
     func testSplitRevertedAppearance_doesNotReplaceOccurrenceOnSupportedRuntime() throws {
         let handler = makeHandler()
         let view = UIViewController(), split = UIViewController()

@@ -801,14 +801,23 @@ internal final class RUMSceneViewsHandler {
             return true
         }
 
+        // A manual start can arrive before a pending split disappearance is reconciled.
+        // Remove that outgoing view without briefly restarting an underlying view.
+        let pending = view.instrumentationType == .manual ? pendingUIKitSplitViewRemovals.first {
+            $0.sceneIdentifier == view.sceneIdentifier && $0.identity == stack.last?.identity
+        } : nil
         if view.instrumentationType == .manual,
            !stack.contains(where: { $0.instrumentationType == .manual }) {
-            stacks[stackIndex].retainedViewIdentityDuringManualAuthority = stack.last?.identity
+            stacks[stackIndex].retainedViewIdentityDuringManualAuthority = pending == nil ? stack.last?.identity : nil
         }
 
         // Stop the last appearing view of the stack
         if isActive, let current = stack.last {
-            stop(view: current, time: time)
+            stop(view: current, time: pending?.time ?? time)
+        }
+        if let pending {
+            stack.removeLast()
+            discardPendingUIKitSplitViewRemoval(identity: pending.identity, sceneIdentifier: pending.sceneIdentifier)
         }
 
         if isActive && !view.isUntrackedModal {
@@ -820,6 +829,9 @@ internal final class RUMSceneViewsHandler {
         stack.removeAll(where: { $0.identity == view.identity })
         stack.append(view)
         stacks[stackIndex].views = stack
+        if let pending {
+            discardUIKitSplitViewContextIfUntracked(identity: pending.identity)
+        }
         return true
     }
 
