@@ -440,6 +440,20 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(message.attributes[RUMCoreContext.IDs.sessionID])
     }
 
+    func testTTFDCommand_whenNoTTIDIsReceived_isNotWritten() throws {
+        // Given
+        let command: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        // Then
+        // A macOS app that never shows a window, or an iOS app that never renders a frame, has no TTID, so its TTFD is dropped.
+        XCTAssertTrue(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).isEmpty)
+    }
+
     func testTTFDCommand_whenReceivedBeforeTTID_sendsOperationMessageBeforeTTIDMessage() throws {
         // Given
         let featureScope = FeatureScopeMock()
@@ -613,6 +627,47 @@ final class RUMAppLaunchManagerTests: XCTestCase {
             [ttfdView.viewUUID.toRUMDataFormat]
         )
         XCTAssertEqual(ttfdMessage.attributes[RUMCoreContext.IDs.viewName] as? [String], ["HomeView"])
+    }
+
+    func testTTIDAndTTFDCommands_whenParentIsDeallocatedBeforeStartupType_writeEventsWithCapturedRUMContext() throws {
+        // Given
+        let appStateManager = AppStateManagerMock()
+        appStateManager.shouldDeferPreviousAppStateInfoCallback = true
+        mockDependencies = .mockWith(appStateManager: appStateManager)
+
+        let applicationID: String = .mockRandom()
+        let sessionID: RUMUUID = .mockRandom()
+        var parent: RUMContextProviderMock? = RUMContextProviderMock(
+            context: .mockWith(rumApplicationID: applicationID, sessionID: sessionID)
+        )
+        weak var weakParent = parent
+        manager = RUMAppLaunchManager(
+            parent: try XCTUnwrap(parent),
+            dependencies: mockDependencies,
+            telemetryController: .init()
+        )
+
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
+        manager.process(ttidCommand, context: mockContext, writer: mockWriter)
+        parent = nil
+        XCTAssertNil(weakParent, "The parent should be deallocated before the app state lookup completes")
+        appStateManager.completePreviousAppStateInfo()
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(vitalEvents.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
+        vitalEvents.forEach { event in
+            XCTAssertEqual(event.application.id, applicationID)
+            XCTAssertEqual(event.session.id, sessionID.toRUMDataFormat)
+        }
     }
 
     func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() throws {
