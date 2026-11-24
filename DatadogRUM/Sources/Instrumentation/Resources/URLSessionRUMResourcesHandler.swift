@@ -121,11 +121,18 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             )
         }
         guard monitor.isMultiSceneTrackingEnabled, context.owner.isValid,
-              monitor.rumContextHandoffOwner === context.owner,
-              let rumContext = context.rumContext, rumContext.sessionSampler.isSampled,
+              monitor.rumContextHandoffOwner === context.owner else {
+            return rejected()
+        }
+
+        // A live capture can propagate tracing even when it cannot reserve a RUM resource.
+        func propagationOnly() -> RUMURLSessionPreparation {
+            RUMURLSessionPreparation(identifier: nil, capturedState: ResourcePreparationState.rejected)
+        }
+        guard let rumContext = context.rumContext, rumContext.sessionSampler.isSampled,
               let sessionID = UUID(uuidString: rumContext.sessionID).map(RUMUUID.init(rawValue:)),
               let viewID = rumContext.viewID.flatMap(UUID.init(uuidString:)).map(RUMUUID.init(rawValue:)) else {
-            return rejected()
+            return propagationOnly()
         }
         if let preparation,
            let state = preparation.capturedState as? ResourcePreparationState,
@@ -137,7 +144,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             return preparation
         }
         guard let receipt = monitor.prepareResource(capturing: context) else {
-            return rejected()
+            return propagationOnly()
         }
         return RUMURLSessionPreparation(identifier: receipt.identity.resourceID, capturedState: ResourcePreparationState.eligible(receipt))
     }
