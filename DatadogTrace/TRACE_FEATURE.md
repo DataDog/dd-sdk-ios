@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-23
-sdk_version: 3.22.0
-verified_against_commit: 6d8beef7c
+last_updated: 2026-11-24
+sdk_version: 3.23.0
+verified_against_commit: 1f00346a6
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -301,7 +301,7 @@ Automatically instrumented `URLSession` spans have no call site to tag. Do **not
 `view.name` makes spans searchable and groupable by view. It does not add the `_dd.*` RUM correlation tags, which are only set from a RUM context.
 
 ### Event Modification
-- **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
+- **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe. Do not dispatch to other queues from it: dispatching synchronously to the main queue (e.g. `DispatchQueue.main.sync`) may cause a deadlock.
 
 ### Client-Side Stats (APM)
 - **`featureFlags[.clientSideStats]`** (default: `false`, experimental) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device from eligible finished spans, including sampled-out ones, and uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans, and spans of kind `client`, `server`, `producer` or `consumer`. Uploaded spans are stamped with `_dd.compute_stats=0` so the backend does not compute stats for the same traffic again; with the flag off, a `_dd.compute_stats` tag set by the app is uploaded unchanged. Enabling it does not change which spans are uploaded. Aggregation and upload respect tracking consent, and `Datadog.clearAllData()` also clears the stats still in memory. Stats are written to storage every 30 seconds, on a best-effort basis while the app may be suspended, and on macOS when the app terminates. Requests tracked by RUM `urlSessionTracking` produce no Trace span, so they are not aggregated. From Objective-C, set `client_side_stats` in `DDTraceConfiguration.featureFlags`; unknown flag names are ignored.

@@ -34,11 +34,11 @@ internal protocol TimeseriesCollecting: AnyObject {
 /// Collects memory and CPU samples at configurable intervals (default: 1 s) during a RUM session and flushes them
 /// as `RUMTimeseriesMemoryEvent` / `RUMTimeseriesCpuEvent` batches via the RUM feature scope.
 internal class TimeseriesSessionCollector: TimeseriesCollecting {
-    /// A single memory sample: physical memory footprint in kilobytes and its percentage of total device RAM.
+    /// A single memory sample: memory footprint and its non-resident (compressed) portion, in kibibytes.
     private struct MemorySample {
         let timestamp: Int64
         let footprintKB: Double
-        let percent: Double
+        let nonResidentKB: Double
     }
 
     /// A single CPU sample: usage as a percentage (0.0 to 100.0).
@@ -47,13 +47,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let usage: Double
     }
 
-    private let memoryReader: SamplingBasedVitalReader
+    private let memoryReader: TimeseriesMemoryReader
     private let cpuUsageProvider: () -> Double?
     private let batchSize: Int
     private let collectTypes: Set<RUM.Configuration.TimeseriesType>
     private let samplingInterval: TimeInterval
     private let featureScope: FeatureScope
-    private let totalRAM: Double
     private let ciTest: RUMCITest?
     private let syntheticsTest: RUMSyntheticsTest?
     private let sessionSampleRate: Double
@@ -98,13 +97,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
 
     init(
-        memoryReader: SamplingBasedVitalReader,
+        memoryReader: TimeseriesMemoryReader,
         featureScope: FeatureScope,
         batchSize: Int = 120,
         collectTypes: Set<RUM.Configuration.TimeseriesType> = Set(RUM.Configuration.TimeseriesType.allCases),
         samplingInterval: TimeInterval = 1,
         cpuUsageProvider: (() -> Double?)? = nil,
-        totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         sessionSampleRate: Double = 100,
@@ -120,7 +118,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.collectTypes = collectTypes
         self.samplingInterval = samplingInterval
         self.featureScope = featureScope
-        self.totalRAM = totalRAM
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.sessionSampleRate = sessionSampleRate
@@ -327,10 +324,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         let timestamp = Int64.ddWithNoOverflow(currentDate.timeIntervalSince1970 * 1_000_000_000)
 
-        if collectTypes.contains(.memory), let bytes = memoryReader.readVitalData() {
-            let footprintKB = bytes / 1_024
-            let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
-            memoryBuffer.append(MemorySample(timestamp: timestamp, footprintKB: footprintKB, percent: memoryPercent))
+        if collectTypes.contains(.memory), let memory = memoryReader.readMemory() {
+            memoryBuffer.append(
+                MemorySample(timestamp: timestamp, footprintKB: memory.footprint / 1_024, nonResidentKB: memory.nonResident / 1_024)
+            )
             markSessionAsSampled()
             if memoryBuffer.count >= batchSize {
                 flushMemory()
@@ -403,7 +400,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                         timestamps: timestamps,
                         values: .init(
                             memoryFootprint: batch.map { $0.footprintKB },
-                            memoryPercent: batch.map { $0.percent }
+                            memoryNonResident: batch.map { $0.nonResidentKB }
                         )
                     ),
                     end: adjustedEnd,
