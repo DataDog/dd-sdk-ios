@@ -9,13 +9,9 @@ import DatadogInternal
 
 #if !os(watchOS) && !os(macOS)
 
-// Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
-// transitive module dependency, but it is not distributed as an XCFramework.
-@_implementationOnly import DatadogMachProfiler
-
 internal final class ProfilingTelemetryController {
-    /// The default sample rate for "Profiling Session" metric (20%),
-    /// applied in addition to the Profiling continuous sample rate (5% by default).
+    /// The default sample rate for "Profiling Session" metrics (20%),
+    /// applied in addition to the global telemetry sample rate.
     static let defaultSampleRate: SampleRate = 20
     /// Telemetry endpoint for sending metrics.
     let telemetry: Telemetry
@@ -26,9 +22,10 @@ internal final class ProfilingTelemetryController {
     /// App launch data attached to application launch profiling sessions.
     @ReadWriteLock
     private var appStartInfo: String?
-    /// Index of the current continuous profiling cycle.
+
+    /// Best-effort sequence of continuous reports in the current RUM session.
     @ReadWriteLock
-    private var continuousCycleIndex = 0
+    private var continuousSession: (id: String?, nextCycleIndex: Int) = (nil, 0)
 
     init(
         sampleRate: SampleRate = ProfilingTelemetryController.defaultSampleRate,
@@ -40,14 +37,16 @@ internal final class ProfilingTelemetryController {
         self.configMetric = configMetric
     }
 
-    /// Registers app launch data that will be attached to application launch profiling sessions.
+    /// Updates telemetry context and resets continuous numbering for a new RUM session.
     func register(context: DatadogContext) {
         appStartInfo = context.launchInfo.profilingAppStartInfo
-    }
-
-    /// Resets the cycle index used by continuous profiling telemetry.
-    func resetContinuousCycleIndex() {
-        continuousCycleIndex = 0
+        if let sessionID = context.additionalContext(ofType: RUMCoreContext.self)?.sessionID {
+            _continuousSession.mutate { session in
+                if session.id != sessionID {
+                    session = (sessionID, 0)
+                }
+            }
+        }
     }
 
     /// Sends a metric for a terminal allocation failure.
@@ -63,29 +62,45 @@ internal final class ProfilingTelemetryController {
     }
 
     /// Sends a metric for a written profile, decorated with shared profiling telemetry state.
-    func sendProfile(durationMs: Int64, fileSize: Int64, for operation: ProfilingOperation) {
+    /// Heap-only writes must not consume the pending CPU aggregation diagnostics.
+    func sendProfile(
+        durationMs: Int64,
+        fileSize: Int64,
+        for operation: ProfilingOperation,
+        profileTypes: [ProfilingSessionMetric.ProfileType] = [.cpu],
+        memoryDiagnostics: MemoryDiagnostics? = nil
+    ) {
         send(
             .init(
                 startReason: operation.startReason,
-                status: .current,
+                status: profileTypes.contains(.cpu) ? .current : .running,
                 durationMs: durationMs,
                 fileSize: fileSize,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
-            )
+            ),
+            profileTypes: profileTypes,
+            memoryDiagnostics: memoryDiagnostics
         )
     }
 
     /// Sends a metric for a profile that could not be serialized.
-    func sendNoData(durationMs: Int64?, for operation: ProfilingOperation) {
+    func sendNoData(
+        durationMs: Int64?,
+        for operation: ProfilingOperation,
+        profileTypes: [ProfilingSessionMetric.ProfileType] = [.cpu],
+        memoryDiagnostics: MemoryDiagnostics? = nil
+    ) {
         send(
             .noData(
                 startReason: operation.startReason,
-                status: .current,
+                status: profileTypes.contains(.cpu) ? .current : .running,
                 durationMs: durationMs,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
-            )
+            ),
+            profileTypes: profileTypes,
+            memoryDiagnostics: memoryDiagnostics
         )
     }
 
@@ -107,43 +122,85 @@ internal final class ProfilingTelemetryController {
     }
 
     /// Sends a metric for a profile that was intentionally dropped.
+    /// Heap-only drops must not consume the pending CPU aggregation diagnostics.
     func sendProfileDropped(
         for operation: ProfilingOperation,
-        reason: ProfilingSessionMetric.ProfileDropReason = .noProfiledEvents
+        reason: ProfilingSessionMetric.ProfileDropReason = .noProfiledEvents,
+        profileTypes: [ProfilingSessionMetric.ProfileType] = [.cpu],
+        memoryDiagnostics: MemoryDiagnostics? = nil
     ) {
         send(
             .profileDropped(
                 startReason: operation.startReason,
-                status: .current,
+                status: profileTypes.contains(.cpu) ? .current : .running,
                 reason: reason,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
-            )
+            ),
+            profileTypes: profileTypes,
+            memoryDiagnostics: memoryDiagnostics
         )
     }
 
-    func send(_ metric: ProfilingSessionMetric) {
-        guard var metricAttributes = metric.asMetricAttributes() else {
+    func send(
+        _ metric: ProfilingSessionMetric,
+        profileTypes: [ProfilingSessionMetric.ProfileType] = [.cpu],
+        memoryDiagnostics: MemoryDiagnostics? = nil
+    ) {
+        guard var metricAttributes = metric.asMetricAttributes(profileTypes: profileTypes) else {
             telemetry.debug("Failed to compute attributes for '\(metric.metricName)'")
             return
         }
-        metricAttributes.merge(AggregationDiagnosticsMetric.consumeDiagnostics().asMetricAttributes() ?? [:]) { $1 }
-        metricAttributes.merge(configMetric.asMetricAttributes() ?? [:]) { $1 }
+        let cpu = profileTypes.contains(.cpu) ? ProfilingDiagnostics.CPUDiagnostics.consume() : nil
+        if cpu != nil || memoryDiagnostics != nil {
+            metricAttributes[ProfilingDiagnostics.Constants.diagnosticsKey] = ProfilingDiagnostics(
+                cpu: cpu,
+                memory: memoryDiagnostics
+            )
+        }
+        if profileTypes.contains(.cpu) {
+            metricAttributes.merge(configMetric.asMetricAttributes() ?? [:]) { $1 }
+        }
 
         telemetry.metric(name: metric.metricName, attributes: metricAttributes, sampleRate: sampleRate)
+    }
+
+    /// Reports an unsuccessful memory cycle without consulting CPU state or consuming CPU diagnostics.
+    func sendMemoryDiagnostics(
+        _ diagnostics: MemoryDiagnostics,
+        for operation: ProfilingOperation
+    ) {
+        let failed: Bool
+        switch diagnostics.captureResult {
+        case .startFailed, .captureFailed, .serializationFailed, .invalidTime:
+            failed = true
+        default:
+            failed = false
+        }
+        send(
+            .init(
+                startReason: operation.startReason,
+                status: .running,
+                errorCode: failed ? .executionFailed : .none,
+                errorMessage: failed ? "Memory profile: \(diagnostics.captureResult.rawValue)." : nil,
+                cycleIndex: cycleIndex(for: operation),
+                appStartInfo: operation == .appLaunch ? appStartInfo : nil
+            ),
+            profileTypes: [.memory],
+            memoryDiagnostics: diagnostics
+        )
     }
 
     private func cycleIndex(for operation: ProfilingOperation) -> Int? {
         guard operation == .continuousProfiling else {
             return nil
         }
-
-        var cycleIndex = 0
-        _continuousCycleIndex.mutate {
-            cycleIndex = $0
-            $0 += 1
+        var index = 0
+        _continuousSession.mutate { session in
+            index = session.nextCycleIndex
+            session.nextCycleIndex += 1
         }
-        return cycleIndex
+        return index
     }
 }
 

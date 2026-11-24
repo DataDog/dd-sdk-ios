@@ -81,10 +81,10 @@ public enum Profiling {
                 )
             )
             let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-            let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
+            let cpuSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.cpuSampleRate
             core.telemetry.configuration(
                 profilingApplicationLaunchSampleRate: Double(appLaunchSampleRate.normalizedSampleRate),
-                profilingSampleRate: Double(continuousSampleRate.normalizedSampleRate)
+                profilingSampleRate: Double(cpuSampleRate.normalizedSampleRate)
             )
         } catch {
             consolePrint("\(error)", .error)

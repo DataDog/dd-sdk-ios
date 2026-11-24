@@ -20,27 +20,51 @@
 
     XCTAssertNil(configuration.customEndpoint);
     XCTAssertEqual(configuration.applicationLaunchSampleRate, 5);
-    XCTAssertEqual(configuration.continuousSampleRate, 5);
+    XCTAssertEqual(configuration.cpuSampleRate, 5);
+    XCTAssertEqual(configuration.memorySampleRate, 0);
 }
 
 - (void)testCustomConfiguration {
     NSURL *endpoint = [NSURL URLWithString:@"https://example.com/profiles"];
     DDProfilingConfiguration *configuration = [[DDProfilingConfiguration alloc] initWithCustomEndpoint:endpoint
                                                                          applicationLaunchSampleRate:12.5
-                                                                                continuousSampleRate:37.5];
+                                                                                       cpuSampleRate:37.5
+                                                                                    memorySampleRate:62.5];
 
     XCTAssertEqualObjects(configuration.customEndpoint, endpoint);
     XCTAssertEqual(configuration.applicationLaunchSampleRate, 12.5);
-    XCTAssertEqual(configuration.continuousSampleRate, 37.5);
+    XCTAssertEqual(configuration.cpuSampleRate, 37.5);
+    XCTAssertEqual(configuration.memorySampleRate, 62.5);
 
     configuration.customEndpoint = nil;
     configuration.applicationLaunchSampleRate = 0;
-    configuration.continuousSampleRate = 100;
+    configuration.cpuSampleRate = 100;
+    configuration.memorySampleRate = 12.5;
 
     XCTAssertNil(configuration.customEndpoint);
     XCTAssertEqual(configuration.applicationLaunchSampleRate, 0);
-    XCTAssertEqual(configuration.continuousSampleRate, 100);
+    XCTAssertEqual(configuration.cpuSampleRate, 100);
+    XCTAssertEqual(configuration.memorySampleRate, 12.5);
 }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+- (void)testLegacyConfiguration {
+    DDProfilingConfiguration *configuration = [[DDProfilingConfiguration alloc] initWithCustomEndpoint:nil
+                                                                         applicationLaunchSampleRate:12.5
+                                                                                continuousSampleRate:37.5];
+
+    XCTAssertEqual(configuration.applicationLaunchSampleRate, 12.5);
+    XCTAssertEqual(configuration.cpuSampleRate, 37.5);
+    XCTAssertEqual(configuration.continuousSampleRate, 37.5);
+    XCTAssertEqual(configuration.memorySampleRate, 0);
+
+    configuration.continuousSampleRate = 75;
+    XCTAssertEqual(configuration.cpuSampleRate, 75);
+    configuration.cpuSampleRate = 25;
+    XCTAssertEqual(configuration.continuousSampleRate, 25);
+}
+#pragma clang diagnostic pop
 
 - (void)testEnableAPI {
     DDProfilingConfiguration *configuration = [[DDProfilingConfiguration alloc] init];
