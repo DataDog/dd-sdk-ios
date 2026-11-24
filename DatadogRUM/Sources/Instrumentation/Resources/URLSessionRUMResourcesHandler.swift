@@ -127,7 +127,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
 
         // A live capture can propagate tracing even when it cannot reserve a RUM resource.
         func propagationOnly() -> RUMURLSessionPreparation {
-            RUMURLSessionPreparation(identifier: nil, capturedState: ResourcePreparationState.rejected)
+            RUMURLSessionPreparation(propagationOnlyState: ResourcePreparationState.rejected)
         }
         guard let rumContext = context.rumContext, rumContext.sessionSampler.isSampled,
               let sessionID = UUID(uuidString: rumContext.sessionID).map(RUMUUID.init(rawValue:)),
@@ -461,13 +461,16 @@ extension DistributedTracing {
 
         var request = request
         var hasSetAnyHeader = false
+        let marksRUMOrigin = networkContext?.isRUMResourcePropagationOnly != true
         headerTypes.forEach {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
                 writer = HTTPHeadersWriter(traceContextInjection: traceContextInjection)
                 // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
-                request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
+                if marksRUMOrigin {
+                    request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
+                }
             case .b3:
                 writer = B3HTTPHeadersWriter(
                     injectEncoding: .single,
@@ -480,9 +483,7 @@ extension DistributedTracing {
                 )
             case .tracecontext:
                 writer = W3CHTTPHeadersWriter(
-                    tracestate: [
-                        W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-                    ],
+                    tracestate: marksRUMOrigin ? [W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM] : [:],
                     traceContextInjection: traceContextInjection
                 )
             }

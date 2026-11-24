@@ -335,6 +335,9 @@ public struct NetworkContext {
     public var accountConfigurationContext: AccountConfigurationContext?
     @_spi(Internal)
     public var rumURLSessionContext: RUMURLSessionContext? = nil
+    /// Propagation is allowed, but no RUM Resource will own the trace.
+    @_spi(Internal)
+    public var isRUMResourcePropagationOnly = false
 }
 
 /// The User configuration context received from `Core`.
