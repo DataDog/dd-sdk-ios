@@ -91,13 +91,50 @@ internal class MessageBus {
     }
 
     /// On-only registration: check the surviving registry entry before connection.
-    func connect(_ receiver: FeatureMessageReceiver, forKey key: String, while isRegistered: @escaping () -> Bool) {
+    func connect(
+        _ receiver: FeatureMessageReceiver,
+        forKey key: String,
+        operationOwner: RUMContextHandoff.Owner? = nil,
+        while isRegistered: @escaping () -> Bool
+    ) {
         queue.async {
             guard isRegistered() else {
                 return
             }
+            if let operationOwner {
+                self.deliverOperationBusMode(to: receiver, owner: operationOwner, active: true)
+            }
             self.bus[key] = receiver
         }
+    }
+
+    /// Queues On-only activation independently of synchronous network callbacks.
+    func notifyOperationBusMode(
+        receivers: [FeatureMessageReceiver],
+        owner: RUMContextHandoff.Owner,
+        active: Bool
+    ) {
+        queue.async {
+            receivers.forEach {
+                self.deliverOperationBusMode(to: $0, owner: owner, active: active)
+            }
+        }
+    }
+
+    /// Called only on the message-bus queue, never by a configuration-thread callback.
+    private func deliverOperationBusMode(
+        to receiver: FeatureMessageReceiver,
+        owner: RUMContextHandoff.Owner,
+        active: Bool
+    ) {
+        if active {
+            guard owner.isValid,
+                  let provider = core as? RUMContextHandoffOwnerProviding,
+                  provider.rumContextHandoffOwner === owner else {
+                return
+            }
+        }
+        (receiver as? RUMOperationBusModeReceiving)?.receiveRUMOperationBusMode(owner: owner, active: active)
     }
 
     /// Removes the given key and its associated receiver from the bus.
