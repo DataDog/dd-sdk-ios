@@ -1177,6 +1177,98 @@ extension RUMApplicationScopeTests {
         navigate(app, context: context, scene: routingSceneB, name: "b", after: 2)
     }
 
+    #if os(iOS)
+    func testMultiSceneBackgroundRollover_recoversApplicationLaunch() throws {
+        for explicitSessionStop in [false, true] {
+            let (app, foreground) = backgroundRoutingApplication()
+            let initial = try startLaunchView(app, context: foreground)
+            let background = DatadogContext.mockWith(
+                sdkInitDate: routingDate,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: routingDate),
+                applicationStateHistory: .mockAppInBackground(since: routingDate.addingTimeInterval(2))
+            )
+            let enterBackground = RUMHandleAppLifecycleEventCommand(time: routingDate.addingTimeInterval(2), event: .didEnterBackground)
+            _ = routeApplicationCommand(app: app, command: enterBackground, context: background, writer: writer)
+            let backgroundError = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingDate.addingTimeInterval(3))
+            _ = routeApplicationCommand(app: app, command: backgroundError, context: background, writer: writer)
+            XCTAssertFalse(initial.isActiveView)
+            XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.name, RUMOffViewEventsHandlingRule.Constants.backgroundViewName)
+
+            let rollover = explicitSessionStop ? 4 : RUMSessionScope.Constants.sessionTimeoutDuration + 4
+            if explicitSessionStop {
+                let stop = RUMStopSessionCommand(time: routingDate.addingTimeInterval(rollover))
+                _ = routeApplicationCommand(app: app, command: stop, context: background, writer: writer)
+            }
+            let enterForeground = RUMHandleAppLifecycleEventCommand(time: routingDate.addingTimeInterval(rollover), event: .willEnterForeground)
+            _ = routeApplicationCommand(app: app, command: enterForeground, context: foreground, writer: writer)
+            XCTAssertNil(app.activeSession)
+
+            let actionName = explicitSessionStop ? "after-background-stop" : "after-background-timeout"
+            let action = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(rollover + 1), actionType: .custom, name: actionName)
+            _ = routeApplicationCommand(app: app, command: action, context: foreground, writer: writer)
+            let successor = try XCTUnwrap(app.activeSession)
+            let restored = try XCTUnwrap(successor.viewScopes.first { $0.isActiveView && $0.viewPath == initial.viewPath })
+            XCTAssertNotEqual(restored.viewUUID, initial.viewUUID)
+            let event = writer.events(ofType: RUMActionEvent.self).last { $0.action.target?.name == actionName }
+            XCTAssertEqual(event?.view.id, restored.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(event?.session.id, successor.sessionUUID.toRUMDataFormat)
+        }
+    }
+
+    func testMultiSceneExplicitStartAfterRollover_skipsApplicationLaunch() throws {
+        let (app, context) = backgroundRoutingApplication()
+        _ = try startLaunchView(app, context: context)
+        let original = try XCTUnwrap(app.activeSession)
+        navigate(app, context: context, scene: routingSceneA, name: "detail", after: RUMSessionScope.Constants.sessionTimeoutDuration + 2)
+
+        let successor = try XCTUnwrap(app.activeSession)
+        XCTAssertNotEqual(original.sessionUUID, successor.sessionUUID)
+        let views = writer.events(ofType: RUMViewEvent.self).filter { $0.session.id == successor.sessionUUID.toRUMDataFormat }
+        XCTAssertEqual(Set(views.map { $0.view.name }), ["detail"])
+    }
+
+    private func backgroundRoutingApplication() -> (RUMApplicationScope, DatadogContext) {
+        let context = DatadogContext.mockWith(
+            sdkInitDate: routingDate,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: routingDate),
+            applicationStateHistory: .mockAppInForeground(since: routingDate)
+        )
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: true, featureFlags: [.multiSceneTracking: true]),
+            sdkContext: context
+        )
+        return (scope, context)
+    }
+
+    private func startLaunchView(_ app: RUMApplicationScope, context: DatadogContext) throws -> RUMViewScope {
+        let error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingDate.addingTimeInterval(1))
+        _ = routeApplicationCommand(app: app, command: error, context: context, writer: writer)
+        return try XCTUnwrap(app.activeSession?.viewScopes.first {
+            $0.isActiveView && $0.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+        })
+    }
+    #endif
+
+    func testMultiSceneExplicitSessionStop_doesNotReuseViewTimings() throws {
+        let (app, context) = routingApplication()
+        navigate(app, context: context, scene: routingSceneA, name: "detail", after: 1)
+        var timing = RUMAddViewTimingCommand(time: routingDate.addingTimeInterval(6), globalAttributes: [:], attributes: [:], timingName: "old")
+        timing.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: timing, context: context, writer: writer)
+        let old = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA })
+        XCTAssertNotNil(old.customTimings["old"])
+
+        let stop = RUMStopSessionCommand(time: routingDate.addingTimeInterval(7))
+        _ = routeApplicationCommand(app: app, command: stop, context: context, writer: writer)
+        var action = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(8), actionType: .custom)
+        action.target = .scene(routingSceneA)
+        _ = routeApplicationCommand(app: app, command: action, context: context, writer: writer)
+
+        let restored = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        XCTAssertNotEqual(restored.viewUUID, old.viewUUID)
+        XCTAssertTrue(restored.customTimings.isEmpty)
+    }
+
     func testMultiSceneSessionStop_restoresForegroundPeersWithFreshViewIDs() throws {
         let (app, context) = routingApplication()
         startRoutingPeers(app, context: context)
