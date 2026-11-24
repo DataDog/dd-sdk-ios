@@ -440,6 +440,20 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(message.attributes[RUMCoreContext.IDs.sessionID])
     }
 
+    func testTTFDCommand_whenNoTTIDIsReceived_isNotWritten() throws {
+        // Given
+        let command: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        // Then
+        // A macOS app that never shows a window, or an iOS app that never renders a frame, has no TTID, so its TTFD is dropped.
+        XCTAssertTrue(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).isEmpty)
+    }
+
     func testTTFDCommand_whenReceivedBeforeTTID_sendsOperationMessageBeforeTTIDMessage() throws {
         // Given
         let featureScope = FeatureScopeMock()
@@ -584,10 +598,16 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         )
 
         // When
+        let ttidRUMContext = mockParent.context
         manager.process(ttidCommand, context: ttidContext, writer: mockWriter, activeView: ttidView)
+        mockParent.context.sessionID = RUMUUID(
+            rawValue: try XCTUnwrap(UUID(uuidString: "22222222-2222-2222-2222-222222222222"))
+        )
         mockParent.context.activeViewID = ttidView.viewUUID
         mockParent.context.activeViewName = ttidView.viewName
+        let ttfdRUMContext = mockParent.context
         manager.process(ttfdCommand, context: ttfdContext, writer: mockWriter, activeView: ttfdView)
+        mockParent.context.sessionID = .nullUUID
         appStateManager.completePreviousAppStateInfo()
 
         // Then
@@ -595,11 +615,13 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
 
         let ttidEvent = try XCTUnwrap(vitalEvents.first)
+        XCTAssertEqual(ttidEvent.session.id, ttidRUMContext.sessionID.toRUMDataFormat)
         XCTAssertEqual(ttidEvent.view.id, ttidView.viewUUID.toRUMDataFormat)
         XCTAssertEqual(ttidEvent.view.name, "ApplicationLaunch")
         XCTAssertEqual(ttidEvent.connectivity?.status, .notConnected)
 
         let ttfdEvent = try XCTUnwrap(vitalEvents.last)
+        XCTAssertEqual(ttfdEvent.session.id, ttfdRUMContext.sessionID.toRUMDataFormat)
         XCTAssertEqual(ttfdEvent.view.id, ttfdView.viewUUID.toRUMDataFormat)
         XCTAssertEqual(ttfdEvent.view.name, "HomeView")
         XCTAssertEqual(ttfdEvent.view.url, "HomeViewPath")
@@ -613,6 +635,47 @@ final class RUMAppLaunchManagerTests: XCTestCase {
             [ttfdView.viewUUID.toRUMDataFormat]
         )
         XCTAssertEqual(ttfdMessage.attributes[RUMCoreContext.IDs.viewName] as? [String], ["HomeView"])
+    }
+
+    func testTTIDAndTTFDCommands_whenParentIsDeallocatedBeforeStartupType_writeEventsWithCapturedRUMContext() throws {
+        // Given
+        let appStateManager = AppStateManagerMock()
+        appStateManager.shouldDeferPreviousAppStateInfoCallback = true
+        mockDependencies = .mockWith(appStateManager: appStateManager)
+
+        let applicationID: String = .mockRandom()
+        let sessionID: RUMUUID = .mockRandom()
+        var parent: RUMContextProviderMock? = RUMContextProviderMock(
+            context: .mockWith(rumApplicationID: applicationID, sessionID: sessionID)
+        )
+        weak var weakParent = parent
+        manager = RUMAppLaunchManager(
+            parent: try XCTUnwrap(parent),
+            dependencies: mockDependencies,
+            telemetryController: .init()
+        )
+
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        // When
+        manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
+        manager.process(ttidCommand, context: mockContext, writer: mockWriter)
+        parent = nil
+        XCTAssertNil(weakParent, "The parent should be deallocated before the app state lookup completes")
+        appStateManager.completePreviousAppStateInfo()
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(vitalEvents.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
+        vitalEvents.forEach { event in
+            XCTAssertEqual(event.application.id, applicationID)
+            XCTAssertEqual(event.session.id, sessionID.toRUMDataFormat)
+        }
     }
 
     func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() throws {
@@ -799,5 +862,147 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 0)
+    }
+}
+
+extension RUMAppLaunchManagerTests {
+    func testAppLaunchCallback_whenSessionIsReleased_itUsesAcceptedSessionOwnership() throws {
+        for includesTTFD in [false, true] {
+            let stateManager = AppStateManagerMock()
+            stateManager.shouldDeferPreviousAppStateInfoCallback = true
+            let acceptedContext = mockParent.context
+            var parent: RUMContextProviderMock? = RUMContextProviderMock(context: acceptedContext)
+            weak var weakParent = parent
+            let dependencies = RUMScopeDependencies.mockWith(appStateManager: stateManager, timeseriesCollector: TimeseriesCollectorMock(hasData: true))
+            let writer = FileWriterMock()
+            let subject = RUMAppLaunchManager(
+                parent: try XCTUnwrap(parent),
+                dependencies: dependencies,
+                telemetryController: .init()
+            )
+            let ttid: RUMTimeToInitialDisplayCommand = .mockWith(
+                time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+            )
+
+            subject.process(ttid, context: mockContext, writer: writer)
+            if includesTTFD {
+                let ttfd: RUMTimeToFullDisplayCommand = .mockWith(
+                    time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+                )
+                subject.process(ttfd, context: mockContext, writer: writer)
+            }
+            XCTAssertTrue(writer.events(ofType: RUMVitalAppLaunchEvent.self).isEmpty)
+
+            parent = nil
+            XCTAssertNil(weakParent)
+            stateManager.completePreviousAppStateInfo()
+
+            let events = writer.events(ofType: RUMVitalAppLaunchEvent.self)
+            XCTAssertEqual(events.count, includesTTFD ? 2 : 1)
+            XCTAssertEqual(events.first?.vital.appLaunchMetric, .ttid)
+            if includesTTFD {
+                XCTAssertEqual(events.last?.vital.appLaunchMetric, .ttfd)
+            }
+            for event in events {
+                XCTAssertEqual(event.application.id, acceptedContext.rumApplicationID)
+                XCTAssertEqual(event.session.id, acceptedContext.sessionID.toRUMDataFormat)
+                XCTAssertEqual(event.session.hasTimeseries, true)
+            }
+            withExtendedLifetime(subject) {}
+        }
+    }
+
+    func testAppLaunchCallback_whenContextChangesBeforeDelivery_itUsesAcceptedSessionAndViewOwners() throws {
+        let stateManager = AppStateManagerMock()
+        stateManager.shouldDeferPreviousAppStateInfoCallback = true
+        let dependencies = RUMScopeDependencies.mockWith(appStateManager: stateManager, timeseriesCollector: TimeseriesCollectorMock(hasData: true))
+        mockParent.context.sessionID = RUMUUID(
+            rawValue: try XCTUnwrap(UUID(uuidString: "11111111-1111-1111-1111-111111111111"))
+        )
+        let acceptedContext = mockParent.context
+        let subject = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: dependencies,
+            telemetryController: .init()
+        )
+        let activeView: RUMViewScope = .mockWith(path: "retained-view", name: "Retained View")
+        let ttid: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+        let ttfd: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(2)
+        )
+
+        subject.process(ttid, context: mockContext, writer: mockWriter, activeView: activeView)
+        subject.process(ttfd, context: mockContext, writer: mockWriter, activeView: activeView)
+        XCTAssertTrue(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).isEmpty)
+        mockParent.context = RUMContext(
+            rumApplicationID: "replacement-" + acceptedContext.rumApplicationID,
+            sessionID: .nullUUID,
+            isSessionActive: false,
+            sessionPrecondition: nil,
+            activeViewID: nil,
+            activeViewPath: nil,
+            activeViewName: nil,
+            activeUserActionID: nil
+        )
+        stateManager.completePreviousAppStateInfo()
+
+        let events = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
+        for event in events {
+            XCTAssertEqual(event.application.id, acceptedContext.rumApplicationID)
+            XCTAssertEqual(event.session.id, acceptedContext.sessionID.toRUMDataFormat)
+            XCTAssertEqual(event.session.hasTimeseries, true)
+            XCTAssertNotEqual(event.application.id, mockParent.context.rumApplicationID)
+            XCTAssertNotEqual(event.session.id, mockParent.context.sessionID.toRUMDataFormat)
+            XCTAssertEqual(event.view.id, activeView.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(event.view.name, "Retained View")
+            XCTAssertEqual(event.view.url, "retained-view")
+        }
+    }
+}
+
+extension RUMAppLaunchManagerTests {
+    private final class LaunchTimeseriesCollector: TimeseriesCollecting {
+        weak var activeContextReader: RUMActiveContextReader?
+        let expectedSessionID: String
+        var queriedSessionIDs: [String] = []
+
+        init(expectedSessionID: String) { self.expectedSessionID = expectedSessionID }
+        func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
+        func pause(sessionID: String) {}
+        func resume(sessionID: String) {}
+        func stop(sessionID: String) {}
+        func noteActivity(sessionID: String) {}
+        func flush() {}
+        func hasCollectedData(sessionID: String) -> Bool {
+            queriedSessionIDs.append(sessionID)
+            return sessionID == expectedSessionID
+        }
+    }
+
+    func testAppLaunchCallback_queriesTimeseriesForAcceptedSession() throws {
+        let stateManager = AppStateManagerMock()
+        stateManager.shouldDeferPreviousAppStateInfoCallback = true
+        mockParent.context.sessionID = RUMUUID(rawValue: try XCTUnwrap(UUID(uuidString: "11111111-1111-1111-1111-111111111111")))
+        let acceptedID = mockParent.context.sessionID.toRUMDataFormat
+        let collector = LaunchTimeseriesCollector(expectedSessionID: acceptedID)
+        let subject = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: .mockWith(appStateManager: stateManager, timeseriesCollector: collector),
+            telemetryController: .init()
+        )
+        let command = RUMTimeToInitialDisplayCommand.mockWith(time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1))
+        subject.process(command, context: mockContext, writer: mockWriter)
+        mockParent.context.sessionID = .nullUUID
+        stateManager.completePreviousAppStateInfo()
+
+        XCTAssertEqual(collector.queriedSessionIDs, [acceptedID])
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).first)
+        XCTAssertEqual(event.session.id, acceptedID)
+        XCTAssertEqual(event.session.hasTimeseries, true)
+        withExtendedLifetime(subject) {}
     }
 }
