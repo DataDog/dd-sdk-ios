@@ -39,6 +39,7 @@ REPO_ROOT=$(realpath .)
 
 SNAPSHOTS_CLI_PATH="$REPO_ROOT/tools/sr-snapshots"
 SNAPSHOTS_REPO_PATH="$REPO_ROOT/../dd-mobile-session-replay-snapshots"
+SNAPSHOTS_REPO_BRANCH="snapshots"
 TEST_WORKSPACE="$REPO_ROOT/DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace"
 
 case "$suite" in
@@ -107,7 +108,7 @@ pull_snapshots() {
     swift run sr-snapshots pull \
 			--local-folder "$SNAPSHOTS_DIR" \
 			--remote-folder "$SNAPSHOTS_REPO_PATH" \
-			--remote-branch "main"
+			--remote-branch "$SNAPSHOTS_REPO_BRANCH"
     cd -
 }
 
@@ -117,7 +118,7 @@ push_snapshots() {
     swift run sr-snapshots push \
 			--local-folder "$SNAPSHOTS_DIR" \
 			--remote-folder "$SNAPSHOTS_REPO_PATH" \
-			--remote-branch "main"
+			--remote-branch "$SNAPSHOTS_REPO_BRANCH"
     cd -
 }
 
@@ -157,6 +158,7 @@ fi
 echo_info "▸ SNAPSHOTS_CLI_PATH = '$SNAPSHOTS_CLI_PATH'"
 echo_info "▸ SNAPSHOTS_PATH = '$SNAPSHOTS_DIR'"
 echo_info "▸ SNAPSHOTS_REPO_PATH = '$SNAPSHOTS_REPO_PATH'"
+echo_info "▸ SNAPSHOTS_REPO_BRANCH = '$SNAPSHOTS_REPO_BRANCH'"
 echo_info "▸ TEST_SCHEME = '$TEST_SCHEME'"
 echo_info "▸ TEST_WORKSPACE = '$TEST_WORKSPACE'"
 echo_info "▸ TEST_ARTIFACTS_PATH = '$TEST_ARTIFACTS_PATH'"
