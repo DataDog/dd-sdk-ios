@@ -1135,7 +1135,11 @@ extension RUMApplicationScopeTests {
     private var routingSceneA: RUMSceneIdentifier { RUMSceneIdentifier(rawValue: "scene-a") }
     private var routingSceneB: RUMSceneIdentifier { RUMSceneIdentifier(rawValue: "scene-b") }
 
-    private func routingApplication(enabled: Bool = true, mapper: RUMEventsMapper = .mockNoOp()) -> (RUMApplicationScope, DatadogContext) {
+    private func routingApplication(
+        enabled: Bool = true,
+        mapper: RUMEventsMapper = .mockNoOp(),
+        viewUpdates: Bool = false
+    ) -> (RUMApplicationScope, DatadogContext) {
         let context = DatadogContext.mockWith(
             sdkInitDate: routingDate,
             launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: routingDate),
@@ -1143,7 +1147,11 @@ extension RUMApplicationScopeTests {
         )
         let cache = ViewCache(dateProvider: DateProviderMock(now: routingDate), isMultiSceneTrackingEnabled: enabled)
         let app = createRUMApplicationScope(
-            dependencies: .mockWith(eventBuilder: RUMEventBuilder(eventsMapper: mapper), viewCache: cache, featureFlags: [.multiSceneTracking: enabled]),
+            dependencies: .mockWith(
+                eventBuilder: RUMEventBuilder(eventsMapper: mapper),
+                viewCache: cache,
+                featureFlags: [.multiSceneTracking: enabled, .viewUpdates: viewUpdates]
+            ),
             sdkContext: context
         )
         return (app, context)
@@ -1284,6 +1292,39 @@ extension RUMApplicationScopeTests {
         XCTAssertTrue(Set(oldViews.map { $0.viewUUID }).isDisjoint(with: restored.viewScopes.map { $0.viewUUID }))
         XCTAssertTrue(restored.viewScopes.allSatisfy { $0.resourceScopes.isEmpty && $0.userActionScope == nil })
         XCTAssertEqual(Set(writer.events(ofType: RUMViewEvent.self).filter { $0.session.id == restored.sessionUUID.toRUMDataFormat }.map { $0.view.name }), Set(["a", "b"]))
+    }
+
+    func testMultiSceneRollover_keepsFirstRestoredViewActionCountThroughUploadFilter() throws {
+        let uploadFilter = RUMViewEventsFilter(telemetry: TelemetryMock())
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+
+        for viewUpdates in [false, true] {
+            let (app, context) = routingApplication(viewUpdates: viewUpdates)
+            startRoutingPeers(app, context: context)
+            let time = routingDate.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 3)
+            var action = RUMAddUserActionCommand.mockWith(time: time, actionType: .custom, name: "after-rollover")
+            action.target = .scene(routingSceneA)
+            _ = routeApplicationCommand(app: app, command: action, context: context, writer: writer)
+
+            let restoredView = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.isActiveView && $0.sceneIdentifier == routingSceneA })
+            let viewID = restoredView.viewUUID.toRUMDataFormat
+            let stored = try zip(writer.events, writer.metadata).compactMap { event, metadata -> Event? in
+                guard let metadata = metadata as? RUMViewEvent.Metadata, metadata.id == viewID else {
+                    return nil
+                }
+                return try Event(data: encoder.encode(event), metadata: encoder.encode(metadata))
+            }
+            let uploaded = uploadFilter.filter(events: stored)
+            let baseline = try decoder.decode(RUMViewEvent.self, from: XCTUnwrap(uploaded.first).data)
+            if viewUpdates {
+                let delta = try decoder.decode(RUMViewUpdateEvent.self, from: XCTUnwrap(uploaded.dropFirst().first).data)
+                XCTAssertEqual(delta.view.action?.count, 1)
+                XCTAssertGreaterThanOrEqual(delta.view.timeSpent ?? baseline.view.timeSpent, baseline.view.timeSpent)
+            } else {
+                XCTAssertEqual(baseline.view.action.count, 1)
+            }
+        }
     }
 
     func testMultiSceneSessionTimeout_restoresForegroundPeersWithFreshViewIDs() throws {

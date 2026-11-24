@@ -523,7 +523,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         serverTimeOffset: TimeInterval,
         hasReplay: Bool?,
         sceneIdentifier: RUMSceneIdentifier? = nil,
-        didReceiveStartCommand: Bool = false
+        isRestored: Bool = false
     ) {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
@@ -538,7 +538,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             interactionToNextViewMetric: metric(for: sceneIdentifier),
             viewIndexInSession: nextViewIndex,
             sceneIdentifier: sceneIdentifier,
-            didReceiveStartCommand: didReceiveStartCommand
+            isRestored: isRestored
         )
         nextViewIndex += 1
 
@@ -689,7 +689,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 serverTimeOffset: context.serverTimeOffset,
                 hasReplay: context.hasReplay,
                 sceneIdentifier: view.sceneIdentifier,
-                didReceiveStartCommand: true
+                isRestored: true
             )
             if let restored = viewScopes.last {
                 sceneState?.restoredViews.append(restored)
@@ -701,10 +701,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         guard let sceneState, !sceneState.restoredViews.isEmpty else {
             return
         }
-        // The index0 initial-view filter intentionally drops a zero-duration baseline.
-        // Emit at a representable positive duration without forwarding the trigger to peers.
+        // Use the trigger time without forwarding the trigger itself to peers.
         let baseline = RUMKeepSessionAliveCommand(
-            time: command.time.addingTimeInterval(0.000001),
+            time: command.time,
             globalAttributes: command.globalAttributes,
             attributes: [:]
         )
