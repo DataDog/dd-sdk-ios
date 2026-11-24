@@ -312,6 +312,8 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// The type of instrumentation that started this view.
     let instrumentationType: InstrumentationType
     var target: RUMCommandTarget
+    /// A repeat of the controller API start replaces its previous occurrence even if ownership changed.
+    let replacesTrackedControllerOwner: Bool
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
     init(
@@ -322,10 +324,12 @@ internal struct RUMStartViewCommand: RUMCommand {
         globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue],
         instrumentationType: InstrumentationType,
-        target: RUMCommandTarget = .processRepresentative
+        target: RUMCommandTarget = .processRepresentative,
+        replacesTrackedControllerOwner: Bool = false
     ) {
         self.time = time
         self.target = target
+        self.replacesTrackedControllerOwner = replacesTrackedControllerOwner
         self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.identity = identity

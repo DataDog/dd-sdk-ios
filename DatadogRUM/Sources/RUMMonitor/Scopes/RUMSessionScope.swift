@@ -792,8 +792,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         if let stop = navigation as? RUMStopViewCommand {
             return views.filter { $0.sceneIdentifier != scene || $0.identity != stop.identity }
         }
+        let start = navigation as? RUMStartViewCommand
         return views.filter {
-            $0.sceneIdentifier != scene && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+            $0.sceneIdentifier != scene
+                && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+                && !(start?.replacesTrackedControllerOwner == true && $0.identity == start?.identity)
         }
     }
 
@@ -965,9 +968,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             guard let destination = sceneState?.navigationDestination, case .ownedScene(let scene) = destination else {
                 return []
             }
+            let start = command as? RUMStartViewCommand
             return viewScopes.filter {
                 $0.sceneIdentifier == scene
-                    || (command is RUMStartViewCommand && $0.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL)
+                    || (start != nil && $0.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL)
+                    || ($0.isActiveView && start?.replacesTrackedControllerOwner == true && $0.identity == start?.identity)
             }
         }
         if command is RUMStopUserActionCommand, case .view(let id) = effectiveTarget(of: command) {
