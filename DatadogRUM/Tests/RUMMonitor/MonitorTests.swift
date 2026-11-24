@@ -968,14 +968,15 @@ extension MonitorTests {
     private func navigationMonitor(
         clock: DateProviderMock,
         cache: ViewCache,
+        scope: MonitorOwnerScope = MonitorOwnerScope(),
         context: @escaping () -> RUMContextHandoff.CurrentValue?
     ) -> Monitor {
         Monitor(
             dependencies: .mockWith(
-                featureScope: MonitorOwnerScope(),
+                featureScope: scope,
                 trackBackgroundEvents: false,
                 viewCache: cache,
-                featureFlags: [.multiSceneTracking: true]
+                featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
             ),
             dateProvider: clock,
             executionContextProvider: { _ in context() }
@@ -1121,9 +1122,10 @@ extension MonitorTests {
             let clock = DateProviderMock(now: snapshotDate)
             let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
             var inferred: RUMContextHandoff.CurrentValue?
-            let monitor = navigationMonitor(clock: clock, cache: cache) { inferred }
+            let scope = MonitorOwnerScope()
+            let monitor = navigationMonitor(clock: clock, cache: cache, scope: scope) { inferred }
             let controller = MonitorControllerReadSpy()
-            monitor.startView(viewController: controller, name: "detached", attributes: [:])
+            monitor.startView(viewController: controller, name: "detached", attributes: ["label": "previous"])
             let detached = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
             let oldID = RUMUUID(rawValue: try XCTUnwrap(UUID(uuidString: detached)))
             startSnapshotView(monitor, key: "peer", target: .scene(sceneB))
@@ -1133,11 +1135,16 @@ extension MonitorTests {
             }
 
             inferred = .init(rumContext: nil, sceneIdentifier: sceneA.rawValue, hasPendingUserAction: false, excludedUserActionID: nil)
-            monitor.startView(viewController: controller, name: "attached", attributes: [:])
+            monitor.startView(viewController: controller, name: "attached", attributes: ["label": "replacement"])
 
             let current = try XCTUnwrap(monitor.applicationScope.activeSession)
             XCTAssertEqual(current.viewScopes.filter { $0.isActiveView && $0.identity == ViewIdentifier(controller) }.map(\.sceneIdentifier), [sceneA])
             XCTAssertNil(monitor.rumContextSnapshot(for: .view(oldID)))
+            let terminal = try XCTUnwrap(scope.base.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == detached })
+            XCTAssertEqual(terminal.view.isActive, false)
+            XCTAssertEqual(terminal.context?.contextInfo["label"] as? String, "previous")
+            let next = try XCTUnwrap(scope.base.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.name == "attached" })
+            XCTAssertEqual(next.context?.contextInfo["label"] as? String, "replacement")
             XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "attached")
 
             inferred = nil
