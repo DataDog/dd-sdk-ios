@@ -1,5 +1,9 @@
 # Unreleased
 
+# 3.18.1 / 23-11-2026
+
+- [FIX] Fix profiler crashes during process-exit cleanup and when memory allocation fails during sample aggregation. See [#3419][]
+
 # 3.18.0 / 21-09-2026
 
 - [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
@@ -1257,6 +1261,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3195]: https://github.com/DataDog/dd-sdk-ios/pull/3195
 [#3200]: https://github.com/DataDog/dd-sdk-ios/pull/3200
 [#3187]: https://github.com/DataDog/dd-sdk-ios/pull/3187
+[#3419]: https://github.com/DataDog/dd-sdk-ios/pull/3419
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
