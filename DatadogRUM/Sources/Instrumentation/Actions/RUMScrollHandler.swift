@@ -175,6 +175,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
         let target: RUMCommandTarget
         let value: RUMContextHandoff.CurrentValue?
         var expiredUnscopedView: RUMExpiredUnscopedActionView? = nil
+        var rolloverSource: RUMCoreContext? = nil
 
         func pending(receipt: RUMContextHandoff.ActionReceipt?) -> Capture {
             Capture(scene: scene, target: target, value: value.map {
@@ -195,7 +196,9 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
                     rumContext: nil,
                     sceneIdentifier: $0.rawValue,
                     hasPendingUserAction: false,
-                    excludedUserActionID: nil
+                    excludedUserActionID: nil,
+                    actionReceipt: value?.actionReceipt,
+                    flagEvaluationContext: value?.rumContext
                 )
             })
         }
@@ -307,11 +310,11 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
             start.target = .continuousAction(ownership)
             start.expiredUnscopedView = frame.capture.expiredUnscopedView
             let receipt = frame.capture.value.map {
-                RUMContextHandoff.ActionReceipt(owner: owner, context: $0.rumContext)
+                RUMContextHandoff.ActionReceipt(owner: owner, context: $0.rumContext, rolloverSource: frame.capture.rolloverSource)
             }
             start.actionReceipt = receipt
             let pending = frame.capture.pending(receipt: receipt)
-            let gesture = Gesture(ownership: ownership, capture: frame.capture)
+            let gesture = Gesture(ownership: ownership, capture: pending)
             // Reentrant customer code can end this gesture while processing its Start.
             gestures[frame.scrollID] = gesture
             let published = withCapture(pending) {
@@ -339,8 +342,9 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
             // Source-less callbacks preserve an inherited binding without inventing one.
             return Capture(scene: nil, target: .processRepresentative, value: nil)
         }
+        var rolloverSource: RUMCoreContext?
         let (target, context, expiredUnscopedView) = isOwnedSubscriber
-            ? expectedMonitor?.captureAutomaticAction(in: scene) ?? (.scene(scene), nil, nil)
+            ? expectedMonitor?.captureAutomaticAction(in: scene, onExpiredView: { rolloverSource = $0 }) ?? (.scene(scene), nil, nil)
             : (.scene(scene), nil, nil)
         let value = RUMContextHandoff.CurrentValue(
             rumContext: context,
@@ -348,7 +352,7 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
             hasPendingUserAction: false,
             excludedUserActionID: nil
         )
-        return Capture(scene: scene, target: target, value: value, expiredUnscopedView: expiredUnscopedView)
+        return Capture(scene: scene, target: target, value: value, expiredUnscopedView: expiredUnscopedView, rolloverSource: rolloverSource)
     }
 
     private var isOwnedSubscriber: Bool {

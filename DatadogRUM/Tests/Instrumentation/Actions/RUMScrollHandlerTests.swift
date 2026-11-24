@@ -405,6 +405,60 @@ final class SceneScrollOwnershipTests: XCTestCase {
         XCTAssertNil(RUMContextHandoff.current(for: peer))
     }
 
+    func testSceneScrollFlagOwnership_resolvesTheFreshViewAtBeginAfterTimeout() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
+        let fixture = SceneScrollFixture()
+        let scene = RUMCommandTarget.scene(.init(rawValue: "a"))
+        let predecessor = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: scene))
+        fixture.expireSession()
+        let scroll = fixture.scroll(in: fixture.windowA)
+        var ownership: RUMCapturedFlagEvaluationOwnership?
+
+        fixture.handler.interceptWillBeginDragging(scroll) {
+            ownership = RUMContextHandoff.current(for: fixture.owner).flatMap {
+                RUMCapturedFlagEvaluationOwnership(capture: .init(owner: fixture.owner, value: $0))
+            }
+        }
+
+        let restored = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: scene))
+        let resolved = try XCTUnwrap(ownership?.resolveView())
+        XCTAssertNotEqual(restored.sessionID, predecessor.sessionID)
+        XCTAssertNotEqual(restored.viewID, predecessor.viewID)
+        XCTAssertEqual(resolved.sessionID.toRUMDataFormat, restored.sessionID)
+        XCTAssertEqual(resolved.viewID.toRUMDataFormat, restored.viewID)
+    }
+
+    func testSceneScrollFlagOwnership_preservesTheViewAcrossBothTerminalCallbacks() throws {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
+        let fixture = SceneScrollFixture()
+        let scene = RUMCommandTarget.scene(.init(rawValue: "a"))
+        let original = try XCTUnwrap(fixture.monitor.rumContextSnapshot(for: scene))
+        let scroll = fixture.scroll(in: fixture.windowA)
+        fixture.handler.interceptWillBeginDragging(scroll) {}
+        var terminalOwners: [String?] = []
+
+        func captureTerminal() {
+            let value = RUMContextHandoff.current(for: fixture.owner)
+            XCTAssertNil(value?.resolvedRUMContext(for: fixture.owner))
+            let ownership = value.flatMap {
+                RUMCapturedFlagEvaluationOwnership(capture: .init(owner: fixture.owner, value: $0))
+            }
+            let resolved = ownership?.resolveView()
+            XCTAssertEqual(resolved?.sessionID.toRUMDataFormat, original.sessionID)
+            terminalOwners.append(resolved?.viewID.toRUMDataFormat)
+        }
+        fixture.handler.interceptDidEndDragging(scroll, willDecelerate: true, operation: captureTerminal)
+        fixture.handler.interceptDidEndDecelerating(scroll, operation: captureTerminal)
+
+        XCTAssertEqual(terminalOwners, [original.viewID, original.viewID])
+    }
+
     func testSceneScroll_restartStopsOldOwnerBeforeFreshStart() throws {
         guard #available(iOS 27.0, *) else {
             assertLegacyScrollDelivery()
