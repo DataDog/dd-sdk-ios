@@ -94,14 +94,17 @@ final class PortableFlagsConfigurationTests: XCTestCase {
         }
     }
 
-    func testFractionalNativeIntegerDoesNotDiscardValidSibling() throws {
-        let parsed = PortableFlagsConfiguration.fromString(try wire(flags: [
-            "good": flag(), "bad": flag(type: "integer", value: 2.5),
-        ]))
+    func testFractionalNativeIntegerMatchesNetworkParser() throws {
+        // A numeric type does not limit reads (FFL-3586), so the network parser accepts a fractional `integer`.
+        let flags: [String: Any] = ["good": flag(), "fractional": flag(type: "integer", value: 2.5)]
+        let response = try string(["data": ["attributes": ["createdAt": "2026-01-01T00:00:00Z", "flags": flags]]])
+        let network = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(response.utf8))
+        let parsed = PortableFlagsConfiguration.fromString(try wire(flags: flags))
         let precomputed = try XCTUnwrap(parsed.precomputed)
         XCTAssertNil(parsed.failure)
-        XCTAssertEqual(Array(precomputed.assignments.flags.keys), ["good"])
-        XCTAssertEqual(precomputed.assignments.failedFlags, ["bad": "Invalid precomputed flag configuration"])
+        XCTAssertEqual(Set(precomputed.assignments.flags.keys), ["good", "fractional"])
+        XCTAssertEqual(precomputed.assignments.flags["fractional"], network.flags["fractional"])
+        XCTAssertTrue(precomputed.assignments.failedFlags.isEmpty)
     }
 
     func testAbsentAndEmptyContextRemainDistinct() throws {
