@@ -45,9 +45,10 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
         guard let capture else {
             return send(body: body, slotId: slotId)
         }
-        send(body: body, slotId: slotId, makeMessage: { message in
+        func ownedMessage(_ message: WebViewMessage) -> FeatureMessage {
             .payload(WebViewMessageWithRUMContext(message: message, capture: capture, sessionExpiry: sessionExpiry))
-        })
+        }
+        send(body: body, slotId: slotId, makeRecordMessage: ownedMessage, makeMessage: ownedMessage)
     }
 
     func send(body: Any, slotId: String?, legacyRegistration: RUMLegacyWebViewTrackingReceipt) {
@@ -56,7 +57,12 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
         })
     }
 
-    private func send(body: Any, slotId: String?, makeMessage: (WebViewMessage) -> FeatureMessage) {
+    private func send(
+        body: Any,
+        slotId: String?,
+        makeRecordMessage: (WebViewMessage) -> FeatureMessage = FeatureMessage.webview,
+        makeMessage: (WebViewMessage) -> FeatureMessage
+    ) {
         guard let core = core else {
             return DD.logger.debug("Core must not be nil when using WebViewTracking")
         }
@@ -79,7 +85,7 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
             case .rum, .telemetry:
                 send(rum: message, makeMessage: makeMessage, in: core)
             case let .record(event, view):
-                send(record: event, view: view, slotId: slotId, in: core)
+                send(record: event, view: view, slotId: slotId, makeMessage: makeRecordMessage, in: core)
             }
         } catch {
             DD.logger.error("Encountered an error when receiving web view event", error: error)
@@ -111,12 +117,18 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
         })
     }
 
-    private func send(record event: WebViewMessage.Event, view: WebViewMessage.View, slotId: String?, in core: DatadogCoreProtocol) {
+    private func send(
+        record event: WebViewMessage.Event,
+        view: WebViewMessage.View,
+        slotId: String?,
+        makeMessage: (WebViewMessage) -> FeatureMessage,
+        in core: DatadogCoreProtocol
+    ) {
         var event = event
         // inject the slotId
         event["slotId"] = slotId
 
-        core.send(message: .webview(.record(event, view)), else: {
+        core.send(message: makeMessage(.record(event, view)), else: {
             DD.logger.warn("A WebView Replay record is lost because Session Replay is disabled in the SDK")
         })
     }
