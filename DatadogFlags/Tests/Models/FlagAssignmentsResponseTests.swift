@@ -771,3 +771,93 @@ final class SplitFeatureParsingTests: XCTestCase {
         XCTAssertEqual(dd.logger.warnMessages.filter { $0.contains("FUTURE") }.count, 1)
     }
 }
+
+final class SnapshotFeatureBridgeTests: XCTestCase {
+    private func decodedAssignment() throws -> FlagAssignment {
+        let json = """
+            {"data":{"attributes":{"observeFullEvaluationData":true,"flags":{"flag":{
+                "allocationKey":"allocation","variationKey":"on","variationType":"boolean",
+                "variationValue":true,"reason":"TARGETING_MATCH","doLog":true,"serialId":0,
+                "features":[
+                    {"key":"holdout.should_include_in_holdout_analysis","value":false,"destinations":["HOOK"]},
+                    {"key":"weight","value":2026,"destinations":["EXPOSURE","EVALUATION"]},
+                    {"key":"holdout.key","value":"2026","destinations":["HOOK","FUTURE"]}
+                ]
+            }}}}}
+            """
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(json.utf8))
+        return try XCTUnwrap(response.flags["flag"])
+    }
+
+    private func rebuilt(_ assignment: FlagAssignment, serialID: Int?) -> FlagAssignment {
+        FlagAssignment(
+            allocationKey: assignment.allocationKey,
+            variationKey: assignment.variationKey,
+            variation: assignment.variation,
+            reason: assignment.reason,
+            doLog: assignment.doLog,
+            serialID: serialID,
+            observeFullEvaluationData: assignment.observeFullEvaluationData,
+            snapshotFeatures: assignment.snapshotFeatures
+        )
+    }
+
+    func testSnapshotFeaturesRoundTripThroughTheBridgeInitializer() throws {
+        let native = try decodedAssignment()
+
+        XCTAssertEqual(native.snapshotFeatures, [
+            FlagSnapshotFeature(key: "holdout.should_include_in_holdout_analysis", value: .bool(false), destinations: ["HOOK"]),
+            FlagSnapshotFeature(key: "weight", value: .number(2_026), destinations: ["EXPOSURE", "EVALUATION"]),
+            FlagSnapshotFeature(key: "holdout.key", value: .string("2026"), destinations: ["HOOK", "FUTURE"]),
+        ])
+        XCTAssertEqual(rebuilt(native, serialID: 0), native)
+        XCTAssertTrue(rebuilt(native, serialID: 0).observeFullEvaluationData)
+
+        for serialID in [nil, 0, Int.max] {
+            var expected = native
+            expected.serialID = serialID
+            XCTAssertEqual(rebuilt(expected, serialID: serialID), expected, "serial ID \(String(describing: serialID))")
+        }
+
+        var protected = native
+        protected.observeFullEvaluationData = false
+        XCTAssertFalse(rebuilt(protected, serialID: 0).observeFullEvaluationData)
+    }
+
+    func testBridgeInitializerNormalizesFeaturesLikeDecoding() {
+        let assignment = FlagAssignment(
+            allocationKey: "allocation",
+            variationKey: "on",
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: true,
+            serialID: nil,
+            observeFullEvaluationData: false,
+            snapshotFeatures: [
+                FlagSnapshotFeature(key: "", value: .string("no key"), destinations: ["HOOK"]),
+                FlagSnapshotFeature(key: "k", value: .number(.nan), destinations: ["HOOK"]),
+                FlagSnapshotFeature(key: "k", value: .number(.infinity), destinations: ["HOOK"]),
+                FlagSnapshotFeature(key: "k", value: .string("no destination"), destinations: ["", ""]),
+                FlagSnapshotFeature(key: "k", value: .string("first"), destinations: ["", "HOOK", "FUTURE"]),
+                FlagSnapshotFeature(key: "k", value: .bool(true), destinations: ["EXPOSURE"]),
+                FlagSnapshotFeature(key: "n", value: .number(-0.5), destinations: ["EVALUATION"]),
+            ]
+        )
+
+        XCTAssertEqual(assignment.features, [
+            SplitFeature(key: "k", value: .string("first"), destinations: ["HOOK", "FUTURE"]),
+            SplitFeature(key: "n", value: .double(-0.5), destinations: ["EVALUATION"]),
+        ])
+        XCTAssertEqual(assignment.features.values(for: .hook), ["k": .string("first")])
+        XCTAssertEqual(assignment.features.values(for: .exposure), [:])
+        XCTAssertEqual(assignment.features.values(for: .evaluation), ["n": .double(-0.5)])
+    }
+
+    func testPublicInitializerBuildsNoFeaturesAndProtectedConsent() {
+        let assignment = FlagAssignment(allocationKey: "a", variationKey: "v", variation: .boolean(true), reason: "STATIC", doLog: true)
+
+        XCTAssertEqual(assignment.features, [])
+        XCTAssertEqual(assignment.snapshotFeatures, [])
+        XCTAssertFalse(assignment.observeFullEvaluationData)
+    }
+}
