@@ -112,6 +112,32 @@ class WebViewRecordReceiverTests: XCTestCase {
         }
     }
 
+    func testLegacyRecordChecksRegistrationWhenItWrites() throws {
+        let original = RUMCoreContext.mockWith(sessionID: UUID(), viewID: nil)
+        let replacement = RUMCoreContext.mockWith(sessionID: UUID(), viewID: nil)
+        for registrationWasReplaced in [false, true] {
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [original]), deferEventWriteContext: true)
+            let receiver = WebViewRecordReceiver(scope: scope)
+            var isCurrent = true
+            let receipt = RUMLegacyWebViewTrackingReceipt(isCurrent: { isCurrent }, setRUMContext: { _ in })
+            let message = FeatureMessage.payload(WebViewMessageWithLegacyRUMRegistration(
+                message: .record(["timestamp": 123], .init(id: "legacy-view")),
+                receipt: receipt
+            ))
+
+            XCTAssertTrue(receiver.receive(message: message, from: NOPDatadogCore()))
+            if registrationWasReplaced {
+                isCurrent = false
+                scope.contextMock = .mockWith(additionalContext: [replacement])
+            }
+            scope.flushDeferredEventWriteContexts()
+
+            let records = scope.eventsWritten(ofType: WebViewRecordReceiver.WebRecord.self)
+            XCTAssertEqual(records.map(\.sessionID), registrationWasReplaced ? [] : [original.sessionID])
+            XCTAssertEqual(records.map(\.viewID), registrationWasReplaced ? [] : ["legacy-view"])
+        }
+    }
+
     func testWhenReceivingOtherMessage_itRejectsIt() throws {
         let scope = FeatureScopeMock()
 

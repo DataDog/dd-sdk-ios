@@ -26,13 +26,20 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
     func receive(message: DatadogInternal.FeatureMessage, from core: DatadogInternal.DatadogCoreProtocol) -> Bool {
         let record: WebViewMessage
         let receipt: WebViewMessageWithRUMContext?
+        let legacyRegistration: RUMLegacyWebViewTrackingReceipt?
         switch message {
         case .webview(let message):
             record = message
             receipt = nil
+            legacyRegistration = nil
         case let .payload(message as WebViewMessageWithRUMContext):
             record = message.message
             receipt = message
+            legacyRegistration = nil
+        case let .payload(message as WebViewMessageWithLegacyRUMRegistration):
+            record = message.message
+            receipt = nil
+            legacyRegistration = message.receipt
         default:
             return false
         }
@@ -41,6 +48,9 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
         }
 
         scope.eventWriteContext { context, writer in
+            guard legacyRegistration?.isCurrent != false else {
+                return
+            }
             let current = context.additionalContext(ofType: RUMCoreContext.self)
             let rumContext: RUMCoreContext?
             if let receipt {
