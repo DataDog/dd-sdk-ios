@@ -463,6 +463,9 @@ internal final class FlagsRepository {
 
     /// Required mode only. When the installed proof expires, `ready` becomes `stale`, or `ready` and `stale`
     /// become `error` when `expireVerifiedFlags` is set. Reads and an expiry timer call this.
+    ///
+    /// It also applies while a refresh is reconciling, and keeps the pending request. When the clock returns into
+    /// the proof window, a client that this rule moved to `error` recovers to `ready` (or `stale` when not fresh).
     private func applyVerifiedExpiry() {
         guard flagAssignmentsFetcher.responseSigningMode == .required else {
             return
@@ -471,13 +474,31 @@ internal final class FlagsRepository {
         var notifyListeners: (() -> Void)?
         _repositoryState.mutate { state in
             let current = stateManager.currentState
-            guard current == .ready || current == .stale, let data = state.flagsData,
-                data.verification != nil,
-                !flagAssignmentsFetcher.isVerified(data.verification, at: now)
-            else {
+            guard let data = state.flagsData, data.verification != nil else {
                 return
             }
-            let newState: FlagsClientState = flagAssignmentsFetcher.isTrusted(data.verification, at: now) ? .stale : .error
+            let verified = flagAssignmentsFetcher.isVerified(data.verification, at: now)
+            let trusted = flagAssignmentsFetcher.isTrusted(data.verification, at: now)
+            let newState: FlagsClientState
+            switch current {
+            case .ready, .stale, .reconciling:
+                guard !verified else {
+                    return
+                }
+                newState = trusted ? .stale : .error
+                // A failed refresh can already be `stale`; expiry only moves it further, to `error`.
+                if current == .stale && newState == .stale {
+                    return
+                }
+            case .error:
+                // Recover only the installed, trusted proof of the requested context.
+                guard trusted, canUseSigned(data, matching: state.latestRequestedContext) else {
+                    return
+                }
+                newState = verified ? .ready : .stale
+            case .notReady:
+                return
+            }
             guard newState != current else {
                 return
             }

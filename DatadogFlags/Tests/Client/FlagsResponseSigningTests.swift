@@ -13,12 +13,6 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsResponseSigningTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        // Signing telemetry is deduplicated per process. Each test starts with an empty set.
-        FlagAssignmentsFetcher.resetSigningTelemetry()
-    }
-
     func testObserveCacheRemainsBoundedAcrossContextsAndTrustScopes() throws {
         let store = SigningDataStoreSpy()
         let fetcher = SigningLifecycleFetcher(mode: .observe)
@@ -738,8 +732,8 @@ final class FlagsResponseSigningTests: XCTestCase {
             }
             return id
         }
-        // required reports failures only, once for each distinct reason.
-        XCTAssertEqual(reports, ["flags.response_signing:required:unverified:missing-proof"])
+        // required reports failures only. Both failures have the same id, so RUM keeps one for each session.
+        XCTAssertEqual(reports, Array(repeating: "flags.response_signing:required:unverified:missing-proof", count: 2))
     }
 
     func testFetcherModesAndRedirectFailures() throws {
@@ -2023,13 +2017,14 @@ extension FlagsResponseSigningTests {
         wait(for: [done], timeout: 2)
     }
 
-    func testSigningTelemetrySendsOneEventForIdenticalFailures() throws {
+    /// The SDK keeps no dedupe set: RUM telemetry deduplicates by id for each session, after its sampling.
+    func testSigningTelemetryGivesIdenticalFailuresTheSameEventID() throws {
         let scope = FeatureScopeMock(context: .mockWith(source: "ios", sdkVersion: "1.2.3"))
         let fetcher = try telemetryFetcher(mode: .observe, scope: scope) { _ in [:] }
         fetchOnce(fetcher)
         fetchOnce(fetcher)
         let events = signingEvents(scope)
-        XCTAssertEqual(events.map(\.id), ["flags.response_signing:observe:unverified:missing-proof"])
+        XCTAssertEqual(events.map(\.id), Array(repeating: "flags.response_signing:observe:unverified:missing-proof", count: 2))
         // The event has only the fields of the shared table.
         XCTAssertEqual(
             events.first?.attributes,
@@ -2280,6 +2275,180 @@ extension FlagsResponseSigningTests {
         XCTAssertNil(FlagAssignmentsFetcher(
             customEndpoint: nil, customHeaders: nil, flagSelection: nil, featureScope: FeatureScopeMock()
         ).responseSigningSession, "Signing off has no signing session")
+    }
+}
+
+extension FlagsResponseSigningTests {
+    // MARK: - Backward clock steps
+
+    func testBackwardClockStepIsToleratedUpToThirtySecondsThenHandledAsExpiryAndRecovers() {
+        for strict in [false, true] {
+            let fetcher = SigningLifecycleFetcher(mode: .required)
+            fetcher.trustExpired = !strict
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: 100))
+            let repository = FlagsRepository(
+                clientName: "signed",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: clock,
+                featureScope: FeatureScopeMock(),
+                flagSelection: nil,
+                initializationTimeout: nil,
+                scheduleExpiry: { _, _ in }
+            )
+            defer { repository.flush() }
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { _ in }
+            fetcher.completeVerified(index: 0, expiry: 200) // verified at 100
+            // A step of 30 s back keeps the proof fresh.
+            clock.now = Date(timeIntervalSince1970: 70)
+            XCTAssertNotNil(repository.flagAssignment(for: "flag"), "strict=\(strict)")
+            XCTAssertEqual(repository.state.currentState, .ready, "strict=\(strict)")
+            // A larger step is handled as expiry.
+            clock.now = Date(timeIntervalSince1970: 69)
+            XCTAssertEqual(repository.flagAssignment(for: "flag") != nil, !strict, "strict=\(strict)")
+            XCTAssertEqual(repository.state.currentState, strict ? .error : .stale, "strict=\(strict)")
+            // The clock returns into the proof window: the client leaves `error`.
+            clock.now = Date(timeIntervalSince1970: 150)
+            XCTAssertNotNil(repository.flagAssignment(for: "flag"), "strict=\(strict)")
+            XCTAssertEqual(repository.state.currentState, strict ? .ready : .stale, "strict=\(strict)")
+        }
+    }
+
+    func testProofValidityToleratesThirtySecondsBeforeVerification() {
+        let proof = FlagsResponseVerification(scope: UUID(), verifiedAt: 100, expiresAt: 200)
+        XCTAssertTrue(proof.isValid(at: Date(timeIntervalSince1970: 70), scope: proof.scope))
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 69), scope: proof.scope))
+        XCTAssertTrue(proof.isValid(at: Date(timeIntervalSince1970: 69), scope: proof.scope, allowExpired: true))
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 69), scope: UUID(), allowExpired: true))
+    }
+
+    // MARK: - expireVerifiedFlags through the real fetcher
+
+    private func realSigningFetcher(
+        expireVerifiedFlags: Bool,
+        clock: DateProviderMock,
+        body: Data
+    ) throws -> FlagAssignmentsFetcher {
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        return FlagAssignmentsFetcher(
+            customEndpoint: URL(string: "https://flags.example.test/precompute-assignments"),
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+            responseSigning: .init(
+                mode: .required,
+                trustedRootCertificates: [try SigningChainFixture.root("root-a")],
+                expireVerifiedFlags: expireVerifiedFlags
+            ),
+            dateProvider: clock,
+            minimumNotBeforeStore: MinimumNotBeforeStoreMock(),
+            signingFetch: { request, complete in
+                do {
+                    let headers = try fixture.signedHeaders(request: request, body: body)
+                    complete(.success((body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headers)!)))
+                } catch {
+                    complete(.failure(error))
+                }
+            },
+            fetch: { _, _ in XCTFail("Signing must use the signing transport") }
+        )
+    }
+
+    func testRealFetcherAppliesExpireVerifiedFlagsAcrossExpiresAt() throws {
+        for strict in [false, true] {
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
+            let body = Data.mockAnyFlagAssignmentsResponse()
+            let fetcher = try realSigningFetcher(expireVerifiedFlags: strict, clock: clock, body: body)
+            let repository = FlagsRepository(
+                clientName: "signed-\(strict)",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: clock,
+                featureScope: FeatureScopeMock(),
+                flagSelection: nil,
+                initializationTimeout: nil,
+                scheduleExpiry: { _, _ in }
+            )
+            defer { repository.flush() }
+            let done = expectation(description: "context \(strict)")
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { result in
+                if case .failure(let error) = result { XCTFail("\(error)") }
+                done.fulfill()
+            }
+            wait(for: [done], timeout: 2)
+            let proof = try XCTUnwrap(repository.assignmentsSnapshot()?.verification)
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertFalse(try XCTUnwrap(repository.flagAssignments()).isEmpty)
+
+            // The fixture proof expires 300 s after it was issued.
+            clock.now = Date(timeIntervalSince1970: SigningChainFixture.now + 300)
+            XCTAssertFalse(fetcher.isVerified(proof, at: clock.now))
+            XCTAssertEqual(fetcher.isTrusted(proof, at: clock.now), !strict, "strict=\(strict)")
+            XCTAssertEqual(repository.flagAssignments().map { !$0.isEmpty } ?? false, !strict, "strict=\(strict)")
+            XCTAssertEqual(repository.state.currentState, strict ? .error : .stale, "strict=\(strict)")
+        }
+    }
+
+    /// The fetcher verifies the proof, but the proof expires before the repository admits it. In the default setting,
+    /// `isTrusted` still accepts it, so only the outer admission check can reject the response.
+    func testOuterAdmissionCheckRejectsAProofThatExpiredBeforeAdmission() throws {
+        let fetcherClock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
+        let repositoryClock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now + 400))
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let fetcher = try realSigningFetcher(expireVerifiedFlags: false, clock: fetcherClock, body: body)
+        let repository = FlagsRepository(
+            clientName: "signed",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: repositoryClock,
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            initializationTimeout: nil,
+            scheduleExpiry: { _, _ in }
+        )
+        defer { repository.flush() }
+        let done = expectation(description: "context")
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { result in
+            defer { done.fulfill() }
+            guard case .failure(.responseSigningFailed(reason: "expired-proof")) = result else {
+                return XCTFail("Expected expired-proof, got \(result)")
+            }
+        }
+        wait(for: [done], timeout: 2)
+        XCTAssertNil(repository.flagAssignments())
+        XCTAssertEqual(repository.state.currentState, .error)
+    }
+
+    // MARK: - Expiry while a refresh is reconciling
+
+    func testProofExpiryAppliesWhileReconcilingAndKeepsThePendingRequest() {
+        for strict in [false, true] {
+            let fetcher = SigningLifecycleFetcher(mode: .required)
+            fetcher.trustExpired = !strict
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: 100))
+            var scheduled: [() -> Void] = []
+            let repository = FlagsRepository(
+                clientName: "signed",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: clock,
+                featureScope: FeatureScopeMock(),
+                flagSelection: nil,
+                initializationTimeout: nil,
+                scheduleExpiry: { scheduled.append($1) }
+            )
+            defer { repository.flush() }
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "a")) { _ in }
+            fetcher.completeVerified(index: 0, expiry: 200)
+            var completed: Result<Void, FlagsError>?
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "b")) { completed = $0 }
+            XCTAssertEqual(repository.state.currentState, .reconciling, "strict=\(strict)")
+            // The proof of `a` expires while the refresh for `b` is in flight.
+            clock.now = Date(timeIntervalSince1970: 200)
+            scheduled.forEach { $0() }
+            XCTAssertEqual(repository.state.currentState, strict ? .error : .stale, "strict=\(strict)")
+            XCTAssertNil(completed, "The pending request is kept")
+            // A verified response for `b` restores `ready`.
+            fetcher.completeVerified(index: 1, expiry: 500)
+            XCTAssertEqual(repository.state.currentState, .ready, "strict=\(strict)")
+            XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        }
     }
 }
 

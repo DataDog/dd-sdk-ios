@@ -470,15 +470,6 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         return site == "datad0g.com" || site.hasSuffix("datadoghq.com") || site.hasSuffix("datadoghq.eu") ? site : "custom"
     }
 
-    /// One `flags.response_signing` event for each distinct (mode, result, reason) in the process.
-    @ReadWriteLock
-    private static var reportedSigningEvents = Set<String>()
-
-    /// For tests only.
-    static func resetSigningTelemetry() {
-        _reportedSigningEvents.mutate { $0.removeAll() }
-    }
-
     private func reportSigning(_ error: FlagsSigningError?, telemetry: SigningTelemetryContext) {
         if let error, reportedSigningOutcomes.insert(error.rawValue).inserted {
             // One user log for each code. `required` fails closed, so it logs an error; `observe` only warns.
@@ -499,12 +490,9 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             return
         }
         let result = error == nil ? "verified" : "unverified"
+        // The event id carries (mode, result, reason). RUM telemetry deduplicates by id for each session and
+        // samples the events, so the SDK keeps no dedupe set of its own: a sampled-out event can be sent again.
         let key = "\(mode):\(result):\(error?.rawValue ?? "")"
-        var inserted = false
-        Self._reportedSigningEvents.mutate { inserted = $0.insert(key).inserted }
-        guard inserted else {
-            return
-        }
         var attributes: [String: Encodable] = [
             "mode": mode,
             "result": result,

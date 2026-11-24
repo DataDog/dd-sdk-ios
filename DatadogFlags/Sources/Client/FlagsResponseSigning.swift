@@ -18,7 +18,7 @@ extension Flags {
         case off
         /// Accept otherwise-valid assignments when verification fails. Intended for initial rollout.
         case observe
-        /// Require verification; use only unexpired verified memory for fallback.
+        /// Require verification. Verified flags stay in memory only; see expireVerifiedFlags for proof expiry.
         case required
     }
 
@@ -132,9 +132,15 @@ internal struct FlagsResponseVerification: Equatable {
     var ignoredMinimumNotBefore = false
 
     /// `allowExpired` keeps a proof usable after `expiresAt`: it was verified once in this scope, but it is not fresh.
+    /// The largest backward clock step after verification that keeps the proof fresh, like the `issued-at` allowance.
+    static let backwardClockTolerance: TimeInterval = 30
+
+    /// A proof is fresh from `verifiedAt` (less a 30 s backward clock step) until `expiresAt`.
+    /// A larger backward step is handled as expiry: `allowExpired` keeps the proof usable as not fresh.
     func isValid(at now: Date, scope: UUID, allowExpired: Bool = false) -> Bool {
-        self.scope == scope && verifiedAt <= now.timeIntervalSince1970
-            && (allowExpired || expiresAt > now.timeIntervalSince1970)
+        let seconds = now.timeIntervalSince1970
+        let fresh = verifiedAt - Self.backwardClockTolerance <= seconds && expiresAt > seconds
+        return self.scope == scope && (allowExpired || fresh)
     }
 }
 
