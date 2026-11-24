@@ -8,6 +8,7 @@
 
 import XCTest
 import DatadogInternal
+import DatadogMachProfiler
 import TestUtilities
 @testable import DatadogProfiling
 
@@ -52,7 +53,7 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], [vital.id])
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalLabel] as? [String], [vital.name])
         XCTAssertEqual(telemetry.messages.count, 1)
-        XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name)?.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name)?.attributes[ProfilingDiagnostics.Constants.diagnosticsKey])
     }
 
     func testWriteHeapProfile_containsOnlyHeapPprof() throws {
@@ -85,7 +86,7 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertEqual(uploadedEvent["attachments"] as? [String], ["heap.pprof", "rum-mobile-events.json"])
         XCTAssertEqual(multipart.formFiles[1].data, heap.attachment.data)
         let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
-        XCTAssertNil(metric.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
+        XCTAssertNil(metric.attributes[ProfilingDiagnostics.Constants.diagnosticsKey])
     }
 
     func testWriteTwoSnapshots_writesOneEventWithBothPprofsAndOneRUMAttachment() throws {
@@ -104,7 +105,7 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertEqual(attachments.pprofs.map(\.filename), ["profile.pprof", "heap.pprof"])
         XCTAssertEqual(attachments.pprofs.map(\.data), [cpu.attachment.data, heap.attachment.data])
         XCTAssertEqual(telemetry.messages.count, 1)
-        XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name)?.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name)?.attributes[ProfilingDiagnostics.Constants.diagnosticsKey])
     }
 
     func testWritePrefersCPURUMDataInEitherSnapshotOrder() throws {
@@ -208,7 +209,7 @@ final class ProfileWriterTests: XCTestCase {
             XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [task.id])
             XCTAssertEqual(Set(attachments.pprofs.map(\.filename)), ["profile.pprof", "heap.pprof"])
             let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
-            XCTAssertNotNil(metric.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
+            XCTAssertNotNil(metric.attributes[ProfilingDiagnostics.Constants.diagnosticsKey])
         }
         XCTAssertEqual(core.events.count, 2)
     }
@@ -419,7 +420,7 @@ final class ProfileWriterTests: XCTestCase {
 
         XCTAssertTrue(core.events.isEmpty)
         let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
-        XCTAssertNil(metric.attributes[AggregationDiagnosticsMetric.Constants.diagnosticsKey])
+        XCTAssertNil(metric.attributes[ProfilingDiagnostics.Constants.diagnosticsKey])
     }
 
     func testWriteDeferredContext_preservesOperationAndCapturedData() throws {
@@ -440,6 +441,46 @@ final class ProfileWriterTests: XCTestCase {
             metricTelemetry.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes
         )
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
+    }
+
+    func testDeferredWritesKeepMemoryDiagnosticsWithTheirCaptureAndReportProfileTypes() throws {
+        let scope = FeatureScopeMock(deferEventWriteContext: true)
+        let writer = ProfileWriter(featureScope: scope, telemetryController: .init(telemetry: telemetry))
+        var native = dd_memory_profiler_diagnostics_t()
+        native.window.recorded_allocations = 11
+        var heap = snapshot(filename: "heap.pprof")
+        heap.memoryDiagnostics = .init(result: .encoded, diagnostics: native)
+        writer.write([snapshot(), heap], operation: .continuousProfiling)
+
+        native.window.recorded_allocations = 22
+        heap.memoryDiagnostics = .init(result: .encoded, diagnostics: native)
+        writer.write([heap], operation: .continuousProfiling)
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        scope.flushDeferredEventWriteContexts()
+
+        let metrics = telemetry.messages.compactMap(\.asMetric)
+        XCTAssertEqual(metrics.count, 2)
+        let sessions = metrics.compactMap { $0.attributes["profiling_session"] as? ProfilingSessionMetric.Attributes }
+        XCTAssertEqual(sessions.map(\.profileTypes), [["cpu", "memory"], ["memory"]])
+        XCTAssertEqual(sessions.map(\.cycleIndex), [0, 1])
+        let diagnostics = metrics.compactMap { $0.attributes["profiling_diagnostics"] as? ProfilingDiagnostics }
+        XCTAssertNotNil(diagnostics[0].cpu)
+        XCTAssertNil(diagnostics[1].cpu)
+        XCTAssertEqual(diagnostics.compactMap { $0.memory?.recordedAllocations }, [11, 22])
+        XCTAssertTrue(metrics.allSatisfy { $0.name == "Profiling Session" })
+    }
+
+    func testUncorrelatedHeapStillReportsItsDiagnostics() throws {
+        var heap = snapshot(filename: "heap.pprof", rumEvents: [])
+        heap.memoryDiagnostics = .init(result: .encoded, diagnostics: .init())
+        writer.write([heap], operation: .continuousProfiling)
+
+        XCTAssertTrue(core.events.isEmpty)
+        let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: "Profiling Session"))
+        let session = try XCTUnwrap(metric.attributes["profiling_session"] as? ProfilingSessionMetric.Attributes)
+        XCTAssertEqual(session.profileTypes, ["memory"])
+        XCTAssertEqual(session.errorMessage, ProfilingSessionMetric.Constants.noProfiledEventsErrorMessage)
+        XCTAssertNotNil((metric.attributes["profiling_diagnostics"] as? ProfilingDiagnostics)?.memory)
     }
 
     private func snapshot(

@@ -18,6 +18,7 @@ import TestUtilities
 final class MemoryProfilerTests: XCTestCase {
     private let queue = DispatchQueue(label: "test.memory-profiler")
     private let core = PassthroughCoreMock()
+    private let telemetry = TelemetryMock()
     private let sessionID = UUID()
     private var profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: 0, memorySampleRate: 100)
 
@@ -2320,6 +2321,223 @@ final class MemoryProfilerTests: XCTestCase {
         drain()
     }
 
+    func testTelemetryReportsWindowEncodingIdleAndOrderlyStopWithoutDoubleCounting() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record()
+        profiler.captureWindow()
+        profiler.captureWindow()
+        drain()
+        profiler.flushAndStop()
+        profiler.flushAndStop()
+
+        let windows = memoryMetrics
+        XCTAssertEqual(windows.map(\.captureResult), [.encoded, .idle, .idle])
+        XCTAssertGreaterThan(windows[0].payloadBytes, 0)
+        XCTAssertGreaterThan(windows[0].encoderStorageBytes, 0)
+        XCTAssertGreaterThan(windows[0].recorderStorageBytes, 0)
+        XCTAssertEqual(windows[0].recordedAllocations, 1)
+        XCTAssertEqual(windows[1].recordedAllocations, 0)
+        XCTAssertEqual(memoryMetrics.reduce(0) { $0 + $1.recordedAllocations }, 1)
+    }
+
+    func testNewOwnerDoesNotReportCountersFromThePreviousSDKLifetime() {
+        let first = makeProfiler()
+        receive(context: context(), on: first)
+        drain()
+        record()
+        first.captureWindow()
+        drain()
+        first.flushAndStop()
+
+        let second = makeProfiler()
+        receive(context: context(), on: second)
+        drain()
+        record()
+        second.captureWindow()
+        drain()
+        second.flushAndStop()
+
+        XCTAssertEqual(memoryMetrics.reduce(0) { $0 + $1.sampledAllocations }, 2)
+        withExtendedLifetime((first, second)) {}
+    }
+
+    func testTelemetryReportsBothInterceptionFailuresAsMetrics() throws {
+        for failure in [DD_MEMORY_TEST_SWIFT_HOOK_FAILS, DD_MEMORY_TEST_OBJC_HOOK_FAILS] {
+            dd_memory_profiler_configure_for_testing(failure)
+            let profiler = makeProfiler()
+            receive(context: context(), on: profiler)
+            receive(context: context(), on: profiler)
+            drain()
+            let metric = try XCTUnwrap(memoryMetrics.last { $0.captureResult == .startFailed })
+            XCTAssertEqual(profiler.state, .failed)
+            if failure == DD_MEMORY_TEST_SWIFT_HOOK_FAILS {
+                XCTAssertEqual(metric.swiftInstallResult, Int32(DD_SWIFT_ALLOC_HOOK_FAILED_REBIND.rawValue))
+                XCTAssertEqual(metric.objcInstallResult, -1)
+            } else {
+                XCTAssertEqual(metric.objcInstallResult, Int32(DD_OBJC_ALLOC_HOOK_FAILED_INSTALL.rawValue))
+            }
+        }
+        XCTAssertEqual(memoryMetrics.filter { $0.captureResult == .startFailed }.count, 2)
+        XCTAssertEqual(telemetry.messages.compactMap(\.asMetric).count, telemetry.messages.count)
+    }
+
+    func testTelemetryPreservesCaptureFailureThroughNativeStop() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        dd_memory_profiler_fail_next_capture_for_testing()
+        profiler.captureWindow()
+        drain()
+
+        XCTAssertEqual(memoryMetrics.last?.captureResult, .captureFailed)
+        XCTAssertEqual(profiler.state, .failed)
+        XCTAssertEqual(memoryMetrics.count, 1)
+    }
+
+    func testTelemetryEncodesTheFinalFreeInsteadOfSkippingAnEmptyLiveSet() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        record()
+        profiler.captureWindow()
+        drain()
+        dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x10000))
+        profiler.captureWindow()
+        drain()
+
+        let windows = memoryMetrics
+        XCTAssertEqual(windows.map(\.captureResult), [.encoded, .encoded])
+        XCTAssertEqual(windows[1].liveOccupancy, 0)
+        XCTAssertGreaterThan(windows[1].payloadBytes, 0)
+        XCTAssertGreaterThan(windows[1].tombstones, 0)
+    }
+
+    func testTelemetryReportsDiscardedSampledOutWindow() {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(sampleRate: 0), on: profiler)
+        drain()
+        record()
+        receive(context: context(sessionID: UUID(), sampleRate: 0), on: profiler)
+        drain()
+
+        let window = memoryMetrics.last
+        XCTAssertEqual(window?.captureResult, .discarded)
+        XCTAssertEqual(window?.sampledAllocations, 1)
+        XCTAssertEqual(window?.payloadBytes, 0)
+        XCTAssertTrue(dd_memory_profiler_is_running())
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testTelemetryReportsInvalidCaptureTime() {
+        let profiler = makeRuntimeProfiler()
+        var invalidContext = context()
+        invalidContext.serverTimeOffset = -Date().timeIntervalSince1970 - 10
+        receive(context: invalidContext, on: profiler)
+        drain()
+        record()
+        profiler.captureWindow()
+        drain()
+
+        XCTAssertEqual(memoryMetrics.last?.captureResult, .invalidTime)
+        XCTAssertEqual(memoryMetrics.last?.payloadBytes, 0)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testTelemetryReportsAllocationLogOverflowAndWindowReset() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        let capacity = Int(DD_MEMORY_ALLOCATION_WINDOW_CAPACITY)
+        for _ in 0..<capacity {
+            record()
+            dd_memory_profiler_remove_for_testing(UnsafeRawPointer(bitPattern: 0x10000))
+        }
+        record(address: 0x20000)
+        profiler.captureWindow()
+        profiler.captureWindow()
+        drain()
+
+        let windows = memoryMetrics
+        XCTAssertEqual(windows[0].droppedAllocRecords, 1)
+        XCTAssertEqual(windows[0].droppedSamples, 0)
+        XCTAssertEqual(windows[0].recordedAllocations, UInt64(capacity))
+        XCTAssertEqual(windows[1].droppedAllocRecords, 0)
+        XCTAssertEqual(windows[1].recordedAllocations, 0)
+    }
+
+    func testTelemetryReportsLiveTableOverflowWithoutRepeatingDrops() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        // Fill all home buckets exactly once before asking the full table to admit another sample.
+        var buckets = Set<Int>()
+        var candidate: UInt = 0x10000
+        while buckets.count < Int(DD_MEMORY_LIVE_SET_CAPACITY) {
+            let bucket = dd_memory_live_set_bucket(UnsafeRawPointer(bitPattern: candidate))
+            if buckets.insert(bucket).inserted {
+                record(address: candidate)
+            }
+            candidate += 0x10
+        }
+        record(address: candidate)
+        profiler.captureWindow()
+        drain()
+        record(address: candidate + 0x10)
+        profiler.captureWindow()
+        drain()
+
+        let windows = memoryMetrics
+        XCTAssertEqual(windows[0].droppedSamples, 1)
+        XCTAssertEqual(windows[0].peakLiveOccupancy, UInt64(DD_MEMORY_LIVE_SET_CAPACITY))
+        XCTAssertEqual(windows[0].maxProbeLength, UInt64(DD_MEMORY_LIVE_SET_MAX_PROBE))
+        XCTAssertGreaterThan(windows[0].averageProbeLength, 0)
+        XCTAssertEqual(windows[1].droppedSamples, 1)
+    }
+
+    func testTelemetryPayloadExcludesCapturedDataAndCustomerAttributes() throws {
+        let profiler = makeRuntimeProfiler()
+        receive(context: context(), on: profiler)
+        drain()
+        "PrivateCustomerClass".withCString { name in
+            var sample = dd_memory_live_sample_t()
+            sample.address = UnsafeRawPointer(bitPattern: 0x123456ab)
+            sample.size = 16
+            sample.weight = 1
+            sample.class_name = name
+            sample.frames.0 = 0xdeadbeef
+            sample.frame_count = 1
+            dd_memory_profiler_record_for_testing(&sample)
+        }
+        _ = profiler.receive(message: .payload(LongTaskMessage(
+            attributes: ["private.attribute": "PrivateCustomerValue"],
+            longTask: .init(id: "PrivateCustomerEvent", type: .longTask, start: 0, duration: 0)
+        )), from: core)
+        profiler.captureWindow()
+        drain()
+        profiler.flushAndStop()
+
+        for metric in memoryMetrics {
+            let data = try JSONEncoder().encode(metric)
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            XCTAssertEqual(json["capture_result"] as? String, metric.captureResult.rawValue)
+            XCTAssertNil(json["outcome"])
+            XCTAssertTrue(json.filter { $0.key != "capture_result" }.values.allSatisfy { $0 is NSNumber })
+            let text = String(decoding: data, as: UTF8.self)
+            for forbidden in ["PrivateCustomer", "private.attribute", "123456ab", "deadbeef", "3735928559", sessionID.uuidString.lowercased()] {
+                XCTAssertFalse(text.contains(forbidden), text)
+            }
+        }
+        XCTAssertFalse(memoryMetrics.isEmpty)
+    }
+
+    private var memoryMetrics: [MemoryDiagnostics] {
+        telemetry.messages.compactMap {
+            ($0.asMetric?.attributes[ProfilingDiagnostics.Constants.diagnosticsKey] as? ProfilingDiagnostics)?.memory
+        }
+    }
+
     private var diagnostics: dd_memory_profiler_test_capture_diagnostics_t {
         dd_memory_profiler_capture_diagnostics_for_testing()
     }
@@ -2350,11 +2568,13 @@ final class MemoryProfilerTests: XCTestCase {
             continuousSampleRate: 0,
             memorySampleRate: memorySampleRate
         )
-        let writer = ProfileWriter(featureScope: core)
+        let telemetryController = ProfilingTelemetryController(sampleRate: 100, telemetry: telemetry)
+        let writer = ProfileWriter(featureScope: core, telemetryController: telemetryController)
         return MemoryProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
             writer: writer,
             scheduler: ProfilingScheduler(writer: writer, profilingInterval: profilingInterval),
+            telemetryController: telemetryController,
             queue: queue,
             dateProvider: dateProvider,
             monotonicClock: monotonicClock,

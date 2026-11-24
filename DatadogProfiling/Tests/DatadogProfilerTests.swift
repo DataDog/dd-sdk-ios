@@ -3112,48 +3112,36 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testContinuousProfiler_resetsCycleIndex_whenRUMSessionChanges() {
-        // Given
+    func testContinuousProfiler_resetsTelemetryCycleIndex_whenRUMSessionChanges() {
         let telemetry = TelemetryMock()
-        let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
-        let profiler = continuousProfiler(telemetryController: telemetryController)
-        let firstSessionID: UUID = .mockAny()
-        let firstSessionContext = DatadogContext.mockWith(
-            applicationStateHistory: .mockAppInForeground(),
-            additionalContext: [RUMCoreContext.mockWith(sessionID: firstSessionID)]
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        let profiler = continuousProfiler(
+            continuousProfilingSampled: true,
+            minProfileDuration: 0,
+            telemetryController: controller
         )
-        _ = profiler.receive(message: .context(firstSessionContext), from: core)
-        flushQueue()
-        telemetryController.sendProfile(durationMs: 1, fileSize: 1, for: .continuousProfiling)
-        telemetryController.sendProfile(durationMs: 1, fileSize: 1, for: .continuousProfiling)
-
-        // When - another context update arrives for the same RUM session.
-        _ = profiler.receive(message: .context(firstSessionContext), from: core)
-        flushQueue()
-        telemetryController.sendProfile(durationMs: 1, fileSize: 1, for: .continuousProfiling)
-
-        // Then - the existing cycle continues.
-        var cycleIndexes = telemetry.messages.compactMap {
-            ($0.asMetric?.attributes[ProfilingSessionMetric.Constants.sessionKey]
-                as? ProfilingSessionMetric.Attributes)?.cycleIndex
-        }
-        XCTAssertEqual(cycleIndexes, [0, 1, 2])
-
-        // When - RUM starts a new session.
-        let secondSessionContext = DatadogContext.mockWith(
+        let firstSession = DatadogContext.mockWith(
             applicationStateHistory: .mockAppInForeground(),
             additionalContext: [RUMCoreContext.mockWith(sessionID: .mockAny())]
         )
-        _ = profiler.receive(message: .context(secondSessionContext), from: core)
-        flushQueue()
-        telemetryController.sendProfile(durationMs: 1, fileSize: 1, for: .continuousProfiling)
-
-        // Then - the first continuous metric in the new session starts at zero.
-        cycleIndexes = telemetry.messages.compactMap {
-            ($0.asMetric?.attributes[ProfilingSessionMetric.Constants.sessionKey]
-                as? ProfilingSessionMetric.Attributes)?.cycleIndex
+        let secondSession = DatadogContext.mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionID: .mockAny())]
+        )
+        for context in [firstSession, firstSession, secondSession] {
+            _ = profiler.receive(message: .context(context), from: core)
+            flushQueue()
+            dd_profiler_stop()
+            dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+            addSampleToCurrentProfile()
+            let captured = expectation(description: "CPU cycle captured")
+            profiler.captureSnapshot(scheduledFor: .now()) { _ in captured.fulfill() }
+            wait(for: [captured], timeout: 2)
         }
-        XCTAssertEqual(cycleIndexes, [0, 1, 2, 0])
+        let indices = telemetry.messages.compactMap {
+            ($0.asMetric?.attributes["profiling_session"] as? ProfilingSessionMetric.Attributes)?.cycleIndex
+        }
+        XCTAssertEqual(indices, [0, 1, 0])
         withExtendedLifetime(profiler) {}
     }
 

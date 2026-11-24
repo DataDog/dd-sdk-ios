@@ -36,6 +36,7 @@ internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendabl
     private let profilingSamplerProvider: ProfilingSamplerProvider
     private let profilingConditions = ProfilingConditions()
     private let writer: ProfileWriter
+    private let telemetryController: ProfilingTelemetryController
     private let scheduler: ProfilingScheduler
     private var periodicStart: DispatchTime?
     private let dateProvider: DateProvider
@@ -69,6 +70,7 @@ internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendabl
         profilingSamplerProvider: ProfilingSamplerProvider,
         writer: ProfileWriter,
         scheduler: ProfilingScheduler,
+        telemetryController: ProfilingTelemetryController = .init(),
         queue: DispatchQueue = MemoryProfiler.defaultQueue,
         dateProvider: DateProvider = SystemDateProvider(),
         monotonicClock: MonotonicClock = SystemMonotonicClock(),
@@ -78,6 +80,7 @@ internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendabl
         self.queue = queue
         self.writer = writer
         self.scheduler = scheduler
+        self.telemetryController = telemetryController
         self.dateProvider = dateProvider
         self.monotonicClock = monotonicClock
         let now = monotonicClock.elapsedTime
@@ -109,7 +112,7 @@ internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendabl
         scheduler.stopPeriodic(for: self)
         // RUM-18564 will coordinate SDK shutdown independently of receiver lifetime.
         if state != .shutDown {
-            dd_memory_profiler_stop()
+            stopNative()
         }
     }
 }
@@ -183,7 +186,7 @@ private extension MemoryProfiler {
                rumContext != nil || sessionSampler != nil {
                 // A launch cannot span RUM sessions. Continue tracking its surviving objects.
                 isRecordingAppLaunch = false
-                pendingAppLaunch = nil
+                discardPendingAppLaunch()
                 if state == .running || state == .waiting || state == .emissionSuspended {
                     // Drain every prior delta, including sampled-out and uncorrelated periods,
                     // so only the live set carries across emission boundaries.
@@ -224,6 +227,9 @@ private extension MemoryProfiler {
                     var snapshot = pendingAppLaunch.snapshot
                     snapshot.rumContext = rumContext
                     writer.write([snapshot], operation: .appLaunch)
+                } else if var diagnostics = pendingAppLaunch.snapshot.memoryDiagnostics {
+                    diagnostics.captureResult = .discarded
+                    telemetryController.sendMemoryDiagnostics(diagnostics, for: .appLaunch)
                 }
             }
             updateState(context: context)
@@ -244,22 +250,9 @@ private extension MemoryProfiler {
             if sessionSampler == nil {
                 // Close exactly at TTID while the first session decision is pending.
                 // Serialize now so the pending snapshot owns its bytes until resolution.
-                var capture = dd_memory_capture_t()
-                let status = dd_memory_profiler_capture(&capture)
-                if periodicStart != nil {
-                    periodicStart = .now()
-                }
-                defer { clearDurationEvents() }
-                switch status {
-                case DD_MEMORY_CAPTURE_READY:
-                    if let snapshot = makeSnapshot(from: capture, message: message) {
-                        pendingAppLaunch = (snapshot, capture.time_nanos)
-                    }
-                case DD_MEMORY_CAPTURE_IDLE:
-                    break
-                default:
-                    stopNative()
-                    state = .failed
+                let origin = dd_memory_profiler_window_start_time_nanos()
+                if let snapshot = closeWindow(operation: .appLaunch, message: message) {
+                    pendingAppLaunch = (snapshot, origin)
                 }
             } else {
                 capture(shouldWrite: canEmit, operation: .appLaunch, message: message)
@@ -356,6 +349,7 @@ private extension MemoryProfiler {
         if state == .stopped {
             guard dd_memory_profiler_start() else {
                 state = .failed
+                telemetryController.sendMemoryDiagnostics(.consume(result: .startFailed), for: .continuousProfiling)
                 return
             }
             state = rumContext == nil ? .waiting : .running
@@ -391,12 +385,16 @@ private extension MemoryProfiler {
     }
 
     func capture(shouldWrite: Bool = true, operation: ProfilingOperation = .continuousProfiling, message: TTIDMessage? = nil) {
-        if let snapshot = closeWindow(shouldEncode: shouldWrite, message: message) {
+        if let snapshot = closeWindow(shouldEncode: shouldWrite, operation: operation, message: message) {
             writer.write([snapshot], operation: operation)
         }
     }
 
-    func closeWindow(shouldEncode: Bool = true, message: TTIDMessage? = nil) -> ProfileSnapshot? {
+    func closeWindow(
+        shouldEncode: Bool = true,
+        operation: ProfilingOperation = .continuousProfiling,
+        message: TTIDMessage? = nil
+    ) -> ProfileSnapshot? {
         defer { clearDurationEvents() }
         var capture = dd_memory_capture_t()
         let status = dd_memory_profiler_capture(&capture)
@@ -404,31 +402,52 @@ private extension MemoryProfiler {
         if periodicStart != nil {
             periodicStart = .now()
         }
+        var result: MemoryDiagnostics.CaptureResult = .discarded
+        var snapshot: ProfileSnapshot?
         switch status {
         case DD_MEMORY_CAPTURE_IDLE:
-            return nil
+            result = .idle
         case DD_MEMORY_CAPTURE_READY:
-            return shouldEncode ? makeSnapshot(from: capture, message: message) : nil
+            if shouldEncode {
+                snapshot = makeSnapshot(from: capture, result: &result, message: message)
+            }
         default:
-            stopNative()
+            result = .captureFailed
+            stopNative(reportDiscardedWindow: false)
             state = .failed
-            return nil
         }
+        let diagnostics = MemoryDiagnostics.consume(
+            result: result,
+            payloadBytes: snapshot?.attachment.data.count ?? 0
+        )
+        if var snapshot {
+            snapshot.memoryDiagnostics = diagnostics
+            return snapshot
+        }
+        telemetryController.sendMemoryDiagnostics(diagnostics, for: operation)
+        return nil
     }
 
-    func makeSnapshot(from capture: dd_memory_capture_t, message: TTIDMessage? = nil) -> ProfileSnapshot? {
+    func makeSnapshot(
+        from capture: dd_memory_capture_t,
+        result: inout MemoryDiagnostics.CaptureResult,
+        message: TTIDMessage? = nil
+    ) -> ProfileSnapshot? {
         let offset = (message?.ttid.serverTimeOffset ?? currentContext?.serverTimeOffset ?? 0).dd.toInt64Nanoseconds
         let (start, startOverflow) = capture.time_nanos.addingReportingOverflow(offset)
         let (end, endOverflow) = start.addingReportingOverflow(capture.duration_nanos)
         guard !startOverflow, !endOverflow, start >= 0, capture.duration_nanos >= 0 else {
+            result = .invalidTime
             return nil
         }
         var capture = capture
         capture.time_nanos = start
         let view = dd_memory_profiler_serialize(&capture)
         guard let bytes = view.data, view.size > 0 else {
+            result = .serializationFailed
             return nil
         }
+        result = .encoded
         let attributes = eventAttributes.merging(message?.attributes ?? [:]) { _, launchValue in launchValue }
         // These events provide RUM context when CPU supplies none; they do not select a heap slice.
         let rumEvents = durationEvents
@@ -454,19 +473,37 @@ private extension MemoryProfiler {
         )
     }
 
+    func discardPendingAppLaunch() {
+        if var diagnostics = pendingAppLaunch?.snapshot.memoryDiagnostics {
+            diagnostics.captureResult = .discarded
+            telemetryController.sendMemoryDiagnostics(diagnostics, for: .appLaunch)
+        }
+        pendingAppLaunch = nil
+    }
+
     func stopPeriodicCapture() {
         periodicStart = nil
         scheduler.stopPeriodic(for: self)
     }
 
-    func stopNative() {
+    func stopNative(reportDiscardedWindow: Bool = true) {
         let didFail = state == .failed
         stopPeriodicCapture()
+        let wasRunning = dd_memory_profiler_is_running()
         dd_memory_profiler_stop()
+        if wasRunning, reportDiscardedWindow {
+            let diagnostics = MemoryDiagnostics.consume(result: .stopped)
+            if diagnostics.sampledAllocations > 0
+                || diagnostics.reentrantSkips > 0
+                || diagnostics.recordedAllocations > 0
+                || diagnostics.droppedAllocRecords > 0 {
+                telemetryController.sendMemoryDiagnostics(diagnostics, for: .continuousProfiling)
+            }
+        }
         state = didFail ? .failed : .stopped
         hasForegroundTime = false
         isRecordingAppLaunch = false
-        pendingAppLaunch = nil
+        discardPendingAppLaunch()
         clearDurationEvents()
     }
 

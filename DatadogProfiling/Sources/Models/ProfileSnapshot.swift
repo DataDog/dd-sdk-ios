@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+#if !os(watchOS) && !os(macOS)
+
 /// Captured profile data and its RUM context, ready to be written independently of the profiler.
 ///
 /// CPU samples have timestamps and can be selected within an event's time range.
@@ -22,6 +24,8 @@ internal struct ProfileSnapshot: @unchecked Sendable {
     let attributes: [AttributeKey: AttributeValue]
     /// Captured with the profile, or resolved by the first session decision for a pending launch.
     var rumContext: RUMCoreContext? = nil
+    /// Owned diagnostics travel with this capture, including through delayed writes.
+    var memoryDiagnostics: MemoryDiagnostics? = nil
 }
 
 internal protocol ProfileSnapshotProvider: AnyObject, Sendable {
@@ -29,3 +33,5 @@ internal protocol ProfileSnapshotProvider: AnyObject, Sendable {
     /// or nil when unavailable. Reject ticks scheduled before the current profiling window.
     func captureSnapshot(scheduledFor time: DispatchTime, completion: @escaping @Sendable (ProfileSnapshot?) -> Void)
 }
+
+#endif

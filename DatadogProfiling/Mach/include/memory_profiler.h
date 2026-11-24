@@ -33,6 +33,24 @@ typedef struct {
     int64_t duration_nanos;
 } dd_memory_capture_t;
 
+/// Numeric diagnostics consumed at capture/stop boundaries on the owner queue.
+/// Consumption resets reporting counters without clearing the live set.
+typedef struct {
+    uint64_t sampled_allocations;
+    uint64_t reentrant_skips;
+    uint64_t recorder_storage_bytes;
+    uint64_t encoder_storage_bytes;
+    /// -1 means the path was not attempted; other values are hook status enums.
+    int32_t swift_install_result;
+    int32_t objc_install_result;
+    dd_memory_closed_window_diagnostics_t window;
+} dd_memory_profiler_diagnostics_t;
+
+/// Returns counts frozen at capture/stop and the latest occupancy/high-water marks.
+/// Includes the final discarded allocation window after stop. Repeated reads
+/// return zero counts; lifetime peaks remain until the recorder restarts.
+dd_memory_profiler_diagnostics_t dd_memory_profiler_consume_diagnostics(void);
+
 /// Starts the process-wide memory sampler, or adopts it without clearing data.
 /// Failure of either runtime hook disables both and releases the recorder.
 /// Recorder allocation failure prevents restarting in the same process.

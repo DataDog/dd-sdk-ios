@@ -14,6 +14,7 @@
 #include "swift_alloc_hook.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <cmath>
@@ -144,6 +145,7 @@ public:
     }
     dd_memory_capture_status_t capture(dd_memory_capture_t *capture);
     dd_memory_pprof_view_t serialize(const dd_memory_capture_t *capture);
+    dd_memory_profiler_diagnostics_t consume_diagnostics();
     void allocation(const void *address, uint64_t size, const char *class_name,
                     const HeapMetadata *metadata, dd_swift_class_name_resolver_t resolver);
     void deallocation(const void *address);
@@ -161,6 +163,7 @@ private:
     void end_selected();
     void disable_allocations();
     void stop_locked();
+    void collect_allocation_diagnostics();
     void notify_drain();
     dd_memory_capture_status_t capture_locked(dd_memory_capture_t *capture);
 #if defined(DEBUG)
@@ -175,6 +178,12 @@ private:
     std::mutex drain_mutex;
     std::condition_variable drained;
     std::atomic<bool> running{false};
+    dd_memory_profiler_diagnostics_t diagnostics{};
+    dd_memory_live_set_diagnostics_t previous_live_diagnostics{};
+    uint64_t previous_swift_reentrant_skips = 0;
+    uint64_t previous_objc_reentrant_skips = 0;
+    std::atomic<uint64_t> sampled_allocations{0};
+    std::atomic<uint64_t> reentrant_skips{0};
     bool started_at_launch = false;
     bool allocation_failed = false;
     // Odd means allocating. Every transition has a distinct epoch, so a
@@ -226,6 +235,14 @@ bool dd_memory_profiler::start(bool testing, uint32_t failed_hook, bool at_launc
         failed_hook = configured_failed_hook;
     }
 #endif
+    diagnostics = {};
+    diagnostics.swift_install_result = -1;
+    diagnostics.objc_install_result = -1;
+    previous_live_diagnostics = {};
+    previous_swift_reentrant_skips = dd_swift_alloc_hook_diagnostics().reentrant_skips;
+    previous_objc_reentrant_skips = dd_objc_alloc_hook_diagnostics().reentrant_skips;
+    sampled_allocations.store(0, std::memory_order_relaxed);
+    reentrant_skips.store(0, std::memory_order_relaxed);
     if (sampler_session.load(std::memory_order_relaxed) == std::numeric_limits<uint64_t>::max() ||
         !clock_origin(window_start_monotonic, window_start_wall)) {
         return false;
@@ -235,6 +252,7 @@ bool dd_memory_profiler::start(bool testing, uint32_t failed_hook, bool at_launc
         allocation_failed = true;
         return false;
     }
+    diagnostics.recorder_storage_bytes = dd_memory_allocation_window_diagnostics(window).storage_bytes;
     generation = dd_memory_allocation_window_start(window);
     if (generation == 0) {
         dd_memory_allocation_window_destroy(window);
@@ -259,18 +277,26 @@ bool dd_memory_profiler::start(bool testing, uint32_t failed_hook, bool at_launc
     (void)failed_hook;
 #endif
     const auto swift_status = dd_swift_alloc_hook_start(swift_allocation, deallocation);
+    diagnostics.swift_install_result = static_cast<int32_t>(swift_status);
     bool swift_ready = swift_status == DD_SWIFT_ALLOC_HOOK_OK ||
                        swift_status == DD_SWIFT_ALLOC_HOOK_ALREADY_INSTALLED;
 #if defined(DEBUG)
-    swift_ready = swift_ready && failed_hook != DD_MEMORY_TEST_SWIFT_HOOK_FAILS;
+    if (failed_hook == DD_MEMORY_TEST_SWIFT_HOOK_FAILS) {
+        diagnostics.swift_install_result = DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+        swift_ready = false;
+    }
 #endif
     bool objc_ready = false;
     if (swift_ready) {
         const auto objc_status = dd_objc_alloc_hook_start(objc_allocation, deallocation);
+        diagnostics.objc_install_result = static_cast<int32_t>(objc_status);
         objc_ready = objc_status == DD_OBJC_ALLOC_HOOK_OK ||
                      objc_status == DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED;
 #if defined(DEBUG)
-        objc_ready = objc_ready && failed_hook != DD_MEMORY_TEST_OBJC_HOOK_FAILS;
+        if (failed_hook == DD_MEMORY_TEST_OBJC_HOOK_FAILS) {
+            diagnostics.objc_install_result = DD_OBJC_ALLOC_HOOK_FAILED_INSTALL;
+            objc_ready = false;
+        }
 #endif
     }
     if (!swift_ready || !objc_ready) {
@@ -342,8 +368,39 @@ void dd_memory_profiler::resume() {
     allocation_epoch.fetch_add(1);
 }
 
+dd_memory_profiler_diagnostics_t dd_memory_profiler::consume_diagnostics() {
+    std::lock_guard<std::mutex> lock(lifecycle_mutex);
+    auto result = diagnostics;
+    diagnostics.sampled_allocations = 0;
+    diagnostics.reentrant_skips = 0;
+    // The table keeps lifetime diagnostics. Consume only their reporting deltas;
+    // resetting the live table here would lose surviving sampled allocations.
+    auto &live = result.window.live_set;
+    live.dropped_samples -= previous_live_diagnostics.dropped_samples;
+    live.probe_count -= previous_live_diagnostics.probe_count;
+    live.total_probe_length -= previous_live_diagnostics.total_probe_length;
+    previous_live_diagnostics = diagnostics.window.live_set;
+    diagnostics.window = {};
+    diagnostics.window.live_set = previous_live_diagnostics;
+    return result;
+}
+
+void dd_memory_profiler::collect_allocation_diagnostics() {
+    diagnostics.sampled_allocations += sampled_allocations.exchange(0, std::memory_order_relaxed);
+    const auto swift_skips = dd_swift_alloc_hook_diagnostics().reentrant_skips;
+    const auto objc_skips = dd_objc_alloc_hook_diagnostics().reentrant_skips;
+    diagnostics.reentrant_skips += reentrant_skips.exchange(0, std::memory_order_relaxed) +
+        (swift_skips >= previous_swift_reentrant_skips ? swift_skips - previous_swift_reentrant_skips : swift_skips) +
+        (objc_skips >= previous_objc_reentrant_skips ? objc_skips - previous_objc_reentrant_skips : objc_skips);
+    previous_swift_reentrant_skips = swift_skips;
+    previous_objc_reentrant_skips = objc_skips;
+}
+
 void dd_memory_profiler::stop_locked() {
     started_at_launch = false;
+    if (encoder != nullptr) {
+        diagnostics.encoder_storage_bytes = dd_memory_pprof_encoder_diagnostics(encoder).storage_bytes;
+    }
     dd_memory_pprof_encoder_destroy(encoder);
     encoder = nullptr;
     if (window == nullptr) {
@@ -358,6 +415,13 @@ void dd_memory_profiler::stop_locked() {
     drain_test_observations();
 #endif
     running.store(false, std::memory_order_release);
+    collect_allocation_diagnostics();
+    const auto final_window = dd_memory_allocation_window_diagnostics(window);
+    diagnostics.window.recorded_allocations += final_window.recorded_allocations;
+    diagnostics.window.dropped_alloc_records += final_window.dropped_alloc_records;
+    diagnostics.window.peak_recorded_allocations = std::max(
+        diagnostics.window.peak_recorded_allocations, final_window.peak_recorded_allocations);
+    diagnostics.window.live_set = final_window.live_set;
     dd_memory_allocation_window_stop(window);
     dd_memory_allocation_window_destroy(window);
     window = nullptr;
@@ -389,6 +453,7 @@ dd_memory_pprof_view_t dd_memory_profiler::serialize(const dd_memory_capture_t *
     if (encoder == nullptr) {
         encoder = dd_memory_pprof_encoder_create(DD_MEMORY_PPROF_MAX_PAYLOAD_BYTES);
     }
+    diagnostics.encoder_storage_bytes = dd_memory_pprof_encoder_diagnostics(encoder).storage_bytes;
     if (!dd_memory_pprof_encoder_encode(encoder, &capture->aggregation,
                                         capture->time_nanos, capture->duration_nanos)) {
         return {};
@@ -412,20 +477,26 @@ dd_memory_capture_status_t dd_memory_profiler::capture_locked(dd_memory_capture_
     }
     const int64_t end = is_paused() ? paused_end :
         static_cast<int64_t>(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW));
-    if (end < window_start_monotonic ||
-        !dd_memory_allocation_window_close(window, generation)) {
+    if (end < window_start_monotonic) {
         return DD_MEMORY_CAPTURE_FAILED;
     }
-    const auto diagnostics = dd_memory_allocation_window_closed_diagnostics(window);
+    // Freeze observer counts before closing the window. Aggregation, name
+    // resolution and serialization may allocate into the following window.
+    collect_allocation_diagnostics();
+    if (!dd_memory_allocation_window_close(window, generation)) {
+        return DD_MEMORY_CAPTURE_FAILED;
+    }
+    diagnostics.window = dd_memory_allocation_window_closed_diagnostics(window);
+    const auto &closed = diagnostics.window;
     capture->aggregation = dd_memory_allocation_window_view(window);
     capture->time_nanos = window_start_wall;
     capture->duration_nanos = end - window_start_monotonic;
     window_start_wall += capture->duration_nanos;
     window_start_monotonic = end;
-    const bool idle = diagnostics.recorded_allocations == 0 &&
-                      diagnostics.dropped_alloc_records == 0 &&
-                      diagnostics.live_set.occupancy == previous_occupancy;
-    previous_occupancy = diagnostics.live_set.occupancy;
+    const bool idle = closed.recorded_allocations == 0 &&
+                      closed.dropped_alloc_records == 0 &&
+                      closed.live_set.occupancy == previous_occupancy;
+    previous_occupancy = closed.live_set.occupancy;
     return idle ? DD_MEMORY_CAPTURE_IDLE : DD_MEMORY_CAPTURE_READY;
 }
 
@@ -438,10 +509,14 @@ void dd_memory_profiler::allocation(
     }
     observation_scope scope(observing);
     if (!scope.has_entered()) {
+        reentrant_skips.fetch_add(1, std::memory_order_relaxed);
         return;
     }
     thread_local dd::profiler::poisson_allocation_sampler sampler;
     const auto selected = sampler.sample(size, sampler_session.load(std::memory_order_relaxed));
+    if (selected.object_weight != 0) {
+        sampled_allocations.fetch_add(1, std::memory_order_relaxed);
+    }
     if (selected.object_weight == 0 || !begin_selected(epoch)) {
         return;
     }
@@ -560,6 +635,7 @@ void dd_memory_profiler::test_record(const dd_memory_live_sample_t *sample) {
     const uint64_t epoch = allocation_epoch.load(std::memory_order_acquire);
     observation_scope scope(observing);
     if (scope.has_entered() && begin_selected(epoch)) {
+        sampled_allocations.fetch_add(1, std::memory_order_relaxed);
         dd_memory_allocation_window_record(window, generation, sample);
         end_selected();
     }
@@ -602,6 +678,11 @@ void memory_profiler_auto_start() {
 }
 
 } // namespace
+
+extern "C" dd_memory_profiler_diagnostics_t dd_memory_profiler_consume_diagnostics(void) {
+    auto *owner = profiler();
+    return owner == nullptr ? dd_memory_profiler_diagnostics_t{} : owner->consume_diagnostics();
+}
 
 extern "C" bool dd_memory_profiler_start(void) {
     auto *owner = profiler();

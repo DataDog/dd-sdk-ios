@@ -35,6 +35,18 @@ internal final class ProfileWriter: @unchecked Sendable {
             return true
         }
 
+        guard !snapshots.isEmpty else {
+            return
+        }
+        let memoryDiagnostics = snapshots.compactMap(\.memoryDiagnostics).first
+        var profileTypes: [ProfilingSessionMetric.ProfileType] = []
+        if snapshots.contains(where: { $0.attachment.filename == ProfileAttachments.Constants.pprofFilename }) {
+            profileTypes.append(.cpu)
+        }
+        if snapshots.contains(where: { $0.attachment.filename == ProfileAttachments.Constants.heapPprofFilename }) {
+            profileTypes.append(.memory)
+        }
+
         // CPU's RUM timeline supports event-range selection; heap aggregates cannot be sliced.
         // Keep CPU events and attributes regardless of completion order, without merging heap events.
         // Another provider supplies RUM data when CPU has none, including memory-only captures.
@@ -45,6 +57,13 @@ internal final class ProfileWriter: @unchecked Sendable {
             ? cpuSnapshot
             : snapshots.first(where: { !$0.rumEvents.isEmpty })
         guard let first = snapshots.first, let rumSnapshot else {
+            if memoryDiagnostics != nil {
+                telemetryController.sendProfileDropped(
+                    for: operation,
+                    profileTypes: profileTypes,
+                    memoryDiagnostics: memoryDiagnostics
+                )
+            }
             return
         }
 
@@ -62,14 +81,18 @@ internal final class ProfileWriter: @unchecked Sendable {
         // The event envelopes the attachment ranges; each pprof retains its own time bounds.
         var start = first.start
         var end = first.end
-        let includesCPUProfile = cpuSnapshot != nil
 
         for snapshot in snapshots {
             guard snapshot.attachment.data.count <= Int(ProfilerFeature.Constants.maxObjectSize) - profileSize else {
                 if snapshots.count > 1 {
                     writeSeparately(snapshots, operation: operation)
                 } else {
-                    telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge, includeCPUDiagnostics: includesCPUProfile)
+                    telemetryController.sendProfileDropped(
+                        for: operation,
+                        reason: .profileTooLarge,
+                        profileTypes: profileTypes,
+                        memoryDiagnostics: memoryDiagnostics
+                    )
                 }
                 return
             }
@@ -83,6 +106,12 @@ internal final class ProfileWriter: @unchecked Sendable {
         let attributes = attributes(for: rumSnapshot)
         featureScope.eventWriteContext { [attributes, pprofs, start, end, profileSize] context, writer in
             guard let rumEventsData = try? self.encoder.encode(rumEvents) else {
+                self.telemetryController.sendNoData(
+                    durationMs: nil,
+                    for: operation,
+                    profileTypes: profileTypes,
+                    memoryDiagnostics: memoryDiagnostics
+                )
                 return
             }
             let attachments = ProfileAttachments(pprofs: pprofs, rumEvents: rumEventsData)
@@ -102,7 +131,8 @@ internal final class ProfileWriter: @unchecked Sendable {
                 durationMs: end.timeIntervalSince(start).dd.toInt64Milliseconds,
                 fileSize: Int64(profileSize),
                 for: operation,
-                includeCPUDiagnostics: includesCPUProfile
+                profileTypes: profileTypes,
+                memoryDiagnostics: memoryDiagnostics
             )
         }
     }

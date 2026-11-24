@@ -287,7 +287,6 @@ private extension DatadogProfiler {
                sessionID != currentRUMSessionID {
                 currentRUMSessionID = sessionID
                 didChangeRUMSession = true
-                telemetryController.resetContinuousCycleIndex()
             }
 
             let wasTrackingConsentAllowed = isTrackingConsentAllowed

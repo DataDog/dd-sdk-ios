@@ -214,10 +214,10 @@ final class DDProfilerTests: XCTestCase {
 
         let metrics = telemetry.messages.compactMap(\.asMetric)
         XCTAssertEqual(metrics.count, 3)
-        let diagnosticsKey = AggregationDiagnosticsMetric.Constants.diagnosticsKey
+        let diagnosticsKey = ProfilingDiagnostics.Constants.diagnosticsKey
         XCTAssertNil(metrics[0].attributes[diagnosticsKey])
         XCTAssertNil(metrics[1].attributes[diagnosticsKey])
-        let diagnostics = try XCTUnwrap(metrics[2].attributes[diagnosticsKey] as? AggregationDiagnosticsMetric.Attributes).aggregation
+        let diagnostics = try XCTUnwrap((metrics[2].attributes[diagnosticsKey] as? ProfilingDiagnostics)?.cpu)
         XCTAssertGreaterThan(diagnostics.droppedBatchCount, 0)
         XCTAssertGreaterThan(diagnostics.droppedSampleCount, 0)
         XCTAssertGreaterThan(diagnostics.maxPendingBytes, 0)

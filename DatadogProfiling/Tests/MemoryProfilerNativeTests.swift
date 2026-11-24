@@ -25,6 +25,53 @@ final class MemoryProfilerNativeTests: XCTestCase {
         super.tearDown()
     }
 
+    func testConsumingDiagnosticsPreservesLiveObjectsAndDoesNotRepeatCounts() throws {
+        record(address: 0x10000, size: 16)
+        var first = capture(expected: DD_MEMORY_CAPTURE_READY)
+        _ = try serializedData(&first)
+        let diagnostics = dd_memory_profiler_consume_diagnostics()
+        XCTAssertEqual(diagnostics.sampled_allocations, 1)
+        XCTAssertEqual(diagnostics.window.recorded_allocations, 1)
+        XCTAssertEqual(diagnostics.window.live_set.occupancy, 1)
+        XCTAssertGreaterThan(diagnostics.encoder_storage_bytes, 0)
+
+        let consumed = dd_memory_profiler_consume_diagnostics()
+        XCTAssertEqual(consumed.sampled_allocations, 0)
+        XCTAssertEqual(consumed.window.recorded_allocations, 0)
+        XCTAssertEqual(consumed.window.live_set.probe_count, 0)
+        XCTAssertEqual(consumed.window.live_set.occupancy, 1)
+        XCTAssertEqual(capture(expected: DD_MEMORY_CAPTURE_IDLE).aggregation.count, 1)
+
+        record(address: 0x20000, size: 8)
+        dd_memory_profiler_stop()
+        let stopped = dd_memory_profiler_consume_diagnostics()
+        XCTAssertEqual(stopped.sampled_allocations, 1)
+        XCTAssertEqual(stopped.window.recorded_allocations, 1)
+        XCTAssertEqual(stopped.window.live_set.occupancy, 2)
+        XCTAssertGreaterThan(stopped.recorder_storage_bytes, 0)
+        XCTAssertTrue(dd_memory_profiler_start_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED))
+        record(address: 0x30000, size: 4)
+        _ = capture(expected: DD_MEMORY_CAPTURE_READY)
+        XCTAssertEqual(dd_memory_profiler_consume_diagnostics().window.recorded_allocations, 1)
+    }
+
+    func testAllocationsAfterCaptureBelongToTheFollowingDiagnosticsWindow() throws {
+        record(address: 0x10000, size: 16)
+        var first = capture(expected: DD_MEMORY_CAPTURE_READY)
+        record(address: 0x20000, size: 32)
+        _ = try serializedData(&first)
+        let closed = dd_memory_profiler_consume_diagnostics()
+        XCTAssertEqual(closed.sampled_allocations, 1)
+        XCTAssertEqual(closed.window.recorded_allocations, 1)
+        XCTAssertEqual(dd_memory_profiler_consume_diagnostics().sampled_allocations, 0)
+
+        _ = capture(expected: DD_MEMORY_CAPTURE_READY)
+        let following = dd_memory_profiler_consume_diagnostics()
+        XCTAssertEqual(following.sampled_allocations, 1)
+        XCTAssertEqual(following.window.recorded_allocations, 1)
+        XCTAssertEqual(following.window.live_set.occupancy, 2)
+    }
+
     func testLaunchRecordingStartsForEveryPositiveRate() {
         let suiteName = "MemoryProfilerNativeTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
