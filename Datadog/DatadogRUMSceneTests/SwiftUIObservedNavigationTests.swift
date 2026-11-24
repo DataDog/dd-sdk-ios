@@ -19,9 +19,18 @@ import Combine
 import Observation
 
 extension SwiftUINavigationOwnershipTests {
-
     @MainActor
     func testObservedNavigationHost_nonReplayingPublisherRestoresDestinationOnReaderRemount() async throws {
+        try await assertNonReplayingPublisherRestoresDestination(afterDisconnect: false)
+    }
+
+    @MainActor
+    func testObservedNavigationHost_nonReplayingPublisherRestoresDestinationAfterSceneDisconnect() async throws {
+        try await assertNonReplayingPublisherRestoresDestination(afterDisconnect: true)
+    }
+
+    @MainActor
+    private func assertNonReplayingPublisherRestoresDestination(afterDisconnect: Bool) async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Observed navigation requires iOS 27") }
         let fixture = try SemanticHostWindow()
         let core = makeSemanticCore()
@@ -72,12 +81,27 @@ extension SwiftUINavigationOwnershipTests {
         try await awaitSemanticBoundary("non-replaying-initial-home", core: core) { snapshot()?.viewName == "Home" }
         let firstView = try XCTUnwrap(snapshot()?.viewID)
 
-        reader.removeFromSuperview()
+        if afterDisconnect {
+            let identity = try XCTUnwrap(state.currentIdentity)
+            state.sceneDidDisconnect(fixture.identifier, admission: admission)
+            // The scene lifecycle owner ends the old view before the same reader is mounted again.
+            XCTAssertEqual(admission.foundation?.disappear(
+                identity: identity,
+                sceneIdentifier: fixture.identifier,
+                binding: admission.binding
+            ), true)
+        } else {
+            reader.removeFromSuperview()
+        }
         try await awaitSemanticBoundary("non-replaying-final-detach", core: core) {
             firstSource.observationCount == 0 && cancellations == 1 && snapshot()?.viewID == nil
         }
         XCTAssertTrue(rows.views.contains { $0.view.id == firstView && $0.view.isActive == false })
-        container.addSubview(reader)
+        if afterDisconnect {
+            reader.notifyCurrentAttachment()
+        } else {
+            container.addSubview(reader)
+        }
         XCTAssertTrue(reader.window === fixture.window)
         XCTAssertEqual(subscriptions, 2)
         let returnedSource = try XCTUnwrap(state.selectedTransitions)
@@ -86,7 +110,9 @@ extension SwiftUINavigationOwnershipTests {
         let token = returnedSource.observe { generations.append($0.generation) }
         defer { returnedSource.removeObserver(token) }
         XCTAssertEqual(generations, [0], "The new subscription did not replay; restore the host's committed destination")
-        guard generations == [0] else { return }
+        guard generations == [0] else {
+            return
+        }
         try await awaitSemanticBoundary("non-replaying-returned-home", core: core) { snapshot()?.viewName == "Home" }
         let returnedView = try XCTUnwrap(snapshot()?.viewID)
         XCTAssertNotEqual(returnedView, firstView)
