@@ -99,17 +99,29 @@ public protocol DatadogURLSessionHandlerPreparingRUM: AnyObject {
 public final class RUMURLSessionPreparation {
     public let identifier: UUID?
     public let capturedState: any URLSessionHandlerCapturedState
-    let allowsRequestModification: Bool
+    enum Modification {
+        case allow
+        case propagateOnly
+        case skip
+    }
+
+    let modification: Modification
 
     public init(identifier: UUID?, capturedState: any URLSessionHandlerCapturedState) {
         self.identifier = identifier
         self.capturedState = capturedState
-        self.allowsRequestModification = true
+        self.modification = .allow
+    }
+
+    public init(propagationOnlyState: any URLSessionHandlerCapturedState) {
+        self.identifier = nil
+        self.capturedState = propagationOnlyState
+        self.modification = .propagateOnly
     }
 
     public init(rejectedState: any URLSessionHandlerCapturedState) {
         self.identifier = nil
         self.capturedState = rejectedState
-        self.allowsRequestModification = false
+        self.modification = .skip
     }
 }
