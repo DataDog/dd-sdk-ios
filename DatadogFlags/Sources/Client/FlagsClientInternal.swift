@@ -12,6 +12,10 @@ public protocol FlagsClientInternal: AnyObject {
     @_spi(Internal)
     func getFlagAssignments() -> [String: FlagAssignment]?
 
+    /// Assignments and consent must be cached together, including for missing-flag evaluations.
+    @_spi(Internal)
+    func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)?
+
     /// Records exposure, evaluation, and RUM tracking according to the enabled native features.
     /// Use the separate operations below for independently selected tracking hooks.
     /// > Warning: This is an internal method and can break in the future.
@@ -31,6 +35,19 @@ public protocol FlagsClientInternal: AnyObject {
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func sendFlagEvaluationEvent(key: String, assignment: FlagAssignment?, context: FlagsEvaluationContext, errorCode: String?)
+
+    /// Records only an evaluation event with the consent the caller captured with its assignments, never the
+    /// current configuration. A nil `telemetryTargetingKey` omits the key; the context still controls opt-out.
+    /// > Warning: This is an internal method and can break in the future.
+    @_spi(Internal)
+    func sendFlagEvaluationEvent(
+        key: String,
+        assignment: FlagAssignment?,
+        context: FlagsEvaluationContext,
+        telemetryTargetingKey: String?,
+        observeFullEvaluationData: Bool,
+        errorCode: String?
+    )
 
     /// Records only a RUM flag annotation, respecting the client's telemetry opt-out configuration.
     /// Does not fetch configuration, record an exposure, or record an evaluation event.
@@ -63,6 +80,25 @@ extension FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagRUMEvaluation(key: String, variant: String, context: FlagsEvaluationContext) {
+        // no-op
+    }
+}
+
+extension FlagsClientInternal {
+    @_spi(Internal)
+    public func getFlagAssignmentsWithConsent() -> (assignments: [String: FlagAssignment], observeFullEvaluationData: Bool)? {
+        nil
+    }
+
+    @_spi(Internal)
+    public func sendFlagEvaluationEvent(
+        key: String,
+        assignment: FlagAssignment?,
+        context: FlagsEvaluationContext,
+        telemetryTargetingKey: String?,
+        observeFullEvaluationData: Bool,
+        errorCode: String?
+    ) {
         // no-op
     }
 }

@@ -4675,6 +4675,9 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         /// Whether the resource was served from the device's local cache (deprecated in favor of `delivery_type`/`transfer_size`)
         public let localCacheHit: Bool?
 
+        /// Properties of a message between processes or threads, such as an Electron IPC call. The channel is reported in resource.url
+        public let message: Message?
+
         /// HTTP method of the resource
         public let method: RUMMethod?
 
@@ -4729,6 +4732,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             case graphql = "graphql"
             case id = "id"
             case localCacheHit = "local_cache_hit"
+            case message = "message"
             case method = "method"
             case `protocol` = "protocol"
             case provider = "provider"
@@ -4759,6 +4763,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         ///   - graphql: GraphQL request parameters
         ///   - id: UUID of the resource
         ///   - localCacheHit: Whether the resource was served from the device's local cache (deprecated in favor of `delivery_type`/`transfer_size`)
+        ///   - message: Properties of a message between processes or threads, such as an Electron IPC call. The channel is reported in resource.url
         ///   - method: HTTP method of the resource
         ///   - `protocol`: Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
         ///   - provider: The provider for this resource
@@ -4785,6 +4790,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             graphql: RUMGraphql? = nil,
             id: String? = nil,
             localCacheHit: Bool? = nil,
+            message: Message? = nil,
             method: RUMMethod? = nil,
             `protocol`: String? = nil,
             provider: Provider? = nil,
@@ -4811,6 +4817,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             self.graphql = graphql
             self.id = id
             self.localCacheHit = localCacheHit
+            self.message = message
             self.method = method
             self.`protocol` = `protocol`
             self.provider = provider
@@ -4939,6 +4946,62 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             ) {
                 self.duration = duration
                 self.start = start
+            }
+        }
+
+        /// Properties of a message between processes or threads, such as an Electron IPC call. The channel is reported in resource.url
+        public struct Message: Codable, Equatable {
+            /// Platform API that sent or received the message
+            public let api: API
+
+            /// UUID of the message, the same on every resource that reports it
+            public let id: String
+
+            /// Whether sending or handling the message failed, as observed by the side reporting the resource
+            public let isError: Bool?
+
+            /// Side of the message reported by the resource: the sender (source) or a receiver (destination)
+            public let role: Role
+
+            public enum CodingKeys: String, CodingKey {
+                case api = "api"
+                case id = "id"
+                case isError = "is_error"
+                case role = "role"
+            }
+
+            /// Properties of a message between processes or threads, such as an Electron IPC call. The channel is reported in resource.url
+            ///
+            /// - Parameters:
+            ///   - api: Platform API that sent or received the message
+            ///   - id: UUID of the message, the same on every resource that reports it
+            ///   - isError: Whether sending or handling the message failed, as observed by the side reporting the resource
+            ///   - role: Side of the message reported by the resource: the sender (source) or a receiver (destination)
+            public init(
+                api: API,
+                id: String,
+                isError: Bool? = nil,
+                role: Role
+            ) {
+                self.api = api
+                self.id = id
+                self.isError = isError
+                self.role = role
+            }
+
+            /// Platform API that sent or received the message
+            public enum API: String, Codable {
+                case invoke = "invoke"
+                case handle = "handle"
+                case send = "send"
+                case sendSync = "send_sync"
+                case on = "on"
+            }
+
+            /// Side of the message reported by the resource: the sender (source) or a receiver (destination)
+            public enum Role: String, Codable {
+                case source = "source"
+                case destination = "destination"
             }
         }
 
@@ -5151,6 +5214,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             case media = "media"
             case other = "other"
             case native = "native"
+            case message = "message"
         }
 
         /// Worker phase properties
@@ -6872,28 +6936,28 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
 
             /// Memory measurements, aligned index-for-index with timestamps
             public struct Values: Codable, Equatable {
-                /// Physical memory footprint of the process in kilobytes
+                /// Memory charged to the process, in kibibytes (1024 bytes). Includes pages the system has compressed or swapped out to reclaim space
                 public let memoryFootprint: [Double]
 
-                /// Memory footprint as a percentage of total device RAM
-                public let memoryPercent: [Double]
+                /// Portion of memory_footprint that the system has compressed or swapped out, in kibibytes (1024 bytes). Zero means nothing is currently reclaimed, not that the value is unavailable
+                public let memoryNonResident: [Double]?
 
                 public enum CodingKeys: String, CodingKey {
                     case memoryFootprint = "memory_footprint"
-                    case memoryPercent = "memory_percent"
+                    case memoryNonResident = "memory_non_resident"
                 }
 
                 /// Memory measurements, aligned index-for-index with timestamps
                 ///
                 /// - Parameters:
-                ///   - memoryFootprint: Physical memory footprint of the process in kilobytes
-                ///   - memoryPercent: Memory footprint as a percentage of total device RAM
+                ///   - memoryFootprint: Memory charged to the process, in kibibytes (1024 bytes). Includes pages the system has compressed or swapped out to reclaim space
+                ///   - memoryNonResident: Portion of memory_footprint that the system has compressed or swapped out, in kibibytes (1024 bytes). Zero means nothing is currently reclaimed, not that the value is unavailable
                 public init(
                     memoryFootprint: [Double],
-                    memoryPercent: [Double]
+                    memoryNonResident: [Double]? = nil
                 ) {
                     self.memoryFootprint = memoryFootprint
-                    self.memoryPercent = memoryPercent
+                    self.memoryNonResident = memoryNonResident
                 }
             }
         }
@@ -14013,6 +14077,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             /// Whether the beta encode cookie options is enabled
             public var betaEncodeCookieOptions: Bool?
 
+            /// Whether the beta track soft navigations feature is enabled
+            public var betaTrackSoftNavigations: Bool?
+
             /// Whether the beta track WebSockets feature is enabled
             public var betaTrackWebSockets: Bool?
 
@@ -14039,6 +14106,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
 
             /// Session replay image privacy level
             public var imagePrivacyLevel: String?
+
+            /// The properties provided in the init context when initializing the SDK
+            public let initContext: InitContext?
 
             /// The type of initialization the SDK used, in case multiple are supported
             public var initializationType: String?
@@ -14196,6 +14266,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             /// Whether user actions are tracked (deprecated in favor of track_user_interactions)
             public var trackInteractions: Bool?
 
+            /// Whether Electron IPC calls are tracked as resources
+            public var trackIpcResources: Bool?
+
             /// Whether long tasks are tracked
             public var trackLongTask: Bool?
 
@@ -14312,6 +14385,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case batchUploadFrequency = "batch_upload_frequency"
                 case betaEnableViewUpdates = "beta_enable_view_updates"
                 case betaEncodeCookieOptions = "beta_encode_cookie_options"
+                case betaTrackSoftNavigations = "beta_track_soft_navigations"
                 case betaTrackWebSockets = "beta_track_web_sockets"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
@@ -14321,6 +14395,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case forwardErrorsToLogs = "forward_errors_to_logs"
                 case forwardReports = "forward_reports"
                 case imagePrivacyLevel = "image_privacy_level"
+                case initContext = "init_context"
                 case initializationType = "initialization_type"
                 case invTimeThresholdMs = "inv_time_threshold_ms"
                 case isMainProcess = "is_main_process"
@@ -14373,6 +14448,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case trackFlutterPerformance = "track_flutter_performance"
                 case trackFrustrations = "track_frustrations"
                 case trackInteractions = "track_interactions"
+                case trackIpcResources = "track_ipc_resources"
                 case trackLongTask = "track_long_task"
                 case trackNativeErrors = "track_native_errors"
                 case trackNativeLongTasks = "track_native_long_tasks"
@@ -14423,6 +14499,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - batchUploadFrequency: The upload frequency of batches (in milliseconds)
             ///   - betaEnableViewUpdates: Whether the beta partial view updates feature is enabled
             ///   - betaEncodeCookieOptions: Whether the beta encode cookie options is enabled
+            ///   - betaTrackSoftNavigations: Whether the beta track soft navigations feature is enabled
             ///   - betaTrackWebSockets: Whether the beta track WebSockets feature is enabled
             ///   - compressIntakeRequests: Whether intake requests are compressed
             ///   - dartVersion: The version of Dart used in a Flutter application
@@ -14432,6 +14509,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - forwardErrorsToLogs: Whether console.error logs, uncaught exceptions and network errors are tracked
             ///   - forwardReports: The reports from the Reporting API tracked
             ///   - imagePrivacyLevel: Session replay image privacy level
+            ///   - initContext: The properties provided in the init context when initializing the SDK
             ///   - initializationType: The type of initialization the SDK used, in case multiple are supported
             ///   - invTimeThresholdMs: Interval in milliseconds when the last action is considered as the action that created the next view. Only sent if a time based strategy has been used
             ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
@@ -14484,6 +14562,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - trackFlutterPerformance: Whether Flutter build and raster time tracking is enabled
             ///   - trackFrustrations: Whether user frustrations are tracked
             ///   - trackInteractions: Whether user actions are tracked (deprecated in favor of track_user_interactions)
+            ///   - trackIpcResources: Whether Electron IPC calls are tracked as resources
             ///   - trackLongTask: Whether long tasks are tracked
             ///   - trackNativeErrors: Whether native error monitoring & crash reporting is enabled (for cross platform SDKs)
             ///   - trackNativeLongTasks: Whether long task tracking is performed automatically
@@ -14530,6 +14609,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 batchUploadFrequency: Int64? = nil,
                 betaEnableViewUpdates: Bool? = nil,
                 betaEncodeCookieOptions: Bool? = nil,
+                betaTrackSoftNavigations: Bool? = nil,
                 betaTrackWebSockets: Bool? = nil,
                 compressIntakeRequests: Bool? = nil,
                 dartVersion: String? = nil,
@@ -14539,6 +14619,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 forwardErrorsToLogs: Bool? = nil,
                 forwardReports: ForwardReports? = nil,
                 imagePrivacyLevel: String? = nil,
+                initContext: InitContext? = nil,
                 initializationType: String? = nil,
                 invTimeThresholdMs: Int64? = nil,
                 isMainProcess: Bool? = nil,
@@ -14591,6 +14672,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 trackFlutterPerformance: Bool? = nil,
                 trackFrustrations: Bool? = nil,
                 trackInteractions: Bool? = nil,
+                trackIpcResources: Bool? = nil,
                 trackLongTask: Bool? = nil,
                 trackNativeErrors: Bool? = nil,
                 trackNativeLongTasks: Bool? = nil,
@@ -14637,6 +14719,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.batchUploadFrequency = batchUploadFrequency
                 self.betaEnableViewUpdates = betaEnableViewUpdates
                 self.betaEncodeCookieOptions = betaEncodeCookieOptions
+                self.betaTrackSoftNavigations = betaTrackSoftNavigations
                 self.betaTrackWebSockets = betaTrackWebSockets
                 self.compressIntakeRequests = compressIntakeRequests
                 self.dartVersion = dartVersion
@@ -14646,6 +14729,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.forwardErrorsToLogs = forwardErrorsToLogs
                 self.forwardReports = forwardReports
                 self.imagePrivacyLevel = imagePrivacyLevel
+                self.initContext = initContext
                 self.initializationType = initializationType
                 self.invTimeThresholdMs = invTimeThresholdMs
                 self.isMainProcess = isMainProcess
@@ -14698,6 +14782,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.trackFlutterPerformance = trackFlutterPerformance
                 self.trackFrustrations = trackFrustrations
                 self.trackInteractions = trackInteractions
+                self.trackIpcResources = trackIpcResources
                 self.trackLongTask = trackLongTask
                 self.trackNativeErrors = trackNativeErrors
                 self.trackNativeLongTasks = trackNativeLongTasks
@@ -14816,6 +14901,33 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                         """
                     )
                     throw DecodingError.typeMismatch(ForwardReports.self, error)
+                }
+            }
+
+            /// The properties provided in the init context when initializing the SDK
+            public struct InitContext: Codable, Equatable {
+                /// Whether account information is provided in the init context
+                public let hasAccount: Bool?
+
+                /// Whether user information is provided in the init context
+                public let hasUser: Bool?
+
+                public enum CodingKeys: String, CodingKey {
+                    case hasAccount = "has_account"
+                    case hasUser = "has_user"
+                }
+
+                /// The properties provided in the init context when initializing the SDK
+                ///
+                /// - Parameters:
+                ///   - hasAccount: Whether account information is provided in the init context
+                ///   - hasUser: Whether user information is provided in the init context
+                public init(
+                    hasAccount: Bool? = nil,
+                    hasUser: Bool? = nil
+                ) {
+                    self.hasAccount = hasAccount
+                    self.hasUser = hasUser
                 }
             }
 
@@ -16770,4 +16882,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/e56d61f0016c507091c8093befa9e73c42037c70
+// Generated from https://github.com/DataDog/rum-events-format/tree/fd2e0202814580d211866a6f3c42cb5e9db075a9

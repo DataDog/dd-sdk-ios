@@ -61,6 +61,20 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testGroupedList() async throws {
+        try await takeLayerSnapshotFor(
+            GroupedListFixtureView(),
+            shouldRecord: shouldRecord
+        )
+    }
+
+    func testRoundedBorders() async throws {
+        try await takeLayerSnapshotFor(
+            RoundedBordersFixtureView(),
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testSteppers() async throws {
         try await takeLayerSnapshotFor(
             StepperFixtureView(),
@@ -133,6 +147,17 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         try await takeLayerSnapshotFor(
             TabFixtureView(),
             with: [.maskAll, .maskSensitiveInputs],
+            shouldRecord: shouldRecord
+        )
+    }
+
+    func testTabAccessory() async throws {
+        guard #available(iOS 26.0, *) else {
+            throw XCTSkip("Tab accessories require iOS 26")
+        }
+
+        try await takeLayerSnapshotFor(
+            TabAccessoryFixtureViewController(),
             shouldRecord: shouldRecord
         )
     }

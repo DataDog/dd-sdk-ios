@@ -526,6 +526,30 @@ struct CALayerSnapshotTests {
         #expect(snapshot.cornerRadii == cornerRadii)
     }
 
+    @available(iOS 26.0, *)
+    @Test("Captures UIKit corner configuration with distinct radii")
+    func capturesUIKitCornerConfiguration() throws {
+        // Given
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: 240, height: 240))
+        view.cornerConfiguration = .corners(
+            topLeftRadius: .fixed(11),
+            topRightRadius: .fixed(22),
+            bottomLeftRadius: .fixed(33),
+            bottomRightRadius: .fixed(44)
+        )
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: view.layer, in: .mockAny()))
+
+        // Then
+        #expect(snapshot.cornerRadii.topLeft == CGSize(width: 11, height: 11))
+        #expect(snapshot.cornerRadii.topRight == CGSize(width: 22, height: 22))
+        #expect(snapshot.cornerRadii.bottomLeft == CGSize(width: 33, height: 33))
+        #expect(snapshot.cornerRadii.bottomRight == CGSize(width: 44, height: 44))
+    }
+
     @Test("Captures masked corner radii")
     func capturesMaskedCornerRadii() throws {
         // Given
@@ -561,9 +585,9 @@ struct CALayerSnapshotTests {
 
 private extension CALayerSnapshot.CornerRadii {
     var nsValue: NSValue {
-        var value = self
-        return withUnsafePointer(to: &value) {
-            NSValue(bytes: $0, objCType: "{CACornerRadii={CGSize=dd}{CGSize=dd}{CGSize=dd}{CGSize=dd}}")
+        let nativeRadii = [bottomLeft, bottomRight, topRight, topLeft]
+        return nativeRadii.withUnsafeBufferPointer {
+            NSValue(bytes: $0.baseAddress!, objCType: "{CACornerRadii={CGSize=dd}{CGSize=dd}{CGSize=dd}{CGSize=dd}}")
         }
     }
 }
