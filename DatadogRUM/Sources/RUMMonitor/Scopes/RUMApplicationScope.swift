@@ -41,6 +41,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private final class SceneRestoration {
         var views: [RUMViewScope] = []
         var webViewLifecycleExpiry: WebViewLifecycleExpiry?
+        var browserRenewal: (predecessor: String, successor: RUMUUID, owner: RUMContextHandoff.Owner)?
     }
     private let sceneRestoration: SceneRestoration?
     var webViewLifecycleExpiry: WebViewLifecycleExpiry? { sceneRestoration?.webViewLifecycleExpiry }
@@ -160,18 +161,35 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
         if command is RUMStopSessionCommand {
             sceneRestoration?.webViewLifecycleExpiry = nil
+            sceneRestoration?.browserRenewal = nil
         }
         if let keepAlive = command as? RUMKeepSessionAliveCommand, let renewal = keepAlive.webViewSessionRenewal {
             guard dependencies.isMultiSceneTrackingEnabled,
                   let capture = keepAlive.capture, isCurrentWebViewRenewalOwner(capture),
-                  capture.value.sceneIdentifier != nil, capture.value.rumContext == nil,
+                  capture.value.sceneIdentifier != nil,
+                  capture.value.rumContext.map({ $0.sessionID == renewal.expiry.sessionID }) != false,
                   renewal.expiry.observedAt <= monotonicTime else {
                 return
             }
             if let session = activeSession {
-                guard session.sessionUUID.toRUMDataFormat == renewal.expiry.sessionID,
-                      RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: renewal.expiry.observedAt)
-                        || RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: renewal.expiry.observedAt) else {
+                func isLive(at time: TimeInterval) -> Bool {
+                    !RUMSessionScope.hasTimedOut(lastInteraction: session.lastInteraction, now: time)
+                        && !RUMSessionScope.hasExpired(sessionStart: session.sessionStart, now: time)
+                }
+
+                if session.sessionUUID.toRUMDataFormat != renewal.expiry.sessionID {
+                    if let binding = sceneRestoration?.browserRenewal, binding.predecessor == renewal.expiry.sessionID,
+                       binding.successor == session.sessionUUID, binding.owner === capture.owner,
+                       isLive(at: monotonicTime) {
+                        writeRenewedWebViewEvent(renewal, session: session, context: context, writer: writer)
+                    }
+                    return
+                }
+                if isLive(at: renewal.expiry.observedAt) {
+                    if let original = capture.value.rumContext, session.sampler.isSampled,
+                       isLive(at: monotonicTime) {
+                        renewal.write(context, writer, original)
+                    }
                     return
                 }
                 // The normal refresh will process this callback against its exact predecessor.
@@ -588,12 +606,21 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         guard isCurrentWebViewRenewalOwner(capture) else {
             return
         }
-        let renewedID = session.sessionUUID.toRUMDataFormat
-        renewal.didRenew?(renewedID)
+        sceneRestoration?.browserRenewal = (renewal.expiry.sessionID, session.sessionUUID, capture.owner)
+        renewal.didRenew?(session.sessionUUID.toRUMDataFormat)
+        writeRenewedWebViewEvent(renewal, session: session, context: context, writer: writer)
+    }
+
+    private func writeRenewedWebViewEvent(
+        _ renewal: RUMWebViewSessionRenewal,
+        session: RUMSessionScope,
+        context: DatadogContext,
+        writer: Writer
+    ) {
         if session.sampler.isSampled {
             renewal.write(context, writer, RUMCoreContext(
                 applicationID: session.context.rumApplicationID,
-                sessionID: renewedID,
+                sessionID: session.sessionUUID.toRUMDataFormat,
                 sessionSampler: session.sampler
             ))
         }
