@@ -2408,7 +2408,6 @@ final class RUMResourceCompletionFixture {
     }
 }
 
-
 extension RUMSessionScopeTests {
     private var sceneATarget: RUMCommandTarget { .scene(RUMSceneIdentifier(rawValue: "scene-a")) }
     private var sceneBTarget: RUMCommandTarget { .scene(RUMSceneIdentifier(rawValue: "scene-b")) }
