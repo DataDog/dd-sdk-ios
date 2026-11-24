@@ -226,14 +226,15 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
 
     func testTraceIgnoresRUMModifierRegisteredAfterPreparationStarted() throws {
         let lateModifier = RequestModifier(header: "x-late-modifier")
-        let preparedModifier = RequestModifier(header: "x-prepared-modifier") { [weak core] in
-            do {
-                try XCTUnwrap(core).register(urlSessionHandler: lateModifier)
-            } catch {
-                XCTFail("Could not register modifier during request preparation: \(error)")
+        let request = try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: true) { core in
+            RequestModifier(header: "x-prepared-modifier") { [weak core] in
+                do {
+                    try XCTUnwrap(core).register(urlSessionHandler: lateModifier)
+                } catch {
+                    XCTFail("Could not register modifier during request preparation: \(error)")
+                }
             }
         }
-        let request = try assertStandaloneTraceWhenRUMRejectsResource(traceFirst: true, modifier: preparedModifier)
         XCTAssertEqual(request.value(forHTTPHeaderField: "x-prepared-modifier"), "set")
         XCTAssertNil(request.value(forHTTPHeaderField: "x-late-modifier"))
     }
@@ -241,19 +242,48 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
     @discardableResult
     private func assertStandaloneTraceWhenRUMRejectsResource(
         traceFirst: Bool,
-        modifier: RequestModifier? = nil
+        makeModifier: ((DatadogCore) -> RequestModifier)? = nil
     ) throws -> URLRequest {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Scene request capture requires iOS 27") }
         let hosts: [String: Set<TracingHeaderType>] = ["www.example.com": [.datadog, .tracecontext]]
-        let traceConfig = Trace.Configuration(urlSessionTracking: .init(
-            firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100)
-        ))
+        let appDirectory = obtainUniqueTemporaryDirectory()
+        let sdkDirectory = appDirectory.appendingPathComponent("sdk", isDirectory: true)
+        try FileManager.default.createDirectory(at: sdkDirectory, withIntermediateDirectories: true)
+        let directory = CoreDirectory(osDirectory: .init(url: appDirectory), coreDirectory: .init(url: sdkDirectory))
+        let core = DatadogCore(
+            directory: directory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer {
+            core.flushAndTearDown()
+            try? FileManager.default.removeItem(at: appDirectory)
+        }
+        let rows = StandaloneTraceRows()
+        let traceConfig = Trace.Configuration(
+            urlSessionTracking: .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100)),
+            eventMapper: { event in
+                rows.record(event)
+                return event
+            }
+        )
         var rumConfig = RUM.Configuration(
             applicationID: .mockAny(),
             urlSessionTracking: .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: hosts, sampleRate: 100))
         )
         rumConfig.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
         rumConfig.featureFlags = [.multiSceneTracking: true]
+        rumConfig.resourceEventMapper = { event in
+            rows.recordResource()
+            return event
+        }
         rumConfig.longTaskThreshold = nil
         rumConfig.appHangThreshold = nil
         if traceFirst {
@@ -263,7 +293,7 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
             try RUM.enableOrThrow(with: rumConfig, in: core)
             Trace.enable(with: traceConfig, in: core)
         }
-        if let modifier {
+        if let modifier = makeModifier?(core) {
             try core.register(urlSessionHandler: modifier)
         }
         core.flush()
@@ -286,11 +316,25 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         XCTAssertNotNil(request.value(forHTTPHeaderField: "traceparent"))
         XCTAssertFalse(request.value(forHTTPHeaderField: "tracestate")?.contains("o:rum") ?? false)
 
-        let spans = try core.waitAndReturnSpanMatchers()
-        XCTAssertEqual(try spans.map { try $0.operationName() }, ["urlsession.request"])
-        let rumEvents = try core.waitAndReturnRUMEventMatchers()
-        XCTAssertFalse(try rumEvents.contains { try $0.eventType() == "resource" })
+        core.flush()
+        XCTAssertEqual(rows.spans.map(\.operationName), ["urlsession.request"])
+        XCTAssertEqual(rows.resourceCount, 0)
         return request
+    }
+
+    private final class StandaloneTraceRows: @unchecked Sendable {
+        @ReadWriteLock
+        private(set) var spans: [SpanEvent] = []
+        @ReadWriteLock
+        private(set) var resourceCount = 0
+
+        func record(_ span: SpanEvent) {
+            _spans.mutate { $0.append(span) }
+        }
+
+        func recordResource() {
+            _resourceCount.mutate { $0 += 1 }
+        }
     }
 
     private final class RequestModifier: DatadogURLSessionHandler, DatadogURLSessionHandlerPreparingRUM {
