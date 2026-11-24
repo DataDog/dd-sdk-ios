@@ -92,14 +92,3 @@ jobs:
           UPDATE_BRANCH: ${{ steps.prepare.outputs.branch }}
         run: |
           gh pr create --draft --base develop --head "$UPDATE_BRANCH" --title 'FFL-3568: Update feature flags precomputed fixtures' --body-file /tmp/feature-flags-precomputed-pr.md
-      # Best effort: if opening the pull request failed, delete the branch unless an open pull request uses it as head.
-      - name: Delete the update branch if no pull request was opened
-        if: failure() && steps.open_pr.outcome == 'failure'
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-          UPDATE_BRANCH: ${{ steps.prepare.outputs.branch }}
-        run: |
-          open=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$UPDATE_BRANCH" --json number --jq 'length')
-          if [ "$open" = 0 ]; then
-            gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$UPDATE_BRANCH" || true
-          fi
