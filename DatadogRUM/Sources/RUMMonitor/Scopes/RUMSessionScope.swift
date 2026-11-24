@@ -725,9 +725,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func effectiveTarget(of command: RUMCommand) -> RUMCommandTarget {
-        let explicit = (command as? RUMExplicitViewTargetCommand)?.explicitTarget
-            ?? (command as? RUMUserActionCommand)?.explicitTarget
-        if let explicit {
+        if let explicit = command.explicitViewTarget {
+            if explicit == .none {
+                return .none
+            }
             if case .view(let id) = explicit {
                 if viewScopes.contains(where: { $0.isActiveView && $0.viewUUID == id }) {
                     return explicit

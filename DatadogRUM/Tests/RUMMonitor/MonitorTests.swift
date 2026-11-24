@@ -658,6 +658,61 @@ extension MonitorTests {
         XCTAssertEqual(monitor.rumContextSnapshot(for: .view(.init(rawValue: viewID)))?.viewID, a.viewID)
     }
 
+    func testSceneSnapshots_keepProcessOwnedViewAfterSceneBecomesRepresentative() throws {
+        let monitor = sceneMonitor(scope: FeatureScopeMock(), clock: DateProviderMock(now: snapshotDate))
+        startSnapshotView(monitor, key: "process", target: .processRepresentative)
+        let processView = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+        let id = RUMUUID(rawValue: try XCTUnwrap(UUID(uuidString: processView)))
+
+        startSnapshotView(monitor, key: "scene", target: .scene(sceneB))
+
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "scene")
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .view(id))?.viewName, "process")
+    }
+
+    func testExplicitNoneTarget_dropsErrorActionAndResourceBeforeProcessing() {
+        let scope = MonitorOwnerScope()
+        let monitor = sceneMonitor(scope: scope, clock: DateProviderMock(now: snapshotDate))
+        startSnapshotView(monitor, key: "a", target: .scene(sceneA))
+        let writes = scope.writes
+        let contextWrites = scope.contextWrites
+        var completions = 0
+
+        monitor.addError(
+            error: NSError(domain: "test", code: 1),
+            source: .source,
+            attributes: [:],
+            completionHandler: { completions += 1 },
+            explicitTarget: RUMCommandTarget.none
+        )
+        monitor.addAction(type: .custom, name: "none", attributes: [:], explicitTarget: RUMCommandTarget.none)
+        monitor.startResource(resourceKey: "none", httpMethod: .get, urlString: "https://example.com", attributes: [:], explicitTarget: RUMCommandTarget.none)
+
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(scope.writes, writes)
+        XCTAssertEqual(scope.contextWrites, contextWrites)
+        XCTAssertTrue(scope.base.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+        XCTAssertTrue(scope.base.eventsWritten(ofType: RUMActionEvent.self).isEmpty)
+        XCTAssertTrue(monitor.applicationScope.activeSession?.viewScopes.allSatisfy { $0.resourceScopes.isEmpty } == true)
+    }
+
+    func testSceneInteraction_publishesRepresentativeViewAndActionToCore() throws {
+        let core = FeatureScopeMock()
+        let monitor = sceneMonitor(scope: core, clock: DateProviderMock(now: snapshotDate))
+        startSnapshotView(monitor, key: "a", target: .scene(sceneA))
+        startSnapshotView(monitor, key: "b", target: .scene(sceneB))
+
+        monitor.startAction(type: .tap, name: "interaction in a", attributes: [:], explicitTarget: .scene(sceneA))
+
+        let representative = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative))
+        var published: RUMCoreContext?
+        core.context { published = $0.additionalContext(ofType: RUMCoreContext.self) }
+        XCTAssertEqual(representative.viewName, "a")
+        XCTAssertEqual(published?.viewID, representative.viewID)
+        XCTAssertNotNil(representative.userActionID)
+        XCTAssertEqual(published?.userActionID, representative.userActionID)
+    }
+
     func testSceneSnapshots_publishOnlyAfterDeferredCommandProcessing() throws {
         let scope = FeatureScopeMock(deferEventWriteContext: true)
         let monitor = sceneMonitor(scope: scope, clock: DateProviderMock(now: snapshotDate))
