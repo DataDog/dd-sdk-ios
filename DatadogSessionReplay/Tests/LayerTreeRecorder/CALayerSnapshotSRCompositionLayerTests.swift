@@ -17,6 +17,34 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotSRCompositionLayerTests {
+    @Test("Uses a composition layer for rounded glass groups inside liquid lenses")
+    func usesLayerForRoundedGlassGroupsInsideLiquidLenses() {
+        // Given
+        let frame = CGRect(x: 0, y: 0, width: 58, height: 38)
+        let corners = CALayerSnapshot.CornerRadii(
+            cornerRadius: 18.5,
+            maskedCorners: [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        )
+        let glass = CALayerSnapshot.mockWith(
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.glassGroup), ignoresSublayers: true),
+            cornerRadii: corners
+        )
+        let plain = CALayerSnapshot.mockWith(absoluteFrame: frame, cornerRadii: corners)
+        let cornerlessGlass = CALayerSnapshot.mockWith(
+            absoluteFrame: frame,
+            observation: glass.observation
+        )
+
+        // When / Then
+        #expect(glass.compositionTreeRepresentation(inheritedEffects: []) == .wireframe)
+        #expect(glass.compositionTreeRepresentation(inheritedEffects: [.platformGlass]) == .wireframe)
+        #expect(glass.compositionTreeRepresentation(inheritedEffects: [.liquidLens]) == .layer)
+        #expect(glass.compositionTreeRepresentation(inheritedEffects: [.backdrop, .liquidLens]) == .layer)
+        #expect(plain.compositionTreeRepresentation(inheritedEffects: [.liquidLens]) == .wireframe)
+        #expect(cornerlessGlass.compositionTreeRepresentation(inheritedEffects: [.liquidLens]) == .wireframe)
+    }
+
     @Test("Creates modifiers in rendering order")
     func createsModifiersInRenderingOrder() throws {
         // Given
@@ -25,12 +53,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
 
         let layer = CALayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 50)
-        layer.masksToBounds = true
         layer.filters = [filter]
-        layer.shadowColor = UIColor.black.cgColor // Shadow modifier is suppressed with masksToBounds == true
-        layer.shadowOffset = CGSize(width: 0, height: 1)
-        layer.shadowOpacity = 0.25
-        layer.shadowRadius = 5
         layer.opacity = 0.5
 
         let maskLayer = CALayer()
@@ -38,15 +61,17 @@ struct CALayerSnapshotSRCompositionLayerTests {
         maskLayer.backgroundColor = UIColor.black.cgColor
         layer.mask = maskLayer
 
-        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        var snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        // A capsule effect supplies both clipping and shadow.
+        snapshot.observation = .init(semantics: .visualEffect(.automaticCapsule))
         let resourceID = "mask-resource-id"
 
         // When
-        let modifiers = snapshot.modifiers(maskImageResourceID: resourceID)
+        let modifiers = snapshot.modifiers(inheritedEffects: [], maskImageResourceID: resourceID)
 
         // Then
-        #expect(snapshot.compositionTreeRepresentation == .layer)
-        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "opacity", "maskImage"])
+        #expect(snapshot.compositionTreeRepresentation(inheritedEffects: []) == .layer)
+        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "shadow", "opacity", "maskImage"])
 
         let modifier = try #require(modifiers.last)
         guard case .compositionLayerMaskImageModifier(let maskImageModifier) = modifier else {
@@ -70,7 +95,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
 
         // When
-        let modifiers = snapshot.modifiers()
+        let modifiers = snapshot.modifiers(inheritedEffects: [])
 
         // Then
         let modifier = try #require(modifiers.first)
@@ -79,13 +104,90 @@ struct CALayerSnapshotSRCompositionLayerTests {
             return
         }
 
-        #expect(snapshot.compositionTreeRepresentation == .layer)
+        #expect(snapshot.compositionTreeRepresentation(inheritedEffects: []) == .layer)
         #expect(modifiers.count == 1)
         #expect(shadow.color == "#00000080")
         #expect(shadow.offsetX == 2)
         #expect(shadow.offsetY == 3)
         #expect(shadow.radius == 4)
         #expect(shadow.path == nil)
+    }
+
+    @Test("Respects bounds clipping for recorded glass group shadows", arguments: [true, false])
+    func respectsBoundsClippingForRecordedGlassGroupShadows(masksToBounds: Bool) throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 50)
+        layer.cornerRadius = 12
+        layer.masksToBounds = masksToBounds
+        layer.maskedCorners = [.layerMinXMinYCorner]
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 2, height: 3)
+        layer.shadowOpacity = 0.5
+        layer.shadowRadius = 4
+        var snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        snapshot.observation = .init(
+            semantics: .visualEffect(.glassGroup),
+            ignoresSublayers: true
+        )
+        let expectedPath = SwiftUI.Path(
+            roundedRect: layer.bounds,
+            cornerRadii: snapshot.cornerRadii,
+            cornerCurve: snapshot.cornerCurve
+        ).dd.svgString
+
+        // When
+        let modifiers = snapshot.modifiers(inheritedEffects: [.liquidLens])
+
+        // Then
+        let expectedShadow = SRCompositionLayerModifier.compositionLayerShadowModifier(value: .init(
+            color: "#00000080",
+            offsetX: 2,
+            offsetY: 3,
+            radius: 4
+        ))
+        let clip = SRCompositionLayerModifier.compositionLayerClipModifier(value: .init(path: expectedPath))
+        let expectedModifiers = masksToBounds ? [clip] : [clip, expectedShadow]
+        #expect(modifiers == expectedModifiers)
+    }
+
+    @Test(
+        "Does not add glass modifiers to plain, lens, or backdrop layers",
+        arguments: [
+            (CALayerSnapshot.SemanticObservation.Semantics.layer, false),
+            (.visualEffect(.liquidLens), false),
+            // Backdrops with nonuniform corners are clipped
+            (.visualEffect(.backdrop), true)
+        ]
+    )
+    func doesNotAddGlassModifiersToPlainLensOrBackdropLayers(
+        semantics: CALayerSnapshot.SemanticObservation.Semantics,
+        hasUniformCorners: Bool
+    ) {
+        // Given
+        let cornerRadii: CALayerSnapshot.CornerRadii = hasUniformCorners
+            ? .init(
+                cornerRadius: 12,
+                maskedCorners: [
+                    .layerMinXMinYCorner,
+                    .layerMaxXMinYCorner,
+                    .layerMinXMaxYCorner,
+                    .layerMaxXMaxYCorner
+                ]
+            )
+            : .init(topLeft: CGSize(width: 12, height: 12))
+        let snapshot = CALayerSnapshot.mockWith(
+            absoluteFrame: CGRect(x: 0, y: 0, width: 100, height: 50),
+            observation: .init(semantics: semantics),
+            cornerRadii: cornerRadii
+        )
+
+        // When
+        let modifiers = snapshot.modifiers(inheritedEffects: [.liquidLens])
+
+        // Then
+        #expect(snapshot.compositionTreeRepresentation(inheritedEffects: []) == .wireframe)
+        #expect(modifiers.isEmpty)
     }
 
     @Test("Maps automatic capsule effect to clip and shadow modifiers")
@@ -112,10 +214,10 @@ struct CALayerSnapshotSRCompositionLayerTests {
         ).dd.svgString
 
         // When
-        let modifiers = snapshot.modifiers()
+        let modifiers = snapshot.modifiers(inheritedEffects: [])
 
         // Then
-        #expect(snapshot.compositionTreeRepresentation == .layer)
+        #expect(snapshot.compositionTreeRepresentation(inheritedEffects: []) == .layer)
         #expect(modifierTypes(modifiers) == ["clip", "shadow"])
 
         let firstModifier = try #require(modifiers.first)
@@ -147,7 +249,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
 
         // When
-        let modifiers = snapshot.modifiers()
+        let modifiers = snapshot.modifiers(inheritedEffects: [])
 
         // Then
         let modifier = try #require(modifiers.first)
@@ -156,7 +258,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
             return
         }
 
-        #expect(snapshot.compositionTreeRepresentation == .layer)
+        #expect(snapshot.compositionTreeRepresentation(inheritedEffects: []) == .layer)
         #expect(colorMatrix.matrix.count == 20)
         #expect(colorMatrix.matrix[0] > 0)
         #expect(colorMatrix.matrix[6] > 0)
@@ -181,7 +283,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let snapshot = CALayerSnapshot.mockWith(filters: [.vibrantColorMatrix(matrix)])
 
         // When
-        let modifiers = snapshot.modifiers()
+        let modifiers = snapshot.modifiers(inheritedEffects: [])
 
         // Then
         let modifier = try #require(modifiers.first)
@@ -208,13 +310,13 @@ struct CALayerSnapshotSRCompositionLayerTests {
         )
 
         // When
-        let regularLayerModifiers = regularLayer.modifiers()
-        let backdropLayerModifiers = backdropLayer.modifiers()
+        let regularLayerModifiers = regularLayer.modifiers(inheritedEffects: [])
+        let backdropLayerModifiers = backdropLayer.modifiers(inheritedEffects: [])
 
         // Then
-        #expect(regularLayer.compositionTreeRepresentation == .layer)
+        #expect(regularLayer.compositionTreeRepresentation(inheritedEffects: []) == .layer)
         #expect(modifierTypes(regularLayerModifiers) == ["gaussianBlur"])
-        #expect(backdropLayer.compositionTreeRepresentation == .wireframe)
+        #expect(backdropLayer.compositionTreeRepresentation(inheritedEffects: []) == .wireframe)
         #expect(backdropLayerModifiers.isEmpty)
     }
 

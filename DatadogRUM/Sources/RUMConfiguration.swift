@@ -277,6 +277,8 @@ extension RUM {
         /// It can be used to modify view events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMViewEvent`, modify it, and return it. Keep the implementation fast
         /// and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Note: This mapper ensures that all views are sent by preventing the return of `nil`. To drop certain automatically
         /// collected RUM views, adjust the implementations of the view predicates (see the `uiKitViewsPredicate` and `swiftUIViewsPredicate` options).
@@ -289,6 +291,8 @@ extension RUM {
         /// It can be used to modify resource events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMResourceEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var resourceEventMapper: RUM.ResourceEventMapper?
@@ -298,6 +302,8 @@ extension RUM {
         /// It can be used to modify action events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMActionEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var actionEventMapper: RUM.ActionEventMapper?
@@ -307,6 +313,8 @@ extension RUM {
         /// It can be used to modify error events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMErrorEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var errorEventMapper: RUM.ErrorEventMapper?
@@ -316,6 +324,8 @@ extension RUM {
         /// It can be used to modify long task events before they are sent. The implementation of the mapper should
         /// obtain a mutable copy of `RUMLongTaskEvent`, modify it, and return it. Returning `nil` will drop the event.
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        /// Do not dispatch to other queues in it: dispatching synchronously to the main queue, for example with
+        /// `DispatchQueue.main.sync`, may cause a deadlock.
         ///
         /// Default: `nil`.
         public var longTaskEventMapper: RUM.LongTaskEventMapper?
@@ -498,6 +508,9 @@ extension RUM {
         internal var viewEndedSampleRate = ViewEndedController.defaultSampleRate
         /// Sample rate for "session ended" metric in telemetry.
         internal var sessionEndedSampleRate = SessionEndedMetricController.defaultSampleRate
+        /// Allows cross-platform SDKs to disable first frame automatic detection for the TTID metric.
+        /// This can then be manually reported with `RUMMonitor._internal.reportAppDisplayInitialized(at:)`
+        internal var reportsAppDisplayInitializedManually = false
 
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 
@@ -913,6 +926,15 @@ extension InternalExtension where ExtendedType == RUM.Configuration {
         get { type.configurationTelemetrySampleRate }
         set { type.configurationTelemetrySampleRate = newValue }
     }
+
+    /// When `true`, the SDK does not detect the app's first frame to compute Time to Initial Display (TTID).
+    /// A cross-platform SDK must report it with `RUMMonitor._internal.reportAppDisplayInitialized(at:)` instead.
+    ///
+    /// It is used by cross-platform SDKs whose first native frame is not the first frame of the app's UI.
+    public var reportsAppDisplayInitializedManually: Bool {
+        get { type.reportsAppDisplayInitializedManually }
+        set { type.reportsAppDisplayInitializedManually = newValue }
+    }
 }
 
 extension RUM.Configuration {
@@ -932,7 +954,7 @@ extension RUM.Configuration {
         /// When `true`, changes how view updates are reported: after the first full `RUMViewEvent`
         /// for a view, subsequent updates are sent as `RUMViewUpdateEvent` deltas containing only the
         /// fields that changed, instead of resending the full event. A full event is still sent every
-        /// 5 updates so the view state can be reconstructed even if some deltas are lost in transit.
+        /// 10th update so the view state can be reconstructed even if some deltas are lost in transit.
         /// Defaults to `true`.
         case viewUpdates
     }

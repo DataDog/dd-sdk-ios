@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-11
-sdk_version: 3.21.0
-verified_against_commit: f4dfe5acb
+last_updated: 2026-11-24
+sdk_version: 3.23.0
+verified_against_commit: 1f00346a6
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -38,7 +38,7 @@ Trace can also connect to automatic `URLSession` network instrumentation; for th
 
 Trace requires initialization via `Datadog.initialize()` before enabling.
 
-**Platform**: iOS, tvOS, watchOS, visionOS
+**Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only)
 
 ## Quick Start Example
 
@@ -273,7 +273,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Span customization**: `spanCustomization` (default: `nil`) is called for each URLSession span Trace creates, after the default tags are set and before the span is finished. Use the span's `setTag(key:value:)` or `setOperationName(_:)` to customize it based on the request, response, or error. The callback receives an `InterceptedRequest` (`url`, `httpMethod`, `httpBody`) captured when the request is intercepted, not the original `URLRequest`. It is not called for requests Trace does not create a span for, such as third-party requests or requests tracked by RUM (use RUM `resourceAttributesProvider` for those). `httpBody` is `nil` if the body is provided through `httpBodyStream` or if the task was created with `uploadTask(with:from:)` or `uploadTask(with:fromFile:)`. Keep the implementation fast and do not make any assumptions on the thread used to run it.
 - **Duration breakdown**: For DNS / SSL / TTFB timing, also call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourURLSessionDelegate.self))` after `Trace.enable()`.
 - **Duration sanitation**: automatic URLSession spans clamp their finish time so it is never earlier than their start time before computing foreground/background tags or finishing the span.
-- **Application-state timing**: `foreground_duration` measures time in states where the process cannot be suspended. On iOS, background intervals are excluded. The internal macOS path excludes sleep intervals and sets `is_background` to `false`; this does not add official macOS support. Other platforms retain start/end background-state classification.
+- **Application-state timing**: `foreground_duration` measures time in states where the process cannot be suspended. On iOS, background intervals are excluded. On macOS, sleep intervals are excluded and `is_background` is `false`. Other platforms retain start/end background-state classification.
 
 > Note: Automatic `URLSession` network instrumentation involves swizzling `URLSession` and `URLSessionTask` methods.
 
@@ -282,6 +282,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Global tags**: `tags: [String: OTTagValue]?` — applied to every span from the default tracer. `OTTagValue` is `Encodable & Sendable`; any custom tag type must conform to both.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
 - **RUM view name**: under the same conditions as the `_dd.*` tags above (a RUM context exists and the RUM session is sampled in), the current RUM view name is added as the `view.name` tag, searchable in APM as `@view.name`. Because it follows the RUM sampling decision, `@view.name` only matches spans from sampled-in RUM sessions. A `view.name` already present in the span's own tags is never overwritten, so apps can set it themselves (see below) and keep that value if they later enable RUM.
+- **User info**: user info set with `Datadog.setUserInfo` is added as `meta.usr.id`, `meta.usr.name`, `meta.usr.email` and `meta.usr.<extraInfo key>`. The anonymous user ID (the same value RUM and Logs send as `usr.anonymous_id`) is added as `meta.usr.anonymous_id` when set; clearing user info does not remove it.
 - **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log. Mobile carrier info is only available on iOS versions below 16, since Apple deprecated the required Core Telephony APIs (`CTCarrier`) without a replacement.
 
 ### Tagging Spans With a View Name
@@ -300,10 +301,10 @@ Automatically instrumented `URLSession` spans have no call site to tag. Do **not
 `view.name` makes spans searchable and groupable by view. It does not add the `_dd.*` RUM correlation tags, which are only set from a RUM context.
 
 ### Event Modification
-- **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
+- **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe. Do not dispatch to other queues from it: dispatching synchronously to the main queue (e.g. `DispatchQueue.main.sync`) may cause a deadlock.
 
 ### Client-Side Stats (APM)
-- **`featureFlags[.clientSideStats]`** (default: `false`, experimental) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device from eligible finished spans, including sampled-out ones, and uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans, and spans of kind `client`, `server`, `producer` or `consumer`. Uploaded spans are stamped with `_dd.compute_stats=0` so the backend does not compute stats for the same traffic again; with the flag off, a `_dd.compute_stats` tag set by the app is uploaded unchanged. Enabling it does not change which spans are uploaded. Aggregation and upload respect tracking consent, and `Datadog.clearAllData()` also clears the stats still in memory. Stats are written to storage every 30 seconds, and on a best-effort basis while the app may be suspended. Requests tracked by RUM `urlSessionTracking` produce no Trace span, so they are not aggregated. From Objective-C, set `client_side_stats` in `DDTraceConfiguration.featureFlags`; unknown flag names are ignored.
+- **`featureFlags[.clientSideStats]`** (default: `false`, experimental) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device from eligible finished spans, including sampled-out ones, and uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans, and spans of kind `client`, `server`, `producer` or `consumer`. Uploaded spans are stamped with `_dd.compute_stats=0` so the backend does not compute stats for the same traffic again; with the flag off, a `_dd.compute_stats` tag set by the app is uploaded unchanged. Enabling it does not change which spans are uploaded. Aggregation and upload respect tracking consent, and `Datadog.clearAllData()` also clears the stats still in memory. Stats are written to storage every 30 seconds, on a best-effort basis while the app may be suspended, and on macOS when the app terminates. Requests tracked by RUM `urlSessionTracking` produce no Trace span, so they are not aggregated. From Objective-C, set `client_side_stats` in `DDTraceConfiguration.featureFlags`; unknown flag names are ignored.
 - **Cardinality limit**: each time bucket retains at most 100 regular groups across deployments, plus one overflow group per deployment. Extra keys are aggregated under service `tracer_blocked_value`, preserving counts and latency statistics by deployment but excluding that traffic from queries filtered to the original service. Overflow is exported with its bucket, never early. A bucket holds at most 10 overflow groups; spans of further deployments are dropped and counted in telemetry. Only the version can change at runtime, so this needs spans from more than 10 versions ending in the same bucket. This bounds retained groups per bucket, not total SDK memory. A bucket larger than 500 KB, under half the 1 MB storage event limit and possible with wide latency ranges, is stored in pieces that are merged again at upload; pieces in different requests set `SplitPayload`. A group too large to store even alone, only possible with very long strings in the group or its bucket metadata, is dropped, logged and counted in telemetry.
 - **Service entries**: root spans, children of explicitly remote contexts, and local children whose `service.name` differs from their parent's are top-level for stats. Service overrides are captured when the child finishes, before event mapping, including updates made after span creation. Automatic `URLSession` spans compare with the span that was active when the request was instrumented, when that span is their parent. This intentionally differs from Go's start-time classification; later parent changes do not reclassify finished children. The parent ID and uploaded span fields are unchanged. OpenTelemetry local-service comparisons require a parent span object (explicit or active); a bare local `SpanContext` has no service metadata and is not assumed to be remote, so its child is not a service entry. `SpanEvent.serviceName` is read-only: adding a `service.name` tag in an event mapper does not override that field or create a service boundary. No child stats are buffered waiting for a parent to finish.
 - **`customStatsEndpoint`** (default: `nil`) — overrides the client-side stats intake URL. Independent of `customEndpoint` (spans) and has no effect unless the `clientSideStats` feature flag is enabled. Also available on `DDTraceConfiguration` from Objective-C.

@@ -1233,6 +1233,7 @@ public class TimeseriesCollectorMock: TimeseriesCollecting {
     public func stop(sessionID: String) {}
     public func noteActivity(sessionID: String) {}
     public func flush() {}
+    public func stopForTermination() {}
     public func hasCollectedData(sessionID: String) -> Bool { hasData }
 }
 
@@ -1782,6 +1783,20 @@ public class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     public func readVitalData() -> Double? {
         onReadVitalData?()
         return vitalData
+    }
+}
+
+public class TimeseriesMemoryReaderMock: TimeseriesMemoryReader {
+    /// Memory footprint in bytes. `nil` makes `readMemory()` fail.
+    public var footprint: Double?
+    /// Non-resident (compressed) memory in bytes.
+    public var nonResident: Double = 0
+    public var onReadMemory: (() -> Void)?
+
+    public init() {}
+    public func readMemory() -> TimeseriesMemoryValues? {
+        onReadMemory?()
+        return footprint.map { TimeseriesMemoryValues(footprint: $0, nonResident: nonResident) }
     }
 }
 

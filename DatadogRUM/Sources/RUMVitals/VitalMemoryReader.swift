@@ -8,14 +8,21 @@ import Foundation
 
 /// A class reading the current Memory footprint.
 internal class VitalMemoryReader: SamplingBasedVitalReader {
-    private let TASK_VM_INFO_COUNT = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
-    private let TASK_VM_INFO_REV1_COUNT = mach_msg_type_number_t((MemoryLayout.offset(of: \task_vm_info_data_t.min_address) ?? 0) / MemoryLayout<integer_t>.size)
+    private static let TASK_VM_INFO_COUNT = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+    private static let TASK_VM_INFO_REV1_COUNT = mach_msg_type_number_t((MemoryLayout.offset(of: \task_vm_info_data_t.min_address) ?? 0) / MemoryLayout<integer_t>.size)
 
     /// The logic to capture the current physical memory usage is based on the https://developer.apple.com/forums/thread/105088 thread.
     /// It collects the recommended `phys_footprint` value.
     ///
     /// - Returns: Current physical memory usage in bytes, `nil` if failed to read.
     func readVitalData() -> Double? {
+        return Self.readTaskVMInfo().map { Double($0.phys_footprint) }
+    }
+
+    /// Reads the current process's `task_vm_info`.
+    ///
+    /// - Returns: The `task_vm_info` structure, `nil` if failed to read or if the kernel returned fewer fields than `phys_footprint` needs.
+    static func readTaskVMInfo() -> task_vm_info_data_t? {
         var info = task_vm_info_data_t()
         var count = TASK_VM_INFO_COUNT
         let kernelReturn = withUnsafeMutablePointer(to: &info) { infoPtr in
@@ -28,6 +35,6 @@ internal class VitalMemoryReader: SamplingBasedVitalReader {
             return nil
         }
 
-        return Double(info.phys_footprint)
+        return info
     }
 }

@@ -37,7 +37,6 @@ internal enum RUMOffViewEventsHandlingRule: Equatable {
         // macOS apps have no background state. This view holds events that arrive with no active view, for example after the last
         // window closes or in a menu bar app. It reuses the "Background" view handling, but keeps its own name so it is not read
         // as an iOS background period.
-        // TODO: RUM-19085 Confirm the name and URL with the macOS RFC reviewers.
         /// The name of the view created when receiving an event while there is no active view.
         static let backgroundViewName = "NoActiveView"
         /// The url of the view created when receiving an event while there is no active view.

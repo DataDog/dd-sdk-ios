@@ -113,11 +113,15 @@ extension CALayerSnapshot {
             self.rawValue = rawValue
         }
 
+        /// Reads a compositing filter, which Core Animation stores as a filter name or a `CAFilter`.
         init?(_ value: Any) {
-            guard let rawValue = value as? String else {
+            let name = value as? String
+                ?? (value as? NSObject)?.safeValue(forKey: "name") as? String
+
+            guard let name else {
                 return nil
             }
-            self.init(rawValue: rawValue)
+            self.init(rawValue: name)
         }
     }
 }

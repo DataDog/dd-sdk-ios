@@ -26,13 +26,17 @@ internal final class FeatureDataStore: DataStore {
     private let queue: DispatchQueue
     /// The telemetry endpoint for sending data store errors.
     private let telemetry: Telemetry
+    /// Keeps sudden termination disabled while writes and deletions are queued or running.
+    private let suddenTermination: SuddenTerminationControl
 
     init(
         feature: String,
         directory: CoreDirectory,
         queue: DispatchQueue,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
+        self.suddenTermination = suddenTermination
         self.feature = feature
         self.coreDirectory = directory
         self.directoryPath = coreDirectory.getDataStorePath(forFeatureNamed: feature)
@@ -41,7 +45,7 @@ internal final class FeatureDataStore: DataStore {
     }
 
     func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
-        queue.async { [weak self] in
+        suddenTermination.async(on: queue) { [weak self] in
             guard let self = self else {
                 return
             }
@@ -73,7 +77,7 @@ internal final class FeatureDataStore: DataStore {
     }
 
     func removeValue(forKey key: String) {
-        queue.async { [weak self] in
+        suddenTermination.async(on: queue) { [weak self] in
             guard let self = self else {
                 return
             }
@@ -88,7 +92,7 @@ internal final class FeatureDataStore: DataStore {
     }
 
     func clearAllData() {
-        queue.async {
+        suddenTermination.async(on: queue) {
             do {
                 let directory = try self.coreDirectory.coreDirectory.subdirectoryIfExists(path: self.directoryPath)
                 try directory?.deleteAllFiles()

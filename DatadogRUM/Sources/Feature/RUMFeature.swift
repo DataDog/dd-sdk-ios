@@ -114,10 +114,20 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         let firstFrameReader: (RenderLoopReader & RUMCommandPublisher)?
         #if os(macOS)
-        // macOS has no render loop to read the first frame from: `RUMInstrumentation` reads the first window instead.
+        // macOS has no render loop to read the first frame from: `RUMInstrumentation` reads the first window instead,
+        // unless a cross-platform SDK reports the first frame itself.
         firstFrameReader = nil
         #else
-        firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        // A cross-platform SDK that reports the first frame itself replaces this reader.
+        firstFrameReader = configuration.reportsAppDisplayInitializedManually
+            ? nil
+            : FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        #endif
+
+        #if os(macOS)
+        if configuration.collectAccessibility {
+            accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenterProvider.workspaceCenter)
+        }
         #endif
 
         #if !os(watchOS) && !os(macOS)
@@ -211,7 +221,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             let collectorReplayState = HasReplayMessageReceiver()
             replayState = collectorReplayState
             return TimeseriesSessionCollector(
-                memoryReader: VitalMemoryReader(),
+                memoryReader: TaskVMInfoMemoryReader(),
                 featureScope: featureScope,
                 collectTypes: effectiveCollectTypes,
                 ciTest: ciTest,
@@ -347,6 +357,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             memoryWarningMonitor: nil,
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
+            reportsAppDisplayInitializedManually: configuration.reportsAppDisplayInitializedManually,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #elseif os(watchOS)
@@ -553,6 +564,12 @@ extension RUMFeature {
 
     func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
         sessionSamplingStore.decision(for: policy, rate: rate)
+    }
+}
+
+extension RUMFeature: BufferedDataWritable {
+    func writeBufferedDataSynchronously() {
+        timeseriesCollector?.stopForTermination()
     }
 }
 

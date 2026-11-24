@@ -13,10 +13,11 @@ extension CALayerSnapshot {
     struct CornerRadii: Sendable, Equatable {
         static let zero = CornerRadii()
 
-        var topLeft: CGSize
-        var topRight: CGSize
+        // Stored property order matches `CACornerRadii`
         var bottomLeft: CGSize
         var bottomRight: CGSize
+        var topRight: CGSize
+        var topLeft: CGSize
 
         init(
             topLeft: CGSize = .zero,
