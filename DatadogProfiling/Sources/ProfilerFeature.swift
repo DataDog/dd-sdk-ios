@@ -42,18 +42,16 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
         telemetryController: ProfilingTelemetryController,
-        userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard, //swiftlint:disable:this required_reason_api_name
-        memorySampleRate: SampleRate = 0
+        userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
         self.telemetryController = telemetryController
 
-        let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
+        let cpuSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.cpuSampleRate
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        // Internal input until RUM-18353 exposes memory profiling configuration.
-        let memorySampleRate = memorySampleRate.normalizedSampleRate
+        let memorySampleRate = configuration.debugSDK ? .maxSampleRate : configuration.memorySampleRate.normalizedSampleRate
         self.profilingSamplerProvider = ProfilingSamplerProvider(
-            continuousSampleRate: continuousSampleRate,
+            continuousSampleRate: cpuSampleRate,
             appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0,
             memorySampleRate: memorySampleRate
         )

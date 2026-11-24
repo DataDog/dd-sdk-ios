@@ -34,8 +34,9 @@ final class DDProfilingTests: XCTestCase {
         let configuration = objc_ProfilingConfiguration(
             customEndpoint: customEndpoint,
             applicationLaunchSampleRate: 0,
-            continuousSampleRate: 0
+            cpuSampleRate: 0
         )
+        configuration.memorySampleRate = 42
 
         objc_Profiling.enable(with: configuration)
 
@@ -43,6 +44,7 @@ final class DDProfilingTests: XCTestCase {
         let requestBuilder = try XCTUnwrap(feature.requestBuilder as? RequestBuilder)
         XCTAssertEqual(requestBuilder.customUploadURL, customEndpoint)
         XCTAssertFalse(feature.profilingSamplerProvider.isContinuousProfilingConfigured)
+        XCTAssertEqual(feature.profilingSamplerProvider.memory.sampleRate, 42)
     }
 
     func testEnableOnNamedInstance() {
@@ -50,7 +52,7 @@ final class DDProfilingTests: XCTestCase {
         CoreRegistry.register(namedCore, named: instanceName)
 
         objc_Profiling.enable(
-            with: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
+            with: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0),
             instanceName: instanceName
         )
 
@@ -60,7 +62,7 @@ final class DDProfilingTests: XCTestCase {
 
     func testEnableWithNilInstanceNameUsesDefaultInstance() {
         objc_Profiling.enable(
-            with: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
+            with: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0),
             instanceName: nil
         )
 
@@ -99,7 +101,7 @@ final class DDProfilingTests: XCTestCase {
     }
 
     func testEnablingTwiceKeepsOriginalFeature() throws {
-        objc_Profiling.enable(with: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0))
+        objc_Profiling.enable(with: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0))
         let feature = try XCTUnwrap(core.get(feature: ProfilerFeature.self))
 
         objc_Profiling.enable(with: .init(customEndpoint: .mockRandom()))
@@ -111,7 +113,7 @@ final class DDProfilingTests: XCTestCase {
     func testEnablingOnAnotherInstanceKeepsOriginalFeature() throws {
         let namedCore = FeatureRegistrationCoreMock()
         CoreRegistry.register(namedCore, named: instanceName)
-        objc_Profiling.enable(with: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0))
+        objc_Profiling.enable(with: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0))
         let feature = try XCTUnwrap(core.get(feature: ProfilerFeature.self))
 
         objc_Profiling.enable(with: .init(), instanceName: instanceName)

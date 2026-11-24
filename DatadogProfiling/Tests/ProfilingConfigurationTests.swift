@@ -18,7 +18,49 @@ final class ProfilingConfigurationTests: XCTestCase {
         // Then
         XCTAssertEqual(config.customEndpoint, endpoint)
         XCTAssertEqual(config.applicationLaunchSampleRate, 5)
-        XCTAssertEqual(config.continuousSampleRate, 5)
+        XCTAssertEqual(config.cpuSampleRate, 5)
+        XCTAssertEqual(config.memorySampleRate, 0)
+    }
+
+    func testCustomConfiguration() {
+        let endpoint: URL = .mockRandom()
+        let configuration = Profiling.Configuration(
+            customEndpoint: endpoint,
+            applicationLaunchSampleRate: 12.5,
+            cpuSampleRate: 37.5,
+            memorySampleRate: 62.5
+        )
+
+        XCTAssertEqual(configuration.customEndpoint, endpoint)
+        XCTAssertEqual(configuration.applicationLaunchSampleRate, 12.5)
+        XCTAssertEqual(configuration.cpuSampleRate, 37.5)
+        XCTAssertEqual(configuration.memorySampleRate, 62.5)
+    }
+
+    @available(*, deprecated)
+    func testLegacyInitializerReferencePreservesConfiguration() {
+        let makeConfiguration: (URL?, Float, Float) -> Profiling.Configuration = Profiling.Configuration.init
+        let endpoint: URL = .mockRandom()
+
+        let configuration = makeConfiguration(endpoint, 12.5, 37.5)
+
+        XCTAssertEqual(configuration.customEndpoint, endpoint)
+        XCTAssertEqual(configuration.applicationLaunchSampleRate, 12.5)
+        XCTAssertEqual(configuration.cpuSampleRate, 37.5)
+        XCTAssertEqual(configuration.memorySampleRate, 0)
+    }
+
+    @available(*, deprecated)
+    func testLegacyContinuousSampleRateForwardsToCPUSampleRate() {
+        var configuration = Profiling.Configuration(cpuSampleRate: 25, memorySampleRate: 50)
+        XCTAssertEqual(configuration.continuousSampleRate, 25)
+
+        configuration.continuousSampleRate = 75
+        XCTAssertEqual(configuration.cpuSampleRate, 75)
+
+        configuration.cpuSampleRate = 10
+        XCTAssertEqual(configuration.continuousSampleRate, 10)
+        XCTAssertEqual(configuration.memorySampleRate, 50)
     }
 }
 

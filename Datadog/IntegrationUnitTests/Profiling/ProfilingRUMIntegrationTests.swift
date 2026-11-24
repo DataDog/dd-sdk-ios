@@ -129,7 +129,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
         // When
         enableRUM(sessionSampleRate: Fixtures.sampledInRUMSessionRate, sessionUUID: sessionUUID)
-        enableProfiling(continuousSampleRate: Fixtures.continuousSampledInRate)
+        enableProfiling(cpuSampleRate: Fixtures.continuousSampledInRate)
 
         startRUMView()
 
@@ -160,10 +160,9 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         )
         let feature = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
+            configuration: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0, memorySampleRate: 100),
             requestBuilder: DatadogProfiling.RequestBuilder(),
-            telemetryController: .init(),
-            memorySampleRate: 100
+            telemetryController: .init()
         )
         defer { feature.memoryProfiler.flushAndStop() }
         try core.register(feature: feature)
@@ -230,7 +229,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
         // When
         enableRUM(sessionSampleRate: Fixtures.sampledInRUMSessionRate, sessionUUID: sessionUUID)
-        enableProfiling(continuousSampleRate: Fixtures.continuousSampledOutRate)
+        enableProfiling(cpuSampleRate: Fixtures.continuousSampledOutRate)
 
         startRUMView()
 
@@ -251,7 +250,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
         // When
         enableRUM(sessionSampleRate: Fixtures.sampledInRUMSessionRate, sessionUUID: sessionUUID)
-        enableProfiling(applicationLaunchSampleRate: 0, continuousSampleRate: 0) // custom profiling
+        enableProfiling(applicationLaunchSampleRate: 0, cpuSampleRate: 0) // custom profiling
 
         startRUMView()
 
@@ -271,7 +270,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
         // When
         enableRUM(sessionSampleRate: Fixtures.unsampledRUMSessionRate, sessionUUID: sessionUUID)
-        enableProfiling(applicationLaunchSampleRate: 0, continuousSampleRate: 0) // custom profiling
+        enableProfiling(applicationLaunchSampleRate: 0, cpuSampleRate: 0) // custom profiling
 
         startRUMView()
         startVital(name: vitalName)
@@ -303,7 +302,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
         // When
         enableRUM(sessionSampleRate: Fixtures.sampledInRUMSessionRate, sessionUUID: sessionUUID)
-        enableProfiling(applicationLaunchSampleRate: 0, continuousSampleRate: Fixtures.continuousSampledOutRate)
+        enableProfiling(applicationLaunchSampleRate: 0, cpuSampleRate: Fixtures.continuousSampledOutRate)
 
         startRUMView()
 
@@ -346,10 +345,10 @@ private extension ProfilingRUMIntegrationTests {
         RUM.enable(with: configuration, in: core)
     }
 
-    func enableProfiling(applicationLaunchSampleRate: SampleRate = .maxSampleRate, continuousSampleRate: SampleRate = .maxSampleRate) {
+    func enableProfiling(applicationLaunchSampleRate: SampleRate = .maxSampleRate, cpuSampleRate: SampleRate = .maxSampleRate) {
         var configuration = Profiling.Configuration(
             applicationLaunchSampleRate: applicationLaunchSampleRate,
-            continuousSampleRate: continuousSampleRate
+            cpuSampleRate: cpuSampleRate
         )
         configuration.minProfileDuration = Fixtures.minProfileDuration
 
