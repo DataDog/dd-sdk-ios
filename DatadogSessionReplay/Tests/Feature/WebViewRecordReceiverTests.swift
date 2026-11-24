@@ -9,6 +9,7 @@
 import XCTest
 import TestUtilities
 
+@_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogSessionReplay
 
@@ -81,6 +82,36 @@ class WebViewRecordReceiverTests: XCTestCase {
         XCTAssertTrue(scope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
+    func testCapturedRecordWritesOnlyInItsOriginalLiveNativeSession() throws {
+        let core = ReplayReceiptCore()
+        let original = RUMCoreContext.mockWith(sessionID: UUID(), viewID: nil)
+        let successor = RUMCoreContext.mockWith(sessionID: UUID(), viewID: nil)
+        let capture = RUMContextHandoff.Capture(owner: core.owner, value: .init(
+            rumContext: original, sceneIdentifier: "original", hasPendingUserAction: false, excludedUserActionID: nil
+        ))
+        let message = FeatureMessage.payload(WebViewMessageWithRUMContext(
+            message: .record(["timestamp": 123], .init(id: "record-view")),
+            capture: capture
+        ))
+        for (current, live) in [(original, original), (successor, successor), (original, successor)] {
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [original]), deferEventWriteContext: true)
+            let receiver = WebViewRecordReceiver(scope: scope)
+
+            XCTAssertTrue(receiver.receive(message: message, from: core))
+            scope.contextMock = .mockWith(additionalContext: [current])
+            core.sessionValidator.sessionID = live.sessionID
+            scope.flushDeferredEventWriteContexts()
+
+            let records = scope.eventsWritten(ofType: WebViewRecordReceiver.WebRecord.self)
+            if current == original && live == original {
+                XCTAssertEqual(records.map(\.sessionID), [original.sessionID])
+                XCTAssertEqual(records.map(\.viewID), ["record-view"])
+            } else {
+                XCTAssertTrue(records.isEmpty)
+            }
+        }
+    }
+
     func testWhenReceivingOtherMessage_itRejectsIt() throws {
         let scope = FeatureScopeMock()
 
@@ -93,6 +124,26 @@ class WebViewRecordReceiverTests: XCTestCase {
 
         // Then
         XCTAssertFalse(result, "It must reject messages addressed to other receivers")
+    }
+}
+
+private final class ReplayReceiptCore: DatadogCoreProtocol, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    private let base = PassthroughCoreMock()
+    let owner = RUMContextHandoff.Owner()
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    let sessionValidator = SessionValidator()
+    var remoteConfiguration: RemoteConfiguration? { nil }
+
+    func register<T>(feature: T) throws where T: DatadogFeature {}
+    func feature<T>(named name: String, type: T.Type) -> T? { name == Feature.rum ? sessionValidator as? T : nil }
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature { base }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
+
+    final class SessionValidator: RUMContextHandoffSessionValidating {
+        var sessionID: String?
+        func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool { self.sessionID == sessionID }
     }
 }
 
