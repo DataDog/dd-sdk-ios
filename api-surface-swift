@@ -1778,6 +1778,8 @@ public enum Profiling
     public struct Configuration: Sendable
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
+        public var cpuSampleRate: SampleRate
         public var continuousSampleRate: SampleRate
         public var memorySampleRate: SampleRate
-        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5,memorySampleRate: SampleRate = 0)
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,cpuSampleRate: SampleRate = 5,memorySampleRate: SampleRate = 0)
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate)

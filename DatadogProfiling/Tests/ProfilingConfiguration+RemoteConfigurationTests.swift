@@ -54,13 +54,13 @@ class ProfilingConfiguration_RemoteConfigurationTests: XCTestCase {
         }
     }
 
-    /// A remote `continuousSampleRate` overrides the in-code value, regardless of the baseline.
-    func testItOverridesContinuousSampleRateFromRemoteValue() throws {
+    /// A remote `continuousSampleRate` overrides the in-code CPU sample rate, regardless of the baseline.
+    func testItOverridesCPUSampleRateFromRemoteValue() throws {
         for _ in 0..<100 {
             // Given
             let profiling: RemoteConfiguration.Profiling = .mockRandom()
             var configuration = Profiling.Configuration(
-                continuousSampleRate: .mockRandom(min: 0, max: 100)
+                cpuSampleRate: .mockRandom(min: 0, max: 100)
             )
 
             // When
@@ -68,7 +68,7 @@ class ProfilingConfiguration_RemoteConfigurationTests: XCTestCase {
 
             // Then
             XCTAssertEqual(
-                configuration.continuousSampleRate,
+                configuration.cpuSampleRate,
                 SampleRate(try XCTUnwrap(profiling.continuousSampleRate))
             )
         }

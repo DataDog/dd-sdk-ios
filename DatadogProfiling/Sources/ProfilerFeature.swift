@@ -47,11 +47,11 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         self.requestBuilder = requestBuilder
         self.telemetryController = telemetryController
 
-        let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
+        let cpuSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.cpuSampleRate
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
         let memorySampleRate = configuration.debugSDK ? .maxSampleRate : configuration.memorySampleRate.normalizedSampleRate
         self.profilingSamplerProvider = ProfilingSamplerProvider(
-            continuousSampleRate: continuousSampleRate,
+            continuousSampleRate: cpuSampleRate,
             appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0,
             memorySampleRate: memorySampleRate
         )

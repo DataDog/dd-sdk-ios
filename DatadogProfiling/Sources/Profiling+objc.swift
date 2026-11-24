@@ -32,12 +32,19 @@ public final class objc_ProfilingConfiguration: NSObject {
         set { configuration.applicationLaunchSampleRate = newValue }
     }
 
-    /// The sampling rate for Continuous Profiling, between 0 and 100.
+    /// The per-session sampling rate for continuous CPU profiling, between 0 and 100.
     ///
     /// Applied in addition to the RUM session sample rate. Default: `5.0`.
+    public var cpuSampleRate: Float {
+        get { configuration.cpuSampleRate }
+        set { configuration.cpuSampleRate = newValue }
+    }
+
+    /// The per-session sampling rate for continuous CPU profiling, between 0 and 100.
+    @available(*, deprecated, renamed: "cpuSampleRate")
     public var continuousSampleRate: Float {
-        get { configuration.continuousSampleRate }
-        set { configuration.continuousSampleRate = newValue }
+        get { configuration.cpuSampleRate }
+        set { configuration.cpuSampleRate = newValue }
     }
 
     /// The per-session sampling rate for memory (heap) profiling, between 0 and 100.
@@ -60,18 +67,41 @@ public final class objc_ProfilingConfiguration: NSObject {
     /// - Parameters:
     ///   - customEndpoint: Overrides the server endpoint where profiles are sent.
     ///   - applicationLaunchSampleRate: The sampling rate for App Launch Profiling.
-    ///   - continuousSampleRate: The sampling rate for Continuous Profiling.
+    ///   - cpuSampleRate: The per-session sampling rate for continuous CPU profiling.
+    ///   - memorySampleRate: The per-session sampling rate for memory profiling. Default: `0.0` (disabled).
     public init(
         customEndpoint: URL? = nil,
         applicationLaunchSampleRate: Float = 5,
-        continuousSampleRate: Float = 5
+        cpuSampleRate: Float = 5,
+        memorySampleRate: Float = 0
     ) {
         configuration = .init(
             customEndpoint: customEndpoint,
             applicationLaunchSampleRate: applicationLaunchSampleRate,
-            continuousSampleRate: continuousSampleRate
+            cpuSampleRate: cpuSampleRate,
+            memorySampleRate: memorySampleRate
         )
     }
+
+    /// Creates a Profiling configuration with memory profiling disabled.
+    /// - Parameters:
+    ///   - customEndpoint: Overrides the server endpoint where profiles are sent.
+    ///   - applicationLaunchSampleRate: The sampling rate for application launch profiling.
+    ///   - continuousSampleRate: The per-session sampling rate for continuous CPU profiling.
+    //swiftlint:disable function_default_parameter_at_end
+    @available(*, deprecated, renamed: "init(customEndpoint:applicationLaunchSampleRate:cpuSampleRate:memorySampleRate:)")
+    public init(
+        customEndpoint: URL? = nil,
+        applicationLaunchSampleRate: Float = 5,
+        continuousSampleRate: Float
+    ) {
+        configuration = .init(
+            customEndpoint: customEndpoint,
+            applicationLaunchSampleRate: applicationLaunchSampleRate,
+            cpuSampleRate: continuousSampleRate
+        )
+    }
+    //swiftlint:enable function_default_parameter_at_end
 }
 
 /// An entry point to the profiling feature.

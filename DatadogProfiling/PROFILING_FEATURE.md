@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-21
+last_updated: 2026-11-24
 sdk_version: 3.22.0
-verified_against_commit: 7be22a467
+verified_against_commit: adb364d37
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -72,7 +72,7 @@ Profiling.enable(
         // Continuous CPU profiling sample rate, applied in addition to RUM session sampling.
         // 100 = all sampled-in RUM sessions eligible, 0 = continuous CPU profiling disabled.
         // Default: 5.0.
-        continuousSampleRate: 5.0,
+        cpuSampleRate: 5.0,
 
         // Memory profile emission sample rate, applied in addition to RUM session sampling.
         // 100 = all sampled-in RUM sessions eligible, 0 = memory profiling disabled.
@@ -119,14 +119,14 @@ After initializing Core and enabling RUM, configure and enable Profiling through
 
 DDProfilingConfiguration *configuration = [[DDProfilingConfiguration alloc] init];
 configuration.applicationLaunchSampleRate = 5.0;
-configuration.continuousSampleRate = 5.0;
+configuration.cpuSampleRate = 5.0;
 // Opt into memory profiling for 5% of sampled-in RUM sessions. Default: 0 (disabled).
 configuration.memorySampleRate = 5.0;
 // configuration.customEndpoint defaults to nil (Datadog intake).
 [DDProfiling enableWith:configuration];
 ```
 
-The configuration also supports `initWithCustomEndpoint:applicationLaunchSampleRate:continuousSampleRate:`. The CPU sample rates default to `5.0`, matching Swift; set the `memorySampleRate` property to opt into memory profiling. Use `[DDProfiling enableWith:configuration instanceName:@"my-instance"]` to select a named SDK instance; a `nil` name selects the default. Profiling still supports only one instance per process, so later enable calls preserve the existing feature.
+The configuration also supports `initWithCustomEndpoint:applicationLaunchSampleRate:cpuSampleRate:memorySampleRate:`. The CPU sample rates default to `5.0` and `memorySampleRate` defaults to `0.0`, matching Swift. Use `[DDProfiling enableWith:configuration instanceName:@"my-instance"]` to select a named SDK instance; a `nil` name selects the default. Profiling still supports only one instance per process, so later enable calls preserve the existing feature.
 
 ## Architecture Overview
 
@@ -235,7 +235,7 @@ All sampling rates accept values from `0.0` to `100.0`. Outside SDK debug mode, 
 | Setting | Default | Effect |
 | --- | --- | --- |
 | `applicationLaunchSampleRate` | `5.0` | Selects application launches for CPU startup profiling. Takes effect on the next process launch; the launch profile also requires an eligible RUM session. |
-| `continuousSampleRate` | `5.0` | Selects RUM sessions for continuous CPU profiling. |
+| `cpuSampleRate` | `5.0` | Selects RUM sessions for continuous CPU profiling. |
 | `memorySampleRate` | `0.0` | Enables memory tracking when positive and selects RUM sessions for heap emission. Also enables early memory collection on the next process launch. |
 
 For example, a RUM session rate of 80% and a memory rate of 5% select approximately 4% of all sessions for heap profile emission. CPU and memory have separate rates: a session can collect memory profiles while CPU profiling is sampled out, or the reverse.
@@ -243,6 +243,12 @@ For example, a RUM session rate of 80% and a memory rate of 5% select approximat
 A positive `memorySampleRate` enables allocation/free tracking across sessions, including sessions not selected for heap emission. The rate controls emitted sessions; it does not reduce the allocation sampling frequency or restrict recording to those sessions.
 
 SDK debug mode raises all three profiling rates to 100%, including memory profiling.
+
+### Deprecated CPU Sampling API
+
+In Swift and Objective-C, `continuousSampleRate` is deprecated in favor of `cpuSampleRate`. Both properties read and update the same CPU sampling rate.
+
+The Swift `init(customEndpoint:applicationLaunchSampleRate:continuousSampleRate:)` and Objective-C `initWithCustomEndpoint:applicationLaunchSampleRate:continuousSampleRate:` initializers remain available but deprecated. They preserve the previous CPU configuration behavior and default memory profiling to disabled. Use the new initializers with `cpuSampleRate` and optional `memorySampleRate` for new code.
 
 ### Upload Endpoint
 
@@ -308,7 +314,7 @@ At a RUM session or sampling boundary, allocation activity is closed for the end
 
 ## Remote Configuration
 
-When `Datadog.Configuration.remoteConfiguration` is configured, a cached or already-fetched remote document can override `applicationLaunchSampleRate` and `continuousSampleRate` at `Profiling.enable(with:)` time. Omitted values preserve the in-code settings.
+When `Datadog.Configuration.remoteConfiguration` is configured, a cached or already-fetched remote document can override `applicationLaunchSampleRate` and `cpuSampleRate` at `Profiling.enable(with:)` time. The remote field for the CPU rate remains `continuousSampleRate`; omitted values preserve the in-code settings.
 
 The merge happens once when Profiling is enabled. Later remote refreshes do not change an already-running feature. `memorySampleRate` currently uses only the in-code value and cannot be remotely changed or disabled.
 

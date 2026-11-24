@@ -130,7 +130,7 @@ final class ProfilerFeatureTests: XCTestCase {
         let objcBefore = dd_objc_alloc_hook_diagnostics()
         let feature = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0),
+            configuration: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
@@ -182,7 +182,7 @@ final class ProfilerFeatureTests: XCTestCase {
         let session = RUMCoreContext.mockWith(sessionSampleRate: 100)
         let feature = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0, memorySampleRate: 100),
+            configuration: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0, memorySampleRate: 100),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
@@ -236,7 +236,7 @@ final class ProfilerFeatureTests: XCTestCase {
         )
         var previous: ProfilerFeature? = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0, memorySampleRate: 100),
+            configuration: .init(applicationLaunchSampleRate: 0, cpuSampleRate: 0, memorySampleRate: 100),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
@@ -574,7 +574,7 @@ final class ProfilerFeatureTests: XCTestCase {
         let core = PassthroughCoreMock()
         let feature = ProfilerFeature(
             core: core,
-            configuration: .init(continuousSampleRate: 100),
+            configuration: .init(cpuSampleRate: 100),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
@@ -605,7 +605,7 @@ final class ProfilerFeatureTests: XCTestCase {
         let core = PassthroughCoreMock()
         let feature = ProfilerFeature(
             core: core,
-            configuration: .init(continuousSampleRate: 100),
+            configuration: .init(cpuSampleRate: 100),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
