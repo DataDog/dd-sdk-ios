@@ -10,6 +10,7 @@ import UIKit
 #endif
 @_spi(Internal)
 @testable import DatadogInternal
+import DatadogCore
 @testable import DatadogRUM
 @testable import TestUtilities
 
@@ -1084,6 +1085,33 @@ extension MonitorTests {
         XCTAssertEqual(error.view.id, a.viewID)
         XCTAssertNotEqual(error.view.id, b.viewID)
         XCTAssertEqual(scope.base.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
+        XCTAssertEqual(completions, 1)
+    }
+
+    @MainActor
+    func testTargetedError_completesOnceWhenItsCoreHasStopped() throws {
+        let instanceName = "monitor-stopped-core-\(UUID())"
+        let core = Datadog.initialize(
+            with: .init(clientToken: "test-client-token", env: "tests"),
+            trackingConsent: .notGranted,
+            instanceName: instanceName
+        )
+        defer { Datadog.stopInstance(named: instanceName) }
+        RUM.enable(with: .init(applicationID: "test-app-id"), in: core)
+        XCTAssertNotNil(core.get(feature: RUMFeature.self))
+        let monitor = sceneMonitor(scope: core.scope(for: RUMFeature.self), clock: DateProviderMock(now: snapshotDate))
+        Datadog.stopInstance(named: instanceName)
+        XCTAssertNil(core.get(feature: RUMFeature.self))
+
+        var completions = 0
+        monitor.addError(
+            error: NSError(domain: "test", code: 1),
+            source: .source,
+            attributes: [:],
+            completionHandler: { completions += 1 },
+            explicitTarget: .scene(sceneA)
+        )
+
         XCTAssertEqual(completions, 1)
     }
 

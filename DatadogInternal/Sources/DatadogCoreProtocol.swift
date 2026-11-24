@@ -219,6 +219,16 @@ public protocol FeatureScope: MessageSending, AdditionalContextSharing, Anonymou
     var telemetry: Telemetry { get }
 }
 
+/// Reports when the Core cannot schedule a write context because the feature or Core stopped.
+@_spi(Internal)
+public protocol FeatureScopeWriteAdmission: FeatureScope {
+    func eventWriteContext(
+        bypassConsent: Bool,
+        onUnavailable: () -> Void,
+        _ block: @escaping (DatadogContext, Writer) -> Void
+    )
+}
+
 /// Feature scope provides a context and a writer to build a record event.
 public extension FeatureScope {
     /// Retrieve the core context and event writer.
