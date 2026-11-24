@@ -11,6 +11,7 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogCore
+import DatadogCore
 @testable import DatadogRUM
 @testable import TestUtilities
 
@@ -1086,6 +1087,66 @@ extension MonitorTests {
         XCTAssertNotEqual(error.view.id, b.viewID)
         XCTAssertEqual(scope.base.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
         XCTAssertEqual(completions, 1)
+    }
+
+    @MainActor
+    func testTargetedError_completesOnceWhenItsCoreHasStopped() throws {
+        let instanceName = "monitor-stopped-core-\(UUID())"
+        let core = Datadog.initialize(
+            with: .init(clientToken: "test-client-token", env: "tests"),
+            trackingConsent: .notGranted,
+            instanceName: instanceName
+        )
+        defer { Datadog.stopInstance(named: instanceName) }
+        RUM.enable(with: .init(applicationID: "test-app-id"), in: core)
+        XCTAssertNotNil(core.get(feature: RUMFeature.self))
+        let monitor = sceneMonitor(scope: core.scope(for: RUMFeature.self), clock: DateProviderMock(now: snapshotDate))
+        Datadog.stopInstance(named: instanceName)
+        XCTAssertNil(core.get(feature: RUMFeature.self))
+
+        var completions = 0
+        monitor.addError(
+            error: NSError(domain: "test", code: 1),
+            source: .source,
+            attributes: [:],
+            completionHandler: { completions += 1 },
+            explicitTarget: .scene(sceneA)
+        )
+
+        XCTAssertEqual(completions, 1)
+    }
+
+    @MainActor
+    func testControllerRestart_movesItsViewToTheNewOwnerAndStopsThere() throws {
+        for afterSessionStop in [false, true] {
+            let clock = DateProviderMock(now: snapshotDate)
+            let cache = ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true)
+            var inferred: RUMContextHandoff.CurrentValue?
+            let monitor = navigationMonitor(clock: clock, cache: cache) { inferred }
+            let controller = MonitorControllerReadSpy()
+            monitor.startView(viewController: controller, name: "detached", attributes: [:])
+            let detached = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+            let oldID = RUMUUID(rawValue: try XCTUnwrap(UUID(uuidString: detached)))
+            startSnapshotView(monitor, key: "peer", target: .scene(sceneB))
+            if afterSessionStop {
+                monitor.stopSession()
+                clock.now = clock.now.addingTimeInterval(1)
+            }
+
+            inferred = .init(rumContext: nil, sceneIdentifier: sceneA.rawValue, hasPendingUserAction: false, excludedUserActionID: nil)
+            monitor.startView(viewController: controller, name: "attached", attributes: [:])
+
+            let current = try XCTUnwrap(monitor.applicationScope.activeSession)
+            XCTAssertEqual(current.viewScopes.filter { $0.isActiveView && $0.identity == ViewIdentifier(controller) }.map(\.sceneIdentifier), [sceneA])
+            XCTAssertNil(monitor.rumContextSnapshot(for: .view(oldID)))
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "attached")
+
+            inferred = nil
+            monitor.stopView(viewController: controller, attributes: [:])
+
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewName, "peer")
+        }
     }
 
     @MainActor
