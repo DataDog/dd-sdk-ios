@@ -87,6 +87,58 @@ class RUMApplicationScopeTests: XCTestCase {
         return scope
     }
 
+    func testMultiSceneRollover_preservesOwnerForTargetedAction() throws {
+        let scene = RUMSceneIdentifier(rawValue: "restored-scene")
+        for explicitStop in [false, true] {
+            var time = Date(timeIntervalSince1970: 1_600_000_000)
+            let context = DatadogContext.mockWith(
+                sdkInitDate: time,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: time),
+                applicationStateHistory: .mockAppInForeground(since: time)
+            )
+            let cache = ViewCache(dateProvider: DateProviderMock(now: time), isMultiSceneTrackingEnabled: true)
+            let scope = createRUMApplicationScope(
+                dependencies: .mockWith(viewCache: cache, featureFlags: [.multiSceneTracking: true]),
+                sdkContext: context
+            )
+            advance(&time, by: 1)
+            let start = RUMStartViewCommand(
+                time: time,
+                identity: ViewIdentifier("detail"),
+                name: "detail",
+                path: "detail",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .manual,
+                target: .scene(scene)
+            )
+            _ = scope.process(command: start, context: context, writer: writer)
+            let original = try XCTUnwrap(scope.activeSession)
+            let originalView = try XCTUnwrap(original.viewScopes.first { $0.isActiveView && $0.sceneIdentifier == scene })
+
+            if explicitStop {
+                _ = scope.process(command: RUMStopSessionCommand(time: time), context: context, writer: writer)
+                advance(&time, by: 1)
+            } else {
+                advance(&time, by: RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+            }
+            let actionName = explicitStop ? "after-stop" : "after-timeout"
+            var action = RUMAddUserActionCommand.mockWith(time: time, actionType: .custom, name: actionName)
+            action.target = .scene(scene)
+            _ = scope.process(command: action, context: context, writer: writer)
+
+            let successor = try XCTUnwrap(scope.activeSession)
+            let restored = try XCTUnwrap(successor.viewScopes.first { $0.isActiveView && $0.identity == originalView.identity })
+            XCTAssertNotEqual(original.sessionUUID, successor.sessionUUID)
+            XCTAssertNotEqual(originalView.viewUUID, restored.viewUUID)
+            XCTAssertEqual(restored.sceneIdentifier, scene)
+            XCTAssertEqual(cache.ownership(forViewID: restored.viewUUID.toRUMDataFormat), .scene(scene))
+            let event = writer.events(ofType: RUMActionEvent.self).last { $0.action.target?.name == actionName }
+            XCTAssertEqual(event?.session.id, successor.sessionUUID.toRUMDataFormat)
+            XCTAssertEqual(event?.view.id, restored.viewUUID.toRUMDataFormat)
+        }
+    }
+
     func testRootContext() {
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(rumApplicationID: "abc-123")
