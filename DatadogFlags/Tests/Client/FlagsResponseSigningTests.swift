@@ -503,6 +503,8 @@ final class FlagsResponseSigningTests: XCTestCase {
         let transcript_base64: String?
         /// Optional per-case root. It replaces the file anchor for this case only.
         let anchor_der_base64: String?
+        /// The shared reason code of a rejected case. All SDKs report the same code.
+        let sdk_reason: String?
     }
 
     private func corpus(name: String, hash: String) throws -> Corpus {
@@ -603,8 +605,11 @@ final class FlagsResponseSigningTests: XCTestCase {
                     )
                     XCTAssertEqual(transcript.base64EncodedString(), vector.transcript_base64, name)
                 } else {
-                    // `rejection_reason` is a stable fixture code, not a native error; assert only the rejection.
-                    XCTAssertThrowsError(try verifier.verify(request: request, response: response, body: body, now: now), name)
+                    // `rejection_reason` is a fixture code. `sdk_reason` is the shared SDK reason code.
+                    let expected = try XCTUnwrap(vector.sdk_reason, "\(name) has no sdk_reason")
+                    XCTAssertThrowsError(try verifier.verify(request: request, response: response, body: body, now: now), name) {
+                        XCTAssertEqual(($0 as? FlagsSigningError)?.rawValue, expected, name)
+                    }
                 }
                 executed += 1
             }
@@ -2454,8 +2459,19 @@ extension FlagsResponseSigningTests {
 
 /// Test-CA-issued certificate-chain credentials and pinned roots from the shared `response-signing-chain` source.
 internal struct SigningChainFixture {
-    /// Within every fixture leaf's 72-hour validity (2026-11-18T04:20:54Z to 2026-11-21T04:20:52Z).
-    static let now: TimeInterval = 1_795_000_000
+    /// The shared `now` of the chain fixtures, from `chain/manifest.json` (1795089600, 2026-11-19T12:00:00Z).
+    /// It is inside every fixture leaf's 72-hour validity.
+    static let now: TimeInterval = {
+        guard let url = try? url("manifest", "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let now = (json["now"] as? NSNumber)?.doubleValue
+        else {
+            XCTFail("The chain manifest has no `now`. Run `make feature-flags-fixtures-pull`.")
+            return 0
+        }
+        return now
+    }()
 
     let key: P256.Signing.PrivateKey
     let leaf: Data

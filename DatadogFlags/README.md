@@ -138,10 +138,10 @@ DRAFT: the edge and the shared fixtures do not send this header yet. The name an
 
 Each folder has a `SOURCE.json` with the commit and the file checksums.
 The native test reads every suite in the upstream manifest, checks counts and checksums,
-and verifies acceptance decisions and exact transcripts. The current snapshot has 99 response
+and verifies acceptance decisions and exact transcripts. The current snapshot has 116 response
 vectors across wire, nested DER, subject DER, certificate-rule, extension-profile, and expiry suites.
 A case can supply its own `anchor_der_base64`, which replaces the file anchor for that case.
-The test asserts only acceptance or rejection; `rejection_reason` is a fixture code, not a native error.
+For each rejected case, the test asserts the shared `sdk_reason` code. `rejection_reason` is a fixture code, not a native error. The chain tests use `now` from `chain/manifest.json`.
 Server-only signing cases are excluded.
 The chain folder holds test-CA-issued chains, the OpenSSL root variants and `staging-us1-dc-intermediate.pem`.
 

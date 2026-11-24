@@ -414,7 +414,12 @@ internal final class FlagsResponseVerifier {
             intermediates: intermediateDERs,
             minimumNotBefore: minimumNotBefore
         )
-        try Self.verifySignature(signature, bytes: transcript, key: leaf.publicKey)
+        do {
+            try Self.verifySignature(signature, bytes: transcript, key: leaf.publicKey)
+        } catch FlagsSigningError.invalidCertificate {
+            // The signature header is not a strict DER ECDSA signature: a malformed proof, not a chain failure.
+            throw FlagsSigningError.invalidProof
+        }
         // The floor applies to the leaf only. It is never compared with an intermediate.
         let anchorKey = Self.hex(Self.digest(anchor))
         if let stored = minimumNotBeforeStore.value(forAnchor: anchorKey, waitForRead: configuration.mode == .required),
