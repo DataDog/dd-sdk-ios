@@ -84,6 +84,14 @@ internal extension RUMViewEvent {
         /// `true` when this metadata describes a `RUMViewUpdateEvent` delta rather than a full `RUMViewEvent`.
         /// Optional so that metadata written by earlier SDK versions keeps decoding.
         let isViewUpdate: Bool?
+        /// A view restored from the previous session already represents an active screen.
+        /// Optional for metadata persisted before rollover restoration.
+        let isRestored: Bool?
+
+        var isInitialPlaceholder: Bool {
+            isRestored != true && indexInSession == 0
+                && duration == RUMViewScope.Constants.minimumTimeSpent.dd.toInt64Nanoseconds
+        }
 
         private enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -93,6 +101,7 @@ internal extension RUMViewEvent {
             case indexInSession = "index"
             case isDeltaBaseline = "is_delta_baseline"
             case isViewUpdate = "is_view_update"
+            case isRestored = "is_restored"
         }
 
         init(
@@ -102,7 +111,8 @@ internal extension RUMViewEvent {
             duration: Int64? = nil,
             indexInSession: Int? = nil,
             isDeltaBaseline: Bool? = false,
-            isViewUpdate: Bool? = nil
+            isViewUpdate: Bool? = nil,
+            isRestored: Bool? = nil
         ) {
             self.id = id
             self.documentVersion = documentVersion
@@ -111,6 +121,7 @@ internal extension RUMViewEvent {
             self.indexInSession = indexInSession
             self.isDeltaBaseline = isDeltaBaseline
             self.isViewUpdate = isViewUpdate
+            self.isRestored = isRestored
         }
     }
 
@@ -120,14 +131,15 @@ internal extension RUMViewEvent {
 
     /// Creates `Metadata` from the given `RUMViewEvent`.
     /// - Returns: The `Metadata` for the given `RUMViewEvent`.
-    func metadata(viewIndexInSession: Int, isDeltaBaseline: Bool = false) -> Metadata {
+    func metadata(viewIndexInSession: Int, isDeltaBaseline: Bool = false, isRestored: Bool = false) -> Metadata {
         return Metadata(
             id: view.id,
             documentVersion: dd.documentVersion,
             hasAccessibility: view.accessibility != nil,
             duration: view.timeSpent,
             indexInSession: viewIndexInSession,
-            isDeltaBaseline: isDeltaBaseline
+            isDeltaBaseline: isDeltaBaseline,
+            isRestored: isRestored ? true : nil
         )
     }
 }
