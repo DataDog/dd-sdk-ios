@@ -8,11 +8,6 @@ import Foundation
 import DatadogInternal
 
 internal struct RUMViewEventsFilter {
-    /// The initial `time_spent` value (1ns) is a placeholder set when a view starts.
-    /// If not updated (e.g., due to app interruption), the view may remain at 1ns duration.
-    /// This is especially problematic for sessions with only the initial view, so we filter out such cases (see RUM-10723).
-    private let oneNanosecondDuration = RUMViewScope.Constants.minimumTimeSpent.dd.toInt64Nanoseconds
-
     let decoder: JSONDecoder
     let telemetry: Telemetry
 
@@ -101,8 +96,8 @@ internal struct RUMViewEventsFilter {
             return supersededViews.contains(viewMetadata.id) ? .skipSuperseded : .keep
         }
 
-        if viewMetadata.duration == oneNanosecondDuration, viewMetadata.indexInSession == 0 {
-            // Filter out initial 1ns views. Such event is never a delta baseline,
+        if viewMetadata.isInitialPlaceholder {
+            // Filter out initial placeholders. They cannot be delta baselines,
             // so it does not supersede earlier events of the view.
             return .skipInitialOneNs
         }
