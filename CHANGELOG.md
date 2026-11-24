@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Flags: Add experimental response signing through `Flags.Configuration.experimentalResponseSigning`. It is staging only and off by default; `off` sends no extra headers. Adds `FlagsError.responseSigningFailed(reason:)`; exhaustive switches need the new case. See [#3357][]
 - [IMPROVEMENT] Flags: Protect evaluation telemetry by default. Targeting keys are hashed and the evaluation context is omitted unless the flags configuration enables full evaluation data. Only stable error codes are reported. See [#3340][]
 
 # 3.22.0 / 12-11-2026
@@ -1345,6 +1346,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3321]: https://github.com/DataDog/dd-sdk-ios/pull/3321
 [#3319]: https://github.com/DataDog/dd-sdk-ios/pull/3319
 [#3344]: https://github.com/DataDog/dd-sdk-ios/pull/3344
+[#3357]: https://github.com/DataDog/dd-sdk-ios/pull/3357
 [#3351]: https://github.com/DataDog/dd-sdk-ios/pull/3351
 [#3339]: https://github.com/DataDog/dd-sdk-ios/pull/3339
 [#3353]: https://github.com/DataDog/dd-sdk-ios/pull/3353

@@ -68,7 +68,7 @@ public enum Flags {
         /// Optional assignment response verification. Default: off.
         /// Staging only; production is not supported yet. Set `customFlagsEndpoint` to the staging endpoint.
         /// On other endpoints, `observe` is ignored with a warning, and `required` fails closed with an error.
-        /// Required mode uses verified memory only and defaults after expiry or restart.
+        /// Required mode keeps verified flags in memory only and returns defaults after a restart. At proof expiry it keeps them as stale, unless expireVerifiedFlags is true.
         public var experimentalResponseSigning: ResponseSigningConfiguration
 
         /// The maximum time to wait for the first evaluation context to become ready.
