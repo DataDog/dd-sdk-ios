@@ -1606,6 +1606,58 @@ extension URLSessionRUMResourcesHandlerTests {
         )
     }
 
+    func testFirstPartyTracePropagationDoesNotRequireAResourceReservation() throws {
+        let time = dateProvider.now
+        let scope = ResourceHandlerOwnerScope(context: .mockWith(sdkInitDate: time, launchInfo: .mockWith(launchReason: .userLaunch)))
+        let (monitor, _) = try preparedResourceMonitor(scope: scope, time: time)
+        let network = NetworkInstrumentationFeature(networkContextProvider: NetworkContextCoreProvider(), messageReceiver: NOPFeatureMessageReceiver())
+        let request = URLRequest(url: try XCTUnwrap(URL(string: "https://example.com/first-party")))
+        let hosts = FirstPartyHosts(["example.com": [.datadog]])
+        let session = UUID()
+
+        for propagation in [true, false] {
+            let handler = createHandler(distributedTracing: .init(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: hosts,
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 0, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 200, advancingByCount: 0),
+                traceContextInjection: propagation ? .all : .sampled,
+                sessionSampling: testSessionSampling
+            ))
+            handler.publish(to: monitor)
+            network.handlers = [handler]
+            let context = RUMCoreContext.mockWith(sessionID: session, sessionSampleRate: 0, viewID: nil)
+            let capture = RUMURLSessionContext(owner: scope.owner, value: .init(
+                rumContext: context, sceneIdentifier: "original", hasPendingUserAction: false, excludedUserActionID: nil
+            ))
+            let preparation = try XCTUnwrap(network.prepareRUMRequest(capturing: capture))
+            XCTAssertNil(preparation.identifier)
+
+            let (modified, instrumentation) = network.intercept(request: request, additionalFirstPartyHosts: hosts, rumContext: capture, preparation: preparation)
+            if propagation {
+                XCTAssertEqual(modified.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
+                XCTAssertEqual(modified.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+            } else {
+                XCTAssertNil(modified.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
+            }
+            XCTAssertNil(instrumentation.first?.traceContext)
+
+            let interception = RUMURLSessionTaskInterception(
+                request: .init(request: modified),
+                isFirstParty: true,
+                trackingMode: .registeredDelegate,
+                identifier: preparation.identifier,
+                rumContext: capture,
+                preparations: preparation.handlers
+            )
+            handler.interceptionDidStart(interception: interception, capturedStates: [])
+            interception.register(response: .mockWith(), error: nil)
+            handler.interceptionDidComplete(interception: interception)
+            XCTAssertTrue(scope.base.eventsWritten(ofType: RUMResourceEvent.self).isEmpty)
+            XCTAssertTrue(monitor.applicationScope.activeSession?.viewScopes.allSatisfy { $0.resourceScopes.isEmpty } == true)
+        }
+    }
+
     func testPreparedResource_commitsFinalRequestToOriginalView() throws {
         for traces in [false, true] {
             for fails in [false, true] {

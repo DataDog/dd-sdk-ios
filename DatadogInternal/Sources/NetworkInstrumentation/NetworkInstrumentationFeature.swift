@@ -406,7 +406,7 @@ extension NetworkInstrumentationFeature {
     }
 
     /// Reserves captured ownership inside the winning task guard before request mutation.
-    private func prepareRUMRequest(capturing context: RUMURLSessionContext?) -> RUMRequestPreparation? {
+    func prepareRUMRequest(capturing context: RUMURLSessionContext?) -> RUMRequestPreparation? {
         guard let context else {
             return nil
         }

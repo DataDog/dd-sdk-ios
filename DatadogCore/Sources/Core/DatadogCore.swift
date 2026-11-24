@@ -820,7 +820,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMFlagEvaluationSending, RUMContextHandoffContextUpdating, RUMContextHandoffEventWriting, RUMOperationScopeProviding where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScopeWriteAdmission, RUMContextHandoffOwnerProviding, RUMFlagEvaluationSending, RUMContextHandoffContextUpdating, RUMContextHandoffEventWriting, RUMOperationScopeProviding where Feature: DatadogFeature {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
     func operationOrigin(for monitor: AnyObject) -> RUMOperationOrigin? {
         guard let core, let provider = core.feature(named: DatadogInternal.Feature.rum, type: RUMOperationOriginProviding.self),
@@ -849,8 +849,17 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
     }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        guard let core = core else {
-            return  // core is deinitialized
+        eventWriteContext(bypassConsent: bypassConsent, onUnavailable: {}, block)
+    }
+
+    func eventWriteContext(
+        bypassConsent: Bool,
+        onUnavailable: () -> Void,
+        _ block: @escaping (DatadogContext, Writer) -> Void
+    ) {
+        guard let core else {
+            onUnavailable()
+            return
         }
         // Capture the storage reference so it is available until async block completion. This is to ensure
         // that we write events which were collected on the caller thread even if the core was released in the meantime.
@@ -863,11 +872,12 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
                 assertionFailure("Obtaining Event Write Context for '\(Feature.name)' but it is not a `DatadogRemoteFeature`.")
                 #endif
             }
+            onUnavailable()
             return
         }
 
         // (on user thread) request SDK context
-        context { context in
+        core.contextProvider.read { context in
             // (on context thread) call the block
             let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)

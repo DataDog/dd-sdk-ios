@@ -367,6 +367,44 @@ final class SceneScrollOwnershipTests: XCTestCase {
         XCTAssertEqual(f.events.map(\.action.type), [.scroll, .swipe])
     }
 
+    func testSceneScroll_preservesPeerBindingsDuringUIKitDelivery() {
+        guard #available(iOS 27.0, *) else {
+            assertLegacyScrollDelivery()
+            return
+        }
+        let fixture = SceneScrollFixture()
+        let scroll = fixture.scroll(in: fixture.windowA)
+        let peer = RUMContextHandoff.Owner()
+        let event = NSObject()
+        let peerValue = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "peer", hasPendingUserAction: false, excludedUserActionID: nil)
+        let ownerValue = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "before-scroll", hasPendingUserAction: false, excludedUserActionID: nil)
+
+        RUMContextHandoff.withUIKitDeliveryValue(peerValue, for: peer, event: event) {
+            RUMContextHandoff.withUIKitDeliveryValue(ownerValue, for: fixture.owner, event: event) {
+                fixture.handler.interceptWillBeginDragging(scroll) {
+                    XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "peer")
+                    XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "a")
+                    XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, true)
+                }
+                fixture.handler.interceptDidEndDragging(scroll, willDecelerate: true) {
+                    XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "peer")
+                    XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, false)
+                }
+                fixture.handler.interceptDidEndDecelerating(scroll) {
+                    XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "peer")
+                    XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.hasPendingUserAction, false)
+                }
+                RUMContextHandoff.withValue(ownerValue, for: fixture.owner) {
+                    XCTAssertNil(RUMContextHandoff.current(for: peer), "An ordinary handoff remains isolated")
+                }
+                XCTAssertEqual(RUMContextHandoff.current(for: fixture.owner)?.sceneIdentifier, "before-scroll")
+                XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "peer")
+            }
+            XCTAssertNil(RUMContextHandoff.current(for: fixture.owner))
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: peer))
+    }
+
     func testSceneScroll_restartStopsOldOwnerBeforeFreshStart() throws {
         guard #available(iOS 27.0, *) else {
             assertLegacyScrollDelivery()
