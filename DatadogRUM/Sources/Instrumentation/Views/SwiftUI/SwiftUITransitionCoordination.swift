@@ -992,9 +992,11 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             queue: .main
         ) { [weak self] notification in
             // Notification delivery is not actor proof. UIKit inspection occurs in owned main delivery.
-            weak var scene = notification.object as? UIWindowScene
-            DispatchQueue.main.async { [weak self, weak scene] in
-                guard let self, self.admitsCallbacks(), let scene else {
+            guard let scene = notification.object as? UIWindowScene else {
+                return
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.admitsCallbacks() else {
                     return
                 }
                 self.discard(sceneIdentifier: RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier))
