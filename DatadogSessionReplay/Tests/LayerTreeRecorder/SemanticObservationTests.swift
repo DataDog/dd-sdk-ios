@@ -347,6 +347,44 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
+    @Test("Records tab accessory as an automatic capsule")
+    func recordsTabAccessoryAsAutomaticCapsule() throws {
+        // Given
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = (0..<3).map { index in
+            let viewController = UIViewController()
+            viewController.tabBarItem = UITabBarItem(
+                title: "Tab \(index)",
+                image: UIImage(systemName: "circle"),
+                tag: index
+            )
+            return viewController
+        }
+        tabBarController.bottomAccessory = UITabAccessory(contentView: UIView())
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
+        tabBarController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let accessoryContainer = try #require(
+            tabBarController.view.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "UIKit._UITabAccessoryContainer"
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(
+            layer: accessoryContainer.layer,
+            context: .mockAny()
+        )
+
+        // Then
+        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+    }
+
+    @available(iOS 26.0, *)
     @Test("Records platform glass semantics and records sublayers")
     func recordsPlatformGlassAndRecordsSublayers() throws {
         // Given

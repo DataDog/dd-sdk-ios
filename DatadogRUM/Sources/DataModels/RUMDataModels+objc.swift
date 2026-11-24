@@ -5702,6 +5702,10 @@ public class objc_RUMResourceEventResource: NSObject {
         root.swiftModel.resource.localCacheHit as NSNumber?
     }
 
+    public var message: objc_RUMResourceEventResourceMessage? {
+        root.swiftModel.resource.message != nil ? objc_RUMResourceEventResourceMessage(root: root) : nil
+    }
+
     public var method: objc_RUMResourceEventResourceRUMMethod {
         .init(swift: root.swiftModel.resource.method)
     }
@@ -6001,6 +6005,84 @@ public enum objc_RUMResourceEventResourceRUMGraphqlOperationType: Int {
     case subscription
 }
 
+@objc(DDRUMResourceEventResourceMessage)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventResourceMessage: NSObject {
+    internal let root: objc_RUMResourceEvent
+
+    internal init(root: objc_RUMResourceEvent) {
+        self.root = root
+    }
+
+    public var api: objc_RUMResourceEventResourceMessageAPI {
+        .init(swift: root.swiftModel.resource.message!.api)
+    }
+
+    public var id: String {
+        root.swiftModel.resource.message!.id
+    }
+
+    public var isError: NSNumber? {
+        root.swiftModel.resource.message!.isError as NSNumber?
+    }
+
+    public var role: objc_RUMResourceEventResourceMessageRole {
+        .init(swift: root.swiftModel.resource.message!.role)
+    }
+}
+
+@objc(DDRUMResourceEventResourceMessageAPI)
+@_spi(objc)
+public enum objc_RUMResourceEventResourceMessageAPI: Int {
+    internal init(swift: RUMResourceEvent.Resource.Message.API) {
+        switch swift {
+        case .invoke: self = .invoke
+        case .handle: self = .handle
+        case .send: self = .send
+        case .sendSync: self = .sendSync
+        case .on: self = .on
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Resource.Message.API {
+        switch self {
+        case .invoke: return .invoke
+        case .handle: return .handle
+        case .send: return .send
+        case .sendSync: return .sendSync
+        case .on: return .on
+        }
+    }
+
+    case invoke
+    case handle
+    case send
+    case sendSync
+    case on
+}
+
+@objc(DDRUMResourceEventResourceMessageRole)
+@_spi(objc)
+public enum objc_RUMResourceEventResourceMessageRole: Int {
+    internal init(swift: RUMResourceEvent.Resource.Message.Role) {
+        switch swift {
+        case .source: self = .source
+        case .destination: self = .destination
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Resource.Message.Role {
+        switch self {
+        case .source: return .source
+        case .destination: return .destination
+        }
+    }
+
+    case source
+    case destination
+}
+
 @objc(DDRUMResourceEventResourceRUMMethod)
 @_spi(objc)
 public enum objc_RUMResourceEventResourceRUMMethod: Int {
@@ -6277,6 +6359,7 @@ public enum objc_RUMResourceEventResourceResourceType: Int {
         case .media: self = .media
         case .other: self = .other
         case .native: self = .native
+        case .message: self = .message
         }
     }
 
@@ -6293,6 +6376,7 @@ public enum objc_RUMResourceEventResourceResourceType: Int {
         case .media: return .media
         case .other: return .other
         case .native: return .native
+        case .message: return .message
         }
     }
 
@@ -6307,6 +6391,7 @@ public enum objc_RUMResourceEventResourceResourceType: Int {
     case media
     case other
     case native
+    case message
 }
 
 @objc(DDRUMResourceEventResourceWorker)
@@ -8478,8 +8563,8 @@ public class objc_RUMTimeseriesMemoryEventTimeseriesDataValues: NSObject {
         root.swiftModel.timeseries.data.values.memoryFootprint as [NSNumber]
     }
 
-    public var memoryPercent: [NSNumber] {
-        root.swiftModel.timeseries.data.values.memoryPercent as [NSNumber]
+    public var memoryNonResident: [NSNumber]? {
+        root.swiftModel.timeseries.data.values.memoryNonResident as [NSNumber]?
     }
 }
 
@@ -16931,6 +17016,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.betaEncodeCookieOptions as NSNumber? }
     }
 
+    public var betaTrackSoftNavigations: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.betaTrackSoftNavigations = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.betaTrackSoftNavigations as NSNumber? }
+    }
+
     public var betaTrackWebSockets: NSNumber? {
         set { root.swiftModel.telemetry.configuration.betaTrackWebSockets = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.betaTrackWebSockets as NSNumber? }
@@ -16970,6 +17060,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
     public var imagePrivacyLevel: String? {
         set { root.swiftModel.telemetry.configuration.imagePrivacyLevel = newValue }
         get { root.swiftModel.telemetry.configuration.imagePrivacyLevel }
+    }
+
+    public var initContext: objc_TelemetryConfigurationEventTelemetryConfigurationInitContext? {
+        root.swiftModel.telemetry.configuration.initContext != nil ? objc_TelemetryConfigurationEventTelemetryConfigurationInitContext(root: root) : nil
     }
 
     public var initializationType: String? {
@@ -17215,6 +17309,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.trackInteractions as NSNumber? }
     }
 
+    public var trackIpcResources: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.trackIpcResources = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackIpcResources as NSNumber? }
+    }
+
     public var trackLongTask: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackLongTask = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackLongTask as NSNumber? }
@@ -17420,6 +17519,25 @@ public class objc_TelemetryConfigurationEventTelemetryConfigurationForwardReport
             return nil
         }
         return value
+    }
+}
+
+@objc(DDTelemetryConfigurationEventTelemetryConfigurationInitContext)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryConfigurationEventTelemetryConfigurationInitContext: NSObject {
+    internal let root: objc_TelemetryConfigurationEvent
+
+    internal init(root: objc_TelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    public var hasAccount: NSNumber? {
+        root.swiftModel.telemetry.configuration.initContext!.hasAccount as NSNumber?
+    }
+
+    public var hasUser: NSNumber? {
+        root.swiftModel.telemetry.configuration.initContext!.hasUser as NSNumber?
     }
 }
 
@@ -18432,4 +18550,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/e56d61f0016c507091c8093befa9e73c42037c70
+// Generated from https://github.com/DataDog/rum-events-format/tree/fd2e0202814580d211866a6f3c42cb5e9db075a9

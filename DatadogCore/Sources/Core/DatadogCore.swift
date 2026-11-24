@@ -53,7 +53,15 @@ internal final class DatadogCore {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message-bus instance.
-    let bus = MessageBus()
+    let bus: MessageBus
+
+    /// Disables sudden termination while events are on their way to storage.
+    let suddenTermination: SuddenTerminationControl
+
+    #if os(macOS)
+    /// Observes `NSApplication.willTerminateNotification` to write pending data before the app exits.
+    private var terminationObserver: (token: NSObjectProtocol, notificationCenter: NotificationCenter)?
+    #endif
 
     /// The remote configuration provider, if configured.
     let remoteConfigurationProvider: RemoteConfigurationProvider?
@@ -94,6 +102,7 @@ internal final class DatadogCore {
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
     ///   - remoteConfigurationProvider: The remote configuration provider, if configured.
+    ///   - suddenTermination: Disables sudden termination while events are on their way to storage.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -106,9 +115,12 @@ internal final class DatadogCore {
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
         isRunFromExtension: Bool = false,
-        remoteConfigurationProvider: RemoteConfigurationProvider? = nil
+        remoteConfigurationProvider: RemoteConfigurationProvider? = nil,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
         self.directory = directory
+        self.suddenTermination = suddenTermination
+        self.bus = MessageBus(suddenTermination: suddenTermination)
         self.dateProvider = dateProvider
         self.remoteConfigurationProvider = remoteConfigurationProvider
         self.performance = performance
@@ -159,14 +171,15 @@ internal final class DatadogCore {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        let userInfo = UserInfo(
-            anonymousId: userInfoPublisher.current.anonymousId,
-            id: id,
-            name: name,
-            email: email,
-            extraInfo: extraInfo
-        )
-        userInfoPublisher.current = userInfo
+        userInfoPublisher.update { userInfo in
+            userInfo = UserInfo(
+                anonymousId: userInfo.anonymousId,
+                id: id,
+                name: name,
+                email: email,
+                extraInfo: extraInfo
+            )
+        }
     }
 
     /// Add or override the extra info of the current user
@@ -174,9 +187,9 @@ internal final class DatadogCore {
     ///  - Parameters:
     ///    - extraInfo: The user's custom attributes to add or override
     func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        var extraInfo = userInfoPublisher.current.extraInfo
-        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-        userInfoPublisher.current.extraInfo = extraInfo
+        userInfoPublisher.update { userInfo in
+            newExtraInfo.forEach { userInfo.extraInfo[$0.key] = $0.value }
+        }
     }
 
     /// Clear the current user information
@@ -193,7 +206,9 @@ internal final class DatadogCore {
     /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
     ///
     func clearUserInfo() {
-        userInfoPublisher.current = UserInfo(anonymousId: userInfoPublisher.current.anonymousId)
+        userInfoPublisher.update { userInfo in
+            userInfo = UserInfo(anonymousId: userInfo.anonymousId)
+        }
     }
 
     /// Sets current account information.
@@ -222,7 +237,14 @@ internal final class DatadogCore {
     ///  - Parameters:
     ///    - extraInfo: The account's custom attributes to add or override
     func addAccountExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        guard let accountInfo = accountInfoPublisher.current else {
+        let updated = accountInfoPublisher.update { accountInfo in
+            guard accountInfo != nil else {
+                return false
+            }
+            newExtraInfo.forEach { accountInfo?.extraInfo[$0.key] = $0.value }
+            return true
+        }
+        guard updated else {
             DD.logger.error(
                 "Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first."
             )
@@ -231,9 +253,6 @@ internal final class DatadogCore {
             #endif
             return
         }
-        var extraInfo = accountInfo.extraInfo
-        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-        accountInfoPublisher.current?.extraInfo = extraInfo
     }
 
     /// Clear the current account information
@@ -257,12 +276,12 @@ internal final class DatadogCore {
     ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        if trackingConsent != consentPublisher.consent {
-            // Queues the context update before the migration. A write context read before the update
-            // has the previous consent, and its events are written before the migration runs. A write
-            // context read after it has the new consent.
-            consentPublisher.consent = trackingConsent
-            contextProvider.queue.async { [allStorages] in
+        // Queues the context update before the migration. A write context read before the update
+        // has the previous consent, and its events are written before the migration runs. A write
+        // context read after it has the new consent.
+        consentPublisher.update(trackingConsent) {
+            // Each migration holds sudden termination on the read-write queue before this hold is released.
+            suddenTermination.async(on: contextProvider.queue) { [allStorages] in
                 // RUM-3175: To prevent race conditions with ongoing "event write" operations,
                 // data migration must be synchronized on the context queue. This guarantees that
                 // all latest events have been written before migration occurs.
@@ -270,6 +289,49 @@ internal final class DatadogCore {
             }
         }
     }
+
+    #if os(macOS)
+    /// Writes the data features hold in memory when the app terminates.
+    ///
+    /// The app exits as soon as the `NSApplication.willTerminateNotification` observers return, so the observer
+    /// blocks the main thread until the data is stored. Call it after the context provider is created: its application
+    /// state publisher then observes the notification first, and features receive the `.terminating` state before
+    /// they write.
+    ///
+    /// - Parameter notificationCenter: The notification center where `NSApplication` notifications are posted.
+    func startObservingAppTermination(in notificationCenter: NotificationCenter) {
+        let token = notificationCenter.addObserver(
+            forName: ApplicationNotifications.willTerminate,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            self?.writeBufferedDataSynchronously()
+        }
+        terminationObserver = (token, notificationCenter)
+    }
+
+    /// Writes the data features hold in memory and waits until it is stored. It **blocks the caller thread**.
+    ///
+    /// Unlike `flush()`, it does not wait for the features' own operations, some of which wait for the main thread.
+    private func writeBufferedDataSynchronously() {
+        // Deliver the context changes and messages posted so far, like the `.terminating` state, before features write.
+        // The configuration telemetry is delivered too, in case its dispatch delay has not ended yet.
+        contextProvider.flush()
+        bus.flush()
+        bus.dispatchPendingConfiguration()
+        features.values.compactMap { $0 as? BufferedDataWritable }.forEach { $0.writeBufferedDataSynchronously() }
+        // Then run the event write contexts opened so far, deliver the messages they send, like telemetry,
+        // and store the events written for them.
+        contextProvider.flush()
+        bus.flush()
+        contextProvider.flush()
+        // Telemetry sent by these last writes, like a write error, is not drained: it is not app data,
+        // and draining until no work is left would delay termination.
+        // A mapper or an encryption that dispatches synchronously to the main queue blocks this wait, and the app
+        // hangs on quit. Their docs advise against it, so the wait is not bounded.
+        readWriteQueue.sync { }
+    }
+    #endif
 
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
@@ -313,10 +375,16 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, all events recorded before this call are stored. Authorized batches were uploaded without retrying
-    /// and then deleted, even if the upload failed. The SDK was deinitialised and its message bus disconnected, so this
-    /// instance of core is non-functional and no message is delivered after return.
+    /// Upon return, all events recorded before this call are stored, including telemetry reported by an upload in
+    /// progress. Authorized batches were uploaded without retrying and then deleted, even if the upload failed. The SDK
+    /// was deinitialised and its message bus disconnected, so this instance of core is non-functional and no message is
+    /// delivered after return.
     func flushAndTearDown() {
+        // Stop the periodic upload schedule first; pending batches stay on disk and are uploaded below.
+        // An upload in progress completes and reports its telemetry (e.g. upload quality) on the message bus,
+        // which `flush()` then delivers and stores, so that it is part of the final upload.
+        allUploads.forEach { $0.cancelSynchronously() }
+
         flush()
 
         // At this point we can assume that all write operations completed and resulted with writing events to
@@ -354,6 +422,10 @@ internal final class DatadogCore {
     ///
     /// Messages queued on the bus are dropped. A delivery already in progress may still complete after return.
     func stop() {
+        #if os(macOS)
+        terminationObserver.map { $0.notificationCenter.removeObserver($0.token) }
+        terminationObserver = nil
+        #endif
         remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
@@ -390,7 +462,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 performance: performancePreset,
                 encryption: encryption,
                 backgroundTasksEnabled: backgroundTasksEnabled,
-                telemetry: telemetry
+                telemetry: telemetry,
+                suddenTermination: suddenTermination
             )
 
             let upload = FeatureUpload(
@@ -447,7 +520,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func set(anonymousId: String?) {
-        userInfoPublisher.current.anonymousId = anonymousId
+        userInfoPublisher.update { $0.anonymousId = anonymousId }
     }
 }
 
@@ -461,7 +534,8 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
             feature: Feature.name,
             directory: core.directory,
             queue: core.readWriteQueue,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            suddenTermination: core.suddenTermination
         )
     }
 
@@ -483,11 +557,21 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
             return
         }
 
+        #if os(macOS)
+        // Sudden termination stays disabled until the block runs. Each write in the block holds it on its own
+        // until the event is stored.
+        let suddenTermination = core.suddenTermination
+        suddenTermination.disableSuddenTermination()
+        #endif
+
         // (on user thread) request SDK context
         context { context in
             // (on context thread) call the block
             let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
+            #if os(macOS)
+            suddenTermination.enableSuddenTermination()
+            #endif
         }
     }
 

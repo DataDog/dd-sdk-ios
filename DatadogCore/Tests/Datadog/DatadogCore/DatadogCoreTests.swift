@@ -32,6 +32,23 @@ private struct FeatureMock: DatadogRemoteFeature {
     var performanceOverride: PerformancePresetOverride? = nil
 }
 
+private final class BufferingFeatureMock: DatadogFeature, BufferedDataWritable, Flushable {
+    static let name = "buffering-mock"
+    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    var onWriteBufferedData: () -> Void = {}
+    private(set) var writeCount = 0
+    private(set) var flushCount = 0
+
+    func writeBufferedDataSynchronously() {
+        writeCount += 1
+        onWriteBufferedData()
+    }
+
+    func flush() {
+        flushCount += 1
+    }
+}
+
 private final class PendingHTTPClientMock: HTTPClient {
     private typealias Completion = (Result<(HTTPURLResponse, Data?), any Error>) -> Void
 
@@ -575,6 +592,7 @@ class DatadogCoreTests: XCTestCase {
         // Given
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let httpClient = PendingHTTPClientMock()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         weak var weakProvider: RemoteConfigurationProvider?
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -593,7 +611,8 @@ class DatadogCoreTests: XCTestCase {
                     site: .us1,
                     directory: temporaryCoreDirectory.coreDirectory,
                     httpClient: httpClient,
-                    notificationCenterProvider: notificationCenterProvider
+                    notificationCenterProvider: notificationCenterProvider,
+                    dateProvider: dateProvider
                 )
                 weakProvider = provider
                 return provider
@@ -601,15 +620,17 @@ class DatadogCoreTests: XCTestCase {
         )
 
         XCTAssertEqual(httpClient.requestsSent().count, 1)
+        dateProvider.advance(bySeconds: 360)
         #if os(macOS)
         notificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
-        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
         XCTAssertEqual(httpClient.requestsSent().count, 2)
 
         // When
         core.stop()
+        dateProvider.advance(bySeconds: 360)
 
         // Then
         XCTAssertNotNil(core.remoteConfigurationProvider)
@@ -617,7 +638,7 @@ class DatadogCoreTests: XCTestCase {
         #if os(macOS)
         notificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
-        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
         XCTAssertEqual(httpClient.requestsSent().count, 2)
     }
@@ -1040,5 +1061,365 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(userAfter.id, "user-id")
         XCTAssertEqual(userAfter.name, "user-name")
         XCTAssertEqual(userAfter.email, "user-email")
+    }
+
+    // MARK: - Sudden Termination
+
+    #if os(macOS)
+    func testWhenEventIsWritten_suddenTerminationStaysDisabledUntilItIsStored() throws {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny(),
+            suddenTermination: suddenTermination
+        )
+        defer { core.stop() }
+        try core.register(feature: FeatureMock())
+        let queueBlocked = DispatchSemaphore(value: 0)
+        core.readWriteQueue.async { queueBlocked.wait() }
+
+        // When
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+        core.contextProvider.flush()
+        let isDisabledBeforeStorage = suddenTermination.isDisabled
+        queueBlocked.signal()
+        core.flush()
+
+        // Then
+        XCTAssertTrue(isDisabledBeforeStorage)
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
+    func testWhenAnEventIsWrittenAfterItsWriteContextReturns_suddenTerminationStaysDisabledUntilItIsStored() throws {
+        // Given
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny(),
+            suddenTermination: suddenTermination
+        )
+        defer { core.stop() }
+        try core.register(feature: FeatureMock())
+        let capturedWriter = ReadWriteLock<Writer?>(wrappedValue: nil)
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            capturedWriter.mutate { $0 = writer }
+        }
+        core.flush()
+        let queueBlocked = DispatchSemaphore(value: 0)
+        core.readWriteQueue.async { queueBlocked.wait() }
+
+        // When
+        try XCTUnwrap(capturedWriter.wrappedValue).write(value: FeatureMock.Event(event: "late"))
+        let isDisabledBeforeStorage = suddenTermination.isDisabled
+        queueBlocked.signal()
+        core.flush()
+
+        // Then
+        XCTAssertTrue(isDisabledBeforeStorage)
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+
+    func testWhenAppTerminates_itWritesBufferedDataWithoutFlushingFeatures() throws {
+        // Given
+        let notificationCenter = NotificationCenter()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.stop() }
+        let feature = BufferingFeatureMock()
+        try core.register(feature: feature)
+        core.startObservingAppTermination(in: notificationCenter)
+
+        // When
+        notificationCenter.post(name: ApplicationNotifications.willTerminate, object: nil)
+
+        // Then
+        XCTAssertEqual(feature.writeCount, 1)
+        XCTAssertEqual(feature.flushCount, 0)
+    }
+
+    func testWhenAppTerminates_messagesSentBeforeAreDeliveredBeforeFeaturesWrite() throws {
+        // Given
+        let notificationCenter = NotificationCenter()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        try core.register(feature: FeatureMock(messageReceiver: receiver))
+        let feature = BufferingFeatureMock()
+        var messagesAtWrite: [FeatureMessage] = []
+        feature.onWriteBufferedData = { messagesAtWrite = receiver.messages }
+        try core.register(feature: feature)
+        core.startObservingAppTermination(in: notificationCenter)
+        core.bus.flush()
+        core.bus.queue.async { Thread.sleep(forTimeInterval: 0.1) } // keep the next message queued when the app terminates
+        core.send(message: .payload("before termination"))
+
+        // When
+        notificationCenter.post(name: ApplicationNotifications.willTerminate, object: nil)
+
+        // Then
+        let payloads = messagesAtWrite.compactMap { message -> String? in
+            guard case .payload(let payload as String) = message else {
+                return nil
+            }
+            return payload
+        }
+        XCTAssertEqual(payloads, ["before termination"])
+    }
+
+    func testWhenAppTerminatesBeforeTheConfigurationTelemetryDelay_theConfigurationIsDelivered() throws {
+        // Given
+        let notificationCenter = NotificationCenter()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        try core.register(feature: FeatureMock(messageReceiver: receiver))
+        core.startObservingAppTermination(in: notificationCenter)
+        core.telemetry.configuration(batchSize: 1)
+
+        // When
+        notificationCenter.post(name: ApplicationNotifications.willTerminate, object: nil)
+
+        // Then
+        let configurations = receiver.messages.compactMap { message -> ConfigurationTelemetry? in
+            guard case .telemetry(.configuration(let configuration)) = message else {
+                return nil
+            }
+            return configuration
+        }
+        XCTAssertEqual(configurations.map(\.batchSize), [1])
+    }
+
+    func testWhenAppTerminates_bufferedDataIsStoredBeforeTheObserverReturns() throws {
+        // Given
+        let notificationCenter = NotificationCenter()
+        let suddenTermination = SuddenTerminationControlMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny(),
+            suddenTermination: suddenTermination
+        )
+        defer { core.stop() }
+        try core.register(feature: FeatureMock())
+        let feature = BufferingFeatureMock()
+        let isWritten = ReadWriteLock(wrappedValue: false)
+        feature.onWriteBufferedData = {
+            core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+                writer.write(value: FeatureMock.Event(event: "buffered")) { isWritten.mutate { $0 = true } }
+            }
+        }
+        try core.register(feature: feature)
+        core.startObservingAppTermination(in: notificationCenter)
+
+        // When
+        notificationCenter.post(name: ApplicationNotifications.willTerminate, object: nil)
+
+        // Then
+        XCTAssertTrue(isWritten.wrappedValue)
+        XCTAssertEqual(suddenTermination.disableCount, 0)
+    }
+    #endif
+
+    // MARK: - Thread safety
+
+    func testWhenUserInfoAPIsAreCalledConcurrently_itKeepsEveryUpdate() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        core.setUserInfo(id: "user-id")
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { iteration in core.addUserExtraInfo(["key-\(iteration)": iteration]) },
+                { _ in core.set(anonymousId: "anonymous-id") }
+            ],
+            iterations: 500
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let user = core.userInfoPublisher.current
+        XCTAssertEqual(user.id, "user-id")
+        XCTAssertEqual(user.anonymousId, "anonymous-id")
+        XCTAssertEqual(user.extraInfo.count, 500)
+        let contextUser = core.contextProvider.read().userInfo
+        XCTAssertEqual(contextUser?.anonymousId, "anonymous-id")
+        XCTAssertEqual(contextUser?.extraInfo.count, 500)
+    }
+
+    func testWhenUserInfoIsSetAndClearedConcurrently_itKeepsTheAnonymousIdentifier() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        core.set(anonymousId: "anonymous-id")
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { core.setUserInfo(id: "user-id", name: "user-name", email: "user-email", extraInfo: ["key": "value"]) },
+                { core.addUserExtraInfo(["other-key": "other-value"]) },
+                { core.clearUserInfo() },
+                { core.set(anonymousId: "anonymous-id") }
+            ],
+            iterations: 250
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let user = core.userInfoPublisher.current
+        XCTAssertEqual(user.anonymousId, "anonymous-id")
+        let contextUser = core.contextProvider.read().userInfo
+        XCTAssertEqual(contextUser?.anonymousId, "anonymous-id")
+        XCTAssertEqual(contextUser?.id, user.id)
+        XCTAssertEqual(contextUser?.extraInfo.keys.sorted(), user.extraInfo.keys.sorted())
+    }
+
+    func testWhenAccountInfoAPIsAreCalledConcurrently_itKeepsEveryUpdate() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        core.setAccountInfo(id: "account-id")
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { iteration in core.addAccountExtraInfo(["key-\(iteration)": iteration]) }
+            ],
+            iterations: 1_000
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let account = core.accountInfoPublisher.current
+        XCTAssertEqual(account?.id, "account-id")
+        XCTAssertEqual(account?.extraInfo.count, 1_000)
+        XCTAssertEqual(core.contextProvider.read().accountInfo?.extraInfo.count, 1_000)
+    }
+
+    func testWhenTrackingConsentIsSetConcurrently_theContextHasTheLastConsent() {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .pending,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { core.set(trackingConsent: .granted) },
+                { core.set(trackingConsent: .notGranted) },
+                { core.set(trackingConsent: .pending) }
+            ],
+            iterations: 300
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        XCTAssertEqual(core.contextProvider.read().trackingConsent, core.consentPublisher.consent)
     }
 }

@@ -21,6 +21,11 @@ public class ServerSession {
         self.recordingURL = server.baseURL.appendingPathComponent(sessionIdentifier)
     }
 
+    /// Removes the requests recorded by the server in this session. Requests recorded in other sessions are kept.
+    public func clearRecordedRequests() {
+        server.clearRecordedRequests(sessionIdentifier: sessionIdentifier)
+    }
+
     /// Returns all requests recorded by the server in this session.
     public func getRecordedRequests() throws -> [Request] {
         return try server

@@ -11,10 +11,25 @@ import DatadogInternal
 internal final class UserInfoPublisher: ContextValuePublisher {
     let initialValue: UserInfo? = .empty
 
+    @ReadWriteLock
     private var receiver: ContextValueReceiver<UserInfo>?
 
-    var current: UserInfo = .empty {
-        didSet { receiver?(current) }
+    @ReadWriteLock
+    private var value: UserInfo = .empty
+
+    var current: UserInfo {
+        get { value }
+        set { update { $0 = newValue } }
+    }
+
+    /// Atomically reads, modifies and publishes the current user info.
+    ///
+    /// The value is published while holding the lock, so concurrent updates reach the receiver in order.
+    func update(_ block: (inout UserInfo) -> Void) {
+        _value.mutate { value in
+            block(&value)
+            receiver?(value)
+        }
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<UserInfo?>) {

@@ -23,6 +23,9 @@ internal protocol TimeseriesCollecting: AnyObject {
     func noteActivity(sessionID: String)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
+    /// Synchronously flushes buffered samples and stops sampling for good, because the app terminates.
+    /// **Blocks the caller thread.**
+    func stopForTermination()
     /// Whether at least one sample was collected for the session identified by `sessionID`.
     /// Safe to call from any thread.
     func hasCollectedData(sessionID: String) -> Bool
@@ -31,11 +34,11 @@ internal protocol TimeseriesCollecting: AnyObject {
 /// Collects memory and CPU samples at configurable intervals (default: 1 s) during a RUM session and flushes them
 /// as `RUMTimeseriesMemoryEvent` / `RUMTimeseriesCpuEvent` batches via the RUM feature scope.
 internal class TimeseriesSessionCollector: TimeseriesCollecting {
-    /// A single memory sample: physical memory footprint in kilobytes and its percentage of total device RAM.
+    /// A single memory sample: memory footprint and its non-resident (compressed) portion, in kibibytes.
     private struct MemorySample {
         let timestamp: Int64
         let footprintKB: Double
-        let percent: Double
+        let nonResidentKB: Double
     }
 
     /// A single CPU sample: usage as a percentage (0.0 to 100.0).
@@ -44,13 +47,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let usage: Double
     }
 
-    private let memoryReader: SamplingBasedVitalReader
+    private let memoryReader: TimeseriesMemoryReader
     private let cpuUsageProvider: () -> Double?
     private let batchSize: Int
     private let collectTypes: Set<RUM.Configuration.TimeseriesType>
     private let samplingInterval: TimeInterval
     private let featureScope: FeatureScope
-    private let totalRAM: Double
     private let ciTest: RUMCITest?
     private let syntheticsTest: RUMSyntheticsTest?
     private let sessionSampleRate: Double
@@ -60,13 +62,23 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
     private let replayState: HasReplayMessageReceiver?
 
-    private var memoryBuffer: [MemorySample] = []
-    private var cpuBuffer: [CPUSample] = []
+    private var memoryBuffer: [MemorySample] = [] {
+        didSet { updateSuddenTerminationHold() }
+    }
+    private var cpuBuffer: [CPUSample] = [] {
+        didSet { updateSuddenTerminationHold() }
+    }
+    /// Keeps sudden termination disabled while samples are buffered, so they are written when the app terminates.
+    // The hold does not depend on tracking consent: with `.notGranted`, samples are buffered and then dropped by
+    // the writer, so the app terminates through AppKit instead of suddenly. No data is kept or lost because of it.
+    private let suddenTerminationHold: SuddenTerminationHold
     private var sessionID: String = ""
     private var applicationID: String = ""
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
+    /// Set when the app terminates. No sample is taken after it, so no new data delays the app exit.
+    private var isTerminated = false
     private let now: () -> Date
     private let mediaTimeProvider: CACurrentMediaTimeProvider
     /// The wall-clock date and monotonic media time captured together at the start of the current session,
@@ -85,27 +97,27 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
 
     init(
-        memoryReader: SamplingBasedVitalReader,
+        memoryReader: TimeseriesMemoryReader,
         featureScope: FeatureScope,
         batchSize: Int = 120,
         collectTypes: Set<RUM.Configuration.TimeseriesType> = Set(RUM.Configuration.TimeseriesType.allCases),
         samplingInterval: TimeInterval = 1,
         cpuUsageProvider: (() -> Double?)? = nil,
-        totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         sessionSampleRate: Double = 100,
         now: @escaping () -> Date = Date.init,
         mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider(),
-        replayState: HasReplayMessageReceiver? = nil
+        replayState: HasReplayMessageReceiver? = nil,
+        suddenTermination: SuddenTerminationControl = ProcessSuddenTerminationControl()
     ) {
         self.replayState = replayState
+        self.suddenTerminationHold = SuddenTerminationHold(control: suddenTermination)
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
         self.collectTypes = collectTypes
         self.samplingInterval = samplingInterval
         self.featureScope = featureScope
-        self.totalRAM = totalRAM
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.sessionSampleRate = sessionSampleRate
@@ -167,7 +179,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Resets state, flips the compression coin, and starts the sampling timer for the new session.
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
         queue.async { [weak self] in
-            guard let self = self else {
+            guard let self = self, !self.isTerminated else {
                 return
             }
             self.flushMemory()
@@ -210,7 +222,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// No-ops if `sessionID` no longer matches the currently active session.
     func resume(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID, self.isPaused else {
+            guard let self = self, self.sessionID == sessionID, self.isPaused, !self.isTerminated else {
                 return
             }
             self.isPaused = false
@@ -248,11 +260,21 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
+    func stopForTermination() {
+        queue.sync {
+            isTerminated = true
+            timer?.cancel()
+            timer = nil
+            flushMemory()
+            flushCPU()
+        }
+    }
+
     /// Restarts a self-stopped timer after a delayed foreground interaction keeps the session alive.
     /// Background pauses and sessions still expired according to the monitor remain stopped.
     func noteActivity(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID, !self.isPaused, self.timer == nil,
+            guard let self = self, self.sessionID == sessionID, !self.isPaused, !self.isTerminated, self.timer == nil,
                   self.activeContextReader?.isSessionExpired(sessionID: sessionID) == false else {
                 return
             }
@@ -302,10 +324,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         let timestamp = Int64.ddWithNoOverflow(currentDate.timeIntervalSince1970 * 1_000_000_000)
 
-        if collectTypes.contains(.memory), let bytes = memoryReader.readVitalData() {
-            let footprintKB = bytes / 1_024
-            let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
-            memoryBuffer.append(MemorySample(timestamp: timestamp, footprintKB: footprintKB, percent: memoryPercent))
+        if collectTypes.contains(.memory), let memory = memoryReader.readMemory() {
+            memoryBuffer.append(
+                MemorySample(timestamp: timestamp, footprintKB: memory.footprint / 1_024, nonResidentKB: memory.nonResident / 1_024)
+            )
             markSessionAsSampled()
             if memoryBuffer.count >= batchSize {
                 flushMemory()
@@ -321,6 +343,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
+    private func updateSuddenTerminationHold() {
+        suddenTerminationHold.isHeld = !memoryBuffer.isEmpty || !cpuBuffer.isEmpty
+    }
+
     private func markSessionAsSampled() {
         guard !sampledSessionIDs.contains(sessionID) else {
             return
@@ -333,7 +359,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             return
         }
         let batch = memoryBuffer
-        memoryBuffer = []
         let sessionID = self.sessionID
         let applicationID = self.applicationID
         let sessionType = self.sessionType
@@ -375,7 +400,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                         timestamps: timestamps,
                         values: .init(
                             memoryFootprint: batch.map { $0.footprintKB },
-                            memoryPercent: batch.map { $0.percent }
+                            memoryNonResident: batch.map { $0.nonResidentKB }
                         )
                     ),
                     end: adjustedEnd,
@@ -386,6 +411,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             )
             writer.write(value: self.sanitizer.sanitize(event: event))
         }
+        // Cleared after the write context opens, so sudden termination stays disabled in between.
+        memoryBuffer = []
     }
 
     private func flushCPU() {
@@ -393,7 +420,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             return
         }
         let batch = cpuBuffer
-        cpuBuffer = []
         let sessionID = self.sessionID
         let applicationID = self.applicationID
         let sessionType = self.sessionType
@@ -443,5 +469,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             )
             writer.write(value: self.sanitizer.sanitize(event: event))
         }
+        // Cleared after the write context opens, so sudden termination stays disabled in between.
+        cpuBuffer = []
     }
 }

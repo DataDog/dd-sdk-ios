@@ -117,7 +117,8 @@ internal class CompositionTreeBuilder {
     ) -> SRCompositionLayer {
         let output = compositionLayerBuilder.build(
             from: snapshot,
-            children: children(for: snapshot, context: context)
+            children: children(for: snapshot, context: context),
+            inheritedEffects: context.visualEffects
         )
 
         if let resource = output.resource {
@@ -165,7 +166,7 @@ internal class CompositionTreeBuilder {
         context: Context,
         to children: inout [SRCompositionLayerChild]
     ) {
-        switch snapshot.compositionTreeRepresentation {
+        switch snapshot.compositionTreeRepresentation(inheritedEffects: context.visualEffects) {
         case .wireframe:
             var context = context
             context.append(heatmapKey: snapshot.heatmapKey)

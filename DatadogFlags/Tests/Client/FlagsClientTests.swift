@@ -12,6 +12,34 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
+    func testSubjectAuthorizationIsolationReturnsGeneralDefaultAndUsesSanitizedRequestedContext() {
+        let requestedContext = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: [
+                "plan": .string("premium"),
+                AssignmentAuthorization.contextAttribute: .string("must-not-be-reported")
+            ]
+        )
+        let repository = FlagsRepositoryMock()
+        repository.evaluationError = .general
+        repository.requestedContext = requestedContext.extractingAssignmentAuthorization().context
+        let evaluations = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: evaluations,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        let details = client.getBooleanDetails(key: "flag", defaultValue: false)
+
+        XCTAssertEqual(details, .init(key: "flag", value: false, error: .general))
+        XCTAssertEqual(evaluations.logEvaluationCalls.count, 1)
+        XCTAssertEqual(evaluations.logEvaluationCalls.first?.error, "GENERAL")
+        XCTAssertEqual(evaluations.logEvaluationCalls.first?.context.targetingKey, "subject")
+        XCTAssertEqual(evaluations.logEvaluationCalls.first?.context.attributes, ["plan": .string("premium")])
+    }
+
     func testDifferentSubjectCannotReenableInstalledSubjectsTelemetryDuringRefresh() throws {
         let fixture = makeSubjectTransitionFixture()
         fixture.client.setEvaluationContext(telemetryContext(.bool(true), subject: "A")) { _ in }
@@ -301,6 +329,193 @@ final class FlagsClientTests: XCTestCase {
             XCTAssertEqual(fixture.exposures.logExposureCalls.map { $0.context.attributes["dd_evaluation_telemetry_opt_out"] }, [.bool(true), .string("true")])
             XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, enabled ? 1 : 2)
             XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, enabled ? 1 : 2)
+        }
+    }
+
+    func testSPIStripsAssignmentTokenFromAllTrackingPaths() throws {
+        let fixture = makeTelemetryFixture(enabled: true)
+        let assignment = try XCTUnwrap(fixture.repository.flagAssignment(for: "flag"))
+        let context = FlagsEvaluationContext(
+            targetingKey: "subject",
+            attributes: [
+                "plan": .string("premium"),
+                AssignmentAuthorization.contextAttribute: .string("opaque-token")
+            ]
+        )
+
+        fixture.client.sendFlagEvaluation(key: "flag", assignment: assignment, context: context)
+        fixture.client.sendFlagExposure(key: "flag", assignment: assignment, context: context)
+        fixture.client.sendFlagEvaluationEvent(key: "flag", assignment: assignment, context: context, errorCode: nil)
+        fixture.client.sendFlagEvaluationEvent(
+            key: "flag",
+            assignment: assignment,
+            context: context,
+            telemetryTargetingKey: context.targetingKey,
+            observeFullEvaluationData: true,
+            errorCode: nil
+        )
+        fixture.client.sendFlagRUMEvaluation(key: "flag", variant: "variant", context: context)
+
+        XCTAssertTrue(fixture.exposures.logExposureCalls.allSatisfy {
+            $0.context.attributes[AssignmentAuthorization.contextAttribute] == nil
+        })
+        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.allSatisfy {
+            $0.context.attributes[AssignmentAuthorization.contextAttribute] == nil
+        })
+    }
+
+    func testCapturedConsentDoesNotOverrideSubjectTelemetryOptOut() throws {
+        for consent in [false, true] {
+            for enabled in [false, true] {
+                // Given
+                let fixture = makeTelemetryFixture(enabled: enabled)
+                let data = try XCTUnwrap(fixture.repository.flagsData)
+                fixture.repository.flagsData = FlagsData(
+                    flags: data.flags,
+                    context: telemetryContext(.bool(true)),
+                    date: data.date,
+                    observeFullEvaluationData: consent
+                )
+
+                // When
+                let success = fixture.client.getBooleanDetails(key: "flag", defaultValue: false)
+                let missing = fixture.client.getBooleanDetails(key: "missing", defaultValue: false)
+                let mismatch = fixture.client.getStringDetails(key: "flag", defaultValue: "fallback")
+
+                // Then
+                XCTAssertTrue(success.value)
+                XCTAssertEqual(missing.error, .flagNotFound)
+                XCTAssertEqual(mismatch.error, .typeMismatch)
+                XCTAssertEqual(success.observeFullEvaluationData, consent)
+                XCTAssertEqual(missing.observeFullEvaluationData, consent)
+                XCTAssertEqual(mismatch.observeFullEvaluationData, consent)
+                XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, enabled ? 0 : 3)
+                XCTAssertTrue(fixture.evaluations.logEvaluationCalls.allSatisfy { $0.assignment.observeFullEvaluationData == consent })
+                XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, enabled ? 0 : 1)
+                XCTAssertEqual(fixture.exposures.logExposureCalls.count, 1)
+            }
+        }
+    }
+
+    func testConsentAwareSPIRespectsOptOutForSuccessAndErrorReplay() throws {
+        for consent in [false, true] {
+            for enabled in [false, true] {
+                for error in [nil, "FLAG_NOT_FOUND"] as [String?] {
+                    // Given
+                    let fixture = makeTelemetryFixture(enabled: enabled)
+                    var assignment = try XCTUnwrap(fixture.repository.flagAssignment(for: "flag"))
+                    assignment.observeFullEvaluationData = !consent
+
+                    // When
+                    for optOut in [AnyValue.bool(true), .string("true")] {
+                        fixture.client.sendFlagEvaluationEvent(
+                            key: "flag",
+                            assignment: assignment,
+                            context: telemetryContext(optOut),
+                            telemetryTargetingKey: "user",
+                            observeFullEvaluationData: consent,
+                            errorCode: error
+                        )
+                    }
+
+                    // Then
+                    XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, enabled ? 1 : 2)
+                    XCTAssertTrue(fixture.evaluations.logEvaluationCalls.allSatisfy { $0.assignment.observeFullEvaluationData == consent })
+                    XCTAssertTrue(fixture.evaluations.logEvaluationCalls.allSatisfy { $0.error == error })
+                    XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+                    XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
+                }
+            }
+        }
+    }
+
+    func testNullableTelemetryKeySPIEncodesOmissionEmptyAndUnicodeWithoutExposuresOrRUM() throws {
+        let vectors: [(key: String?, protectedKey: String?)] = [
+            (nil, nil),
+            ("", ""),
+            ("é", "sha256_4a99557e4033c3539de2eb65472017cad5f9557f7a0625a09f1c3f6e2ba69c4c"),
+            ("\u{FFFD}", "sha256_83d544ccc223c057d2bf80d3f2a32982c32c3c0db8e2674820da5064783fb097")
+        ]
+        let scenarios: [(reason: String, error: String?)] = [
+            ("TARGETING_MATCH", nil), ("DEFAULT", nil), ("ERROR", "FLAG_NOT_FOUND")
+        ]
+        for consent in [false, true] {
+            for scenario in scenarios {
+                // Given
+                let scope = FeatureScopeMock()
+                let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+                let fixture = makeTelemetryFixture(enabled: true)
+                let client: FlagsClientInternal = FlagsClient(
+                    repository: fixture.repository,
+                    exposureLogger: fixture.exposures,
+                    evaluationLogger: EvaluationLogger(aggregator: aggregator),
+                    rumFlagEvaluationReporter: fixture.rum,
+                    configuration: .init(enableEvaluationTelemetryOptOutParameter: true)
+                )
+                let context = FlagsEvaluationContext(targetingKey: "ASSIGNMENT_SUBJECT", attributes: ["private": .string("CONTEXT_CANARY")])
+                var assignment = try XCTUnwrap(fixture.repository.flagAssignment(for: "flag"))
+                assignment.reason = scenario.reason
+                assignment.observeFullEvaluationData = !consent
+
+                // When
+                for vector in vectors {
+                    for _ in 0..<2 {
+                        client.sendFlagEvaluationEvent(
+                            key: "flag",
+                            assignment: assignment,
+                            context: context,
+                            telemetryTargetingKey: vector.key,
+                            observeFullEvaluationData: consent,
+                            errorCode: scenario.error
+                        )
+                    }
+                }
+                aggregator.sendEvaluations()
+
+                // Then
+                let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+                XCTAssertEqual(events.count, vectors.count)
+                XCTAssertEqual(events.reduce(0) { $0 + $1.evaluationCount }, 8)
+                for vector in vectors {
+                    let expectedKey = consent ? vector.key : vector.protectedKey
+                    let event = try XCTUnwrap(events.first { $0.targetingKey == expectedKey })
+                    XCTAssertEqual(event.evaluationCount, 2)
+                    XCTAssertEqual(event.context?.evaluation, consent ? context.attributes : nil)
+                    XCTAssertEqual(event.error?.message, scenario.error)
+                    XCTAssertEqual(event.runtimeDefaultUsed, scenario.reason == "TARGETING_MATCH" ? nil : true)
+                    let data = try JSONEncoder().encode(event)
+                    let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                    XCTAssertEqual(json["targeting_key"] as? String, expectedKey)
+                    if vector.key == nil {
+                        XCTAssertNil(json["targeting_key"])
+                    }
+                    XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("ASSIGNMENT_SUBJECT"))
+                }
+                XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+                XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
+            }
+        }
+    }
+
+    func testNullableTelemetryKeySPIKeepsSubjectOptOut() throws {
+        for consent in [false, true] {
+            for telemetryKey in [nil, "", "different-subject"] as [String?] {
+                for error in [nil, "TYPE_MISMATCH"] as [String?] {
+                    let fixture = makeTelemetryFixture(enabled: true)
+                    let client: FlagsClientInternal = fixture.client
+                    let assignment = try XCTUnwrap(fixture.repository.flagAssignment(for: "flag"))
+                    let context = telemetryContext(.bool(true), subject: "original-subject")
+                    client.sendFlagEvaluationEvent(
+                        key: "flag",
+                        assignment: assignment,
+                        context: context,
+                        telemetryTargetingKey: telemetryKey,
+                        observeFullEvaluationData: consent,
+                        errorCode: error
+                    )
+                    XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
+                }
+            }
         }
     }
 
@@ -644,25 +859,32 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNotNil(evaluationLogger.logEvaluationCalls[7].error, "typeMismatch should have error")
     }
 
-    func testDoubleEvaluationOfWholeNumberVariation() {
-        // Given - a whole number served as "number" decodes as `.integer`
+    func testNumericEvaluationConvertsWithoutLoss() {
+        // Given - whole and fractional numeric variations
         let exposureLogger = ExposureLoggerMock()
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
                 flagsData: .init(
                     flags: [
-                        "whole-number-flag": FlagAssignment(
+                        "integer-flag": .init(
                             allocationKey: "allocation-128",
-                            variationKey: "5.0",
+                            variationKey: "5",
                             variation: .integer(5),
                             reason: "TARGETING_MATCH",
                             doLog: true
-                        ).servedAsNumber(),
-                        "integer-flag": .init(
+                        ),
+                        "whole-double-flag": .init(
                             allocationKey: "allocation-129",
-                            variationKey: "variation-129",
-                            variation: .integer(7),
+                            variationKey: "7.0",
+                            variation: .double(7),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "fractional-double-flag": .init(
+                            allocationKey: "allocation-130",
+                            variationKey: "1.2",
+                            variation: .double(1.2),
                             reason: "TARGETING_MATCH",
                             doLog: true
                         ),
@@ -677,26 +899,43 @@ final class FlagsClientTests: XCTestCase {
         )
 
         // When
-        let doubleDetails = client.getDoubleDetails(key: "whole-number-flag", defaultValue: 3.14)
-        let integerDetails = client.getIntegerDetails(key: "whole-number-flag", defaultValue: 0)
-        let integerFlagAsDouble = client.getDoubleDetails(key: "integer-flag", defaultValue: 3.14)
+        let integerAsDouble = client.getDoubleDetails(key: "integer-flag", defaultValue: 3.14)
+        let integerAsInteger = client.getIntegerDetails(key: "integer-flag", defaultValue: 0)
+        let wholeDoubleAsInteger = client.getIntegerDetails(key: "whole-double-flag", defaultValue: 0)
+        let fractionalAsDouble = client.getDoubleDetails(key: "fractional-double-flag", defaultValue: 3.14)
+        let exposuresBeforeMismatch = exposureLogger.logExposureCalls.map(\.flagKey)
+        let fractionalAsInteger = client.getIntegerDetails(key: "fractional-double-flag", defaultValue: 0)
 
         // Then
         XCTAssertEqual(
-            doubleDetails,
+            integerAsDouble,
             FlagDetails(
-                key: "whole-number-flag",
+                key: "integer-flag",
                 value: 5.0,
-                variant: "5.0",
+                variant: "5",
                 reason: "TARGETING_MATCH",
                 allocationKey: "allocation-128"
             )
         )
-        XCTAssertEqual(integerDetails.value, 5)
-        XCTAssertNil(integerDetails.error)
-        XCTAssertEqual(integerFlagAsDouble, FlagDetails(key: "integer-flag", value: 3.14, error: .typeMismatch))
-        XCTAssertEqual(exposureLogger.logExposureCalls.count, 2)
-        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, "TYPE_MISMATCH"])
+        XCTAssertEqual(integerAsInteger.value, 5)
+        XCTAssertNil(integerAsInteger.error)
+        XCTAssertEqual(
+            wholeDoubleAsInteger,
+            FlagDetails(
+                key: "whole-double-flag",
+                value: 7,
+                variant: "7.0",
+                reason: "TARGETING_MATCH",
+                allocationKey: "allocation-129"
+            )
+        )
+        XCTAssertEqual(fractionalAsDouble.value, 1.2)
+        XCTAssertNil(fractionalAsDouble.error)
+        XCTAssertEqual(fractionalAsInteger, FlagDetails(key: "fractional-double-flag", value: 0, error: .typeMismatch))
+        let expectedExposures = ["integer-flag", "integer-flag", "whole-double-flag", "fractional-double-flag"]
+        XCTAssertEqual(exposuresBeforeMismatch, expectedExposures)
+        XCTAssertEqual(exposureLogger.logExposureCalls.map(\.flagKey), expectedExposures)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.map(\.error), [nil, nil, nil, nil, "TYPE_MISMATCH"])
     }
 
     func testFlagEvaluationTracking() {
@@ -1310,11 +1549,35 @@ final class FlagsClientTests: XCTestCase {
             XCTAssertEqual(event.error?.message, key == "error" ? "TYPE_MISMATCH" : nil)
         }
         for event in events {
-            XCTAssertEqual(event.targetingKey, "captured-user")
-            XCTAssertEqual(event.context?.evaluation?["tier"], .string("premium"))
+            XCTAssertEqual(event.targetingKey, "sha256_320d01bdc4586767c33c70753dc2eb543f4024de1c60f7ee5c1aba76596ec2f4")
+            XCTAssertNil(event.context)
         }
         XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
         XCTAssertTrue(rumReporter.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testIndependentEvaluationTrackingUsesConsentCarriedByTheAssignment() throws {
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(now: .mockAny()), featureScope: featureScope, flushInterval: 60)
+        let client: FlagsClientInternal = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLogger(aggregator: aggregator),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+        let context = FlagsEvaluationContext(targetingKey: "captured-user", attributes: ["tier": .string("premium")])
+        var assignment = FlagAssignment(
+            allocationKey: "allocation", variationKey: "variant", variation: .boolean(true), reason: "MATCH", doLog: false
+        )
+        assignment.observeFullEvaluationData = true
+
+        client.sendFlagEvaluationEvent(key: "flag", assignment: assignment, context: context, errorCode: "customer-error")
+        aggregator.sendEvaluations()
+
+        let event = try XCTUnwrap(featureScope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
+        XCTAssertEqual(event.targetingKey, "captured-user")
+        XCTAssertEqual(event.context?.evaluation?["tier"], .string("premium"))
+        XCTAssertEqual(event.error?.message, "GENERAL")
     }
 
     func testIndependentExposureTrackingPreservesDeduplicationAndDoLog() throws {
