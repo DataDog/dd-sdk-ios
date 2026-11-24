@@ -11,10 +11,39 @@ import DatadogInternal
 internal final class AccountInfoPublisher: ContextValuePublisher {
     let initialValue: AccountInfo? = nil
 
+    @ReadWriteLock
     private var receiver: ContextValueReceiver<AccountInfo?>?
 
-    var current: AccountInfo? = nil {
-        didSet { receiver?(current) }
+    @ReadWriteLock
+    private var value: AccountInfo? = nil
+
+    var current: AccountInfo? {
+        get { value }
+        set {
+            update {
+                $0 = newValue
+                return true
+            }
+        }
+    }
+
+    /// Atomically reads and modifies the current account info, and publishes it if `block` returns `true`.
+    ///
+    /// The value is published while holding the lock, so concurrent updates reach the receiver in order.
+    ///
+    /// - Parameter block: Modifies the account info and returns whether it should be published.
+    /// - Returns: Whether the account info was published.
+    @discardableResult
+    func update(_ block: (inout AccountInfo?) -> Bool) -> Bool {
+        var published = false
+        _value.mutate { value in
+            guard block(&value) else {
+                return
+            }
+            receiver?(value)
+            published = true
+        }
+        return published
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<AccountInfo?>) {

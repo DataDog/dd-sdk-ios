@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-10
-sdk_version: 3.21.0
-verified_against_commit: 2eaafaeb9
+last_updated: 2026-11-24
+sdk_version: 3.23.0
+verified_against_commit: 1f00346a6
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -286,6 +286,8 @@ Event mappers allow modifying or dropping events before upload:
 
 **Note**: To filter views, use view predicates instead of the mapper.
 
+Keep mappers fast and make no assumptions about the thread they run on. Do not dispatch to other queues from a mapper: dispatching synchronously to the main queue (e.g. `DispatchQueue.main.sync`) may cause a deadlock.
+
 ### Feature Flags
 - `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true, .viewUpdates: true]`.
 - Flags omitted from a custom dictionary fall back to their entry in `.defaults`, or `false` if no default is declared. An empty dictionary therefore still enables scroll/swipe tracking and view updates; set a flag explicitly to `false` to disable it.
@@ -306,7 +308,7 @@ Event mappers allow modifying or dropping events before upload:
   RUM.enable(with: rumConfig)
   ```
 - `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
-- `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
+- `TimeseriesType`: `.memory` (memory footprint and the portion of it the system has compressed), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
 - Timeseries are not collected in app extensions (e.g. widgets): `RUMFeature` creates no collector when the bundle type is not `.iOSApp`, because extensions receive no app lifecycle notifications to pause collection and write buffered samples.
 - Samples are buffered in memory and written in batches of 120, and when the session is paused, stopped, or the SDK is flushed. On macOS, buffered samples are also written when the app terminates, and sudden termination stays disabled while samples are buffered, which is most of the session.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.

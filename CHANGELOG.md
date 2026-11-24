@@ -1,6 +1,25 @@
 # Unreleased
 
+# 3.23.0 / 24-11-2026
+
+- [FEATURE] Add the anonymous user ID to Trace spans as `meta.usr.anonymous_id`. See [#3480][]
+- [FEATURE] Flags: Add subject authorization for protected flag environments. When authorization fails, prevent a subject from using flag assignments retained for another subject. Adds `FlagsError.assignmentAuthorizationFailed` and `FlagEvaluationError.general`; exhaustive switches need the new cases. See [#3445][]
+- [IMPROVEMENT] Add stack trace support to RUM monitor `stopResourceWithError` API. See [#3422][]
+- [IMPROVEMENT] Add `stopResourceWithErrorWithResourceKey:message:type:stack:response:attributes:` to `DDRUMMonitor` to report a resource error's type and stack trace from Objective-C. See [#3457][]
 - [IMPROVEMENT] Flags: Protect evaluation telemetry by default. Targeting keys are hashed and the evaluation context is omitted unless the flags configuration enables full evaluation data. Only stable error codes are reported. See [#3340][]
+- [IMPROVEMENT] Add `DDProfiling` and `DDProfilingConfiguration` to configure and enable native profiling from Objective-C integrations. See [#3465][]
+- [IMPROVEMENT] Add `addErrorWithMessage:type:stack:source:attributes:` to `DDRUMMonitor` to report an error type from Objective-C. See [#3458][]
+- [IMPROVEMENT] RUM: Allow cross-platform SDKs to report the first frame used for Time to Initial Display (TTID). See [#3462][]
+- [IMPROVEMENT] Flags: Send the SDK's `service` in the `dd-service` header on flag requests, the same service RUM reports, so Usage Attribution can split Feature Flags usage by service. See [#3469][]
+- [IMPROVEMENT] Send full RUM view events less often when view updates are enabled: every 10th view update instead of every 6th. This reduces view payload size. See [#3491][]
+- [FIX] Flags: `getIntegerValue`, `getDoubleValue` and their details variants now return the flag value when it converts between `Int` and `Double` without loss. Before, some of these reads returned the default value with `.typeMismatch`. See [#3399][]
+- [FIX] Fix rounded corners in Session Replay composition tree recordings. See [#3464][]
+- [FIX] Preserve rounded borders on transparent layers in composition tree recordings. See [#3466][]
+- [FIX] Fix a crash when the app launch vitals (TTID/TTFD) were written after the RUM session that received them was deallocated. See [#3479][]
+- [FIX] Fix Liquid Glass slider and switch thumb rendering during interactions in Session Replay. See [#3482][]
+- [FIX] Fix an `unrecognized selector` crash for `typeDescription` when tapping SwiftUI views with RUM action tracking, in Debug builds that link `DatadogRUM` statically. See [#3489][]
+- [FIX] Fix Liquid Glass tab bar rendering in Session Replay, including tab selections, tab accessory backgrounds, and missing tab icons. See [#3492][]
+- [FIX] Fix possible crashes and lost updates when user info, account info or tracking consent APIs are called concurrently from multiple threads. See [#3463][]
 
 # 3.22.0 / 12-11-2026
 
@@ -1362,6 +1381,23 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3290]: https://github.com/DataDog/dd-sdk-ios/pull/3290
 [#3419]: https://github.com/DataDog/dd-sdk-ios/pull/3419
 [#3442]: https://github.com/DataDog/dd-sdk-ios/pull/3442
+[#3480]: https://github.com/DataDog/dd-sdk-ios/pull/3480
+[#3445]: https://github.com/DataDog/dd-sdk-ios/pull/3445
+[#3422]: https://github.com/DataDog/dd-sdk-ios/pull/3422
+[#3457]: https://github.com/DataDog/dd-sdk-ios/pull/3457
+[#3465]: https://github.com/DataDog/dd-sdk-ios/pull/3465
+[#3458]: https://github.com/DataDog/dd-sdk-ios/pull/3458
+[#3462]: https://github.com/DataDog/dd-sdk-ios/pull/3462
+[#3469]: https://github.com/DataDog/dd-sdk-ios/pull/3469
+[#3491]: https://github.com/DataDog/dd-sdk-ios/pull/3491
+[#3399]: https://github.com/DataDog/dd-sdk-ios/pull/3399
+[#3464]: https://github.com/DataDog/dd-sdk-ios/pull/3464
+[#3466]: https://github.com/DataDog/dd-sdk-ios/pull/3466
+[#3479]: https://github.com/DataDog/dd-sdk-ios/pull/3479
+[#3482]: https://github.com/DataDog/dd-sdk-ios/pull/3482
+[#3489]: https://github.com/DataDog/dd-sdk-ios/pull/3489
+[#3492]: https://github.com/DataDog/dd-sdk-ios/pull/3492
+[#3463]: https://github.com/DataDog/dd-sdk-ios/pull/3463
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

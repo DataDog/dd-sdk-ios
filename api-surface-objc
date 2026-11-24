@@ -1517,6 +1517,7 @@ public class objc_RUMResourceEventResource: NSObject
     public var graphql: objc_RUMResourceEventResourceRUMGraphql?
     public var id: String?
     public var localCacheHit: NSNumber?
+    public var message: objc_RUMResourceEventResourceMessage?
     public var method: objc_RUMResourceEventResourceRUMMethod
     public var `protocol`: String?
     public var provider: objc_RUMResourceEventResourceProvider?
@@ -1571,6 +1572,20 @@ public enum objc_RUMResourceEventResourceRUMGraphqlOperationType: Int
     case query
     case mutation
     case subscription
+public class objc_RUMResourceEventResourceMessage: NSObject
+    public var api: objc_RUMResourceEventResourceMessageAPI
+    public var id: String
+    public var isError: NSNumber?
+    public var role: objc_RUMResourceEventResourceMessageRole
+public enum objc_RUMResourceEventResourceMessageAPI: Int
+    case invoke
+    case handle
+    case send
+    case sendSync
+    case on
+public enum objc_RUMResourceEventResourceMessageRole: Int
+    case source
+    case destination
 public enum objc_RUMResourceEventResourceRUMMethod: Int
     case none
     case post
@@ -1634,6 +1649,7 @@ public enum objc_RUMResourceEventResourceResourceType: Int
     case media
     case other
     case native
+    case message
 public class objc_RUMResourceEventResourceWorker: NSObject
     public var duration: NSNumber
     public var start: NSNumber
@@ -2060,7 +2076,7 @@ public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject
     public var values: objc_RUMTimeseriesMemoryEventTimeseriesDataValues
 public class objc_RUMTimeseriesMemoryEventTimeseriesDataValues: NSObject
     public var memoryFootprint: [NSNumber]
-    public var memoryPercent: [NSNumber]
+    public var memoryNonResident: [NSNumber]?
 public class objc_RUMTimeseriesMemoryEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -3739,6 +3755,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var batchUploadFrequency: NSNumber?
     public var betaEnableViewUpdates: NSNumber?
     public var betaEncodeCookieOptions: NSNumber?
+    public var betaTrackSoftNavigations: NSNumber?
     public var betaTrackWebSockets: NSNumber?
     public var compressIntakeRequests: NSNumber?
     public var dartVersion: String?
@@ -3748,6 +3765,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var forwardErrorsToLogs: NSNumber?
     public var forwardReports: objc_TelemetryConfigurationEventTelemetryConfigurationForwardReports?
     public var imagePrivacyLevel: String?
+    public var initContext: objc_TelemetryConfigurationEventTelemetryConfigurationInitContext?
     public var initializationType: String?
     public var invTimeThresholdMs: NSNumber?
     public var isMainProcess: NSNumber?
@@ -3800,6 +3818,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var trackFlutterPerformance: NSNumber?
     public var trackFrustrations: NSNumber?
     public var trackInteractions: NSNumber?
+    public var trackIpcResources: NSNumber?
     public var trackLongTask: NSNumber?
     public var trackNativeErrors: NSNumber?
     public var trackNativeLongTasks: NSNumber?
@@ -3841,6 +3860,9 @@ public class objc_TelemetryConfigurationEventTelemetryConfigurationForwardConsol
 public class objc_TelemetryConfigurationEventTelemetryConfigurationForwardReports: NSObject
     public var stringsArray: [String]?
     public var string: String?
+public class objc_TelemetryConfigurationEventTelemetryConfigurationInitContext: NSObject
+    public var hasAccount: NSNumber?
+    public var hasUser: NSNumber?
 public class objc_TelemetryConfigurationEventTelemetryConfigurationPlugins: NSObject
     public var name: String
     public var pluginsInfo: [String: Any]
