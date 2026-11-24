@@ -44,16 +44,37 @@ internal struct PortableFlagsConfiguration {
             guard case .dictionary(let data) = payload["data"],
                   case .dictionary(let attributes) = data["attributes"],
                   case .dictionary(let flags) = attributes["flags"],
+                  // A flag that failed to evaluate on the server has an error record instead of an assignment.
+                  case .dictionary(let evaluationErrors) = attributes["flagEvaluationErrors"] ?? .dictionary([:]),
+                  Set(flags.keys).isDisjoint(with: evaluationErrors.keys),
                   let createdAt = attributes["createdAt"], validTimestamp(createdAt) else {
                 throw Failure.invalidPrecomputed
+            }
+
+            // Reuse encoding and opt-out metadata validation without changing the network parser.
+            let encoder = JSONEncoder()
+            var metadata = attributes
+            metadata["flags"] = .dictionary([:])
+            let metadataData = try encoder.encode(["data": AnyValue.dictionary(["attributes": .dictionary(metadata)])])
+            let parsed = try decoder.decode(FlagAssignmentsResponse.self, from: metadataData)
+            // Dependency evaluations are validated like the browser does, but evaluation does not use them yet.
+            var isDependencyKey: (String) -> Bool = { _ in true }
+            if let obfuscation = parsed.obfuscation {
+                // Validate even keys whose values failed to decode.
+                try obfuscation.validateKeys(Array(flags.keys) + evaluationErrors.keys, codingPath: [])
+                // An encoded response can list dependencies only if it declares how their keys are encrypted.
+                let encryptsKeys = encryptsDependencyKeys(attributes["obfuscation"])
+                isDependencyKey = { encryptsKeys && isEncryptedDependencyKey($0) }
             }
 
             // Decode flags independently; a malformed assignment must not hide its valid siblings.
             var validFlags: [String: FlagAssignment] = [:]
             var failedFlags: [String: String] = [:]
-            let encoder = JSONEncoder()
             for (key, flag) in flags {
-                if let normalized = normalize(flag),
+                // An error result belongs in `flagEvaluationErrors`, not in `flags`.
+                if case .dictionary(let fields) = flag, fields["reason"] != .string("ERROR"),
+                   validDependencies(fields["dependencyEvaluations"], isKey: isDependencyKey),
+                   let normalized = normalize(flag),
                    let encoded = try? encoder.encode(normalized),
                    let assignment = try? decoder.decode(FlagAssignment.self, from: encoded) {
                     validFlags[key] = assignment
@@ -61,15 +82,9 @@ internal struct PortableFlagsConfiguration {
                     failedFlags[key] = "Invalid precomputed flag configuration"
                 }
             }
-
-            // Reuse encoding and opt-out metadata validation without changing the network parser.
-            var metadata = attributes
-            metadata["flags"] = .dictionary([:])
-            let metadataData = try encoder.encode(["data": AnyValue.dictionary(["attributes": .dictionary(metadata)])])
-            let parsed = try decoder.decode(FlagAssignmentsResponse.self, from: metadataData)
-            if let obfuscation = parsed.obfuscation {
-                // Validate even keys whose values failed to decode.
-                try obfuscation.validateKeys(flags.keys, codingPath: [])
+            // A valid error record leaves its flag absent, so reads keep returning the default value.
+            for (key, error) in evaluationErrors where !validEvaluationError(error, isDependencyKey: isDependencyKey) {
+                failedFlags[key] = "Invalid precomputed flag evaluation error"
             }
             return FlagAssignmentsResponse(
                 flags: validFlags,
@@ -90,6 +105,66 @@ internal struct PortableFlagsConfiguration {
             case .double(let value): return value.isFinite
             default: return false
             }
+        }
+
+        /// Mirrors the browser's `isPrecomputedErrorFlag`.
+        private static func validEvaluationError(_ value: AnyValue, isDependencyKey: (String) -> Bool) -> Bool {
+            guard case .dictionary(let fields) = value else {
+                return false
+            }
+            return fields["reason"] == .string("ERROR") && fields["errorCode"] == .string("GENERAL")
+                && (fields["errorMessage"] == nil || nonEmptyString(fields["errorMessage"]))
+                && validDependencies(fields["dependencyEvaluations"], isKey: isDependencyKey)
+        }
+
+        /// Mirrors the browser's `isDependencyEvaluations`: an optional list with one result per dependency key.
+        private static func validDependencies(_ value: AnyValue?, isKey: (String) -> Bool) -> Bool {
+            guard case .array(let dependencies) = value ?? .array([]) else {
+                return false
+            }
+            var keys: Set<String> = []
+            for dependency in dependencies {
+                guard case .dictionary(let fields) = dependency, case .string(let key) = fields["flagKey"], !key.isEmpty,
+                      isKey(key), keys.insert(key).inserted, validDependency(fields) else {
+                    return false
+                }
+            }
+            return true
+        }
+
+        /// Mirrors the browser's `isDependencyEvaluation`: an error result explains the failure, and any other
+        /// result only says whether the dependency is in the assignment.
+        private static func validDependency(_ fields: [String: AnyValue]) -> Bool {
+            if fields["reason"] == .string("ERROR") {
+                return nonEmptyString(fields["errorCode"]) && fields["isPresentInAssignment"] == nil
+                    && (fields["errorMessage"] == nil || nonEmptyString(fields["errorMessage"]))
+            }
+            guard case .bool = fields["isPresentInAssignment"] else {
+                return false
+            }
+            return [fields["reason"], fields["errorCode"], fields["errorMessage"]].allSatisfy { $0 == nil || $0 == .null }
+        }
+
+        private static func nonEmptyString(_ value: AnyValue?) -> Bool {
+            guard case .string(let string) = value else {
+                return false
+            }
+            return !string.isEmpty
+        }
+
+        private static func encryptsDependencyKeys(_ obfuscation: AnyValue?) -> Bool {
+            guard case .dictionary(let descriptor) = obfuscation,
+                  case .dictionary(let encryption) = descriptor["dependencyKeyEncryption"] else {
+                return false
+            }
+            return encryption["scheme"] == .string("dependency-key-hkdf-sha256-aes-256-gcm-v1")
+        }
+
+        /// Mirrors the browser's `isEncryptedDependencyKey`: unpadded base64url text. Keys are not decrypted.
+        private static func isEncryptedDependencyKey(_ key: String) -> Bool {
+            let length = key.utf8.count
+            return length >= 38 && length % 4 != 1
+                && key.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == "_") }
         }
 
         private static func normalize(_ value: AnyValue) -> AnyValue? {

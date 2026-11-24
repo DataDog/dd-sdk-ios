@@ -217,6 +217,115 @@ final class PortableFlagsConfigurationTests: XCTestCase {
         XCTAssertEqual(PortableFlagsConfiguration.fromString(try wire(flags: ["plaintext": [:]], attributes: encoding)).failure, .invalidPrecomputed)
     }
 
+    func testValidEvaluationErrorLeavesFlagAbsentAndSiblingsValid() throws {
+        let errors: [String: Any] = [
+            "failed": evaluationError,
+            "explained": [
+                "reason": "ERROR", "errorCode": "GENERAL", "errorMessage": "Dependency failed",
+                "dependencyEvaluations": [dependency("flag")],
+            ],
+        ]
+        let parsed = PortableFlagsConfiguration.fromString(try wire(attributes: ["flagEvaluationErrors": errors]))
+        let assignments = try XCTUnwrap(parsed.precomputed).assignments
+        XCTAssertNil(parsed.failure)
+        XCTAssertEqual(Array(assignments.flags.keys), ["flag"])
+        XCTAssertTrue(assignments.failedFlags.isEmpty)
+        XCTAssertEqual(PortableFlagsConfiguration.fromString(try parsed.toString()).precomputed?.assignments, assignments)
+    }
+
+    func testRejectsFlagEvaluationErrorsThatAreNotAnObject() throws {
+        for errors in [NSNull(), [], "error"] as [Any] {
+            let parsed = PortableFlagsConfiguration.fromString(try wire(attributes: ["flagEvaluationErrors": errors]))
+            XCTAssertEqual(parsed.failure, .invalidPrecomputed, "\(errors)")
+        }
+    }
+
+    func testRejectsFlagWithBothAssignmentAndEvaluationError() throws {
+        let parsed = PortableFlagsConfiguration.fromString(try wire(attributes: ["flagEvaluationErrors": ["flag": evaluationError]]))
+        XCTAssertEqual(parsed.failure, .invalidPrecomputed)
+    }
+
+    func testRejectsEvaluationErrorKeyThatIsNotADigestInEncodedResponse() throws {
+        func parse(errorKey: String) throws -> PortableFlagsConfiguration {
+            let attributes = encoding.merging(["flagEvaluationErrors": [errorKey: evaluationError]]) { _, replacement in replacement }
+            return PortableFlagsConfiguration.fromString(try wire(flags: [digest: flag()], attributes: attributes))
+        }
+        XCTAssertNil(try parse(errorKey: String(repeating: "0", count: 64)).failure)
+        XCTAssertEqual(try parse(errorKey: "plaintext").failure, .invalidPrecomputed)
+        XCTAssertEqual(try parse(errorKey: digest.uppercased()).failure, .invalidPrecomputed)
+    }
+
+    func testInvalidEvaluationErrorDoesNotDiscardSiblings() throws {
+        let invalidErrors: [Any] = [
+            NSNull(), [:], ["reason": "ERROR"], ["reason": "TARGETING_MATCH", "errorCode": "GENERAL"],
+            ["reason": "ERROR", "errorCode": "TYPE_MISMATCH"],
+            ["reason": "ERROR", "errorCode": "GENERAL", "errorMessage": ""],
+            ["reason": "ERROR", "errorCode": "GENERAL", "errorMessage": NSNull()],
+            ["reason": "ERROR", "errorCode": "GENERAL", "dependencyEvaluations": [:]],
+        ]
+        for invalidError in invalidErrors {
+            let parsed = PortableFlagsConfiguration.fromString(try wire(attributes: ["flagEvaluationErrors": ["bad": invalidError]]))
+            let assignments = try XCTUnwrap(parsed.precomputed).assignments
+            XCTAssertEqual(Array(assignments.flags.keys), ["flag"], "\(invalidError)")
+            XCTAssertEqual(assignments.failedFlags, ["bad": "Invalid precomputed flag evaluation error"], "\(invalidError)")
+        }
+    }
+
+    func testErrorReasonInAssignmentDoesNotDiscardSiblings() throws {
+        var errorFlag = flag()
+        errorFlag["reason"] = "ERROR"
+        let assignments = try XCTUnwrap(PortableFlagsConfiguration.fromString(try wire(flags: ["good": flag(), "bad": errorFlag])).precomputed).assignments
+        XCTAssertEqual(Array(assignments.flags.keys), ["good"])
+        XCTAssertEqual(assignments.failedFlags, ["bad": "Invalid precomputed flag configuration"])
+    }
+
+    func testInvalidDependencyEvaluationsDoNotDiscardSiblings() throws {
+        let valid: [Any] = [
+            dependency("a"), ["flagKey": "b", "isPresentInAssignment": false, "reason": NSNull()],
+            ["flagKey": "c", "reason": "ERROR", "errorCode": "TYPE_MISMATCH", "errorMessage": "Wrong type"],
+        ]
+        let parsed = PortableFlagsConfiguration.fromString(try wire(flags: ["flag": flag(dependencies: valid)]))
+        XCTAssertNotNil(parsed.precomputed?.assignments.flags["flag"])
+        XCTAssertTrue(try XCTUnwrap(parsed.precomputed).assignments.failedFlags.isEmpty)
+
+        let invalid: [Any] = [
+            NSNull(), [:], [NSNull()], [["isPresentInAssignment": true]], [dependency("")], [dependency("a"), dependency("a")],
+            [["flagKey": "a"]], [["flagKey": "a", "isPresentInAssignment": "true"]],
+            [["flagKey": "a", "isPresentInAssignment": true, "reason": "TARGETING_MATCH"]],
+            [["flagKey": "a", "isPresentInAssignment": true, "errorCode": "GENERAL"]],
+            [["flagKey": "a", "reason": "ERROR"]], [["flagKey": "a", "reason": "ERROR", "errorCode": "GENERAL", "errorMessage": ""]],
+            [["flagKey": "a", "reason": "ERROR", "errorCode": "GENERAL", "isPresentInAssignment": false]],
+        ]
+        for dependencies in invalid {
+            let parsed = PortableFlagsConfiguration.fromString(try wire(flags: ["good": flag(), "bad": flag(dependencies: dependencies)]))
+            let assignments = try XCTUnwrap(parsed.precomputed).assignments
+            XCTAssertEqual(Array(assignments.flags.keys), ["good"], "\(dependencies)")
+            XCTAssertEqual(assignments.failedFlags, ["bad": "Invalid precomputed flag configuration"], "\(dependencies)")
+        }
+    }
+
+    func testEncodedResponseRequiresEncryptedDependencyKeys() throws {
+        let key = String(repeating: "A", count: 37) + "_" // 38 base64url characters
+        let undeclared: [String: Any] = ["scheme": "flag-key-sha256-v1", "salt": salt]
+        let declared = undeclared.merging(["dependencyKeyEncryption": ["scheme": "dependency-key-hkdf-sha256-aes-256-gcm-v1"]]) { _, replacement in replacement }
+        let unknown = undeclared.merging(["dependencyKeyEncryption": ["scheme": "unknown"]]) { _, replacement in replacement }
+        let cases: [([String: Any], [Any], Bool)] = [
+            (undeclared, [], true), (declared, [dependency(key)], true),
+            (undeclared, [dependency(key)], false), (unknown, [dependency(key)], false),
+            (declared, [dependency(String(key.dropFirst()))], false), // 37 characters
+            (declared, [dependency(key + "AAA")], false), // 41 characters cannot be unpadded base64url
+            (declared, [dependency(String(key.dropLast()) + "+")], false),
+        ]
+        for (obfuscation, dependencies, valid) in cases {
+            let attributes: [String: Any] = ["obfuscated": true, "obfuscation": obfuscation]
+            let parsed = PortableFlagsConfiguration.fromString(try wire(flags: [digest: flag(dependencies: dependencies)], attributes: attributes))
+            let assignments = try XCTUnwrap(parsed.precomputed).assignments
+            XCTAssertEqual(assignments.flags[digest] != nil, valid, "\(obfuscation) \(dependencies)")
+            XCTAssertEqual(assignments.failedFlags.isEmpty, valid, "\(obfuscation) \(dependencies)")
+        }
+    }
+
+    private let evaluationError: [String: Any] = ["reason": "ERROR", "errorCode": "GENERAL"]
     private let digest = "9817872c144b018abd77e3915bd77e2c27f4f534dccff8ffaca27361e3a5e1ee"
     private let salt = "000102030405060708090a0b0c0d0e0f"
     private var encoding: [String: Any] {
@@ -228,6 +337,14 @@ final class PortableFlagsConfigurationTests: XCTestCase {
             "allocationKey": "allocation", "variationKey": "variant", "variationType": type,
             "variationValue": value, "reason": "TARGETING_MATCH", "doLog": true, "serialId": 42,
         ]
+    }
+
+    private func flag(dependencies: Any) -> [String: Any] {
+        flag().merging(["dependencyEvaluations": dependencies]) { _, replacement in replacement }
+    }
+
+    private func dependency(_ key: String) -> [String: Any] {
+        ["flagKey": key, "isPresentInAssignment": true]
     }
 
     private func wire(flags: [String: Any]? = nil, entry: [String: Any] = [:], attributes: [String: Any] = [:]) throws -> String {
