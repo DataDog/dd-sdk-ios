@@ -158,7 +158,7 @@ extension FlagAssignmentsResponse {
     /// Decoding keeps one key of each group, but its value can come from another spelling in the group.
     /// So every member of a group is decoded again from its own bytes.
     func addingKeySpellings(from data: Data) -> FlagAssignmentsResponse {
-        let bytes = Array(data)
+        let bytes = Array(FlagsNumericJSON.utf8(data))
         guard obfuscation == nil,
               Self.mayContainNonASCIIKeys(bytes),
               let members = JSONObjectMembers.members(at: Self.flagAssignmentsPath, in: bytes) else {

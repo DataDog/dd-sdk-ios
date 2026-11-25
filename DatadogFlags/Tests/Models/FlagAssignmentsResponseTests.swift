@@ -715,3 +715,199 @@ extension FlagAssignmentsResponseTests {
         }
     }
 }
+
+final class FlagKeySpellingsTests: XCTestCase {
+    private let composed = "caf\u{00E9}"
+    private let decomposed = "cafe\u{0301}"
+
+    /// Breaks if `mayContainNonASCIIKeys` stops treating `\u` escapes as possible non-ASCII keys.
+    func testKeySpellingsAreFoundInPrettyPrintedASCIIOnlyResponses() throws {
+        let body = """
+        {
+          "data": {
+            "attributes": {
+              "flags": {
+                "caf\\u00e9": {"allocationKey": "a", "variationKey": "composed", "variationType": "string", "variationValue": "composed", "reason": "STATIC", "doLog": true},
+                \t"cafe\\u0301" : {"allocationKey": "a", "variationKey": "decomposed", "variationType": "string", "variationValue": "decomposed", "reason": "STATIC", "doLog": true}
+              }
+            }
+          }
+        }
+        """
+        let data = Data(body.utf8)
+        XCTAssertTrue(data.allSatisfy { $0 < 0x80 })
+        let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
+        let served = response.flags.map { ($0.key, $0.value.variationKey) } + response.keySpellings.map { ($0.key, $0.assignment.variationKey) }
+        XCTAssertEqual(served.count, 2)
+        XCTAssertEqual(served.first { $0.0.utf8.elementsEqual(composed.utf8) }?.1, "composed")
+        XCTAssertEqual(served.first { $0.0.utf8.elementsEqual(decomposed.utf8) }?.1, "decomposed")
+    }
+
+    /// Breaks if the merged value that decoding kept is not removed before the members are rebuilt.
+    func testKeySpellingsDropTheMergedValueWhenAMemberCannotBeRebuilt() throws {
+        let valid = #"{"allocationKey":"a","variationKey":"valid","variationType":"string","variationValue":"valid","reason":"STATIC","doLog":true}"#
+        let unknown = #"{"allocationKey":"a","variationKey":"unknown","variationType":"future-type","variationValue":1,"reason":"STATIC","doLog":true}"#
+        let malformed = #"{"allocationKey":"a","variationKey":"malformed","variationType":"string","variationValue":"x","reason":"STATIC"}"#
+        let validAssignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(valid.utf8))
+        for (composedValue, label) in [(unknown, "unknown"), (malformed, "malformed")] {
+            let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(composedValue),"cafe\#u{0301}":\#(valid)}}}}"#
+            let response = FlagAssignmentsResponse(flags: [composed: validAssignment]).addingKeySpellings(from: Data(body.utf8))
+            let served = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
+            XCTAssertEqual(served.count, 1, label)
+            XCTAssertNil(served.first { $0.0.utf8.elementsEqual(composed.utf8) }, label)
+            XCTAssertEqual(served.first { $0.0.utf8.elementsEqual(decomposed.utf8) }?.1, validAssignment, label)
+            if label == "unknown" {
+                XCTAssertEqual(response.failedFlags.count, 1)
+                XCTAssertEqual(response.failedFlags.first.map { Array($0.key.utf8) }, Array(composed.utf8))
+            } else {
+                XCTAssertTrue(response.failedFlags.isEmpty)
+            }
+        }
+    }
+
+    /// Breaks if colliding members skip the numeric token rules, or if the cache version ignores `keySpellings`.
+    func testKeySpellingsSelectTheCacheVersionAndKeepNumericTokens() throws {
+        let assignment = { (value: String) in
+            #"{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(value),"reason":"STATIC","doLog":false}"#
+        }
+        let selection = CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
+        let cases: [(literal: String, selection: CanonicalFlagSelection?, version: DataStoreKeyVersion)] = [
+            ("1.00000000000000001", nil, 4),
+            ("1.00000000000000001", selection, 4),
+            ("2.5", selection, 3),
+            ("2.5", nil, dataStoreDefaultKeyVersion)
+        ]
+        for (literal, selection, version) in cases {
+            let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(assignment("1")),"cafe\#u{0301}":\#(assignment(literal))}}}}"#
+            let data = Data(body.utf8)
+            let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
+            let spelling = try XCTUnwrap(response.keySpellings.first, literal)
+            XCTAssertEqual(Array(spelling.key.utf8), Array(decomposed.utf8), literal)
+            XCTAssertEqual(response.flags[composed]?.variation(as: Int.self), 1, literal)
+            XCTAssertNil(spelling.assignment.variation(as: Int.self), literal)
+            XCTAssertEqual(spelling.assignment.variation(as: Double.self), Double(literal), literal)
+            let flagsData = FlagsData(flags: response.flags, context: .mockAny(), date: .mockAny(), flagSelection: selection, keySpellings: response.keySpellings)
+            let scope = FeatureScopeMock()
+            scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "spellings")
+            let stored = try XCTUnwrap(scope.dataStoreMock.storage["spellings"])
+            for other: DataStoreKeyVersion in [1, 2, 3, 4] where other != version {
+                XCTAssertNil(stored.data(expectedVersion: other), "\(literal) at \(other)")
+            }
+            XCTAssertNotNil(stored.data(expectedVersion: version), literal)
+        }
+    }
+
+    /// Breaks if a cold start from the cache loses a spelling, its `CACHED` reason, or its first-flags key.
+    func testOfflineRestartServesBothCachedSpellings() throws {
+        let assignment = { (variant: String) in
+            #"{"allocationKey":"a","variationKey":"\#(variant)","variationType":"string","variationValue":"\#(variant)","reason":"STATIC","doLog":true}"#
+        }
+        let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(assignment("composed")),"cafe\#u{0301}":\#(assignment("decomposed"))}}}}"#
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let clientName = UUID().uuidString
+        let context = FlagsEvaluationContext(targetingKey: "subject")
+
+        let online = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: scope,
+                fetch: { _, complete in complete(.success((Data(body.utf8), .mockAny()))) }
+            ),
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        let loaded = expectation(description: "online configuration loaded")
+        online.setEvaluationContext(context) { _ in loaded.fulfill() }
+        wait(for: [loaded], timeout: 2)
+        online.flush()
+
+        let offline = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                complete(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        let firstFlags = expectation(description: "first flags from cache")
+        let keys = ReadWriteLock<[[UInt8]]>(wrappedValue: [])
+        _ = offline.onFirstFlags { event in
+            keys.wrappedValue = event.flagsChanged.map { Array($0.utf8) }
+            firstFlags.fulfill()
+        }
+        let failed = expectation(description: "offline refresh finished")
+        offline.setEvaluationContext(context) { _ in failed.fulfill() }
+        wait(for: [firstFlags, failed], timeout: 5)
+
+        for (key, variant) in [(composed, "composed"), (decomposed, "decomposed")] {
+            XCTAssertEqual(offline.flagAssignment(for: key)?.variationKey, variant)
+            XCTAssertEqual(offline.flagAssignment(for: key)?.reason, "CACHED", variant)
+        }
+        XCTAssertEqual(keys.wrappedValue.count, 2)
+        XCTAssertEqual(Set(keys.wrappedValue), [Array(composed.utf8), Array(decomposed.utf8)])
+    }
+
+    /// Breaks if an assignment that collides with another spelling can reject the whole response.
+    func testCollidingSpellingWithAnOverflowingNumberKeepsTheOtherFlags() throws {
+        let boolean = #"{"allocationKey":"a","variationKey":"on","variationType":"boolean","variationValue":true,"reason":"STATIC","doLog":true}"#
+        let overflow = #"{"allocationKey":"a","variationKey":"big","variationType":"number","variationValue":1e400,"reason":"STATIC","doLog":true}"#
+        let other = #"{"allocationKey":"a","variationKey":"other","variationType":"string","variationValue":"x","reason":"STATIC","doLog":true}"#
+        // Each spelling as raw UTF-8 bytes or as `\u` escapes.
+        let spelled = [(composed, [composed, #"caf\u00e9"#]), (decomposed, [decomposed, #"cafe\u0301"#])]
+        for keys in [[composed, decomposed], [decomposed, composed]] {
+            for values in [[boolean, overflow], [overflow, boolean]] {
+                for (first, second) in [(0, 0), (0, 1), (1, 0), (1, 1)] {
+                let label = "\(keys[0].utf8.elementsEqual(composed.utf8) ? "composed" : "decomposed") key first, \(values[0] == boolean ? "boolean" : "number") first, escapes \(first)\(second)"
+                let firstKey = spelled.first { $0.0.utf8.elementsEqual(keys[0].utf8) }!.1[first]
+                let secondKey = spelled.first { $0.0.utf8.elementsEqual(keys[1].utf8) }!.1[second]
+                let body = #"{"data":{"attributes":{"flags":{"\#(firstKey)":\#(values[0]),"\#(secondKey)":\#(values[1]),"other":\#(other)}}}}"#
+                let data = Data(body.utf8)
+                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
+                let served = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
+                let booleanKey = values[0] == boolean ? keys[0] : keys[1]
+                let numberKey = values[0] == boolean ? keys[1] : keys[0]
+                XCTAssertEqual(served.count, 3, label)
+                XCTAssertEqual(served.first { $0.0.utf8.elementsEqual(booleanKey.utf8) }?.1.variation(as: Bool.self), true, label)
+                let number = try XCTUnwrap(served.first { $0.0.utf8.elementsEqual(numberKey.utf8) }?.1, label)
+                XCTAssertNil(number.variation(as: Double.self), label)
+                XCTAssertNil(number.variation(as: Int.self), label)
+                XCTAssertEqual(response.flags["other"]?.variationKey, "other", label)
+                }
+            }
+        }
+    }
+
+    /// Breaks if the numeric or key-spelling scan reads a UTF-16, UTF-32 or byte-order-marked response as UTF-8.
+    func testResponsesInOtherUnicodeEncodingsKeepTheirTokensAndSpellings() throws {
+        let assignment = { (variant: String, value: String) in
+            #"{"allocationKey":"a","variationKey":"\#(variant)","variationType":"number","variationValue":\#(value),"reason":"STATIC","doLog":true}"#
+        }
+        let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(assignment("composed", "1")),"cafe\u0301":\#(assignment("decomposed", "1.00000000000000001")),"plain":\#(assignment("plain", "1.00000000000000001"))}}}}"#
+        let encodings: [(String, Data)] = [
+            ("UTF-8 with BOM", Data([0xEF, 0xBB, 0xBF]) + Data(body.utf8)),
+            ("UTF-16BE with BOM", Data([0xFE, 0xFF]) + body.data(using: .utf16BigEndian)!),
+            ("UTF-16LE with BOM", Data([0xFF, 0xFE]) + body.data(using: .utf16LittleEndian)!),
+            ("UTF-16BE", body.data(using: .utf16BigEndian)!),
+            ("UTF-16LE", body.data(using: .utf16LittleEndian)!),
+            ("UTF-32BE", body.data(using: .utf32BigEndian)!),
+            ("UTF-32LE", body.data(using: .utf32LittleEndian)!)
+        ]
+        for (label, data) in encodings {
+            let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
+            let served = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
+            XCTAssertEqual(served.count, 3, label)
+            XCTAssertEqual(served.first { $0.0.utf8.elementsEqual(composed.utf8) }?.1.variationKey, "composed", label)
+            XCTAssertEqual(served.first { $0.0.utf8.elementsEqual(decomposed.utf8) }?.1.variationKey, "decomposed", label)
+            let plain = try XCTUnwrap(response.flags["plain"], label)
+            XCTAssertNil(plain.variation(as: Int.self), label)
+            XCTAssertEqual(plain.variation(as: Double.self), 1, label)
+        }
+    }
+}
