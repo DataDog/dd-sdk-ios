@@ -167,6 +167,8 @@ internal final class FlagsRepository {
     struct CachedFlagsData {
         enum LookupResult: Equatable {
             case resolved(FlagAssignment?)
+            /// The response served the key, but its assignment cannot be parsed.
+            case unparsed
             case missingHash
         }
 
@@ -177,7 +179,10 @@ internal final class FlagsRepository {
 
         func cachedAssignment(for key: String, supportsObfuscation: Bool) -> LookupResult {
             guard data.obfuscation != nil else {
-                return .resolved(plaintextAssignment(for: key))
+                if let assignment = plaintextAssignment(for: key) {
+                    return .resolved(assignment)
+                }
+                return data.unparsedFlagKeys.contains { $0.utf8.elementsEqual(key.utf8) } ? .unparsed : .resolved(nil)
             }
             guard supportsObfuscation else {
                 return .resolved(nil)
@@ -185,7 +190,10 @@ internal final class FlagsRepository {
             guard let lookupKey = lookupKeys[Data(key.utf8)] else {
                 return .missingHash
             }
-            return .resolved(data.flags[lookupKey])
+            if let assignment = data.flags[lookupKey] {
+                return .resolved(assignment)
+            }
+            return data.unparsedFlagKeys.contains(lookupKey) ? .unparsed : .resolved(nil)
         }
 
         mutating func flagAssignment(for key: String) -> FlagAssignment? {
@@ -615,7 +623,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         let hasError = stateManager.currentState == .error
         let snapshot = repositoryState
 
-        func result(from state: RepositoryState, assignment: FlagAssignment?) -> FlagEvaluationSnapshot {
+        func result(from state: RepositoryState, assignment: FlagAssignment?, unparsed: Bool = false) -> FlagEvaluationSnapshot {
             let readable = !hasError && state.readableFlagsData != nil
             let context = readable ? state.flagsData?.context : nil
             let authorizationError = state.assignmentSubjectIsolationRequired && !readable
@@ -631,7 +639,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 observeFullEvaluationData: readable ? (state.flagsData?.observeFullEvaluationData ?? false) : false,
                 requestedContext: state.experimentationOptOutMode == .disabled && !authorizationError
                     ? nil : state.latestRequestedContext,
-                error: state.hasInvalidContext ? .invalidContext : (authorizationError ? .general : nil)
+                error: state.hasInvalidContext ? .invalidContext
+                    : (authorizationError ? .general : (readable && unparsed ? .parseError : nil))
             )
         }
 
@@ -640,6 +649,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         }
         switch snapshot.activeFlagsData?.cachedAssignment(for: key, supportsObfuscation: snapshot.supportsFlagKeyObfuscation) {
         case .resolved(let assignment): return result(from: snapshot, assignment: assignment)
+        case .unparsed: return result(from: snapshot, assignment: nil, unparsed: true)
         case nil: return result(from: snapshot, assignment: nil)
         case .missingHash: break
         }
@@ -648,10 +658,14 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _repositoryState.mutate { state in
             // A refresh or reset can replace the snapshot after the read. Recheck it under the write lock.
             var assignment: FlagAssignment?
+            var unparsed = false
             if state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation {
                 assignment = state.activeFlagsData?.flagAssignment(for: key)
+                // `flagAssignment(for:)` stored the lookup key, so this lookup resolves without hashing again.
+                unparsed = assignment == nil
+                    && state.activeFlagsData?.cachedAssignment(for: key, supportsObfuscation: true) == .unparsed
             }
-            resolved = result(from: state, assignment: assignment)
+            resolved = result(from: state, assignment: assignment, unparsed: unparsed)
         }
         return resolved
     }
@@ -797,7 +811,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     flagSelection: self.flagSelection,
                     experimentationOptOutPolicy: policy,
                     observeFullEvaluationData: response.observeFullEvaluationData,
-                    keySpellings: response.keySpellings
+                    keySpellings: response.keySpellings,
+                    unparsedFlagKeys: Array(response.failedFlags.keys)
                 )
                 var versionAfterSuccess: UInt64?
                 var isServingRequestedContext = false

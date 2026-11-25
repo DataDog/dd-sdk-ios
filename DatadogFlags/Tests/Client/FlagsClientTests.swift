@@ -33,7 +33,7 @@ final class FlagsClientTests: XCTestCase {
 
         let details = client.getBooleanDetails(key: "flag", defaultValue: false)
 
-        XCTAssertEqual(details, .init(key: "flag", value: false, error: .general))
+        XCTAssertEqual(details, .init(key: "flag", value: false, reason: "ERROR", error: .general))
         XCTAssertEqual(evaluations.logEvaluationCalls.count, 1)
         XCTAssertEqual(evaluations.logEvaluationCalls.first?.error, "GENERAL")
         XCTAssertEqual(evaluations.logEvaluationCalls.first?.context.targetingKey, "subject")
@@ -834,6 +834,7 @@ final class FlagsClientTests: XCTestCase {
             .init(
                 key: "missing-flag",
                 value: false,
+                reason: "ERROR",
                 error: .flagNotFound
             )
         )
@@ -842,6 +843,7 @@ final class FlagsClientTests: XCTestCase {
             .init(
                 key: "string-flag",
                 value: false,
+                reason: "ERROR",
                 error: .typeMismatch
             )
         )
@@ -992,7 +994,7 @@ final class FlagsClientTests: XCTestCase {
         )
         XCTAssertEqual(fractionalAsDouble.value, 1.2)
         XCTAssertNil(fractionalAsDouble.error)
-        XCTAssertEqual(fractionalAsInteger, FlagDetails(key: "fractional-double-flag", value: 0, error: .typeMismatch))
+        XCTAssertEqual(fractionalAsInteger, FlagDetails(key: "fractional-double-flag", value: 0, reason: "ERROR", error: .typeMismatch))
         let expectedExposures = ["integer-flag", "integer-flag", "whole-double-flag", "fractional-double-flag"]
         XCTAssertEqual(exposuresBeforeMismatch, expectedExposures)
         XCTAssertEqual(exposureLogger.logExposureCalls.map(\.flagKey), expectedExposures)
@@ -1567,18 +1569,18 @@ final class FlagsClientTests: XCTestCase {
         let flagNotFoundDetails = clientWithFlags.getDetails(key: "missing-flag", defaultValue: false)
         let typeMismatchDetails = clientWithFlags.getDetails(key: "string-flag", defaultValue: false)
 
-        // Then — all error paths return nil allocationKey
+        // Then — all error paths return nil allocationKey and the OpenFeature ERROR reason
         XCTAssertEqual(providerNotReadyDetails.error, .providerNotReady)
         XCTAssertNil(providerNotReadyDetails.allocationKey)
-        XCTAssertNil(providerNotReadyDetails.reason)
+        XCTAssertEqual(providerNotReadyDetails.reason, "ERROR")
 
         XCTAssertEqual(flagNotFoundDetails.error, .flagNotFound)
         XCTAssertNil(flagNotFoundDetails.allocationKey)
-        XCTAssertNil(flagNotFoundDetails.reason)
+        XCTAssertEqual(flagNotFoundDetails.reason, "ERROR")
 
         XCTAssertEqual(typeMismatchDetails.error, .typeMismatch)
         XCTAssertNil(typeMismatchDetails.allocationKey)
-        XCTAssertNil(typeMismatchDetails.reason)
+        XCTAssertEqual(typeMismatchDetails.reason, "ERROR")
     }
 
     func testIndependentTrackingOperations() throws {

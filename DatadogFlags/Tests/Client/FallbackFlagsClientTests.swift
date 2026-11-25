@@ -26,7 +26,7 @@ final class FallbackFlagsClientTests: XCTestCase {
             let details = client.wrappedValue.getBooleanDetails(key: "flag", defaultValue: true)
             XCTAssertTrue(details.value)
             XCTAssertEqual(details.error, .providerNotReady)
-            XCTAssertNil(details.reason)
+            XCTAssertEqual(details.reason, "ERROR")
             delivered.wrappedValue = true
         }
         XCTAssertTrue(delivered.wrappedValue)
@@ -90,7 +90,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         // Then
         XCTAssertEqual(
             flagDetails,
-            FlagDetails(key: .mockAny(), value: false, error: .providerNotReady)
+            FlagDetails(key: .mockAny(), value: false, reason: "ERROR", error: .providerNotReady)
         )
         XCTAssertEqual(dd.logger.errorMessages.count, 1)
         XCTAssertEqual(
