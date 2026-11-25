@@ -1006,7 +1006,18 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 ExperimentationOptOut.accepts(response, for: policy) ? .success(response) : .failure(.invalidResponse)
             }
             let admittedResult: Result<FlagAssignmentsResponse, FlagsError>
+            // Required mode: a response that verified but crossed `expires-at` before admission is still trusted when
+            // `expireVerifiedFlags` is off. It is installed as `stale`, not `ready`, and it becomes the verified fallback.
+            var expiredAtAdmission = false
+            if case .success(let response) = validated, self.flagAssignmentsFetcher.responseSigningMode == .required,
+                response.responseSigningCacheScope != nil,
+                response.responseSigningCacheScope == self.flagAssignmentsFetcher.responseSigningCacheScope,
+                !self.flagAssignmentsFetcher.isVerified(response.verification, at: self.dateProvider.now),
+                self.flagAssignmentsFetcher.isTrusted(response.verification, at: self.dateProvider.now) {
+                expiredAtAdmission = true
+            }
             if case .success(let response) = validated, self.flagAssignmentsFetcher.responseSigningMode != .off,
+                !expiredAtAdmission,
                 response.responseSigningCacheScope == nil
                     || response.responseSigningCacheScope != self.flagAssignmentsFetcher.responseSigningCacheScope
                     || (self.flagAssignmentsFetcher.responseSigningMode == .required
@@ -1066,7 +1077,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         return
                     }
                     state.flagsData = flagsData
-                    if self.flagAssignmentsFetcher.isVerified(flagsData.verification, at: self.dateProvider.now) {
+                    if expiredAtAdmission
+                        || self.flagAssignmentsFetcher.isVerified(flagsData.verification, at: self.dateProvider.now) {
                         state.verifiedFlagsData = flagsData
                     }
                     state.assignmentSubjectIsolationRequired = false
@@ -1075,7 +1087,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     state.flagsDataVersion += 1
                     versionAfterSuccess = state.flagsDataVersion
                     callbacks = state.finishWaitingForInitialFlagsData()
-                    notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
+                    notifyListeners = self.stateManager.updateStateWithoutNotifying(expiredAtAdmission ? .stale : .ready)
                 }
                 guard let versionAfterSuccess else {
                     let canComplete = !expiredBeforeAdmission

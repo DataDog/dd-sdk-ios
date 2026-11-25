@@ -149,9 +149,10 @@ internal struct FlagsResponseVerification: Equatable {
     /// The SDK acts on these values only, never on a second read of the raw response headers.
     var verifiedResponseHeaders: [String: String?] = [:]
 
-    /// The `issued-at` of the verified proof, and the monotonic time of the verification. A wall clock step back
-    /// during the process cannot extend the proof: its time is at least `verifiedIssuedAt` plus the monotonic time since.
-    var verifiedIssuedAt: TimeInterval? = nil
+    /// The effective time at the verification (`max(now, timeFloor)`), and the monotonic time of the verification.
+    /// A wall clock step back during the process cannot extend the proof: its time is at least `monotonicBaseline`
+    /// plus the monotonic time since. The baseline keeps the age that the proof had at the verification.
+    var monotonicBaseline: TimeInterval? = nil
     var verifiedUptime: TimeInterval = 0
     /// The build floor and the high-water mark at the verification. The time of the proof is never lower.
     var timeFloor: TimeInterval = 0
@@ -164,11 +165,11 @@ internal struct FlagsResponseVerification: Equatable {
     /// The largest backward clock step after verification that keeps the proof fresh, like the `issued-at` allowance.
     static let backwardClockTolerance: TimeInterval = 30
 
-    /// The time for the expiry of this proof: `max(now, timeFloor, verifiedIssuedAt + monotonic time since)`.
+    /// The time for the expiry of this proof: `max(now, timeFloor, monotonicBaseline + monotonic time since)`.
     func effectiveTime(at now: Date, uptime: TimeInterval = FlagsMonotonicClock.now()) -> TimeInterval {
         var seconds = max(now.timeIntervalSince1970, timeFloor)
-        if let verifiedIssuedAt {
-            seconds = max(seconds, verifiedIssuedAt + max(0, uptime - verifiedUptime))
+        if let monotonicBaseline {
+            seconds = max(seconds, monotonicBaseline + max(0, uptime - verifiedUptime))
         }
         return seconds
     }
@@ -369,30 +370,45 @@ internal struct SystemFlagsKeychain: FlagsKeychain {
 /// - Without a Keychain entitlement (`errSecMissingEntitlement`), the store keeps using the earlier file store.
 /// - When another Keychain call fails, the store keeps the value in memory for the process.
 internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
-    /// Serializes read-compare-write of the Keychain items across all instances in the process.
-    private static let keychainLock = NSLock()
+    /// The highest value known for each key, shared by all stores over the same Keychain items. It is a lower bound
+    /// of the stored value. Its lock also serializes read-compare-write of the Keychain items.
+    final class SharedValues {
+        /// All stores over the system Keychain in this process, for example of two SDK cores, share these values.
+        static let process = SharedValues()
+        fileprivate let lock = NSLock()
+        fileprivate var values: [String: UInt64] = [:]
+    }
+
     private let keychain: any FlagsKeychain
     private let legacy: DataStoreSigningFloorStore?
+    private let shared: SharedValues
     private let lock = NSLock()
-    /// The highest value known in this process for each key. It is a lower bound of the stored value.
-    private var values: [String: UInt64] = [:]
-    /// Keys whose stored value was read completely. A failed or unfinished read is retried.
+    /// Keys whose stored value this store read completely. A failed or unfinished read is retried. Each store
+    /// reads once, because each SDK core has its own earlier file to migrate.
     private var readKeys: Set<String> = []
+    private var keychainLock: NSLock { shared.lock }
+    private var values: [String: UInt64] {
+        get { shared.values }
+        set { shared.values = newValue }
+    }
 
-    init(legacy: DataStoreSigningFloorStore?, keychain: any FlagsKeychain = SystemFlagsKeychain()) {
-        self.keychain = keychain
+    /// Production uses the system Keychain and the shared values of the process. A test Keychain gets its own values,
+    /// unless the test gives shared values.
+    init(legacy: DataStoreSigningFloorStore?, keychain: (any FlagsKeychain)? = nil, shared: SharedValues? = nil) {
+        self.keychain = keychain ?? SystemFlagsKeychain()
         self.legacy = legacy
+        self.shared = shared ?? (keychain == nil ? .process : SharedValues())
     }
 
     func value(forKey key: String, waitForRead: Bool) -> UInt64? {
         lock.lock()
-        if readKeys.contains(key) {
-            defer { lock.unlock() }
+        let wasRead = readKeys.contains(key)
+        lock.unlock()
+        keychainLock.lock()
+        defer { keychainLock.unlock() }
+        if wasRead {
             return values[key]
         }
-        lock.unlock()
-        Self.keychainLock.lock()
-        defer { Self.keychainLock.unlock() }
         var stored: UInt64?
         var failure: OSStatus?
         do {
@@ -420,14 +436,14 @@ internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
                 break
             }
         }
-        lock.lock()
-        defer { lock.unlock() }
         let merged = [values[key], stored, migrated].compactMap { $0 }.max()
         if let merged {
             values[key] = merged
         }
         if complete {
+            lock.lock()
             readKeys.insert(key)
+            lock.unlock()
         }
         return merged
     }
@@ -435,14 +451,12 @@ internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
     func store(_ value: UInt64, forKey key: String) {
         // The earlier file is a lower bound. `observe` waits for it at most the short read timeout.
         let old = legacy.flatMap { $0.read(forKey: key, waitForRead: false) ?? nil }
-        Self.keychainLock.lock()
-        defer { Self.keychainLock.unlock() }
-        lock.lock()
+        keychainLock.lock()
+        defer { keychainLock.unlock() }
         var target = [values[key], old, value].compactMap { $0 }.max() ?? value
-        lock.unlock()
         do {
             let stored = try keychain.read(account: key).flatMap(Self.decode)
-            // Never write a lower value: another instance can have written a higher one.
+            // Never write a lower value: another instance or process can have written a higher one.
             if stored.map({ $0 < target }) ?? true {
                 try keychain.write(Self.encode(target), account: key)
             }
@@ -452,9 +466,7 @@ internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
         } catch {
             // A failed Keychain call keeps the value in memory for this process. The response is still accepted.
         }
-        lock.lock()
         values[key] = max(values[key] ?? 0, target)
-        lock.unlock()
     }
 
     private static func encode(_ value: UInt64) -> Data { Data(String(value).utf8) }
@@ -714,7 +726,7 @@ internal final class FlagsResponseVerifier {
             floorStore.store(min(issuedAt, UInt64(deviceNow + 30)), forKey: Self.highWaterMarkKey(anchorKey))
         }
         var verification = FlagsResponseVerification(scope: scope, verifiedAt: deviceNow, expiresAt: Double(expiresAt))
-        verification.verifiedIssuedAt = Double(issuedAt)
+        verification.monotonicBaseline = seconds
         verification.verifiedUptime = uptime()
         verification.timeFloor = timeFloor
         for (name, value) in responseHeaders {

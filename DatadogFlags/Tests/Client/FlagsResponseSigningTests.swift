@@ -2037,7 +2037,7 @@ extension FlagsResponseSigningTests {
             let proof = try verify(verifier, signedFixtureResponse(verifier, "two-intermediates", now: now + 30), at: now)
             XCTAssertEqual(store.values[try highWaterMarkKey()], UInt64(now + 30))
             XCTAssertEqual(proof.verifiedAt, now, "verifiedAt is the device clock")
-            XCTAssertEqual(proof.verifiedIssuedAt, now + 30)
+            XCTAssertEqual(proof.monotonicBaseline, attempt == 0 ? now : now + 30)
             // The mark of a response applies from the next verification.
             XCTAssertEqual(proof.timeFloor, attempt == 0 ? 0 : now + 30)
         }
@@ -2146,7 +2146,7 @@ extension FlagsResponseSigningTests {
     func testWallClockStepBackDoesNotExtendTheProof() throws {
         let scope = UUID()
         var proof = FlagsResponseVerification(scope: scope, verifiedAt: 1_000, expiresAt: 1_300)
-        proof.verifiedIssuedAt = 1_000
+        proof.monotonicBaseline = 1_000
         proof.verifiedUptime = 50
         XCTAssertTrue(proof.isValid(at: Date(timeIntervalSince1970: 1_270), scope: scope, uptime: 340))
         // 301 s passed on the monotonic clock. The wall clock stepped back 21 s, inside the 30 s allowance.
@@ -2163,7 +2163,39 @@ extension FlagsResponseSigningTests {
         )
         let verified = try verify(verifier, signedFixtureResponse(verifier, "two-intermediates"))
         XCTAssertEqual(verified.verifiedUptime, 77)
-        XCTAssertEqual(verified.verifiedIssuedAt, SigningChainFixture.now)
+        XCTAssertEqual(verified.monotonicBaseline, SigningChainFixture.now)
+    }
+
+    /// The monotonic term starts at the effective time of the verification, so it keeps the age of the proof.
+    func testMonotonicExpiryKeepsTheAgeOfTheProofAtVerification() {
+        let scope = UUID()
+        // Issued at 1000, expires at 1300, verified at device time 1290.
+        var proof = FlagsResponseVerification(scope: scope, verifiedAt: 1_290, expiresAt: 1_300)
+        proof.monotonicBaseline = 1_290
+        proof.verifiedUptime = 50
+        // 20 monotonic seconds later, the clock steps back 20 s, inside the 30 s allowance. The proof expired at 1300.
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 1_290), scope: scope, uptime: 70))
+        XCTAssertEqual(proof.effectiveTime(at: Date(timeIntervalSince1970: 1_290), uptime: 70), 1_310)
+        // After the expiry was observed, a later step back does not make the proof readable again.
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 1_280), scope: scope, uptime: 90))
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 1_265), scope: scope, uptime: 100))
+    }
+
+    func testKeychainStoresOfTwoCoresShareTheirValues() throws {
+        let keychain = KeychainMock()
+        let shared = KeychainSigningFloorStore.SharedValues()
+        let key = try floorKey()
+        keychain.items[key] = Data("100".utf8)
+        let first = KeychainSigningFloorStore(legacy: nil, keychain: keychain, shared: shared)
+        let second = KeychainSigningFloorStore(legacy: nil, keychain: keychain, shared: shared)
+        XCTAssertEqual(first.value(forKey: key, waitForRead: true), 100)
+        XCTAssertEqual(second.value(forKey: key, waitForRead: true), 100)
+        second.store(200, forKey: key)
+        // `first` read 100 before. It now uses 200, and its lower write keeps 200.
+        XCTAssertEqual(first.value(forKey: key, waitForRead: true), 200)
+        first.store(150, forKey: key)
+        XCTAssertEqual(keychain.items[key], Data("200".utf8))
+        XCTAssertEqual(second.value(forKey: key, waitForRead: true), 200)
     }
 
     /// iOS only: a slow first read must not skip the floor in `required` mode.
@@ -2561,6 +2593,23 @@ extension FlagsResponseSigningTests {
         )
     }
 
+    /// A verified response header value never reaches the logs or the telemetry. They carry fixed values only.
+    func testVerifiedResponseHeaderValuesNeverReachLogsOrTelemetry() throws {
+        let secret = "secret-header-value-1234"
+        let errors = try selectionIgnoredErrors(
+            mode: .observe,
+            signed: [("content-type", "application/json"), ("dd-flag-selection-ignored", secret)]
+        ) { logger, scope in
+            XCTAssertFalse(logger.recordedLogs.contains { $0.message.contains(secret) }, "A log carries a header value")
+            XCTAssertFalse(
+                scope.telemetryMock.messages.contains { String(describing: $0).contains(secret) },
+                "Telemetry carries a header value"
+            )
+            XCTAssertTrue(logger.recordedLogs.contains { $0.message.contains("(unknown)") })
+        }
+        XCTAssertEqual(errors.count, 1)
+    }
+
     /// The SDK request carries the selection at `data.attributes.flag_selection`. So in `required` mode a signed
     /// response list without `dd-flag-selection-ignored` is rejected, and the SDK does not hide an ignored selection.
     func testRequiredRejectsAResponseListWithoutSelectionIgnoredForTheSDKRequestEnvelope() throws {
@@ -2579,10 +2628,12 @@ extension FlagsResponseSigningTests {
         mode: Flags.ResponseSigningMode,
         signed: [(name: String, value: String?)],
         added: [String: String] = [:],
-        expectedFailureReason: String? = nil
+        expectedFailureReason: String? = nil,
+        inspect: ((CoreLoggerMock, FeatureScopeMock) -> Void)? = nil
     ) throws -> [String] {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
         let now = SigningChainFixture.now
         let fixture = try SigningChainFixture.credential("two-intermediates")
         let body = Data.mockAnyFlagAssignmentsResponse()
@@ -2590,7 +2641,7 @@ extension FlagsResponseSigningTests {
             customEndpoint: nil,
             customHeaders: nil,
             flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
-            featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+            featureScope: scope,
             responseSigning: .init(mode: mode, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
             dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
             floorStore: InMemorySigningFloorStore(),
@@ -2620,6 +2671,7 @@ extension FlagsResponseSigningTests {
         } else {
             XCTAssertEqual(try XCTUnwrap(result).get().flags, .mockAny())
         }
+        inspect?(dd.logger, scope)
         return dd.logger.errorMessages
     }
 
@@ -2880,7 +2932,8 @@ extension FlagsResponseSigningTests {
     private func realSigningFetcher(
         expireVerifiedFlags: Bool,
         clock: DateProviderMock,
-        body: Data
+        body: Data,
+        fails: @escaping () -> Bool = { false }
     ) throws -> FlagAssignmentsFetcher {
         let fixture = try SigningChainFixture.credential("two-intermediates")
         return FlagAssignmentsFetcher(
@@ -2896,6 +2949,9 @@ extension FlagsResponseSigningTests {
             dateProvider: clock,
             floorStore: MinimumNotBeforeStoreMock(),
             signingFetch: { request, complete in
+                if fails() {
+                    return complete(.failure(URLError(.notConnectedToInternet)))
+                }
                 do {
                     let headers = try fixture.signedHeaders(request: request, body: body)
                     complete(.success((body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headers)!)))
@@ -3002,31 +3058,50 @@ extension FlagsResponseSigningTests {
 
     /// The fetcher verifies the proof, but the proof expires before the repository admits it. In the default setting,
     /// `isTrusted` still accepts it, so only the outer admission check can reject the response.
-    func testOuterAdmissionCheckRejectsAProofThatExpiredBeforeAdmission() throws {
-        let fetcherClock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
-        let repositoryClock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now + 400))
-        let body = Data.mockAnyFlagAssignmentsResponse()
-        let fetcher = try realSigningFetcher(expireVerifiedFlags: false, clock: fetcherClock, body: body)
-        let repository = FlagsRepository(
-            clientName: "signed",
-            flagAssignmentsFetcher: fetcher,
-            dateProvider: repositoryClock,
-            featureScope: FeatureScopeMock(),
-            flagSelection: nil,
-            initializationTimeout: nil,
-            scheduleExpiry: { _, _ in }
-        )
-        defer { repository.flush() }
-        let done = expectation(description: "context")
-        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { result in
-            defer { done.fulfill() }
-            guard case .failure(.responseSigningFailed(reason: "expired-proof")) = result else {
-                return XCTFail("Expected expired-proof, got \(result)")
+    /// A response that verified but crossed `expires-at` before admission is installed as `stale` and kept as the
+    /// verified fallback. With `expireVerifiedFlags`, it is rejected with `expired-proof`.
+    func testProofThatExpiredBeforeAdmissionIsStaleOrRejectedWhenStrict() throws {
+        for strict in [false, true] {
+            let fetcherClock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
+            let repositoryClock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now + 400))
+            let body = Data.mockAnyFlagAssignmentsResponse()
+            var offline = false
+            let fetcher = try realSigningFetcher(expireVerifiedFlags: strict, clock: fetcherClock, body: body) { offline }
+            let repository = FlagsRepository(
+                clientName: "signed",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: repositoryClock,
+                featureScope: FeatureScopeMock(),
+                flagSelection: nil,
+                initializationTimeout: nil,
+                scheduleExpiry: { _, _ in }
+            )
+            defer { repository.flush() }
+            let context = FlagsEvaluationContext(targetingKey: "subject")
+            let done = expectation(description: "context")
+            repository.setEvaluationContext(context) { result in
+                defer { done.fulfill() }
+                switch (strict, result) {
+                case (false, .success), (true, .failure(.responseSigningFailed(reason: "expired-proof"))): break
+                default: XCTFail("strict \(strict): \(result)")
+                }
             }
+            wait(for: [done], timeout: 2)
+            if strict {
+                XCTAssertNil(repository.flagAssignments())
+                XCTAssertEqual(repository.state.currentState, .error)
+                continue
+            }
+            XCTAssertEqual(repository.state.currentState, .stale, "Not ready: the proof expired before admission")
+            XCTAssertEqual(repository.flagAssignments(), .mockAny())
+            // The response is the verified fallback: a failed refresh of the same context keeps serving it.
+            offline = true
+            let refreshed = expectation(description: "refresh")
+            repository.setEvaluationContext(context) { _ in refreshed.fulfill() }
+            wait(for: [refreshed], timeout: 2)
+            XCTAssertEqual(repository.state.currentState, .stale)
+            XCTAssertEqual(repository.flagAssignments(), .mockAny())
         }
-        wait(for: [done], timeout: 2)
-        XCTAssertNil(repository.flagAssignments())
-        XCTAssertEqual(repository.state.currentState, .error)
     }
 
     // MARK: - Expiry while a refresh is reconciling
