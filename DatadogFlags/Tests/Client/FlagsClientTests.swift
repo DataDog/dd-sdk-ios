@@ -605,6 +605,23 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("mode `.immediate`") && $0.contains("mode `.disabled`") })
     }
 
+    func testExistingNamedClientReportsIgnoredTrackingOptions() {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+        let original = FlagsClient.create(name: "existing", in: core)
+        let duplicate = FlagsClient.create(configuration: .init(trackExposures: false), name: "existing", in: core)
+        XCTAssertIdentical(original, duplicate)
+        XCTAssertEqual(
+            printFunction.printedMessages,
+            [
+                "🔥 Datadog SDK usage error: Attempted to create a `FlagsClient` named 'existing' with `trackExposures: false` and `trackEvaluations: true`, but one already exists with `trackExposures: true` and `trackEvaluations: true`. The existing client will be used, and new configuration will be ignored."
+            ]
+        )
+    }
+
     func testCreate() {
         // Given
         let printFunction = PrintFunctionSpy()
@@ -1162,24 +1179,57 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(exposures.first?.variant.key, "variant")
     }
 
-    func testClientTrackingOptionsCannotReenableSDKWideTracking() throws {
+    func testClientTrackingOptionsCannotReenableSDKWideExposuresOrRUM() throws {
+        let sdkConfigurations: [(name: String, configuration: Flags.Configuration, exposures: Int, rumMessages: Int)] = [
+            ("trackExposures=false", .init(trackExposures: false), 0, 1),
+            ("rumIntegrationEnabled=false", .init(rumIntegrationEnabled: false), 1, 0)
+        ]
+        for (name, sdkConfiguration, expectedExposures, expectedRUMMessages) in sdkConfigurations {
+            // Given
+            let messageReceiver = FeatureMessageReceiverMock()
+            let core = try coreWithCachedFlags(forClientsNamed: ["client"], messageReceiver: messageReceiver)
+            Flags.enable(with: sdkConfiguration, in: core)
+            let client = FlagsClient.create(
+                configuration: .init(trackExposures: true, trackEvaluations: true),
+                name: "client",
+                in: core
+            )
+
+            // When
+            let details = client.getDetails(key: "test", defaultValue: "default")
+
+            // Then
+            XCTAssertEqual(details.value, "cached", name)
+            XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, expectedExposures, name)
+            XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, expectedRUMMessages, name)
+        }
+    }
+
+    func testClientTrackingOptionsCannotReenableSDKWideEvaluations() throws {
         // Given
-        let messageReceiver = FeatureMessageReceiverMock()
-        let core = try coreWithCachedFlags(forClientsNamed: ["client"], messageReceiver: messageReceiver)
-        Flags.enable(with: .init(trackExposures: false, trackEvaluations: false, rumIntegrationEnabled: false), in: core)
-        let client = FlagsClient.create(
-            configuration: .init(trackExposures: true, trackEvaluations: true),
-            name: "client",
-            in: core
+        let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
+
+        Flags.enable(with: .init(trackEvaluations: false), in: core)
+        let client = try XCTUnwrap(
+            FlagsClient.create(
+                configuration: .init(trackExposures: true, trackEvaluations: true),
+                name: "client",
+                in: core
+            ) as? FlagsClientInternal
         )
+        let context = FlagsEvaluationContext(targetingKey: "subject")
 
         // When
-        let details = client.getDetails(key: "test", defaultValue: "default")
+        client.sendFlagEvaluation(key: "flag", assignment: .mockAnyBoolean(doLog: true), context: context)
+        client.sendFlagEvaluationEvent(key: "missing", assignment: nil, context: context, errorCode: "FLAG_NOT_FOUND")
+        core.get(feature: FlagsFeature.self)?.flush()
 
         // Then
-        XCTAssertEqual(details.value, "cached")
-        XCTAssertTrue(core.events(ofType: ExposureEvent.self).isEmpty)
-        XCTAssertTrue(messageReceiver.messages.filter(\.isRUMMessage).isEmpty)
+        let exposures = core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self)
+        let evaluations = core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(exposures.count, 1, "Exposure logging stays enabled")
+        XCTAssertTrue(evaluations.isEmpty, "The client must not send evaluations disabled for the SDK")
     }
 
     func testClientsCreatedAfterEnableUseTheConfiguredFlagSelectionForTheirCache() throws {

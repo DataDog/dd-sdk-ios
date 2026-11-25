@@ -240,7 +240,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - Evaluation errors are limited to stable OpenFeature codes. Any other string becomes `GENERAL`, so customer data from an error cannot enter telemetry.
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
-- `FlagsClient.Configuration.trackExposures` and `trackEvaluations` turn tracking off for one client, for example to read a flag without recording it and record the exposure later through another client. They only narrow the SDK-wide `Flags.Configuration` settings. A client with `trackExposures: false` gets a no-op exposure logger, so it never writes the deduplication cache and another client still logs its exposure for the same subject and flag. A client with `trackEvaluations: false` sends no evaluation events and no RUM flag evaluations. Flag values are unchanged.
+- `FlagsClient.Configuration.trackExposures` and `trackEvaluations` turn tracking off for one client, for example to read a flag without recording it and record the exposure later through another client. They only narrow the SDK-wide `Flags.Configuration` settings. A client with `trackExposures: false` gets a no-op exposure logger. Each client already has its own exposure deduplication cache, so another client still logs its exposure for the same subject and flag. A client with `trackEvaluations: false` sends no evaluation events and no RUM flag evaluations. Flag values are unchanged.
 
 ### Experimentation Opt-Out
 - `experimentationOptOutMode` reads the context attribute `dd_experimentation_opt_out_at`, an RFC3339 timestamp string. `.immediate` excludes the subject from all experiment allocations; `.futureExperimentsOnly` excludes experiments activated at or after the timestamp.
@@ -274,7 +274,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 **Solutions:** Check `env` and `site` in `Datadog.Configuration` match the environment where the flag is configured.
 
 ### "New client configuration is ignored"
-**Causes:** A client with that name already exists. `create` returns the existing client and keeps its original configuration. `Flags.Configuration` is also fixed after `Flags.enable()`.
+**Causes:** A client with that name already exists. `create` returns the existing client, keeps its original configuration, and reports a usage error naming any differing experimentation opt-out mode or `trackExposures` and `trackEvaluations` settings. `Flags.Configuration` is also fixed after `Flags.enable()`.
 
 **Solutions:** Use a new client name, or set the configuration on the first `create` call.
 

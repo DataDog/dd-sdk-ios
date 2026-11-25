@@ -321,6 +321,21 @@ public final class FlagsClient {
                 )
                 return client
             }
+            if let existing = client as? FlagsClient,
+               existing.configuration.trackExposures != configuration.trackExposures
+                || existing.configuration.trackEvaluations != configuration.trackEvaluations {
+                reportIssue(
+                    """
+                    Attempted to create a `FlagsClient` named '\(name)' with `trackExposures: \(configuration.trackExposures)` \
+                    and `trackEvaluations: \(configuration.trackEvaluations)`, but one already exists with \
+                    `trackExposures: \(existing.configuration.trackExposures)` \
+                    and `trackEvaluations: \(existing.configuration.trackEvaluations)`. \
+                    The existing client will be used, and new configuration will be ignored.
+                    """,
+                    in: core
+                )
+                return client
+            }
             reportIssue(
                 """
                 Attempted to create a `FlagsClient` named '\(name)', but one already exists. \
@@ -342,8 +357,8 @@ public final class FlagsClient {
                 initializationTimeout: feature.initializationTimeout,
                 experimentationOptOutMode: configuration.experimentationOptOutMode
             ),
-            // Per-client settings only narrow the SDK-wide ones. A disabled client gets no-op loggers, so it never
-            // writes to the exposure deduplication cache or the evaluation aggregator shared with other clients.
+            // Per-client settings only narrow the SDK-wide ones. A disabled client gets no-op loggers instead:
+            // it logs no exposures and adds nothing to the evaluation aggregator, which all clients share.
             exposureLogger: configuration.trackExposures ? feature.makeExposureLogger(featureScope) : NOPExposureLogger(),
             evaluationLogger: configuration.trackEvaluations ? feature.makeEvaluationLogger(featureScope) : NOPEvaluationLogger(),
             rumFlagEvaluationReporter: configuration.trackEvaluations
