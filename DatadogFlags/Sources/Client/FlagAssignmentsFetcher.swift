@@ -446,6 +446,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         requestCarriedAssignmentToken: requestCarriedAssignmentToken,
                         featureScope: self.featureScope,
                         verification: proof,
+                        signedRequest: prepared != nil,
                         cacheScope: cacheScope,
                         completion: completion
                     )
@@ -534,16 +535,19 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         requestCarriedAssignmentToken: Bool,
         featureScope: any FeatureScope,
         verification: FlagsResponseVerification? = nil,
+        signedRequest: Bool = false,
         cacheScope: String? = nil,
         completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         switch result {
         case let .success((data, httpResponse)):
+            // A signed response binds `DD-Flag-Selection-Ignored` in its response list. The SDK then uses only the
+            // verified value: a proxy cannot add or remove it. An unverified signed response reports nothing.
+            let ignoredValue = signedRequest
+                ? verification?.verifiedResponseHeader(FlagsResponseVerifier.flagSelectionIgnoredHeader)
+                : httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader)
             let ignoredReason = requestCarriedFlagSelection
-                ? reportedFlagSelectionIgnoredReason(
-                    httpResponse.value(forHTTPHeaderField: flagSelectionIgnoredHeader),
-                    redact: requestCarriedAssignmentToken
-                )
+                ? reportedFlagSelectionIgnoredReason(ignoredValue, redact: requestCarriedAssignmentToken)
                 : nil
             if httpResponse.statusCode == 401, isAssignmentAuthorizationRejection(data) {
                 DD.logger.warn("Assignment download failed: \(AssignmentAuthorization.rejectionCode)")

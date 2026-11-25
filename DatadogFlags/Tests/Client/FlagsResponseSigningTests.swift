@@ -84,6 +84,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             request.httpMethod = "POST"
             request.httpBody = Data("{}".utf8)
             request.setValue("test", forHTTPHeaderField: "dd-client-token")
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
             XCTAssertNoThrow(try FlagsResponseVerifier(configuration: configuration).prepare(request))
         }
         let rejected = [
@@ -101,6 +102,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             request.httpMethod = "POST"
             request.httpBody = Data("{}".utf8)
             request.setValue("test", forHTTPHeaderField: "dd-client-token")
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
             XCTAssertThrowsError(try FlagsResponseVerifier(configuration: configuration).prepare(request), endpoint)
         }
     }
@@ -367,12 +369,28 @@ final class FlagsResponseSigningTests: XCTestCase {
         request.httpMethod = "POST"
         request.httpBody = Data("{}".utf8)
         request.setValue("token", forHTTPHeaderField: "dd-client-token")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
         let verifier = FlagsResponseVerifier(configuration: .init(mode: .required))
         let first = try verifier.prepare(request)
         let second = try verifier.prepare(request)
         XCTAssertNil(first.value(forHTTPHeaderField: "X-stream"))
         XCTAssertEqual(first.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities"), "response-signing-v1")
         XCTAssertEqual(first.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "signature-version"), "1")
+        // The SDK lists each bound header that it set, in ascending byte order.
+        XCTAssertEqual(
+            first.value(forHTTPHeaderField: FlagsResponseVerifier.signedHeadersName),
+            "content-type,x-dd-feature-flags-capabilities"
+        )
+        request.setValue("rum-app", forHTTPHeaderField: "dd-application-id")
+        XCTAssertEqual(
+            try verifier.prepare(request).value(forHTTPHeaderField: FlagsResponseVerifier.signedHeadersName),
+            "content-type,dd-application-id,x-dd-feature-flags-capabilities"
+        )
+        // `content-type` is a required name, so a request without it is not signed.
+        request.setValue(nil, forHTTPHeaderField: "content-type")
+        XCTAssertThrowsError(try verifier.prepare(request)) {
+            XCTAssertEqual($0 as? FlagsSigningError, .unsupportedRequest)
+        }
         let nonce = try XCTUnwrap(first.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "request-nonce"))
         XCTAssertNotNil(nonce.range(of: "^[0-9a-f]{32}$", options: .regularExpression))
         XCTAssertNotEqual(nonce, second.value(forHTTPHeaderField: FlagsResponseVerifier.prefix + "request-nonce"))
@@ -413,6 +431,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             request.httpMethod = "POST"
             request.httpBody = Data("{}".utf8)
             request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
             let prepared = try verifier.prepare(request)
             let fixture = try SigningChainFixture.credential(name)
             leaves.insert(fixture.leaf)
@@ -505,6 +524,8 @@ final class FlagsResponseSigningTests: XCTestCase {
         let anchor_der_base64: String?
         /// The shared reason code of a rejected case. All SDKs report the same code.
         let sdk_reason: String?
+        /// The values of the signed response list of an accepted case, in list order. `nil` is an absent header.
+        let verified_response_headers: [String: String?]?
     }
 
     private func corpus(name: String, hash: String) throws -> Corpus {
@@ -591,7 +612,10 @@ final class FlagsResponseSigningTests: XCTestCase {
                 if vector.expected_accept {
                     let proof = try verifier.verify(request: request, response: response, body: body, now: now)
                     XCTAssertEqual(proof.verifiedAt, vector.now, name)
+                    XCTAssertEqual(proof.verifiedResponseHeaders, try XCTUnwrap(vector.verified_response_headers, name), name)
                     let prefix = FlagsResponseVerifier.prefix
+                    let listed = try XCTUnwrap(responseHeaders[prefix + "signed-response-headers"], name)
+                        .split(separator: ",").map { ($0.description, responseHeaders[$0.description]) }
                     let chain = try XCTUnwrap(responseHeaders[prefix + "signing-chain"], name)
                         .split(separator: ",").map { try XCTUnwrap(Data(base64Encoded: String($0))) }
                     let transcript = try FlagsResponseVerifier.transcript(
@@ -601,7 +625,8 @@ final class FlagsResponseSigningTests: XCTestCase {
                         issuedAt: try XCTUnwrap(UInt64(XCTUnwrap(responseHeaders[prefix + "issued-at"]))),
                         expiresAt: try XCTUnwrap(UInt64(XCTUnwrap(responseHeaders[prefix + "expires-at"]))),
                         leaf: try XCTUnwrap(Data(base64Encoded: XCTUnwrap(responseHeaders[prefix + "signing-certificate"]))),
-                        intermediates: chain
+                        intermediates: chain,
+                        responseHeaders: listed
                     )
                     XCTAssertEqual(transcript.base64EncodedString(), vector.transcript_base64, name)
                 } else {
@@ -666,6 +691,7 @@ final class FlagsResponseSigningTests: XCTestCase {
         request.httpMethod = "POST"
         request.httpBody = Data("{}".utf8)
         request.setValue("test", forHTTPHeaderField: "dd-client-token")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
         XCTAssertThrowsError(try FlagsResponseVerifier(configuration: .init(mode: .required)).prepare(request))
         let observing = FlagsResponseVerifier(configuration: .init(mode: .observe))
         let prepared = try observing.prepare(request)
@@ -1076,6 +1102,7 @@ final class FlagsResponseSigningTests: XCTestCase {
     func testSigningScopeSeparatesEveryIdentityAndConfigurationInput() {
         var request = URLRequest(url: URL(string: "https://example.test/assign?dd_env=prod")!)
         request.setValue("token-a", forHTTPHeaderField: "dd-client-token")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
         let verifier = FlagsResponseVerifier(configuration: .init(mode: .observe, trustedRootCertificates: [Data([1])]))
         func scope(_ value: URLRequest, environment: String = "prod") -> String {
             verifier.cacheScope(request: value, environment: environment, customHeaderNames: ["x-custom"])
@@ -1456,6 +1483,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             request.httpMethod = "POST"
             request.httpBody = Data("{}".utf8)
             request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
             let prepared = try verifier.prepare(request)
             let fixture = try SigningChainFixture.credential(row.credential)
             let response = try response(prepared, fixture.signedHeaders(request: prepared, body: body))
@@ -1499,13 +1527,21 @@ final class FlagsResponseSigningTests: XCTestCase {
             issuedAt: 10,
             expiresAt: 20,
             leaf: fixture.leaf,
-            intermediates: fixture.intermediates
+            intermediates: fixture.intermediates,
+            responseHeaders: SigningChainFixture.responseHeaders
         )
         XCTAssertTrue(transcript.starts(with: Data("datadog.feature-flags.precomputed-assignments.v1\0".utf8)))
         var tail = Data(SHA256.hash(data: body))
         tail.append(Data(SHA256.hash(data: fixture.leaf)))
         tail.append(UInt8(fixture.intermediates.count))
         for intermediate in fixture.intermediates { tail.append(Data(SHA256.hash(data: intermediate))) }
+        // The signed response list follows the chain: `u8(count)`, then `lp(name) u8(presence) lp(value)` each.
+        tail.append(2)
+        for (name, value) in [("content-type", "application/json"), ("dd-flag-selection-ignored", "")] {
+            tail.append(contentsOf: [0, 0, 0, UInt8(name.utf8.count)] + Array(name.utf8))
+            tail.append(value.isEmpty ? 0 : 1)
+            tail.append(contentsOf: [0, 0, 0, UInt8(value.utf8.count)] + Array(value.utf8))
+        }
         XCTAssertEqual(fixture.intermediates.count, 2)
         XCTAssertEqual(transcript.suffix(tail.count), tail)
         // Header order is bound: reversing the chain changes the transcript.
@@ -1518,7 +1554,8 @@ final class FlagsResponseSigningTests: XCTestCase {
                 issuedAt: 10,
                 expiresAt: 20,
                 leaf: fixture.leaf,
-                intermediates: fixture.intermediates.reversed()
+                intermediates: fixture.intermediates.reversed(),
+                responseHeaders: SigningChainFixture.responseHeaders
             )
         )
         for count in [0, 4] {
@@ -1530,7 +1567,8 @@ final class FlagsResponseSigningTests: XCTestCase {
                     issuedAt: 10,
                     expiresAt: 20,
                     leaf: fixture.leaf,
-                    intermediates: Array(repeating: fixture.leaf, count: count)
+                    intermediates: Array(repeating: fixture.leaf, count: count),
+                    responseHeaders: SigningChainFixture.responseHeaders
                 )
             )
         }
@@ -1623,6 +1661,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             request.httpMethod = "POST"
             request.httpBody = Data("{}".utf8)
             request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
             let prepared = try verifier.prepare(request)
             let response = try response(prepared, fixture.signedHeaders(request: prepared, body: body))
             if row.accept {
@@ -1672,7 +1711,8 @@ final class FlagsResponseSigningTests: XCTestCase {
                 issuedAt: 10,
                 expiresAt: 20,
                 leaf: fixture.leaf,
-                intermediates: fixture.intermediates
+                intermediates: fixture.intermediates,
+                responseHeaders: SigningChainFixture.responseHeaders
             )
             XCTAssertTrue(transcript.starts(with: prefix(authority)), url)
         }
@@ -1827,6 +1867,7 @@ extension FlagsResponseSigningTests {
         request.httpMethod = "POST"
         request.httpBody = Data("{}".utf8)
         request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
         let prepared = try verifier.prepare(request)
         let body = Data.mockAnyFlagAssignmentsResponse()
         var headers = try SigningChainFixture.credential(name)
@@ -2255,7 +2296,79 @@ extension FlagsResponseSigningTests {
         request.httpMethod = "POST"
         request.httpBody = Data("{}".utf8)
         request.setValue("fixture-token", forHTTPHeaderField: "dd-client-token")
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
         return try verifier.prepare(request)
+    }
+
+    func testSignedResponseReportsOnlyTheVerifiedFlagSelectionIgnoredValue() throws {
+        let listed: [(name: String, value: String?)] = [
+            ("content-type", "application/json"), ("dd-flag-selection-ignored", "too_many_values")
+        ]
+        XCTAssertEqual(
+            try selectionIgnoredErrors(mode: .required, signed: listed),
+            ["`Flags.Configuration.flagSelection` was ignored by the server (too_many_values). Loaded the full flag configuration."]
+        )
+        // A listed header that is absent is verified as absent, and nothing is reported.
+        XCTAssertEqual(try selectionIgnoredErrors(mode: .required, signed: SigningChainFixture.responseHeaders), [])
+        // `observe` accepts a response that fails verification, but it never reads the raw header of a signed request.
+        // A header that a proxy added after signing fails the signature.
+        XCTAssertEqual(
+            try selectionIgnoredErrors(
+                mode: .observe,
+                signed: SigningChainFixture.responseHeaders,
+                added: ["dd-flag-selection-ignored": "too_many_values"]
+            ),
+            []
+        )
+        // A header that is present and not listed is not verified. With a selection, the list must name it.
+        XCTAssertEqual(
+            try selectionIgnoredErrors(
+                mode: .observe,
+                signed: [("content-type", "application/json")],
+                added: ["dd-flag-selection-ignored": "too_many_values"]
+            ),
+            []
+        )
+    }
+
+    /// Fetches once with a flag selection through the signed path, and returns the error logs.
+    private func selectionIgnoredErrors(
+        mode: Flags.ResponseSigningMode,
+        signed: [(name: String, value: String?)],
+        added: [String: String] = [:]
+    ) throws -> [String] {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let now = SigningChainFixture.now
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        let body = Data.mockAnyFlagAssignmentsResponse()
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: []),
+            featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+            responseSigning: .init(mode: mode, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
+            dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
+            signingFetch: { request, completion in
+                do {
+                    let fields = try fixture.signedHeaders(request: request, body: body, now: now, responseHeaders: signed)
+                        .merging(added) { $1 }
+                    let url = try XCTUnwrap(request.url)
+                    let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: fields))
+                    completion(.success((body, response)))
+                } catch { completion(.failure(error)) }
+            },
+            fetch: { _, _ in XCTFail("A signed fetch must not retry unsigned") }
+        )
+        let completed = expectation(description: "Fetch with a flag selection")
+        var result: Result<FlagAssignmentsResponse, FlagsError>?
+        fetcher.flagAssignments(for: .mockAny()) {
+            result = $0
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 2)
+        XCTAssertEqual(try XCTUnwrap(result).get().flags, .mockAny())
+        return dd.logger.errorMessages
     }
 
     func testCertificateIDMustMatchTheLeaf() throws {
@@ -2743,13 +2856,20 @@ internal struct SigningChainFixture {
         return try XCTUnwrap(Data(base64Encoded: body))
     }
 
+    /// The default signed response list of the edge: `content-type,dd-flag-selection-ignored`.
+    static let responseHeaders: [(name: String, value: String?)] = [
+        ("content-type", "application/json"), ("dd-flag-selection-ignored", nil)
+    ]
+
     /// Edge-equivalent v1 proof headers for `request` and `body`, signed with the fixture key.
+    /// The result also has the listed response headers that are present.
     func signedHeaders(
         request: URLRequest,
         body: Data,
         now: TimeInterval = now,
         minimumNotBefore: UInt64? = nil,
-        status: Int = 200
+        status: Int = 200,
+        responseHeaders: [(name: String, value: String?)] = responseHeaders
     ) throws -> [String: String] {
         let prefix = FlagsResponseVerifier.prefix
         let transcript = try FlagsResponseVerifier.transcript(
@@ -2760,6 +2880,7 @@ internal struct SigningChainFixture {
             expiresAt: UInt64(now + 300),
             leaf: leaf,
             intermediates: intermediates,
+            responseHeaders: responseHeaders,
             minimumNotBefore: minimumNotBefore
         )
         var headers = [
@@ -2769,8 +2890,12 @@ internal struct SigningChainFixture {
             prefix + "certificate-id": SHA256.hash(data: leaf).map { String(format: "%02x", $0) }.joined(),
             prefix + "issued-at": String(UInt64(now)),
             prefix + "expires-at": String(UInt64(now + 300)),
-            prefix + "signature": try key.signature(for: transcript).derRepresentation.base64EncodedString()
+            prefix + "signature": try key.signature(for: transcript).derRepresentation.base64EncodedString(),
+            prefix + "signed-response-headers": responseHeaders.map(\.name).joined(separator: ",")
         ]
+        for case let (name, value?) in responseHeaders {
+            headers[name] = value
+        }
         if let minimumNotBefore {
             headers[prefix + "minimum-leaf-not-before"] = String(minimumNotBefore)
         }

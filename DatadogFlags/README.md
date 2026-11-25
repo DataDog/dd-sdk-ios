@@ -39,7 +39,7 @@ Staging only; production is not supported yet. Production support comes in a lat
 
 The SDK does not send `X-stream`. The edge buffers the responses that it signs. Until the edge buffering build is on staging, `required` on staging fails closed and `observe` reports `missing-proof`.
 
-The first public response-signing protocol is v1. The SDK advertises `response-signing-v1`, sends signature version `1`, and verifies the `datadog.feature-flags.precomputed-assignments.v1` transcript. A v1 response carries the leaf in `x-datadog-feature-flags-signing-certificate` and 1 to 3 intermediates in `x-datadog-feature-flags-signing-chain`. The chain header joins standard base64 DER entries with `,` and no spaces. Index 0 issued the leaf, and a pinned root issued the last entry. The SDK rejects a response that has only the earlier `x-datadog-feature-flags-signing-intermediate` header. The transcript ends with `SHA256(leaf)`, one byte with the intermediate count, and the SHA-256 digest of each intermediate in header order. Earlier POC v1/v2 and draft v3 labels are not supported public versions; public v1 does not accept their proofs. X.509 v3 certificate encoding is unchanged.
+The first public response-signing protocol is v1. The SDK advertises `response-signing-v1`, sends signature version `1`, and verifies the `datadog.feature-flags.precomputed-assignments.v1` transcript. A v1 response carries the leaf in `x-datadog-feature-flags-signing-certificate` and 1 to 3 intermediates in `x-datadog-feature-flags-signing-chain`. The chain header joins standard base64 DER entries with `,` and no spaces. Index 0 issued the leaf, and a pinned root issued the last entry. The SDK rejects a response that has only the earlier `x-datadog-feature-flags-signing-intermediate` header. After the response body, the transcript has `SHA256(leaf)`, one byte with the intermediate count, the SHA-256 digest of each intermediate in header order, and the signed response list (see [Signed header lists](#signed-header-lists)). Earlier POC v1/v2 and draft v3 labels are not supported public versions; public v1 does not accept their proofs. X.509 v3 certificate encoding is unchanged.
 
 Response signing is disabled by default. It is available only for the staging assignment endpoint. `DatadogSite` has no staging case, so set `customFlagsEndpoint` to the staging endpoint. For every other endpoint, `observe` is a no-op: the SDK logs a warning, sends the ordinary request, and does not verify flags. For every other endpoint, `required` fails closed: the SDK logs an error once when Flags is enabled, sends no assignment request, puts the client in its error state, and returns `FlagsError.responseSigningFailed(reason: "unsupported-site")` on every fetch. To use Flags outside staging, remove `required` or use `observe`. Signing protects response integrity; subject authorization remains separate.
 
@@ -69,7 +69,7 @@ Certificate profile:
 
 The FFE OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Datadog must assign the production OID before this draft is released.
 
-Signing-enabled requests reject redirects, use a fresh 16-byte nonce and bind the exact emitted URL/query, request body, effective client token, semantic headers, response bytes and complete public chain. Verification runs before JSON decoding and cache admission, with expiry checked again at admission and evaluation. Response verification is bounded to 2 MiB and request signing to 1 MiB. Responses are buffered application bytes after HTTP decompression; this draft does not add a signed streaming or critical-flags protocol.
+Signing-enabled requests reject redirects, use a fresh 16-byte nonce and bind the exact emitted URL/query, request body, effective client token, the signed request and response header lists, response bytes and complete public chain. Verification runs before JSON decoding and cache admission, with expiry checked again at admission and evaluation. Response verification is bounded to 2 MiB and request signing to 1 MiB. Responses are buffered application bytes after HTTP decompression; this draft does not add a signed streaming or critical-flags protocol.
 
 At signing cutover, the staging edge can serve unsigned 200 responses until the credential rotator republishes the credential. `observe` accepts such a response unverified and reports a `missing-proof` outcome. `required` rejects it with `FlagsError.responseSigningFailed(reason: "missing-proof")` and does not retry unsigned. Disabling edge signing cannot weaken `required` in an installed SDK. A required client keeps its verified flags in memory only. At the signed expiry, it keeps serving them as `stale`, or returns defaults when `expireVerifiedFlags` is `true`. Restore valid signed delivery to recover. Mobile rotation and application lifecycle validation remain required before rollout beyond staging.
 
@@ -116,12 +116,24 @@ The event has only these fields: `mode` (`observe` or `required`), `result` (`ve
 
 The verified-flags cache scope does not include the RUM application ID or the RUM session. A RUM start, a RUM stop or an application ID change does not invalidate verified flags or discard an in-flight response. Each response transcript still binds `dd-application-id`.
 
+## Signed header lists
+
+v1 binds two signed lists of header names, so a new bound header needs no transcript change. Only staging used the earlier v1 layout with fixed header slots, and the SDK rejects a proof of that layout.
+
+- Each list is one header value: lowercase HTTP token names in ascending byte order, unique, joined by `,` with no spaces. A list has 1 to 32 names of at most 64 bytes.
+- In the transcript, each list is `u8(count)`, then `lp(name) || u8(presence) || lp(value)` for each name. An absent header has presence `0` and an empty value.
+- Request list: the SDK sends `x-datadog-feature-flags-signed-headers`. It lists each bound header that it set: `content-type`, `dd-application-id` (when RUM sets it), `x-dd-feature-flags-capabilities`, `x-rkyv` and `x-use-cache`. The list must name `content-type` and `x-dd-feature-flags-capabilities`. It never names `dd-client-token`, `authorization` or a `x-datadog-feature-flags-` header: the token and `authorization` keep their hashed slots. The request list replaces the earlier fixed header slots.
+- Headers that are not listed and not bound are not signed, for example `dd-assignment-token`, `dd-service` and `traceparent`.
+- Response list: the required proof header `x-datadog-feature-flags-signed-response-headers` follows the chain in the transcript. It must name `content-type`, and `dd-flag-selection-ignored` when the request has a flag selection. It must not name a proof header.
+- The SDK acts on a listed response header only after verification passes, and it uses the verified value. For a signed request, the SDK reads `DD-Flag-Selection-Ignored` only from the verified list. A response that fails verification in `observe` reports no ignored selection.
+- `URLRequest` and `HTTPURLResponse` join repeated header lines with `,`. So the SDK rejects a comma in a listed request value other than the capabilities, and in the `content-type` or `dd-flag-selection-ignored` response value. A repeated line of another listed response header changes the bound value, and the signature fails.
+
 ## Minimum leaf not-before revocation (draft wire)
 
 DRAFT: the edge and the shared fixtures do not send this header yet. The name and the transcript rule can change.
 
 - A verified response can carry `x-datadog-feature-flags-minimum-leaf-not-before` (the leaf floor): unix seconds, a decimal integer with no sign and no leading zeros, from 0 to 2^53-1, in one header line.
-- When the header is present, the transcript ends with `0x01` and the value as a big-endian `u64`. When it is absent, the v1 transcript does not change. So a change, an addition or a removal of the header fails the signature.
+- When the header is present, the transcript ends with `0x01` and the value as a big-endian `u64`, after the signed response list. When it is absent, the v1 transcript does not change. So a change, an addition or a removal of the header fails the signature.
 - The floor applies to the leaf only. The SDK never compares it with an intermediate.
 - The SDK accepts the value only from a fully verified response. It ignores a value that is greater than the `notBefore` of the leaf in the same response, because a response must never revoke its own leaf. It reports `minimum-not-before-ignored`. It also ignores a value that is lower than the stored value.
 - The SDK stores the highest value for each trust anchor (key: SHA-256 of the root DER) in the Flags feature data store, so it survives a restart. This is the only data that `required` mode persists. It holds no flag data.
@@ -138,8 +150,9 @@ DRAFT: the edge and the shared fixtures do not send this header yet. The name an
 
 Each folder has a `SOURCE.json` with the commit and the file checksums.
 The native test reads every suite in the upstream manifest, checks counts and checksums,
-and verifies acceptance decisions and exact transcripts. The current snapshot has 116 response
+and verifies acceptance decisions and exact transcripts. The current snapshot has 160 response
 vectors across wire, nested DER, subject DER, certificate-rule, extension-profile, and expiry suites.
+For each accepted case, the test also asserts the verified values of the signed response list (`verified_response_headers`).
 A case can supply its own `anchor_der_base64`, which replaces the file anchor for that case.
 For each rejected case, the test asserts the shared `sdk_reason` code. `rejection_reason` is a fixture code, not a native error. The chain tests use `now` from `chain/manifest.json`.
 Server-only signing cases are excluded.

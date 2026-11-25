@@ -228,7 +228,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - `Flags.FlagSelection` applies to every client and is fixed at `Flags.enable()`.
 - A flag is loaded if it has any listed tag (exact, case-sensitive) or its whole key matches any pattern (`*` matches any run of characters).
 - Values are trimmed and deduplicated. Each list accepts at most 31 values, each value at most 200 UTF-8 bytes. Over a limit, the selection is not sent: the SDK logs an error and loads every flag.
-- If the server ignores the selection, it loads every flag. For a request without an assignment token, the SDK logs a known reason from the `DD-Flag-Selection-Ignored` header or reports another nonempty value as `unknown`. For a token-bearing request, it reports every nonempty value as `redacted`. A proxy behind `customFlagsEndpoint` must forward that header.
+- If the server ignores the selection, it loads every flag. For a request without an assignment token, the SDK logs a known reason from the `DD-Flag-Selection-Ignored` header or reports another nonempty value as `unknown`. For a token-bearing request, it reports every nonempty value as `redacted`. A proxy behind `customFlagsEndpoint` must forward that header. With response signing, the SDK uses only the verified value of the signed response list (see [Signed header lists](README.md#signed-header-lists)).
 - A cache saved under a different selection is not loaded.
 
 ### Exposures and Evaluation Telemetry

@@ -130,6 +130,13 @@ internal struct FlagsResponseVerification: Equatable {
     var cacheScope: String? = nil
     /// The verified response carried a minimum leaf not-before value that the SDK ignored.
     var ignoredMinimumNotBefore = false
+    /// The response headers that the signed response list names, with their verified values. `nil` is an absent header.
+    /// The SDK acts on these values only, never on a second read of the raw response headers.
+    var verifiedResponseHeaders: [String: String?] = [:]
+
+    func verifiedResponseHeader(_ name: String) -> String? {
+        verifiedResponseHeaders[name] ?? nil
+    }
 
     /// `allowExpired` keeps a proof usable after `expiresAt`: it was verified once in this scope, but it is not fresh.
     /// The largest backward clock step after verification that keeps the proof fresh, like the `issued-at` allowance.
@@ -232,6 +239,18 @@ internal final class FlagsResponseVerifier {
     static let maximumIntermediates = 3
     static let prefix = "x-datadog-feature-flags-"
     static let maximumResponseBytes = 2 * 1_024 * 1_024
+    /// The request header that names the request headers that the transcript binds.
+    static let signedHeadersName = prefix + "signed-headers"
+    /// Request headers that can change a signed response. When present, each one must be in the signed request list.
+    static let boundRequestHeaders = [
+        "content-type", "dd-application-id", "x-dd-feature-flags-capabilities", "x-rkyv", "x-use-cache"
+    ]
+    /// The proof headers. The signed response list must not name one of them.
+    static let proofHeaders = [
+        "signature-version", "certificate-id", "signing-certificate", "signing-chain", "issued-at", "expires-at",
+        "signature", "signed-response-headers"
+    ].map { prefix + $0 }
+    static let flagSelectionIgnoredHeader = "dd-flag-selection-ignored"
     let scope = UUID()
     let configuration: Flags.ResponseSigningConfiguration
     let minimumNotBeforeStore: any FlagsMinimumNotBeforeStore
@@ -342,6 +361,11 @@ internal final class FlagsResponseVerifier {
             Array(Set(existing + [Self.capability])).sorted().joined(separator: ","),
             forHTTPHeaderField: "x-dd-feature-flags-capabilities"
         )
+        // The SDK lists each bound header that it set. The list is already in ascending byte order.
+        request.setValue(
+            Self.boundRequestHeaders.filter { request.value(forHTTPHeaderField: $0) != nil }.joined(separator: ","),
+            forHTTPHeaderField: Self.signedHeadersName
+        )
         _ = try Self.requestComponents(request)
         return request
     }
@@ -365,6 +389,7 @@ internal final class FlagsResponseVerifier {
         guard identifier == Self.hex(Self.digest(leafDER)) else {
             throw FlagsSigningError.invalidProof
         }
+        let responseHeaders = try Self.signedResponseHeaders(response, request: request)
         let issuedAt = try Self.seconds(Self.header(response, "issued-at"))
         let expiresAt = try Self.seconds(Self.header(response, "expires-at"))
         // DRAFT wire: optional, and bound in the transcript when present.
@@ -419,6 +444,7 @@ internal final class FlagsResponseVerifier {
             expiresAt: expiresAt,
             leaf: leafDER,
             intermediates: intermediateDERs,
+            responseHeaders: responseHeaders,
             minimumNotBefore: minimumNotBefore
         )
         do {
@@ -434,6 +460,9 @@ internal final class FlagsResponseVerifier {
             throw FlagsSigningError.revokedCertificate
         }
         var verification = FlagsResponseVerification(scope: scope, verifiedAt: seconds, expiresAt: Double(expiresAt))
+        for (name, value) in responseHeaders {
+            verification.verifiedResponseHeaders[name] = .some(value)
+        }
         if let minimumNotBefore {
             // A response must never revoke its own leaf.
             if Double(minimumNotBefore) > leaf.notBefore {
@@ -453,9 +482,10 @@ internal final class FlagsResponseVerifier {
         expiresAt: UInt64,
         leaf: Data,
         intermediates: [Data],
+        responseHeaders: [(name: String, value: String?)],
         minimumNotBefore: UInt64? = nil
     ) throws -> Data {
-        let components = try requestComponents(request)
+        let (components, signedHeaders) = try requestComponents(request)
         guard let status = UInt16(exactly: status), body.count <= maximumResponseBytes,
             (1...maximumIntermediates).contains(intermediates.count)
         else {
@@ -479,14 +509,7 @@ internal final class FlagsResponseVerifier {
         try appendLength(nonceBytes, to: &result)
         result.append(digest(request.httpBody ?? Data()))
         result.append(digest(Data((request.value(forHTTPHeaderField: "dd-client-token") ?? "").utf8)))
-        for name in ["content-type", "dd-application-id", "x-rkyv", "x-use-cache", "x-dd-feature-flags-capabilities"] {
-            if let value = request.value(forHTTPHeaderField: name) {
-                result.append(1)
-                try appendLength(Data(value.utf8), to: &result)
-            } else {
-                result.append(0)
-            }
-        }
+        try appendList(signedHeaders.map { ($0, request.value(forHTTPHeaderField: $0)) }, to: &result)
         if let auth = request.value(forHTTPHeaderField: "authorization") {
             result.append(1)
             result.append(digest(Data(auth.utf8)))
@@ -501,7 +524,8 @@ internal final class FlagsResponseVerifier {
         result.append(digest(leaf))
         result.append(UInt8(intermediates.count))
         for intermediate in intermediates { result.append(digest(intermediate)) }
-        // DRAFT wire: absent keeps the v1 transcript unchanged.
+        try appendList(responseHeaders, to: &result)
+        // DRAFT wire: absent keeps the v1 transcript unchanged. The tail stays the last field.
         if let minimumNotBefore {
             result.append(1)
             appendInteger(minimumNotBefore, to: &result)
@@ -509,7 +533,8 @@ internal final class FlagsResponseVerifier {
         return result
     }
 
-    private static func requestComponents(_ request: URLRequest) throws -> [String] {
+    /// Returns the URL components of the transcript and the names of the signed request list.
+    private static func requestComponents(_ request: URLRequest) throws -> (components: [String], signedHeaders: [String]) {
         guard request.httpMethod == "POST", let url = request.url,
             let parts = URLComponents(url: url, resolvingAgainstBaseURL: false),
             let scheme = parts.scheme?.lowercased(), scheme == "https",
@@ -523,10 +548,19 @@ internal final class FlagsResponseVerifier {
         else {
             throw FlagsSigningError.unsupportedRequest
         }
-        for name in ["content-type", "dd-application-id", "x-rkyv", "x-use-cache", "authorization"] {
-            if request.value(forHTTPHeaderField: name)?.contains(",") == true {
-                throw FlagsSigningError.unsupportedRequest
-            }
+        // `URLRequest` joins repeated lines with ",". Only the capabilities value can contain a comma,
+        // so a comma in another listed or bound value is a repeated line.
+        guard let list = request.value(forHTTPHeaderField: signedHeadersName), let signedHeaders = headerList(list),
+            signedHeaders.contains("content-type"), signedHeaders.contains("x-dd-feature-flags-capabilities"),
+            !signedHeaders.contains(where: { $0 == "dd-client-token" || $0 == "authorization" || $0.hasPrefix(prefix) }),
+            boundRequestHeaders.allSatisfy({ signedHeaders.contains($0) || request.value(forHTTPHeaderField: $0) == nil }),
+            signedHeaders.allSatisfy({ name in
+                request.value(forHTTPHeaderField: name)
+                    .map { name == "x-dd-feature-flags-capabilities" || !$0.contains(",") } ?? false
+            }),
+            request.value(forHTTPHeaderField: "authorization")?.contains(",") != true
+        else {
+            throw FlagsSigningError.unsupportedRequest
         }
         let capabilities = (request.value(forHTTPHeaderField: "x-dd-feature-flags-capabilities") ?? "")
             .split(separator: ",", omittingEmptySubsequences: false).map { $0.trimmingCharacters(in: .whitespaces) }
@@ -536,10 +570,69 @@ internal final class FlagsResponseVerifier {
         if host.contains(":"), !host.hasPrefix("[") { host = "[\(host)]" }
         // The authority omits the default port of the scheme.
         if let port = parts.port, port != defaultPort(scheme) { host += ":\(port)" }
-        return [
+        let components = [
             "POST", scheme, host, parts.percentEncodedPath.isEmpty ? "/" : parts.percentEncodedPath,
             parts.percentEncodedQuery.map { "?" + $0 } ?? ""
         ]
+        return (components, signedHeaders)
+    }
+
+    /// Parses a signed header list: 1 to 32 lowercase token names of at most 64 bytes, in ascending byte order
+    /// (so unique), joined by "," with no spaces. Returns `nil` for a malformed list.
+    private static func headerList(_ value: String) -> [String]? {
+        let names = value.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+        let tokenBytes = Set("0123456789abcdefghijklmnopqrstuvwxyz!#$%&'*+.^_`|~-".utf8)
+        guard (1...32).contains(names.count),
+            names.allSatisfy({ !$0.isEmpty && $0.utf8.count <= 64 && $0.utf8.allSatisfy(tokenBytes.contains) }),
+            zip(names, names.dropFirst()).allSatisfy({ $0.utf8.lexicographicallyPrecedes($1.utf8) })
+        else {
+            return nil
+        }
+        return names
+    }
+
+    /// The names of the signed response list in list order, with the value of each response header.
+    /// The list contains commas, so it is read without `header()`.
+    private static func signedResponseHeaders(
+        _ response: HTTPURLResponse,
+        request: URLRequest
+    ) throws -> [(name: String, value: String?)] {
+        guard let names = headerList(try singleHeader(response, "signed-response-headers")),
+            names.contains("content-type"),
+            !hasFlagSelection(request) || names.contains(flagSelectionIgnoredHeader),
+            !names.contains(where: proofHeaders.contains)
+        else {
+            throw FlagsSigningError.invalidProof
+        }
+        return try names.map { name in
+            let values = response.allHeaderFields.compactMap { key, value -> String? in
+                (key as? String)?.lowercased() == name ? value as? String : nil
+            }
+            // `HTTPURLResponse` joins repeated lines with ", ". These values never contain a comma,
+            // so a comma is a repeated line. A repeated line of another listed header fails the signature.
+            guard values.count <= 1,
+                !(name == "content-type" || name == flagSelectionIgnoredHeader) || values.first?.contains(",") != true
+            else {
+                throw FlagsSigningError.invalidProof
+            }
+            return (name, values.first)
+        }
+    }
+
+    /// A request has a flag selection when its JSON body has a non-null `flag_selection`,
+    /// or its URL query has `selected_flag_tags` or `selected_flag_key_patterns`.
+    private static func hasFlagSelection(_ request: URLRequest) -> Bool {
+        let query = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false)?.queryItems } ?? []
+        if query.contains(where: { $0.name == "selected_flag_tags" || $0.name == "selected_flag_key_patterns" }) {
+            return true
+        }
+        guard let body = request.httpBody,
+            let object = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+            let selection = object["flag_selection"]
+        else {
+            return false
+        }
+        return !(selection is NSNull)
     }
 
     private static func defaultPort(_ scheme: String) -> Int { scheme == "https" ? 443 : 80 }
@@ -633,6 +726,18 @@ internal final class FlagsResponseVerifier {
         }
         appendInteger(length, to: &output)
         output.append(value)
+    }
+    /// `u8(count) || for each name: lp(name) || u8(presence) || lp(value)`. An absent header has an empty value.
+    private static func appendList(_ entries: [(name: String, value: String?)], to output: inout Data) throws {
+        guard let count = UInt8(exactly: entries.count) else {
+            throw FlagsSigningError.invalidProof
+        }
+        output.append(count)
+        for (name, value) in entries {
+            try appendLength(Data(name.utf8), to: &output)
+            output.append(value == nil ? 0 : 1)
+            try appendLength(Data((value ?? "").utf8), to: &output)
+        }
     }
     private static func appendInteger<T: FixedWidthInteger>(_ value: T, to output: inout Data) {
         var bigEndian = value.bigEndian
