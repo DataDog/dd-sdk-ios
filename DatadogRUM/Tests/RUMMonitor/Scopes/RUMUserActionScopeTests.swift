@@ -270,6 +270,61 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
     }
 
+    func testWhenUserActionEndsBeforeItStarted_itSendsActionEventWithoutLoadingTime() throws {
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .swipe,
+            startTime: startTime,
+            isContinuous: true
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand(
+                    time: startTime.addingTimeInterval(-1),
+                    globalAttributes: [:],
+                    attributes: [:],
+                    actionType: .swipe,
+                    name: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.action.id, scope.actionUUID.toRUMDataFormat)
+        XCTAssertNil(event.action.loadingTime, "A negative duration must not be reported as loading time")
+    }
+
+    func testWhenUserActionEndsAtItsStartTime_itSendsZeroLoadingTime() throws {
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .swipe,
+            startTime: startTime,
+            isContinuous: true
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand(
+                    time: startTime,
+                    globalAttributes: [:],
+                    attributes: [:],
+                    actionType: .swipe,
+                    name: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.action.loadingTime, 0)
+    }
+
     func testWhenContinuousUserActionEndsInCiTest_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let fakeCiTestId: String = .mockRandom()

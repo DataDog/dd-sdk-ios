@@ -163,6 +163,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             frustrations = [errorFrustrationType]
         }
 
+        // A negative duration (completion before start) is not a valid loading time, so it is omitted.
+        let duration = completionTime.timeIntervalSince(actionStartTime)
+
         let actionEvent = RUMActionEvent(
             dd: .init(
                 action: .init(heatmapAttributes: heatmapAttributes),
@@ -179,7 +182,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 error: .init(count: errorsCount.toInt64),
                 frustration: frustrations.map { .init(type: $0) },
                 id: actionUUID.toRUMDataFormat,
-                loadingTime: completionTime.timeIntervalSince(actionStartTime).dd.toInt64Nanoseconds,
+                loadingTime: duration >= 0 ? duration.dd.toInt64Nanoseconds : nil,
                 longTask: .init(count: longTasksCount),
                 resource: .init(count: resourcesCount.toInt64),
                 target: .init(name: name),
