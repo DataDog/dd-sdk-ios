@@ -107,7 +107,11 @@ public final class FlagsClient {
         static let typeMismatch = "TYPE_MISMATCH"
         static let invalidContext = "INVALID_CONTEXT"
         static let general = "GENERAL"
+        static let parseError = "PARSE_ERROR"
     }
+
+    /// The OpenFeature reason of an evaluation that returns the default value because of an error.
+    static let errorReason = "ERROR"
 
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
@@ -340,7 +344,7 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: snapshot.requestedContext ?? .empty,
                 flagError: EvaluationError.general
             )
-            return FlagDetails(key: key, value: defaultValue, error: .general)
+            return FlagDetails(key: key, value: defaultValue, reason: Self.errorReason, error: .general)
         }
 
         if snapshot.error == .invalidContext {
@@ -351,7 +355,7 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: snapshot.requestedContext ?? .empty,
                 flagError: EvaluationError.invalidContext
             )
-            return FlagDetails(key: key, value: defaultValue, error: .invalidContext)
+            return FlagDetails(key: key, value: defaultValue, reason: Self.errorReason, error: .invalidContext)
         }
         guard let context else {
             logEvaluation(
@@ -361,7 +365,20 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: snapshot.requestedContext ?? .empty,
                 flagError: EvaluationError.providerNotReady
             )
-            return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
+            return FlagDetails(key: key, value: defaultValue, reason: Self.errorReason, error: .providerNotReady)
+        }
+
+        if snapshot.error == .parseError {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
+                for: key,
+                assignment: defaultAssignment,
+                evaluationContext: context,
+                flagError: EvaluationError.parseError
+            )
+            var details = FlagDetails(key: key, value: defaultValue, reason: Self.errorReason, error: .parseError)
+            details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+            return details
         }
 
         guard let flagAssignment = snapshot.assignment else {
@@ -372,7 +389,7 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: context,
                 flagError: EvaluationError.flagNotFound
             )
-            var details = FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
+            var details = FlagDetails(key: key, value: defaultValue, reason: Self.errorReason, error: .flagNotFound)
             details.observeFullEvaluationData = snapshot.observeFullEvaluationData
             return details
         }
@@ -385,7 +402,7 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: context,
                 flagError: EvaluationError.typeMismatch
             )
-            var details = FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
+            var details = FlagDetails(key: key, value: defaultValue, reason: Self.errorReason, error: .typeMismatch)
             details.observeFullEvaluationData = snapshot.observeFullEvaluationData
             return details
         }

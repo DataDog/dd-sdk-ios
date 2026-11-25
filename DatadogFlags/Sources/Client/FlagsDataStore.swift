@@ -73,6 +73,8 @@ internal struct FlagsDataStore {
     }
 
     private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
+        // Key spellings alone keep the earlier version: an earlier reader ignores `keySpellings` and returns one
+        // assignment for every canonically equivalent spelling, as it did before spellings were kept.
         if flagsData.flags.values.contains(where: { $0.numericConversion != nil })
             || flagsData.keySpellings.contains(where: { $0.assignment.numericConversion != nil }) {
             return numericAssignmentsVersion

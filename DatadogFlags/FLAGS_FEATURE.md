@@ -256,13 +256,14 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 ## Common Troubleshooting Patterns
 
 ### "Every flag returns its default value"
-**Causes:** Check `details.error` and `client.state.currentState` to find which of these applies:
+**Causes:** Check `details.error` and `client.state.currentState` to find which of these applies. Every error result has `details.reason` set to `"ERROR"`:
 - `.providerNotReady`: no context set yet and no cache, or no subject-authorization boundary is active and either the fetch is still running without readable assignments or an ordinary fetch failure has no eligible fallback.
 - `.general`: an active subject-authorization boundary has no readable assignments for the requested subject.
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
 - `.typeMismatch`: the getter type differs from the flag's type, or the numeric value has no valid read for the getter. `getIntegerValue` needs a whole value within `Int` range. `getDoubleValue` needs a fractional value or a whole value that `Double` represents exactly. Values that overflow `Double`, and nonzero values that round to zero, fail both. The served `integer`, `number`, or `float` label does not change the result.
 - Known limitation: with older `JSONDecoder` implementations (seen with Swift 5.4 corelibs Foundation; expected on iOS and tvOS 15–16 and macOS 12–13, not verified there), a number outside `Double` range such as `1e400` can make the whole response invalid instead of only that flag. Newer OS versions return `.typeMismatch` for that flag only.
 - `.invalidContext`: `dd_experimentation_opt_out_at` is malformed while an opt-out mode is enabled.
+- `.parseError`: the response served the key, but the SDK cannot parse its assignment, for example because its variation type is not supported. Other flags in the response stay usable. The error survives the cache.
 - The client came from `FlagsClient.shared(named:)` before it was created, or `create` ran before `Flags.enable()`: this returns a no-op client that always returns defaults with `.providerNotReady`. Look for the SDK usage error message.
 
 **Solutions:** Call `Flags.enable()`, then `FlagsClient.create()`, then `setEvaluationContext` and wait for its completion (or `.ready` state) before relying on values.

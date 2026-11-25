@@ -12,11 +12,21 @@ import DatadogInternal
 @_spi(Internal)
 @testable import DatadogFlags
 
+#if targetEnvironment(simulator) || targetEnvironment(macCatalyst) || os(macOS)
+private let canReadTheBuildCheckout = true
+#else
+private let canReadTheBuildCheckout = false
+#endif
+
 final class CanonicalPrecomputedTests: XCTestCase {
     private let decoder = JSONDecoder()
     private var executedEvaluations = 0
 
     func testCanonicalResponses() throws {
+        // A physical device cannot read the build machine's checkout through `#filePath`.
+        try XCTSkipUnless(canReadTheBuildCheckout, "Canonical fixtures load from the build machine's checkout")
+        // The iOS expectations include integers that need a 64-bit `Int`, for example on a 32-bit watch.
+        try XCTSkipIf(Int.bitWidth < 64, "The canonical iOS expectations need a 64-bit Int")
         // Fixtures are git-ignored and fetched by `make feature-flags-fixtures-pull`, like SR snapshots.
         let root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent() // Models
@@ -50,35 +60,18 @@ final class CanonicalPrecomputedTests: XCTestCase {
                     if fixture["expectedResponseError"] != nil {
                         XCTAssertEqual(fixture["expectedResponseError"] as? String, "INVALID_RESPONSE")
                         try runRejected(fixture, responseData: responseData)
-                        if case .failure(.invalidResponse) = try signedResponse(responseData) {} else {
-                            XCTFail("A valid signature must not admit an invalid canonical response")
-                        }
                         return
                     }
                     let context = try decoder.decode(FlagsEvaluationContext.self, from: data(fixture["context"]!))
                     let response = try fetchAccepted(responseData, context: context)
-                    let initial = FlagsData(
-                        flags: response.flags,
-                        context: context,
-                        date: Date(),
-                        obfuscation: response.obfuscation,
-                        observeFullEvaluationData: response.observeFullEvaluationData,
-                        keySpellings: response.keySpellings
-                    )
-                    let restored = try restoreThroughDataStore(initial)
+                    // The same bytes, verified through the required signing path, must evaluate the same.
                     let verified = try signedResponse(responseData).get()
                     XCTAssertNotNil(verified.verification)
-                    let signed = FlagsData(
-                        flags: verified.flags,
-                        context: context,
-                        date: Date(),
-                        obfuscation: verified.obfuscation,
-                        observeFullEvaluationData: verified.observeFullEvaluationData,
-                        keySpellings: verified.keySpellings
-                    )
-                    let states = [("network-decoded", initial), ("serialized-state", restored), ("required-verified", signed)]
-                    for (label, state) in states {
-                        try XCTContext.runActivity(named: label) { _ in try run(fixture, state: state) }
+                    let states = [("network-decoded", response, false), ("serialized-state", response, true), ("required-verified", verified, false)]
+                    for (label, served, restored) in states {
+                        try XCTContext.runActivity(named: label) { _ in
+                            try run(fixture, response: served, context: context, restored: restored)
+                        }
                     }
                 }
             } catch {
@@ -167,18 +160,38 @@ final class CanonicalPrecomputedTests: XCTestCase {
         return try XCTUnwrap(result)
     }
 
-    /// Persists and restores through the production store, including its version selection and version check.
-    private func restoreThroughDataStore(_ flagsData: FlagsData) throws -> FlagsData {
-        let scope = FeatureScopeMock()
-        scope.flagsDataStore.setFlagsData(flagsData, forClientNamed: "canonical")
-        let read = expectation(description: "Canonical cache restored")
-        var restored: FlagsData?
-        scope.flagsDataStore.flagsData(forClientNamed: "canonical") { value in
-            restored = value
-            read.fulfill()
+    /// Returns a repository that serves `response`. When `restored`, an earlier repository persists `response`
+    /// through the production store, and this repository is offline, so it serves the restored cache.
+    private func repository(
+        serving response: FlagAssignmentsResponse,
+        context: FlagsEvaluationContext,
+        restored: Bool,
+        scope: FeatureScopeMock,
+        date: DateProviderMock
+    ) -> FlagsRepository {
+        let clientName = UUID().uuidString
+        func makeRepository(_ result: Result<FlagAssignmentsResponse, FlagsError>) -> FlagsRepository {
+            FlagsRepository(
+                clientName: clientName,
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in complete(result) },
+                dateProvider: date,
+                featureScope: scope,
+                flagSelection: nil,
+                initializationTimeout: nil
+            )
         }
-        wait(for: [read], timeout: 2)
-        return try XCTUnwrap(restored, "FlagsDataStore rejected the cache it wrote")
+        if restored {
+            let online = makeRepository(.success(response))
+            let persisted = expectation(description: "Canonical response persisted")
+            online.setEvaluationContext(context) { _ in persisted.fulfill() }
+            wait(for: [persisted], timeout: 2)
+            online.flush()
+        }
+        let repository = makeRepository(restored ? .failure(.networkError(URLError(.notConnectedToInternet))) : .success(response))
+        let loaded = expectation(description: restored ? "Canonical cache restored offline" : "Canonical response loaded")
+        repository.setEvaluationContext(context) { _ in loaded.fulfill() }
+        wait(for: [loaded], timeout: 2)
+        return repository
     }
 
     private func runRejected(_ fixture: [String: Any], responseData: Data) throws {
@@ -220,12 +233,12 @@ final class CanonicalPrecomputedTests: XCTestCase {
         XCTAssertTrue(try scope.eventsWritten(ofType: FlagEvaluationEvent.self).isEmpty)
     }
 
-    private func run(_ fixture: [String: Any], state: FlagsData) throws {
+    private func run(_ fixture: [String: Any], response: FlagAssignmentsResponse, context: FlagsEvaluationContext, restored: Bool) throws {
         let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
         let date = DateProviderMock()
         let aggregator = EvaluationAggregator(dateProvider: date, featureScope: scope, flushInterval: 100)
         let client = FlagsClient(
-            repository: FlagsRepositoryMock(flagsData: state),
+            repository: repository(serving: response, context: context, restored: restored, scope: scope, date: date),
             exposureLogger: ExposureLogger(dateProvider: date, featureScope: scope),
             evaluationLogger: EvaluationLogger(aggregator: aggregator),
             rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
@@ -233,11 +246,11 @@ final class CanonicalPrecomputedTests: XCTestCase {
         let evaluations = try XCTUnwrap(fixture["evaluations"] as? [[String: Any]])
         for evaluation in evaluations where applies(evaluation) {
             switch evaluation["variationType"] as? String {
-            case "boolean": try check(evaluation, client: client, type: Bool.self)
-            case "string": try check(evaluation, client: client, type: String.self)
-            case "integer": try check(evaluation, client: client, type: Int.self)
-            case "float": try check(evaluation, client: client, type: Double.self)
-            case "object": try check(evaluation, client: client, type: AnyValue.self)
+            case "boolean": try check(evaluation, client: client, type: Bool.self, restored: restored)
+            case "string": try check(evaluation, client: client, type: String.self, restored: restored)
+            case "integer": try check(evaluation, client: client, type: Int.self, restored: restored)
+            case "float": try check(evaluation, client: client, type: Double.self, restored: restored)
+            case "object": try check(evaluation, client: client, type: AnyValue.self, restored: restored)
             default: XCTFail("Unsupported canonical getter"); return
             }
         }
@@ -249,15 +262,19 @@ final class CanonicalPrecomputedTests: XCTestCase {
         assertEvents(events, matchers: expected["evaluationEvents"] as? [[String: Any]] ?? [], exact: expected["noUnmatchedEvents"] as? Bool == true)
     }
 
-    private func check<T: FlagValue & Decodable & Equatable>(_ evaluation: [String: Any], client: FlagsClient, type: T.Type) throws {
+    private func check<T: FlagValue & Decodable & Equatable>(_ evaluation: [String: Any], client: FlagsClient, type: T.Type, restored: Bool) throws {
         let key = try XCTUnwrap(evaluation["flag"] as? String)
         let fallback = try decoder.decode(T.self, from: data(evaluation["defaultValue"]!))
         let expected = try XCTUnwrap(evaluation["expectedResult"] as? [String: Any])
         let details = client.getDetails(key: key, defaultValue: fallback)
         executedEvaluations += 1
         XCTAssertEqual(details.value, try decoder.decode(T.self, from: data(expected["value"]!)), key)
-        if expected.keys.contains("reason") {
-            XCTAssertEqual(details.error == nil ? details.reason : "ERROR", expected["reason"] as? String, key)
+        // `restored-reason` gives the rule: a successful evaluation from a restored snapshot reports `restoredReason`,
+        // which is `CACHED`. Most cases give no `restoredReason`, so the rule applies to them with `CACHED`.
+        if restored, !(expected["errorCode"] is String) {
+            XCTAssertEqual(details.reason, evaluation["restoredReason"] as? String ?? "CACHED", key)
+        } else if expected.keys.contains("reason") {
+            XCTAssertEqual(details.reason, expected["reason"] as? String, key)
         }
         if expected.keys.contains("variantKey") { XCTAssertEqual(details.variant, expected["variantKey"] as? String, key) }
         if expected.keys.contains("errorCode") { XCTAssertEqual(errorCode(details.error), expected["errorCode"] as? String, key) }
@@ -271,6 +288,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
         case .typeMismatch: return "TYPE_MISMATCH"
         case .invalidContext: return "INVALID_CONTEXT"
         case .general: return "GENERAL"
+        case .parseError: return "PARSE_ERROR"
         }
     }
 

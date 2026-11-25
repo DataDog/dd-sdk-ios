@@ -5,7 +5,7 @@
       "kind": "precomputed-assignments",
       "prefix": "precomputed-assignments/",
       "destination": "DatadogFlags/Fixtures/precomputed",
-      "commit": "9afc3f75c3fef9643a9c1b5e2b1e5a9adac48177",
+      "commit": "f8765f73e41eff57429dbb60289147e7d9c52b2b",
       "files": {
         "schemas/precomputed-assignment.schema.json": "schema.json",
         "precomputed-assignments/README.md": "README.md",
@@ -30,7 +30,7 @@
       "kind": "files",
       "prefix": "response-signing/chain/",
       "destination": "DatadogFlags/Fixtures/response-signing-chain",
-      "commit": "fe24ed2c4872bf109b0c71ffb2229152d76b8963",
+      "commit": "ae7b72b57cee315fdda3a7d4b337925acfad53b5",
       "files": {
         "LICENSE": "LICENSE",
         "NOTICE": "NOTICE"

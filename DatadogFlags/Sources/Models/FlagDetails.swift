@@ -24,6 +24,9 @@ public enum FlagEvaluationError: Error {
 
     /// The provider cannot evaluate the flag because the current subject has no authorized assignments.
     case general
+
+    /// The flag's assignment cannot be parsed, for example because its variation type is not supported.
+    case parseError
 }
 
 /// Detailed information about a feature flag evaluation.

@@ -217,6 +217,7 @@ internal enum FlagsNumericJSON {
         // The cache stores `_numericLiteral` whenever a read differs from the decoded number, and writes every
         // other number as exact `JSONEncoder` output. Only network responses need their original tokens.
         if !cached {
+            let data = utf8(data)
             var tokens = try numericTokens(in: data)
             for key in T.flagAssignmentsPath {
                 guard case .object(let object) = tokens, let next = object[key] else {
@@ -226,8 +227,37 @@ internal enum FlagsNumericJSON {
                 tokens = next
             }
             decoder.userInfo[tokensKey] = tokens
+            return try decoder.decode(type, from: data)
         }
         return try decoder.decode(type, from: data)
+    }
+
+    /// Returns `data` as UTF-8 without a byte order mark. `JSONDecoder` also reads UTF-16 and UTF-32, but the
+    /// numeric token scan and the key-spelling scan read UTF-8 bytes.
+    static func utf8(_ data: Data) -> Data {
+        let head = Array(data.prefix(4))
+        if head.starts(with: [0xEF, 0xBB, 0xBF]) {
+            return Data(data.dropFirst(3))
+        }
+        // Without a byte order mark, the zero bytes around the first ASCII character give the encoding.
+        let zero = head.map { $0 == 0 }
+        let encoding: String.Encoding
+        if head.starts(with: [0x00, 0x00, 0xFE, 0xFF]) || zero.starts(with: [true, true, true]) {
+            encoding = .utf32BigEndian
+        } else if head.starts(with: [0xFF, 0xFE, 0x00, 0x00]) || zero == [false, true, true, true] {
+            encoding = .utf32LittleEndian
+        } else if head.starts(with: [0xFE, 0xFF]) || zero.first == true {
+            encoding = .utf16BigEndian
+        } else if head.starts(with: [0xFF, 0xFE]) || zero.dropFirst().first == true {
+            encoding = .utf16LittleEndian
+        } else {
+            return data
+        }
+        guard let text = String(data: data, encoding: encoding) else {
+            return data
+        }
+        let scalars = text.unicodeScalars
+        return Data(String(scalars.first == "\u{FEFF}" ? scalars.dropFirst() : scalars[...]).utf8)
     }
 
     /// Copies `data` with every number token quoted, and decodes the string leaves of the result.

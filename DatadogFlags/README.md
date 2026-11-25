@@ -341,6 +341,7 @@ Use `--update --source <local-checkout> --ref <commit>` to test an upstream fixt
 The weekly `Feature flags precomputed fixtures` workflow opens a draft update PR that proposes the latest ffe-system-test-data `main` commit.
 It uses a short-lived token restricted to the default branch and this workflow.
 It waits when an update PR is already open. Normal SDK CI must pass before merge.
+If PR creation fails, the workflow retains the signed update branch for inspection and recovery.
 Merge the upstream fixture contract before merging its consumer PRs.
 The update workflow never merges or publishes an SDK release.
 

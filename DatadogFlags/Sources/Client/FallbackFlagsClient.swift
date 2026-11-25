@@ -45,7 +45,7 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
             Ensure that a client named '\(name)' is created before using it.
             """
         )
-        return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
+        return FlagDetails(key: key, value: defaultValue, reason: FlagsClient.errorReason, error: .providerNotReady)
     }
 }
 
