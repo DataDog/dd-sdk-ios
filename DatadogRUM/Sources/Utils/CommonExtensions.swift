@@ -12,17 +12,13 @@ import AppKit
 import UIKit
 #endif
 
-/// Protocol defining interface for type description functionality
-@objc
-internal protocol TypeDescribing {
-    /// Returns a string describing the type of the object
-    var typeDescription: String { get }
-}
-
-/// Default implementation for UIKit views
-extension DDView: TypeDescribing {
-    /// Returns a string describing the type of the view
-    @objc var typeDescription: String {
+internal extension DDView {
+    /// Returns a string describing the type of the view.
+    ///
+    /// This must not be `@objc`: callers would then dispatch it through the Objective-C runtime and only reference
+    /// its selector, so a static linker could drop this file from the `DatadogRUM` library (e.g. in non-WMO Debug builds
+    /// without `-ObjC`), leaving `typeDescription` unregistered and crashing with "unrecognized selector".
+    var typeDescription: String {
         return String(describing: type(of: self))
     }
 }

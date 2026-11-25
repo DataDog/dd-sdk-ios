@@ -151,6 +151,17 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testTabAccessory() async throws {
+        guard #available(iOS 26.0, *) else {
+            throw XCTSkip("Tab accessories require iOS 26")
+        }
+
+        try await takeLayerSnapshotFor(
+            TabAccessoryFixtureViewController(),
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testToolbar() async throws {
         try await takeLayerSnapshotFor(
             ToolbarFixtureView(),

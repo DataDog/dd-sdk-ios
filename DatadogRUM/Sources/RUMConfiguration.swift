@@ -954,7 +954,7 @@ extension RUM.Configuration {
         /// When `true`, changes how view updates are reported: after the first full `RUMViewEvent`
         /// for a view, subsequent updates are sent as `RUMViewUpdateEvent` deltas containing only the
         /// fields that changed, instead of resending the full event. A full event is still sent every
-        /// 5 updates so the view state can be reconstructed even if some deltas are lost in transit.
+        /// 10th update so the view state can be reconstructed even if some deltas are lost in transit.
         /// Defaults to `true`.
         case viewUpdates
     }

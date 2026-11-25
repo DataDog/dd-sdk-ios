@@ -177,8 +177,12 @@ struct CompositionTreeBuilderTests {
     }
 
     @Test(
-        "Build clips nonuniform glass groups outside liquid lenses",
+        "Build clips glass groups and backdrops with nonuniform corners outside liquid lenses",
         arguments: [
+            CALayerSnapshot.SemanticObservation.VisualEffect.glassGroup,
+            .backdrop
+        ],
+        [
             CALayerSnapshot.CornerRadii(
                 topLeft: CGSize(width: 18.5, height: 18.5),
                 topRight: CGSize(width: 18.5, height: 18.5),
@@ -193,13 +197,16 @@ struct CompositionTreeBuilderTests {
             )
         ]
     )
-    func buildClipsNonuniformGlassGroupsOutsideLiquidLenses(cornerRadii: CALayerSnapshot.CornerRadii) throws {
+    func buildClipsNonuniformCornersOutsideLiquidLenses(
+        visualEffect: CALayerSnapshot.SemanticObservation.VisualEffect,
+        cornerRadii: CALayerSnapshot.CornerRadii
+    ) throws {
         // Given
         let frame = CGRect(x: 10, y: 20, width: 58, height: 38)
         let glass = CALayerSnapshot.mockWith(
             replayID: 2,
             absoluteFrame: frame,
-            observation: .init(semantics: .visualEffect(.glassGroup), ignoresSublayers: true),
+            observation: .init(semantics: .visualEffect(visualEffect), ignoresSublayers: true),
             cornerRadii: cornerRadii,
             masksToBounds: false
         )

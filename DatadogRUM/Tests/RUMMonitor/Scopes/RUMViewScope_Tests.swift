@@ -766,9 +766,12 @@ class RUMViewScope_Tests: XCTestCase {
             context: context,
             writer: writer
         )
-        for second in 1...3 {
+        // Fill the deltas so the app hang and the view-b start reach `maxConsecutiveViewUpdates`,
+        // and the pending resource stop triggers the full view event resync.
+        let timingsCount = Int(RUMViewScope.Constants.maxConsecutiveViewUpdates) - 2
+        for index in 0..<timingsCount {
             _ = scope.process(
-                command: RUMAddViewTimingCommand.mockWith(time: startTime + TimeInterval(second), timingName: "timing-\(second)"),
+                command: RUMAddViewTimingCommand.mockWith(time: startTime + 0.1 * TimeInterval(index + 1), timingName: "timing-\(index + 1)"),
                 context: context,
                 writer: writer
             )
