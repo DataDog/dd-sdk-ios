@@ -63,6 +63,14 @@ public enum Flags {
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
 
+        /// Experimental. Response signing is in preview and works only on the Datadog staging endpoint. The API can change or be removed in a minor release, based on customer feedback.
+        ///
+        /// Optional assignment response verification. Default: off.
+        /// Staging only; production is not supported yet. Set `customFlagsEndpoint` to the staging endpoint.
+        /// On other endpoints, `observe` is ignored with a warning, and `required` fails closed with an error.
+        /// Required mode keeps verified flags in memory only and returns defaults after a restart. At proof expiry it keeps them as stale, unless expireVerifiedFlags is true.
+        public var experimentalResponseSigning: ResponseSigningConfiguration
+
         /// The maximum time to wait for the first evaluation context to become ready.
         ///
         /// This timeout covers the complete initialization operation. It includes loading cached data,
@@ -142,6 +150,7 @@ public enum Flags {
         ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
         ///   - flagSelection: Loads only the flags that match these tags or key patterns. Default: `nil`.
+        ///   - experimentalResponseSigning: Experimental. Optional verification. Staging only; production is not supported yet. Default: off.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
@@ -153,7 +162,8 @@ public enum Flags {
             trackEvaluations: Bool = true,
             evaluationFlushInterval: TimeInterval = 10.0,
             rumIntegrationEnabled: Bool = true,
-            flagSelection: FlagSelection? = nil
+            flagSelection: FlagSelection? = nil,
+            experimentalResponseSigning: ResponseSigningConfiguration = .init()
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
@@ -165,7 +175,38 @@ public enum Flags {
             self.trackEvaluations = trackEvaluations
             self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
+            self.experimentalResponseSigning = experimentalResponseSigning
             self.flagSelection = flagSelection
+        }
+
+        /// Creates a configuration for the Datadog Flags feature without response signing.
+        public init(
+            gracefulModeEnabled: Bool,
+            customFlagsEndpoint: URL?,
+            customFlagsHeaders: [String: String]?,
+            initializationTimeout: TimeInterval?,
+            customExposureEndpoint: URL?,
+            trackExposures: Bool,
+            customEvaluationEndpoint: URL?,
+            trackEvaluations: Bool,
+            evaluationFlushInterval: TimeInterval,
+            rumIntegrationEnabled: Bool,
+            flagSelection: FlagSelection?
+        ) {
+            self.init(
+                gracefulModeEnabled: gracefulModeEnabled,
+                customFlagsEndpoint: customFlagsEndpoint,
+                customFlagsHeaders: customFlagsHeaders,
+                initializationTimeout: initializationTimeout,
+                customExposureEndpoint: customExposureEndpoint,
+                trackExposures: trackExposures,
+                customEvaluationEndpoint: customEvaluationEndpoint,
+                trackEvaluations: trackEvaluations,
+                evaluationFlushInterval: evaluationFlushInterval,
+                rumIntegrationEnabled: rumIntegrationEnabled,
+                flagSelection: flagSelection,
+                experimentalResponseSigning: .init()
+            )
         }
 
         /// Creates a configuration for the Datadog Flags feature without a flag selection.

@@ -16,6 +16,7 @@ tracked_files:
   - DatadogFlags/Sources/Models/AnyValue.swift
   - DatadogFlags/Sources/Client/FlagsClientInternal.swift
   - DatadogFlags/Sources/Models/FlagAssignment.swift
+  - DatadogFlags/Sources/Client/FlagsResponseSigning.swift
 ---
 
 # Flags Feature
@@ -66,7 +67,9 @@ Flags.enable(
         // Add evaluated flags to the active RUM view. Default: true.
         rumIntegrationEnabled: true,
         // Load only flags matching these tags or whole-key patterns (`*` wildcard). Default: nil (all flags).
-        flagSelection: Flags.FlagSelection(tags: ["checkout"], keyPatterns: ["checkout-*"])
+        flagSelection: Flags.FlagSelection(tags: ["checkout"], keyPatterns: ["checkout-*"]),
+        // Experimental. Verify signed assignment responses. Staging endpoint only. Default: off.
+        experimentalResponseSigning: .init(mode: .off)
     )
 )
 
@@ -177,6 +180,7 @@ flowchart LR
 - `customExposureEndpoint` and `customEvaluationEndpoint` replace the intake URLs for exposures and evaluations.
 
 ### Startup and Caching
+- With `experimentalResponseSigning` in `observe` mode, the disk cache uses a separate hashed key and never becomes a verified entry. In `required` mode, the SDK writes no flag data to disk; it persists only the draft leaf floor. See `DatadogFlags/README.md`.
 - Assignments are saved per client name after each successful fetch. On the next launch, the cached assignments load at client creation and can be evaluated **before** `setEvaluationContext` is called. Their `reason` is `"CACHED"`. With an experimentation opt-out mode enabled, cached assignments are served only after `setEvaluationContext` with the same context.
 - Startup cache selection and failed-refresh fallback normally require an identical context (same targeting key and attributes). An active subject-authorization boundary permits eligible assignments for the same targeting key when other attributes differ. Experimentation opt-out modes still require the full context and policy to match.
 - When a later context replaces a context that already has fresh assignments, the previous assignments stay readable while the new fetch is in flight (state `.reconciling`). An experimentation opt-out mode or an active subject-authorization boundary can make them ineligible.
@@ -224,7 +228,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - `Flags.FlagSelection` applies to every client and is fixed at `Flags.enable()`.
 - A flag is loaded if it has any listed tag (exact, case-sensitive) or its whole key matches any pattern (`*` matches any run of characters).
 - Values are trimmed and deduplicated. Each list accepts at most 31 values, each value at most 200 UTF-8 bytes. Over a limit, the selection is not sent: the SDK logs an error and loads every flag.
-- If the server ignores the selection, it loads every flag. For a request without an assignment token, the SDK logs a known reason from the `DD-Flag-Selection-Ignored` header or reports another nonempty value as `unknown`. For a token-bearing request, it reports every nonempty value as `redacted`. A proxy behind `customFlagsEndpoint` must forward that header.
+- If the server ignores the selection, it loads every flag. For a request without an assignment token, the SDK logs a known reason from the `DD-Flag-Selection-Ignored` header or reports another nonempty value as `unknown`. For a token-bearing request, it reports every nonempty value as `redacted`. A proxy behind `customFlagsEndpoint` must forward that header. With response signing, the SDK uses only the verified value of the signed response list (see [Signed header lists](README.md#signed-header-lists)).
 - A cache saved under a different selection is not loaded.
 
 ### Exposures and Evaluation Telemetry

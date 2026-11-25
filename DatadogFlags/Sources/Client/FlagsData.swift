@@ -14,6 +14,9 @@ internal struct FlagsData: Equatable, Codable {
     var date: Date
     let obfuscation: FlagKeyObfuscation?
     let flagSelection: CanonicalFlagSelection?
+    // Proofs are process-local and cannot be restored by decoding an ordinary disk cache.
+    var verification: FlagsResponseVerification? = nil
+    var responseSigningCacheScope: String? = nil
     // Optional so snapshots written before opt-out support remain readable.
     let experimentationOptOutPolicy: ExperimentationOptOut?
     let observeFullEvaluationData: Bool
@@ -53,6 +56,7 @@ internal struct FlagsData: Equatable, Codable {
 
     private enum CodingKeys: String, CodingKey {
         case flags, keySpellings, context, date, obfuscation, flagSelection, experimentationOptOutPolicy, observeFullEvaluationData
+        case responseSigningCacheScope
         case unparsedFlagKeys
     }
 
@@ -69,6 +73,8 @@ internal struct FlagsData: Equatable, Codable {
             keySpellings: try container.decodeIfPresent([FlagKeySpelling].self, forKey: .keySpellings) ?? [],
             unparsedFlagKeys: try container.decodeIfPresent([String].self, forKey: .unparsedFlagKeys) ?? []
         )
+        // Only the observe cache scope is persisted. A verification proof is never decoded from disk.
+        responseSigningCacheScope = try container.decodeIfPresent(String.self, forKey: .responseSigningCacheScope)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -83,6 +89,7 @@ internal struct FlagsData: Equatable, Codable {
         try container.encodeIfPresent(flagSelection, forKey: .flagSelection)
         try container.encodeIfPresent(experimentationOptOutPolicy, forKey: .experimentationOptOutPolicy)
         try container.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
+        try container.encodeIfPresent(responseSigningCacheScope, forKey: .responseSigningCacheScope)
         if !unparsedFlagKeys.isEmpty {
             try container.encode(unparsedFlagKeys, forKey: .unparsedFlagKeys)
         }

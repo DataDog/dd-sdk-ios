@@ -48,6 +48,8 @@ internal final class FlagsStateManager: FlagsStateObservable {
     private struct ManagerState {
         var clientState: FlagsClientState = .notReady
         var version: UInt64 = 0
+        /// Counts every accepted update, also one that keeps the state.
+        var updateCount: UInt64 = 0
         var listeners: [WeakListener] = []
     }
 
@@ -56,6 +58,11 @@ internal final class FlagsStateManager: FlagsStateObservable {
 
     var currentState: FlagsClientState {
         managerState.clientState
+    }
+
+    /// Changes after each accepted update, so a caller can detect any update since it last read the value.
+    var updateCount: UInt64 {
+        managerState.updateCount
     }
 
     func updateState(_ newState: FlagsClientState) {
@@ -90,6 +97,7 @@ internal final class FlagsStateManager: FlagsStateObservable {
                 return
             }
             accepted = true
+            state.updateCount += 1
             guard newState != state.clientState else {
                 return
             }
