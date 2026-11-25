@@ -12,11 +12,21 @@ import DatadogInternal
 @_spi(Internal)
 @testable import DatadogFlags
 
+#if targetEnvironment(simulator) || targetEnvironment(macCatalyst) || os(macOS)
+private let canReadTheBuildCheckout = true
+#else
+private let canReadTheBuildCheckout = false
+#endif
+
 final class CanonicalPrecomputedTests: XCTestCase {
     private let decoder = JSONDecoder()
     private var executedEvaluations = 0
 
     func testCanonicalResponses() throws {
+        // A physical device cannot read the build machine's checkout through `#filePath`.
+        try XCTSkipUnless(canReadTheBuildCheckout, "Canonical fixtures load from the build machine's checkout")
+        // The iOS expectations include integers that need a 64-bit `Int`, for example on a 32-bit watch.
+        try XCTSkipIf(Int.bitWidth < 64, "The canonical iOS expectations need a 64-bit Int")
         // Fixtures are git-ignored and fetched by `make feature-flags-fixtures-pull`, like SR snapshots.
         let root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent() // Models
