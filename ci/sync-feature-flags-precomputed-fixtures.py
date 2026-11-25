@@ -115,6 +115,8 @@ def snapshot(source, ref, spec):
             continue
         if target in {'index.json', 'SOURCE.json'} or target.startswith('responses/'):
             raise ValueError('Fixture path is reserved: ' + path)
+        if target in result:
+            raise ValueError('Two fixture files map to ' + target)
         mode, kind, blob = metadata.decode().split()
         if mode not in {'100644', '100755'} or kind != 'blob':
             raise ValueError('Fixture entries must be ordinary files: ' + path)
@@ -210,7 +212,7 @@ def write_snapshot(destination, after):
 
 
 def load_sources(config):
-    """Validate the manifest: a non-empty list of sources with unique names and destinations."""
+    """Validate the manifest: a non-empty list of sources with unique names and separate destinations."""
     sources = config.get('sources')
     if not isinstance(sources, list) or not sources:
         raise ValueError('ci/feature-flags-precomputed-fixtures.json must list at least one source')
@@ -230,13 +232,19 @@ def load_sources(config):
         if not isinstance(spec['files'], dict) or not all(isinstance(k, str) and isinstance(v, str)
                                                           for k, v in spec['files'].items()):
             raise ValueError(f'Source {name} has an invalid file map')
+        # The importer writes and records each target as given, so a target must be its own normalized form.
         if any(not Path(path).parts or Path(path).is_absolute() or '..' in Path(path).parts
-               for path in spec['files'].values()):
-            raise ValueError(f'Source {name} file map must stay inside the snapshot')
-        if spec.get('destination') in destinations:
-            raise ValueError(f'Source {name} reuses a destination')
+               or Path(path).as_posix() != path for path in spec['files'].values()):
+            raise ValueError(f'Source {name} file map must use normalized paths inside the snapshot')
+        destination = spec.get('destination')
+        if not isinstance(destination, str) or Path(destination).as_posix() != destination:
+            raise ValueError(f'Source {name} needs a normalized destination folder')
+        # Compare case-insensitively, as on the default macOS file system. A nested destination also overlaps.
+        folder = destination.lower() + '/'
+        if any(folder.startswith(other) or other.startswith(folder) for other in destinations):
+            raise ValueError(f'Source {name} destination overlaps another source')
         names.add(name)
-        destinations.add(spec.get('destination'))
+        destinations.add(folder)
     return sources
 
 
@@ -306,18 +314,26 @@ def sync(root, spec, args):
                 fetch(source, ref)
                 ref = 'FETCH_HEAD'
             after = snapshot(source, ref, spec)
-            pinned = before if current == pin else None
-            if args.update and pinned is None and json.loads(after['SOURCE.json'])['commit'] != pin:
-                # A fresh checkout has no local snapshot, so read the pinned one to compare.
-                try:
-                    if fetched:
-                        fetch(source, pin)
-                        pinned = snapshot(source, 'FETCH_HEAD', spec)
-                    else:
-                        pinned = snapshot(source, pin, spec)
-                except (Exception, SystemExit):  # pylint: disable=broad-except
-                    # Without a readable pinned snapshot, the new commit counts as a change.
-                    pinned = None
+            pinned = None
+            if args.update and json.loads(after['SOURCE.json'])['commit'] != pin:
+                # Compare with the local snapshot only when it verifies; otherwise read the pin from Git.
+                if current == pin:
+                    try:
+                        verify(destination, spec)
+                        pinned = before
+                    except (ValueError, KeyError, TypeError):
+                        pinned = None
+                if pinned is None:
+                    try:
+                        if fetched:
+                            fetch(source, pin)
+                            pinned = snapshot(source, 'FETCH_HEAD', spec)
+                        else:
+                            pinned = snapshot(source, pin, spec)
+                    except (Exception, SystemExit) as error:  # pylint: disable=broad-except
+                        # Moving the pin needs proof that the imported files changed.
+                        raise ValueError(f"Cannot read the pinned {spec['name']} snapshot ({pin}); "
+                                         'the update stops and keeps the pin') from error
         # An upstream commit that changes no imported file keeps the pin.
         if pinned is not None and json.loads(after['SOURCE.json'])['commit'] != pin \
                 and {k: v for k, v in pinned.items() if k != 'SOURCE.json'} == \
@@ -329,6 +345,44 @@ def sync(root, spec, args):
         unity_metadata(destination, spec['name'])
     commit = json.loads(after['SOURCE.json'])['commit']
     return commit, len(json.loads(after['index.json'])), commit != pin
+
+
+def resolve_update_ref(args):
+    """Resolve the --update revision to one commit, so every source pins the same upstream revision."""
+    ref = args.ref or 'main'
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', ref) or '..' in ref:
+        raise ValueError('Invalid fixture revision')
+    if args.source is not None:
+        sha = git(args.source, 'rev-parse', '--verify', ref + '^{commit}').decode().strip()
+    elif re.fullmatch(r'[0-9a-f]{40}', ref):
+        sha = ref
+    else:
+        lines = subprocess.run(['git', 'ls-remote', REPOSITORY, ref], check=True, capture_output=True,
+                               text=True, timeout=180).stdout.splitlines()
+        refs = dict(reversed(line.split('\t', 1)) for line in lines if '\t' in line)
+        sha = next((refs[name] for name in (f'refs/heads/{ref}', f'refs/tags/{ref}^{{}}', f'refs/tags/{ref}')
+                    if name in refs), None)
+        if sha is None:
+            raise SystemExit(f'Could not resolve {ref} in {REPOSITORY}')
+    if not re.fullmatch(r'[0-9a-f]{40}', sha):
+        raise ValueError('Expected a full source commit SHA')
+    return argparse.Namespace(**dict(vars(args), ref=sha))
+
+
+def sync_sources(root, sources, args):
+    """Sync every source and update the pins in `sources`. Return (changed sources, file count)."""
+    if args.update:
+        args = resolve_update_ref(args)
+    changes = []
+    total = 0
+    for spec in sources:
+        commit, count, changed = sync(root, spec, args)
+        total += count
+        print(f"Feature flags fixtures {spec['name']}: {commit}; {count} files; pin changed={str(changed).lower()}")
+        if changed:
+            spec['commit'] = commit
+            changes.append(f"{spec['name']}@{commit}")
+    return changes, total
 
 
 def main():
@@ -345,16 +399,7 @@ def main():
     root = Path(__file__).resolve().parent.parent
     config_path = root / 'ci/feature-flags-precomputed-fixtures.json'
     config = json.loads(config_path.read_text())
-    sources = load_sources(config)
-    changes = []
-    total = 0
-    for spec in sources:
-        commit, count, changed = sync(root, spec, args)
-        total += count
-        print(f"Feature flags fixtures {spec['name']}: {commit}; {count} files; pin changed={str(changed).lower()}")
-        if changed:
-            spec['commit'] = commit
-            changes.append(f"{spec['name']}@{commit}")
+    changes, total = sync_sources(root, load_sources(config), args)
     if changes:
         config_path.write_text(json.dumps(config, indent=2) + '\n')
     if os.environ.get('GITHUB_OUTPUT'):

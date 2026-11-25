@@ -18,6 +18,15 @@ SPEC.loader.exec_module(sync)
 PIN = '0' * 40
 
 
+def commit(repository, message):
+    """Commits without the developer's global identity and signing settings."""
+    subprocess.run(['git', '-C', str(repository), 'add', '.'], check=True)
+    subprocess.run(['git', '-C', str(repository), '-c', 'user.name=t', '-c', 'user.email=t@example.com',
+                    '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', message], check=True)
+    return subprocess.run(['git', '-C', str(repository), 'rev-parse', 'HEAD'],
+                          check=True, capture_output=True, text=True).stdout.strip()
+
+
 def source(**overrides):
     spec = {'name': 'chain', 'kind': 'files', 'prefix': 'response-signing/chain/',
             'destination': 'Fixtures/chain', 'commit': PIN, 'files': {'LICENSE': 'LICENSE'}}
@@ -45,6 +54,14 @@ class LoadSourcesTests(unittest.TestCase):
             {'sources': [source(files={'LICENSE': ''})]},
             {'sources': [source(), source()]},
             {'sources': [source(), source(name='other')]},
+            {'sources': [source(files={'LICENSE': './LICENSE'})]},
+            {'sources': [source(files={'LICENSE': 'nested/'})]},
+            {'sources': [source(destination=None)]},
+            {'sources': [source(destination='Fixtures/chain/')]},
+            {'sources': [source(destination='./Fixtures/chain')]},
+            {'sources': [source(), source(name='other', destination='Fixtures/chain/nested')]},
+            {'sources': [source(name='other', destination='Fixtures/chain/nested'), source()]},
+            {'sources': [source(), source(name='other', destination='fixtures/Chain')]},
         ]
         for config in invalid:
             with self.assertRaises(ValueError, msg=json.dumps(config)):
@@ -54,7 +71,7 @@ class LoadSourcesTests(unittest.TestCase):
 class SnapshotTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
-        self.repository = Path(self.temporary.name)
+        self.repository = Path(self.temporary.name) / 'upstream'
         subprocess.run(['git', 'init', '-q', str(self.repository)], check=True)
         files = {
             'LICENSE': 'license\n',
@@ -68,9 +85,11 @@ class SnapshotTests(unittest.TestCase):
             target = self.repository / path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content)
-        subprocess.run(['git', '-C', str(self.repository), 'add', '.'], check=True)
-        subprocess.run(['git', '-C', str(self.repository), '-c', 'user.name=t', '-c', 'user.email=t@example.com',
-                        'commit', '-q', '-m', 'fixtures'], check=True)
+        self.pin = commit(self.repository, 'fixtures')
+        self.consumer = Path(self.temporary.name) / 'consumer'
+        subprocess.run(['git', 'init', '-q', str(self.consumer)], check=True)
+        self.consumer = self.consumer.resolve()
+        self.run_args = SimpleNamespace(verify=False, update=False, ref=None, source=self.repository)
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -109,16 +128,56 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(sorted(k for k in result if k != 'SOURCE.json'),
                          ['index.json', 'nested/leaf.json', 'renamed.pem'])
 
+    def update_args(self, ref='HEAD'):
+        return SimpleNamespace(**dict(self.run_args.__dict__, update=True, ref=ref))
+
+    def test_mapped_file_cannot_replace_a_prefix_file(self):
+        with self.assertRaisesRegex(ValueError, 'Two fixture files'):
+            sync.snapshot(self.repository, 'HEAD', source(files={'LICENSE': 'root-a.pem'}))
+
+    def test_update_does_not_trust_an_edited_local_snapshot(self):
+        spec = source(commit=self.pin)
+        sync.sync(self.consumer, spec, self.run_args)
+        (self.consumer / 'Fixtures/chain/root-a.pem').write_text('edited\n')
+        (self.repository / 'response-signing/other.txt').write_text('outside the prefix, changed\n')
+        commit(self.repository, 'outside')
+        self.assertEqual(sync.sync(self.consumer, spec, self.update_args()), (self.pin, 2, False))
+        self.assertEqual((self.consumer / 'Fixtures/chain/root-a.pem').read_text(), 'root\n')
+        sync.verify(self.consumer / 'Fixtures/chain', spec)
+
+    def test_update_stops_when_the_old_pin_is_unreadable(self):
+        spec = source(commit='f' * 40)
+        with self.assertRaisesRegex(ValueError, 'keeps the pin'):
+            sync.sync(self.consumer, spec, self.update_args())
+        self.assertFalse((self.consumer / 'Fixtures/chain').exists())
+
+    def test_update_resolves_the_ref_once_for_every_source(self):
+        sources = [source(commit=self.pin),
+                   source(name='readme', prefix='precomputed-assignments/', destination='Fixtures/readme',
+                          commit=self.pin, files={})]
+        original = sync.sync
+
+        def advance_upstream_after_the_first_source(root, spec, args):
+            result = original(root, spec, args)
+            if spec['name'] == 'chain':
+                (self.repository / 'precomputed-assignments/README.md').write_text('changed\n')
+                commit(self.repository, 'moves main between sources')
+            return result
+
+        sync.sync = advance_upstream_after_the_first_source
+        try:
+            changes, _ = sync.sync_sources(self.consumer, sources, self.update_args())
+        finally:
+            sync.sync = original
+        self.assertEqual(changes, [])
+        self.assertEqual([s['commit'] for s in sources], [self.pin, self.pin])
+
     def test_changed_source_specification_imports_again(self):
-        consumer = self.repository / 'consumer'
-        subprocess.run(['git', 'init', '-q', str(consumer)], check=True)
-        consumer = consumer.resolve()
-        commit = subprocess.run(['git', '-C', str(self.repository), 'rev-parse', 'HEAD'],
-                                check=True, capture_output=True, text=True).stdout.strip()
-        spec = source(commit=commit)
-        run = SimpleNamespace(verify=False, update=False, ref=None, source=self.repository)
+        consumer = self.consumer
+        spec = source(commit=self.pin)
+        run = self.run_args
         sync.sync(consumer, spec, run)
-        changed = source(commit=commit, prefix='response-signing/chain/nested/', files={})
+        changed = source(commit=self.pin, prefix='response-signing/chain/nested/', files={})
         with self.assertRaisesRegex(ValueError, 'source specification'):
             sync.sync(consumer, changed, SimpleNamespace(**dict(run.__dict__, verify=True)))
         sync.sync(consumer, changed, run)
