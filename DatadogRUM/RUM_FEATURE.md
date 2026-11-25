@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-24
+last_updated: 2026-11-25
 sdk_version: 3.23.0
-verified_against_commit: 1f00346a6
+verified_against_commit: 2a7395791
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -318,6 +318,7 @@ Keep mappers fast and make no assumptions about the thread they run on. Do not d
 When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `RUM.enable(with:)` runs, it is merged onto the in-code `RUM.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
 
 - **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `vitalsUpdateFrequency`, `trackBackgroundEvents`/`trackSlowFrames`/`trackWatchdogTerminations` (except on macOS), `trackUserInteractions` (except on watchOS), and `trackMemoryWarnings` (except on watchOS and macOS). `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
+- **`rum.disallowList`** replaces the in-code `urlSessionTracking.disallowList` (an empty list clears it). It is applied after the `trace` namespace, so it also covers instrumentation enabled by `trace`, but it never enables URLSession instrumentation on its own. The remote document is served from a public CDN, so patterns should not contain sensitive paths.
 - **`trace` namespace** configures distributed tracing on RUM's own URLSession instrumentation (traced hosts, sample rate, header/propagator types, injection strategy), merged field by field onto any in-code `urlSessionTracking.firstPartyHostsTracing`. An explicit `rum.trackResources == false` disables that instrumentation and suppresses `trace` entirely, regardless of the hosts it declares.
 - A parameter the remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration fetched) leaves the configuration unchanged.
 - See `RUMConfiguration+RemoteConfiguration.swift` for the full merge rules, and `DatadogTrace/TRACE_FEATURE.md#remote-configuration` for how Trace's own remote `trace.sampleRate` differs from this one (RUM owns propagation enablement; Trace only owns its default tracer's span sample rate).
