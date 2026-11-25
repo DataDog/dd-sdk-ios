@@ -872,6 +872,82 @@ final class FlagsResponseSigningTests: XCTestCase {
         XCTAssertEqual(store.removals, 0)
     }
 
+    func testRequiredRejectionPersistsNothingAndRestartLoadsNoUnverifiedFlags() throws {
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        let anchor = try SigningChainFixture.root("root-a")
+        let body = try JSONEncoder().encode(FlagAssignmentsResponse(flags: ["flag": .mockAnyBoolean()]))
+        let tampered = try JSONEncoder().encode(FlagAssignmentsResponse(flags: ["flag": .mockAnyBoolean(), "extra": .mockAnyBoolean()]))
+        let clock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
+        let store = SigningDataStoreSpy()
+        let context = FlagsEvaluationContext(targetingKey: "same")
+
+        // An earlier unsigned client left flags on disk under the same client name.
+        let unsigned = FlagsRepository(
+            clientName: "signed",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(FlagAssignmentsResponse(flags: ["flag": .mockAnyBoolean()])))
+            },
+            dateProvider: clock,
+            featureScope: FeatureScopeMock(dataStore: store),
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        unsigned.setEvaluationContext(context) { _ in }
+        unsigned.flush()
+        XCTAssertEqual(store.writes, 1)
+        let seededKeys = store.keys
+        let seededReads = store.reads
+
+        func requiredRepository() -> FlagsRepository {
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: FeatureScopeMock(dataStore: store),
+                responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
+                dateProvider: clock,
+                signingFetch: { request, completion in
+                    do {
+                        // The proof signs `body`, but the edge returns other bytes.
+                        let headers = try fixture.signedHeaders(request: request, body: body)
+                        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headers)!
+                        completion(.success((tampered, response)))
+                    } catch { completion(.failure(error)) }
+                },
+                fetch: { _, _ in XCTFail("must not retry unsigned") }
+            )
+            return FlagsRepository(
+                clientName: "signed",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: clock,
+                featureScope: FeatureScopeMock(dataStore: store),
+                flagSelection: nil,
+                initializationTimeout: nil
+            )
+        }
+
+        let repository = requiredRepository()
+        let rejected = expectation(description: "required rejects the response")
+        repository.setEvaluationContext(context) { result in
+            guard case .failure(.responseSigningFailed) = result else {
+                return XCTFail("required admitted an invalid response: \(result)")
+            }
+            rejected.fulfill()
+        }
+        wait(for: [rejected], timeout: 2)
+        repository.flush()
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertNil(repository.flagAssignments())
+        XCTAssertEqual(store.writes, 1, "required wrote flag data after a rejection")
+        XCTAssertEqual(store.keys, seededKeys)
+
+        let restarted = requiredRepository()
+        defer { restarted.flush() }
+        XCTAssertNil(restarted.flagAssignment(for: "flag"))
+        XCTAssertNil(restarted.flagAssignments())
+        XCTAssertEqual(store.reads, seededReads, "required read the unverified disk cache")
+    }
+
     func testRequiredResetAndNewContextRejectLateVerifiedCallbacks() {
         let clock = DateProviderMock(now: Date(timeIntervalSince1970: 100))
         let fetcher = SigningLifecycleFetcher(mode: .required)
@@ -2089,6 +2165,11 @@ extension FlagsResponseSigningTests {
             ("https://preview.ff-cdn.datadoghq.eu/x", "datadoghq.eu"),
             ("https://proxy.example.test/precompute-assignments", "custom"),
             ("https://preview.ff-cdn.example.test/x", "custom"),
+            ("https://preview.ff-cdn.evildatadoghq.com/x", "custom"),
+            ("https://preview.ff-cdn.evildatadoghq.eu/x", "custom"),
+            ("https://preview.ff-cdn.evildatad0g.com/x", "custom"),
+            ("https://preview.ff-cdn.datadoghq.com.example.test/x", "custom"),
+            ("https://preview.ff-cdn.ap1.datadoghq.com/x", "ap1.datadoghq.com"),
             (nil, "custom"),
         ]
         for (url, site) in cases {

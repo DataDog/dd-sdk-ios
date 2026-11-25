@@ -467,7 +467,10 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             return "custom"
         }
         let site = String(host.dropFirst(prefix.count))
-        return site == "datad0g.com" || site.hasSuffix("datadoghq.com") || site.hasSuffix("datadoghq.eu") ? site : "custom"
+        // Match whole DNS labels, so `evildatadoghq.com` reports `custom`.
+        let exact: Set<String> = ["datad0g.com", "datadoghq.com", "datadoghq.eu"]
+        let isDatadog = exact.contains(site) || site.hasSuffix(".datadoghq.com") || site.hasSuffix(".datadoghq.eu")
+        return isDatadog ? site : "custom"
     }
 
     private func reportSigning(_ error: FlagsSigningError?, telemetry: SigningTelemetryContext) {
