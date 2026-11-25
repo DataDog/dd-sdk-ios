@@ -142,6 +142,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
             featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
             responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
             dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
+            floorStore: InMemorySigningFloorStore(),
             signingFetch: { request, completion in
                 do {
                     let fields = try fixture.signedHeaders(request: request, body: body, now: now)

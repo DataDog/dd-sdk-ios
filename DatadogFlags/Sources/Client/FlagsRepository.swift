@@ -375,7 +375,8 @@ internal final class FlagsRepository {
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         // Wall time keeps counting while the device sleeps.
         self.scheduleExpiry = scheduleExpiry ?? { delay, work in
-            DispatchQueue.global(qos: .utility).asyncAfter(wallDeadline: .now() + delay, execute: work)
+            // A monotonic deadline: a wall clock step back does not delay the move to `stale`.
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + delay, execute: work)
         }
         featureScope.context { [weak self] context in
             guard let self else {

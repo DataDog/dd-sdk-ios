@@ -137,6 +137,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 flagSelection: nil,
                 featureScope: scope,
                 responseSigning: responseSigning,
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { _, _ in XCTFail("An opted-out client must not use the signing transport") },
                 fetch: fetch
             )
@@ -259,6 +260,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 flagSelection: nil,
                 featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
                 responseSigning: effective,
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { _, _ in XCTFail("Required signing outside staging must not send a request") },
                 fetch: { _, _ in XCTFail("Required signing outside staging must not send a request") }
             )
@@ -306,6 +308,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 flagSelection: nil,
                 featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
                 responseSigning: .init(mode: mode),
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { request, complete in
                     complete(.success((body, HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: [:])!)))
                 },
@@ -336,6 +339,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 flagSelection: nil,
                 featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
                 responseSigning: .init(mode: mode),
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: reply,
                 fetch: reply
             )
@@ -460,6 +464,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 featureScope: scope,
                 responseSigning: .init(mode: mode),
                 dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now)),
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { request, complete in
                     signedRequests += 1
                     XCTAssertTrue(
@@ -727,6 +732,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             featureScope: scope,
             responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
             dateProvider: clock,
+            floorStore: InMemorySigningFloorStore(),
             signingFetch: { request, completion in
                 do {
                     XCTAssertEqual(request.value(forHTTPHeaderField: "dd-client-token"), "effective-override")
@@ -782,6 +788,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                     flagSelection: nil,
                     featureScope: FeatureScopeMock(),
                     responseSigning: .init(mode: mode, trustedRootCertificates: [anchor]),
+                    floorStore: InMemorySigningFloorStore(),
                     signingFetch: { request, completion in
                         signedCalls += 1
                         XCTAssertNil(request.value(forHTTPHeaderField: "X-stream"))
@@ -934,6 +941,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 featureScope: FeatureScopeMock(dataStore: store),
                 responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
                 dateProvider: clock,
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { request, completion in
                     do {
                         // The proof signs `body`, but the edge returns other bytes.
@@ -1015,6 +1023,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 featureScope: FeatureScopeMock(),
                 responseSigning: .init(mode: mode, trustedRootCertificates: [anchor]),
                 dateProvider: clock,
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { request, completion in
                     do {
                         calls += 1
@@ -1149,6 +1158,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 flagSelection: selection,
                 featureScope: FeatureScopeMock(),
                 responseSigning: .init(mode: .observe),
+                floorStore: InMemorySigningFloorStore(),
                 fetch: { _, _ in XCTFail("no network expected") }
             )
             return fetcher.updateResponseSigningCacheScope(context)
@@ -1168,6 +1178,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagSelection: nil,
             featureScope: FeatureScopeMock(),
             responseSigning: .init(mode: .observe),
+            floorStore: InMemorySigningFloorStore(),
             fetch: { _, _ in XCTFail("no network expected") }
         )
         let receiver = FlagsSigningScopeReceiver(fetcher: fetcher)
@@ -1198,6 +1209,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             flagSelection: nil,
             featureScope: FeatureScopeMock(),
             responseSigning: .init(mode: .required),
+            floorStore: InMemorySigningFloorStore(),
             fetch: { _, _ in XCTFail("no network expected") }
         )
         let receiver = FlagsSigningScopeReceiver(fetcher: fetcher)
@@ -1246,6 +1258,7 @@ final class FlagsResponseSigningTests: XCTestCase {
             featureScope: FeatureScopeMock(context: appA),
             responseSigning: .init(mode: .required, trustedRootCertificates: [anchor]),
             dateProvider: clock,
+            floorStore: InMemorySigningFloorStore(),
             signingFetch: { request, complete in
                 // The transcript still binds the application ID of this request.
                 XCTAssertEqual(request.value(forHTTPHeaderField: "dd-application-id"), "app-a")
@@ -1289,6 +1302,7 @@ final class FlagsResponseSigningTests: XCTestCase {
                 featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
                 responseSigning: .init(mode: mode, trustedRootCertificates: [anchor]),
                 dateProvider: clock,
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { request, complete in
                     do {
                         // Signed for a different body: the signature does not match.
@@ -2074,9 +2088,51 @@ extension FlagsResponseSigningTests {
         }
     }
 
+    func testKeychainReadFailureIsRetriedAndThenAppliesTheStoredFloor() throws {
+        let keychain = KeychainMock()
+        keychain.items[try floorKey()] = Data("42".utf8)
+        keychain.failingReads = 1
+        let store = KeychainSigningFloorStore(legacy: nil, keychain: keychain)
+        // Before the first unlock the read fails. It is not cached as "no value".
+        XCTAssertNil(store.value(forKey: try floorKey(), waitForRead: true))
+        XCTAssertEqual(store.value(forKey: try floorKey(), waitForRead: true), 42)
+        // The value in memory stays a lower bound while reads fail.
+        store.store(50, forKey: try highWaterMarkKey())
+        keychain.failingReads = 1
+        XCTAssertEqual(store.value(forKey: try highWaterMarkKey(), waitForRead: true), 50)
+    }
+
+    func testTwoKeychainStoresNeverLowerAValueThatTheOtherWrote() throws {
+        let keychain = KeychainMock()
+        let first = KeychainSigningFloorStore(legacy: nil, keychain: keychain)
+        let second = KeychainSigningFloorStore(legacy: nil, keychain: keychain)
+        let key = try highWaterMarkKey()
+        XCTAssertNil(second.value(forKey: key, waitForRead: true))
+        first.store(200, forKey: key)
+        // `second` read no value before. Its lower write must not replace the value of `first`.
+        second.store(100, forKey: key)
+        XCTAssertEqual(keychain.items[key], Data("200".utf8))
+        XCTAssertEqual(KeychainSigningFloorStore(legacy: nil, keychain: keychain).value(forKey: key, waitForRead: true), 200)
+        second.store(300, forKey: key)
+        XCTAssertEqual(keychain.items[key], Data("300".utf8))
+    }
+
+    func testMissingKeychainEntitlementKeepsTheEarlierFileStore() throws {
+        let keychain = KeychainMock()
+        keychain.fails = true
+        keychain.failureStatus = errSecMissingEntitlement
+        let caches = DataStoreMock()
+        let store = KeychainSigningFloorStore(legacy: DataStoreSigningFloorStore(dataStore: caches), keychain: keychain)
+        store.store(42, forKey: try highWaterMarkKey())
+        // The value persists in the file store, and a restart reads it.
+        let restarted = KeychainSigningFloorStore(legacy: DataStoreSigningFloorStore(dataStore: caches), keychain: keychain)
+        XCTAssertEqual(restarted.value(forKey: try highWaterMarkKey(), waitForRead: true), 42)
+    }
+
     func testSystemKeychainRoundTrip() throws {
         let keychain = SystemFlagsKeychain()
         let account = "test-round-trip"
+        defer { keychain.delete(account: account) }
         do {
             try keychain.write(Data("1".utf8), account: account)
         } catch let failure as SystemFlagsKeychain.Failure where failure.status == errSecMissingEntitlement {
@@ -2268,6 +2324,7 @@ extension FlagsResponseSigningTests {
             featureScope: scope,
             responseSigning: .init(mode: mode, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
             dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now)),
+            floorStore: InMemorySigningFloorStore(),
             signingFetch: { request, complete in
                 do {
                     let headers = try respond(request)
@@ -2536,6 +2593,7 @@ extension FlagsResponseSigningTests {
             featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
             responseSigning: .init(mode: mode, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
             dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: now)),
+            floorStore: InMemorySigningFloorStore(),
             signingFetch: { request, completion in
                 do {
                     let fields = try fixture.signedHeaders(request: request, body: body, now: now, responseHeaders: signed)
@@ -2624,6 +2682,7 @@ extension FlagsResponseSigningTests {
                 flagSelection: nil,
                 featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
                 responseSigning: .init(mode: mode, trustedRootCertificates: roots),
+                floorStore: InMemorySigningFloorStore(),
                 signingFetch: { request, complete in
                     sent.append(request)
                     complete(.success((.mockAnyFlagAssignmentsResponse(), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: [:])!)))
@@ -2710,6 +2769,7 @@ extension FlagsResponseSigningTests {
             flagSelection: nil,
             featureScope: FeatureScopeMock(),
             responseSigning: .init(mode: .observe),
+            floorStore: InMemorySigningFloorStore(),
             fetch: { _, _ in XCTFail("no network expected") }
         )
         let base = DatadogContext.mockWith(clientToken: "token", env: "staging", source: "ios")
@@ -3138,15 +3198,19 @@ private final class SlowDataStore: DataStore {
 private final class KeychainMock: FlagsKeychain {
     var items: [String: Data] = [:]
     var fails = false
+    /// The number of next reads that fail, for example before the first unlock.
+    var failingReads = 0
+    var failureStatus = errSecNotAvailable
     func read(account: String) throws -> Data? {
-        if fails {
-            throw SystemFlagsKeychain.Failure(status: errSecNotAvailable)
+        if fails || failingReads > 0 {
+            failingReads = max(0, failingReads - 1)
+            throw SystemFlagsKeychain.Failure(status: failureStatus)
         }
         return items[account]
     }
     func write(_ data: Data, account: String) throws {
         if fails {
-            throw SystemFlagsKeychain.Failure(status: errSecNotAvailable)
+            throw SystemFlagsKeychain.Failure(status: failureStatus)
         }
         items[account] = data
     }
@@ -3224,7 +3288,8 @@ private final class SigningDataStoreSpy: DataStore {
     var signingFloorReads = 0
     func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
         reads += 1
-        if key.hasPrefix(DataStoreSigningFloorStore.keyPrefix) {
+        let floorKinds = [FlagsResponseVerifier.leafFloorKey(""), FlagsResponseVerifier.highWaterMarkKey("")]
+        if floorKinds.contains(where: { key.hasPrefix(DataStoreSigningFloorStore.keyPrefix + $0) }) {
             signingFloorReads += 1
         }
         store.value(forKey: key, callback: callback)

@@ -288,6 +288,9 @@ internal final class DataStoreSigningFloorStore: FlagsSigningFloorStore {
     }
 
     func removeValue(forKey key: String) {
+        lock.lock()
+        values[key] = .some(nil)
+        lock.unlock()
         dataStore.removeValue(forKey: Self.keyPrefix + key)
     }
 }
@@ -340,23 +343,41 @@ internal struct SystemFlagsKeychain: FlagsKeychain {
         var status = SecItemUpdate(query(account) as CFDictionary, attributes as CFDictionary)
         if status == errSecItemNotFound {
             status = SecItemAdd(query(account).merging(attributes) { $1 } as CFDictionary, nil)
+            if status == errSecDuplicateItem {
+                // Another writer added the item after the update. Update it now.
+                status = SecItemUpdate(query(account) as CFDictionary, attributes as CFDictionary)
+            }
         }
         guard status == errSecSuccess else {
             throw Failure(status: status)
         }
     }
+
+    /// Tests only: removes an item.
+    func delete(account: String) {
+        SecItemDelete(query(account) as CFDictionary)
+    }
 }
 
 /// Persists the signing floors in the Keychain (service `com.datadoghq.flags.response-signing`, account = key,
 /// `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`). The items stay after a reinstall and a `Library/Caches` cleanup.
-/// The first read of a key migrates a value of the earlier `Library/Caches` store, then deletes that file.
-/// When a Keychain call fails, the store keeps the value in memory for the process.
+/// - The first read of a key migrates a value of the earlier `Library/Caches` store, then deletes that file.
+/// - A failed Keychain read (for example before the first unlock) is retried on the next read. The values in memory
+///   stay a lower bound in the meantime.
+/// - A write reads the stored value, compares and writes under one lock for all instances, so two SDK instances
+///   never lower a value.
+/// - Without a Keychain entitlement (`errSecMissingEntitlement`), the store keeps using the earlier file store.
+/// - When another Keychain call fails, the store keeps the value in memory for the process.
 internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
+    /// Serializes read-compare-write of the Keychain items across all instances in the process.
+    private static let keychainLock = NSLock()
     private let keychain: any FlagsKeychain
     private let legacy: DataStoreSigningFloorStore?
     private let lock = NSLock()
-    /// Keys that were read or written, with their value. `nil` means "read, no value".
-    private var values: [String: UInt64?] = [:]
+    /// The highest value known in this process for each key. It is a lower bound of the stored value.
+    private var values: [String: UInt64] = [:]
+    /// Keys whose stored value was read completely. A failed or unfinished read is retried.
+    private var readKeys: Set<String> = []
 
     init(legacy: DataStoreSigningFloorStore?, keychain: any FlagsKeychain = SystemFlagsKeychain()) {
         self.keychain = keychain
@@ -365,29 +386,35 @@ internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
 
     func value(forKey key: String, waitForRead: Bool) -> UInt64? {
         lock.lock()
-        if let cached = values[key] {
-            lock.unlock()
-            return cached
+        if readKeys.contains(key) {
+            defer { lock.unlock() }
+            return values[key]
         }
         lock.unlock()
-        var keychainFailed = false
-        var value: UInt64?
+        Self.keychainLock.lock()
+        defer { Self.keychainLock.unlock() }
+        var stored: UInt64?
+        var failure: OSStatus?
         do {
-            value = try keychain.read(account: key).flatMap(Self.decode)
+            stored = try keychain.read(account: key).flatMap(Self.decode)
         } catch {
-            keychainFailed = true
+            failure = (error as? SystemFlagsKeychain.Failure)?.status ?? errSecInternalError
         }
-        var complete = true
-        if value == nil, let legacy {
+        let fileStore = failure == errSecMissingEntitlement
+        var complete = failure == nil || fileStore
+        var migrated: UInt64?
+        if let legacy {
             switch legacy.read(forKey: key, waitForRead: waitForRead) {
             case .none:
-                // `observe` only: the earlier file was not read in time. Try again on the next verification.
+                // `observe` only: the earlier file was not read in time. Try again on the next read.
                 complete = false
-            case .some(let migrated?):
-                value = migrated
-                // Delete the earlier file only after the Keychain holds its value.
-                if !keychainFailed, (try? keychain.write(Self.encode(migrated), account: key)) != nil {
-                    legacy.removeValue(forKey: key)
+            case .some(let old?):
+                migrated = old
+                // Delete the earlier file only after the Keychain holds a value that is not lower.
+                if failure == nil {
+                    if stored.map({ $0 >= old }) == true || (try? keychain.write(Self.encode(old), account: key)) != nil {
+                        legacy.removeValue(forKey: key)
+                    }
                 }
             case .some(nil):
                 break
@@ -395,23 +422,39 @@ internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
         }
         lock.lock()
         defer { lock.unlock() }
-        let merged = [values[key] ?? nil, value].compactMap { $0 }.max()
+        let merged = [values[key], stored, migrated].compactMap { $0 }.max()
+        if let merged {
+            values[key] = merged
+        }
         if complete {
-            values[key] = .some(merged)
+            readKeys.insert(key)
         }
         return merged
     }
 
     func store(_ value: UInt64, forKey key: String) {
-        let current = self.value(forKey: key, waitForRead: true)
+        // The earlier file is a lower bound. `observe` waits for it at most the short read timeout.
+        let old = legacy.flatMap { $0.read(forKey: key, waitForRead: false) ?? nil }
+        Self.keychainLock.lock()
+        defer { Self.keychainLock.unlock() }
         lock.lock()
-        defer { lock.unlock() }
-        if let stored = [values[key] ?? nil, current].compactMap({ $0 }).max(), stored >= value {
-            return
+        var target = [values[key], old, value].compactMap { $0 }.max() ?? value
+        lock.unlock()
+        do {
+            let stored = try keychain.read(account: key).flatMap(Self.decode)
+            // Never write a lower value: another instance can have written a higher one.
+            if stored.map({ $0 < target }) ?? true {
+                try keychain.write(Self.encode(target), account: key)
+            }
+            target = max(target, stored ?? 0)
+        } catch let failure as SystemFlagsKeychain.Failure where failure.status == errSecMissingEntitlement {
+            legacy?.store(target, forKey: key)
+        } catch {
+            // A failed Keychain call keeps the value in memory for this process. The response is still accepted.
         }
-        values[key] = .some(value)
-        // A failed write keeps the value in memory for this process. The response is still accepted.
-        try? keychain.write(Self.encode(value), account: key)
+        lock.lock()
+        values[key] = max(values[key] ?? 0, target)
+        lock.unlock()
     }
 
     private static func encode(_ value: UInt64) -> Data { Data(String(value).utf8) }
