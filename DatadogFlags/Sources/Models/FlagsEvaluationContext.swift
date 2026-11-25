@@ -81,13 +81,31 @@ public struct FlagsEvaluationContext: Equatable, Codable {
 extension FlagsEvaluationContext {
     /// Compares the encoded bytes. `==` compares strings by canonical equivalence, so a precomposed and a
     /// decomposed targeting key are equal, but the requests carry different bytes. A signed proof binds the bytes.
+    /// It compares the UTF-8 bytes of every string and key in place, so required-mode reads encode nothing.
     internal func hasSameWireIdentity(as other: FlagsEvaluationContext) -> Bool {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        guard let lhs = try? encoder.encode(self), let rhs = try? encoder.encode(other) else {
-            return false
+        targetingKey.utf8.elementsEqual(other.targetingKey.utf8)
+            && AnyValue.dictionary(attributes).hasSameWireIdentity(as: .dictionary(other.attributes))
+    }
+}
+
+extension AnyValue {
+    fileprivate func hasSameWireIdentity(as other: AnyValue) -> Bool {
+        switch (self, other) {
+        case let (.string(lhs), .string(rhs)):
+            return lhs.utf8.elementsEqual(rhs.utf8)
+        case let (.array(lhs), .array(rhs)):
+            return lhs.elementsEqual(rhs) { $0.hasSameWireIdentity(as: $1) }
+        case let (.dictionary(lhs), .dictionary(rhs)):
+            // Keys that differ only in normalization are the same dictionary key, so compare their bytes too.
+            return lhs.count == rhs.count && lhs.allSatisfy { key, value in
+                guard let index = rhs.index(forKey: key) else {
+                    return false
+                }
+                return rhs[index].key.utf8.elementsEqual(key.utf8) && value.hasSameWireIdentity(as: rhs[index].value)
+            }
+        default:
+            return self == other
         }
-        return lhs == rhs
     }
 }
 

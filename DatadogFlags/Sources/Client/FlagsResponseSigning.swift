@@ -235,6 +235,8 @@ internal final class FlagsResponseVerifier {
     let scope = UUID()
     let configuration: Flags.ResponseSigningConfiguration
     let minimumNotBeforeStore: any FlagsMinimumNotBeforeStore
+    /// The configured and bundled roots, parsed once instead of on each verification.
+    private let parsedRoots: [Data: FlagsSigningCertificate]
 
     init(
         configuration: Flags.ResponseSigningConfiguration,
@@ -242,6 +244,11 @@ internal final class FlagsResponseVerifier {
     ) {
         self.configuration = configuration
         self.minimumNotBeforeStore = minimumNotBeforeStore
+        var parsedRoots: [Data: FlagsSigningCertificate] = [:]
+        for data in configuration.trustedRootCertificates + [Flags.ResponseSigningConfiguration.stagingRoot] {
+            parsedRoots[data] = try? FlagsSigningCertificate(der: data, role: .anchor)
+        }
+        self.parsedRoots = parsedRoots
     }
 
     /// Hash only configuration/identity, excluding nonce and subject. Subject matching is a separate repository gate.
@@ -384,7 +391,7 @@ internal final class FlagsResponseVerifier {
         }
         var anchor: Data?
         for data in roots {
-            guard let root = try? FlagsSigningCertificate(der: data, role: .anchor),
+            guard let root = parsedRoots[data],
                 root.pathLength.map({ $0 >= intermediates.count }) ?? true,
                 (try? Self.verifyChild(last, parent: root)) != nil,
                 root.notBefore <= seconds, seconds < root.notAfter,

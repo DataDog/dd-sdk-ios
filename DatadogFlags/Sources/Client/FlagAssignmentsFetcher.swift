@@ -177,7 +177,9 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         guard let current = responseSigningCacheScope, proof?.cacheScope == current else {
             return false
         }
-        return proof?.isValid(at: now, scope: verifier.scope, allowExpired: !verifier.configuration.expireVerifiedFlags) == true
+        // `expireVerifiedFlags` is a required-mode setting. Observe never trusts an expired proof.
+        let allowExpired = verifier.configuration.mode == .required && !verifier.configuration.expireVerifiedFlags
+        return proof?.isValid(at: now, scope: verifier.scope, allowExpired: allowExpired) == true
     }
 
     convenience init(

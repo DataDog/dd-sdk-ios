@@ -215,6 +215,12 @@ internal final class FlagsRepository {
 
     /// Synchronizes assignments, request supersession, and disk-read lifecycle. Client-state transitions
     /// acquire this lock before the state-manager lock; listeners and completions run after unlocking.
+    private struct StateBeforeVerifiedExpiry {
+        let state: FlagsClientState
+        let updateCount: UInt64
+        let flagsDataVersion: UInt64
+    }
+
     private struct RepositoryState {
         var experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
         var requestedOptOut: ExperimentationOptOut?
@@ -238,6 +244,9 @@ internal final class FlagsRepository {
         var cachedFlagsData: FlagsData?
         // Observation data never replaces this process-local verified fallback.
         var verifiedFlagsData: FlagsData?
+        /// Required mode: the state before proof expiry or a backward clock step changed it. It is valid only while
+        /// no other state update and no new install happened.
+        var stateBeforeVerifiedExpiry: StateBeforeVerifiedExpiry?
         // A missing or delayed context must not expose encoded assignments to legacy bridges.
         var supportsFlagKeyObfuscation = false
 
@@ -465,12 +474,22 @@ internal final class FlagsRepository {
     /// become `error` when `expireVerifiedFlags` is set. Reads and an expiry timer call this.
     ///
     /// It also applies while a refresh is reconciling, and keeps the pending request. When the clock returns into
-    /// the proof window, a client that this rule moved to `error` recovers to `ready` (or `stale` when not fresh).
+    /// the proof window, the client gets back the state from before this rule changed it, if nothing else changed
+    /// the state in between. Otherwise a client in `error` recovers to `ready` (or `stale` when not fresh).
     private func applyVerifiedExpiry() {
         guard flagAssignmentsFetcher.responseSigningMode == .required else {
             return
         }
         let now = dateProvider.now
+        // Most reads change nothing: decide under the read lock first, and take the write lock only for a change.
+        let snapshot = repositoryState
+        if let data = snapshot.flagsData, data.verification != nil {
+            guard needsVerifiedExpiryUpdate(snapshot, data: data, now: now) else {
+                return
+            }
+        } else {
+            return
+        }
         var notifyListeners: (() -> Void)?
         _repositoryState.mutate { state in
             let current = stateManager.currentState
@@ -479,6 +498,20 @@ internal final class FlagsRepository {
             }
             let verified = flagAssignmentsFetcher.isVerified(data.verification, at: now)
             let trusted = flagAssignmentsFetcher.isTrusted(data.verification, at: now)
+            if let before = state.stateBeforeVerifiedExpiry {
+                if before.updateCount != stateManager.updateCount || before.flagsDataVersion != state.flagsDataVersion {
+                    // Another update happened after this rule changed the state. Use the rules below.
+                    state.stateBeforeVerifiedExpiry = nil
+                } else if verified {
+                    // The clock returned into the proof window: restore the state from before this rule changed it.
+                    state.stateBeforeVerifiedExpiry = nil
+                    guard canUseSigned(data, matching: state.latestRequestedContext) else {
+                        return
+                    }
+                    notifyListeners = stateManager.updateStateWithoutNotifying(before.state)
+                    return
+                }
+            }
             let newState: FlagsClientState
             switch current {
             case .ready, .stale, .reconciling:
@@ -503,8 +536,35 @@ internal final class FlagsRepository {
                 return
             }
             notifyListeners = stateManager.updateStateWithoutNotifying(newState)
+            state.stateBeforeVerifiedExpiry = current == .error ? nil : StateBeforeVerifiedExpiry(
+                state: current,
+                updateCount: stateManager.updateCount,
+                flagsDataVersion: state.flagsDataVersion
+            )
         }
         notifyListeners?()
+    }
+
+    /// A read-only test for `applyVerifiedExpiry`: `true` when its write-lock pass can change something.
+    private func needsVerifiedExpiryUpdate(_ state: RepositoryState, data: FlagsData, now: Date) -> Bool {
+        let verified = flagAssignmentsFetcher.isVerified(data.verification, at: now)
+        if let before = state.stateBeforeVerifiedExpiry {
+            let isCurrent = before.updateCount == stateManager.updateCount && before.flagsDataVersion == state.flagsDataVersion
+            if !isCurrent || verified {
+                return true
+            }
+        }
+        switch stateManager.currentState {
+        case .ready, .reconciling:
+            return !verified
+        case .stale:
+            return !verified && !flagAssignmentsFetcher.isTrusted(data.verification, at: now)
+        case .error:
+            return flagAssignmentsFetcher.isTrusted(data.verification, at: now)
+                && canUseSigned(data, matching: state.latestRequestedContext)
+        case .notReady:
+            return false
+        }
     }
 
     private func scheduleVerifiedExpiry(for data: FlagsData) {
@@ -972,8 +1032,12 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     // Accept an older success for the current context only if no success or reset
                     // superseded its starting version. The latest request's success always applies.
                     let isLatestRequest = contextUpdateID == state.contextUpdateID
-                    let isFreshForLatestContext = state.latestRequestedContext == context
-                        && state.flagsDataVersion == versionAtStart
+                    // Required mode compares wire identity: a proof binds the request bytes.
+                    let required = self.flagAssignmentsFetcher.responseSigningMode == .required
+                    let isLatestContext = state.latestRequestedContext.map {
+                        required ? $0.hasSameWireIdentity(as: context) : $0 == context
+                    } ?? false
+                    let isFreshForLatestContext = isLatestContext && state.flagsDataVersion == versionAtStart
                     guard isLatestRequest || (!state.hasObservedAssignmentAuthorization && isFreshForLatestContext) else {
                         // A newer success for the same context and policy still satisfies this request.
                         isServingRequestedContext = state.readableFlagsData?.context == context

@@ -2179,6 +2179,22 @@ extension FlagsResponseSigningTests {
 
     // MARK: - Required mode matches contexts by wire identity
 
+    func testWireIdentityComparesTheBytesOfNestedValuesAndKeys() {
+        let nfc = "caf\u{E9}", nfd = "cafe\u{301}"
+        func context(value: AnyValue, key: String = "k", attribute: String = "a") -> FlagsEvaluationContext {
+            FlagsEvaluationContext(targetingKey: key, attributes: [attribute: value])
+        }
+        let nested = AnyValue.dictionary(["list": .array([.string(nfc), .int(1)])])
+        XCTAssertTrue(context(value: nested).hasSameWireIdentity(as: context(value: nested)))
+        let decomposed = AnyValue.dictionary(["list": .array([.string(nfd), .int(1)])])
+        XCTAssertEqual(context(value: nested), context(value: decomposed))
+        XCTAssertFalse(context(value: nested).hasSameWireIdentity(as: context(value: decomposed)))
+        XCTAssertFalse(context(value: .null, attribute: nfc).hasSameWireIdentity(as: context(value: .null, attribute: nfd)))
+        XCTAssertFalse(context(value: .null, key: nfc).hasSameWireIdentity(as: context(value: .null, key: nfd)))
+        XCTAssertFalse(context(value: .int(1)).hasSameWireIdentity(as: context(value: .int(2))))
+        XCTAssertFalse(context(value: .null).hasSameWireIdentity(as: FlagsEvaluationContext(targetingKey: "k")))
+    }
+
     func testRequiredDoesNotServeAContextWithADifferentWireIdentity() {
         let precomposed = FlagsEvaluationContext(targetingKey: "caf\u{E9}")
         let decomposed = FlagsEvaluationContext(targetingKey: "cafe\u{301}")
@@ -2201,6 +2217,31 @@ extension FlagsResponseSigningTests {
         XCTAssertNotNil(repository.flagAssignment(for: "flag"))
         // While the decomposed context is pending, and after its request fails, the precomposed proof is not used.
         repository.setEvaluationContext(decomposed) { _ in }
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        fetcher.completions[1](.failure(.networkError(URLError(.notConnectedToInternet))))
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.state.currentState, .error)
+    }
+
+    /// Two requests overlap: a precomposed context, then a decomposed one. The older response is for another wire
+    /// identity, so it must not publish `ready`, and the failure of the newer request must still apply.
+    func testRequiredDoesNotAdmitAnOlderResponseForAnotherWireIdentity() {
+        let precomposed = FlagsEvaluationContext(targetingKey: "caf\u{E9}")
+        let decomposed = FlagsEvaluationContext(targetingKey: "cafe\u{301}")
+        let fetcher = SigningLifecycleFetcher(mode: .required)
+        let repository = FlagsRepository(
+            clientName: "signed",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: 100)),
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        defer { repository.flush() }
+        repository.setEvaluationContext(precomposed) { _ in }
+        repository.setEvaluationContext(decomposed) { _ in }
+        fetcher.completeVerified(index: 0, expiry: 200)
+        XCTAssertNotEqual(repository.state.currentState, .ready, "an older response for another wire identity published ready")
         XCTAssertNil(repository.flagAssignment(for: "flag"))
         fetcher.completions[1](.failure(.networkError(URLError(.notConnectedToInternet))))
         XCTAssertNil(repository.flagAssignment(for: "flag"))
@@ -2322,6 +2363,35 @@ extension FlagsResponseSigningTests {
         }
     }
 
+    /// The shared vectors pin only a non-critical PolicyMappings. NameConstraints, PolicyConstraints and
+    /// InhibitAnyPolicy must also fail when they are not critical. The leaf parser rejects them before any
+    /// signature check, so a swapped OID byte isolates the rule.
+    func testNonCriticalConstraintExtensionsAreRejected() throws {
+        let url = try SharedSigningFixtures.url("response-signing-v1", "extension-profile", "json")
+        let profile = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        let cases = try XCTUnwrap(profile["cases"] as? [[String: Any]])
+        let vector = try XCTUnwrap(cases.first { $0["id"] as? String == "noncritical-policy-mappings" })
+        let response = try XCTUnwrap(vector["response"] as? [String: Any])
+        let headers = try XCTUnwrap(response["headers"] as? [[String]])
+        let encoded = try XCTUnwrap(headers.first { $0.first == FlagsResponseVerifier.prefix + "signing-certificate" }?.last)
+        let leaf = try XCTUnwrap(Data(base64Encoded: encoded))
+        let policyMappings = Data([6, 3, 85, 29, 33])
+        let range = try XCTUnwrap(leaf.range(of: policyMappings))
+        func swappingLastOIDByte(_ byte: UInt8) -> Data {
+            var data = leaf
+            data[range.upperBound - 1] = byte
+            return data
+        }
+        // Control: certificatePolicies (2.5.29.32) is not a constraint, so the same non-critical slot parses.
+        XCTAssertNoThrow(try FlagsSigningCertificate(der: swappingLastOIDByte(32), role: .leaf))
+        // NameConstraints (2.5.29.30), PolicyMappings (.33), PolicyConstraints (.36), InhibitAnyPolicy (.54).
+        for byte: UInt8 in [30, 33, 36, 54] {
+            XCTAssertThrowsError(try FlagsSigningCertificate(der: swappingLastOIDByte(byte), role: .leaf), "2.5.29.\(byte)") {
+                XCTAssertEqual($0 as? FlagsSigningError, .invalidCertificate, "2.5.29.\(byte)")
+            }
+        }
+    }
+
     // MARK: - Scope update work and session lifetime
 
     func testScopeUpdateSkipsWorkWhenNoInputChanged() {
@@ -2392,11 +2462,40 @@ extension FlagsResponseSigningTests {
             clock.now = Date(timeIntervalSince1970: 69)
             XCTAssertEqual(repository.flagAssignment(for: "flag") != nil, !strict, "strict=\(strict)")
             XCTAssertEqual(repository.state.currentState, strict ? .error : .stale, "strict=\(strict)")
-            // The clock returns into the proof window: the client leaves `error`.
+            // The clock returns into the proof window: the client gets back the state from before the step.
             clock.now = Date(timeIntervalSince1970: 150)
             XCTAssertNotNil(repository.flagAssignment(for: "flag"), "strict=\(strict)")
-            XCTAssertEqual(repository.state.currentState, strict ? .ready : .stale, "strict=\(strict)")
+            XCTAssertEqual(repository.state.currentState, .ready, "strict=\(strict)")
         }
+    }
+
+    /// A state update between the clock step and the return wins: the client does not go back to `ready`.
+    func testClockReturnDoesNotRestoreReadyAfterAFailedRefreshInBetween() {
+        let fetcher = SigningLifecycleFetcher(mode: .required)
+        fetcher.trustExpired = true
+        let clock = DateProviderMock(now: Date(timeIntervalSince1970: 100))
+        let repository = FlagsRepository(
+            clientName: "signed",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: clock,
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            initializationTimeout: nil,
+            scheduleExpiry: { _, _ in }
+        )
+        defer { repository.flush() }
+        let context = FlagsEvaluationContext(targetingKey: "subject")
+        repository.setEvaluationContext(context) { _ in }
+        fetcher.completeVerified(index: 0, expiry: 200)
+        clock.now = Date(timeIntervalSince1970: 69)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.state.currentState, .stale)
+        repository.setEvaluationContext(context) { _ in }
+        fetcher.completions[1](.failure(.networkError(URLError(.notConnectedToInternet))))
+        XCTAssertEqual(repository.state.currentState, .stale)
+        clock.now = Date(timeIntervalSince1970: 150)
+        XCTAssertNotNil(repository.flagAssignment(for: "flag"))
+        XCTAssertEqual(repository.state.currentState, .stale)
     }
 
     func testProofValidityToleratesThirtySecondsBeforeVerification() {
@@ -2471,6 +2570,65 @@ extension FlagsResponseSigningTests {
             XCTAssertEqual(repository.flagAssignments().map { !$0.isEmpty } ?? false, !strict, "strict=\(strict)")
             XCTAssertEqual(repository.state.currentState, strict ? .error : .stale, "strict=\(strict)")
         }
+    }
+
+    /// `expireVerifiedFlags` applies to `required` only. In `observe`, an expired proof must not make older verified
+    /// flags win the failure fallback over newer unverified flags.
+    func testObserveFallbackDoesNotPreferAnExpiredVerifiedResponse() throws {
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        let clock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
+        let verifiedBody = try JSONEncoder().encode(FlagAssignmentsResponse(flags: ["old": .mockAnyBoolean()]))
+        let unverifiedBody = try JSONEncoder().encode(FlagAssignmentsResponse(flags: ["new": .mockAnyBoolean()]))
+        var calls = 0
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: URL(string: "https://flags.example.test/precompute-assignments"),
+            customHeaders: nil,
+            flagSelection: nil,
+            featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
+            responseSigning: .init(mode: .observe, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
+            dateProvider: clock,
+            minimumNotBeforeStore: MinimumNotBeforeStoreMock(),
+            signingFetch: { request, complete in
+                calls += 1
+                switch calls {
+                case 1:
+                    do {
+                        let headers = try fixture.signedHeaders(request: request, body: verifiedBody)
+                        complete(.success((verifiedBody, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headers)!)))
+                    } catch { complete(.failure(error)) }
+                case 2:
+                    complete(.success((unverifiedBody, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: [:])!)))
+                default:
+                    complete(.failure(URLError(.notConnectedToInternet)))
+                }
+            },
+            fetch: { _, _ in XCTFail("Signing must use the signing transport") }
+        )
+        let repository = FlagsRepository(
+            clientName: "observe-fallback",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: clock,
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            initializationTimeout: nil,
+            scheduleExpiry: { _, _ in }
+        )
+        defer { repository.flush() }
+        let context = FlagsEvaluationContext(targetingKey: "subject")
+        for _ in 0..<3 {
+            let done = expectation(description: "context update")
+            repository.setEvaluationContext(context) { _ in done.fulfill() }
+            wait(for: [done], timeout: 2)
+            if calls == 2 {
+                XCTAssertNotNil(repository.flagAssignment(for: "new"))
+                // The fixture proof expires 300 s after it was issued.
+                clock.now = Date(timeIntervalSince1970: SigningChainFixture.now + 300)
+            }
+        }
+        XCTAssertEqual(calls, 3)
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertNotNil(repository.flagAssignment(for: "new"), "observe restored the expired verified flags")
+        XCTAssertNil(repository.flagAssignment(for: "old"))
     }
 
     /// The fetcher verifies the proof, but the proof expires before the repository admits it. In the default setting,
