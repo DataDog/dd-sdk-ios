@@ -65,6 +65,7 @@ Certificate profile:
 - The leaf extended key usage must contain the FFE assignment-signing OID and must not contain `anyExtendedKeyUsage`. Other OIDs are allowed.
 - The intermediate at index `i` must be a CA with a decoded path length constraint of at least `i`. Its extended key usage is optional. When present, it must contain the FFE OID or `anyExtendedKeyUsage`.
 - The root extended key usage is optional. When present, it must contain the FFE OID or `anyExtendedKeyUsage`. A root path length constraint must be at least the number of intermediates.
+- The leaf validity, `notAfter - notBefore`, is at most 432300 s (120 hours and 5 minutes), as the edge and the issuance policy check. A longer leaf is `invalid-certificate`. Intermediates keep their own rules.
 - The transcript authority is the lowercase host, with IPv6 in brackets. It contains the port only when the port is not the default port of the scheme.
 
 The FFE OID `1.3.6.1.4.1.99999.1.1` is a placeholder. Datadog must assign the production OID before this draft is released.
@@ -163,7 +164,7 @@ Tests verify the shared fixtures at their own clock, which is before the build f
 
 Each folder has a `SOURCE.json` with the commit and the file checksums.
 The native test reads every suite in the upstream manifest, checks counts and checksums,
-and verifies acceptance decisions and exact transcripts. The current snapshot has 161 response
+and verifies acceptance decisions and exact transcripts. The current snapshot has 164 response
 vectors across wire, nested DER, subject DER, certificate-rule, extension-profile, and expiry suites.
 For each accepted case, the test also asserts the verified values of the signed response list (`verified_response_headers`).
 A case can supply its own `anchor_der_base64`, which replaces the file anchor for that case.

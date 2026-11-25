@@ -576,6 +576,18 @@ final class FlagsResponseSigningTests: XCTestCase {
         XCTAssertEqual(executed, manifest.files.values.map(\.response_cases).reduce(0, +))
     }
 
+    /// F16: a leaf that spans exactly 432300 s verifies, and a leaf that spans 432301 s is an invalid certificate.
+    func testLeafLifetimeBoundaryVectors() throws {
+        let url = try SharedSigningFixtures.url("response-signing-v1", "corpus", "json")
+        let corpus = try JSONDecoder().decode(Corpus.self, from: Data(contentsOf: url))
+        XCTAssertEqual(FlagsResponseVerifier.maximumLeafLifetime, 432_300)
+        for (id, accept) in [("valid-leaf-lifetime-at-limit", true), ("leaf-lifetime-over-limit", false)] {
+            let vector = try XCTUnwrap(corpus.cases.first { $0.id == id }, id)
+            XCTAssertEqual(vector.expected_accept, accept, id)
+            XCTAssertEqual(try assertCorpus(Corpus(anchor_der_base64: corpus.anchor_der_base64, cases: [vector]), suite: id), 1)
+        }
+    }
+
     /// The empty query binds as `?`, and a high-S ECDSA signature is accepted (no low-S rule).
     func testSharedEmptyQueryAndHighSSignatureVectorsAreAccepted() throws {
         let url = try SharedSigningFixtures.url("response-signing-v1", "corpus", "json")

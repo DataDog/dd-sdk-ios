@@ -496,6 +496,9 @@ internal final class FlagsResponseVerifier {
     /// or shortly before it. It must never be later than the release build time.
     static let buildFloor: UInt64 = 1_795_564_800
 
+    /// The longest leaf validity, `notAfter - notBefore`: 120 hours and 5 minutes, as the edge and the issuance policy.
+    static let maximumLeafLifetime: TimeInterval = 432_300
+
     static func leafFloorKey(_ anchorKey: String) -> String { "minimum-leaf-not-before-" + anchorKey }
     static func highWaterMarkKey(_ anchorKey: String) -> String { "issued-at-high-water-mark-" + anchorKey }
     let scope = UUID()
@@ -661,6 +664,10 @@ internal final class FlagsResponseVerifier {
             throw FlagsSigningError.expiredProof
         }
         let leaf = try FlagsSigningCertificate(der: leafDER, role: .leaf)
+        // F16: a leaf never spans more than the issuance policy, as the edge checks before it signs.
+        guard leaf.notAfter - leaf.notBefore <= Self.maximumLeafLifetime else {
+            throw FlagsSigningError.invalidCertificate
+        }
         let intermediates = try intermediateDERs.map { try FlagsSigningCertificate(der: $0, role: .intermediate) }
         // Path: leaf -> intermediate[0] -> ... -> intermediate[n-1] -> pinned root.
         var child = leaf
@@ -888,22 +895,16 @@ internal final class FlagsResponseVerifier {
         }
     }
 
-    /// A request has a flag selection when its JSON body has a non-null `flag_selection` at the top level or in `data.attributes`,
-    /// or its URL query has `selected_flag_tags` or `selected_flag_key_patterns`.
+    /// A request has a flag selection when its JSON:API body has a `data.attributes.flag_selection` object, as the
+    /// edge reads it. A top-level `flag_selection` and the URL query are not a selection.
     private static func hasFlagSelection(_ request: URLRequest) -> Bool {
-        let query = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false)?.queryItems } ?? []
-        if query.contains(where: { $0.name == "selected_flag_tags" || $0.name == "selected_flag_key_patterns" }) {
-            return true
-        }
-        // The SDK request puts the selection at `data.attributes.flag_selection`. The shared fixtures use a flat body.
         guard let body = request.httpBody,
             let object = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
-            let selection = object["flag_selection"]
-                ?? ((object["data"] as? [String: Any])?["attributes"] as? [String: Any])?["flag_selection"]
+            let attributes = (object["data"] as? [String: Any])?["attributes"] as? [String: Any]
         else {
             return false
         }
-        return !(selection is NSNull)
+        return attributes["flag_selection"] is [String: Any]
     }
 
     private static func defaultPort(_ scheme: String) -> Int { scheme == "https" ? 443 : 80 }
