@@ -33,10 +33,12 @@ extension DatadogExtension where ExtendedType: UIColor {
 
         type.getRed(&r, green: &g, blue: &b, alpha: &a)
 
-        let ri = Int16.ddWithNoOverflow(round(r * 255))
-        let gi = Int16.ddWithNoOverflow(round(g * 255))
-        let bi = Int16.ddWithNoOverflow(round(b * 255))
-        let ai = Int16.ddWithNoOverflow(round(a * 255))
+        // Colors outside the sRGB gamut (e.g. Display P3) have components below 0 or above 1,
+        // which `#RRGGBBAA` can't express. `UInt8.ddWithNoOverflow` clamps them to `0...255`.
+        let ri = UInt8.ddWithNoOverflow(round(r * 255))
+        let gi = UInt8.ddWithNoOverflow(round(g * 255))
+        let bi = UInt8.ddWithNoOverflow(round(b * 255))
+        let ai = UInt8.ddWithNoOverflow(round(a * 255))
 
         var rstr = String(ri, radix: 16, uppercase: true)
         var gstr = String(gi, radix: 16, uppercase: true)
