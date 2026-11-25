@@ -618,16 +618,18 @@ internal final class FlagsResponseVerifier {
         }
     }
 
-    /// A request has a flag selection when its JSON body has a non-null `flag_selection`,
+    /// A request has a flag selection when its JSON body has a non-null `flag_selection` at the top level or in `data.attributes`,
     /// or its URL query has `selected_flag_tags` or `selected_flag_key_patterns`.
     private static func hasFlagSelection(_ request: URLRequest) -> Bool {
         let query = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false)?.queryItems } ?? []
         if query.contains(where: { $0.name == "selected_flag_tags" || $0.name == "selected_flag_key_patterns" }) {
             return true
         }
+        // The SDK request puts the selection at `data.attributes.flag_selection`. The shared fixtures use a flat body.
         guard let body = request.httpBody,
             let object = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
             let selection = object["flag_selection"]
+                ?? ((object["data"] as? [String: Any])?["attributes"] as? [String: Any])?["flag_selection"]
         else {
             return false
         }

@@ -2357,11 +2357,25 @@ extension FlagsResponseSigningTests {
         )
     }
 
+    /// The SDK request carries the selection at `data.attributes.flag_selection`. So in `required` mode a signed
+    /// response list without `dd-flag-selection-ignored` is rejected, and the SDK does not hide an ignored selection.
+    func testRequiredRejectsAResponseListWithoutSelectionIgnoredForTheSDKRequestEnvelope() throws {
+        XCTAssertEqual(
+            try selectionIgnoredErrors(
+                mode: .required,
+                signed: [("content-type", "application/json")],
+                expectedFailureReason: "invalid-proof"
+            ),
+            [FlagsSigningError.invalidProof.logMessage]
+        )
+    }
+
     /// Fetches once with a flag selection through the signed path, and returns the error logs.
     private func selectionIgnoredErrors(
         mode: Flags.ResponseSigningMode,
         signed: [(name: String, value: String?)],
-        added: [String: String] = [:]
+        added: [String: String] = [:],
+        expectedFailureReason: String? = nil
     ) throws -> [String] {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -2393,7 +2407,14 @@ extension FlagsResponseSigningTests {
             completed.fulfill()
         }
         wait(for: [completed], timeout: 2)
-        XCTAssertEqual(try XCTUnwrap(result).get().flags, .mockAny())
+        if let expectedFailureReason {
+            guard case .failure(.responseSigningFailed(reason: expectedFailureReason)) = try XCTUnwrap(result) else {
+                XCTFail("Expected responseSigningFailed(\(expectedFailureReason)), got \(String(describing: result))")
+                return dd.logger.errorMessages
+            }
+        } else {
+            XCTAssertEqual(try XCTUnwrap(result).get().flags, .mockAny())
+        }
         return dd.logger.errorMessages
     }
 
