@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Context information used for feature flag targeting and evaluation.
 ///
@@ -81,7 +82,7 @@ public struct FlagsEvaluationContext: Equatable, Codable {
 extension FlagsEvaluationContext {
     /// Compares the encoded bytes. `==` compares strings by canonical equivalence, so a precomposed and a
     /// decomposed targeting key are equal, but the requests carry different bytes. A signed proof binds the bytes.
-    /// It compares the UTF-8 bytes of every string and key in place, so required-mode reads encode nothing.
+    /// It compares the UTF-8 bytes of every string and key in place. Only a mixed int and double pair is encoded.
     internal func hasSameWireIdentity(as other: FlagsEvaluationContext) -> Bool {
         targetingKey.utf8.elementsEqual(other.targetingKey.utf8)
             && AnyValue.dictionary(attributes).hasSameWireIdentity(as: .dictionary(other.attributes))
@@ -103,6 +104,17 @@ extension AnyValue {
                 }
                 return rhs[index].key.utf8.elementsEqual(key.utf8) && value.hasSameWireIdentity(as: rhs[index].value)
             }
+        case let (.double(lhs), .double(rhs)):
+            // `0.0 == -0.0`, but they encode as `0` and `-0`. Distinct bit patterns encode differently.
+            return lhs.bitPattern == rhs.bitPattern
+        case (.int, .double), (.double, .int):
+            // `.int(1)` and `.double(1)` both encode as `1`, but `.int(10_000_000_000_000_000)` and `.double(1e16)` do not.
+            // So compare the bytes of the request encoder. This mixed case is rare.
+            let encoder = JSONEncoder.dd.default()
+            guard let lhs = try? encoder.encode([self]), let rhs = try? encoder.encode([other]) else {
+                return false
+            }
+            return lhs == rhs
         default:
             return self == other
         }

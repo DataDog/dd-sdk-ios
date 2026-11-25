@@ -2236,6 +2236,30 @@ extension FlagsResponseSigningTests {
         XCTAssertFalse(context(value: .null).hasSameWireIdentity(as: FlagsEvaluationContext(targetingKey: "k")))
     }
 
+    /// Numbers match by the bytes that the request encoder writes, not by `AnyValue` equality.
+    func testWireIdentityOfNumbersMatchesTheEncodedRequestBytes() throws {
+        func context(_ value: AnyValue) -> FlagsEvaluationContext {
+            FlagsEvaluationContext(targetingKey: "k", attributes: ["a": .array([value])])
+        }
+        // `.int(1)` and `.double(1)` encode as `1` but are not equal. `0.0` and `-0.0` are equal but encode differently.
+        XCTAssertNotEqual(AnyValue.int(1), .double(1))
+        XCTAssertTrue(context(.int(1)).hasSameWireIdentity(as: context(.double(1))))
+        XCTAssertEqual(AnyValue.double(0), .double(-0.0))
+        XCTAssertFalse(context(.double(0)).hasSameWireIdentity(as: context(.double(-0.0))))
+        let values: [AnyValue] = [
+            .int(0), .int(1), .int(-1), .int(10_000_000_000_000_000), .int(Int.max), .int(Int.min),
+            .double(0), .double(-0.0), .double(1), .double(-1), .double(1.5), .double(0.1), .double(1e16),
+            .double(9.223372036854776e18), .double(-9.223372036854776e18), .bool(true), .string("1"), .null
+        ]
+        let encoder = JSONEncoder.dd.default()
+        for lhs in values {
+            for rhs in values {
+                let sameBytes = try encoder.encode(["a": [lhs]]) == encoder.encode(["a": [rhs]])
+                XCTAssertEqual(context(lhs).hasSameWireIdentity(as: context(rhs)), sameBytes, "\(lhs) and \(rhs)")
+            }
+        }
+    }
+
     func testRequiredDoesNotServeAContextWithADifferentWireIdentity() {
         let precomposed = FlagsEvaluationContext(targetingKey: "caf\u{E9}")
         let decomposed = FlagsEvaluationContext(targetingKey: "cafe\u{301}")
