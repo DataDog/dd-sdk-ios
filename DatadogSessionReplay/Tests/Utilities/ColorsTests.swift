@@ -44,6 +44,20 @@ class ColorsTests: XCTestCase {
         XCTAssertEqual(hexString(from: white), "#FFFFFF80")
     }
 
+    func testWhenConvertingColorsOutsideSRGBGamutToHexString() {
+        let belowZero = UIColor(red: -1 / 255, green: 72 / 255, blue: 239 / 255, alpha: 1).cgColor
+        XCTAssertEqual(hexString(from: belowZero), "#0048EFFF")
+
+        let aboveOne = UIColor(red: 1.1, green: 72 / 255, blue: 239 / 255, alpha: 1).cgColor
+        XCTAssertEqual(hexString(from: aboveOne), "#FF48EFFF")
+
+        let displayP3Red = UIColor(displayP3Red: 1, green: 0, blue: 0, alpha: 1).cgColor
+        XCTAssertEqual(hexString(from: displayP3Red), "#FF0000FF")
+
+        let displayP3Green = UIColor(displayP3Red: 0, green: 1, blue: 0, alpha: 1).cgColor
+        XCTAssertEqual(hexString(from: displayP3Green), "#00FF00FF")
+    }
+
     func testWhenConvertingAnyColorToHexString() throws {
         /// Returns `CGColor` constructed from provided `#RRGGBBAA` string.
         func cgColor(from rrggbbaaHex: String) -> CGColor {

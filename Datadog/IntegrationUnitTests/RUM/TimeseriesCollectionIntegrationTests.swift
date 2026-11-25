@@ -88,6 +88,11 @@ class TimeseriesCollectionIntegrationTests: RUMSessionTestsBase {
         DDAssertEqual(Double(cpuDataPoints), Double(expected), accuracy: Double(dataPointsTolerance))
         assertTimestampsProgress(memory.map { $0.timeseries.data.timestamps }, metric: "memory")
         assertTimestampsProgress(cpu.map { $0.timeseries.data.timestamps }, metric: "cpu")
+        for event in memory {
+            let nonResident = try XCTUnwrap(event.timeseries.data.values.memoryNonResident)
+            XCTAssertEqual(nonResident.count, event.timeseries.data.timestamps.count)
+            XCTAssertTrue(nonResident.allSatisfy { $0 >= 0 })
+        }
     }
 
     func testGivenTimeseriesEnabled_whenAppBackgroundsAndForegroundsTwice_itPausesAndResumesCollection() throws {

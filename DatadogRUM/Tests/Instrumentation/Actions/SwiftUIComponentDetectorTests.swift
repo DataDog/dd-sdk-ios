@@ -311,20 +311,28 @@ class SwiftUIComponentDetectorTests: XCTestCase {
         XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
     }
 
+    func testTypeDescription_isNotDispatchedThroughObjectiveCRuntime() {
+        // `typeDescription` must stay a Swift-only member: as an `@objc` category method it could be dropped
+        // by the static linker in Debug builds and crash with "unrecognized selector".
+        XCTAssertFalse(UIView.instancesRespond(to: NSSelectorFromString("typeDescription")))
+        XCTAssertEqual(UIButton().typeDescription, "UIButton")
+        XCTAssertEqual(HostingViewMock().typeDescription, "HostingViewMock")
+    }
+
     func testLegacyDetector_IgnoresContainerViews() {
         // Given
         let detector = LegacySwiftUIComponentDetector()
-        let containerView = SwiftUIViewMock()
-        let mockTouch = MockUITouch(phase: .ended, view: containerView)
-        let testCases = [
-            "HostingView",
-            "HostingScrollView",
-            "PlatformGroupContainer"
+        // The type names of these mocks contain the ignored SwiftUI container type names.
+        let containerViews: [SwiftUIViewMock] = [
+            HostingViewMock(),
+            HostingScrollViewMock(),
+            PlatformGroupContainerMock()
         ]
 
         // When
-        for containerType in testCases {
-            containerView.mockTypeDescription = containerType
+        for containerView in containerViews {
+            let containerType = containerView.typeDescription
+            let mockTouch = MockUITouch(phase: .ended, view: containerView)
             let command = detector.createActionCommand(
                 from: mockTouch,
                 predicate: defaultPredicate,
@@ -613,17 +621,15 @@ private class MockGestureRecognizer: UIGestureRecognizer {
 }
 
 private class SwiftUIViewMock: UIView {
-    var mockTypeDescription: String?
     var overrideIsSwiftUIView: Bool?
-
-    // Implement TypeDescribing protocol
-    override var typeDescription: String {
-        return mockTypeDescription ?? "_TtCV7SwiftUI9EmptyView"
-    }
 
     @objc override var isSwiftUIView: Bool {
         return overrideIsSwiftUIView ?? true
     }
 }
+
+private final class HostingViewMock: SwiftUIViewMock {}
+private final class HostingScrollViewMock: SwiftUIViewMock {}
+private final class PlatformGroupContainerMock: SwiftUIViewMock {}
 
 #endif

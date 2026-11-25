@@ -154,19 +154,32 @@ struct CALayerSnapshotSRCompositionLayerTests {
     @Test(
         "Does not add glass modifiers to plain, lens, or backdrop layers",
         arguments: [
-            CALayerSnapshot.SemanticObservation.Semantics.layer,
-            .visualEffect(.liquidLens),
-            .visualEffect(.backdrop)
+            (CALayerSnapshot.SemanticObservation.Semantics.layer, false),
+            (.visualEffect(.liquidLens), false),
+            // Backdrops with nonuniform corners are clipped
+            (.visualEffect(.backdrop), true)
         ]
     )
     func doesNotAddGlassModifiersToPlainLensOrBackdropLayers(
-        semantics: CALayerSnapshot.SemanticObservation.Semantics
+        semantics: CALayerSnapshot.SemanticObservation.Semantics,
+        hasUniformCorners: Bool
     ) {
         // Given
+        let cornerRadii: CALayerSnapshot.CornerRadii = hasUniformCorners
+            ? .init(
+                cornerRadius: 12,
+                maskedCorners: [
+                    .layerMinXMinYCorner,
+                    .layerMaxXMinYCorner,
+                    .layerMinXMaxYCorner,
+                    .layerMaxXMaxYCorner
+                ]
+            )
+            : .init(topLeft: CGSize(width: 12, height: 12))
         let snapshot = CALayerSnapshot.mockWith(
             absoluteFrame: CGRect(x: 0, y: 0, width: 100, height: 50),
             observation: .init(semantics: semantics),
-            cornerRadii: .init(topLeft: CGSize(width: 12, height: 12))
+            cornerRadii: cornerRadii
         )
 
         // When

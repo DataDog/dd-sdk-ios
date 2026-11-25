@@ -171,14 +171,15 @@ internal final class DatadogCore {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        let userInfo = UserInfo(
-            anonymousId: userInfoPublisher.current.anonymousId,
-            id: id,
-            name: name,
-            email: email,
-            extraInfo: extraInfo
-        )
-        userInfoPublisher.current = userInfo
+        userInfoPublisher.update { userInfo in
+            userInfo = UserInfo(
+                anonymousId: userInfo.anonymousId,
+                id: id,
+                name: name,
+                email: email,
+                extraInfo: extraInfo
+            )
+        }
     }
 
     /// Add or override the extra info of the current user
@@ -186,9 +187,9 @@ internal final class DatadogCore {
     ///  - Parameters:
     ///    - extraInfo: The user's custom attributes to add or override
     func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        var extraInfo = userInfoPublisher.current.extraInfo
-        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-        userInfoPublisher.current.extraInfo = extraInfo
+        userInfoPublisher.update { userInfo in
+            newExtraInfo.forEach { userInfo.extraInfo[$0.key] = $0.value }
+        }
     }
 
     /// Clear the current user information
@@ -205,7 +206,9 @@ internal final class DatadogCore {
     /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
     ///
     func clearUserInfo() {
-        userInfoPublisher.current = UserInfo(anonymousId: userInfoPublisher.current.anonymousId)
+        userInfoPublisher.update { userInfo in
+            userInfo = UserInfo(anonymousId: userInfo.anonymousId)
+        }
     }
 
     /// Sets current account information.
@@ -234,7 +237,14 @@ internal final class DatadogCore {
     ///  - Parameters:
     ///    - extraInfo: The account's custom attributes to add or override
     func addAccountExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        guard let accountInfo = accountInfoPublisher.current else {
+        let updated = accountInfoPublisher.update { accountInfo in
+            guard accountInfo != nil else {
+                return false
+            }
+            newExtraInfo.forEach { accountInfo?.extraInfo[$0.key] = $0.value }
+            return true
+        }
+        guard updated else {
             DD.logger.error(
                 "Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first."
             )
@@ -243,9 +253,6 @@ internal final class DatadogCore {
             #endif
             return
         }
-        var extraInfo = accountInfo.extraInfo
-        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-        accountInfoPublisher.current?.extraInfo = extraInfo
     }
 
     /// Clear the current account information
@@ -269,11 +276,10 @@ internal final class DatadogCore {
     ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        if trackingConsent != consentPublisher.consent {
-            // Queues the context update before the migration. A write context read before the update
-            // has the previous consent, and its events are written before the migration runs. A write
-            // context read after it has the new consent.
-            consentPublisher.consent = trackingConsent
+        // Queues the context update before the migration. A write context read before the update
+        // has the previous consent, and its events are written before the migration runs. A write
+        // context read after it has the new consent.
+        consentPublisher.update(trackingConsent) {
             // Each migration holds sudden termination on the read-write queue before this hold is released.
             suddenTermination.async(on: contextProvider.queue) { [allStorages] in
                 // RUM-3175: To prevent race conditions with ongoing "event write" operations,
@@ -369,10 +375,16 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, all events recorded before this call are stored. Authorized batches were uploaded without retrying
-    /// and then deleted, even if the upload failed. The SDK was deinitialised and its message bus disconnected, so this
-    /// instance of core is non-functional and no message is delivered after return.
+    /// Upon return, all events recorded before this call are stored, including telemetry reported by an upload in
+    /// progress. Authorized batches were uploaded without retrying and then deleted, even if the upload failed. The SDK
+    /// was deinitialised and its message bus disconnected, so this instance of core is non-functional and no message is
+    /// delivered after return.
     func flushAndTearDown() {
+        // Stop the periodic upload schedule first; pending batches stay on disk and are uploaded below.
+        // An upload in progress completes and reports its telemetry (e.g. upload quality) on the message bus,
+        // which `flush()` then delivers and stores, so that it is part of the final upload.
+        allUploads.forEach { $0.cancelSynchronously() }
+
         flush()
 
         // At this point we can assume that all write operations completed and resulted with writing events to
@@ -508,7 +520,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func set(anonymousId: String?) {
-        userInfoPublisher.current.anonymousId = anonymousId
+        userInfoPublisher.update { $0.anonymousId = anonymousId }
     }
 }
 
