@@ -18,7 +18,7 @@
       "kind": "files",
       "prefix": "response-signing/v1/",
       "destination": "DatadogFlags/Fixtures/response-signing-v1",
-      "commit": "8026615edfc8a4dc8ff27fef2f7cd399e5d312e7",
+      "commit": "ae7b72b57cee315fdda3a7d4b337925acfad53b5",
       "files": {
         "response-signing/README.md": "README.md",
         "LICENSE": "LICENSE",

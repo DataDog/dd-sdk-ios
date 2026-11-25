@@ -122,8 +122,8 @@ v1 binds two signed lists of header names, so a new bound header needs no transc
 
 - Each list is one header value: lowercase HTTP token names in ascending byte order, unique, joined by `,` with no spaces. A list has 1 to 32 names of at most 64 bytes.
 - In the transcript, each list is `u8(count)`, then `lp(name) || u8(presence) || lp(value)` for each name. An absent header has presence `0` and an empty value.
-- Request list: the SDK sends `x-datadog-feature-flags-signed-headers`. It lists each bound header that it set: `content-type`, `dd-application-id` (when RUM sets it), `x-dd-feature-flags-capabilities`, `x-rkyv` and `x-use-cache`. The list must name `content-type` and `x-dd-feature-flags-capabilities`. It never names `dd-client-token`, `authorization` or a `x-datadog-feature-flags-` header: the token and `authorization` keep their hashed slots. The request list replaces the earlier fixed header slots.
-- Headers that are not listed and not bound are not signed, for example `dd-assignment-token`, `dd-service` and `traceparent`.
+- Request list: the SDK sends `x-datadog-feature-flags-signed-headers`. It lists each bound header that it set: `content-type`, `dd-application-id` (when RUM sets it), `x-dd-feature-flags-capabilities` and `x-rkyv`. `x-use-cache` is a staging header, not a bound header: the SDK does not list it, and it is not signed. The list must name `content-type` and `x-dd-feature-flags-capabilities`. It never names `dd-client-token`, `authorization` or a `x-datadog-feature-flags-` header: the token and `authorization` keep their hashed slots. The request list replaces the earlier fixed header slots.
+- Headers that are not listed and not bound are not signed, for example `dd-assignment-token`, `dd-service`, `traceparent` and an unlisted `x-use-cache`.
 - Response list: the required proof header `x-datadog-feature-flags-signed-response-headers` follows the chain in the transcript. It must name `content-type`, and `dd-flag-selection-ignored` when the request has a flag selection. It must not name a proof header.
 - The SDK acts on a listed response header only after verification passes, and it uses the verified value. For a signed request, the SDK reads `DD-Flag-Selection-Ignored` only from the verified list. A response that fails verification in `observe` reports no ignored selection.
 - `URLRequest` and `HTTPURLResponse` join repeated header lines with `,`. So the SDK rejects a comma in a listed request value other than the capabilities, and in the `content-type` or `dd-flag-selection-ignored` response value. A repeated line of another listed response header changes the bound value, and the signature fails.
@@ -150,7 +150,7 @@ DRAFT: the edge and the shared fixtures do not send this header yet. The name an
 
 Each folder has a `SOURCE.json` with the commit and the file checksums.
 The native test reads every suite in the upstream manifest, checks counts and checksums,
-and verifies acceptance decisions and exact transcripts. The current snapshot has 160 response
+and verifies acceptance decisions and exact transcripts. The current snapshot has 161 response
 vectors across wire, nested DER, subject DER, certificate-rule, extension-profile, and expiry suites.
 For each accepted case, the test also asserts the verified values of the signed response list (`verified_response_headers`).
 A case can supply its own `anchor_der_base64`, which replaces the file anchor for that case.

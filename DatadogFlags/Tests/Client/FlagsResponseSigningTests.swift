@@ -382,6 +382,8 @@ final class FlagsResponseSigningTests: XCTestCase {
             "content-type,x-dd-feature-flags-capabilities"
         )
         request.setValue("rum-app", forHTTPHeaderField: "dd-application-id")
+        // `x-use-cache` is a staging header, not a bound header, so the SDK does not list it.
+        request.setValue("true", forHTTPHeaderField: "x-use-cache")
         XCTAssertEqual(
             try verifier.prepare(request).value(forHTTPHeaderField: FlagsResponseVerifier.signedHeadersName),
             "content-type,dd-application-id,x-dd-feature-flags-capabilities"

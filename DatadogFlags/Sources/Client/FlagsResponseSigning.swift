@@ -241,10 +241,9 @@ internal final class FlagsResponseVerifier {
     static let maximumResponseBytes = 2 * 1_024 * 1_024
     /// The request header that names the request headers that the transcript binds.
     static let signedHeadersName = prefix + "signed-headers"
-    /// Request headers that can change a signed response. When present, each one must be in the signed request list.
-    static let boundRequestHeaders = [
-        "content-type", "dd-application-id", "x-dd-feature-flags-capabilities", "x-rkyv", "x-use-cache"
-    ]
+    /// Request headers that can change a signed response (the edge `bound` class). When present, each one must be
+    /// in the signed request list. `x-use-cache` is a staging header: the SDK does not list it, so it is not signed.
+    static let boundRequestHeaders = ["content-type", "dd-application-id", "x-dd-feature-flags-capabilities", "x-rkyv"]
     /// The proof headers. The signed response list must not name one of them.
     static let proofHeaders = [
         "signature-version", "certificate-id", "signing-certificate", "signing-chain", "issued-at", "expires-at",
