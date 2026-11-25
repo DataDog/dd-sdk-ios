@@ -83,7 +83,7 @@ jobs:
           head-sha: ${{ github.sha }}
           create-branch: true
           force: false
-          message: 'FFL-3568: Update feature flags precomputed fixtures'
+          message: '[FFL-3568] Update feature flags precomputed fixtures'
       - name: Open the draft pull request
         id: open_pr
         if: steps.prepare.outputs.ready == 'true'
@@ -91,4 +91,4 @@ jobs:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           UPDATE_BRANCH: ${{ steps.prepare.outputs.branch }}
         run: |
-          gh pr create --draft --base develop --head "$UPDATE_BRANCH" --title 'FFL-3568: Update feature flags precomputed fixtures' --body-file /tmp/feature-flags-precomputed-pr.md
+          gh pr create --draft --base develop --head "$UPDATE_BRANCH" --title '[FFL-3568] Update feature flags precomputed fixtures' --body-file /tmp/feature-flags-precomputed-pr.md
