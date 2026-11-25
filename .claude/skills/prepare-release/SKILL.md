@@ -35,6 +35,8 @@ Review and stage only each step's files, then commit with `git commit -S` and th
 
 **Version:** update `__sdkVersion` in `DatadogCore/Sources/Versioning.swift`, preserving its format, and run `./tools/podspec_bump_version.sh '<version>'`. Verify every root podspec and `__sdkVersion` match. Use the helper directly because `make bump` stages the entire tree and creates its own commit.
 
+**Response-signing build floor:** update the response-signing build floor in the version bump commit. Set `FlagsResponseVerifier.buildFloor` in `DatadogFlags/Sources/Client/FlagsResponseSigning.swift`, and the value in `DatadogFlags/README.md`, to the release date or a date shortly before it, in Unix seconds. It must never be later than the release build time.
+
 **Changelog:** run `dd-sdk-ios:generate-changelog` with the version, baseline, and original frozen source, excluding all preparation commits. Resolve coverage gaps and `Unreleased` conflicts, then commit only `CHANGELOG.md`.
 
 **Documentation:** first run `make feature-docs-verify`. If it passes, leave docs unchanged and skip their commit. For stale documentation, run `dd-sdk-ios:update-feature-docs`, review and commit its changes, including required registry updates, then verify again. Skip an empty commit; resolve other verification failures before pushing.

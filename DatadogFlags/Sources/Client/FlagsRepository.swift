@@ -571,7 +571,7 @@ internal final class FlagsRepository {
         guard flagAssignmentsFetcher.responseSigningMode == .required, let verification = data.verification else {
             return
         }
-        let delay = max(0, verification.expiresAt - dateProvider.now.timeIntervalSince1970)
+        let delay = max(0, verification.expiresAt - verification.effectiveTime(at: dateProvider.now))
         scheduleExpiry(delay) { [weak self] in self?.applyVerifiedExpiry() }
     }
 

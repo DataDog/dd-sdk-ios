@@ -219,7 +219,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         ),
         responseSigning: Flags.ResponseSigningConfiguration = .init(),
         dateProvider: any DateProvider = SystemDateProvider(),
-        minimumNotBeforeStore: (any FlagsMinimumNotBeforeStore)? = nil,
+        floorStore: (any FlagsSigningFloorStore)? = nil,
         signingSession: URLSession? = nil,
         signingFetch: ((URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void)? = nil,
         fetch: @escaping (URLRequest, @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) -> Void
@@ -235,7 +235,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             ? nil
             : FlagsResponseVerifier(
                 configuration: responseSigning,
-                minimumNotBeforeStore: minimumNotBeforeStore ?? DataStoreMinimumNotBeforeStore(dataStore: featureScope.dataStore)
+                floorStore: floorStore
+                    ?? KeychainSigningFloorStore(legacy: DataStoreSigningFloorStore(dataStore: featureScope.dataStore))
             )
         self.signingSession = signingSession
         self.signingFetch = signingFetch

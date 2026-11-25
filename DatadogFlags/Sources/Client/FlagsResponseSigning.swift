@@ -44,15 +44,30 @@ extension Flags {
         public var expireVerifiedFlags: Bool
         /// Test-only trust anchors in DER form. Production code never sets them, and a response never supplies them.
         internal var trustedRootCertificates: [Data]
+        /// The lowest time, in Unix seconds, that the verifier uses as the device clock. See `FlagsResponseVerifier.buildFloor`.
+        internal var buildFloor: UInt64
 
         public init(mode: ResponseSigningMode = .off, expireVerifiedFlags: Bool = false) {
-            self.init(mode: mode, trustedRootCertificates: [], expireVerifiedFlags: expireVerifiedFlags)
+            self.init(
+                mode: mode,
+                trustedRootCertificates: [],
+                expireVerifiedFlags: expireVerifiedFlags,
+                buildFloor: FlagsResponseVerifier.buildFloor
+            )
         }
 
-        internal init(mode: ResponseSigningMode, trustedRootCertificates: [Data], expireVerifiedFlags: Bool = false) {
+        /// Tests verify fixtures at their own clock, which is before the build floor. So this initializer
+        /// turns the floor off unless a test sets it.
+        internal init(
+            mode: ResponseSigningMode,
+            trustedRootCertificates: [Data],
+            expireVerifiedFlags: Bool = false,
+            buildFloor: UInt64 = 0
+        ) {
             self.mode = mode
             self.expireVerifiedFlags = expireVerifiedFlags
             self.trustedRootCertificates = trustedRootCertificates
+            self.buildFloor = buildFloor
         }
 
         /// The only endpoint that serves signed assignments: the staging (`datad0g.com`) assignment edge.
@@ -134,6 +149,13 @@ internal struct FlagsResponseVerification: Equatable {
     /// The SDK acts on these values only, never on a second read of the raw response headers.
     var verifiedResponseHeaders: [String: String?] = [:]
 
+    /// The `issued-at` of the verified proof, and the monotonic time of the verification. A wall clock step back
+    /// during the process cannot extend the proof: its time is at least `verifiedIssuedAt` plus the monotonic time since.
+    var verifiedIssuedAt: TimeInterval? = nil
+    var verifiedUptime: TimeInterval = 0
+    /// The build floor and the high-water mark at the verification. The time of the proof is never lower.
+    var timeFloor: TimeInterval = 0
+
     func verifiedResponseHeader(_ name: String) -> String? {
         verifiedResponseHeaders[name] ?? nil
     }
@@ -142,42 +164,67 @@ internal struct FlagsResponseVerification: Equatable {
     /// The largest backward clock step after verification that keeps the proof fresh, like the `issued-at` allowance.
     static let backwardClockTolerance: TimeInterval = 30
 
-    /// A proof is fresh from `verifiedAt` (less a 30 s backward clock step) until `expiresAt`.
+    /// The time for the expiry of this proof: `max(now, timeFloor, verifiedIssuedAt + monotonic time since)`.
+    func effectiveTime(at now: Date, uptime: TimeInterval = FlagsMonotonicClock.now()) -> TimeInterval {
+        var seconds = max(now.timeIntervalSince1970, timeFloor)
+        if let verifiedIssuedAt {
+            seconds = max(seconds, verifiedIssuedAt + max(0, uptime - verifiedUptime))
+        }
+        return seconds
+    }
+
+    /// A proof is fresh from `verifiedAt` (less a 30 s backward clock step) until `expiresAt` at its effective time.
     /// A larger backward step is handled as expiry: `allowExpired` keeps the proof usable as not fresh.
-    func isValid(at now: Date, scope: UUID, allowExpired: Bool = false) -> Bool {
-        let seconds = now.timeIntervalSince1970
-        let fresh = verifiedAt - Self.backwardClockTolerance <= seconds && expiresAt > seconds
+    /// The 30 s allowance applies to the device clock only. It never lowers the effective time.
+    func isValid(
+        at now: Date,
+        scope: UUID,
+        allowExpired: Bool = false,
+        uptime: TimeInterval = FlagsMonotonicClock.now()
+    ) -> Bool {
+        let fresh = verifiedAt - Self.backwardClockTolerance <= now.timeIntervalSince1970
+            && expiresAt > effectiveTime(at: now, uptime: uptime)
         return self.scope == scope && (allowExpired || fresh)
     }
 }
 
-/// DRAFT wire. Persists the highest accepted minimum leaf not-before value (the leaf floor) per trust anchor.
-/// This is the only data that `required` mode persists. It holds no flag data.
-internal protocol FlagsMinimumNotBeforeStore: AnyObject {
-    /// `waitForRead` waits for the first persistent read with no time limit, so the floor is never skipped.
-    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64?
-    func store(_ value: UInt64, forAnchor anchor: String)
-}
-
-/// Keeps values in memory only. The verifier uses it when no persistent store is given.
-internal final class InMemoryMinimumNotBeforeStore: FlagsMinimumNotBeforeStore {
-    @ReadWriteLock
-    private var values: [String: UInt64] = [:]
-
-    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64? { values[anchor] }
-
-    func store(_ value: UInt64, forAnchor anchor: String) {
-        _values.mutate { $0[anchor] = max($0[anchor] ?? 0, value) }
+/// A clock that the device owner cannot set. On Darwin, `CLOCK_MONOTONIC` also counts the time that the device sleeps.
+internal enum FlagsMonotonicClock {
+    static func now() -> TimeInterval {
+        TimeInterval(clock_gettime_nsec_np(CLOCK_MONOTONIC)) / 1_000_000_000
     }
 }
 
-/// Persists values in the Flags feature data store, so they survive a restart.
-internal final class DataStoreMinimumNotBeforeStore: FlagsMinimumNotBeforeStore {
-    static let keyPrefix = "response-signing-minimum-leaf-not-before-"
+/// Persists the signing floors for each trust anchor: the highest accepted minimum leaf not-before value
+/// (the leaf floor, DRAFT wire) and the high-water mark of verified `issued-at` values.
+/// This is the only data that `required` mode persists. It holds no flag data.
+/// A store keeps the highest value for each key: a lower value never replaces a stored one.
+internal protocol FlagsSigningFloorStore: AnyObject {
+    /// `waitForRead` waits for the first persistent read with no time limit, so a floor is never skipped.
+    func value(forKey key: String, waitForRead: Bool) -> UInt64?
+    func store(_ value: UInt64, forKey key: String)
+}
+
+/// Keeps values in memory only. The verifier uses it when no persistent store is given.
+internal final class InMemorySigningFloorStore: FlagsSigningFloorStore {
+    @ReadWriteLock
+    private var values: [String: UInt64] = [:]
+
+    func value(forKey key: String, waitForRead: Bool) -> UInt64? { values[key] }
+
+    func store(_ value: UInt64, forKey key: String) {
+        _values.mutate { $0[key] = max($0[key] ?? 0, value) }
+    }
+}
+
+/// The earlier store in the Flags feature data store, in `Library/Caches`. The OS can delete that folder,
+/// so the SDK now only migrates its values to the Keychain.
+internal final class DataStoreSigningFloorStore: FlagsSigningFloorStore {
+    static let keyPrefix = "response-signing-"
     private let dataStore: any DataStore
     private let readTimeout: TimeInterval
     private let lock = NSLock()
-    /// Anchors that were read from disk or written, with their value. `nil` means "read, no value".
+    /// Keys that were read from disk or written, with their value. `nil` means "read, no value".
     private var values: [String: UInt64?] = [:]
 
     init(dataStore: any DataStore, readTimeout: TimeInterval = 0.5) {
@@ -185,19 +232,29 @@ internal final class DataStoreMinimumNotBeforeStore: FlagsMinimumNotBeforeStore 
         self.readTimeout = readTimeout
     }
 
-    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64? {
+    func value(forKey key: String, waitForRead: Bool) -> UInt64? {
+        if let read = read(forKey: key, waitForRead: waitForRead) {
+            return read
+        }
         lock.lock()
-        if let cached = values[anchor] {
+        defer { lock.unlock() }
+        return values[key] ?? nil
+    }
+
+    /// Returns `.none` when the read did not finish in time (`observe` only), and `.some(nil)` when no value is stored.
+    func read(forKey key: String, waitForRead: Bool) -> UInt64?? {
+        lock.lock()
+        if let cached = values[key] {
             lock.unlock()
-            return cached
+            return .some(cached)
         }
         lock.unlock()
         // Verification runs on the assignment fetch queue, never on the data store queue, so waiting is safe.
-        // `required` waits for the read: it must never skip the floor. `observe` waits a short time.
+        // `required` waits for the read: it must never skip a floor. `observe` waits a short time.
         let group = DispatchGroup()
         group.enter()
         var read: UInt64??
-        dataStore.value(forKey: Self.keyPrefix + anchor) { [lock] result in
+        dataStore.value(forKey: Self.keyPrefix + key) { [lock] result in
             let value = result.data().flatMap { String(data: $0, encoding: .utf8) }.flatMap(UInt64.init)
             lock.lock()
             read = .some(value)
@@ -213,23 +270,152 @@ internal final class DataStoreMinimumNotBeforeStore: FlagsMinimumNotBeforeStore 
         defer { lock.unlock() }
         guard let read else {
             // `observe` only: the read did not finish in time. Try again on the next verification.
-            return values[anchor] ?? nil
+            return .none
         }
-        let merged = [values[anchor] ?? nil, read].compactMap { $0 }.max()
-        values[anchor] = .some(merged)
+        let merged = [values[key] ?? nil, read].compactMap { $0 }.max()
+        values[key] = .some(merged)
+        return .some(merged)
+    }
+
+    func store(_ value: UInt64, forKey key: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let stored = values[key] ?? nil, stored >= value {
+            return
+        }
+        values[key] = .some(value)
+        dataStore.setValue(Data(String(value).utf8), forKey: Self.keyPrefix + key, version: dataStoreDefaultKeyVersion)
+    }
+
+    func removeValue(forKey key: String) {
+        dataStore.removeValue(forKey: Self.keyPrefix + key)
+    }
+}
+
+/// Reads and writes generic password items of the response signing service.
+internal protocol FlagsKeychain {
+    func read(account: String) throws -> Data?
+    func write(_ data: Data, account: String) throws
+}
+
+internal struct SystemFlagsKeychain: FlagsKeychain {
+    static let service = "com.datadoghq.flags.response-signing"
+
+    struct Failure: Error {
+        let status: OSStatus
+    }
+
+    private func query(_ account: String) -> [String: Any] {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.service,
+            kSecAttrAccount as String: account
+        ]
+        #if os(macOS)
+        query[kSecUseDataProtectionKeychain as String] = true
+        #endif
+        return query
+    }
+
+    func read(account: String) throws -> Data? {
+        var query = query(account)
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecItemNotFound {
+            return nil
+        }
+        guard status == errSecSuccess else {
+            throw Failure(status: status)
+        }
+        return result as? Data
+    }
+
+    func write(_ data: Data, account: String) throws {
+        let attributes: [String: Any] = [
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        ]
+        var status = SecItemUpdate(query(account) as CFDictionary, attributes as CFDictionary)
+        if status == errSecItemNotFound {
+            status = SecItemAdd(query(account).merging(attributes) { $1 } as CFDictionary, nil)
+        }
+        guard status == errSecSuccess else {
+            throw Failure(status: status)
+        }
+    }
+}
+
+/// Persists the signing floors in the Keychain (service `com.datadoghq.flags.response-signing`, account = key,
+/// `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`). The items stay after a reinstall and a `Library/Caches` cleanup.
+/// The first read of a key migrates a value of the earlier `Library/Caches` store, then deletes that file.
+/// When a Keychain call fails, the store keeps the value in memory for the process.
+internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
+    private let keychain: any FlagsKeychain
+    private let legacy: DataStoreSigningFloorStore?
+    private let lock = NSLock()
+    /// Keys that were read or written, with their value. `nil` means "read, no value".
+    private var values: [String: UInt64?] = [:]
+
+    init(legacy: DataStoreSigningFloorStore?, keychain: any FlagsKeychain = SystemFlagsKeychain()) {
+        self.keychain = keychain
+        self.legacy = legacy
+    }
+
+    func value(forKey key: String, waitForRead: Bool) -> UInt64? {
+        lock.lock()
+        if let cached = values[key] {
+            lock.unlock()
+            return cached
+        }
+        lock.unlock()
+        var keychainFailed = false
+        var value: UInt64?
+        do {
+            value = try keychain.read(account: key).flatMap(Self.decode)
+        } catch {
+            keychainFailed = true
+        }
+        var complete = true
+        if value == nil, let legacy {
+            switch legacy.read(forKey: key, waitForRead: waitForRead) {
+            case .none:
+                // `observe` only: the earlier file was not read in time. Try again on the next verification.
+                complete = false
+            case .some(let migrated?):
+                value = migrated
+                // Delete the earlier file only after the Keychain holds its value.
+                if !keychainFailed, (try? keychain.write(Self.encode(migrated), account: key)) != nil {
+                    legacy.removeValue(forKey: key)
+                }
+            case .some(nil):
+                break
+            }
+        }
+        lock.lock()
+        defer { lock.unlock() }
+        let merged = [values[key] ?? nil, value].compactMap { $0 }.max()
+        if complete {
+            values[key] = .some(merged)
+        }
         return merged
     }
 
-    func store(_ value: UInt64, forAnchor anchor: String) {
+    func store(_ value: UInt64, forKey key: String) {
+        let current = self.value(forKey: key, waitForRead: true)
         lock.lock()
         defer { lock.unlock() }
-        // Keep the highest value: a lower value never replaces a stored one.
-        if let stored = values[anchor] ?? nil, stored >= value {
+        if let stored = [values[key] ?? nil, current].compactMap({ $0 }).max(), stored >= value {
             return
         }
-        values[anchor] = .some(value)
-        dataStore.setValue(Data(String(value).utf8), forKey: Self.keyPrefix + anchor, version: dataStoreDefaultKeyVersion)
+        values[key] = .some(value)
+        // A failed write keeps the value in memory for this process. The response is still accepted.
+        try? keychain.write(Self.encode(value), account: key)
     }
+
+    private static func encode(_ value: UInt64) -> Data { Data(String(value).utf8) }
+    private static func decode(_ data: Data) -> UInt64? { String(data: data, encoding: .utf8).flatMap(UInt64.init) }
 }
 
 internal final class FlagsResponseVerifier {
@@ -250,18 +436,28 @@ internal final class FlagsResponseVerifier {
         "signature", "signed-response-headers"
     ].map { prefix + $0 }
     static let flagSelectionIgnoredHeader = "dd-flag-selection-ignored"
+    /// The build floor (2026-11-25T00:00:00Z), in Unix seconds. The verifier never uses a device clock before it, so a
+    /// leaf that expired before this release never verifies again. The release process sets it to the release date
+    /// or shortly before it. It must never be later than the release build time.
+    static let buildFloor: UInt64 = 1_795_564_800
+
+    static func leafFloorKey(_ anchorKey: String) -> String { "minimum-leaf-not-before-" + anchorKey }
+    static func highWaterMarkKey(_ anchorKey: String) -> String { "issued-at-high-water-mark-" + anchorKey }
     let scope = UUID()
     let configuration: Flags.ResponseSigningConfiguration
-    let minimumNotBeforeStore: any FlagsMinimumNotBeforeStore
+    let floorStore: any FlagsSigningFloorStore
+    private let uptime: () -> TimeInterval
     /// The configured and bundled roots, parsed once instead of on each verification.
     private let parsedRoots: [Data: FlagsSigningCertificate]
 
     init(
         configuration: Flags.ResponseSigningConfiguration,
-        minimumNotBeforeStore: any FlagsMinimumNotBeforeStore = InMemoryMinimumNotBeforeStore()
+        floorStore: any FlagsSigningFloorStore = InMemorySigningFloorStore(),
+        uptime: @escaping () -> TimeInterval = FlagsMonotonicClock.now
     ) {
         self.configuration = configuration
-        self.minimumNotBeforeStore = minimumNotBeforeStore
+        self.floorStore = floorStore
+        self.uptime = uptime
         var parsedRoots: [Data: FlagsSigningCertificate] = [:]
         for data in configuration.trustedRootCertificates + [Flags.ResponseSigningConfiguration.stagingRoot] {
             parsedRoots[data] = try? FlagsSigningCertificate(der: data, role: .anchor)
@@ -393,7 +589,17 @@ internal final class FlagsResponseVerifier {
         let expiresAt = try Self.seconds(Self.header(response, "expires-at"))
         // DRAFT wire: optional, and bound in the transcript when present.
         let minimumNotBefore = try Self.optionalHeader(response, "minimum-leaf-not-before").map(Self.seconds)
-        let seconds = now.timeIntervalSince1970
+        // effectiveNow = max(now, build floor, high-water mark). A clock set back cannot make an older proof or leaf
+        // valid again. The marks of all configured roots apply: each one is a time that a trusted signer reached.
+        let deviceNow = now.timeIntervalSince1970
+        var timeFloor = Double(configuration.buildFloor)
+        for data in roots {
+            let key = Self.highWaterMarkKey(Self.hex(Self.digest(data)))
+            if let mark = floorStore.value(forKey: key, waitForRead: configuration.mode == .required) {
+                timeFloor = max(timeFloor, Double(mark))
+            }
+        }
+        let seconds = max(deviceNow, timeFloor)
         guard Double(issuedAt) <= seconds + 30, Double(expiresAt) > seconds,
             expiresAt > issuedAt, expiresAt - issuedAt <= 300
         else {
@@ -454,11 +660,20 @@ internal final class FlagsResponseVerifier {
         }
         // The floor applies to the leaf only. It is never compared with an intermediate.
         let anchorKey = Self.hex(Self.digest(anchor))
-        if let stored = minimumNotBeforeStore.value(forAnchor: anchorKey, waitForRead: configuration.mode == .required),
+        let required = configuration.mode == .required
+        if let stored = floorStore.value(forKey: Self.leafFloorKey(anchorKey), waitForRead: required),
             leaf.notBefore < Double(stored) {
             throw FlagsSigningError.revokedCertificate
         }
-        var verification = FlagsResponseVerification(scope: scope, verifiedAt: seconds, expiresAt: Double(expiresAt))
+        // Every check passed. One response moves the mark at most 30 s past the device clock, so a leaked key
+        // cannot move it far into the future.
+        if deviceNow + 30 >= 0 {
+            floorStore.store(min(issuedAt, UInt64(deviceNow + 30)), forKey: Self.highWaterMarkKey(anchorKey))
+        }
+        var verification = FlagsResponseVerification(scope: scope, verifiedAt: deviceNow, expiresAt: Double(expiresAt))
+        verification.verifiedIssuedAt = Double(issuedAt)
+        verification.verifiedUptime = uptime()
+        verification.timeFloor = timeFloor
         for (name, value) in responseHeaders {
             verification.verifiedResponseHeaders[name] = .some(value)
         }
@@ -467,7 +682,7 @@ internal final class FlagsResponseVerifier {
             if Double(minimumNotBefore) > leaf.notBefore {
                 verification.ignoredMinimumNotBefore = true
             } else {
-                minimumNotBeforeStore.store(minimumNotBefore, forAnchor: anchorKey)
+                floorStore.store(minimumNotBefore, forKey: Self.leafFloorKey(anchorKey))
             }
         }
         return verification

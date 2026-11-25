@@ -136,10 +136,23 @@ DRAFT: the edge and the shared fixtures do not send this header yet. The name an
 - When the header is present, the transcript ends with `0x01` and the value as a big-endian `u64`, after the signed response list. When it is absent, the v1 transcript does not change. So a change, an addition or a removal of the header fails the signature.
 - The floor applies to the leaf only. The SDK never compares it with an intermediate.
 - The SDK accepts the value only from a fully verified response. It ignores a value that is greater than the `notBefore` of the leaf in the same response, because a response must never revoke its own leaf. It reports `minimum-not-before-ignored`. It also ignores a value that is lower than the stored value.
-- The SDK stores the highest value for each trust anchor (key: SHA-256 of the root DER) in the Flags feature data store, so it survives a restart. This is the only data that `required` mode persists. It holds no flag data.
+- The SDK stores the highest value for each trust anchor (key: SHA-256 of the root DER) in the Keychain, so it survives a restart, a reinstall and a cleanup of `Library/Caches`. See [Clock floor](#clock-floor) for the storage and the migration. This and the high-water mark are the only data that `required` mode persists. They hold no flag data.
 - On each verification, the SDK rejects a leaf with a `notBefore` lower than the stored value, with the reason `revoked-certificate`. `required` fails closed. `observe` accepts the response and reports the reason. Both modes store new values.
 - `required` waits for the first read of the stored value, so it never skips the floor. `observe` waits up to 0.5 s, and if the read is not done, that verification uses no stored value.
 - A new leaf under older intermediates is accepted. The floor cannot revoke an intermediate.
+
+## Clock floor
+
+The device owner can set the device clock. So the verifier never uses a time before `effectiveNow` = `max(now, build floor, high-water mark)`:
+
+- The build floor is a Unix time compiled into the SDK release (`FlagsResponseVerifier.buildFloor`, now `1795564800`, 2026-11-25T00:00:00Z). A leaf that expired before the release never verifies again. Each release sets it to the release date or shortly before it.
+- The high-water mark is the highest `issued-at` of a fully verified response, for each trust anchor. The SDK updates it only after every check passes, including the leaf floor. One response moves it to at most `min(issued_at, now + 30)`, so a leaked key cannot move it far into the future. It never goes down.
+- Every time check of the proof and the chain uses `effectiveNow`. A proof or a certificate that is expired at `effectiveNow` gives `expired-proof`, as before. The 30 s backward step allowance applies to the device clock only.
+- At each verification, the SDK records the proof `issued-at` and a monotonic time (`CLOCK_MONOTONIC`, which also counts sleep). For the expiry of that proof and for `stale`, it uses `max(effectiveNow, issued_at + monotonic time since)`. So a clock change during the process does not extend a proof.
+
+The leaf floor and the high-water mark are Keychain generic password items: service `com.datadoghq.flags.response-signing`, account `<kind>-<anchor>`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`. The kinds are `minimum-leaf-not-before` and `issued-at-high-water-mark`. Earlier versions kept the leaf floor in `Library/Caches`, which the OS can delete. On the first read of a key, the SDK copies a value from that file to the Keychain, then deletes the file. When a Keychain call fails, the SDK keeps the value in memory for the process and accepts the response.
+
+Tests verify the shared fixtures at their own clock, which is before the build floor. The test-only configuration initializer turns the floor off unless a test sets it.
 
 ## Validation and shared fixtures
 

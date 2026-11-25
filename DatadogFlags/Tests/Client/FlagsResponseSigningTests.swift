@@ -973,7 +973,7 @@ final class FlagsResponseSigningTests: XCTestCase {
         defer { restarted.flush() }
         XCTAssertNil(restarted.flagAssignment(for: "flag"))
         XCTAssertNil(restarted.flagAssignments())
-        XCTAssertEqual(store.reads, seededReads, "required read the unverified disk cache")
+        XCTAssertEqual(store.reads - store.signingFloorReads, seededReads, "required read the unverified disk cache")
     }
 
     func testRequiredResetAndNewContextRejectLateVerifiedCallbacks() {
@@ -1863,6 +1863,7 @@ extension FlagsResponseSigningTests {
         _ verifier: FlagsResponseVerifier,
         _ name: String,
         minimumNotBefore: UInt64? = nil,
+        now: TimeInterval = SigningChainFixture.now,
         changeHeader: ((inout [String: String]) -> Void)? = nil
     ) throws -> (URLRequest, HTTPURLResponse, Data) {
         var request = URLRequest(url: URL(string: "https://flags.example.test/precompute-assignments")!)
@@ -1873,30 +1874,33 @@ extension FlagsResponseSigningTests {
         let prepared = try verifier.prepare(request)
         let body = Data.mockAnyFlagAssignmentsResponse()
         var headers = try SigningChainFixture.credential(name)
-            .signedHeaders(request: prepared, body: body, minimumNotBefore: minimumNotBefore)
+            .signedHeaders(request: prepared, body: body, now: now, minimumNotBefore: minimumNotBefore)
         changeHeader?(&headers)
         return (prepared, try response(prepared, headers), body)
     }
 
-    private func verify(_ verifier: FlagsResponseVerifier, _ signed: (URLRequest, HTTPURLResponse, Data)) throws -> FlagsResponseVerification {
-        try verifier.verify(
-            request: signed.0,
-            response: signed.1,
-            body: signed.2,
-            now: Date(timeIntervalSince1970: SigningChainFixture.now)
-        )
+    private func verify(
+        _ verifier: FlagsResponseVerifier,
+        _ signed: (URLRequest, HTTPURLResponse, Data),
+        at now: TimeInterval = SigningChainFixture.now
+    ) throws -> FlagsResponseVerification {
+        try verifier.verify(request: signed.0, response: signed.1, body: signed.2, now: Date(timeIntervalSince1970: now))
     }
 
-    private func requiredVerifier(store: any FlagsMinimumNotBeforeStore) throws -> FlagsResponseVerifier {
+    private func requiredVerifier(store: any FlagsSigningFloorStore) throws -> FlagsResponseVerifier {
         FlagsResponseVerifier(
             configuration: .init(mode: .required, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
-            minimumNotBeforeStore: store
+            floorStore: store
         )
     }
 
     private func anchorKey() throws -> String {
         SHA256.hash(data: try SigningChainFixture.root("root-a")).map { String(format: "%02x", $0) }.joined()
     }
+
+    private func floorKey() throws -> String { FlagsResponseVerifier.leafFloorKey(try anchorKey()) }
+
+    private func highWaterMarkKey() throws -> String { FlagsResponseVerifier.highWaterMarkKey(try anchorKey()) }
 
     /// `two-intermediates` has an older leaf than `rotated-lower-intermediate`. Both chains share the upper intermediate,
     /// and every intermediate is older than both leaves.
@@ -1913,7 +1917,7 @@ extension FlagsResponseSigningTests {
         XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates")))
         let proof = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor))
         XCTAssertFalse(proof.ignoredMinimumNotBefore)
-        XCTAssertEqual(store.values[try anchorKey()], floor)
+        XCTAssertEqual(store.values[try floorKey()], floor)
         // The old leaf is now revoked. The new leaf still verifies.
         XCTAssertThrowsError(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates"))) {
             XCTAssertEqual($0 as? FlagsSigningError, .revokedCertificate)
@@ -1938,7 +1942,7 @@ extension FlagsResponseSigningTests {
         XCTAssertTrue(intermediates.allSatisfy { $0.notBefore < Double(floor) }, "Every intermediate is older than the floor")
         let proof = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor))
         XCTAssertFalse(proof.ignoredMinimumNotBefore)
-        XCTAssertEqual(store.values[try anchorKey()], floor)
+        XCTAssertEqual(store.values[try floorKey()], floor)
         for _ in 0..<2 {
             XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate")))
         }
@@ -1946,47 +1950,190 @@ extension FlagsResponseSigningTests {
 
     func testMinimumNotBeforeDataStoreKeepsTheHighestValueAcrossARestart() throws {
         let dataStore = DataStoreMock()
-        let first = DataStoreMinimumNotBeforeStore(dataStore: dataStore)
+        let first = DataStoreSigningFloorStore(dataStore: dataStore)
         for wait in [true, false] {
-            XCTAssertNil(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor", waitForRead: wait))
+            XCTAssertNil(DataStoreSigningFloorStore(dataStore: dataStore).value(forKey: "anchor", waitForRead: wait))
         }
-        first.store(20, forAnchor: "anchor")
-        first.store(10, forAnchor: "anchor")
-        XCTAssertEqual(first.value(forAnchor: "anchor", waitForRead: true), 20)
-        XCTAssertNil(first.value(forAnchor: "other", waitForRead: true))
+        first.store(20, forKey: "anchor")
+        first.store(10, forKey: "anchor")
+        XCTAssertEqual(first.value(forKey: "anchor", waitForRead: true), 20)
+        XCTAssertNil(first.value(forKey: "other", waitForRead: true))
         // A restart reads the persisted value from the feature data store.
-        let restarted = DataStoreMinimumNotBeforeStore(dataStore: dataStore)
-        XCTAssertEqual(restarted.value(forAnchor: "anchor", waitForRead: true), 20)
-        restarted.store(15, forAnchor: "anchor")
-        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor", waitForRead: false), 20)
-        restarted.store(30, forAnchor: "anchor")
-        XCTAssertEqual(DataStoreMinimumNotBeforeStore(dataStore: dataStore).value(forAnchor: "anchor", waitForRead: true), 30)
+        let restarted = DataStoreSigningFloorStore(dataStore: dataStore)
+        XCTAssertEqual(restarted.value(forKey: "anchor", waitForRead: true), 20)
+        restarted.store(15, forKey: "anchor")
+        XCTAssertEqual(DataStoreSigningFloorStore(dataStore: dataStore).value(forKey: "anchor", waitForRead: false), 20)
+        restarted.store(30, forKey: "anchor")
+        XCTAssertEqual(DataStoreSigningFloorStore(dataStore: dataStore).value(forKey: "anchor", waitForRead: true), 30)
+    }
+
+    // MARK: - Clock floor (build floor, high-water mark, monotonic expiry)
+
+    func testBuildFloorIsNotLaterThanNowAndAppliesToThePublicConfiguration() {
+        XCTAssertLessThanOrEqual(Double(FlagsResponseVerifier.buildFloor), Date().timeIntervalSince1970)
+        XCTAssertEqual(Flags.ResponseSigningConfiguration(mode: .required).buildFloor, FlagsResponseVerifier.buildFloor)
+    }
+
+    func testBuildFloorRejectsALeafThatExpiredBeforeTheRelease() throws {
+        let floor = FlagsResponseVerifier.buildFloor
+        let deviceNow = Double(floor) - 86_400
+        let fixture = try SigningChainFixture.credential("two-intermediates")
+        XCTAssertLessThan(try FlagsSigningCertificate(der: fixture.leaf, role: .leaf).notAfter, Double(floor))
+        XCTAssertLessThan(SigningChainFixture.now, deviceNow)
+        let anchor = try SigningChainFixture.root("root-a")
+        let withFloor = FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [anchor], buildFloor: floor)
+        )
+        // The leaf is valid at the fixture clock. With the floor, the device clock cannot go back to that time.
+        let signed = try signedFixtureResponse(withFloor, "two-intermediates")
+        XCTAssertThrowsError(try verify(withFloor, signed, at: deviceNow)) {
+            XCTAssertEqual($0 as? FlagsSigningError, .expiredProof)
+        }
+        XCTAssertThrowsError(try verify(withFloor, signed)) {
+            XCTAssertEqual($0 as? FlagsSigningError, .expiredProof)
+        }
+        XCTAssertNoThrow(try verify(try requiredVerifier(store: MinimumNotBeforeStoreMock()), signed))
+    }
+
+    func testHighWaterMarkRejectsAnOlderProofAfterAClockRollbackAndARestart() throws {
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = try requiredVerifier(store: store)
+        let earlier = SigningChainFixture.now
+        let later = earlier + 3_600
+        let leaf = try FlagsSigningCertificate(der: SigningChainFixture.credential("two-intermediates").leaf, role: .leaf)
+        XCTAssertLessThanOrEqual(leaf.notBefore, earlier)
+        XCTAssertGreaterThan(leaf.notAfter, later + 300)
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates", now: later), at: later))
+        XCTAssertEqual(store.values[try highWaterMarkKey()], UInt64(later))
+        // The device clock goes back 1 h. A proof that is valid at that time is rejected.
+        for current in [verifier, try requiredVerifier(store: store)] {
+            XCTAssertThrowsError(
+                try verify(current, signedFixtureResponse(current, "two-intermediates", now: earlier), at: earlier)
+            ) {
+                XCTAssertEqual($0 as? FlagsSigningError, .expiredProof)
+            }
+        }
+    }
+
+    func testHighWaterMarkMovesAtMostThirtySecondsPastTheDeviceClock() throws {
+        let store = MinimumNotBeforeStoreMock()
+        let verifier = try requiredVerifier(store: store)
+        let now = SigningChainFixture.now
+        for attempt in 0..<3 {
+            let proof = try verify(verifier, signedFixtureResponse(verifier, "two-intermediates", now: now + 30), at: now)
+            XCTAssertEqual(store.values[try highWaterMarkKey()], UInt64(now + 30))
+            XCTAssertEqual(proof.verifiedAt, now, "verifiedAt is the device clock")
+            XCTAssertEqual(proof.verifiedIssuedAt, now + 30)
+            // The mark of a response applies from the next verification.
+            XCTAssertEqual(proof.timeFloor, attempt == 0 ? 0 : now + 30)
+        }
+    }
+
+    func testKeychainStoreMigratesTheCachesFileAndKeepsTheHighWaterMarkAcrossARestart() throws {
+        let keychain = KeychainMock()
+        let caches = DataStoreMock()
+        DataStoreSigningFloorStore(dataStore: caches).store(42, forKey: try floorKey())
+        let store = KeychainSigningFloorStore(legacy: DataStoreSigningFloorStore(dataStore: caches), keychain: keychain)
+        XCTAssertEqual(store.value(forKey: try floorKey(), waitForRead: true), 42)
+        XCTAssertEqual(keychain.items[try floorKey()], Data("42".utf8))
+        XCTAssertNil(DataStoreSigningFloorStore(dataStore: caches).value(forKey: try floorKey(), waitForRead: true))
+
+        let later = SigningChainFixture.now + 3_600
+        let verifier = try requiredVerifier(store: store)
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates", now: later), at: later))
+        XCTAssertEqual(keychain.items[try highWaterMarkKey()], Data(String(UInt64(later)).utf8))
+        // A restart reads the Keychain only. The Caches file is gone.
+        let restarted = try requiredVerifier(store: KeychainSigningFloorStore(legacy: nil, keychain: keychain))
+        let earlier = SigningChainFixture.now
+        XCTAssertThrowsError(
+            try verify(restarted, signedFixtureResponse(restarted, "two-intermediates", now: earlier), at: earlier)
+        ) {
+            XCTAssertEqual($0 as? FlagsSigningError, .expiredProof)
+        }
+    }
+
+    func testKeychainFailureKeepsTheValuesInMemoryAndAcceptsTheResponse() throws {
+        let keychain = KeychainMock()
+        keychain.fails = true
+        let caches = DataStoreMock()
+        DataStoreSigningFloorStore(dataStore: caches).store(42, forKey: try floorKey())
+        let store = KeychainSigningFloorStore(legacy: DataStoreSigningFloorStore(dataStore: caches), keychain: keychain)
+        XCTAssertEqual(store.value(forKey: try floorKey(), waitForRead: true), 42)
+        // The Caches file stays until the Keychain holds its value.
+        XCTAssertEqual(DataStoreSigningFloorStore(dataStore: caches).value(forKey: try floorKey(), waitForRead: true), 42)
+
+        let verifier = try requiredVerifier(store: store)
+        let later = SigningChainFixture.now + 3_600
+        XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "two-intermediates", now: later), at: later))
+        XCTAssertTrue(keychain.items.isEmpty)
+        let earlier = SigningChainFixture.now
+        XCTAssertThrowsError(
+            try verify(verifier, signedFixtureResponse(verifier, "two-intermediates", now: earlier), at: earlier)
+        ) {
+            XCTAssertEqual($0 as? FlagsSigningError, .expiredProof)
+        }
+    }
+
+    func testSystemKeychainRoundTrip() throws {
+        let keychain = SystemFlagsKeychain()
+        let account = "test-round-trip"
+        do {
+            try keychain.write(Data("1".utf8), account: account)
+        } catch let failure as SystemFlagsKeychain.Failure where failure.status == errSecMissingEntitlement {
+            throw XCTSkip("The test host has no Keychain entitlement.")
+        }
+        try keychain.write(Data("2".utf8), account: account)
+        XCTAssertEqual(try keychain.read(account: account), Data("2".utf8))
+        XCTAssertNil(try keychain.read(account: "test-absent-account"))
+    }
+
+    func testWallClockStepBackDoesNotExtendTheProof() throws {
+        let scope = UUID()
+        var proof = FlagsResponseVerification(scope: scope, verifiedAt: 1_000, expiresAt: 1_300)
+        proof.verifiedIssuedAt = 1_000
+        proof.verifiedUptime = 50
+        XCTAssertTrue(proof.isValid(at: Date(timeIntervalSince1970: 1_270), scope: scope, uptime: 340))
+        // 301 s passed on the monotonic clock. The wall clock stepped back 21 s, inside the 30 s allowance.
+        XCTAssertFalse(proof.isValid(at: Date(timeIntervalSince1970: 1_280), scope: scope, uptime: 351))
+        XCTAssertTrue(proof.isValid(at: Date(timeIntervalSince1970: 1_280), scope: scope, allowExpired: true, uptime: 351))
+        XCTAssertEqual(proof.effectiveTime(at: Date(timeIntervalSince1970: 1_280), uptime: 351), 1_301)
+        // Without a monotonic start, the wall clock decides, as before.
+        let wallOnly = FlagsResponseVerification(scope: scope, verifiedAt: 1_000, expiresAt: 1_300)
+        XCTAssertTrue(wallOnly.isValid(at: Date(timeIntervalSince1970: 1_280), scope: scope, uptime: 351))
+        // The verifier records the monotonic time of the verification.
+        let verifier = FlagsResponseVerifier(
+            configuration: .init(mode: .required, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
+            uptime: { 77 }
+        )
+        let verified = try verify(verifier, signedFixtureResponse(verifier, "two-intermediates"))
+        XCTAssertEqual(verified.verifiedUptime, 77)
+        XCTAssertEqual(verified.verifiedIssuedAt, SigningChainFixture.now)
     }
 
     /// iOS only: a slow first read must not skip the floor in `required` mode.
     func testRequiredWaitsForASlowFloorReadAndNeverSkipsTheCheck() throws {
         let persisted = DataStoreMock()
         let floor = try SigningChainFixture.credential("rotated-lower-intermediate").leafNotBefore()
-        DataStoreMinimumNotBeforeStore(dataStore: persisted).store(floor, forAnchor: try anchorKey())
+        DataStoreSigningFloorStore(dataStore: persisted).store(floor, forKey: try floorKey())
         let slow = SlowDataStore(wrapping: persisted, delay: 1)
         let anchor = try SigningChainFixture.root("root-a")
 
         let required = FlagsResponseVerifier(
             configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
-            minimumNotBeforeStore: DataStoreMinimumNotBeforeStore(dataStore: slow, readTimeout: 0.1)
+            floorStore: DataStoreSigningFloorStore(dataStore: slow, readTimeout: 0.1)
         )
         XCTAssertThrowsError(try verify(required, signedFixtureResponse(required, "two-intermediates"))) {
             XCTAssertEqual($0 as? FlagsSigningError, .revokedCertificate)
         }
 
         // `observe` waits only for the short read timeout. The next verification uses the finished read.
-        let observeStore = DataStoreMinimumNotBeforeStore(dataStore: slow, readTimeout: 0.1)
+        let observeStore = DataStoreSigningFloorStore(dataStore: slow, readTimeout: 0.1)
         let observe = FlagsResponseVerifier(
             configuration: .init(mode: .observe, trustedRootCertificates: [anchor]),
-            minimumNotBeforeStore: observeStore
+            floorStore: observeStore
         )
         XCTAssertNoThrow(try verify(observe, signedFixtureResponse(observe, "two-intermediates")))
-        XCTAssertEqual(observeStore.value(forAnchor: try anchorKey(), waitForRead: true), floor)
+        XCTAssertEqual(observeStore.value(forKey: try floorKey(), waitForRead: true), floor)
         XCTAssertThrowsError(try verify(observe, signedFixtureResponse(observe, "two-intermediates")))
     }
 
@@ -1996,7 +2143,7 @@ extension FlagsResponseSigningTests {
         let floor = try SigningChainFixture.credential("rotated-lower-intermediate").leafNotBefore()
         _ = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor))
         _ = try verify(verifier, signedFixtureResponse(verifier, "rotated-lower-intermediate", minimumNotBefore: floor - 1))
-        XCTAssertEqual(store.values[try anchorKey()], floor)
+        XCTAssertEqual(store.values[try floorKey()], floor)
     }
 
     func testLeafFloorGreaterThanTheLeafIsIgnored() throws {
@@ -2006,14 +2153,14 @@ extension FlagsResponseSigningTests {
         // A response never revokes its own leaf.
         let proof = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: try chain.leafNotBefore() + 1))
         XCTAssertTrue(proof.ignoredMinimumNotBefore)
-        XCTAssertTrue(store.values.isEmpty)
+        XCTAssertNil(store.values[try floorKey()])
         XCTAssertNoThrow(try verify(verifier, signedFixtureResponse(verifier, "one-intermediate")))
         // A value later than the intermediate but not later than the leaf is accepted: intermediates are not compared.
         let between = try chain.oldestNotBefore() + 1
         XCTAssertLessThanOrEqual(between, try chain.leafNotBefore())
         let accepted = try verify(verifier, signedFixtureResponse(verifier, "one-intermediate", minimumNotBefore: between))
         XCTAssertFalse(accepted.ignoredMinimumNotBefore)
-        XCTAssertEqual(store.values[try anchorKey()], between)
+        XCTAssertEqual(store.values[try floorKey()], between)
     }
 
     func testChangedMinimumNotBeforeHeaderFailsTheSignature() throws {
@@ -2021,7 +2168,7 @@ extension FlagsResponseSigningTests {
         let store = MinimumNotBeforeStoreMock()
         let verifier = FlagsResponseVerifier(
             configuration: .init(mode: .required, trustedRootCertificates: [anchor]),
-            minimumNotBeforeStore: store
+            floorStore: store
         )
         let value = try SigningChainFixture.credential("one-intermediate").leafNotBefore()
         let name = FlagsResponseVerifier.prefix + "minimum-leaf-not-before"
@@ -2053,7 +2200,7 @@ extension FlagsResponseSigningTests {
         let value = try SigningChainFixture.credential("rotated-lower-intermediate").leafNotBefore()
         for mode in [Flags.ResponseSigningMode.required, .observe] {
             let store = MinimumNotBeforeStoreMock()
-            store.values[anchorKey] = value
+            store.values[FlagsResponseVerifier.leafFloorKey(anchorKey)] = value
             let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
             let telemetry = scope.telemetryMock
             let fetcher = FlagAssignmentsFetcher(
@@ -2063,7 +2210,7 @@ extension FlagsResponseSigningTests {
                 featureScope: scope,
                 responseSigning: .init(mode: mode, trustedRootCertificates: [anchor]),
                 dateProvider: DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now)),
-                minimumNotBeforeStore: store,
+                floorStore: store,
                 signingFetch: { request, complete in
                     do {
                         let headers = try SigningChainFixture.credential("two-intermediates").signedHeaders(request: request, body: body)
@@ -2438,7 +2585,9 @@ extension FlagsResponseSigningTests {
         let headers = try SigningChainFixture.credential("two-intermediates").signedHeaders(request: prepared, body: body, now: issued)
         let signed = try response(prepared, headers)
         XCTAssertNoThrow(try verifier.verify(request: prepared, response: signed, body: body, now: Date(timeIntervalSince1970: issued - 30)))
-        XCTAssertThrowsError(try verifier.verify(request: prepared, response: signed, body: body, now: Date(timeIntervalSince1970: issued - 31))) {
+        // A new verifier: the accepted response moved the high-water mark to `issued`.
+        let fresh = try requiredVerifier(store: MinimumNotBeforeStoreMock())
+        XCTAssertThrowsError(try fresh.verify(request: prepared, response: signed, body: body, now: Date(timeIntervalSince1970: issued - 31))) {
             XCTAssertEqual($0 as? FlagsSigningError, .expiredProof)
         }
     }
@@ -2685,7 +2834,7 @@ extension FlagsResponseSigningTests {
                 expireVerifiedFlags: expireVerifiedFlags
             ),
             dateProvider: clock,
-            minimumNotBeforeStore: MinimumNotBeforeStoreMock(),
+            floorStore: MinimumNotBeforeStoreMock(),
             signingFetch: { request, complete in
                 do {
                     let headers = try fixture.signedHeaders(request: request, body: body)
@@ -2747,7 +2896,7 @@ extension FlagsResponseSigningTests {
             featureScope: FeatureScopeMock(context: .mockWith(source: "ios")),
             responseSigning: .init(mode: .observe, trustedRootCertificates: [try SigningChainFixture.root("root-a")]),
             dateProvider: clock,
-            minimumNotBeforeStore: MinimumNotBeforeStoreMock(),
+            floorStore: MinimumNotBeforeStoreMock(),
             signingFetch: { request, complete in
                 calls += 1
                 switch calls {
@@ -2986,10 +3135,27 @@ private final class SlowDataStore: DataStore {
     func flush() { wrapped.flush() }
 }
 
-private final class MinimumNotBeforeStoreMock: FlagsMinimumNotBeforeStore {
+private final class KeychainMock: FlagsKeychain {
+    var items: [String: Data] = [:]
+    var fails = false
+    func read(account: String) throws -> Data? {
+        if fails {
+            throw SystemFlagsKeychain.Failure(status: errSecNotAvailable)
+        }
+        return items[account]
+    }
+    func write(_ data: Data, account: String) throws {
+        if fails {
+            throw SystemFlagsKeychain.Failure(status: errSecNotAvailable)
+        }
+        items[account] = data
+    }
+}
+
+private final class MinimumNotBeforeStoreMock: FlagsSigningFloorStore {
     var values: [String: UInt64] = [:]
-    func value(forAnchor anchor: String, waitForRead: Bool) -> UInt64? { values[anchor] }
-    func store(_ value: UInt64, forAnchor anchor: String) {
+    func value(forKey anchor: String, waitForRead: Bool) -> UInt64? { values[anchor] }
+    func store(_ value: UInt64, forKey anchor: String) {
         values[anchor] = max(values[anchor] ?? 0, value)
     }
 }
@@ -3054,8 +3220,13 @@ private final class SigningDataStoreSpy: DataStore {
     var reads = 0
     var writes = 0
     var removals = 0
+    /// Reads of the earlier signing floor file, which the Keychain store migrates. They are not flag data.
+    var signingFloorReads = 0
     func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
         reads += 1
+        if key.hasPrefix(DataStoreSigningFloorStore.keyPrefix) {
+            signingFloorReads += 1
+        }
         store.value(forKey: key, callback: callback)
     }
     func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
