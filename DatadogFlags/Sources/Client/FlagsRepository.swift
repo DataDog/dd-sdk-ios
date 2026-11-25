@@ -460,7 +460,7 @@ internal final class FlagsRepository {
         return initializationCompletion
     }
 
-    private func canUseSigned(_ data: FlagsData?, matching context: FlagsEvaluationContext?) -> Bool {
+    private func canUseSigned(_ data: FlagsData?, matching context: FlagsEvaluationContext?, at now: Date? = nil) -> Bool {
         guard flagAssignmentsFetcher.responseSigningMode != .off else {
             return true
         }
@@ -476,7 +476,7 @@ internal final class FlagsRepository {
         guard let context, data.context.hasSameWireIdentity(as: context) else {
             return false
         }
-        return flagAssignmentsFetcher.isTrusted(data.verification, at: dateProvider.now)
+        return flagAssignmentsFetcher.isTrusted(data.verification, at: now ?? dateProvider.now)
     }
 
     /// Required mode only. When the installed proof expires, `ready` becomes `stale`, or `ready` and `stale`
@@ -1006,22 +1006,24 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 ExperimentationOptOut.accepts(response, for: policy) ? .success(response) : .failure(.invalidResponse)
             }
             let admittedResult: Result<FlagAssignmentsResponse, FlagsError>
-            // Required mode: a response that verified but crossed `expires-at` before admission is still trusted when
-            // `expireVerifiedFlags` is off. It is installed as `stale`, not `ready`, and it becomes the verified fallback.
-            var expiredAtAdmission = false
-            if case .success(let response) = validated, self.flagAssignmentsFetcher.responseSigningMode == .required,
+            // One clock read decides admission. Required mode: a response that verified but crossed `expires-at` is
+            // still trusted when `expireVerifiedFlags` is off, so it is admitted. The install step decides its state.
+            // Only required mode reads the clock here: a success claims its completion before any other clock read.
+            let required = self.flagAssignmentsFetcher.responseSigningMode == .required
+            let admissionNow = required ? self.dateProvider.now : Date.distantPast
+            var trustedAtAdmission = false
+            if case .success(let response) = validated, required,
                 response.responseSigningCacheScope != nil,
                 response.responseSigningCacheScope == self.flagAssignmentsFetcher.responseSigningCacheScope,
-                !self.flagAssignmentsFetcher.isVerified(response.verification, at: self.dateProvider.now),
-                self.flagAssignmentsFetcher.isTrusted(response.verification, at: self.dateProvider.now) {
-                expiredAtAdmission = true
+                self.flagAssignmentsFetcher.isTrusted(response.verification, at: admissionNow) {
+                trustedAtAdmission = true
             }
             if case .success(let response) = validated, self.flagAssignmentsFetcher.responseSigningMode != .off,
-                !expiredAtAdmission,
+                !trustedAtAdmission,
                 response.responseSigningCacheScope == nil
                     || response.responseSigningCacheScope != self.flagAssignmentsFetcher.responseSigningCacheScope
                     || (self.flagAssignmentsFetcher.responseSigningMode == .required
-                        && !self.flagAssignmentsFetcher.isVerified(response.verification, at: self.dateProvider.now)) {
+                        && !self.flagAssignmentsFetcher.isVerified(response.verification, at: admissionNow)) {
                 // A proof that expired before admission is a signing failure. A changed request scope is not.
                 let expired = self.flagAssignmentsFetcher.responseSigningMode == .required
                     && response.verification != nil
@@ -1032,84 +1034,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             } else {
                 admittedResult = validated
             }
-            switch admittedResult {
-            case .success(let response):
-                // Claim success before processing assignments or publishing ready can race the timeout.
-                let operationCompletion = takeCompletion()
-                var flagsData = FlagsData(
-                    flags: response.flags,
-                    context: context,
-                    date: self.dateProvider.now,
-                    obfuscation: response.obfuscation,
-                    flagSelection: self.flagSelection,
-                    experimentationOptOutPolicy: policy,
-                    observeFullEvaluationData: response.observeFullEvaluationData,
-                    keySpellings: response.keySpellings,
-                    unparsedFlagKeys: Array(response.failedFlags.keys)
-                )
-                flagsData.verification = response.verification
-                flagsData.responseSigningCacheScope = response.responseSigningCacheScope
-                var versionAfterSuccess: UInt64?
-                var expiredBeforeAdmission = false
-                var isServingRequestedContext = false
-                var callbacks: [PendingCacheReadCallback] = []
-                var notifyListeners: (() -> Void)?
-                var publish: (() -> Void)?
-                self._repositoryState.mutate { state in
-                    // Accept an older success for the current context only if no success or reset
-                    // superseded its starting version. The latest request's success always applies.
-                    let isLatestRequest = contextUpdateID == state.contextUpdateID
-                    // Required mode compares wire identity: a proof binds the request bytes.
-                    let required = self.flagAssignmentsFetcher.responseSigningMode == .required
-                    let isLatestContext = state.latestRequestedContext.map {
-                        required ? $0.hasSameWireIdentity(as: context) : $0 == context
-                    } ?? false
-                    let isFreshForLatestContext = isLatestContext && state.flagsDataVersion == versionAtStart
-                    guard isLatestRequest || (!state.hasObservedAssignmentAuthorization && isFreshForLatestContext) else {
-                        // A newer success for the same context and policy still satisfies this request.
-                        isServingRequestedContext = state.readableFlagsData?.context == context
-                        return
-                    }
-                    guard self.canUseSigned(flagsData, matching: context) else {
-                        expiredBeforeAdmission = true
-                        state.flagsData = nil
-                        notifyListeners = self.stateManager.updateStateWithoutNotifying(.error)
-                        return
-                    }
-                    state.flagsData = flagsData
-                    if expiredAtAdmission
-                        || self.flagAssignmentsFetcher.isVerified(flagsData.verification, at: self.dateProvider.now) {
-                        state.verifiedFlagsData = flagsData
-                    }
-                    state.assignmentSubjectIsolationRequired = false
-                    publish = state.readableFlagsData.flatMap { self.firstFlags.reserve(keys: $0.allFlagKeys) }
-                    state.cachedFlagsData = flagsData
-                    state.flagsDataVersion += 1
-                    versionAfterSuccess = state.flagsDataVersion
-                    callbacks = state.finishWaitingForInitialFlagsData()
-                    notifyListeners = self.stateManager.updateStateWithoutNotifying(expiredAtAdmission ? .stale : .ready)
-                }
-                guard let versionAfterSuccess else {
-                    let canComplete = !expiredBeforeAdmission
-                        && (self.experimentationOptOutMode == .disabled || isServingRequestedContext)
-                    complete(
-                        canComplete ? .success(()) : .failure(.invalidResponse),
-                        notifyListeners: notifyListeners,
-                        completion: operationCompletion
-                    )
-                    return
-                }
-                let pendingCompletions = callbacks.map { $0.prepare() }
-                Self.publishFirstFlags(publish)
-                self.scheduleVerifiedExpiry(for: flagsData)
-                self.writeState(flagsData, version: versionAfterSuccess, contextUpdateID: contextUpdateID)
-                complete(
-                    .success(()),
-                    notifyListeners: notifyListeners,
-                    completion: operationCompletion,
-                    pendingCompletions: pendingCompletions
-                )
-            case .failure(let error):
+            func fail(_ error: FlagsError, takeCompletion: @escaping () -> InitializationCompletion.Completion?) {
                 if case .assignmentAuthorizationFailed = error {
                     // Establish the subject boundary as soon as the rejection is known, even if
                     // fallback selection is waiting for the initial disk read to complete.
@@ -1135,6 +1060,104 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     )
                     complete(.failure(error), notifyListeners: notifyListeners, completion: operationCompletion)
                 })
+            }
+
+            switch admittedResult {
+            case .success(let response):
+                // Claim success before processing assignments or publishing ready can race the timeout.
+                let operationCompletion = takeCompletion()
+                var flagsData = FlagsData(
+                    flags: response.flags,
+                    context: context,
+                    date: self.dateProvider.now,
+                    obfuscation: response.obfuscation,
+                    flagSelection: self.flagSelection,
+                    experimentationOptOutPolicy: policy,
+                    observeFullEvaluationData: response.observeFullEvaluationData,
+                    keySpellings: response.keySpellings,
+                    unparsedFlagKeys: Array(response.failedFlags.keys)
+                )
+                flagsData.verification = response.verification
+                flagsData.responseSigningCacheScope = response.responseSigningCacheScope
+                var versionAfterSuccess: UInt64?
+                var expiredBeforeAdmission = false
+                var expiredAtInstall = false
+                var staleAtInstall = false
+                var isServingRequestedContext = false
+                var callbacks: [PendingCacheReadCallback] = []
+                var notifyListeners: (() -> Void)?
+                var publish: (() -> Void)?
+                self._repositoryState.mutate { state in
+                    // Accept an older success for the current context only if no success or reset
+                    // superseded its starting version. The latest request's success always applies.
+                    let isLatestRequest = contextUpdateID == state.contextUpdateID
+                    // Required mode compares wire identity: a proof binds the request bytes.
+                    let required = self.flagAssignmentsFetcher.responseSigningMode == .required
+                    let isLatestContext = state.latestRequestedContext.map {
+                        required ? $0.hasSameWireIdentity(as: context) : $0 == context
+                    } ?? false
+                    let isFreshForLatestContext = isLatestContext && state.flagsDataVersion == versionAtStart
+                    guard isLatestRequest || (!state.hasObservedAssignmentAuthorization && isFreshForLatestContext) else {
+                        // A newer success for the same context and policy still satisfies this request.
+                        isServingRequestedContext = state.readableFlagsData?.context == context
+                        return
+                    }
+                    // One clock read decides the install. With `expireVerifiedFlags`, a proof that expired after admission
+                    // installs nothing and changes no state: the fetch fails with `expired-proof`, as before admission.
+                    let installNow = self.dateProvider.now
+                    let fetcher = self.flagAssignmentsFetcher
+                    if required, flagsData.responseSigningCacheScope == fetcher.responseSigningCacheScope,
+                        !fetcher.isTrusted(flagsData.verification, at: installNow) {
+                        expiredAtInstall = true
+                        return
+                    }
+                    guard self.canUseSigned(flagsData, matching: context, at: installNow) else {
+                        expiredBeforeAdmission = true
+                        state.flagsData = nil
+                        notifyListeners = self.stateManager.updateStateWithoutNotifying(.error)
+                        return
+                    }
+                    // A trusted proof that is no longer fresh is installed as `stale`, and it stays the verified fallback.
+                    let fresh = fetcher.isVerified(flagsData.verification, at: installNow)
+                    staleAtInstall = required && !fresh
+                    state.flagsData = flagsData
+                    if fresh || staleAtInstall {
+                        state.verifiedFlagsData = flagsData
+                    }
+                    state.assignmentSubjectIsolationRequired = false
+                    publish = state.readableFlagsData.flatMap { self.firstFlags.reserve(keys: $0.allFlagKeys) }
+                    state.cachedFlagsData = flagsData
+                    state.flagsDataVersion += 1
+                    versionAfterSuccess = state.flagsDataVersion
+                    callbacks = state.finishWaitingForInitialFlagsData()
+                    notifyListeners = self.stateManager.updateStateWithoutNotifying(staleAtInstall ? .stale : .ready)
+                }
+                if expiredAtInstall {
+                    fail(.responseSigningFailed(reason: FlagsSigningError.expiredProof.rawValue)) { operationCompletion }
+                    return
+                }
+                guard let versionAfterSuccess else {
+                    let canComplete = !expiredBeforeAdmission
+                        && (self.experimentationOptOutMode == .disabled || isServingRequestedContext)
+                    complete(
+                        canComplete ? .success(()) : .failure(.invalidResponse),
+                        notifyListeners: notifyListeners,
+                        completion: operationCompletion
+                    )
+                    return
+                }
+                let pendingCompletions = callbacks.map { $0.prepare() }
+                Self.publishFirstFlags(publish)
+                self.scheduleVerifiedExpiry(for: flagsData)
+                self.writeState(flagsData, version: versionAfterSuccess, contextUpdateID: contextUpdateID)
+                complete(
+                    .success(()),
+                    notifyListeners: notifyListeners,
+                    completion: operationCompletion,
+                    pendingCompletions: pendingCompletions
+                )
+            case .failure(let error):
+                fail(error, takeCompletion: takeCompletion)
             }
         }
     }

@@ -3116,6 +3116,58 @@ extension FlagsResponseSigningTests {
         }
     }
 
+    /// The proof expires between admission and install. One clock read decides the install: strict policy fails with
+    /// `expired-proof`, installs nothing, starts no proof timer and publishes no `ready` or `stale`. The default policy
+    /// installs the response as `stale`.
+    func testProofThatExpiresBetweenAdmissionAndInstallFollowsOneClockRead() throws {
+        for strict in [false, true] {
+            let fetcherClock = DateProviderMock(now: Date(timeIntervalSince1970: SigningChainFixture.now))
+            let repositoryClock = SteppingDateProvider(
+                first: Date(timeIntervalSince1970: SigningChainFixture.now),
+                then: Date(timeIntervalSince1970: SigningChainFixture.now + 400)
+            )
+            let body = Data.mockAnyFlagAssignmentsResponse()
+            let fetcher = try realSigningFetcher(expireVerifiedFlags: strict, clock: fetcherClock, body: body) {
+                // The next repository read is the admission check. Every later read is after `expires-at`.
+                repositoryClock.step()
+                return false
+            }
+            var timers = 0
+            let repository = FlagsRepository(
+                clientName: "signed",
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: repositoryClock,
+                featureScope: FeatureScopeMock(),
+                flagSelection: nil,
+                initializationTimeout: nil,
+                scheduleExpiry: { _, _ in timers += 1 }
+            )
+            defer { repository.flush() }
+            let listener = SigningStateRecorder()
+            repository.state.addListener(listener)
+            defer { repository.state.removeListener(listener) }
+            let done = expectation(description: "context")
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject")) { result in
+                defer { done.fulfill() }
+                switch (strict, result) {
+                case (false, .success), (true, .failure(.responseSigningFailed(reason: "expired-proof"))): break
+                default: XCTFail("strict \(strict): \(result)")
+                }
+            }
+            wait(for: [done], timeout: 2)
+            if strict {
+                XCTAssertNil(repository.flagAssignments())
+                XCTAssertEqual(repository.state.currentState, .error)
+                XCTAssertFalse(listener.states.contains(.ready) || listener.states.contains(.stale), "\(listener.states)")
+                XCTAssertEqual(timers, 0, "No proof timer for a snapshot that was not installed")
+            } else {
+                XCTAssertEqual(repository.state.currentState, .stale)
+                XCTAssertFalse(listener.states.contains(.ready), "\(listener.states)")
+                XCTAssertEqual(repository.flagAssignments(), .mockAny())
+            }
+        }
+    }
+
     // MARK: - Expiry while a refresh is reconciling
 
     func testProofExpiryAppliesWhileReconcilingAndKeepsThePendingRequest() {
@@ -3280,6 +3332,50 @@ private final class SlowDataStore: DataStore {
     func removeValue(forKey key: String) { wrapped.removeValue(forKey: key) }
     func clearAllData() { wrapped.clearAllData() }
     func flush() { wrapped.flush() }
+}
+
+/// Returns `first` until `step()`. After `step()`, it returns `first` once more, then `then`.
+private final class SigningStateRecorder: FlagsStateListener {
+    private let lock = NSLock()
+    private var recorded: [FlagsClientState] = []
+    var states: [FlagsClientState] {
+        lock.lock()
+        defer { lock.unlock() }
+        return recorded
+    }
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        lock.lock()
+        recorded.append(newState)
+        lock.unlock()
+    }
+}
+
+private final class SteppingDateProvider: DateProvider, @unchecked Sendable {
+    private let lock = NSLock()
+    private let first: Date
+    private let then: Date
+    private var remainingFirstReads: Int?
+
+    init(first: Date, then: Date) {
+        self.first = first
+        self.then = then
+    }
+
+    func step() {
+        lock.lock()
+        remainingFirstReads = 1
+        lock.unlock()
+    }
+
+    var now: Date {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let remaining = remainingFirstReads else {
+            return first
+        }
+        remainingFirstReads = max(0, remaining - 1)
+        return remaining > 0 ? first : then
+    }
 }
 
 private final class KeychainMock: FlagsKeychain {
