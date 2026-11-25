@@ -2141,6 +2141,24 @@ extension FlagsResponseSigningTests {
         XCTAssertEqual(restarted.value(forKey: try highWaterMarkKey(), waitForRead: true), 42)
     }
 
+    /// Without a Keychain entitlement the file is the store. A write before its slow first read finished must not
+    /// replace a higher stored value.
+    func testMissingEntitlementFallbackNeverLowersAnUnreadFileValue() throws {
+        let keychain = KeychainMock()
+        keychain.fails = true
+        keychain.failureStatus = errSecMissingEntitlement
+        let persisted = DataStoreMock()
+        DataStoreSigningFloorStore(dataStore: persisted).store(100, forKey: try floorKey())
+        let slow = SlowDataStore(wrapping: persisted, delay: 1)
+        let store = KeychainSigningFloorStore(
+            legacy: DataStoreSigningFloorStore(dataStore: slow, readTimeout: 0.1),
+            keychain: keychain
+        )
+        store.store(10, forKey: try floorKey())
+        let restarted = KeychainSigningFloorStore(legacy: DataStoreSigningFloorStore(dataStore: persisted), keychain: keychain)
+        XCTAssertEqual(restarted.value(forKey: try floorKey(), waitForRead: true), 100)
+    }
+
     func testSystemKeychainRoundTrip() throws {
         let keychain = SystemFlagsKeychain()
         let account = "test-round-trip"

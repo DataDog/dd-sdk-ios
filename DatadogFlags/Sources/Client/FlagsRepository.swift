@@ -375,8 +375,10 @@ internal final class FlagsRepository {
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         // Wall time keeps counting while the device sleeps.
         self.scheduleExpiry = scheduleExpiry ?? { delay, work in
-            // A monotonic deadline: a wall clock step back does not delay the move to `stale`.
+            // Two deadlines, and the first one applies the expiry. The monotonic deadline is not delayed by a wall clock
+            // step back. The wall deadline counts the time that the device sleeps. Applying the expiry twice is safe.
             DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + delay, execute: work)
+            DispatchQueue.global(qos: .utility).asyncAfter(wallDeadline: .now() + delay, execute: work)
         }
         featureScope.context { [weak self] context in
             guard let self else {

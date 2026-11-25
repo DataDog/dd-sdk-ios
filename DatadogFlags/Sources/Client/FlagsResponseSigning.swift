@@ -450,7 +450,8 @@ internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
 
     func store(_ value: UInt64, forKey key: String) {
         // The earlier file is a lower bound. `observe` waits for it at most the short read timeout.
-        let old = legacy.flatMap { $0.read(forKey: key, waitForRead: false) ?? nil }
+        let oldRead = legacy?.read(forKey: key, waitForRead: false)
+        let old = oldRead ?? nil
         keychainLock.lock()
         defer { keychainLock.unlock() }
         var target = [values[key], old, value].compactMap { $0 }.max() ?? value
@@ -462,7 +463,10 @@ internal final class KeychainSigningFloorStore: FlagsSigningFloorStore {
             }
             target = max(target, stored ?? 0)
         } catch let failure as SystemFlagsKeychain.Failure where failure.status == errSecMissingEntitlement {
-            legacy?.store(target, forKey: key)
+            // The file is the store. Write it only after its value was read, so a lower value never replaces it.
+            if case .some = oldRead {
+                legacy?.store(target, forKey: key)
+            }
         } catch {
             // A failed Keychain call keeps the value in memory for this process. The response is still accepted.
         }
