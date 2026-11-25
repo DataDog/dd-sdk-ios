@@ -9,20 +9,19 @@ import DatadogInternal
 
 internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
-    private static let decoder: JSONDecoder = {
-        let decoder = JSONDecoder()
-        if let key = CodingUserInfoKey.decodesStoredVariations {
-            decoder.userInfo[key] = true
-        }
-        return decoder
-    }()
     // Version 2 readers support obfuscated keys but do not understand flag selection or experimentation opt-out.
     private static let encodedAssignmentsVersion: DataStoreKeyVersion = 2
     // Version 3 readers understand flag selection and experimentation opt-out. Earlier readers skip a cache
     // filtered by either, because it does not hold the full flag configuration for its subject.
     private static let filteredAssignmentsVersion: DataStoreKeyVersion = 3
+    // Version 4 preserves numeric tokens. Earlier readers must not interpret rounded or placeholder values.
+    // The reader accepts an entry only when `version(for:)` of the decoded data equals the stored version.
+    // Future readers must still classify every existing version 4 entry as version 4, also when a later
+    // change alters when `numericConversion` is kept. An incompatible cache format change needs version 5
+    // or higher.
+    private static let numericAssignmentsVersion: DataStoreKeyVersion = 4
     private static let knownVersions: Set<DataStoreKeyVersion> = [
-        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion
+        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion, numericAssignmentsVersion
     ]
 
     let featureScope: FeatureScope
@@ -58,7 +57,9 @@ internal struct FlagsDataStore {
             }
 
             do {
-                let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
+                // `cached: true` skips the numeric token pre-pass: the SDK writes `_numericLiteral` for every
+                // number whose read depends on its original token.
+                let flagsData = try FlagsNumericJSON.decode(FlagsData.self, from: data, cached: true)
                 guard Self.version(for: flagsData) == version else {
                     throw FlagsError.invalidResponse
                 }
@@ -72,6 +73,12 @@ internal struct FlagsDataStore {
     }
 
     private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
+        // Key spellings alone keep the earlier version: an earlier reader ignores `keySpellings` and returns one
+        // assignment for every canonically equivalent spelling, as it did before spellings were kept.
+        if flagsData.flags.values.contains(where: { $0.numericConversion != nil })
+            || flagsData.keySpellings.contains(where: { $0.assignment.numericConversion != nil }) {
+            return numericAssignmentsVersion
+        }
         // Protect both key encodings from readers that would ignore the persisted selection or policy.
         if flagsData.flagSelection != nil || flagsData.experimentationOptOutPolicy != nil {
             return filteredAssignmentsVersion

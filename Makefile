@@ -3,6 +3,7 @@ all: env-check repo-setup dependencies templates
 		lint lint-cpp license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
 		ui-test ui-test-all ui-test-build ui-test-run ui-tests-open \
+		feature-flags-fixtures-pull \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all smoke-test-macos smoke-test-macos-all \
@@ -98,8 +99,11 @@ DEFAULT_USE_TEST_VISIBILITY := 0
 
 SKIP_OBJC_TYPES ?= TelemetryUsageEvent
 
+# Schemes whose test plans include DatadogFlagsTests need the shared Flags conformance fixtures
+FEATURE_FLAGS_FIXTURE_SCHEMES := DatadogFlags UnitTests-%
+
 # Run unit tests for specified SCHEME
-test:
+test: $(if $(filter $(FEATURE_FLAGS_FIXTURE_SCHEMES),$(SCHEME)),feature-flags-fixtures-pull)
 	@$(call require_param,SCHEME)
 	@$(call require_param,OS)
 	@$(call require_param,PLATFORM)
@@ -385,6 +389,11 @@ rc-models-verify:
 protoc-pprof:
 	@$(ECHO_TITLE) "protoc-pprof"
 	./tools/protoc-pprof.sh --proto-path DatadogProfiling/Protos/profile.proto --output-dir DatadogProfiling/Mach
+
+# Fetches shared Flags conformance fixtures at the pinned ffe-system-test-data commit (no-op when up to date)
+feature-flags-fixtures-pull:
+	@$(ECHO_TITLE) "make feature-flags-fixtures-pull"
+	python3 ci/sync-feature-flags-precomputed-fixtures.py
 
 # Pushes current SR snapshots to snapshots repo
 sr-snapshots-push:

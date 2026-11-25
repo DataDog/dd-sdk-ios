@@ -1,0 +1,94 @@
+name: Feature flags precomputed fixtures
+on:
+  pull_request:
+    paths:
+      - 'ci/*precomputed*'
+      - 'DatadogFlags/Tests/Models/CanonicalPrecomputedTests.swift'
+      - '.github/workflows/feature-flags-precomputed-fixtures.yml'
+  schedule:
+    - cron: '23 8 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: feature-flags-precomputed-fixtures-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test the sync script
+        run: python3 -m unittest discover -s ci -p 'test_*.py'
+      - name: Fetch the pinned snapshots
+        run: python3 ci/sync-feature-flags-precomputed-fixtures.py
+      - name: Verify them against the pins
+        run: python3 ci/sync-feature-flags-precomputed-fixtures.py --verify
+  update:
+    # Forks cannot get the write token, so run only in the upstream repository.
+    if: github.repository == 'DataDog/dd-sdk-ios' && github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Pin the latest upstream fixtures
+        id: sync
+        run: python3 ci/sync-feature-flags-precomputed-fixtures.py --update --ref main
+      # Get the write token only when there is a pin to propose.
+      - uses: DataDog/dd-octo-sts-action@c85802a58e202b7e764b5441e4378c76043c8108 # v1.0.5
+        id: token
+        if: steps.sync.outputs.changed == 'true'
+        with:
+          scope: DataDog/dd-sdk-ios
+          policy: self.feature-flags-precomputed-fixtures
+      - name: Prepare a draft update
+        id: prepare
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          SOURCE_COMMIT: ${{ steps.sync.outputs.source_commit }}
+          # Open update PRs are found by branch, so title edits can't cause duplicates.
+          UPDATE_BRANCH_PREFIX: automation/feature-flags-precomputed-fixtures-
+        run: |
+          existing=$(gh pr list --state open --base develop --limit 200 --json headRefName --jq "[.[] | select(.headRefName | startswith(\"$UPDATE_BRANCH_PREFIX\"))] | length")
+          if [ "$existing" != 0 ]; then
+            echo 'An update PR is already open. Merge or close it before the next update.'
+            exit 0
+          fi
+          branch="${UPDATE_BRANCH_PREFIX}${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git add -- ci/feature-flags-precomputed-fixtures.json
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+          python3 - <<'BODY'
+          import os
+          from pathlib import Path
+          template = Path('ci/feature-flags-precomputed-fixtures-pr.md').read_text()
+          Path('/tmp/feature-flags-precomputed-pr.md').write_text(template.replace('SOURCE_COMMIT', os.environ['SOURCE_COMMIT']))
+          BODY
+      - name: Create a signed fixture commit
+        if: steps.prepare.outputs.ready == 'true'
+        uses: DataDog/commit-headless@d6afabfd690ea1dbdd7d368acbefd71304928699 # action/v3.4.1
+        with:
+          command: commit
+          token: ${{ steps.token.outputs.token }}
+          branch: ${{ steps.prepare.outputs.branch }}
+          head-sha: ${{ github.sha }}
+          create-branch: true
+          force: false
+          message: '[FFL-3568] Update feature flags precomputed fixtures'
+      - name: Open the draft pull request
+        id: open_pr
+        if: steps.prepare.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          UPDATE_BRANCH: ${{ steps.prepare.outputs.branch }}
+        run: |
+          gh pr create --draft --base develop --head "$UPDATE_BRANCH" --title '[FFL-3568] Update feature flags precomputed fixtures' --body-file /tmp/feature-flags-precomputed-pr.md

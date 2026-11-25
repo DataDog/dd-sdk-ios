@@ -1728,6 +1728,7 @@ public enum FlagEvaluationError: Error
     case typeMismatch
     case invalidContext
     case general
+    case parseError
 public struct FlagDetails<T>: Equatable where T: Equatable
     public var key: String
     public var value: T

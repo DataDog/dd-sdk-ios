@@ -24,6 +24,9 @@ public enum FlagEvaluationError: Error {
 
     /// The provider cannot evaluate the flag because the current subject has no authorized assignments.
     case general
+
+    /// The flag's assignment cannot be parsed, for example because its variation type is not supported.
+    case parseError
 }
 
 /// Detailed information about a feature flag evaluation.
@@ -117,7 +120,8 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
 /// A side-effect-free snapshot of cached precomputed feature flag assignments.
 ///
 /// `FlagsSnapshot` is intended for diagnostics and export use cases. Reading a snapshot does not record
-/// evaluations, exposures, or RUM feature flag evaluations. A snapshot may include assignments that have not
+/// evaluations, exposures, or RUM feature flag evaluations. Unrepresentable numeric assignments are omitted.
+/// A snapshot may include assignments that have not
 /// been evaluated through ``FlagsClientProtocol/getValue(key:defaultValue:)`` or
 /// ``FlagsClientProtocol/getDetails(key:defaultValue:)``.
 @available(*, message: "This API is in preview and may change in future releases")
@@ -165,7 +169,7 @@ public struct FlagSnapshot: Equatable, Encodable {
     }
 
     internal init?(_ assignment: FlagAssignment) {
-        guard let value = assignment.variation.snapshotValue else {
+        guard assignment.hasRepresentableValue, let value = assignment.variation.snapshotValue else {
             return nil
         }
 
