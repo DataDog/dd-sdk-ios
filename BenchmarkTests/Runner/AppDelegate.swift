@@ -19,6 +19,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         applicationInfo = try! AppInfo() // crash if info are missing or malformed
 
+        // serve the Rick & Morty API from bundled data so runs don't depend on the public API
+        RickMortyMockURLProtocol.register()
+
         window = UIWindow(frame: UIScreen.main.bounds)
 
         if let scenario = SyntheticScenario() {
