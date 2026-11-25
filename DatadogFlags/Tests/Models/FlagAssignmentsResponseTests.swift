@@ -858,11 +858,14 @@ final class FlagKeySpellingsTests: XCTestCase {
     func testCollidingSpellingWithAnOverflowingNumberKeepsTheOtherFlags() throws {
         // Foundation in Xcode 26 rejects the whole document: "Number 1e400 is not representable in Swift".
         // Later Foundation versions decode it, and this test checks that the other flags stay.
-        struct Probe: Decodable { let a: Bool }
-        try XCTSkipIf(
-            (try? JSONDecoder().decode(Probe.self, from: Data(#"{"a":true,"b":1e400}"#.utf8))) == nil,
-            "This Foundation rejects a JSON document with an out-of-range number"
-        )
+        func decode(_ data: Data) throws -> FlagAssignmentsResponse {
+            do {
+                return try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
+            } catch DecodingError.dataCorrupted(let context)
+                where String(describing: context.underlyingError).contains("is not representable") {
+                throw XCTSkip("This Foundation rejects a JSON document with an out-of-range number")
+            }
+        }
         let boolean = #"{"allocationKey":"a","variationKey":"on","variationType":"boolean","variationValue":true,"reason":"STATIC","doLog":true}"#
         let overflow = #"{"allocationKey":"a","variationKey":"big","variationType":"number","variationValue":1e400,"reason":"STATIC","doLog":true}"#
         let other = #"{"allocationKey":"a","variationKey":"other","variationType":"string","variationValue":"x","reason":"STATIC","doLog":true}"#
@@ -876,7 +879,7 @@ final class FlagKeySpellingsTests: XCTestCase {
                 let secondKey = spelled.first { $0.0.utf8.elementsEqual(keys[1].utf8) }!.1[second]
                 let body = #"{"data":{"attributes":{"flags":{"\#(firstKey)":\#(values[0]),"\#(secondKey)":\#(values[1]),"other":\#(other)}}}}"#
                 let data = Data(body.utf8)
-                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
+                let response = try decode(data)
                 let served = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
                 let booleanKey = values[0] == boolean ? keys[0] : keys[1]
                 let numberKey = values[0] == boolean ? keys[1] : keys[0]
