@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 SPEC = importlib.util.spec_from_file_location(
     'sync', Path(__file__).resolve().parent / 'sync-feature-flags-precomputed-fixtures.py')
@@ -101,6 +102,28 @@ class SnapshotTests(unittest.TestCase):
         (destination / 'root-a.pem').write_text('changed\n')
         with self.assertRaises(ValueError):
             sync.verify(destination, spec)
+
+    def test_explicit_mapping_wins_over_the_prefix(self):
+        spec = source(files={'response-signing/chain/root-a.pem': 'renamed.pem'})
+        result = sync.snapshot(self.repository, 'HEAD', spec)
+        self.assertEqual(sorted(k for k in result if k != 'SOURCE.json'),
+                         ['index.json', 'nested/leaf.json', 'renamed.pem'])
+
+    def test_changed_source_specification_imports_again(self):
+        consumer = self.repository / 'consumer'
+        subprocess.run(['git', 'init', '-q', str(consumer)], check=True)
+        consumer = consumer.resolve()
+        commit = subprocess.run(['git', '-C', str(self.repository), 'rev-parse', 'HEAD'],
+                                check=True, capture_output=True, text=True).stdout.strip()
+        spec = source(commit=commit)
+        run = SimpleNamespace(verify=False, update=False, ref=None, source=self.repository)
+        sync.sync(consumer, spec, run)
+        changed = source(commit=commit, prefix='response-signing/chain/nested/', files={})
+        with self.assertRaisesRegex(ValueError, 'source specification'):
+            sync.sync(consumer, changed, SimpleNamespace(**dict(run.__dict__, verify=True)))
+        sync.sync(consumer, changed, run)
+        self.assertEqual(sorted(sync.read_snapshot(consumer / 'Fixtures/chain')), ['SOURCE.json', 'index.json', 'leaf.json'])
+        sync.sync(consumer, changed, SimpleNamespace(**dict(run.__dict__, verify=True)))
 
 
 if __name__ == '__main__':
