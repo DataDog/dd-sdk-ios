@@ -654,7 +654,7 @@ final class FlagsEvaluationLocalIntakeTests: XCTestCase {
         let pending = cachedClient.getBooleanDetails(key: "visible-flag", defaultValue: false)
         XCTAssertFalse(pending.value)
         XCTAssertEqual(pending.error, .providerNotReady)
-        XCTAssertNil(pending.reason)
+        XCTAssertEqual(pending.reason, "ERROR")
         XCTAssertNil(pending.variant)
         server.releaseAssignments(status: 500)
         wait(for: [changedFailed], timeout: 5)
