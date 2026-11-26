@@ -203,6 +203,43 @@ extension SwiftUINavigationOwnershipTests {
         completed = true
     }
 
+    func testRestoredEqualRoutesKeepDistinctBoundarySlots() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Native semantic navigation requires iOS 27")
+        }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        defer { fixture.restore(); core.stop() }
+        let feature = try makeSemanticFeature(in: core, rows: SemanticHostRows())
+        let binding = try XCTUnwrap(feature.instrumentation.swiftUIViewFoundation?.makeBinding())
+        let state = RUMNativeNavigationState<String>()
+        let admission = try XCTUnwrap(state.configure(binding: binding))
+        let route = "detail"
+        state.reconcile(path: [route, route], metadata: .automatic, admission: admission)
+
+        let entries = state.pathEntries
+        XCTAssertEqual(entries.count, 2)
+        let lowerSlot = try XCTUnwrap(entries.first?.slot)
+        let upperSlot = try XCTUnwrap(entries.last?.slot)
+        let lower = state.makeClaim(for: route, slot: lowerSlot)
+        let upper = state.makeClaim(for: route, slot: upperSlot)
+        let lowerConfiguration = try XCTUnwrap(state.configuration(for: route, retaining: lower, admission: admission, slot: lowerSlot))
+        let upperConfiguration = try XCTUnwrap(state.configuration(for: route, retaining: upper, admission: admission, slot: upperSlot))
+        XCTAssertNotEqual(lowerConfiguration.occurrenceKey, upperConfiguration.occurrenceKey)
+        XCTAssertFalse(lowerConfiguration.isCurrentDestination)
+        XCTAssertTrue(upperConfiguration.isCurrentDestination)
+
+        let source = try XCTUnwrap(state.source)
+        state.didMaterialize(lowerConfiguration, claim: lower, source: source, admission: admission)
+        state.didMaterialize(upperConfiguration, claim: upper, source: source, admission: admission)
+        state.reconcile(path: [route], metadata: .automatic, admission: admission)
+
+        let retained = try XCTUnwrap(state.configuration(for: route, retaining: lower, admission: admission, slot: lowerSlot))
+        XCTAssertEqual(retained.occurrenceKey, lowerConfiguration.occurrenceKey)
+        XCTAssertTrue(retained.isCurrentDestination)
+        XCTAssertNil(state.configuration(for: route, retaining: upper, admission: admission, slot: upperSlot))
+    }
+
     func testNativeNavigationStack_poppedEqualRouteCannotReclaimRetainedSlot() async throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Native semantic navigation requires iOS 27") }
         let fixture = try SemanticHostWindow()
