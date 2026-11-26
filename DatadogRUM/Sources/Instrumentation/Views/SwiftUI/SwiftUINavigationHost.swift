@@ -746,13 +746,17 @@ internal struct RUMNavigationStack<Route: Hashable, Root: View, Destination: Vie
         #if DD_SDK_COMPILED_FOR_TESTING
         testingOnNativeUpdate?(state, admission, nil, forwardedPath)
         #endif
-        return NavigationStack(path: forwardedPath) {
+        return NavigationStack(path: positionedPath) {
             RUMNativeNavigationBoundary<Route, Root>(
                 route: nil, state: state, admission: admission, content: root
             )
-            .navigationDestination(for: Route.self) { route in
+            .navigationDestination(for: RUMNativeNavigationState<Route>.PathEntry.self) { entry in
                 RUMNativeNavigationBoundary(
-                    route: route, state: state, admission: admission, content: destination(route)
+                    route: entry.route,
+                    state: state,
+                    admission: admission,
+                    content: destination(entry.route),
+                    slot: entry.slot
                 )
             }
         }
@@ -793,6 +797,15 @@ internal struct RUMNavigationStack<Route: Hashable, Root: View, Destination: Vie
         }
     }
 
+    private var positionedPath: Binding<[RUMNativeNavigationState<Route>.PathEntry]> {
+        Binding(
+            get: { state.pathEntries },
+            set: { entries, transaction in
+                forwardedPath.transaction(transaction).wrappedValue = entries.map(\.route)
+            }
+        )
+    }
+
     private var forwardedPath: Binding<[Route]> {
         Binding(
             get: { path.wrappedValue },
@@ -816,6 +829,20 @@ internal struct RUMNavigationStack<Route: Hashable, Root: View, Destination: Vie
 @available(iOS 27.0, *)
 @MainActor
 internal final class RUMNativeNavigationState<Route: Hashable> {
+    /// SwiftUI receives a stable identifier for each path position, including equal routes.
+    struct PathEntry: Hashable {
+        let route: Route
+        let slot: UUID
+
+        static func == (lhs: Self, rhs: Self) -> Bool { lhs.slot == rhs.slot }
+
+        func hash(into hasher: inout Hasher) { hasher.combine(slot) }
+    }
+
+    var pathEntries: [PathEntry] {
+        zip(acceptedPath, acceptedSlots).map { PathEntry(route: $0, slot: $1) }
+    }
+
     private struct Position: Hashable {
         let container: UUID
         let slot: UUID
@@ -986,12 +1013,12 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         _ = offeredSource.reconcileCurrentDestination(configuration: configuration, admission: expected)
     }
 
-    func makeClaim(for route: Route?) -> Claim {
+    func makeClaim(for route: Route?, slot: UUID? = nil) -> Claim {
         reconciliationEntry &+= 1
         let entry = reconciliationEntry
         let original = admission
         let path = acceptedPath
-        let depth = depth(for: route, path: path)
+        let depth = slot.flatMap { acceptedSlots.firstIndex(of: $0).map { $0 + 1 } } ?? depth(for: route, path: path)
         let claim = Claim(route: route, depth: depth)
         claim.isValid = accepts(entry: entry, admission: original)
         return claim
@@ -1000,7 +1027,8 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
     func configuration(
         for route: Route?,
         retaining claim: Claim,
-        admission expected: RUMSwiftUIViewCallbackAdmission?
+        admission expected: RUMSwiftUIViewCallbackAdmission?,
+        slot: UUID? = nil
     ) -> RUMViewTrackingState.Configuration? {
         guard let expected, admits(expected) else {
             return nil
@@ -1017,7 +1045,12 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         let reusedRoute = priorRoute == route
         let keepsMountedSlot = reusedRoute && claim.mountedSource === originalSource
         let selectedDepth: Int
-        if keepsMountedSlot, let slot = claim.mountedSlot {
+        if let slot {
+            guard let index = slots.firstIndex(of: slot) else {
+                return nil
+            }
+            selectedDepth = index + 1
+        } else if keepsMountedSlot, let slot = claim.mountedSlot {
             if slot == rootSlot {
                 selectedDepth = 0
             } else if let retainedIndex = slots.firstIndex(of: slot) {
@@ -1193,6 +1226,7 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
 @MainActor
 private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View {
     let route: Route?
+    let slot: UUID?
     let state: RUMNativeNavigationState<Route>
     let admission: RUMSwiftUIViewCallbackAdmission?
     let content: Content
@@ -1202,17 +1236,19 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
         route: Route?,
         state: RUMNativeNavigationState<Route>,
         admission: RUMSwiftUIViewCallbackAdmission?,
-        content: Content
+        content: Content,
+        slot: UUID? = nil
     ) {
         self.route = route
+        self.slot = slot
         self.state = state
         self.admission = admission
         self.content = content
-        _claim = State(initialValue: state.makeClaim(for: route))
+        _claim = State(initialValue: state.makeClaim(for: route, slot: slot))
     }
 
     var body: some View {
-        let configuration = state.configuration(for: route, retaining: claim, admission: admission)
+        let configuration = state.configuration(for: route, retaining: claim, admission: admission, slot: slot)
         let source = admission.flatMap { state.source(for: $0) }
         return content.background {
             if let admission, admission.isValid, let configuration, let source,
