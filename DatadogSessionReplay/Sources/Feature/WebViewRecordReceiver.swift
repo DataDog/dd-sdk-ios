@@ -38,6 +38,7 @@ internal final class WebViewRecordReceiver: FeatureMessageReceiver, @unchecked S
     private struct RenewalState {
         static let retention: TimeInterval = 10
         static let maxEntries = 32
+        static let maxPendingBytes = 10.MB
         var generation: UInt64 = 0
         var pending: [Pending] = []
         var accepted: [Accepted] = []
@@ -161,7 +162,7 @@ internal final class WebViewRecordReceiver: FeatureMessageReceiver, @unchecked S
                 return
             }
             guard state.pending.count < RenewalState.maxEntries, let encoded = try? JSONSerialization.data(withJSONObject: event),
-                  encoded.count + state.pending.reduce(0, { $0 + $1.event.count }) <= Int(SessionReplay.maxObjectSize) else {
+                  encoded.count + state.pending.reduce(0, { $0 + $1.event.count }) <= RenewalState.maxPendingBytes else {
                 return
             }
             state.pending.append(.init(key: key, viewID: viewID, event: encoded, consentRevision: consentRevision, receivedAt: now))
