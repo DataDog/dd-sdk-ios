@@ -893,8 +893,73 @@ extension SwiftUINavigationOwnershipTests {
         try await exerciseOrdinaryReaderOverlap(
             savedAppearance: false,
             deliverOldDisappearance: true,
-            temporarilyDetachReplacement: true
+            temporarilyDetachReplacement: true,
+            deferInitialAppearance: true
         )
+    }
+
+    @MainActor
+    func testDeferredAppearanceRefreshesDisappearanceOwnerForReusedReader() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let fixture = try SemanticHostWindow()
+        let core = makeSemanticCore()
+        defer { fixture.restore(); core.stop() }
+        let rows = SemanticHostRows()
+        let feature = try makeSemanticFeature(in: core, rows: rows)
+        let driver = OrdinarySwiftUIViewDriver()
+        var reader: RUMSceneIdentifierReader.ObserverView?
+        var appear: (() -> Void)?
+        var disappear: (() -> Void)?
+        RUMSwiftUIViewCallbackAdmission.ordinaryLifecycleObserver = { mounted, onAppear, onDisappear in
+            guard mounted.window === fixture.window else {
+                return
+            }
+            reader = mounted
+            appear = onAppear
+            disappear = onDisappear
+        }
+        defer { RUMSwiftUIViewCallbackAdmission.ordinaryLifecycleObserver = nil }
+        _ = fixture.install(OrdinarySwiftUIViewChild(driver: driver).trackRUMView(name: "Returned view", in: core))
+
+        func snapshot() -> RUMCoreContext? {
+            feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))
+        }
+        try await awaitSemanticBoundary("first occurrence tracked", core: core) {
+            snapshot()?.viewName == "Returned view" && disappear != nil
+        }
+        let original = try XCTUnwrap(snapshot()?.viewID)
+        let sameReader = try XCTUnwrap(reader)
+        let appearAgain = try XCTUnwrap(appear)
+        let disappearAgain = try XCTUnwrap(disappear)
+        RUMSwiftUIViewCallbackAdmission.ordinaryLifecycleObserver = nil
+        disappearAgain()
+        core.flush()
+        XCTAssertNil(snapshot()?.viewID)
+
+        let coordinator = RetainedCompletionCoordinator()
+        RUMSwiftUIInteractiveTransitionArbiter.coordinatorProviderOverride = { scene, _ in
+            scene == fixture.identifier ? coordinator : nil
+        }
+        defer { RUMSwiftUIInteractiveTransitionArbiter.coordinatorProviderOverride = nil }
+        appearAgain()
+        core.flush()
+        XCTAssertEqual(coordinator.registrations, 1)
+        XCTAssertNil(snapshot()?.viewID, "Appearance must wait for transition completion")
+        RUMSwiftUIInteractiveTransitionArbiter.coordinatorProviderOverride = nil
+        coordinator.complete(cancelled: false)
+        await drainOwnedMainDelivery()
+        core.flush()
+        let returned = try XCTUnwrap(snapshot()?.viewID)
+        XCTAssertNotEqual(returned, original)
+        XCTAssertTrue(sameReader.window === fixture.window)
+
+        sameReader.removeFromSuperview()
+        core.flush()
+        XCTAssertEqual(snapshot()?.viewID, returned, "Reader detachment alone cannot end the view")
+        disappearAgain()
+        core.flush()
+        XCTAssertNil(snapshot()?.viewID, "The reused disappearance must stop the deferred occurrence")
+        XCTAssertTrue(rows.views.contains { $0.view.id == returned && $0.view.isActive == false })
     }
 
     @available(iOS 27.0, *)
@@ -903,7 +968,8 @@ extension SwiftUINavigationOwnershipTests {
         savedAppearance: Bool,
         disconnectWithoutDetach: Bool = false,
         deliverOldDisappearance: Bool = false,
-        temporarilyDetachReplacement: Bool = false
+        temporarilyDetachReplacement: Bool = false,
+        deferInitialAppearance: Bool = false
     ) async throws {
         let fixture = try SemanticHostWindow()
         let core = makeSemanticCore()
@@ -933,14 +999,31 @@ extension SwiftUINavigationOwnershipTests {
         defer { RUMNativeNavigationTesting.onBoundary = nil }
         var oldDisappearance: (() -> Void)?
         if deliverOldDisappearance {
-            RUMSwiftUIViewCallbackAdmission.ordinaryDisappearanceObserver = { reader, callback in
+            RUMSwiftUIViewCallbackAdmission.ordinaryLifecycleObserver = { reader, _, callback in
                 if reader === originalReader, reader.window === fixture.window {
                     oldDisappearance = callback
                 }
             }
         }
-        defer { RUMSwiftUIViewCallbackAdmission.ordinaryDisappearanceObserver = nil }
+        defer { RUMSwiftUIViewCallbackAdmission.ordinaryLifecycleObserver = nil }
+        let coordinator = RetainedCompletionCoordinator()
+        if deferInitialAppearance {
+            RUMSwiftUIInteractiveTransitionArbiter.coordinatorProviderOverride = { scene, _ in
+                scene == fixture.identifier ? coordinator : nil
+            }
+        }
+        defer { RUMSwiftUIInteractiveTransitionArbiter.coordinatorProviderOverride = nil }
         _ = fixture.install(OrdinarySwiftUIViewChild(driver: driver).trackRUMView(name: "Overlapping reader", in: core))
+        if deferInitialAppearance {
+            try await awaitSemanticBoundary("deferred first appearance registered", core: core) {
+                coordinator.registrations == 1 && oldDisappearance != nil && originalReader?.window === fixture.window
+            }
+            XCTAssertNil(capturedState?.activeLifecycleGeneration)
+            RUMSwiftUIViewCallbackAdmission.ordinaryLifecycleObserver = nil
+            RUMSwiftUIInteractiveTransitionArbiter.coordinatorProviderOverride = nil
+            coordinator.complete(cancelled: false)
+            await drainOwnedMainDelivery()
+        }
         try await awaitSemanticBoundary("old scene reader tracking", core: core) {
             originalReader?.window === fixture.window
                 && feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewName == "Overlapping reader"
@@ -948,6 +1031,9 @@ extension SwiftUINavigationOwnershipTests {
         let originalView = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID)
         let original = try XCTUnwrap(originalReader)
         let state = try XCTUnwrap(capturedState)
+        let unrecordedSource = deferInitialAppearance
+            ? RUMSwiftUIViewCallbackAdmission.testUnrecordedOrdinaryOwnership(for: original, state: state)
+            : nil
         let admission = try XCTUnwrap(capturedAdmission)
         let arbiter = try XCTUnwrap(admission.foundation?.makeTransitionAdmission(for: admission))
 
@@ -1022,6 +1108,9 @@ extension SwiftUINavigationOwnershipTests {
             replacement.removeFromSuperview()
             XCTAssertNil(replacement.window)
             XCTAssertNil(arbiter.mountedSceneIdentifier(for: state))
+            if let unrecordedSource {
+                XCTAssertTrue(unrecordedSource(), "A detached callback from the old scene is stale even without a recorded generation")
+            }
             core.flush()
             XCTAssertEqual(feature.monitor.rumContextSnapshot(for: .scene(peerID))?.viewID, returnedView)
         }
