@@ -145,6 +145,7 @@ internal class Monitor: RUMCommandSubscriber {
             var sessionID: String?
             var sessionStart: TimeInterval?
             var lastInteraction: TimeInterval?
+            var webViewRenewalPredecessor: String?
             var webViewLifecycleExpiry: RUMApplicationScope.WebViewLifecycleExpiry?
         }
 
@@ -503,7 +504,11 @@ internal class Monitor: RUMCommandSubscriber {
             representative: makeCoreContext(session: activeSession, view: representativeView),
             sessionID: activeSession.sessionUUID.toRUMDataFormat,
             sessionStart: activeSession.sessionStart,
-            lastInteraction: activeSession.lastInteraction
+            lastInteraction: activeSession.lastInteraction,
+            webViewRenewalPredecessor: applicationScope.webViewRenewalPredecessor(
+                for: activeSession.sessionUUID,
+                owner: rumContextHandoffOwner
+            )
         )
         var activeViewCount = 0
         for view in activeSession.viewScopes where view.isActiveView {
@@ -624,6 +629,16 @@ extension Monitor: RUMContextSnapshotProviding {
             return nil
         }
         return context
+    }
+
+    func webViewRenewalPredecessor(for sessionID: String, owner: RUMContextHandoff.Owner) -> String? {
+        guard owner.isValid, rumContextHandoffOwner === owner,
+              let snapshot = sceneContextSnapshots?.value,
+              let context = snapshot.representative, context.sessionID == sessionID,
+              isLiveContext(context, in: snapshot) else {
+            return nil
+        }
+        return snapshot.webViewRenewalPredecessor
     }
 
     /// A mounted browser can report to the live session before its scene has a native view.
