@@ -296,6 +296,57 @@ extension SwiftUINavigationOwnershipTests {
         XCTAssertNil(reevaluateRemoved(), "The old claim cannot impersonate a fresh occurrence at the same depth")
     }
 
+    func testRepeatedRouteReconfirmsPositionWhenItsTrackingSourceChanges() async throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Native semantic navigation requires iOS 27")
+        }
+        let fixture = try SemanticHostWindow()
+        let directory = temporaryUniqueCoreDirectory()
+        try directory.create()
+        let original = makeSemanticCore()
+        let replacement = makeSemanticCore(directory: directory)
+        defer {
+            fixture.restore()
+            replacement.stop()
+            original.stop()
+            try? directory.delete()
+        }
+        let originalRows = SemanticHostRows()
+        let replacementRows = SemanticHostRows()
+        let originalFeature = try makeSemanticFeature(in: original, rows: originalRows)
+        let replacementFeature = try makeSemanticFeature(in: replacement, rows: replacementRows)
+        let driver = NativeHostDriver(core: original)
+        let route = NativeHostRoute.detail(secret: "restored")
+        driver.path = [route, route]
+        let capture = NativeHostCapture()
+        let priorHook = RUMNativeNavigationTesting.onBoundary
+        capture.observeBoundaries()
+        defer { RUMNativeNavigationTesting.onBoundary = priorHook }
+        _ = fixture.install(NativeHostRoot(driver: driver, capture: capture))
+        try await awaitSemanticBoundary("original repeated route", core: original) {
+            let id = originalFeature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID
+            return capture.proof(viewID: id, depth: 2, fixture: fixture, rows: originalRows) != nil
+        }
+        let originalState = try XCTUnwrap(capture.state)
+        let originalAdmission = try XCTUnwrap(capture.admission).registrationIdentifier
+
+        let disabledCore = NOPDatadogCore()
+        driver.core = disabledCore
+        try await awaitSemanticBoundary("repeated route while disabled", core: nil) {
+            capture.admission == nil && capture.state === originalState && originalState.source == nil
+        }
+        XCTAssertEqual(driver.path, [route, route])
+
+        driver.core = replacement
+        try await awaitSemanticBoundary("repeated route on replacement tracking source", core: replacement) {
+            let id = replacementFeature.monitor.rumContextSnapshot(for: .scene(fixture.identifier))?.viewID
+            return capture.proof(viewID: id, depth: 2, fixture: fixture, rows: replacementRows) != nil
+        }
+        XCTAssertTrue(capture.state === originalState)
+        XCTAssertNotEqual(capture.admission?.registrationIdentifier, originalAdmission)
+        XCTAssertEqual(driver.path, [route, route])
+    }
+
     func testNativeNavigationStack_whenAdmissionRetires_itRejectsStaleCallbacksAndPreservesUnusedTracking() async throws {
         guard #available(iOS 27.0, *) else {
             throw XCTSkip("Native semantic navigation requires iOS 27")
