@@ -1252,7 +1252,12 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
     let admission: RUMSwiftUIViewCallbackAdmission?
     let content: Content
     @State private var claim: RUMNativeNavigationState<Route>.Claim
-    @State private var confirmedSlot: UUID?
+    private struct Confirmation: Equatable {
+        let slot: UUID
+        let registrationIdentifier: UUID
+    }
+
+    @State private var confirmation: Confirmation?
 
     init(
         route: Route?,
@@ -1299,7 +1304,7 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
         }
         .background {
             if let admission, let route, claim.requiresNativePosition,
-               confirmedSlot == nil || confirmedSlot != claim.mountedSlot {
+               confirmation?.registrationIdentifier != admission.registrationIdentifier || confirmation?.slot != claim.mountedSlot {
                 RUMSceneIdentifierReader(
                     admission: admission,
                     applicationSupportsMultipleScenes: true,
@@ -1312,10 +1317,13 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
                             guard let reader,
                                   let slot = state.confirmNativePosition(
                                     for: route, retaining: claim, reader: reader, admission: admission
-                                  ), confirmedSlot != slot else {
+                                  ) else {
                                 return
                             }
-                            confirmedSlot = slot
+                            let proven = Confirmation(slot: slot, registrationIdentifier: admission.registrationIdentifier)
+                            if confirmation != proven {
+                                confirmation = proven
+                            }
                         }
                     },
                     onChange: { _ in }
