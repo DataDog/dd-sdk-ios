@@ -79,6 +79,15 @@ If you need to execute multiple scenarios/runs in the same application process, 
 xcrun simctl openurl booted 'bench://stop'
 ```
 
+### Rick & Morty API mock
+
+The `rumAuto` and `timeseries` scenarios show a catalog built on the Rick & Morty API. The runner does not call the public API: [`RickMortyMockURLProtocol`](Runner/Scenarios/RUM/RUMAuto/Core/RickMortyMock.swift) is registered at launch and answers every request to `rickandmortyapi.com` from the data in [`Runner/Scenarios/RUM/RUMAuto/Mock`](Runner/Scenarios/RUM/RUMAuto/Mock):
+
+- 30 characters, 50 episodes and 20 locations, made up and in the API's JSON format
+- 3 neutral avatar images, each character keeping its own avatar URL
+
+The data does not come from the show, so do not replace it with real API content. If a screen requests something the mock cannot answer, it returns a `404` and logs `[RickMortyMock] unhandled <url>`.
+
 ### Synthetics Configuration
 
 Please refer to the [Confluence page (internal)](https://datadoghq.atlassian.net/wiki/spaces/RUMP/pages/3981476482/Benchmarks+iOS)

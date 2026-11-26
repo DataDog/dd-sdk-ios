@@ -237,6 +237,13 @@
 		D294EA332D088377009582F3 /* SessionReplaySwiftUIScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294EA322D088377009582F3 /* SessionReplaySwiftUIScenario.swift */; };
 		D294EA352D08850F009582F3 /* ModuleBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294EA342D08850F009582F3 /* ModuleBundle.swift */; };
 		D29F75502C4AA07E00288638 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29F754F2C4AA07E00288638 /* AppDelegate.swift */; };
+		258B9D9150D74E8C1F119C49 /* RickMortyMockLocations.json in Resources */ = {isa = PBXBuildFile; fileRef = 410E1729B0DC85204960A5C9 /* RickMortyMockLocations.json */; };
+		3C345EEA708141DD947F7BED /* RickMortyMockCharacters.json in Resources */ = {isa = PBXBuildFile; fileRef = D9128B45606F5D6DDF9C9F1C /* RickMortyMockCharacters.json */; };
+		428363D112B96487B96C1D43 /* RickMortyMockAvatar1.png in Resources */ = {isa = PBXBuildFile; fileRef = 648F5E1775B2395F6008F01E /* RickMortyMockAvatar1.png */; };
+		5368BD93FA62024E5DD8388C /* RickMortyMockAvatar2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A053E9A5FC833C3D28613A9 /* RickMortyMockAvatar2.png */; };
+		E4B66ACACF7668E7177A6815 /* RickMortyMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9355C77527461500F6A613 /* RickMortyMock.swift */; };
+		EADF9F313DFB1BF1B479AC87 /* RickMortyMockAvatar3.png in Resources */ = {isa = PBXBuildFile; fileRef = C9F3D808522D28DA3007DE02 /* RickMortyMockAvatar3.png */; };
+		FEC110D2E2F937269780466F /* RickMortyMockEpisodes.json in Resources */ = {isa = PBXBuildFile; fileRef = 87BDD559A82C8AE15BB14F80 /* RickMortyMockEpisodes.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -503,6 +510,13 @@
 		D29F755D2C4AA08000288638 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D2CA7E862C57F9B800AAB380 /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "dd-sdk-ios"; path = ..; sourceTree = "<group>"; };
 		D2E60B9F2C732FBB00A18F1C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		0C9355C77527461500F6A613 /* RickMortyMock.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RickMortyMock.swift; sourceTree = "<group>"; };
+		1A053E9A5FC833C3D28613A9 /* RickMortyMockAvatar2.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = RickMortyMockAvatar2.png; sourceTree = "<group>"; };
+		410E1729B0DC85204960A5C9 /* RickMortyMockLocations.json */ = {isa = PBXFileReference; includeInIndex = 1; path = RickMortyMockLocations.json; sourceTree = "<group>"; };
+		648F5E1775B2395F6008F01E /* RickMortyMockAvatar1.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = RickMortyMockAvatar1.png; sourceTree = "<group>"; };
+		87BDD559A82C8AE15BB14F80 /* RickMortyMockEpisodes.json */ = {isa = PBXFileReference; includeInIndex = 1; path = RickMortyMockEpisodes.json; sourceTree = "<group>"; };
+		C9F3D808522D28DA3007DE02 /* RickMortyMockAvatar3.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = RickMortyMockAvatar3.png; sourceTree = "<group>"; };
+		D9128B45606F5D6DDF9C9F1C /* RickMortyMockCharacters.json */ = {isa = PBXFileReference; includeInIndex = 1; path = RickMortyMockCharacters.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -621,6 +635,7 @@
 				86FBEDB92D8C25E9005CFCC4 /* Models */,
 				86FA74272D89C45800F69130 /* UI */,
 				86FA742A2D89C49400F69130 /* RUMAutoScenario.swift */,
+				8F2DDA1C470A9D1089E143FD /* Mock */,
 			);
 			path = RUMAuto;
 			sourceTree = "<group>";
@@ -760,8 +775,23 @@
 			children = (
 				86FA743A2D8AC3C900F69130 /* Utils.swift */,
 				86FA74382D8AC2C700F69130 /* RickMortyService.swift */,
+				0C9355C77527461500F6A613 /* RickMortyMock.swift */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		8F2DDA1C470A9D1089E143FD /* Mock */ = {
+			isa = PBXGroup;
+			children = (
+				D9128B45606F5D6DDF9C9F1C /* RickMortyMockCharacters.json */,
+				87BDD559A82C8AE15BB14F80 /* RickMortyMockEpisodes.json */,
+				410E1729B0DC85204960A5C9 /* RickMortyMockLocations.json */,
+				648F5E1775B2395F6008F01E /* RickMortyMockAvatar1.png */,
+				1A053E9A5FC833C3D28613A9 /* RickMortyMockAvatar2.png */,
+				C9F3D808522D28DA3007DE02 /* RickMortyMockAvatar3.png */,
+			);
+			name = Mock;
+			path = Mock;
 			sourceTree = "<group>";
 		};
 		D231DC322C73355800F3F66C /* CatalogUIKit */ = {
@@ -1397,6 +1427,12 @@
 			files = (
 				86FBEDDC2D8C491E005CFCC4 /* EpisodeDetailView.storyboard in Resources */,
 				86FA743D2D8AD6AE00F69130 /* LocationsView.storyboard in Resources */,
+				3C345EEA708141DD947F7BED /* RickMortyMockCharacters.json in Resources */,
+				FEC110D2E2F937269780466F /* RickMortyMockEpisodes.json in Resources */,
+				258B9D9150D74E8C1F119C49 /* RickMortyMockLocations.json in Resources */,
+				428363D112B96487B96C1D43 /* RickMortyMockAvatar1.png in Resources */,
+				5368BD93FA62024E5DD8388C /* RickMortyMockAvatar2.png in Resources */,
+				EADF9F313DFB1BF1B479AC87 /* RickMortyMockAvatar3.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1600,6 +1636,7 @@
 				86252B1B2D818E360098FAEF /* TraceScenario.swift in Sources */,
 				86FBEDD32D8C4348005CFCC4 /* EpisodeListItem.swift in Sources */,
 				D26806112D9D84130004C54A /* BenchmarkVitals.swift in Sources */,
+				E4B66ACACF7668E7177A6815 /* RickMortyMock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
