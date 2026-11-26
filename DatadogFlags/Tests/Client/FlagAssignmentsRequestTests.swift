@@ -183,7 +183,10 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(request.url, testURL)
+        XCTAssertEqual(
+            request.url,
+            URL(string: "https://test.example.com/precompute-assignments?cap_dependent-flags-variant-key=v1")
+        )
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/vnd.api+json")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"), "assignment-encoding-flag-key-256-v1")
@@ -268,6 +271,48 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         // Then
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-service"), "manual-service")
         XCTAssertEqual(request.allHTTPHeaderFields?.keys.filter { $0.lowercased() == "dd-service" }.count, 1)
+    }
+
+    func testDependentFlagsCapabilityIsQueryOnlyAndPreservesExistingQuery() throws {
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: try XCTUnwrap(URL(string: "https://test.example.com/precompute-assignments?existing=1&cap_dependent-flags-variant-key=old")),
+            evaluationContext: .mockAny(),
+            context: .mockWith(source: "ios"),
+            customHeaders: nil,
+            flagSelection: nil
+        )
+
+        let components = try XCTUnwrap(request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) })
+        XCTAssertEqual(components.queryItems?.filter { $0.name == "existing" }.map(\.value), ["1"])
+        XCTAssertEqual(components.queryItems?.filter { $0.name == "cap_dependent-flags-variant-key" }.map(\.value), ["v1"])
+        XCTAssertFalse(request.allHTTPHeaderFields?.keys.contains(where: { $0.lowercased().contains("dependent") }) == true)
+    }
+
+    func testBridgeSourcesAdvertiseNoCapabilitiesAndPreserveBridgeIdentity() throws {
+        for source in ["react-native", "flutter", "unity", "future-bridge"] {
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: try XCTUnwrap(URL(string: "https://test.example.com/precompute-assignments?existing=1&cap_dependent-flags-variant-key=old")),
+                evaluationContext: .mockAny(),
+                context: .mockWith(source: source, sdkVersion: "99.1.2-bridge"),
+                customHeaders: ["X-DD-FEATURE-FLAGS-CAPABILITIES": "injected-capability"],
+                flagSelection: nil
+            )
+
+            let components = try XCTUnwrap(request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) })
+            XCTAssertEqual(components.queryItems?.filter { $0.name == "existing" }.map(\.value), ["1"], source)
+            XCTAssertTrue(components.queryItems?.filter { $0.name == "cap_dependent-flags-variant-key" }.isEmpty == true, source)
+            XCTAssertNil(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"), source)
+
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
+            let data = try XCTUnwrap(body["data"] as? [String: Any])
+            let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
+            XCTAssertEqual(
+                attributes["source"] as? [String: String],
+                ["sdk_name": source, "sdk_version": "99.1.2-bridge"],
+                source
+            )
+            XCTAssertNil(attributes["supported_capabilities"], source)
+        }
     }
 
     func testFlagAssignmentsRequestWithFlagSelection() throws {

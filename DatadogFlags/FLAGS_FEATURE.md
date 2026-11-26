@@ -236,6 +236,8 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - Both are written through the SDK's storage, so they follow tracking consent like other events.
 - With `enableEvaluationTelemetryOptOutParameter`, a context attribute `dd_evaluation_telemetry_opt_out: .bool(true)` suppresses evaluation events and RUM annotations for that subject, but not exposures. See `DatadogFlags/README.md`.
 
+Native iOS clients replay prerequisite evaluations when evaluating a dependent flag. Every reached prerequisite contributes evaluation telemetry. Only prerequisites marked as present in the selected assignment contribute exposure and RUM enrichment, and only after the root evaluation succeeds. A malformed local prerequisite graph returns the caller's default and reports `PARSE_ERROR` evaluation telemetry.
+
 ### Experimentation Opt-Out
 - `experimentationOptOutMode` reads the context attribute `dd_experimentation_opt_out_at`, an RFC3339 timestamp string. `.immediate` excludes the subject from all experiment allocations; `.futureExperimentsOnly` excludes experiments activated at or after the timestamp.
 - A malformed value fails `setEvaluationContext` with `.invalidContext` without a request, and evaluations return `.invalidContext`.
@@ -311,7 +313,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 
 - **RUM**: optional. With `rumIntegrationEnabled`, each successful evaluation adds `feature_flags.<key> = <variant key>` to the active view. RUM must be enabled for this; without it, messages are ignored. When RUM is enabled before the fetch, the request also carries the RUM application ID.
 - **Tracking consent**: exposures and evaluation events are stored and uploaded like other events, following the SDK's tracking consent. Assignment fetching does not depend on consent.
-- **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `getFlagAssignmentsWithConsent`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Bridges that replay evaluations use the consent-aware snapshot and evaluation overload so each event keeps the privacy policy captured with its assignments. Obfuscated flag keys are supported only when the SDK source is `ios`. `getFlagAssignments` and `getFlagAssignmentsWithConsent` omit numeric assignments with no valid `Int` or `Double` value.
+- **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `getFlagAssignmentsWithConsent`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Bridges that replay evaluations use the consent-aware snapshot and evaluation overload so each event keeps the privacy policy captured with its assignments. Obfuscated flag keys and dependent flags are supported only when the SDK source is `ios`. During the first bridge compatibility phase, bridge requests advertise neither capability; ordinary assignments remain available, while dependency-bearing roots and dependent evaluation errors are excluded. `getFlagAssignments` and `getFlagAssignmentsWithConsent` omit numeric assignments with no valid `Int` or `Double` value.
 - **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status.
 
 ## Additional Context

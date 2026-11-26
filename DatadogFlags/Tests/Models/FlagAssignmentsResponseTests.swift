@@ -619,6 +619,171 @@ final class FlagAssignmentsResponseTests: XCTestCase {
 }
 
 extension FlagAssignmentsResponseTests {
+    func testCanonicallyEquivalentEvaluationErrorKeysPreserveUTF8IdentityAndPersistence() throws {
+        let nfc = "caf\u{00E9}"
+        let nfd = "cafe\u{0301}"
+        let json = #"""
+        {"data":{"attributes":{"flags":{},"flagEvaluationErrors":{
+          "\#(nfc)":{"reason":"ERROR","errorCode":"GENERAL","errorMessage":"nfc"},
+          "\#(nfd)":{"reason":"ERROR","errorCode":"GENERAL","errorMessage":"nfd"}
+        }}}}
+        """#
+        let response = try FlagsNumericJSON.decode(
+            FlagAssignmentsResponse.self,
+            from: Data(json.utf8)
+        ).addingKeySpellings(from: Data(json.utf8))
+        let data = FlagsData(
+            flags: response.flags,
+            flagEvaluationErrors: response.flagEvaluationErrors,
+            context: .mockAny(),
+            date: .mockAny(),
+            errorKeySpellings: response.errorKeySpellings
+        )
+        let restored = try JSONDecoder().decode(FlagsData.self, from: JSONEncoder().encode(data))
+        var cache = FlagsRepository.CachedFlagsData(data: restored)
+
+        XCTAssertEqual(cache.evaluation(for: nfc).1?.errorMessage, "nfc")
+        XCTAssertEqual(cache.evaluation(for: nfd).1?.errorMessage, "nfd")
+        XCTAssertEqual(restored.flagEvaluationErrors.count + restored.errorKeySpellings.count, 2)
+    }
+
+    func testAssignmentErrorUnionUsesExactUTF8KeyIdentity() throws {
+        let nfc = "caf\u{00E9}"
+        let nfd = "cafe\u{0301}"
+        let assignment = #"{"allocationKey":"a","variationKey":"v","variationType":"boolean","variationValue":true,"reason":"STATIC","doLog":false}"#
+        let json = #"""
+        {"data":{"attributes":{
+          "flags":{"\#(nfc)":\#(assignment)},
+          "flagEvaluationErrors":{"\#(nfd)":{"reason":"ERROR","errorCode":"GENERAL"}}
+        }}}
+        """#
+        let response = try FlagsNumericJSON.decode(
+            FlagAssignmentsResponse.self,
+            from: Data(json.utf8)
+        ).addingKeySpellings(from: Data(json.utf8))
+        var cache = FlagsRepository.CachedFlagsData(data: FlagsData(
+            flags: response.flags,
+            flagEvaluationErrors: response.flagEvaluationErrors,
+            context: .mockAny(),
+            date: .mockAny(),
+            keySpellings: response.keySpellings,
+            errorKeySpellings: response.errorKeySpellings
+        ))
+
+        XCTAssertNotNil(cache.evaluation(for: nfc).0)
+        XCTAssertNil(cache.evaluation(for: nfc).1)
+        XCTAssertNil(cache.evaluation(for: nfd).0)
+        XCTAssertNotNil(cache.evaluation(for: nfd).1)
+    }
+
+    func testDecodesDependentAssignmentsAndErrorsAsDisjointPersistentMaps() throws {
+        let json = #"""
+        {
+          "data": { "attributes": {
+            "flags": {
+              "parent": {
+                "allocationKey": "parent-allocation", "variationKey": "on", "variationType": "boolean",
+                "variationValue": true, "reason": "TARGETING_MATCH", "doLog": true
+              },
+              "child": {
+                "allocationKey": "child-allocation", "variationKey": "control", "variationType": "string",
+                "variationValue": "control", "reason": "TARGETING_MATCH", "doLog": false,
+                "dependencyEvaluations": [{ "flagKey": "parent", "isPresentInAssignment": true }]
+              }
+            },
+            "flagEvaluationErrors": {
+              "failed-root": {
+                "reason": "ERROR", "errorCode": "GENERAL", "errorMessage": "dependency failed",
+                "dependencyEvaluations": [
+                  { "flagKey": "parent", "isPresentInAssignment": false },
+                  { "flagKey": "missing", "reason": "ERROR", "errorCode": "FLAG_NOT_FOUND" }
+                ],
+                "futureField": true
+              }
+            }
+          }}
+        }
+        """#
+
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(json.utf8))
+
+        XCTAssertEqual(response.flags["child"]?.dependencyEvaluations, [
+            .success(flagKey: "parent", isPresentInAssignment: true),
+        ])
+        XCTAssertNil(response.flags["failed-root"])
+        XCTAssertEqual(response.flagEvaluationErrors["failed-root"]?.errorMessage, "dependency failed")
+        XCTAssertEqual(response.flagEvaluationErrors["failed-root"]?.dependencyEvaluations, [
+            .success(flagKey: "parent", isPresentInAssignment: false),
+            .failure(flagKey: "missing", errorCode: "FLAG_NOT_FOUND", errorMessage: nil),
+        ])
+        let persisted = FlagsData(
+            flags: response.flags,
+            flagEvaluationErrors: response.flagEvaluationErrors,
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: JSONEncoder().encode(persisted)), persisted)
+        let scope = FeatureScopeMock()
+        scope.flagsDataStore.setFlagsData(persisted, forClientNamed: "dependent")
+        let stored = try XCTUnwrap(scope.dataStoreMock.storage["dependent"])
+        for legacyVersion: DataStoreKeyVersion in [1, 2, 3, 4] {
+            XCTAssertNil(stored.data(expectedVersion: legacyVersion))
+        }
+        XCTAssertNotNil(stored.data(expectedVersion: 5))
+        let restored = expectation(description: "restored dependent configuration")
+        scope.flagsDataStore.flagsData(forClientNamed: "dependent") {
+            XCTAssertEqual($0, persisted)
+            restored.fulfill()
+        }
+        wait(for: [restored], timeout: 1)
+    }
+
+    func testDependencyTraceInKeySpellingUsesVersionFiveCache() throws {
+        var dependent = FlagAssignment.mockAnyBoolean()
+        dependent.dependencyEvaluations = [
+            .success(flagKey: "parent", isPresentInAssignment: true),
+        ]
+        let data = FlagsData(
+            flags: ["caf\u{00E9}": .mockAnyBoolean()],
+            context: .mockAny(),
+            date: .mockAny(),
+            keySpellings: [FlagKeySpelling(key: "cafe\u{0301}", assignment: dependent)]
+        )
+        let scope = FeatureScopeMock()
+
+        scope.flagsDataStore.setFlagsData(data, forClientNamed: "dependent-spelling")
+
+        let stored = try XCTUnwrap(scope.dataStoreMock.storage["dependent-spelling"])
+        XCTAssertNotNil(stored.data(expectedVersion: 5))
+        for legacyVersion: DataStoreKeyVersion in [1, 2, 3, 4] {
+            XCTAssertNil(stored.data(expectedVersion: legacyVersion))
+        }
+    }
+
+    func testRejectsImpossibleDependentAssignmentShapes() {
+        let assignment = #"{"allocationKey":"a","variationKey":"v","variationType":"boolean","variationValue":true,"reason":"TARGETING_MATCH","doLog":false}"#
+        let cases = [
+            #"{"data":{"attributes":{"flags":{"root":#(assignment)},"flagEvaluationErrors":{"root":{"reason":"ERROR","errorCode":"GENERAL"}}}}}"#,
+            #"{"data":{"attributes":{"flags":{"root":#(assignment)},"flagEvaluationErrors":{"failed":{"reason":"ERROR","errorCode":"FLAG_NOT_FOUND"}}}}}"#,
+            """
+            {"data":{"attributes":{"flags":{"root":{"allocationKey":"a","variationKey":"v",
+            "variationType":"boolean","variationValue":true,"reason":"TARGETING_MATCH","doLog":false,
+            "dependencyEvaluations":[{"flagKey":"parent","reason":"ERROR","errorCode":"GENERAL",
+            "isPresentInAssignment":false}]}}}}}
+            """,
+            """
+            {"data":{"attributes":{"flags":{"root":{"allocationKey":"a","variationKey":"v",
+            "variationType":"boolean","variationValue":true,"reason":"TARGETING_MATCH","doLog":false,
+            "dependencyEvaluations":[{"flagKey":"parent","isPresentInAssignment":true},
+            {"flagKey":"parent","isPresentInAssignment":false}]}}}}}
+            """,
+        ]
+
+        for json in cases {
+            XCTAssertThrowsError(try JSONDecoder().decode(FlagAssignmentsResponse.self, from: Data(json.utf8)), json)
+        }
+    }
+
     func testConsentIsTolerantAndPersistedWithTheWholeConfiguration() throws {
         let fields = [
             "", ", \"observeFullEvaluationData\": true", ", \"observeFullEvaluationData\": false",
@@ -784,7 +949,8 @@ final class FlagKeySpellingsTests: XCTestCase {
         let validAssignment = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(valid.utf8))
         for (composedValue, label) in [(unknown, "unknown"), (malformed, "malformed")] {
             let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(composedValue),"cafe\#u{0301}":\#(valid)}}}}"#
-            let response = FlagAssignmentsResponse(flags: [composed: validAssignment]).addingKeySpellings(from: Data(body.utf8))
+            let response = try FlagAssignmentsResponse(flags: [composed: validAssignment])
+                .addingKeySpellings(from: Data(body.utf8))
             let served = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
             XCTAssertEqual(served.count, 1, label)
             XCTAssertNil(served.first { $0.0.utf8.elementsEqual(composed.utf8) }, label)

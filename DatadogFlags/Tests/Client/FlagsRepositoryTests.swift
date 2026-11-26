@@ -14,6 +14,49 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testLegacyBridgeIgnoresDependentTracesAndRootErrors() {
+        var root = FlagAssignment.mockAnyBoolean()
+        root.dependencyEvaluations = [.success(flagKey: "missing-parent", isPresentInAssignment: true)]
+        let repository = FlagsRepository(
+            clientName: "legacy-bridge",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(.init(
+                    flags: ["root": root, "ordinary": .mockAnyBoolean()],
+                    flagEvaluationErrors: ["failed": .init(
+                        errorCode: "GENERAL",
+                        dependencyEvaluations: [
+                            .success(flagKey: "missing-parent", isPresentInAssignment: true)
+                        ]
+                    )]
+                )))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(context: .mockWith(source: "react-native")),
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        defer { repository.flush() }
+
+        var result: Result<Void, FlagsError>?
+        repository.setEvaluationContext(.init(targetingKey: "subject")) { result = $0 }
+
+        guard case .success? = result else {
+            return XCTFail("Expected the legacy assignment to install, got \(String(describing: result))")
+        }
+        let rootSnapshot = repository.evaluationSnapshot(for: "root")
+        XCTAssertNil(rootSnapshot.assignment)
+        XCTAssertNil(rootSnapshot.evaluationFailure)
+        XCTAssertEqual(rootSnapshot.dependencyEvaluations, [])
+        XCTAssertFalse(rootSnapshot.hasInvalidDependencyGraph)
+
+        let failedSnapshot = repository.evaluationSnapshot(for: "failed")
+        XCTAssertNil(failedSnapshot.assignment)
+        XCTAssertNil(failedSnapshot.evaluationFailure)
+        XCTAssertEqual(failedSnapshot.dependencyEvaluations, [])
+        XCTAssertNotNil(repository.flagAssignment(for: "ordinary"))
+        XCTAssertEqual(Set(repository.flagAssignments()?.keys.map { $0 } ?? []), ["ordinary"])
+    }
+
     func testResetClearsInvalidContext() {
         for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
             let repository = FlagsRepository(
@@ -3903,7 +3946,7 @@ final class FlagsRepositoryTests: XCTestCase {
             date: .mockAny(),
             flagSelection: CanonicalFlagSelection(tags: ["mobile"], keyPatterns: [])
         )
-        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 5)
+        try scope.dataStoreMock.setValue(JSONEncoder().encode(flagsData), forKey: "cached", version: 6)
         let completed = expectation(description: "unknown version skipped")
 
         // When
