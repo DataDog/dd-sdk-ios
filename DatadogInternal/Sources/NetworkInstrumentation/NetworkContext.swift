@@ -622,11 +622,12 @@ public struct WebViewMessageWithRUMContext {
         self.slotID = slotID
     }
 
-    public func replayRenewalKey(forBrowserViewID viewID: String) -> RUMWebViewReplayRenewal.Key? {
-        guard let expiry = sessionExpiry, let sceneID = capture.value.sceneIdentifier, let slotID else {
+    public func replayRenewalKey(forBrowserViewID viewID: String, predecessorSessionID: String? = nil) -> RUMWebViewReplayRenewal.Key? {
+        guard let predecessor = predecessorSessionID ?? sessionExpiry?.sessionID,
+              let sceneID = capture.value.sceneIdentifier, let slotID else {
             return nil
         }
-        return .init(owner: capture.owner, sceneID: sceneID, predecessor: expiry.sessionID, slotID: slotID, browserViewID: viewID)
+        return .init(owner: capture.owner, sceneID: sceneID, predecessor: predecessor, slotID: slotID, browserViewID: viewID)
     }
 
     /// Resolves only its original owner and a native session that is still alive at delivery.

@@ -464,7 +464,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMCont
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
                 viewCache: dependencies.viewCache,
-                timeseriesCollector: timeseriesCollector
+                timeseriesCollector: timeseriesCollector,
+                webViewRenewalPredecessor: monitor.webViewRenewalPredecessor(for:owner:)
             ),
             CrashReportReceiver(
                 featureScope: featureScope,

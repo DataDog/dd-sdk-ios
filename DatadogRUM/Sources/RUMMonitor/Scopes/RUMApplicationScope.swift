@@ -46,6 +46,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private let sceneRestoration: SceneRestoration?
     var webViewLifecycleExpiry: WebViewLifecycleExpiry? { sceneRestoration?.webViewLifecycleExpiry }
 
+    func webViewRenewalPredecessor(for successor: RUMUUID, owner: RUMContextHandoff.Owner?) -> String? {
+        guard let owner, owner.isValid, let renewal = sceneRestoration?.browserRenewal,
+              renewal.owner === owner, renewal.successor == successor else {
+            return nil
+        }
+        return renewal.predecessor
+    }
+
     /// The end reason from the last active session. Used as "start reason" for the new session.
     private var lastSessionEndReason: RUMSessionScope.EndReason?
 
