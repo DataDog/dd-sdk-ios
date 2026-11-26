@@ -877,11 +877,20 @@ extension SwiftUINavigationOwnershipTests {
         try await exerciseOrdinaryReaderOverlap(savedAppearance: false, disconnectWithoutDetach: true)
     }
 
+    @MainActor
+    func testOrdinaryTrackedView_lateDisappearanceCannotStopReplacement() async throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Owned SwiftUI tracking requires iOS 27")
+        }
+        try await exerciseOrdinaryReaderOverlap(savedAppearance: false, deliverOldDisappearance: true)
+    }
+
     @available(iOS 27.0, *)
     @MainActor
     private func exerciseOrdinaryReaderOverlap(
         savedAppearance: Bool,
-        disconnectWithoutDetach: Bool = false
+        disconnectWithoutDetach: Bool = false,
+        deliverOldDisappearance: Bool = false
     ) async throws {
         let fixture = try SemanticHostWindow()
         let core = makeSemanticCore()
@@ -909,6 +918,15 @@ extension SwiftUINavigationOwnershipTests {
             capturedAdmission = admission
         }
         defer { RUMNativeNavigationTesting.onBoundary = nil }
+        var oldDisappearance: (() -> Void)?
+        if deliverOldDisappearance {
+            RUMSwiftUIViewCallbackAdmission.ordinaryDisappearanceObserver = { reader, callback in
+                if reader === originalReader, reader.window === fixture.window {
+                    oldDisappearance = callback
+                }
+            }
+        }
+        defer { RUMSwiftUIViewCallbackAdmission.ordinaryDisappearanceObserver = nil }
         _ = fixture.install(OrdinarySwiftUIViewChild(driver: driver).trackRUMView(name: "Overlapping reader", in: core))
         try await awaitSemanticBoundary("old scene reader tracking", core: core) {
             originalReader?.window === fixture.window
@@ -987,6 +1005,16 @@ extension SwiftUINavigationOwnershipTests {
         guard let returnedView = recovered?.viewID else { return }
         XCTAssertNotEqual(returnedView, originalView)
         XCTAssertTrue(rows.views.contains { $0.view.id == returnedView && $0.view.isActive == true })
+        if deliverOldDisappearance {
+            let callback = try XCTUnwrap(oldDisappearance)
+            callback()
+            core.flush()
+            XCTAssertEqual(
+                feature.monitor.rumContextSnapshot(for: .scene(peerID))?.viewID,
+                returnedView,
+                "The old reader's disappearance cannot stop the replacement"
+            )
+        }
     }
 
     @MainActor
