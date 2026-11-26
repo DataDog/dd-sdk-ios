@@ -69,6 +69,58 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(interceptedData, [body, body])
     }
 
+    // MARK: - Async data APIs cancellation
+
+    @available(iOS 15, tvOS 15, *)
+    func testSwizzling_asyncDataFromURL_whenSwiftTaskIsCancelled_itInterceptsCancellationOnce() async throws {
+        try await assertCancellationIsIntercepted { session in _ = try await session.data(from: URL.mockAny()) }
+    }
+
+    @available(iOS 15, tvOS 15, *)
+    func testSwizzling_asyncDataForRequest_whenSwiftTaskIsCancelled_itInterceptsCancellationOnce() async throws {
+        try await assertCancellationIsIntercepted { session in _ = try await session.data(for: URLRequest(url: URL.mockAny())) }
+    }
+
+    @available(iOS 15, tvOS 15, *)
+    private func assertCancellationIsIntercepted(sending send: @escaping (URLSession) async throws -> Void) async throws {
+        let lock = NSLock()
+        var interceptedErrors: [Error?] = []
+        var receivedData: [Data] = []
+
+        let swizzler = URLSessionSwizzler()
+        try swizzler.swizzle(
+            interceptCompletionHandler: { _, _, error in lock.lock(); interceptedErrors.append(error); lock.unlock() },
+            didReceive: { _, data in lock.lock(); receivedData.append(data); lock.unlock() }
+        )
+        defer { swizzler.unswizzle() }
+
+        let requestStarted = expectation(description: "request in flight")
+        HangingURLProtocol.onStartLoading = { requestStarted.fulfill() }
+        defer { HangingURLProtocol.onStartLoading = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [HangingURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+
+        let request = Task { try await send(session) }
+        await fulfillment(of: [requestStarted], timeout: 5)
+        request.cancel()
+
+        do {
+            try await request.value
+            XCTFail("Cancelled request must throw")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .cancelled)
+        }
+
+        lock.lock()
+        defer { lock.unlock() }
+        XCTAssertEqual(interceptedErrors.count, 1, "Completion interceptor must receive the cancellation exactly once")
+        XCTAssertEqual((interceptedErrors.first as? URLError)?.code, .cancelled)
+        XCTAssertTrue(receivedData.isEmpty)
+    }
+
     // MARK: - AsyncDataTaskCompletionHandler guards
 
     func testAsyncDataTaskHook_whenSelectorIsMissing_itIsNotBuilt() {
@@ -126,6 +178,16 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(intercepted, [body])
         XCTAssertTrue(task.dd.hasCompletion)
     }
+}
+
+/// Starts loading and never responds, keeping the request in flight until it is cancelled.
+private final class HangingURLProtocol: URLProtocol {
+    static var onStartLoading: (() -> Void)?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() { Self.onStartLoading?() }
+    override func stopLoading() {}
 }
 
 /// Exposes selectors shaped like the private `NSURLSession` async-data entry points.
