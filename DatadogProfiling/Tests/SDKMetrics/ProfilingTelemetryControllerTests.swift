@@ -411,6 +411,44 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metric.cycleIndex, 0)
     }
 
+    func testTriggeredMemoryReportsDoNotAdvanceContinuousCycleIndex() throws {
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling, profileTypes: [.memory])
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .trigger, profileTypes: [.memory])
+        controller.sendMemoryDiagnostics(.init(result: .idle, diagnostics: .init()), for: .trigger)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling, profileTypes: [.memory])
+
+        let sessions = telemetry.messages.compactMap {
+            $0.asMetric?.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes
+        }
+        XCTAssertEqual(sessions.count, 4)
+        XCTAssertEqual(sessions.map(\.startReason), ["continuous", "trigger", "trigger", "continuous"])
+        XCTAssertEqual(sessions.map(\.cycleIndex), [0, nil, nil, 1])
+    }
+
+    func testTriggeredMemoryOutcomesSerializeTriggerStartReason() throws {
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .trigger, profileTypes: [.memory])
+        controller.sendProfileDropped(for: .trigger, profileTypes: [.memory])
+        controller.sendNoData(durationMs: nil, for: .trigger, profileTypes: [.memory])
+        for result: MemoryDiagnostics.CaptureResult in [.idle, .startFailed, .captureFailed, .serializationFailed, .invalidTime] {
+            controller.sendMemoryDiagnostics(.init(result: result, diagnostics: .init()), for: .trigger)
+        }
+
+        let sessions = telemetry.messages.compactMap {
+            $0.asMetric?.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes
+        }
+        XCTAssertEqual(sessions.count, 8)
+        for (index, session) in sessions.enumerated() {
+            let encoded = try JSONEncoder().encode(session)
+            let fields = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+            XCTAssertEqual(fields["start_reason"] as? String, "trigger")
+            XCTAssertEqual(fields["profile_types"] as? [String], ["memory"])
+            XCTAssertEqual((fields["file_size"] as? NSNumber)?.int64Value, index == 0 ? 2 : nil)
+            XCTAssertNil(fields["cycle_index"])
+        }
+    }
+
     func testSendProfile_usesRumOperationStartReason_forCustomOperation() throws {
         // Given
         let controller = ProfilingTelemetryController(telemetry: telemetry)

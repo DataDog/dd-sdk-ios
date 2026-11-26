@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-24
+last_updated: 2026-11-26
 sdk_version: 3.22.0
 verified_against_commit: adb364d37
 tracked_files:
@@ -48,7 +48,7 @@ RUM.enable(
         uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
         uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
 
-        // Profiles can include long tasks and app hangs when their RUM tracking is enabled.
+        // CPU profiles can include long tasks and app hangs when their RUM tracking is enabled.
         // Long task threshold in seconds. Default: 0.1.
         longTaskThreshold: 0.1,
         // App hang threshold in seconds. Default: nil (disabled).
@@ -85,7 +85,7 @@ Profiling.enable(
 let monitor = RUMMonitor.shared()
 
 // 4. (Optional) Report TTFD when the launch content is fully displayed.
-// Continuous CPU profiles can correlate with this full-display timing; this does not report TTID.
+// This timing correlates CPU profiles and requests an eligible heap capture; it does not report TTID.
 monitor.reportAppFullyDisplayed()
 
 // 5. (Optional) Profile a RUM operation using the active CPU recording.
@@ -134,9 +134,11 @@ Profiling is one `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with
 
 RUM integration uses Core context and feature messages; `DatadogProfiling` does not import `DatadogRUM`. `ProfilingContextMessageReceiver` updates `ProfilingSamplerProvider` from the RUM session sampler before the profilers handle the context. `DatadogProfiler` owns application-launch, continuous, and custom/operation CPU profiling, while `MemoryProfiler` owns allocation tracking and heap captures. CPU quota admission is separate from memory sampling.
 
-`ProfilingScheduler` requests periodic captures from both profilers on a common 60-second cadence. Each profiler owns its collection window and returns an owned `ProfileSnapshot`; launch and lifecycle captures can also be written independently. `ProfileWriter` combines compatible snapshots and RUM correlations into a `ProfileEvent` with `ProfileAttachments`. `RequestBuilder` uploads those attachments through the shared Profiling feature storage and upload path.
+`ProfilingScheduler` requests periodic captures from both profilers on a common 60-second cadence. Each profiler owns its collection window and returns an owned `ProfileSnapshot`; launch, event-triggered, and lifecycle captures can also be written independently. `ProfileWriter` combines compatible snapshots and RUM correlations into a `ProfileEvent` with `ProfileAttachments`. `RequestBuilder` uploads those attachments through the shared Profiling feature storage and upload path.
 
 RUM operation start/end messages are handled by `DatadogProfiler`. During continuous profiling they correlate operations with the ongoing CPU profile. In custom operation mode, the CPU profiler also schedules captures around operation completion and its duration cutoff.
+
+`MemoryProfiler` also observes TTFD through `OperationMessage`, app hangs through `AppHangMessage`, and retained RUM memory warning errors through `MemoryWarningMessage`. These events request heap captures independently of CPU recording. Long tasks and ordinary operation steps are handled by the CPU profiler and do not supply heap events or attributes.
 
 ```mermaid
 flowchart TD
@@ -170,6 +172,12 @@ Continuous CPU and heap captures share a 60-second cadence. Their collection int
 
 Periodic CPU captures require a recording window of at least five seconds. If the next capture is due sooner, CPU recording continues until a later periodic capture. Heap snapshots continue independently and do not use this minimum.
 
+Periodic heap collection does not guarantee an upload. A heap snapshot can share an upload with a compatible CPU profile that supplies RUM correlations, including long tasks. Long-task events and attributes belong to that CPU profile; the memory profiler does not retain them or use them to make a heap-only upload eligible. Without CPU correlations or an eligible heap trigger, the writer drops the heap snapshot. Capturing still closes the allocation window and resets its allocation totals, while tracked live objects remain available to later captures.
+
+After launch, TTFD, app hangs, and memory warning errors schedule an asynchronous heap capture with a fixed one-second delay. Further triggers within that interval join the pending capture without extending its deadline. If a periodic tick closes the window first, it satisfies the pending request and writes the heap separately, preserving its triggering RUM correlations and the CPU profile's own timeline. Captures enter the normal storage and upload pipeline; they do not force an immediate network request.
+
+Event-triggered captures can emit an unchanged, nonempty live heap with zero allocation totals for the new window. Completely idle windows with no tracked live objects are skipped.
+
 | Profile data | Time semantics | Event-range selection |
 |---|---|---|
 | CPU/wall-time samples | Individual timestamped samples across the collection interval | Samples can be selected within a RUM event's time range. |
@@ -180,7 +188,7 @@ One heap profile contains both allocation totals and live-memory estimates. The 
 
 When CPU and heap data appear together, selecting a RUM event's time range applies to the CPU samples. The heap data remains a complete capture. Profiles require RUM correlation data even when only memory profiling is running.
 
-RUM association provides navigation and surrounding context for a heap snapshot. It does not establish the heap contents during an earlier event or attribute allocations to that event. For example, a snapshot at 60 seconds cannot reconstruct the live heap during a long task at 20 seconds. App-launch heap captures are triggered by TTID, providing context at that launch boundary.
+RUM association provides navigation and surrounding context for a heap snapshot. It does not establish the heap contents during an earlier event or attribute allocations to that event. For example, a snapshot at 60 seconds cannot reconstruct the live heap during a long task at 20 seconds. Event-triggered snapshots bring the capture closer to the reported event, but still describe the heap at capture time. App-launch heap captures are triggered by TTID, providing context at that launch boundary.
 
 ## Key Files
 
@@ -200,8 +208,9 @@ RUM association provides navigation and surrounding context for a heap snapshot.
 ### Runtime Orchestration
 
 - **`DatadogProfiling/Sources/DatadogProfiler.swift`** — CPU application-launch, continuous, and custom/operation profiling, including operation lifecycle, event correlation, and CPU status.
-- **`DatadogProfiling/Sources/Models/ProfilingOperation.swift`** — application-launch, continuous, and custom profiling mode identifiers.
-- **`DatadogProfiling/Sources/MemoryProfiler.swift`** — memory recording, launch capture, session/window boundaries, and heap emission.
+- **`DatadogProfiling/Sources/Models/ProfilingOperation.swift`** — application-launch, continuous, event-triggered, and custom profiling operation identifiers.
+- **`DatadogProfiling/Sources/MemoryProfiler.swift`** — memory recording, launch and event-triggered captures, session/window boundaries, and heap emission.
+- **`DatadogInternal/Sources/Models/RUM/MemoryWarningMessage.swift`** — retained RUM memory warning error IDs, timestamps, and correlation context for heap captures.
 - **`DatadogProfiling/Sources/Models/ProfilingConditions.swift`** — battery, Low Power Mode, and background eligibility checks.
 - **`DatadogProfiling/Sources/ProfilingQuotaChecker.swift`** — CPU session quota requests and admission decisions.
 
@@ -268,16 +277,16 @@ CPU profiling also depends on session quota admission. Explicit quota rejection 
 
 ## RUM Correlation
 
-| RUM event | CPU profiles | Heap profiles |
-| --- | --- | --- |
-| Time to initial display (TTID) | Correlates application startup. | Correlates a launch heap snapshot when early memory collection is available and the memory session decision admits emission. |
-| Time to full display (TTFD) | Can be attached to a continuous CPU profile. | Does not independently trigger or correlate a heap snapshot. |
-| Sampled operation steps | Can be attached to an active CPU profile. | Do not independently trigger or correlate a heap snapshot. |
-| App hangs and long tasks | Can be attached when they overlap collected CPU samples. | Can be attached when they overlap the heap collection window. |
+| RUM event                      | CPU profiles                                             | Heap profiles                                                                                                                |
+| ------------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Time to initial display (TTID) | Correlates application startup.                          | Correlates a launch heap snapshot when early memory collection is available and the memory session decision admits emission. |
+| Time to full display (TTFD)    | Can be attached to a continuous CPU profile.             | Requests a heap capture correlated with the TTFD vital.                                                                      |
+| Sampled operation steps        | Can be attached to an active CPU profile.                | Do not independently trigger or correlate a heap snapshot.                                                                   |
+| App hangs                      | Can be attached when they overlap collected CPU samples. | Request a heap capture correlated with the hang error.                                                                       |
+| Memory warning errors          | Do not independently correlate a CPU profile.            | Request a heap capture correlated with the retained RUM error.                                                               |
+| Long tasks                     | Can be attached when they overlap collected CPU samples. | Can make a combined CPU/heap upload eligible through CPU correlations. Do not supply heap events or attributes, or trigger a capture. |
 
-App hangs and long tasks are included in captured windows; receiving one does not immediately trigger a separate profile. RUM memory warnings do not currently trigger a heap snapshot either. Combined uploads use CPU RUM events and attributes when available; heap correlations are used when CPU supplies none. The event range can select CPU samples but cannot select a slice of the heap capture.
-
-
+Memory warnings require RUM memory warning tracking (`trackMemoryWarnings`, enabled by default on supported platforms). App hang and memory warning errors dropped by `errorEventMapper` do not trigger heap captures. Event-triggered heaps retain their own RUM correlations in separate writes. Other combined uploads use CPU RUM events and attributes when available; heap correlations are used when CPU supplies none. The event range can select CPU samples but cannot select a slice of the heap capture.
 
 ## Exploring Profiles
 
@@ -308,7 +317,7 @@ Heap totals do not represent the app's total memory footprint and should not be 
 
 ### Launch and Session Boundaries
 
-Early launch collection uses the previous process's memory configuration. Emitting a launch heap profile requires the current memory rate composed with RUM session sampling, plus foreground eligibility. TTFD does not replace TTID for this launch capture.
+Early launch collection uses the previous process's memory configuration. Emitting a launch heap profile requires the current memory rate composed with RUM session sampling, plus foreground eligibility. Triggers received while this launch window is open join its TTID capture; they do not close it early. After the launch window's 60-second TTID wait expires, new eligible triggers use the normal one-second capture delay without waiting for a periodic tick. TTFD reported after TTID requests a later heap capture and does not replace TTID for the launch capture.
 
 At a RUM session or sampling boundary, allocation activity is closed for the ending context so its allocation totals do not carry into the next window. Allocation/free tracking and the live set continue across sampled-out sessions, allowing a later sampled-in profile to include objects that survived those sessions. Revoking consent or shutting down memory recording clears that state.
 
@@ -334,7 +343,7 @@ A CPU window needs correlated RUM events: TTFD, sampled operation steps, app han
 
 ### CPU Profiles Appear but Heap Profiles Are Missing
 
-Set `memorySampleRate` above zero for normal use; SDK debug mode overrides it to 100%. For heap-only uploads after launch, enable RUM long task or app hang tracking. TTFD and operation steps alone do not provide independent heap correlations. A window without observed allocations or live-set changes may also produce no heap data.
+Set `memorySampleRate` above zero for normal use; SDK debug mode overrides it to 100%. Periodic heaps can share uploads with compatible CPU profiles that have RUM correlations. For heap-only uploads, report TTFD, track app hangs, or retain memory warning errors with `trackMemoryWarnings` enabled. Long tasks and ordinary operation steps do not provide independent heap correlations. A completely idle window with no tracked live objects produces no heap data.
 
 ### A RUM Operation Has No Profile
 
@@ -350,7 +359,7 @@ CPU collection and periodic heap emission pause in the background. When memory t
 
 ## Feature Interactions
 
-- **RUM** supplies session sampling, application/session/view context, and the supported event correlations. Enable long task or app hang tracking when those correlations are needed.
+- **RUM** supplies session sampling, application/session/view context, and the supported event correlations. TTID, TTFD, app hangs, and retained memory warning errors can trigger heap captures. Long tasks remain CPU correlations and can make combined periodic CPU/heap uploads eligible.
 - **Tracking consent** controls local storage and upload, as well as stopping collection when consent is not granted.
 - **Remote Configuration** can override the two CPU rates when Profiling is enabled; memory sampling remains configured in code.
 

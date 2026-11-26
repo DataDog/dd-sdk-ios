@@ -14,6 +14,11 @@ import Foundation
 
 /// Owns memory profiling windows independently of CPU profiling decisions.
 internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendable {
+    enum Constants {
+        /// Delay for collecting nearby RUM events into one heap capture.
+        static let eventCaptureDelay: TimeInterval = 1
+    }
+
     static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.datadog-memory-profiler",
         qos: .utility
@@ -42,6 +47,7 @@ internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendabl
     private let dateProvider: DateProvider
     private let monotonicClock: MonotonicClock
     private let appLaunchDeadline: TimeInterval
+    private var eventCaptureWorkItem: DispatchWorkItem?
     private var sessionSampler: DeterministicSampler?
     // Retain the last ID through missing RUM context so returning sessions start a fresh delta.
     private var lastSessionID: String?
@@ -51,7 +57,7 @@ internal final class MemoryProfiler: ProfileSnapshotProvider, @unchecked Sendabl
         snapshot: ProfileSnapshot,
         timeNanos: Int64
     )?
-    private var durationEvents: [DurationEvent] = []
+    private var rumEvents: [RUMEvent] = []
     private var eventAttributes: [AttributeKey: AttributeValue] = [:]
     private var currentContext: DatadogContext?
     private var hasForegroundTime = false
@@ -132,9 +138,12 @@ extension MemoryProfiler: FeatureMessageReceiver {
             case let message as TTIDMessage:
                 captureAppLaunch(message: message)
             case let message as AppHangMessage:
-                append(message.hang, attributes: message.attributes)
-            case let message as LongTaskMessage:
-                append(message.longTask, attributes: message.attributes)
+                append(.error(message.hang), attributes: message.attributes)
+            case let message as MemoryWarningMessage:
+                append(.error(message.warning), attributes: message.attributes)
+            case let message as OperationMessage where message.operation.stepType == nil
+                && message.operation.name == "time_to_full_display":
+                append(.vital(message.operation), attributes: message.attributes)
             default:
                 break
             }
@@ -195,7 +204,7 @@ private extension MemoryProfiler {
                 // The new window must establish its own foreground history. An
                 // active prior session cannot authorize a second closing emission.
                 hasForegroundTime = false
-                clearDurationEvents()
+                clearEvents()
             }
             sessionSampler = rumContext?.sessionSampler
             if let rumContext {
@@ -203,7 +212,7 @@ private extension MemoryProfiler {
             }
             currentContext = context
             if profilingSamplerProvider.memory.sampled(for: sessionSampler) == false {
-                clearDurationEvents()
+                clearEvents()
             }
 
             let currentAppState = context.applicationStateHistory.currentState
@@ -274,7 +283,18 @@ extension MemoryProfiler {
                 completion(nil)
                 return
             }
-            completion(closeWindow())
+            // Event-triggered heaps retain their own correlations instead of inheriting
+            // the CPU timeline selected by a combined periodic write.
+            let operation: ProfilingOperation = rumEvents.isEmpty ? .continuousProfiling : .trigger
+            let snapshot = closeWindow(operation: operation)
+            if operation == .trigger {
+                if let snapshot {
+                    writer.write([snapshot], operation: operation)
+                }
+                completion(nil)
+            } else {
+                completion(snapshot)
+            }
         }
     }
 
@@ -310,21 +330,58 @@ extension MemoryProfiler {
 // MARK: - Helpers
 
 private extension MemoryProfiler {
-    func append(_ event: DurationEvent, attributes: [AttributeKey: AttributeValue]) {
+    func append(_ event: RUMEvent, attributes: [AttributeKey: AttributeValue]) {
         queue.async { [weak self] in
             guard let self, state != .stopped, state != .failed, state != .shutDown,
                   state != .emissionSuspended || isRecordingAppLaunch,
                   profilingSamplerProvider.memory.sampled(for: sessionSampler) != false else {
                 return
             }
-            durationEvents.append(event)
-            eventAttributes = attributes
+            rumEvents.append(event)
+            mergeEventAttributes(attributes)
+            scheduleEventCapture()
         }
     }
 
-    func clearDurationEvents() {
-        durationEvents.removeAll()
+    func mergeEventAttributes(_ attributes: [AttributeKey: AttributeValue]) {
+        var merged = attributes
+        for key in [RUMCoreContext.IDs.viewID, RUMCoreContext.IDs.viewName] {
+            var views = eventAttributes[key] as? [String] ?? []
+            for view in attributes[key] as? [String] ?? [] where !views.contains(view) {
+                views.append(view)
+            }
+            if !views.isEmpty {
+                merged[key] = views
+            }
+        }
+        eventAttributes = merged
+    }
+
+    func clearEvents() {
+        eventCaptureWorkItem?.cancel()
+        eventCaptureWorkItem = nil
+        rumEvents.removeAll()
         eventAttributes.removeAll()
+    }
+
+    func scheduleEventCapture() {
+        guard eventCaptureWorkItem == nil, !rumEvents.isEmpty,
+              state == .running, canEmit else {
+            return
+        }
+        expireAppLaunchIfNeeded()
+        guard !isRecordingAppLaunch else {
+            return
+        }
+        // A fixed delay coalesces bursts without postponing capture on each new event.
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, state == .running, canEmit, !rumEvents.isEmpty else {
+                return
+            }
+            capture(operation: .trigger)
+        }
+        eventCaptureWorkItem = work
+        queue.asyncAfter(deadline: .now() + Constants.eventCaptureDelay, execute: work)
     }
 
     var canEmit: Bool {
@@ -363,7 +420,7 @@ private extension MemoryProfiler {
                     if canEmit {
                         capture()
                     } else {
-                        clearDurationEvents()
+                        clearEvents()
                     }
                 }
                 if state != .failed {
@@ -379,12 +436,14 @@ private extension MemoryProfiler {
                 periodicStart = .now()
             }
             scheduler.startPeriodic(for: self)
+            scheduleEventCapture()
         } else {
             stopPeriodicCapture()
         }
     }
 
     func capture(shouldWrite: Bool = true, operation: ProfilingOperation = .continuousProfiling, message: TTIDMessage? = nil) {
+        let operation = operation == .continuousProfiling && !rumEvents.isEmpty ? .trigger : operation
         if let snapshot = closeWindow(shouldEncode: shouldWrite, operation: operation, message: message) {
             writer.write([snapshot], operation: operation)
         }
@@ -395,7 +454,7 @@ private extension MemoryProfiler {
         operation: ProfilingOperation = .continuousProfiling,
         message: TTIDMessage? = nil
     ) -> ProfileSnapshot? {
-        defer { clearDurationEvents() }
+        defer { clearEvents() }
         var capture = dd_memory_capture_t()
         let status = dd_memory_profiler_capture(&capture)
         // Queued ticks from the preceding window must not close the new one.
@@ -407,6 +466,10 @@ private extension MemoryProfiler {
         switch status {
         case DD_MEMORY_CAPTURE_IDLE:
             result = .idle
+            // An unchanged live set is still useful at an event boundary.
+            if shouldEncode, !rumEvents.isEmpty, capture.aggregation.count > 0 {
+                snapshot = makeSnapshot(from: capture, result: &result, message: message)
+            }
         case DD_MEMORY_CAPTURE_READY:
             if shouldEncode {
                 snapshot = makeSnapshot(from: capture, result: &result, message: message)
@@ -448,17 +511,11 @@ private extension MemoryProfiler {
             return nil
         }
         result = .encoded
-        let attributes = eventAttributes.merging(message?.attributes ?? [:]) { _, launchValue in launchValue }
-        // These events provide RUM context when CPU supplies none; they do not select a heap slice.
-        let rumEvents = durationEvents
-            .filter { $0.couldBeSampled(byProfileStartingAt: start, endingAt: end) }
-            .compactMap { event -> RUMEvent? in
-                switch event.type {
-                case .error: return .hang(event)
-                case .longTask: return .longTask(event)
-                @unknown default: return nil
-                }
-            }
+        if let message {
+            mergeEventAttributes(eventAttributes.merging(message.attributes) { _, launchValue in launchValue })
+        }
+        // A trigger may arrive after its event ended or a periodic window closed.
+        // Its correlation describes why we captured, not a slice of the heap.
         return ProfileSnapshot(
             start: Date(timeIntervalSince1970: Double(start) / 1_000_000_000),
             end: Date(timeIntervalSince1970: Double(end) / 1_000_000_000),
@@ -468,7 +525,7 @@ private extension MemoryProfiler {
                 data: Data(bytes: bytes, count: view.size)
             ),
             rumEvents: rumEvents + (message.map { [.vital($0.ttid)] } ?? []),
-            attributes: attributes,
+            attributes: eventAttributes,
             rumContext: rumContext
         )
     }
@@ -504,7 +561,7 @@ private extension MemoryProfiler {
         hasForegroundTime = false
         isRecordingAppLaunch = false
         discardPendingAppLaunch()
-        clearDurationEvents()
+        clearEvents()
     }
 
     func shutDown() {

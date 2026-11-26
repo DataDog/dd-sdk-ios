@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogInternal
+@preconcurrency import DatadogInternal
 
 internal struct PprofAttachment: Codable, Sendable {
     let filename: String
@@ -61,9 +61,9 @@ internal struct ProfileAttachments: Codable {
 }
 
 /// Bundles individually all RUM events that are part of a profile event.
-internal enum RUMEvent {
+internal enum RUMEvent: Sendable {
     case vital(Vital)
-    case hang(DurationEvent)
+    case error(DurationEvent)
     case longTask(DurationEvent)
 }
 
@@ -72,7 +72,7 @@ extension RUMEvent: Encodable {
         switch self {
         case .vital(let value):
             try value.encode(to: encoder)
-        case .hang(let value):
+        case .error(let value):
             try value.encode(to: encoder)
         case .longTask(let value):
             try value.encode(to: encoder)

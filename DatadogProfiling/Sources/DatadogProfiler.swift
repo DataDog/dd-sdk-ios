@@ -695,7 +695,7 @@ private extension DatadogProfiler {
                 filename: ProfileAttachments.Constants.pprofFilename,
                 data: Data(bytes: bytes, count: count)
             ),
-            rumEvents: currentRUMVitals.values.map(RUMEvent.vital) + hangs.map(RUMEvent.hang) + longTasks.map(RUMEvent.longTask),
+            rumEvents: currentRUMVitals.values.map(RUMEvent.vital) + hangs.map(RUMEvent.error) + longTasks.map(RUMEvent.longTask),
             attributes: attributes,
             rumContext: currentRUMContext
         )

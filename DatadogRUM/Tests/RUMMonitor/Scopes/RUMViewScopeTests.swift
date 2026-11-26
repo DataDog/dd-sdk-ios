@@ -3676,7 +3676,168 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertFalse(writer.events(ofType: RUMViewEvent.self).isEmpty)
     }
 
+    // MARK: - Memory warnings
+
+    func testWhenMemoryWarningIsReported_itSendsProfilingMessageOnlyIfErrorIsKept() throws {
+        for shouldDropError in [false, true] {
+            let featureScope = FeatureScopeMock()
+            let writer = FileWriterMock()
+            let startTime: Date = .mockDecember15th2019At10AMUTC()
+            let warningTime = startTime.addingTimeInterval(1)
+            let serverTimeOffset: TimeInterval = 10
+            let scope = RUMViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockWith(
+                    featureScope: featureScope,
+                    eventBuilder: RUMEventBuilder(eventsMapper: .mockWith(errorEventMapper: { shouldDropError ? nil : $0 })),
+                    featureFlags: [.viewUpdates: false]
+                ),
+                identity: .mockViewIdentifier(),
+                path: "UIViewController",
+                name: "ViewName",
+                customTimings: [:],
+                startTime: startTime,
+                serverTimeOffset: serverTimeOffset,
+                interactionToNextViewMetric: nil,
+                viewIndexInSession: .mockAny()
+            )
+            let command = RUMAddCurrentViewMemoryWarningCommand(
+                time: warningTime,
+                globalAttributes: [:],
+                attributes: [:],
+                message: "Memory Warning",
+                type: "MemoryWarning",
+                stack: nil,
+                threads: nil,
+                binaryImages: nil,
+                isStackTraceTruncated: nil
+            )
+
+            XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
+
+            let messages = featureScope.messagesSent().compactMap { $0.asPayload as? MemoryWarningMessage }
+            if shouldDropError {
+                XCTAssertTrue(messages.isEmpty)
+                XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+            } else {
+                XCTAssertEqual(messages.count, 1)
+                XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).count, 1)
+                let message = try XCTUnwrap(messages.first)
+                let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+                XCTAssertEqual(message.warning.id, error.error.id)
+                XCTAssertEqual(message.warning.type, .error)
+                XCTAssertEqual(message.warning.start, warningTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds)
+                XCTAssertEqual(message.warning.duration, 0)
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.applicationID] as? String, error.application.id)
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.sessionID] as? String, error.session.id)
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [error.view.id])
+            }
+        }
+    }
+
+    func testWhenOrdinaryErrorIsReported_itDoesNotSendMemoryWarningProfilingMessage() {
+        let featureScope = FeatureScopeMock()
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: startTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(scope.process(
+            command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: startTime.addingTimeInterval(1)),
+            context: context,
+            writer: writer
+        ))
+
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).count, 1)
+        XCTAssertTrue(featureScope.messagesSent().compactMap { $0.asPayload as? MemoryWarningMessage }.isEmpty)
+    }
+
     // MARK: - App Hangs
+
+    func testWhenAppHangIsReported_itSendsProfilingMessageOnlyForKeptErrorWithID() throws {
+        for scenario in ["kept", "dropped", "idless", "mapped-id"] {
+            let featureScope = FeatureScopeMock()
+            let writer = FileWriterMock()
+            let startTime: Date = .mockDecember15th2019At10AMUTC()
+            let hangTime = startTime.addingTimeInterval(1)
+            let serverTimeOffset: TimeInterval = 10
+            let mappedID = UUID().uuidString.lowercased()
+            let scope = RUMViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockWith(
+                    featureScope: featureScope,
+                    eventBuilder: RUMEventBuilder(eventsMapper: .mockWith(errorEventMapper: { event in
+                        guard scenario != "dropped" else {
+                            return nil
+                        }
+                        var event = event
+                        if scenario == "idless" || scenario == "mapped-id" {
+                            event.error = .init(
+                                id: scenario == "mapped-id" ? mappedID : nil,
+                                message: event.error.message,
+                                source: event.error.source
+                            )
+                        }
+                        return event
+                    })),
+                    featureFlags: [.viewUpdates: false]
+                ),
+                identity: .mockViewIdentifier(),
+                path: "UIViewController",
+                name: "ViewName",
+                customTimings: [:],
+                startTime: startTime,
+                serverTimeOffset: serverTimeOffset,
+                interactionToNextViewMetric: nil,
+                viewIndexInSession: .mockAny()
+            )
+            let command = RUMAddCurrentViewAppHangCommand.mockWith(
+                time: hangTime,
+                message: "App Hang",
+                type: "AppHang",
+                hangDuration: 2
+            )
+
+            XCTAssertTrue(scope.process(command: command, context: context, writer: writer), scenario)
+
+            let messages = featureScope.messagesSent().compactMap { $0.asPayload as? AppHangMessage }
+            let errors = writer.events(ofType: RUMErrorEvent.self)
+            if scenario == "dropped" {
+                XCTAssertTrue(messages.isEmpty)
+                XCTAssertTrue(errors.isEmpty)
+            } else if scenario == "idless" {
+                XCTAssertTrue(messages.isEmpty)
+                XCTAssertNil(try XCTUnwrap(errors.first).error.id)
+            } else {
+                XCTAssertEqual(messages.count, 1)
+                XCTAssertEqual(errors.count, 1)
+                let message = try XCTUnwrap(messages.first)
+                let error = try XCTUnwrap(errors.first)
+                XCTAssertEqual(message.hang.id, error.error.id)
+                if scenario == "mapped-id" {
+                    XCTAssertEqual(message.hang.id, mappedID)
+                }
+                XCTAssertEqual(message.hang.type, .error)
+                XCTAssertEqual(message.hang.start, hangTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds)
+                XCTAssertEqual(message.hang.duration, 2_000_000_000)
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.applicationID] as? String, error.application.id)
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.sessionID] as? String, error.session.id)
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [error.view.id])
+            }
+        }
+    }
 
     func testWhenViewAppHangIsTracked_itSendsErrorEventAndViewUpdateEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()

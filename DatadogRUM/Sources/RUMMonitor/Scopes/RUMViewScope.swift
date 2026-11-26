@@ -777,15 +777,6 @@ extension RUMViewScope {
                     ? hangEnd.timeIntervalSince(hangStart)
                     : appStateHistory.foregroundDuration(during: hangStart...hangEnd)
             }
-
-            let appHang = DurationEvent(
-                id: errorId,
-                type: .error,
-                start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
-                duration: appHangCommand.hangDuration.dd.toInt64Nanoseconds
-            )
-
-            dependencies.featureScope.send(message: .payload(AppHangMessage(attributes: rumContextAttributes, hang: appHang)))
         }
 
         // Error event attributes
@@ -884,6 +875,24 @@ extension RUMViewScope {
 
         if let event = dependencies.eventBuilder.build(from: errorEvent) {
             writer.write(value: event)
+            if let appHangCommand = command as? RUMAddCurrentViewAppHangCommand, let errorID = event.error.id {
+                let appHang = DurationEvent(
+                    id: errorID,
+                    type: .error,
+                    start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
+                    duration: appHangCommand.hangDuration.dd.toInt64Nanoseconds
+                )
+                dependencies.featureScope.send(message: .payload(AppHangMessage(attributes: rumContextAttributes, hang: appHang)))
+            }
+            if command is RUMAddCurrentViewMemoryWarningCommand, let errorID = event.error.id {
+                let warning = DurationEvent(
+                    id: errorID,
+                    type: .error,
+                    start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
+                    duration: 0
+                )
+                dependencies.featureScope.send(message: .payload(MemoryWarningMessage(attributes: rumContextAttributes, warning: warning)))
+            }
             needsViewUpdate = true
         } else {
             errorsCount -= 1
