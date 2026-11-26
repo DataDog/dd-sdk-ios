@@ -224,6 +224,23 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             }
 
             writer.write(value: AnyEncodable(event))
+
+            if let capture, renewedContext != nil, let expiry = capture.sessionExpiry,
+               rum.sessionID != expiry.sessionID, context.trackingConsent == .granted,
+               event["type"] as? String == "view", (event["session"] as? JSON)?["id"] as? String == rum.sessionID,
+               let id = (event["view"] as? JSON)?["id"] as? String,
+               let offset = webViewContext.serverTimeOffset(forView: id),
+               let key = capture.replayRenewalKey(forBrowserViewID: id) {
+                let renewal = RUMWebViewReplayRenewal(
+                    key: key, context: rum, offset: offset, consentRevision: context.trackingConsentRevision
+                )
+                // Run after the RUM command publishes the new session snapshot.
+                receiver.featureScope.context { current in
+                    if current.trackingConsentRevision == renewal.consentRevision {
+                        core.send(message: .payload(renewal))
+                    }
+                }
+            }
         }
         if let capture, let expiry = capture.sessionExpiry {
             let renewal = RUMWebViewSessionRenewal(expiry: expiry, write: { [weak self, weak core] context, writer, accepted in
