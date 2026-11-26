@@ -149,14 +149,6 @@ internal struct FlagsData: Equatable, Codable {
             || keySpellings.contains(where: { !$0.assignment.dependencyEvaluations.isEmpty })
     }
 
-    var legacyCompatible: FlagsData {
-        var data = self
-        data.flags = flags.filter { $0.value.dependencyEvaluations.isEmpty }
-        data.keySpellings = keySpellings.filter { $0.assignment.dependencyEvaluations.isEmpty }
-        data.flagEvaluationErrors = [:]
-        data.errorKeySpellings = []
-        return data
-    }
 }
 
 extension FlagsData: FlagNumericTokenRoot {

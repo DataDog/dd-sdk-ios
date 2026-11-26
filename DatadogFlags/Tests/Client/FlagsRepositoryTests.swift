@@ -14,18 +14,18 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
-    func testLegacyBridgeIgnoresDependentTracesAndRootErrors() {
+    func testBridgeRetainsDependentTracesAndRootErrorsReceivedFromServer() {
         var root = FlagAssignment.mockAnyBoolean()
-        root.dependencyEvaluations = [.success(flagKey: "missing-parent", isPresentInAssignment: true)]
+        root.dependencyEvaluations = [.success(flagKey: "parent", isPresentInAssignment: true)]
         let repository = FlagsRepository(
             clientName: "legacy-bridge",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
                 completion(.success(.init(
-                    flags: ["root": root, "ordinary": .mockAnyBoolean()],
+                    flags: ["root": root, "parent": .mockAnyBoolean(), "ordinary": .mockAnyBoolean()],
                     flagEvaluationErrors: ["failed": .init(
                         errorCode: "GENERAL",
                         dependencyEvaluations: [
-                            .success(flagKey: "missing-parent", isPresentInAssignment: true)
+                            .success(flagKey: "parent", isPresentInAssignment: true)
                         ]
                     )]
                 )))
@@ -44,17 +44,17 @@ final class FlagsRepositoryTests: XCTestCase {
             return XCTFail("Expected the legacy assignment to install, got \(String(describing: result))")
         }
         let rootSnapshot = repository.evaluationSnapshot(for: "root")
-        XCTAssertNil(rootSnapshot.assignment)
+        XCTAssertNotNil(rootSnapshot.assignment)
         XCTAssertNil(rootSnapshot.evaluationFailure)
-        XCTAssertEqual(rootSnapshot.dependencyEvaluations, [])
+        XCTAssertEqual(rootSnapshot.dependencyEvaluations.count, 1)
         XCTAssertFalse(rootSnapshot.hasInvalidDependencyGraph)
 
         let failedSnapshot = repository.evaluationSnapshot(for: "failed")
         XCTAssertNil(failedSnapshot.assignment)
-        XCTAssertNil(failedSnapshot.evaluationFailure)
-        XCTAssertEqual(failedSnapshot.dependencyEvaluations, [])
+        XCTAssertNotNil(failedSnapshot.evaluationFailure)
+        XCTAssertEqual(failedSnapshot.dependencyEvaluations.count, 1)
         XCTAssertNotNil(repository.flagAssignment(for: "ordinary"))
-        XCTAssertEqual(Set(repository.flagAssignments()?.keys.map { $0 } ?? []), ["ordinary"])
+        XCTAssertEqual(Set(repository.flagAssignments()?.keys.map { $0 } ?? []), ["root", "parent", "ordinary"])
     }
 
     func testResetClearsInvalidContext() {

@@ -182,14 +182,11 @@ internal final class FlagsRepository {
 
         func cachedAssignment(
             for key: String,
-            supportsObfuscation: Bool,
-            supportsDependentFlags: Bool = true
+            supportsObfuscation: Bool
         ) -> LookupResult {
             guard data.obfuscation != nil else {
                 if let assignment = plaintextAssignment(for: key) {
-                    return .resolved(
-                        assignment.dependencyEvaluations.isEmpty == false && !supportsDependentFlags ? nil : assignment
-                    )
+                    return .resolved(assignment)
                 }
                 return data.unparsedFlagKeys.contains { $0.utf8.elementsEqual(key.utf8) } ? .unparsed : .resolved(nil)
             }
@@ -200,9 +197,7 @@ internal final class FlagsRepository {
                 return .missingHash
             }
             if let assignment = data.flags[lookupKey] {
-                return .resolved(
-                    assignment.dependencyEvaluations.isEmpty == false && !supportsDependentFlags ? nil : assignment
-                )
+                return .resolved(assignment)
             }
             return data.unparsedFlagKeys.contains(lookupKey) ? .unparsed : .resolved(nil)
         }
@@ -330,11 +325,10 @@ internal final class FlagsRepository {
             }
         }
         var cachedFlagsData: FlagsData?
-        // Source identity can arrive after the disk cache. Unknown fails closed only for capability-bearing data.
+        // Source identity can arrive after the disk cache. It gates only representations the bridge cannot decode.
         var capabilityIdentity: CapabilityIdentity = .unknown
 
         var supportsFlagKeyObfuscation: Bool { capabilityIdentity == .native }
-        var supportsDependentFlags: Bool { capabilityIdentity == .native }
 
         var readableFlagsData: FlagsData? {
             guard let stored = flagsData, let data = capabilityProjection(of: stored) else {
@@ -358,14 +352,7 @@ internal final class FlagsRepository {
             guard data.obfuscation == nil || supportsFlagKeyObfuscation else {
                 return nil
             }
-            switch capabilityIdentity {
-            case .unknown:
-                return data.containsDependentEvaluations ? nil : data
-            case .native:
-                return data
-            case .bridge:
-                return data.legacyCompatible
-            }
+            return data
         }
         /// Advances on accepted fetches and reset; zero means the initial disk read can still apply.
         var flagsDataVersion: UInt64 = 0
@@ -761,16 +748,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         }
         switch snapshot.activeFlagsData?.cachedAssignment(
             for: key,
-            supportsObfuscation: snapshot.supportsFlagKeyObfuscation,
-            supportsDependentFlags: snapshot.supportsDependentFlags
+            supportsObfuscation: snapshot.supportsFlagKeyObfuscation
         ) {
         case .resolved(let assignment):
-            let evaluationFailure = snapshot.supportsDependentFlags
-                ? snapshot.activeFlagsData?.cachedEvaluationFailure(for: key)
-                : nil
-            let trace = snapshot.supportsDependentFlags
-                ? (assignment?.dependencyEvaluations ?? evaluationFailure?.dependencyEvaluations ?? [])
-                : []
+            let evaluationFailure = snapshot.activeFlagsData?.cachedEvaluationFailure(for: key)
+            let trace = assignment?.dependencyEvaluations ?? evaluationFailure?.dependencyEvaluations ?? []
             if trace.isEmpty {
                 return result(from: snapshot, assignment: assignment, evaluationFailure: evaluationFailure)
             }
@@ -790,15 +772,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             var unparsed = false
             if state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation {
                 (assignment, evaluationFailure) = state.activeFlagsData?.evaluation(for: key) ?? (nil, nil)
-                if !state.supportsDependentFlags {
-                    if assignment?.dependencyEvaluations.isEmpty == false {
-                        assignment = nil
-                    }
-                    evaluationFailure = nil
-                }
-                let trace = state.supportsDependentFlags
-                    ? (assignment?.dependencyEvaluations ?? evaluationFailure?.dependencyEvaluations ?? [])
-                    : []
+                let trace = assignment?.dependencyEvaluations ?? evaluationFailure?.dependencyEvaluations ?? []
                 if !trace.isEmpty {
                     if let resolved = state.activeFlagsData?.resolveDependencies(trace, rootFlagKey: key) {
                         dependencies = resolved
@@ -818,8 +792,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     && evaluationFailure == nil
                     && state.activeFlagsData?.cachedAssignment(
                         for: key,
-                        supportsObfuscation: true,
-                        supportsDependentFlags: state.supportsDependentFlags
+                        supportsObfuscation: true
                     ) == .unparsed
             }
             resolved = result(

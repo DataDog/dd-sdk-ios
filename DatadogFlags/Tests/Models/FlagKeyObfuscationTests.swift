@@ -653,7 +653,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
         }
     }
 
-    func testDelayedSourceFailsClosedForDependentCacheThenProjectsForNativeOrBridge() {
+    func testDelayedSourceRetainsPlaintextDependentCacheForNativeOrBridge() {
         var dependent = FlagAssignment.mockAnyBoolean()
         dependent.dependencyEvaluations = [
             .success(flagKey: "ordinary", isPresentInAssignment: true),
@@ -676,23 +676,17 @@ final class FlagKeyObfuscationTests: XCTestCase {
                 flagSelection: nil
             )
 
-            XCTAssertNil(repository.context, source)
-            XCTAssertNil(repository.flagAssignment(for: "ordinary"), source)
-            XCTAssertNil(repository.flagAssignment(for: "dependent"), source)
-            XCTAssertNil(repository.evaluationSnapshot(for: "failed").evaluationFailure, source)
+            XCTAssertNotNil(repository.context, source)
+            XCTAssertNotNil(repository.flagAssignment(for: "ordinary"), source)
+            XCTAssertNotNil(repository.flagAssignment(for: "dependent"), source)
+            XCTAssertNotNil(repository.evaluationSnapshot(for: "failed").evaluationFailure, source)
 
             scope.completeContext(source: source)
 
             XCTAssertNotNil(repository.flagAssignment(for: "ordinary"), source)
-            if source == "ios" {
-                XCTAssertNotNil(repository.flagAssignment(for: "dependent"))
-                XCTAssertNotNil(repository.evaluationSnapshot(for: "failed").evaluationFailure)
-                XCTAssertEqual(Set(repository.flagAssignments()?.keys.map { $0 } ?? []), ["ordinary", "dependent"])
-            } else {
-                XCTAssertNil(repository.flagAssignment(for: "dependent"))
-                XCTAssertNil(repository.evaluationSnapshot(for: "failed").evaluationFailure)
-                XCTAssertEqual(Set(repository.flagAssignments()?.keys.map { $0 } ?? []), ["ordinary"])
-            }
+            XCTAssertNotNil(repository.flagAssignment(for: "dependent"))
+            XCTAssertNotNil(repository.evaluationSnapshot(for: "failed").evaluationFailure)
+            XCTAssertEqual(Set(repository.flagAssignments()?.keys.map { $0 } ?? []), ["ordinary", "dependent"])
         }
     }
 
