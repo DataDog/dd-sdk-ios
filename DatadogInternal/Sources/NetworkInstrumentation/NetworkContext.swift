@@ -556,6 +556,51 @@ public struct WebViewMessageWithLegacyRUMRegistration {
     }
 }
 
+/// Proof that RUM admitted a browser view to the sampled successor of its captured native session.
+@_spi(Internal)
+public struct RUMWebViewReplayRenewal {
+    public struct Key: Hashable {
+        public let owner: RUMContextHandoff.Owner
+        private let sceneID: String
+        private let predecessor: String
+        private let slotID: String
+        private let browserViewID: String
+
+        fileprivate init(owner: RUMContextHandoff.Owner, sceneID: String, predecessor: String, slotID: String, browserViewID: String) {
+            self.owner = owner
+            self.sceneID = sceneID
+            self.predecessor = predecessor
+            self.slotID = slotID
+            self.browserViewID = browserViewID
+        }
+
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.owner === rhs.owner && lhs.sceneID == rhs.sceneID && lhs.predecessor == rhs.predecessor
+                && lhs.slotID == rhs.slotID && lhs.browserViewID == rhs.browserViewID
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(ObjectIdentifier(owner))
+            hasher.combine(sceneID)
+            hasher.combine(predecessor)
+            hasher.combine(slotID)
+            hasher.combine(browserViewID)
+        }
+    }
+
+    public let key: Key
+    public let context: RUMCoreContext
+    public let offset: TimeInterval
+    public let consentRevision: UInt64
+
+    public init(key: Key, context: RUMCoreContext, offset: TimeInterval, consentRevision: UInt64) {
+        self.key = key
+        self.context = context
+        self.offset = offset
+        self.consentRevision = consentRevision
+    }
+}
+
 /// Carries native ownership with a Browser message across asynchronous queues.
 @_spi(Internal)
 public struct WebViewMessageWithRUMContext {
@@ -563,10 +608,25 @@ public struct WebViewMessageWithRUMContext {
     public let capture: RUMContextHandoff.Capture
     public let sessionExpiry: RUMWebViewSessionExpiry?
 
-    public init(message: WebViewMessage, capture: RUMContextHandoff.Capture, sessionExpiry: RUMWebViewSessionExpiry? = nil) {
+    private let slotID: String?
+
+    public init(
+        message: WebViewMessage,
+        capture: RUMContextHandoff.Capture,
+        sessionExpiry: RUMWebViewSessionExpiry? = nil,
+        slotID: String? = nil
+    ) {
         self.message = message
         self.capture = capture
         self.sessionExpiry = sessionExpiry
+        self.slotID = slotID
+    }
+
+    public func replayRenewalKey(forBrowserViewID viewID: String) -> RUMWebViewReplayRenewal.Key? {
+        guard let expiry = sessionExpiry, let sceneID = capture.value.sceneIdentifier, let slotID else {
+            return nil
+        }
+        return .init(owner: capture.owner, sceneID: sceneID, predecessor: expiry.sessionID, slotID: slotID, browserViewID: viewID)
     }
 
     /// Resolves only its original owner and a native session that is still alive at delivery.
