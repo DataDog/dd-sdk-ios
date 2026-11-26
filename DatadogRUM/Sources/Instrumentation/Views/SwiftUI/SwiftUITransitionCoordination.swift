@@ -967,6 +967,10 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
     }
 
     private let notificationCenter: NotificationCenter
+    #if DD_SDK_COMPILED_FOR_TESTING
+    @MainActor static var coordinatorProviderOverride: CoordinatorProvider?
+    #endif
+
     private let coordinatorProvider: CoordinatorProvider
     private let admitsCallbacks: @MainActor () -> Bool
     private var disconnectObserver: NSObjectProtocol?
@@ -977,7 +981,12 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
     convenience init(notificationCenter: NotificationCenter, admitsCallbacks: @escaping @MainActor () -> Bool) {
         let provider = RUMSwiftUITransitionCoordinatorProvider()
         self.init(notificationCenter: notificationCenter, admitsCallbacks: admitsCallbacks) { sceneIdentifier, observers in
-            provider.coordinator(for: sceneIdentifier, observers: observers)
+            #if DD_SDK_COMPILED_FOR_TESTING
+            if let override = Self.coordinatorProviderOverride {
+                return override(sceneIdentifier, observers)
+            }
+            #endif
+            return provider.coordinator(for: sceneIdentifier, observers: observers)
         }
     }
 

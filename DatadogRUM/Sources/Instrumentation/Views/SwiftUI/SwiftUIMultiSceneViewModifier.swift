@@ -170,11 +170,16 @@ private final class RUMOrdinaryDisappearanceOwner {
     }
 
     func wasReplaced(in state: RUMViewTrackingState) -> Bool {
-        guard !isAmbiguous, let scene, let activeScene = state.sceneIdentifier,
-              let origin = occurrenceGeneration, let current = state.activeLifecycleGeneration else {
+        guard !isAmbiguous, let scene, let activeScene = state.sceneIdentifier else {
             return false
         }
-        return origin != current || scene != activeScene
+        if scene != activeScene {
+            return true
+        }
+        guard let origin = occurrenceGeneration, let current = state.activeLifecycleGeneration else {
+            return false
+        }
+        return origin != current
     }
 
     var hasDetachedReader: Bool {
@@ -201,6 +206,19 @@ private final class RUMOrdinaryDisappearanceOwner {
         }
     }
 }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+extension RUMSwiftUIViewCallbackAdmission {
+    static func testUnrecordedOrdinaryOwnership(
+        for reader: RUMSceneIdentifierReader.ObserverView,
+        state: RUMViewTrackingState
+    ) -> () -> Bool {
+        let owner = RUMOrdinaryDisappearanceOwner()
+        owner.register(reader)
+        return { owner.hasDetachedReader && owner.wasReplaced(in: state) }
+    }
+}
+#endif
 
 @available(iOS 17.0, *)
 @MainActor
@@ -230,6 +248,9 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 }
             }
         }
+        let onOrdinaryAppear: () -> Void = {
+            requestOrdinaryAppearance(ownedBy: disappearanceOwner)
+        }
         let onDisappear: () -> Void = {
             disappear(ownedBy: disappearanceOwner)
         }
@@ -244,7 +265,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         let onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
         if startsOnInitialMount {
             onMount = { sceneIdentifier in
-                mount(in: sceneIdentifier)
+                mount(in: sceneIdentifier, ownedBy: disappearanceOwner)
                 rememberDisappearanceOwner()
             }
         } else {
@@ -261,7 +282,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         }
         let onDidDetach: (@MainActor () -> Void)?
         if navigationOccurrenceSource == nil {
-            onDidDetach = reconcileSurvivingOrdinaryReader
+            onDidDetach = { reconcileSurvivingOrdinaryReader(ownedBy: disappearanceOwner) }
         } else {
             onDidDetach = nil
         }
@@ -277,7 +298,11 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                         rememberDisappearanceOwner()
                         #if DD_SDK_COMPILED_FOR_TESTING
                         if disappearanceOwner != nil, observer.currentSceneIdentifier != nil {
-                            RUMSwiftUIViewCallbackAdmission.ordinaryDisappearanceObserver?(observer, admission.disappearanceCallback(perform: onDisappear))
+                            RUMSwiftUIViewCallbackAdmission.ordinaryLifecycleObserver?(
+                                observer,
+                                onOrdinaryAppear,
+                                admission.disappearanceCallback(perform: onDisappear)
+                            )
                         }
                         #endif
                     },
@@ -296,7 +321,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                         } ?? false
                     },
                     onChange: { attachment in
-                        readerAttachmentChanged(attachment)
+                        readerAttachmentChanged(attachment, ownedBy: disappearanceOwner)
                     }
                 )
             )
@@ -307,7 +332,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     }
                     update(attachment: attachment)
                 } else if let scene = mountedOrdinaryScene {
-                    update(attachment: .attached(scene))
+                    update(attachment: .attached(scene), ownedBy: disappearanceOwner)
                 }
                 // SwiftUI defines the initial callback as part of this view's
                 // appearance. Enqueue once from this supported signal so the
@@ -318,8 +343,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     if !session.didReceiveInitialSceneIdentifier {
                         session.didReceiveInitialSceneIdentifier = true
                         if navigationOccurrenceSource == nil {
-                            requestOrdinaryAppearance()
-                            rememberDisappearanceOwner()
+                            onOrdinaryAppear()
                         } else {
                             appear()
                         }
@@ -328,8 +352,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             }
             .onAppear {
                 if navigationOccurrenceSource == nil {
-                    requestOrdinaryAppearance()
-                    rememberDisappearanceOwner()
+                    onOrdinaryAppear()
                 } else {
                     guard let attachment = attachment(for: sceneIdentifier) else {
                         return
@@ -421,7 +444,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         }
     }
 
-    private func mount(in sceneIdentifier: RUMSceneIdentifier) {
+    private func mount(in sceneIdentifier: RUMSceneIdentifier, ownedBy owner: RUMOrdinaryDisappearanceOwner?) {
         _ = admission.withSession { session in
             let trackingState = session.trackingState
             if navigationOccurrenceSource == nil {
@@ -434,7 +457,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 }
                 session.shouldReconcileSurvivingOrdinaryReader = false
                 if session.hasPendingOrdinaryAppearance {
-                    requestOrdinaryAppearance()
+                    requestOrdinaryAppearance(ownedBy: owner)
                     return
                 }
             }
@@ -517,11 +540,11 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             }
             #if os(iOS)
             if let transitionArbiter {
-                transitionArbiter.process(.mount(sceneIdentifier), state: trackingState, send: apply)
+                transitionArbiter.process(.mount(sceneIdentifier), state: trackingState, send: ordinaryPublisher(ownedBy: owner))
                 return
             }
             #endif
-            apply(trackingState.mountFromReader(in: sceneIdentifier))
+            ordinaryPublisher(ownedBy: owner)(trackingState.mountFromReader(in: sceneIdentifier))
         }
     }
 
@@ -606,7 +629,8 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
 
     private func update(
         attachment: RUMViewTrackingState.Attachment,
-        allowsDormantBoundaryPromotion: Bool = false
+        allowsDormantBoundaryPromotion: Bool = false,
+        ownedBy owner: RUMOrdinaryDisappearanceOwner? = nil
     ) {
         _ = admission.withSession { session in
             let trackingState = session.trackingState
@@ -688,11 +712,11 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             }
             #if os(iOS)
             if let transitionArbiter {
-                transitionArbiter.process(.update(attachment), state: trackingState, send: apply)
+                transitionArbiter.process(.update(attachment), state: trackingState, send: ordinaryPublisher(ownedBy: owner))
                 return
             }
             #endif
-            apply(trackingState.update(attachment: attachment))
+            ordinaryPublisher(ownedBy: owner)(trackingState.update(attachment: attachment))
         }
     }
 
@@ -702,17 +726,20 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         } ?? nil
     }
 
-    private func readerAttachmentChanged(_ attachment: RUMViewTrackingState.Attachment) {
+    private func readerAttachmentChanged(
+        _ attachment: RUMViewTrackingState.Attachment,
+        ownedBy owner: RUMOrdinaryDisappearanceOwner?
+    ) {
         if navigationOccurrenceSource == nil, case .attached(let sceneIdentifier) = attachment {
             guard let sceneIdentifier, sceneIdentifier == mountedOrdinaryScene else {
                 return
             }
         }
-        update(attachment: attachment)
+        update(attachment: attachment, ownedBy: owner)
         rebindNavigationOccurrenceSource(attachment: attachment)
     }
 
-    private func reconcileSurvivingOrdinaryReader() {
+    private func reconcileSurvivingOrdinaryReader(ownedBy owner: RUMOrdinaryDisappearanceOwner?) {
         _ = admission.withSession { session in
             let state = session.trackingState
             let restoresAppearance = state.needsReaderRemount && state.appearanceForReaderMount == true
@@ -723,11 +750,11 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             }
             // UIKit has removed the old window reference. The reader that
             // already reported its attachment can now prove sole scene ownership.
-            mount(in: scene)
+            mount(in: scene, ownedBy: owner)
         }
     }
 
-    private func requestOrdinaryAppearance() {
+    private func requestOrdinaryAppearance(ownedBy owner: RUMOrdinaryDisappearanceOwner?) {
         _ = admission.withSession { session in
             let state = session.trackingState
             guard let transitionArbiter,
@@ -736,15 +763,33 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 return
             }
             session.hasPendingOrdinaryAppearance = false
+            let publish = ordinaryPublisher(ownedBy: owner)
             // A live reader can recover the state after its previous scene disconnects.
             if state.needsReaderRemount {
-                transitionArbiter.process(.mount(sceneIdentifier), state: state, send: apply)
+                transitionArbiter.process(.mount(sceneIdentifier), state: state, send: publish)
             }
             transitionArbiter.process(
                 .reconcile(configuration: nil, attachment: .attached(sceneIdentifier), isAppeared: true),
                 state: state,
-                send: apply
+                send: publish
             )
+        }
+    }
+
+    private func ordinaryPublisher(
+        ownedBy owner: RUMOrdinaryDisappearanceOwner?
+    ) -> @MainActor ([RUMViewTrackingState.Transition]) -> Void {
+        guard let owner else {
+            return apply
+        }
+        return { transitions in
+            // The arbiter calls this after committing the state, even if the appearance was deferred.
+            if !transitions.isEmpty {
+                _ = admission.withSession { session in
+                    owner.rememberActiveOccurrence(session.trackingState)
+                }
+            }
+            apply(transitions)
         }
     }
 
