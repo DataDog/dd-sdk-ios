@@ -360,7 +360,9 @@ def resolve_update_ref(args):
         lines = subprocess.run(['git', 'ls-remote', REPOSITORY, ref], check=True, capture_output=True,
                                text=True, timeout=180).stdout.splitlines()
         refs = dict(reversed(line.split('\t', 1)) for line in lines if '\t' in line)
-        sha = next((refs[name] for name in (f'refs/heads/{ref}', f'refs/tags/{ref}^{{}}', f'refs/tags/{ref}')
+        # An exact name such as `HEAD` or `refs/heads/main` comes first, then the branch and tag forms.
+        sha = next((refs[name] for name in (f'{ref}^{{}}', ref, f'refs/heads/{ref}',
+                                          f'refs/tags/{ref}^{{}}', f'refs/tags/{ref}')
                     if name in refs), None)
         if sha is None:
             raise SystemExit(f'Could not resolve {ref} in {REPOSITORY}')

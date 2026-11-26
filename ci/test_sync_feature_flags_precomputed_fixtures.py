@@ -172,6 +172,16 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(changes, [])
         self.assertEqual([s['commit'] for s in sources], [self.pin, self.pin])
 
+    def test_update_resolves_exact_remote_refs(self):
+        original = sync.REPOSITORY
+        sync.REPOSITORY = str(self.repository)
+        try:
+            for ref in ['main', 'refs/heads/main', 'HEAD']:
+                args = sync.resolve_update_ref(SimpleNamespace(ref=ref, source=None))
+                self.assertEqual(args.ref, self.pin, ref)
+        finally:
+            sync.REPOSITORY = original
+
     def test_changed_source_specification_imports_again(self):
         consumer = self.consumer
         spec = source(commit=self.pin)
