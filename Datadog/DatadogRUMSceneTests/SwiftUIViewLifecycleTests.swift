@@ -885,12 +885,25 @@ extension SwiftUINavigationOwnershipTests {
         try await exerciseOrdinaryReaderOverlap(savedAppearance: false, deliverOldDisappearance: true)
     }
 
+    @MainActor
+    func testOrdinaryTrackedView_lateDisappearanceCannotStopTemporarilyDetachedReplacement() async throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Owned SwiftUI tracking requires iOS 27")
+        }
+        try await exerciseOrdinaryReaderOverlap(
+            savedAppearance: false,
+            deliverOldDisappearance: true,
+            temporarilyDetachReplacement: true
+        )
+    }
+
     @available(iOS 27.0, *)
     @MainActor
     private func exerciseOrdinaryReaderOverlap(
         savedAppearance: Bool,
         disconnectWithoutDetach: Bool = false,
-        deliverOldDisappearance: Bool = false
+        deliverOldDisappearance: Bool = false,
+        temporarilyDetachReplacement: Bool = false
     ) async throws {
         let fixture = try SemanticHostWindow()
         let core = makeSemanticCore()
@@ -1005,6 +1018,13 @@ extension SwiftUINavigationOwnershipTests {
         guard let returnedView = recovered?.viewID else { return }
         XCTAssertNotEqual(returnedView, originalView)
         XCTAssertTrue(rows.views.contains { $0.view.id == returnedView && $0.view.isActive == true })
+        if temporarilyDetachReplacement {
+            replacement.removeFromSuperview()
+            XCTAssertNil(replacement.window)
+            XCTAssertNil(arbiter.mountedSceneIdentifier(for: state))
+            core.flush()
+            XCTAssertEqual(feature.monitor.rumContextSnapshot(for: .scene(peerID))?.viewID, returnedView)
+        }
         if deliverOldDisappearance {
             let callback = try XCTUnwrap(oldDisappearance)
             callback()
@@ -1014,6 +1034,13 @@ extension SwiftUINavigationOwnershipTests {
                 returnedView,
                 "The old reader's disappearance cannot stop the replacement"
             )
+        }
+        if temporarilyDetachReplacement {
+            peerWindow.addSubview(replacement)
+            core.flush()
+            XCTAssertTrue(replacement.window === peerWindow)
+            XCTAssertEqual(feature.monitor.rumContextSnapshot(for: .scene(peerID))?.viewID, returnedView)
+            XCTAssertFalse(rows.views.contains { $0.view.id == returnedView && $0.view.isActive == false })
         }
     }
 
