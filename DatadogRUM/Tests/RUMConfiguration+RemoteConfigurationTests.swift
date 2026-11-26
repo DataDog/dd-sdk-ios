@@ -54,6 +54,9 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             // config / action predicate: enabling keeps whatever is set, disabling clears it. Either
             // way, `presence == remote flag`.
             XCTAssertEqual(configuration.urlSessionTracking != nil, try XCTUnwrap(rum.trackResources))
+            if rum.trackResources == true {
+                XCTAssertEqual(configuration.urlSessionTracking?.disallowList, rum.disallowList)
+            }
             #if !os(watchOS)
             #if os(macOS)
             XCTAssertEqual(configuration.macOSActionsPredicate != nil, try XCTUnwrap(rum.trackUserInteractions))
@@ -71,6 +74,7 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
     func testWhenRemoteEnablesAlreadyConfiguredTracking_itPreservesInCodeValues() {
         // Given
         let customHost = "custom.example.com"
+        let customPattern = "https://custom.example.com/health"
         #if os(macOS)
         let predicate = MacOSRUMActionsPredicateMock()
         #elseif !os(watchOS)
@@ -78,7 +82,7 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         #endif
 
         var configuration: RUM.Configuration = .mockWith { configuration in
-            configuration.urlSessionTracking = .init(firstPartyHostsTracing: .trace(hosts: [customHost]))
+            configuration.urlSessionTracking = .init(firstPartyHostsTracing: .trace(hosts: [customHost]), disallowList: [customPattern])
             #if os(macOS)
             configuration.macOSActionsPredicate = predicate
             #elseif !os(watchOS)
@@ -94,6 +98,7 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             return XCTFail("Expected in-code first-party hosts tracing to be preserved")
         }
         XCTAssertEqual(hosts, [customHost])
+        XCTAssertEqual(configuration.urlSessionTracking?.disallowList, [customPattern])
         #if os(macOS)
         XCTAssertIdentical(configuration.macOSActionsPredicate as AnyObject, predicate)
         #elseif !os(watchOS)
@@ -240,6 +245,47 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         )
 
         XCTAssertNil(configuration.urlSessionTracking)
+    }
+
+    // MARK: - Disallow list
+
+    /// A remote `disallowList` replaces the in-code one rather than merging with it, and an explicit
+    /// empty list clears it.
+    func testWhenRemoteProvidesDisallowList_itReplacesInCodeDisallowList() {
+        var configuration: RUM.Configuration = .mockWith {
+            $0.urlSessionTracking = .init(disallowList: ["https://in-code.example.com/*"])
+        }
+
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(disallowList: ["https://remote.example.com/*"])))
+        XCTAssertEqual(configuration.urlSessionTracking?.disallowList, ["https://remote.example.com/*"])
+
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(disallowList: [])))
+        XCTAssertEqual(configuration.urlSessionTracking?.disallowList, [])
+    }
+
+    /// A remote `disallowList` has nothing to filter without network instrumentation, so it must not
+    /// enable resource tracking on its own.
+    func testWhenRemoteDisallowListIsProvidedWithoutNetworkInstrumentation_itLeavesConfigurationUnchanged() {
+        var configuration: RUM.Configuration = .mockWith { $0.urlSessionTracking = nil }
+
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(disallowList: ["https://remote.example.com/*"])))
+
+        XCTAssertNil(configuration.urlSessionTracking)
+    }
+
+    /// When network instrumentation is enabled by the `trace` namespace (applied after `rum`), the
+    /// remote `disallowList` must still apply to it.
+    func testWhenRemoteTraceEnablesNetworkInstrumentation_itAppliesRemoteDisallowList() {
+        var configuration: RUM.Configuration = .mockWith { $0.urlSessionTracking = nil }
+
+        configuration.apply(
+            remoteConfiguration: .mockWith(
+                rum: .mockWith(disallowList: ["https://remote.example.com/*"]),
+                trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [.datadog])])
+            )
+        )
+
+        XCTAssertEqual(configuration.urlSessionTracking?.disallowList, ["https://remote.example.com/*"])
     }
 
     /// An explicit `appHang.enabled == false` clears the in-code `appHangThreshold`, disabling app-hang

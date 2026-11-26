@@ -19,7 +19,8 @@ extension RUM.Configuration {
     ///
     /// The two namespaces interact through RUM's URLSession instrumentation, which carries both
     /// resource collection and trace propagation: an explicit `rum.trackResources == false` disables
-    /// that instrumentation, so it also suppresses `trace`, regardless of the hosts it declares.
+    /// that instrumentation, so it also suppresses `trace`, regardless of the hosts it declares. The
+    /// `rum.disallowList` is applied last, so it also covers instrumentation enabled by `trace`.
     ///
     /// The merge happens once, at `RUM.enable(with:)` time; live updates after initialization are out
     /// of scope.
@@ -31,6 +32,21 @@ extension RUM.Configuration {
 
         if remoteConfiguration?.rum?.trackResources != false {
             apply(trace: remoteConfiguration?.trace)
+        }
+
+        apply(disallowList: remoteConfiguration?.rum?.disallowList)
+    }
+
+    /// Applies the remote `rum.disallowList` to RUM's URLSession instrumentation.
+    ///
+    /// A present list replaces the in-code one (an empty list clears it), while an omitted list keeps
+    /// the in-code value. Without URLSession instrumentation there is nothing to filter, so the list
+    /// never enables resource tracking on its own.
+    ///
+    /// - Parameter disallowList: The remote disallow list, or `nil` when omitted.
+    private mutating func apply(disallowList: [String]?) {
+        if let disallowList {
+            urlSessionTracking?.disallowList = disallowList
         }
     }
 

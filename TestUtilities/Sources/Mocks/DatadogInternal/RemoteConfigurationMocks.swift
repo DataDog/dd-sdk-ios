@@ -76,6 +76,7 @@ extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
         .init(
             appHang: .mockRandom(),
             applicationId: .mockRandom(),
+            disallowList: .mockRandom(count: .mockRandom(min: 1, max: 5)),
             longTask: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100),
             trackAnonymousUser: .mockRandom(),
@@ -93,6 +94,7 @@ extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
     public static func mockWith(
         appHang: RemoteConfiguration.RUM.AppHang? = nil,
         applicationId: String = .mockAny(),
+        disallowList: [String]? = nil,
         longTask: RemoteConfiguration.RUM.LongTask? = nil,
         telemetrySampleRate: Double? = nil,
         trackAnonymousUser: Bool? = nil,
@@ -108,6 +110,7 @@ extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
         .init(
             appHang: appHang,
             applicationId: applicationId,
+            disallowList: disallowList,
             longTask: longTask,
             telemetrySampleRate: telemetrySampleRate,
             trackAnonymousUser: trackAnonymousUser,

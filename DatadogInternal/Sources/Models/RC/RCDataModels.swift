@@ -76,6 +76,9 @@ public struct RemoteConfiguration: Codable {
         /// UUID of the RUM application
         public let applicationId: String
 
+        /// URL patterns excluded from automatic RUM resource tracking. Each '*' matches any sequence of characters
+        public let disallowList: [String]?
+
         public let longTask: LongTask?
 
         public let telemetrySampleRate: Double?
@@ -101,6 +104,7 @@ public struct RemoteConfiguration: Codable {
         public enum CodingKeys: String, CodingKey {
             case appHang = "appHang"
             case applicationId = "applicationId"
+            case disallowList = "disallowList"
             case longTask = "longTask"
             case telemetrySampleRate = "telemetrySampleRate"
             case trackAnonymousUser = "trackAnonymousUser"
@@ -118,6 +122,7 @@ public struct RemoteConfiguration: Codable {
         /// - Parameters:
         ///   - appHang:
         ///   - applicationId: UUID of the RUM application
+        ///   - disallowList: URL patterns excluded from automatic RUM resource tracking. Each '*' matches any sequence of characters
         ///   - longTask:
         ///   - telemetrySampleRate:
         ///   - trackAnonymousUser:
@@ -132,6 +137,7 @@ public struct RemoteConfiguration: Codable {
         public init(
             appHang: AppHang? = nil,
             applicationId: String,
+            disallowList: [String]? = nil,
             longTask: LongTask? = nil,
             telemetrySampleRate: Double? = nil,
             trackAnonymousUser: Bool? = nil,
@@ -146,6 +152,7 @@ public struct RemoteConfiguration: Codable {
         ) {
             self.appHang = appHang
             self.applicationId = applicationId
+            self.disallowList = disallowList
             self.longTask = longTask
             self.telemetrySampleRate = telemetrySampleRate
             self.trackAnonymousUser = trackAnonymousUser
@@ -333,4 +340,4 @@ public struct RemoteConfiguration: Codable {
     }
 }
 
-// Generated from https://github.com/ddoghq/dd-source/blob/cc93aada0854d04913ae6551702185fd05cf4a95/domains/remote-config/shared/libs/config-validator/schemas/RUM_SDK_CONFIG/ios.json
+// Generated from https://github.com/ddoghq/dd-source/blob/abe11637286cc9b667e27aa1c6c4a4c1c950e21a/domains/remote-config/shared/libs/config-validator/schemas/RUM_SDK_CONFIG/ios.json
