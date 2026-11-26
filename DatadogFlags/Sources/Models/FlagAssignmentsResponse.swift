@@ -11,12 +11,17 @@ internal struct FlagAssignmentsResponse: Equatable {
     /// Assignments whose keys are canonically equivalent to, but not byte-equal to, a key in `flags`.
     var keySpellings: [FlagKeySpelling] = []
     private(set) var failedFlags: [String: String] // key -> error description
+    /// Failed keys that are canonically equivalent to, but not byte-equal to, a key in `failedFlags`.
+    private(set) var failedKeySpellings: [String] = []
     let obfuscation: FlagKeyObfuscation?
     let experimentationOptOut: Bool?
     let hasMalformedOptOutMetadata: Bool
     let experimentationOptOutMode: String?
     let experimentationOptOutAt: String?
     let observeFullEvaluationData: Bool
+
+    /// Every served key whose assignment cannot be parsed, one entry for each spelling.
+    var unparsedFlagKeys: [String] { Array(failedFlags.keys) + failedKeySpellings }
 
     init(
         flags: [String: FlagAssignment],
@@ -177,9 +182,7 @@ extension FlagAssignmentsResponse {
                     continue
                 }
                 if case .unknown(let typeName) = assignment.variation {
-                    if response.failedFlags[member.key] == nil {
-                        response.failedFlags[member.key] = "Unrecognized variation type \(typeName)"
-                    }
+                    response.fail(member.key, "Unrecognized variation type \(typeName)")
                     continue
                 }
                 assignment.observeFullEvaluationData = observeFullEvaluationData
@@ -187,6 +190,18 @@ extension FlagAssignmentsResponse {
             }
         }
         return response
+    }
+
+    /// Records a failure under the exact bytes of `key`. A later duplicate of the same bytes keeps the first one.
+    private mutating func fail(_ key: String, _ description: String) {
+        guard let index = failedFlags.index(forKey: key) else {
+            failedFlags[key] = description
+            return
+        }
+        if !failedFlags[index].key.utf8.elementsEqual(key.utf8),
+           !failedKeySpellings.contains(where: { $0.utf8.elementsEqual(key.utf8) }) {
+            failedKeySpellings.append(key)
+        }
     }
 
     /// Stores `assignment` under the exact bytes of `key`. A later duplicate of the same bytes replaces it.

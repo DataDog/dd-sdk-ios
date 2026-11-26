@@ -146,7 +146,17 @@ extension FlagAssignment: Codable {
                 // example `9007199254740993.5`.
                 self.variation = .integer(number)
             } else {
-                self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
+                do {
+                    self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
+                } catch {
+                    // A canonically equivalent key can hide this member's token, and `JSONDecoder` rejects a number
+                    // such as `1e400`. `addingKeySpellings(from:)` decodes the member again from its own bytes.
+                    // `JSONDecoder` reports that rejection with an internal error type, so only type errors rethrow.
+                    guard FlagsNumericJSON.hasTokens(decoder), !FlagsNumericJSON.isTypeError(error) else {
+                        throw error
+                    }
+                    self.variation = .unknown(variationType)
+                }
             }
         case "object":
             self.variation = try .object(container.decode(AnyValue.self, forKey: .variationValue))
@@ -319,6 +329,22 @@ internal enum FlagsNumericJSON {
             return nil
         }
         return literal
+    }
+
+    /// True when `decode` scanned the original number tokens, that is, for a network response.
+    static func hasTokens(_ decoder: Decoder) -> Bool {
+        guard let tokensKey else {
+            return false
+        }
+        return decoder.userInfo[tokensKey] is FlagNumericTokenTree
+    }
+
+    /// True for an error that a value of the wrong JSON type causes, for example a string for a number.
+    static func isTypeError(_ error: Error) -> Bool {
+        switch error as? DecodingError {
+        case .typeMismatch, .valueNotFound, .keyNotFound: return true
+        default: return false
+        }
     }
 
     static func isCache(_ decoder: Decoder) -> Bool {

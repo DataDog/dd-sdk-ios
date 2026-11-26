@@ -812,7 +812,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     experimentationOptOutPolicy: policy,
                     observeFullEvaluationData: response.observeFullEvaluationData,
                     keySpellings: response.keySpellings,
-                    unparsedFlagKeys: Array(response.failedFlags.keys)
+                    unparsedFlagKeys: response.unparsedFlagKeys
                 )
                 var versionAfterSuccess: UInt64?
                 var isServingRequestedContext = false

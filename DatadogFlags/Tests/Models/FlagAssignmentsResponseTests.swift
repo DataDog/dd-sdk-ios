@@ -704,6 +704,39 @@ extension FlagAssignmentsResponseTests {
         }
     }
 
+    /// Decodes each assignment under a flag key that the token tree does not hold. Some `JSONDecoder` versions
+    /// decode every member of two canonically equivalent keys, while the tree keeps one of them.
+    private struct HiddenTokenResponse: FlagNumericTokenRoot {
+        static var flagAssignmentsPath: [String] { ["flags"] }
+
+        var flags: [String: FlagAssignment] = [:]
+
+        init(from decoder: Decoder) throws {
+            let flagsContainer = try decoder.container(keyedBy: ShortCodingPathResponse.Key.self)
+                .nestedContainer(keyedBy: ShortCodingPathResponse.Key.self, forKey: .init(stringValue: "flags"))
+            for key in flagsContainer.allKeys {
+                let hidden = ShortCodingPathDecoder(
+                    base: try flagsContainer.superDecoder(forKey: key),
+                    codingPath: [ShortCodingPathResponse.Key(stringValue: "hidden-\(key.stringValue)")]
+                )
+                flags[key.stringValue] = try FlagAssignment(from: hidden)
+            }
+        }
+    }
+
+    /// Breaks if a number without its token reaches `JSONDecoder`, which rejects the whole response for `1e400`.
+    func testNumberWithoutItsTokenDoesNotRejectTheResponse() throws {
+        for literal in ["1e400", "-1e400"] {
+            let json = #"{"flags":{"flag":{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}}}"#
+            let response = try FlagsNumericJSON.decode(HiddenTokenResponse.self, from: Data(json.utf8))
+            let assignment = try XCTUnwrap(response.flags["flag"], literal)
+            XCTAssertEqual(assignment.variation, .unknown("number"), literal)
+        }
+        let json = #"{"flags":{"flag":{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":2.5,"reason":"STATIC","doLog":false}}}"#
+        let response = try FlagsNumericJSON.decode(HiddenTokenResponse.self, from: Data(json.utf8))
+        XCTAssertEqual(response.flags["flag"]?.variation(as: Double.self), 2.5)
+    }
+
     func testMalformedNumberTokensRejectTheResponse() {
         for literal in ["1e+", "1e", "1.", "1.e5", "-", "01", "-01", "1-2", "1e+-2", "0x10"] {
             let json = #"{"data":{"attributes":{"flags":{"flag":{"allocationKey":"a","variationKey":"v","variationType":"number","variationValue":\#(literal),"reason":"STATIC","doLog":false}}}}}"#
@@ -854,18 +887,60 @@ final class FlagKeySpellingsTests: XCTestCase {
         XCTAssertEqual(Set(keys.wrappedValue), [Array(composed.utf8), Array(decomposed.utf8)])
     }
 
+    /// Breaks if a failed spelling is dropped because a canonically equivalent spelling also failed.
+    func testEveryFailedSpellingReportsAParseErrorOnlineAndFromTheCache() throws {
+        let unknown = { (variant: String) in
+            #"{"allocationKey":"a","variationKey":"\#(variant)","variationType":"future-type","variationValue":1,"reason":"STATIC","doLog":true}"#
+        }
+        let other = #"{"allocationKey":"a","variationKey":"on","variationType":"boolean","variationValue":true,"reason":"STATIC","doLog":true}"#
+        let body = #"{"data":{"attributes":{"flags":{"caf\#u{00E9}":\#(unknown("composed")),"cafe\#u{0301}":\#(unknown("decomposed")),"other":\#(other)}}}}"#
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let clientName = UUID().uuidString
+        let context = FlagsEvaluationContext(targetingKey: "subject")
+
+        let online = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                flagSelection: nil,
+                featureScope: scope,
+                fetch: { _, complete in complete(.success((Data(body.utf8), .mockAny()))) }
+            ),
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        let loaded = expectation(description: "online configuration loaded")
+        online.setEvaluationContext(context) { _ in loaded.fulfill() }
+        wait(for: [loaded], timeout: 2)
+        online.flush()
+
+        let offline = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, complete in
+                complete(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: scope,
+            flagSelection: nil,
+            initializationTimeout: nil
+        )
+        let failed = expectation(description: "offline refresh finished")
+        offline.setEvaluationContext(context) { _ in failed.fulfill() }
+        wait(for: [failed], timeout: 5)
+
+        for (repository, pass) in [(online, "online"), (offline, "cached")] {
+            for key in [composed, decomposed] {
+                XCTAssertEqual(repository.evaluationSnapshot(for: key).error, .parseError, "\(pass) \(Array(key.utf8))")
+            }
+            XCTAssertEqual(repository.flagAssignment(for: "other")?.variationKey, "on", pass)
+        }
+    }
+
     /// Breaks if an assignment that collides with another spelling can reject the whole response.
     func testCollidingSpellingWithAnOverflowingNumberKeepsTheOtherFlags() throws {
-        // Foundation in Xcode 26 rejects the whole document: "Number 1e400 is not representable in Swift".
-        // Later Foundation versions decode it, and this test checks that the other flags stay.
-        func decode(_ data: Data) throws -> FlagAssignmentsResponse {
-            do {
-                return try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
-            } catch DecodingError.dataCorrupted(let context)
-                where String(describing: context.underlyingError).contains("is not representable") {
-                throw XCTSkip("This Foundation rejects a JSON document with an out-of-range number")
-            }
-        }
         let boolean = #"{"allocationKey":"a","variationKey":"on","variationType":"boolean","variationValue":true,"reason":"STATIC","doLog":true}"#
         let overflow = #"{"allocationKey":"a","variationKey":"big","variationType":"number","variationValue":1e400,"reason":"STATIC","doLog":true}"#
         let other = #"{"allocationKey":"a","variationKey":"other","variationType":"string","variationValue":"x","reason":"STATIC","doLog":true}"#
@@ -879,7 +954,7 @@ final class FlagKeySpellingsTests: XCTestCase {
                 let secondKey = spelled.first { $0.0.utf8.elementsEqual(keys[1].utf8) }!.1[second]
                 let body = #"{"data":{"attributes":{"flags":{"\#(firstKey)":\#(values[0]),"\#(secondKey)":\#(values[1]),"other":\#(other)}}}}"#
                 let data = Data(body.utf8)
-                let response = try decode(data)
+                let response = try FlagsNumericJSON.decode(FlagAssignmentsResponse.self, from: data).addingKeySpellings(from: data)
                 let served = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
                 let booleanKey = values[0] == boolean ? keys[0] : keys[1]
                 let numberKey = values[0] == boolean ? keys[1] : keys[0]
