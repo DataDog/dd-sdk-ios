@@ -173,6 +173,8 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual([s['commit'] for s in sources], [self.pin, self.pin])
 
     def test_update_resolves_exact_remote_refs(self):
+        # `git init` names the first branch from the local config, so create `main` explicitly.
+        subprocess.run(['git', '-C', str(self.repository), 'update-ref', 'refs/heads/main', 'HEAD'], check=True)
         original = sync.REPOSITORY
         sync.REPOSITORY = str(self.repository)
         try:
