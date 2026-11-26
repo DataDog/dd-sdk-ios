@@ -10,6 +10,9 @@ internal struct FlagsData: Equatable, Codable {
     var flags: [String: FlagAssignment]
     /// Plaintext assignments that `flags` cannot hold beside a canonically equivalent key.
     var keySpellings: [FlagKeySpelling]
+    var flagEvaluationErrors: [String: FlagEvaluationFailure]
+    /// Plaintext errors that `flagEvaluationErrors` cannot hold beside a canonically equivalent key.
+    var errorKeySpellings: [FlagEvaluationErrorSpelling]
     var context: FlagsEvaluationContext
     var date: Date
     let obfuscation: FlagKeyObfuscation?
@@ -23,6 +26,7 @@ internal struct FlagsData: Equatable, Codable {
 
     init(
         flags: [String: FlagAssignment],
+        flagEvaluationErrors: [String: FlagEvaluationFailure] = [:],
         context: FlagsEvaluationContext,
         date: Date,
         obfuscation: FlagKeyObfuscation? = nil,
@@ -30,6 +34,7 @@ internal struct FlagsData: Equatable, Codable {
         experimentationOptOutPolicy: ExperimentationOptOut? = nil,
         observeFullEvaluationData: Bool = false,
         keySpellings: [FlagKeySpelling] = [],
+        errorKeySpellings: [FlagEvaluationErrorSpelling] = [],
         unparsedFlagKeys: [String] = []
     ) {
         self.flags = flags.mapValues { assignment in
@@ -42,6 +47,8 @@ internal struct FlagsData: Equatable, Codable {
             spelling.assignment.observeFullEvaluationData = observeFullEvaluationData
             return spelling
         }
+        self.flagEvaluationErrors = flagEvaluationErrors
+        self.errorKeySpellings = errorKeySpellings
         self.context = context
         self.date = date
         self.obfuscation = obfuscation
@@ -52,14 +59,18 @@ internal struct FlagsData: Equatable, Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case flags, keySpellings, context, date, obfuscation, flagSelection, experimentationOptOutPolicy, observeFullEvaluationData
-        case unparsedFlagKeys
+        case flags, keySpellings, flagEvaluationErrors, errorKeySpellings, context, date, obfuscation, flagSelection
+        case experimentationOptOutPolicy, observeFullEvaluationData, unparsedFlagKeys
     }
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             flags: try container.decode([String: FlagAssignment].self, forKey: .flags),
+            flagEvaluationErrors: try container.decodeIfPresent(
+                [String: FlagEvaluationFailure].self,
+                forKey: .flagEvaluationErrors
+            ) ?? [:],
             context: try container.decode(FlagsEvaluationContext.self, forKey: .context),
             date: try container.decode(Date.self, forKey: .date),
             obfuscation: try container.decodeIfPresent(FlagKeyObfuscation.self, forKey: .obfuscation),
@@ -67,8 +78,40 @@ internal struct FlagsData: Equatable, Codable {
             experimentationOptOutPolicy: try container.decodeIfPresent(ExperimentationOptOut.self, forKey: .experimentationOptOutPolicy),
             observeFullEvaluationData: (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true,
             keySpellings: try container.decodeIfPresent([FlagKeySpelling].self, forKey: .keySpellings) ?? [],
+            errorKeySpellings: try container.decodeIfPresent(
+                [FlagEvaluationErrorSpelling].self,
+                forKey: .errorKeySpellings
+            ) ?? [],
             unparsedFlagKeys: try container.decodeIfPresent([String].self, forKey: .unparsedFlagKeys) ?? []
         )
+        let assignmentKeys = flags.keys.map { Data($0.utf8) }
+            + keySpellings.map { Data($0.key.utf8) }
+            + unparsedFlagKeys.map { Data($0.utf8) }
+        let errorKeys = flagEvaluationErrors.keys.map { Data($0.utf8) } + errorKeySpellings.map { Data($0.key.utf8) }
+        guard Set(assignmentKeys).isDisjoint(with: Set(errorKeys)) else {
+            throw DecodingError.dataCorrupted(.init(
+                codingPath: container.codingPath,
+                debugDescription: "A flag cannot contain both an assignment and an evaluation error"
+            ))
+        }
+        if let obfuscation {
+            guard keySpellings.isEmpty, errorKeySpellings.isEmpty else {
+                throw DecodingError.dataCorrupted(.init(
+                    codingPath: container.codingPath,
+                    debugDescription: "Obfuscated flag keys cannot use plaintext spelling sidecars"
+                ))
+            }
+            try obfuscation.validateKeys(flags.keys, codingPath: container.codingPath + [CodingKeys.flags])
+            try obfuscation.validateKeys(
+                unparsedFlagKeys,
+                codingPath: container.codingPath + [CodingKeys.unparsedFlagKeys]
+            )
+            try obfuscation.validateErrorKeys(
+                flagEvaluationErrors.keys,
+                codingPath: container.codingPath + [CodingKeys.flagEvaluationErrors]
+            )
+            try obfuscation.validateDependencyEvaluations(in: flags.values, and: flagEvaluationErrors.values)
+        }
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -76,6 +119,12 @@ internal struct FlagsData: Equatable, Codable {
         try container.encode(flags, forKey: .flags)
         if !keySpellings.isEmpty {
             try container.encode(keySpellings, forKey: .keySpellings)
+        }
+        if !flagEvaluationErrors.isEmpty {
+            try container.encode(flagEvaluationErrors, forKey: .flagEvaluationErrors)
+        }
+        if !errorKeySpellings.isEmpty {
+            try container.encode(errorKeySpellings, forKey: .errorKeySpellings)
         }
         try container.encode(context, forKey: .context)
         try container.encode(date, forKey: .date)
@@ -92,6 +141,14 @@ internal struct FlagsData: Equatable, Codable {
     var allFlagKeys: [String] {
         Array(flags.keys) + keySpellings.map(\.key)
     }
+
+    var containsDependentEvaluations: Bool {
+        !flagEvaluationErrors.isEmpty
+            || !errorKeySpellings.isEmpty
+            || flags.values.contains(where: { !$0.dependencyEvaluations.isEmpty })
+            || keySpellings.contains(where: { !$0.assignment.dependencyEvaluations.isEmpty })
+    }
+
 }
 
 extension FlagsData: FlagNumericTokenRoot {

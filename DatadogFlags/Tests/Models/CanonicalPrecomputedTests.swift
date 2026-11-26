@@ -247,6 +247,7 @@ final class CanonicalPrecomputedTests: XCTestCase {
     private func errorCode(_ error: FlagEvaluationError?) -> String? {
         switch error {
         case .none: return nil
+        case .general: return "GENERAL"
         case .providerNotReady: return "PROVIDER_NOT_READY"
         case .flagNotFound: return "FLAG_NOT_FOUND"
         case .typeMismatch: return "TYPE_MISMATCH"

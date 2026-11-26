@@ -40,6 +40,176 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(evaluations.logEvaluationCalls.first?.context.attributes, ["plan": .string("premium")])
     }
 
+    func testDependentAssignmentsEmitOrderedTelemetryAndOnlySelectedAncestorSideEffects() {
+        let fixture = makeTelemetryFixture(enabled: false)
+        var root = FlagAssignment(
+            allocationKey: "root-allocation",
+            variationKey: "root-variant",
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: true
+        )
+        root.dependencyEvaluations = [
+            .success(flagKey: "selected-parent", isPresentInAssignment: true),
+            .success(flagKey: "reached-parent", isPresentInAssignment: false),
+        ]
+        fixture.repository.flagsData = FlagsData(
+            flags: [
+                "root": root,
+                "selected-parent": .init(
+                    allocationKey: "selected-allocation",
+                    variationKey: "selected-variant",
+                    variation: .string("on"),
+                    reason: "TARGETING_MATCH",
+                    doLog: true
+                ),
+                "reached-parent": .init(
+                    allocationKey: "reached-allocation",
+                    variationKey: "reached-variant",
+                    variation: .string("off"),
+                    reason: "DEFAULT",
+                    doLog: true
+                ),
+            ],
+            context: telemetryContext(nil),
+            date: .mockAny()
+        )
+
+        let details = fixture.client.getDetails(key: "root", defaultValue: false)
+
+        XCTAssertTrue(details.value)
+        XCTAssertNil(details.error)
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.map(\.flagKey), ["selected-parent", "reached-parent", "root"])
+        XCTAssertEqual(fixture.exposures.logExposureCalls.map(\.flagKey), ["selected-parent", "root"])
+        XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.map(\.0), ["selected-parent", "root"])
+    }
+
+    func testDependentRootErrorReturnsCallerDefaultWithoutAncestorExposureOrRUM() {
+        let fixture = makeTelemetryFixture(enabled: false)
+        fixture.repository.flagsData = FlagsData(
+            flags: [
+                "parent": .init(
+                    allocationKey: "parent-allocation",
+                    variationKey: "parent-variant",
+                    variation: .boolean(true),
+                    reason: "TARGETING_MATCH",
+                    doLog: true
+                ),
+            ],
+            flagEvaluationErrors: [
+                "root": .init(
+                    dependencyEvaluations: [
+                        .success(flagKey: "parent", isPresentInAssignment: true),
+                        .failure(flagKey: "missing", errorCode: "FLAG_NOT_FOUND", errorMessage: nil),
+                    ]
+                ),
+            ],
+            context: telemetryContext(nil),
+            date: .mockAny()
+        )
+
+        let details = fixture.client.getDetails(key: "root", defaultValue: "fallback")
+
+        XCTAssertEqual(details.value, "fallback")
+        XCTAssertEqual(details.error, .general)
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.map(\.flagKey), ["parent", "missing", "root"])
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.map(\.error), [nil, "FLAG_NOT_FOUND", "GENERAL"])
+        XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+        XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testDependentRootTypeMismatchDoesNotEmitAncestorExposureOrRUM() {
+        let fixture = makeTelemetryFixture(enabled: false)
+        var root = FlagAssignment(
+            allocationKey: "root-allocation",
+            variationKey: "root-variant",
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: true
+        )
+        root.dependencyEvaluations = [.success(flagKey: "parent", isPresentInAssignment: true)]
+        fixture.repository.flagsData = FlagsData(
+            flags: [
+                "root": root,
+                "parent": .init(
+                    allocationKey: "parent-allocation",
+                    variationKey: "parent-variant",
+                    variation: .boolean(true),
+                    reason: "TARGETING_MATCH",
+                    doLog: true
+                ),
+            ],
+            context: telemetryContext(nil),
+            date: .mockAny()
+        )
+
+        let details = fixture.client.getDetails(key: "root", defaultValue: "fallback")
+
+        XCTAssertEqual(details.value, "fallback")
+        XCTAssertEqual(details.error, .typeMismatch)
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.map(\.flagKey), ["parent", "root"])
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.map(\.error), [nil, "TYPE_MISMATCH"])
+        XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+        XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testMalformedDependencyGraphReportsParseErrorAndReturnsPublicGeneral() {
+        let fixture = makeTelemetryFixture(enabled: false)
+        var root = FlagAssignment.mockAnyBoolean()
+        root.dependencyEvaluations = [
+            .success(flagKey: "missing-parent", isPresentInAssignment: true),
+        ]
+        fixture.repository.flagsData = FlagsData(
+            flags: ["root": root],
+            context: telemetryContext(nil),
+            date: .mockAny()
+        )
+
+        let details = fixture.client.getBooleanDetails(key: "root", defaultValue: false)
+
+        XCTAssertEqual(details.error, .general)
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.map(\.error), ["PARSE_ERROR"])
+        XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+        XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testDependentAncestorExposuresUseExistingDeduplication() {
+        let scope = FeatureScopeMock()
+        var root = FlagAssignment(
+            allocationKey: "root-allocation",
+            variationKey: "root-variant",
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: true
+        )
+        root.dependencyEvaluations = [.success(flagKey: "parent", isPresentInAssignment: true)]
+        let repository = FlagsRepositoryMock(flagsData: FlagsData(
+            flags: [
+                "root": root,
+                "parent": .init(
+                    allocationKey: "parent-allocation",
+                    variationKey: "parent-variant",
+                    variation: .boolean(true),
+                    reason: "TARGETING_MATCH",
+                    doLog: true
+                ),
+            ],
+            context: .init(targetingKey: "subject"),
+            date: .mockAny()
+        ))
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: scope),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        XCTAssertTrue(client.getBooleanValue(key: "root", defaultValue: false))
+        XCTAssertTrue(client.getBooleanValue(key: "root", defaultValue: false))
+
+        XCTAssertEqual(scope.exposureEventsWritten.map(\.flag.key), ["parent", "root"])
+    }
+
     func testDifferentSubjectCannotReenableInstalledSubjectsTelemetryDuringRefresh() throws {
         let fixture = makeSubjectTransitionFixture()
         fixture.client.setEvaluationContext(telemetryContext(.bool(true), subject: "A")) { _ in }
@@ -1390,7 +1560,7 @@ final class FlagsClientTests: XCTestCase {
         let decomposed = try FlagsNumericJSON.decode(FlagAssignment.self, from: Data(assignment("2.5").utf8))
         // Some decoders keep the composed key with the decomposed key's value.
         let merged = FlagAssignmentsResponse(flags: [nfc: decomposed])
-        let response = merged.addingKeySpellings(from: Data(body.utf8))
+        let response = try merged.addingKeySpellings(from: Data(body.utf8))
         let assignments = response.flags.map { ($0.key, $0.value) } + response.keySpellings.map { ($0.key, $0.assignment) }
         XCTAssertEqual(assignments.count, 2)
         XCTAssertEqual(assignments.first { $0.0.utf8.elementsEqual(nfc.utf8) }?.1, composed)

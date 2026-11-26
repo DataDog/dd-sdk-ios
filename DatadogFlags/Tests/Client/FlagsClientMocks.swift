@@ -184,11 +184,27 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     }
 
     func evaluationSnapshot(for key: String) -> FlagEvaluationSnapshot {
-        FlagEvaluationSnapshot(
+        let lookupKey = flagsData?.obfuscation?.lookupKey(for: key) ?? key
+        let assignment = flagsData?.flags[lookupKey]
+        let failure = flagsData?.flagEvaluationErrors[lookupKey]
+        let trace = assignment?.dependencyEvaluations ?? failure?.dependencyEvaluations ?? []
+        let dependencies = trace.compactMap { evaluation -> ResolvedDependencyEvaluation? in
+            switch evaluation {
+            case .success(let dependencyKey, let isPresent):
+                guard let dependency = flagsData?.flags[dependencyKey] else { return nil }
+                return .success(flagKey: dependencyKey, assignment: dependency, isPresentInAssignment: isPresent)
+            case .failure(let dependencyKey, let errorCode, let errorMessage):
+                return .failure(flagKey: dependencyKey, errorCode: errorCode, errorMessage: errorMessage)
+            }
+        }
+        return FlagEvaluationSnapshot(
             context: flagsData?.context,
-            assignment: flagAssignment(for: key),
+            assignment: assignment,
             telemetryOptedOut: telemetry.isOptedOut(evaluating: flagsData?.context),
             observeFullEvaluationData: flagsData?.observeFullEvaluationData ?? false,
+            evaluationFailure: failure,
+            dependencyEvaluations: dependencies,
+            hasInvalidDependencyGraph: dependencies.count != trace.count,
             requestedContext: requestedContext,
             error: evaluationError
         )

@@ -10,6 +10,9 @@ import Foundation
 ///
 /// Indicates why a flag evaluation may have failed or returned a default value.
 public enum FlagEvaluationError: Error {
+    /// The flag evaluation failed for a provider-defined reason.
+    case general
+
     /// The feature flag provider is not ready to evaluate flags.
     case providerNotReady
 
@@ -21,9 +24,6 @@ public enum FlagEvaluationError: Error {
 
     /// The evaluation context is invalid, for example an invalid experimentation opt-out timestamp.
     case invalidContext
-
-    /// The provider cannot evaluate the flag because the current subject has no authorized assignments.
-    case general
 
     /// The flag's assignment cannot be parsed, for example because its variation type is not supported.
     case parseError

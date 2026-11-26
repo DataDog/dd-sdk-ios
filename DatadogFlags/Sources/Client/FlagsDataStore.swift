@@ -20,8 +20,12 @@ internal struct FlagsDataStore {
     // change alters when `numericConversion` is kept. An incompatible cache format change needs version 5
     // or higher.
     private static let numericAssignmentsVersion: DataStoreKeyVersion = 4
+    // Version 5 preserves dependent evaluations and terminal per-flag errors. Older readers must skip it
+    // instead of treating failed roots as absent legacy flags.
+    private static let dependentAssignmentsVersion: DataStoreKeyVersion = 5
     private static let knownVersions: Set<DataStoreKeyVersion> = [
-        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion, numericAssignmentsVersion
+        dataStoreDefaultKeyVersion, encodedAssignmentsVersion, filteredAssignmentsVersion, numericAssignmentsVersion,
+        dependentAssignmentsVersion
     ]
 
     let featureScope: FeatureScope
@@ -73,8 +77,9 @@ internal struct FlagsDataStore {
     }
 
     private static func version(for flagsData: FlagsData) -> DataStoreKeyVersion {
-        // Key spellings alone keep the earlier version: an earlier reader ignores `keySpellings` and returns one
-        // assignment for every canonically equivalent spelling, as it did before spellings were kept.
+        if flagsData.containsDependentEvaluations {
+            return dependentAssignmentsVersion
+        }
         if flagsData.flags.values.contains(where: { $0.numericConversion != nil })
             || flagsData.keySpellings.contains(where: { $0.assignment.numericConversion != nil }) {
             return numericAssignmentsVersion

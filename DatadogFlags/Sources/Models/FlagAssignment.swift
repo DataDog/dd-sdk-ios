@@ -23,6 +23,7 @@ public struct FlagAssignment: Equatable {
     public var doLog: Bool
     public var serialID: Int?
     internal var numericConversion: FlagNumericConversion?
+    internal var dependencyEvaluations: [PrecomputedDependencyEvaluation] = []
 
     /// Whether a decoded number has a value that snapshots and bridge consumers can represent.
     internal var hasRepresentableValue: Bool {
@@ -97,6 +98,7 @@ extension FlagAssignment: Codable {
         case serialID = "serialId"
         case numericLiteral = "_numericLiteral"
         case observeFullEvaluationData
+        case dependencyEvaluations
     }
 
     public init(from decoder: any Decoder) throws {
@@ -109,6 +111,11 @@ extension FlagAssignment: Codable {
         // A malformed serial id decodes as absent so it cannot fail the whole response.
         self.serialID = try? container.decodeIfPresent(Int.self, forKey: .serialID)
         self.observeFullEvaluationData = (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
+        self.dependencyEvaluations = try container.decodeIfPresent(
+            [PrecomputedDependencyEvaluation].self,
+            forKey: .dependencyEvaluations
+        ) ?? []
+        try PrecomputedDependencyEvaluation.validateUniqueKeys(dependencyEvaluations, codingPath: container.codingPath)
 
         let variationType = try container.decode(String.self, forKey: .variationType)
 
@@ -175,6 +182,9 @@ extension FlagAssignment: Codable {
         try container.encodeIfPresent(serialID, forKey: .serialID)
         try container.encodeIfPresent(numericConversion?.literal, forKey: .numericLiteral)
         try container.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
+        if !dependencyEvaluations.isEmpty {
+            try container.encode(dependencyEvaluations, forKey: .dependencyEvaluations)
+        }
 
         switch variation {
         case .boolean(let value):

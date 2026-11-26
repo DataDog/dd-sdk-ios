@@ -12,6 +12,78 @@ import TestUtilities
 @testable import DatadogFlags
 
 final class FlagKeyObfuscationTests: XCTestCase {
+    func testDecryptsCanonicalDependencyKeyVectorAndRejectsTampering() throws {
+        let encoding = try JSONDecoder().decode(
+            FlagKeyObfuscation.self,
+            from: Data(
+                #"""
+                {"scheme":"flag-key-sha256-v1","salt":"000102030405060708090a0b0c0d0e0f",
+                "dependencyKeyEncryption":{"scheme":"dependency-key-hkdf-sha256-aes-256-gcm-v1"}}
+                """#.utf8
+            )
+        )
+        let encrypted = "tATBHdKpF-zxZ2Fr70UGwTMfPcXSdulh78uKYPpNzVBoSlNnB6qMCTtI1o8"
+
+        XCTAssertEqual(
+            encoding.dependencyFlagKey(encrypted, rootFlagKey: "checkout-redesign"),
+            "new-payment-flow"
+        )
+        XCTAssertNil(encoding.dependencyFlagKey(encrypted + "A", rootFlagKey: "checkout-redesign"))
+        XCTAssertNil(encoding.dependencyFlagKey(encrypted, rootFlagKey: "different-root"))
+    }
+
+    func testObfuscatedDependencyTraceDecryptsThenHashesTopLevelKey() throws {
+        let encoding = try JSONDecoder().decode(
+            FlagKeyObfuscation.self,
+            from: Data(
+                #"""
+                {"scheme":"flag-key-sha256-v1","salt":"000102030405060708090a0b0c0d0e0f",
+                "dependencyKeyEncryption":{"scheme":"dependency-key-hkdf-sha256-aes-256-gcm-v1"}}
+                """#.utf8
+            )
+        )
+        let parent = FlagAssignment(
+            allocationKey: "parent-allocation",
+            variationKey: "parent-variant",
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: true
+        )
+        var root = FlagAssignment(
+            allocationKey: "root-allocation",
+            variationKey: "root-variant",
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: false
+        )
+        root.dependencyEvaluations = [
+            .success(
+                flagKey: "tATBHdKpF-zxZ2Fr70UGwTMfPcXSdulh78uKYPpNzVBoSlNnB6qMCTtI1o8",
+                isPresentInAssignment: true
+            ),
+        ]
+        var cache = FlagsRepository.CachedFlagsData(data: FlagsData(
+            flags: [
+                encoding.lookupKey(for: "checkout-redesign"): root,
+                encoding.lookupKey(for: "new-payment-flow"): parent,
+            ],
+            context: .mockAny(),
+            date: .mockAny(),
+            obfuscation: encoding
+        ))
+
+        let (resolvedRoot, failure) = cache.evaluation(for: "checkout-redesign")
+        let dependencies = cache.resolveDependencies(
+            try XCTUnwrap(resolvedRoot).dependencyEvaluations,
+            rootFlagKey: "checkout-redesign"
+        )
+
+        XCTAssertNil(failure)
+        XCTAssertEqual(dependencies, [
+            .success(flagKey: "new-payment-flow", assignment: parent, isPresentInAssignment: true),
+        ])
+    }
+
     private let salt = "000102030405060708090a0b0c0d0e0f"
     private let digest = "9817872c144b018abd77e3915bd77e2c27f4f534dccff8ffaca27361e3a5e1ee"
     private let assignment = FlagAssignment(
@@ -456,7 +528,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
                 let scope = FeatureScopeMock()
                 let data = try cacheData(obfuscated: obfuscated, policy: policy)
                 let expectedVersion: DataStoreKeyVersion = policy != nil ? 3 : (obfuscated ? 2 : 1)
-                for version in [DataStoreKeyVersion(1), 2, 3, 4] where version != expectedVersion {
+                for version in [DataStoreKeyVersion(1), 2, 3, 4, 5] where version != expectedVersion {
                     scope.dataStore.setValue(try JSONEncoder().encode(data), forKey: "client", version: version)
                     let completed = expectation(description: "mismatched cache rejected")
                     scope.flagsDataStore.flagsData(forClientNamed: "client") {
@@ -491,8 +563,10 @@ final class FlagKeyObfuscationTests: XCTestCase {
             XCTAssertNil(attributes["supported_capabilities"])
             if source != "ios" {
                 XCTAssertNil(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"))
+                XCTAssertNil(request.url?.query)
             } else {
                 XCTAssertEqual(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"), "assignment-encoding-flag-key-256-v1")
+                XCTAssertEqual(request.url?.query, "cap_dependent-flags-variant-key=v1")
             }
         }
     }
@@ -576,6 +650,43 @@ final class FlagKeyObfuscationTests: XCTestCase {
             fetchCompletion?(.failure(.invalidResponse))
             XCTAssertEqual(repository.state.currentState, source == "ios" ? .stale : .error)
             XCTAssertEqual(repository.flagAssignment(for: "flag"), source == "ios" ? expected : nil)
+        }
+    }
+
+    func testDelayedSourceRetainsPlaintextDependentCacheForNativeOrBridge() {
+        var dependent = FlagAssignment.mockAnyBoolean()
+        dependent.dependencyEvaluations = [
+            .success(flagKey: "ordinary", isPresentInAssignment: true),
+        ]
+        let cached = FlagsData(
+            flags: ["ordinary": .mockAnyBoolean(), "dependent": dependent],
+            flagEvaluationErrors: ["failed": .init()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+
+        for source in ["ios", "react-native"] {
+            let scope = DeferredFlagsContextScope()
+            scope.flagsDataStore.setFlagsData(cached, forClientNamed: "client")
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                flagSelection: nil
+            )
+
+            XCTAssertNotNil(repository.context, source)
+            XCTAssertNotNil(repository.flagAssignment(for: "ordinary"), source)
+            XCTAssertNotNil(repository.flagAssignment(for: "dependent"), source)
+            XCTAssertNotNil(repository.evaluationSnapshot(for: "failed").evaluationFailure, source)
+
+            scope.completeContext(source: source)
+
+            XCTAssertNotNil(repository.flagAssignment(for: "ordinary"), source)
+            XCTAssertNotNil(repository.flagAssignment(for: "dependent"))
+            XCTAssertNotNil(repository.evaluationSnapshot(for: "failed").evaluationFailure)
+            XCTAssertEqual(Set(repository.flagAssignments()?.keys.map { $0 } ?? []), ["ordinary", "dependent"])
         }
     }
 

@@ -21,20 +21,22 @@ extension URLRequest {
         let authorization = evaluationContext.extractingAssignmentAuthorization()
         let evaluationContext = authorization.context
         let assignmentToken = AssignmentAuthorization.usableToken(assignmentToken ?? authorization.token)
-        var request = URLRequest(url: url)
+        var requestURL = url
+        if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            var queryItems = components.queryItems ?? []
+            queryItems.removeAll { $0.name == "cap_dependent-flags-variant-key" }
+            if context.source == "ios" {
+                queryItems.append(URLQueryItem(name: "cap_dependent-flags-variant-key", value: "v1"))
+            }
+            components.queryItems = queryItems.isEmpty ? nil : queryItems
+            requestURL = components.url ?? url
+        }
+        var request = URLRequest(url: requestURL)
         request.httpMethod = "POST"
 
         request.setValue("application/vnd.api+json", forHTTPHeaderField: "Content-Type")
         request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
         request.setValue(context.clientToken, forHTTPHeaderField: "dd-client-token")
-        // Bridge SDKs that consume raw snapshots cannot resolve encoded keys yet.
-        if FlagKeyObfuscation.isSupported(source: context.source) {
-            request.setValue(
-                [FlagKeyObfuscation.capability].sorted().joined(separator: ","),
-                forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"
-            )
-        }
-
         if let applicationId = context.additionalContext(ofType: RUMCoreContext.self)?.applicationID {
             request.setValue(applicationId, forHTTPHeaderField: "dd-application-id")
         }
@@ -54,6 +56,12 @@ extension URLRequest {
             }
         }
         request.setValue(assignmentToken, forHTTPHeaderField: AssignmentAuthorization.header)
+
+        // Bridge SDKs that consume raw snapshots cannot resolve encoded keys yet.
+        request.setValue(
+            FlagKeyObfuscation.isSupported(source: context.source) ? FlagKeyObfuscation.capability : nil,
+            forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"
+        )
 
         let requestBody = FlagAssignmentsRequestBody(
             environment: FlagAssignmentsRequestBody.Environment(

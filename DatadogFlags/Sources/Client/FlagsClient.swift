@@ -106,6 +106,7 @@ public final class FlagsClient {
         static let flagNotFound = "FLAG_NOT_FOUND"
         static let typeMismatch = "TYPE_MISMATCH"
         static let invalidContext = "INVALID_CONTEXT"
+        static let parseError = "PARSE_ERROR"
         static let general = "GENERAL"
         static let parseError = "PARSE_ERROR"
     }
@@ -381,6 +382,39 @@ extension FlagsClient: FlagsClientProtocol {
             return details
         }
 
+        if snapshot.hasInvalidDependencyGraph {
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
+                for: key,
+                assignment: defaultAssignment,
+                evaluationContext: context,
+                flagError: EvaluationError.parseError
+            )
+            var details = FlagDetails(key: key, value: defaultValue, error: .general)
+            details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+            return details
+        }
+
+        if let failure = snapshot.evaluationFailure {
+            trackDependencyEvaluations(
+                snapshot.dependencyEvaluations,
+                context: context,
+                trackEvaluationTelemetry: trackEvaluationTelemetry,
+                observeFullEvaluationData: snapshot.observeFullEvaluationData,
+                rootSucceeded: false
+            )
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
+                for: key,
+                assignment: defaultAssignment,
+                evaluationContext: context,
+                flagError: failure.errorCode
+            )
+            var details = FlagDetails(key: key, value: defaultValue, error: .general)
+            details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+            return details
+        }
+
         guard let flagAssignment = snapshot.assignment else {
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
@@ -395,6 +429,13 @@ extension FlagsClient: FlagsClientProtocol {
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
+            trackDependencyEvaluations(
+                snapshot.dependencyEvaluations,
+                context: context,
+                trackEvaluationTelemetry: trackEvaluationTelemetry,
+                observeFullEvaluationData: snapshot.observeFullEvaluationData,
+                rootSucceeded: false
+            )
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
@@ -416,9 +457,54 @@ extension FlagsClient: FlagsClientProtocol {
         )
 
         details.observeFullEvaluationData = snapshot.observeFullEvaluationData
+        trackDependencyEvaluations(
+            snapshot.dependencyEvaluations,
+            context: context,
+            trackEvaluationTelemetry: trackEvaluationTelemetry,
+            observeFullEvaluationData: snapshot.observeFullEvaluationData,
+            rootSucceeded: true
+        )
         trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
 
         return details
+    }
+
+    private func trackDependencyEvaluations(
+        _ dependencies: [ResolvedDependencyEvaluation],
+        context: FlagsEvaluationContext,
+        trackEvaluationTelemetry: Bool,
+        observeFullEvaluationData: Bool,
+        rootSucceeded: Bool
+    ) {
+        for dependency in dependencies {
+            switch dependency {
+            case .success(let flagKey, let assignment, let isPresentInAssignment):
+                if trackEvaluationTelemetry {
+                    evaluationLogger.logEvaluation(
+                        for: flagKey,
+                        assignment: assignment,
+                        evaluationContext: context,
+                        flagError: nil
+                    )
+                }
+                guard rootSucceeded, isPresentInAssignment else { continue }
+                exposureLogger.logExposure(for: flagKey, assignment: assignment, evaluationContext: context)
+                if trackEvaluationTelemetry {
+                    rumFlagEvaluationReporter.sendFlagEvaluation(flagKey: flagKey, value: assignment.variationKey)
+                }
+            case .failure(let flagKey, let errorCode, _):
+                guard trackEvaluationTelemetry else { continue }
+                var dependencyAssignment = Self.defaultAssignment
+                dependencyAssignment.reason = "ERROR"
+                dependencyAssignment.observeFullEvaluationData = observeFullEvaluationData
+                evaluationLogger.logEvaluation(
+                    for: flagKey,
+                    assignment: dependencyAssignment,
+                    evaluationContext: context,
+                    flagError: errorCode
+                )
+            }
+        }
     }
 
     private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {

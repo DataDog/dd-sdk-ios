@@ -45,7 +45,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
     func testFlagAssignments() throws {
         // Given
-        featureScope.contextMock = .mockWith(site: .us3)
+        featureScope.contextMock = .mockWith(site: .us3, source: "ios")
         var capturedRequest: URLRequest?
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
@@ -70,7 +70,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         waitForExpectations(timeout: 1)
         XCTAssertEqual(
             capturedRequest?.url?.absoluteString,
-            "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments"
+            "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments?cap_dependent-flags-variant-key=v1"
         )
         let flagAssignments = try XCTUnwrap(capturedResult?.get())
         XCTAssertEqual(flagAssignments.flags, .mockAny())
@@ -184,6 +184,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
     func testFlagAssignmentsCustomEndpoint() {
         // Given
+        featureScope.contextMock = .mockWith(source: "ios")
         let customEndpoint = URL(string: "https://custom-proxy.com/flags")!
         var capturedRequest: URLRequest?
         let fetcher = FlagAssignmentsFetcher(
@@ -206,7 +207,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 1)
-        XCTAssertEqual(capturedRequest?.url, customEndpoint)
+        XCTAssertEqual(capturedRequest?.url, URL(string: "https://custom-proxy.com/flags?cap_dependent-flags-variant-key=v1"))
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
     }
 
@@ -270,6 +271,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
     func testFlagAssignmentsSendsFlagSelectionToCustomEndpoint() throws {
         // Given
+        featureScope.contextMock = .mockWith(source: "ios")
         let customEndpoint = URL(string: "https://custom-proxy.com/flags")!
         var capturedRequest: URLRequest?
         let fetcher = FlagAssignmentsFetcher(
@@ -291,7 +293,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 1)
-        XCTAssertEqual(capturedRequest?.url, customEndpoint)
+        XCTAssertEqual(capturedRequest?.url, URL(string: "https://custom-proxy.com/flags?cap_dependent-flags-variant-key=v1"))
         let body = try XCTUnwrap(capturedRequest?.httpBody)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
         let data = try XCTUnwrap(json["data"] as? [String: Any])

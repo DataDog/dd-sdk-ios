@@ -38,6 +38,9 @@ internal struct FlagEvaluationSnapshot {
     let assignment: FlagAssignment?
     let telemetryOptedOut: Bool
     let observeFullEvaluationData: Bool
+    let evaluationFailure: FlagEvaluationFailure?
+    let dependencyEvaluations: [ResolvedDependencyEvaluation]
+    let hasInvalidDependencyGraph: Bool
     var requestedContext: FlagsEvaluationContext? = nil
     var error: FlagEvaluationError? = nil
 }
@@ -177,7 +180,10 @@ internal final class FlagsRepository {
         // Swift String equality treats canonically equivalent Unicode sequences as equal.
         private(set) var lookupKeys: [Data: String] = [:]
 
-        func cachedAssignment(for key: String, supportsObfuscation: Bool) -> LookupResult {
+        func cachedAssignment(
+            for key: String,
+            supportsObfuscation: Bool
+        ) -> LookupResult {
             guard data.obfuscation != nil else {
                 if let assignment = plaintextAssignment(for: key) {
                     return .resolved(assignment)
@@ -210,6 +216,68 @@ internal final class FlagsRepository {
             return data.flags[lookupKey]
         }
 
+        func cachedEvaluationFailure(for key: String) -> FlagEvaluationFailure? {
+            guard data.obfuscation != nil else {
+                return plaintextEvaluationFailure(for: key)
+            }
+            guard let lookupKey = lookupKeys[Data(key.utf8)] else {
+                return nil
+            }
+            return data.flagEvaluationErrors[lookupKey]
+        }
+
+        mutating func evaluation(for key: String) -> (FlagAssignment?, FlagEvaluationFailure?) {
+            guard let obfuscation = data.obfuscation else {
+                return (plaintextAssignment(for: key), plaintextEvaluationFailure(for: key))
+            }
+            let keyBytes = Data(key.utf8)
+            let lookupKey: String
+            if let cached = lookupKeys[keyBytes] {
+                lookupKey = cached
+            } else {
+                lookupKey = obfuscation.lookupKey(for: key)
+                if lookupKeys.count >= Self.lookupCacheLimit { lookupKeys.removeAll(keepingCapacity: true) }
+                lookupKeys[keyBytes] = lookupKey
+            }
+            return (data.flags[lookupKey], data.flagEvaluationErrors[lookupKey])
+        }
+
+        mutating func resolveDependencies(
+            _ evaluations: [PrecomputedDependencyEvaluation],
+            rootFlagKey: String
+        ) -> [ResolvedDependencyEvaluation]? {
+            var resolved: [ResolvedDependencyEvaluation] = []
+            resolved.reserveCapacity(evaluations.count)
+            for evaluation in evaluations {
+                let dependencyKey: String
+                if let obfuscation = data.obfuscation {
+                    guard let decrypted = obfuscation.dependencyFlagKey(evaluation.flagKey, rootFlagKey: rootFlagKey) else {
+                        return nil
+                    }
+                    dependencyKey = decrypted
+                } else {
+                    dependencyKey = evaluation.flagKey
+                }
+                switch evaluation {
+                case .success(_, let isPresentInAssignment):
+                    let (assignment, failure) = self.evaluation(for: dependencyKey)
+                    guard let assignment, failure == nil else { return nil }
+                    resolved.append(.success(
+                        flagKey: dependencyKey,
+                        assignment: assignment,
+                        isPresentInAssignment: isPresentInAssignment
+                    ))
+                case .failure(_, let errorCode, let errorMessage):
+                    resolved.append(.failure(
+                        flagKey: dependencyKey,
+                        errorCode: errorCode,
+                        errorMessage: errorMessage
+                    ))
+                }
+            }
+            return resolved
+        }
+
         /// Plaintext keys match byte for byte, like encoded keys. A `String` dictionary lookup alone would also
         /// return the assignment of a canonically equivalent spelling.
         private func plaintextAssignment(for key: String) -> FlagAssignment? {
@@ -218,11 +286,25 @@ internal final class FlagsRepository {
             }
             return data.keySpellings.first { $0.key.utf8.elementsEqual(key.utf8) }?.assignment
         }
+
+        private func plaintextEvaluationFailure(for key: String) -> FlagEvaluationFailure? {
+            if let index = data.flagEvaluationErrors.index(forKey: key),
+               data.flagEvaluationErrors[index].key.utf8.elementsEqual(key.utf8) {
+                return data.flagEvaluationErrors[index].value
+            }
+            return data.errorKeySpellings.first { $0.key.utf8.elementsEqual(key.utf8) }?.failure
+        }
     }
 
     /// Synchronizes assignments, request supersession, and disk-read lifecycle. Client-state transitions
     /// acquire this lock before the state-manager lock; listeners and completions run after unlocking.
     private struct RepositoryState {
+        enum CapabilityIdentity {
+            case unknown
+            case native
+            case bridge
+        }
+
         var experimentationOptOutMode: FlagsClient.ExperimentationOptOutMode = .disabled
         var requestedOptOut: ExperimentationOptOut?
         var hasInvalidContext = false
@@ -243,11 +325,13 @@ internal final class FlagsRepository {
             }
         }
         var cachedFlagsData: FlagsData?
-        // A missing or delayed context must not expose encoded assignments to legacy bridges.
-        var supportsFlagKeyObfuscation = false
+        // Source identity can arrive after the disk cache. It gates only representations the bridge cannot decode.
+        var capabilityIdentity: CapabilityIdentity = .unknown
+
+        var supportsFlagKeyObfuscation: Bool { capabilityIdentity == .native }
 
         var readableFlagsData: FlagsData? {
-            guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
+            guard let stored = flagsData, let data = capabilityProjection(of: stored) else {
                 return nil
             }
             if experimentationOptOutMode != .disabled {
@@ -260,6 +344,13 @@ internal final class FlagsRepository {
             if assignmentSubjectIsolationRequired {
                 guard let requestedContext = latestRequestedContext,
                       data.context.targetingKey.utf8.elementsEqual(requestedContext.targetingKey.utf8) else { return nil }
+            }
+            return data
+        }
+
+        func capabilityProjection(of data: FlagsData) -> FlagsData? {
+            guard data.obfuscation == nil || supportsFlagKeyObfuscation else {
+                return nil
             }
             return data
         }
@@ -366,7 +457,7 @@ internal final class FlagsRepository {
             }
             var publish: (() -> Void)?
             self._repositoryState.mutate { state in
-                state.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
+                state.capabilityIdentity = context.source == "ios" ? .native : .bridge
                 publish = state.readableFlagsData.flatMap { self.firstFlags.reserve(keys: $0.allFlagKeys) }
             }
             Self.publishFirstFlags(publish)
@@ -579,11 +670,11 @@ internal final class FlagsRepository {
                 matching: context,
                 allowingSameSubject: state.assignmentSubjectIsolationRequired
             ),
-               matchingFlagsData.obfuscation == nil || state.supportsFlagKeyObfuscation {
+               state.capabilityProjection(of: matchingFlagsData) != nil {
                 state.flagsData = matchingFlagsData
                 // An eligible fallback re-establishes a usable assignment set.
                 state.assignmentSubjectIsolationRequired = false
-                publish = firstFlags.reserve(keys: matchingFlagsData.allFlagKeys)
+                publish = state.readableFlagsData.flatMap { firstFlags.reserve(keys: $0.allFlagKeys) }
                 newState = .stale
             } else {
                 // Drop active flags to prevent cross-context leakage. Keep the fallback cache:
@@ -623,7 +714,12 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         let hasError = stateManager.currentState == .error
         let snapshot = repositoryState
 
-        func result(from state: RepositoryState, assignment: FlagAssignment?, unparsed: Bool = false) -> FlagEvaluationSnapshot {
+        func result(
+            from state: RepositoryState,
+            assignment: FlagAssignment?,
+            evaluationFailure: FlagEvaluationFailure? = nil,
+            unparsed: Bool = false
+        ) -> FlagEvaluationSnapshot {
             let readable = !hasError && state.readableFlagsData != nil
             let context = readable ? state.flagsData?.context : nil
             let authorizationError = state.assignmentSubjectIsolationRequired && !readable
@@ -637,6 +733,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 // Unreadable assignments must not discard the stored subject's reporting policy.
                 telemetryOptedOut: isPolicyLoading || state.telemetry.isOptedOut(evaluating: telemetryContext),
                 observeFullEvaluationData: readable ? (state.flagsData?.observeFullEvaluationData ?? false) : false,
+                evaluationFailure: readable ? evaluationFailure : nil,
+                dependencyEvaluations: [],
+                hasInvalidDependencyGraph: false,
                 requestedContext: state.experimentationOptOutMode == .disabled && !authorizationError
                     ? nil : state.latestRequestedContext,
                 error: state.hasInvalidContext ? .invalidContext
@@ -647,8 +746,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard !hasError else {
             return result(from: snapshot, assignment: nil)
         }
-        switch snapshot.activeFlagsData?.cachedAssignment(for: key, supportsObfuscation: snapshot.supportsFlagKeyObfuscation) {
-        case .resolved(let assignment): return result(from: snapshot, assignment: assignment)
+        switch snapshot.activeFlagsData?.cachedAssignment(
+            for: key,
+            supportsObfuscation: snapshot.supportsFlagKeyObfuscation
+        ) {
+        case .resolved(let assignment):
+            let evaluationFailure = snapshot.activeFlagsData?.cachedEvaluationFailure(for: key)
+            let trace = assignment?.dependencyEvaluations ?? evaluationFailure?.dependencyEvaluations ?? []
+            if trace.isEmpty {
+                return result(from: snapshot, assignment: assignment, evaluationFailure: evaluationFailure)
+            }
+            break
         case .unparsed: return result(from: snapshot, assignment: nil, unparsed: true)
         case nil: return result(from: snapshot, assignment: nil)
         case .missingHash: break
@@ -658,14 +766,52 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _repositoryState.mutate { state in
             // A refresh or reset can replace the snapshot after the read. Recheck it under the write lock.
             var assignment: FlagAssignment?
+            var evaluationFailure: FlagEvaluationFailure?
+            var dependencies: [ResolvedDependencyEvaluation] = []
+            var hasInvalidDependencyGraph = false
             var unparsed = false
             if state.flagsData?.obfuscation == nil || state.supportsFlagKeyObfuscation {
-                assignment = state.activeFlagsData?.flagAssignment(for: key)
-                // `flagAssignment(for:)` stored the lookup key, so this lookup resolves without hashing again.
+                (assignment, evaluationFailure) = state.activeFlagsData?.evaluation(for: key) ?? (nil, nil)
+                let trace = assignment?.dependencyEvaluations ?? evaluationFailure?.dependencyEvaluations ?? []
+                if !trace.isEmpty {
+                    if let resolved = state.activeFlagsData?.resolveDependencies(trace, rootFlagKey: key) {
+                        dependencies = resolved
+                        if assignment != nil && resolved.contains(where: { dependency in
+                            switch dependency {
+                            case .failure: return true
+                            case .success: return false
+                            }
+                        }) {
+                            hasInvalidDependencyGraph = true
+                        }
+                    } else {
+                        hasInvalidDependencyGraph = true
+                    }
+                }
                 unparsed = assignment == nil
-                    && state.activeFlagsData?.cachedAssignment(for: key, supportsObfuscation: true) == .unparsed
+                    && evaluationFailure == nil
+                    && state.activeFlagsData?.cachedAssignment(
+                        for: key,
+                        supportsObfuscation: true
+                    ) == .unparsed
             }
-            resolved = result(from: state, assignment: assignment, unparsed: unparsed)
+            resolved = result(
+                from: state,
+                assignment: assignment,
+                evaluationFailure: evaluationFailure,
+                unparsed: unparsed
+            )
+            resolved = FlagEvaluationSnapshot(
+                context: resolved.context,
+                assignment: resolved.assignment,
+                telemetryOptedOut: resolved.telemetryOptedOut,
+                observeFullEvaluationData: resolved.observeFullEvaluationData,
+                evaluationFailure: resolved.evaluationFailure,
+                dependencyEvaluations: dependencies,
+                hasInvalidDependencyGraph: hasInvalidDependencyGraph,
+                requestedContext: resolved.requestedContext,
+                error: resolved.error
+            )
         }
         return resolved
     }
@@ -805,6 +951,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 let operationCompletion = takeCompletion()
                 let flagsData = FlagsData(
                     flags: response.flags,
+                    flagEvaluationErrors: response.flagEvaluationErrors,
                     context: context,
                     date: self.dateProvider.now,
                     obfuscation: response.obfuscation,
@@ -812,6 +959,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     experimentationOptOutPolicy: policy,
                     observeFullEvaluationData: response.observeFullEvaluationData,
                     keySpellings: response.keySpellings,
+                    errorKeySpellings: response.errorKeySpellings,
                     unparsedFlagKeys: response.unparsedFlagKeys
                 )
                 var versionAfterSuccess: UInt64?
