@@ -135,6 +135,7 @@ internal final class RUMSwiftUIViewCallbackAdmission {
     }
 
     static var lifecycleObserver: ((LifecycleObservation) -> Void)?
+    static var ordinaryDisappearanceObserver: ((RUMSceneIdentifierReader.ObserverView, @escaping () -> Void) -> Void)?
 
     /// Records values without retaining ownership or invoking callback admission.
     func recordLifecycleObservation(

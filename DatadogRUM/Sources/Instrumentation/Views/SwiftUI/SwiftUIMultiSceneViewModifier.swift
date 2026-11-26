@@ -160,6 +160,10 @@ private final class RUMOrdinaryDisappearanceOwner {
         reader = observer
     }
 
+    var hasDetachedReader: Bool {
+        scene != nil && reader?.currentSceneIdentifier == nil
+    }
+
     var attachedScene: RUMSceneIdentifier? {
         guard !isAmbiguous, let scene, let reader, reader.currentSceneIdentifier == scene,
               !movedAcrossScenes || stillInOriginalHost(reader) else {
@@ -202,6 +206,9 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         let disappearanceOwner = startsOnInitialMount && configuration == nil
             ? RUMOrdinaryDisappearanceOwner()
             : nil
+        let onDisappear: () -> Void = {
+            disappear(ownedBy: disappearanceOwner)
+        }
         let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)?
         if startsOnInitialMount, navigationOccurrenceSource != nil {
             onInitialMount = { sceneIdentifier in
@@ -242,6 +249,11 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     onCreate: { observer in
                         register(observer: observer)
                         disappearanceOwner?.register(observer)
+                        #if DD_SDK_COMPILED_FOR_TESTING
+                        if disappearanceOwner != nil, observer.currentSceneIdentifier != nil {
+                            RUMSwiftUIViewCallbackAdmission.ordinaryDisappearanceObserver?(observer, admission.disappearanceCallback(perform: onDisappear))
+                        }
+                        #endif
                     },
                     onInitialMount: onInitialMount,
                     onMount: onMount,
@@ -292,9 +304,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     appear()
                 }
             }
-            .onDisappear(perform: admission.disappearanceCallback {
-                disappear(in: disappearanceOwner?.attachedScene)
-            })
+            .onDisappear(perform: admission.disappearanceCallback(perform: onDisappear))
     }
 
     /// iOS 27 may reuse the speculative route's modifier state for the route
@@ -740,7 +750,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
         }
     }
 
-    private func disappear(in scene: RUMSceneIdentifier?) {
+    private func disappear(ownedBy owner: RUMOrdinaryDisappearanceOwner?) {
         #if DD_SDK_COMPILED_FOR_TESTING
         admission.recordLifecycleObservation("trait-disappear-entry")
         #endif
@@ -750,6 +760,12 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
             #if DD_SDK_COMPILED_FOR_TESTING
             admission.recordLifecycleObservation("trait-disappear-admitted", state: trackingState)
             #endif
+            if owner?.hasDetachedReader == true, trackingState.activeLifecycleGeneration != nil,
+               let mountedScene = transitionArbiter?.mountedSceneIdentifier(for: trackingState),
+               mountedScene == trackingState.sceneIdentifier {
+                // The callback's reader has left. A live reader already owns the current occurrence.
+                return
+            }
             session.hasPendingOrdinaryAppearance = false
             session.shouldReconcileSurvivingOrdinaryReader = false
 
@@ -784,7 +800,7 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                 #if DD_SDK_COMPILED_FOR_TESTING
                 admission.recordLifecycleObservation("trait-disappear-arbiter", state: trackingState)
                 #endif
-                transitionArbiter.process(.disappear, state: trackingState, disappearanceScene: scene, send: apply)
+                transitionArbiter.process(.disappear, state: trackingState, disappearanceScene: owner?.attachedScene, send: apply)
                 return
             }
             #endif
