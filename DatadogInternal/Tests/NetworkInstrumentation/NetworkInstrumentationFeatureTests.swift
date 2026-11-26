@@ -2652,6 +2652,48 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.payload), "GraphQL payload header should be removed")
     }
 
+    // MARK: - Completion handler vs. metrics ordering
+
+    private var completedInterceptions: [URLSessionTaskInterception] = []
+
+    private func interceptTaskWithCompletionHandler(in feature: NetworkInstrumentationFeature) -> URLSessionTask {
+        feature.handlers = [handler]
+        handler.onInterceptionDidComplete = { [weak self] in self?.completedInterceptions.append($0) }
+        let task = URLSessionTask.mockWith(request: .mockAny(), response: .mockAny())
+        var tracking = task.dd
+        tracking.hasCompletion = true
+        feature.intercept(task: task, with: [], additionalFirstPartyHosts: nil, trackingMode: .registeredDelegate)
+        return task
+    }
+
+    func testGivenTaskWithCompletionHandler_whenMetricsArriveAfterCompletion_itFinishesOnce() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let task = interceptTaskWithCompletionHandler(in: feature)
+
+        feature.task(task, didCompleteWithError: nil, fromCompletionHandler: true)
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 0, "Must wait for metrics in registered delegate mode")
+
+        feature.task(task, didFinishCollecting: .mockAny())
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 1, "Delayed metrics must finish the interception once the completion ran")
+        XCTAssertNotNil(completedInterceptions.first?.metrics)
+    }
+
+    func testGivenTaskWithCompletionHandler_whenMetricsArriveBeforeCompletion_itFinishesOnceAfterCompletion() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let task = interceptTaskWithCompletionHandler(in: feature)
+
+        feature.task(task, didFinishCollecting: .mockAny())
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 0, "Must wait for the completion handler to capture data")
+
+        feature.task(task, didCompleteWithError: nil, fromCompletionHandler: true)
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 1)
+        XCTAssertNotNil(completedInterceptions.first?.metrics)
+    }
+
     // MARK: - Thread Safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {

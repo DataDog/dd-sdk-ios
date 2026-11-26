@@ -54,6 +54,9 @@ public class URLSessionTaskInterception {
     public private(set) var responseSize: Int64?
     /// Task completion collected during this interception.
     public private(set) var completion: ResourceCompletion?
+    /// Whether the task's swizzled completion handler has executed. Lets a later callback
+    /// (e.g. delayed `didFinishCollecting`) finish the interception. Accessed on the feature queue only.
+    internal var hasExecutedCompletionHandler = false
     /// Trace context injected to request headers. Can be `nil` if the trace was not sampled or if modifying
     /// request was not possible in `URLSession` swizzling on certain OS version.
     public private(set) var trace: TraceContext?

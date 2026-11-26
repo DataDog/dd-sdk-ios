@@ -197,13 +197,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     guard let delegate = task.dd.delegate, delegate.isKind(of: delegateClass) else {
                         return
                     }
-                    self.task(task, didCompleteWithError: error)
+                    self.task(task, didCompleteWithError: error, fromCompletionHandler: true)
                 } else {
                     // Automatic mode: skip if task has a registered delegate
                     if let delegate = task.dd.delegate, self.isRegisteredDelegate(delegate) {
                         return
                     }
-                    self.task(task, didCompleteWithError: error)
+                    self.task(task, didCompleteWithError: error, fromCompletionHandler: true)
                 }
             }, didReceive: { [weak self] task, data in
                 guard let self = self else {
@@ -523,8 +523,9 @@ extension NetworkInstrumentationFeature {
             // Populate interception.responseSize for registered delegate mode
             self.captureResponseSize(for: interception, from: task, metrics: resourceMetrics)
 
-            // Don't finish yet if task has completion handler - let completion handler finish after capturing data
-            if interception.isDone && !task.dd.hasCompletion {
+            // Don't finish yet if task has a completion handler that hasn't run - it finishes after capturing data.
+            // If the completion already ran (e.g. metrics forwarding was delayed), finish here.
+            if interception.isDone && self.isCompletionHandlerSettled(for: task, interception: interception) {
                 // Registered delegate mode: `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing
                 self.finish(task: task, interception: interception, endDate: nil)
             }
@@ -572,7 +573,8 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task that has finished transferring data.
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
-    func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
+    ///   - fromCompletionHandler: `true` when called from a swizzled completion handler.
+    func task(_ task: URLSessionTask, didCompleteWithError error: Error?, fromCompletionHandler: Bool = false) {
         // Capture end time before entering the queue for more accurate timing.
         // `endMediaTime` is from the same monotonic clock as `startMediaTime` so the derived
         // duration is guaranteed `>= 0` regardless of wall-clock corrections.
@@ -582,6 +584,10 @@ extension NetworkInstrumentationFeature {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
+            }
+
+            if fromCompletionHandler {
+                interception.hasExecutedCompletionHandler = true
             }
 
             interception.register(
@@ -600,6 +606,11 @@ extension NetworkInstrumentationFeature {
                 self.finish(task: task, interception: interception, endDate: endTime, endMediaTime: endMediaTime)
             }
         }
+    }
+
+    /// `true` when the task has no swizzled completion handler, or when it has already executed.
+    private func isCompletionHandlerSettled(for task: URLSessionTask, interception: URLSessionTaskInterception) -> Bool {
+        return !task.dd.hasCompletion || interception.hasExecutedCompletionHandler
     }
 
     private func firstPartyHosts(with additionalFirstPartyHosts: FirstPartyHosts?) -> FirstPartyHosts {
@@ -674,7 +685,7 @@ extension NetworkInstrumentationFeature {
             // However, if the task has a completion handler, wait for it to fire instead of finishing here.
             // This ensures we capture the response data through completion handler swizzling before finishing.
             // The completion handler will call finish() after capturing the data.
-            if interception.isDone && !task.dd.hasCompletion {
+            if interception.isDone && self.isCompletionHandlerSettled(for: task, interception: interception) {
                 self.finish(task: task, interception: interception, endDate: endTime, endMediaTime: endMediaTime)
             }
         }
