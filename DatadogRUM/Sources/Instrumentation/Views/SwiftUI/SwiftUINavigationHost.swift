@@ -749,17 +749,13 @@ internal struct RUMNavigationStack<Route: Hashable, Root: View, Destination: Vie
         #if DD_SDK_COMPILED_FOR_TESTING
         testingOnNativeUpdate?(state, admission, nil, forwardedPath)
         #endif
-        return NavigationStack(path: positionedPath) {
+        return NavigationStack(path: forwardedPath) {
             RUMNativeNavigationBoundary<Route, Root>(
                 route: nil, state: state, admission: admission, content: root
             )
-            .navigationDestination(for: RUMNativeNavigationState<Route>.PathEntry.self) { entry in
+            .navigationDestination(for: Route.self) { route in
                 RUMNativeNavigationBoundary(
-                    route: entry.route,
-                    state: state,
-                    admission: admission,
-                    content: destination(entry.route),
-                    slot: entry.slot
+                    route: route, state: state, admission: admission, content: destination(route)
                 )
             }
         }
@@ -800,15 +796,6 @@ internal struct RUMNavigationStack<Route: Hashable, Root: View, Destination: Vie
         }
     }
 
-    private var positionedPath: Binding<[RUMNativeNavigationState<Route>.PathEntry]> {
-        Binding(
-            get: { state.pathEntries },
-            set: { entries, transaction in
-                forwardedPath.transaction(transaction).wrappedValue = entries.map(\.route)
-            }
-        )
-    }
-
     private var forwardedPath: Binding<[Route]> {
         Binding(
             get: { path.wrappedValue },
@@ -832,20 +819,6 @@ internal struct RUMNavigationStack<Route: Hashable, Root: View, Destination: Vie
 @available(iOS 27.0, *)
 @MainActor
 internal final class RUMNativeNavigationState<Route: Hashable> {
-    /// SwiftUI receives a stable identifier for each path position, including equal routes.
-    struct PathEntry: Hashable {
-        let route: Route
-        let slot: UUID
-
-        static func == (lhs: Self, rhs: Self) -> Bool { lhs.slot == rhs.slot }
-
-        func hash(into hasher: inout Hasher) { hasher.combine(slot) }
-    }
-
-    var pathEntries: [PathEntry] {
-        zip(acceptedPath, acceptedSlots).map { PathEntry(route: $0, slot: $1) }
-    }
-
     private struct Position: Hashable {
         let container: UUID
         let slot: UUID
@@ -858,6 +831,7 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         fileprivate var isValid: Bool = true
         fileprivate var mountedSlot: UUID?
         fileprivate weak var mountedSource: RUMSwiftUINavigationOccurrenceSource?
+        fileprivate var requiresNativePosition = false
 
         fileprivate init(route: Route?, depth: Int) {
             self.route = route
@@ -1016,12 +990,12 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         _ = offeredSource.reconcileCurrentDestination(configuration: configuration, admission: expected)
     }
 
-    func makeClaim(for route: Route?, slot: UUID? = nil) -> Claim {
+    func makeClaim(for route: Route?) -> Claim {
         reconciliationEntry &+= 1
         let entry = reconciliationEntry
         let original = admission
         let path = acceptedPath
-        let depth = slot.flatMap { acceptedSlots.firstIndex(of: $0).map { $0 + 1 } } ?? depth(for: route, path: path)
+        let depth = depth(for: route, path: path)
         let claim = Claim(route: route, depth: depth)
         claim.isValid = accepts(entry: entry, admission: original)
         return claim
@@ -1030,8 +1004,7 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
     func configuration(
         for route: Route?,
         retaining claim: Claim,
-        admission expected: RUMSwiftUIViewCallbackAdmission?,
-        slot: UUID? = nil
+        admission expected: RUMSwiftUIViewCallbackAdmission?
     ) -> RUMViewTrackingState.Configuration? {
         guard let expected, admits(expected) else {
             return nil
@@ -1047,13 +1020,10 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         let priorDepth = claim.depth
         let reusedRoute = priorRoute == route
         let keepsMountedSlot = reusedRoute && claim.mountedSource === originalSource
+        let requiresNativePosition = (reusedRoute && claim.requiresNativePosition)
+            || route.map { path.firstIndex(of: $0) != path.lastIndex(of: $0) } == true
         let selectedDepth: Int
-        if let slot {
-            guard let index = slots.firstIndex(of: slot) else {
-                return nil
-            }
-            selectedDepth = index + 1
-        } else if keepsMountedSlot, let slot = claim.mountedSlot {
+        if keepsMountedSlot, let slot = claim.mountedSlot {
             if slot == rootSlot {
                 selectedDepth = 0
             } else if let retainedIndex = slots.firstIndex(of: slot) {
@@ -1062,6 +1032,17 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
                 // An outgoing equal route must not impersonate the surviving route.
                 return nil
             }
+        } else if requiresNativePosition {
+            // A value-equal boundary cannot claim a slot until its own reader proves its position.
+            // Keep that requirement after a pop so an unmounted outgoing boundary cannot guess again.
+            guard accepts(entry: entry, admission: expected), source === originalSource else {
+                return nil
+            }
+            claim.route = route
+            claim.requiresNativePosition = true
+            claim.mountedSlot = nil
+            claim.mountedSource = nil
+            return nil
         } else {
             let currentDepth = depth(for: route, path: path)
             selectedDepth = !claim.isValid || !reusedRoute || priorDepth > path.count ? currentDepth : priorDepth
@@ -1080,11 +1061,49 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
         claim.route = route
         claim.depth = selectedDepth
         claim.isValid = true
+        claim.requiresNativePosition = requiresNativePosition
         if !reusedRoute || claim.mountedSource !== originalSource {
             claim.mountedSlot = nil
             claim.mountedSource = nil
         }
         return configuration
+    }
+
+    func confirmNativePosition(
+        for route: Route,
+        retaining claim: Claim,
+        reader: RUMSceneIdentifierReader.ObserverView,
+        admission expected: RUMSwiftUIViewCallbackAdmission
+    ) -> UUID? {
+        guard admits(expected), let currentSource = source, claim.requiresNativePosition,
+              let window = observer?.window, reader.window === window,
+              let scene = reader.currentSceneIdentifier, observer?.currentSceneIdentifier == scene,
+              expected.admits(sceneIdentifier: scene) else {
+            return nil
+        }
+        reconciliationEntry &+= 1
+        let entry = reconciliationEntry
+        let path = acceptedPath
+        let slots = acceptedSlots
+        var controller = reader.nearestViewController
+        while let host = controller {
+            if let navigation = host.navigationController, navigation.viewControllers.contains(where: { $0 === host }) {
+                guard let slot = slots.last, let lastRoute = path.last,
+                      navigation.topViewController === host, navigation.viewControllers.count == path.count + 1,
+                      lastRoute == route, claim.route == route,
+                      accepts(entry: entry, admission: expected), source === currentSource else {
+                    return nil
+                }
+                if let mounted = claim.mountedSlot, claim.mountedSource === currentSource, mounted != slot {
+                    return nil
+                }
+                claim.mountedSlot = slot
+                claim.mountedSource = currentSource
+                return slot
+            }
+            controller = host.parent
+        }
+        return nil
     }
 
     func didMaterialize(
@@ -1229,33 +1248,31 @@ internal final class RUMNativeNavigationState<Route: Hashable> {
 @MainActor
 private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View {
     let route: Route?
-    let slot: UUID?
     let state: RUMNativeNavigationState<Route>
     let admission: RUMSwiftUIViewCallbackAdmission?
     let content: Content
     @State private var claim: RUMNativeNavigationState<Route>.Claim
+    @State private var confirmedSlot: UUID?
 
     init(
         route: Route?,
         state: RUMNativeNavigationState<Route>,
         admission: RUMSwiftUIViewCallbackAdmission?,
-        content: Content,
-        slot: UUID? = nil
+        content: Content
     ) {
         self.route = route
-        self.slot = slot
         self.state = state
         self.admission = admission
         self.content = content
-        _claim = State(initialValue: state.makeClaim(for: route, slot: slot))
+        _claim = State(initialValue: state.makeClaim(for: route))
     }
 
     var body: some View {
-        let configuration = state.configuration(for: route, retaining: claim, admission: admission, slot: slot)
+        let configuration = state.configuration(for: route, retaining: claim, admission: admission)
         #if DD_SDK_COMPILED_FOR_TESTING
         if let configuration, let observe = RUMNativeNavigationTesting.onClaim {
-            observe(configuration) { [state, claim, route, slot, admission] in
-                state.configuration(for: route, retaining: claim, admission: admission, slot: slot)
+            observe(configuration) { [state, claim, route, admission] in
+                state.configuration(for: route, retaining: claim, admission: admission)
             }
         }
         #endif
@@ -1277,6 +1294,31 @@ private struct RUMNativeNavigationBoundary<Route: Hashable, Content: View>: View
                         }
                         state.didMaterialize(mounted, claim: claim, source: source, admission: admission)
                     }
+                )
+            }
+        }
+        .background {
+            if let admission, let route, claim.requiresNativePosition,
+               confirmedSlot == nil || confirmedSlot != claim.mountedSlot {
+                RUMSceneIdentifierReader(
+                    admission: admission,
+                    applicationSupportsMultipleScenes: true,
+                    onCreate: { reader in
+                        guard reader.window != nil else {
+                            return
+                        }
+                        // SwiftUI may still be updating its view tree during UIKit attachment.
+                        DispatchQueue.main.async { [weak reader] in
+                            guard let reader,
+                                  let slot = state.confirmNativePosition(
+                                    for: route, retaining: claim, reader: reader, admission: admission
+                                  ), confirmedSlot != slot else {
+                                return
+                            }
+                            confirmedSlot = slot
+                        }
+                    },
+                    onChange: { _ in }
                 )
             }
         }
