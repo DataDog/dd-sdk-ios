@@ -46,7 +46,9 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
             return send(body: body, slotId: slotId)
         }
         func ownedMessage(_ message: WebViewMessage) -> FeatureMessage {
-            .payload(WebViewMessageWithRUMContext(message: message, capture: capture, sessionExpiry: sessionExpiry))
+            .payload(WebViewMessageWithRUMContext(
+                message: message, capture: capture, sessionExpiry: sessionExpiry, slotID: slotId
+            ))
         }
         send(body: body, slotId: slotId, makeRecordMessage: ownedMessage, makeMessage: ownedMessage)
     }

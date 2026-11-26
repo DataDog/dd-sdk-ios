@@ -8,7 +8,8 @@
 import Foundation
 import DatadogInternal
 
-internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFeature {
+internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFeature, DataClearable {
+    private let webViewRecords: WebViewRecordReceiver
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
@@ -40,10 +41,12 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )
+        let webViewRecords = WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self))
+        self.webViewRecords = webViewRecords
         self.messageReceiver = CombinedFeatureMessageReceiver(
             [
+                webViewRecords,
                 recordingComponents.messageReceiver,
-                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self)),
                 EmbeddedContentReceiver(
                     scope: core.scope(for: SessionReplayFeature.self),
                     resourcesWriter: resourcesWriter,
@@ -66,6 +69,10 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.imagePrivacyLevel = configuration.imagePrivacyLevel
         self.touchPrivacyLevel = configuration.touchPrivacyLevel
         self.recordingCoordinator = recordingComponents.recordingCoordinator
+    }
+
+    func clearAllData() {
+        webViewRecords.clearAllData()
     }
 
     func startRecording() {
