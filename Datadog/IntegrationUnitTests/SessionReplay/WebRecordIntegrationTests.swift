@@ -152,12 +152,21 @@ class WebRecordIntegrationTests: XCTestCase {
         try assertExpiredBrowserRecordFollowsView(recordFirst: true, startUnrelatedSession: true)
     }
 
+    @MainActor
+    func testExpiredRecordFollowsAViewCapturedInTheBrowserRenewedSession() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Native WebView session capture requires iOS 27")
+        }
+        try assertExpiredBrowserRecordFollowsView(recordFirst: true, renewBeforeView: true)
+    }
+
     @available(iOS 27.0, *)
     @MainActor
     private func assertExpiredBrowserRecordFollowsView(
         recordFirst: Bool,
         clearBeforeView: Bool = false,
-        startUnrelatedSession: Bool = false
+        startUnrelatedSession: Bool = false,
+        renewBeforeView: Bool = false
     ) throws {
         let date = Date()
         let clock = MonotonicClockMock()
@@ -219,11 +228,16 @@ class WebRecordIntegrationTests: XCTestCase {
         let expiry = try XCTUnwrap(observation.expiry)
         XCTAssertEqual(expiry.sessionID, predecessor.sessionID)
         let browserView = UUID().uuidString.lowercased()
-        func send(_ message: WebViewMessage, slotID: String = "registered-browser") {
+        func send(
+            _ message: WebViewMessage,
+            slotID: String = "registered-browser",
+            using liveObservation: RUMWebViewSessionObservation? = nil
+        ) {
+            let receipt = liveObservation ?? observation
             core.send(message: .payload(WebViewMessageWithRUMContext(
                 message: message,
-                capture: observation.capture,
-                sessionExpiry: expiry,
+                capture: receipt.capture,
+                sessionExpiry: receipt.expiry,
                 slotID: slotID
             )))
             core.flush()
@@ -256,7 +270,24 @@ class WebRecordIntegrationTests: XCTestCase {
             feature.monitor.startView(key: "unrelated", name: "Unrelated", attributes: [:])
             core.flush()
         }
-        send(view)
+        if renewBeforeView {
+            send(.rum([
+                "type": "resource",
+                "date": 1_700_000_000_000,
+                "application": ["id": "browser"],
+                "session": ["id": "browser"],
+                "view": ["id": "other-browser-view"]
+            ]))
+            let current = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative))
+            XCTAssertNotEqual(current.sessionID, expiry.sessionID)
+            replayScope.contextMock = .mockWith(trackingConsent: .granted, additionalContext: [current])
+            let live = try XCTUnwrap(feature.observeRUMSession(forSceneIdentifier: scene.rawValue, owner: owner))
+            XCTAssertNil(live.expiry)
+            XCTAssertEqual(live.capture.value.rumContext?.sessionID, current.sessionID)
+            send(view, using: live)
+        } else {
+            send(view)
+        }
         let successor = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative))
         XCTAssertNotEqual(successor.sessionID, predecessor.sessionID)
         replayScope.contextMock = .mockWith(trackingConsent: .granted, additionalContext: [successor])

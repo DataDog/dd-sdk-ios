@@ -25,6 +25,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
     /// The timeseries collector, used to tell if the current session has collected timeseries data.
     let timeseriesCollector: TimeseriesCollecting?
+    private let webViewRenewalPredecessor: (String, RUMContextHandoff.Owner) -> String?
 
     /// Creates a new receiver.
     ///
@@ -34,18 +35,21 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     ///   - viewCache: The RUM view cache.
     ///   - timeseriesCollector: The timeseries collector, or `nil` if timeseries collection is not enabled.
+    ///   - webViewRenewalPredecessor: The verified predecessor of a live Browser-renewed native session.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         commandSubscriber: RUMCommandSubscriber,
         viewCache: ViewCache,
-        timeseriesCollector: TimeseriesCollecting? = nil
+        timeseriesCollector: TimeseriesCollecting? = nil,
+        webViewRenewalPredecessor: @escaping (String, RUMContextHandoff.Owner) -> String? = { _, _ in nil }
     ) {
         self.featureScope = featureScope
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
         self.viewCache = viewCache
         self.timeseriesCollector = timeseriesCollector
+        self.webViewRenewalPredecessor = webViewRenewalPredecessor
     }
 
     /// Writes a Browser RUM event to the core.
@@ -225,12 +229,19 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
             writer.write(value: AnyEncodable(event))
 
-            if let capture, renewedContext != nil, let expiry = capture.sessionExpiry,
-               rum.sessionID != expiry.sessionID, context.trackingConsent == .granted,
+            if let capture, context.trackingConsent == .granted,
                event["type"] as? String == "view", (event["session"] as? JSON)?["id"] as? String == rum.sessionID,
                let id = (event["view"] as? JSON)?["id"] as? String,
-               let offset = webViewContext.serverTimeOffset(forView: id),
-               let key = capture.replayRenewalKey(forBrowserViewID: id) {
+               let offset = webViewContext.serverTimeOffset(forView: id) {
+                // The expired callback was admitted by the renewal command. A live callback can
+                // bridge only the exact Browser-owned predecessor published with the live session.
+                let predecessor = renewedContext == nil
+                    ? receiver.webViewRenewalPredecessor(rum.sessionID, capture.capture.owner)
+                    : capture.sessionExpiry?.sessionID
+                guard let predecessor, predecessor != rum.sessionID,
+                      let key = capture.replayRenewalKey(forBrowserViewID: id, predecessorSessionID: predecessor) else {
+                    return
+                }
                 let renewal = RUMWebViewReplayRenewal(
                     key: key, context: rum, offset: offset, consentRevision: context.trackingConsentRevision
                 )
