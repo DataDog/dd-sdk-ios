@@ -89,6 +89,22 @@ final class ProfileWriterTests: XCTestCase {
         XCTAssertNil(metric.attributes[ProfilingDiagnostics.Constants.diagnosticsKey])
     }
 
+    func testWriteTriggeredHeapProfile_serializesTriggerOperationTag() throws {
+        let warning = DurationEvent(id: "warning", type: .error, start: 20, duration: 0)
+        let heap = snapshot(filename: "heap.pprof", rumEvents: [.error(warning)])
+
+        writer.write([heap], operation: .trigger)
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let data = try JSONEncoder.dd.default().encode(event)
+        let uploadedEvent = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let tags = try XCTUnwrap(uploadedEvent["tags_profiler"] as? String)
+        XCTAssertTrue(tags.split(separator: ",").contains("operation:trigger"))
+        XCTAssertFalse(tags.split(separator: ",").contains("operation:continuous"))
+        XCTAssertEqual(event.attachments, ["heap.pprof", "rum-mobile-events.json"])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], [warning.id])
+    }
+
     func testWriteTwoSnapshots_writesOneEventWithBothPprofsAndOneRUMAttachment() throws {
         let cpu = snapshot(start: 20, end: 70, rumEvents: [.vital(.mockAny())])
         let heap = snapshot(filename: "heap.pprof", start: 10, end: 60)
@@ -113,7 +129,7 @@ final class ProfileWriterTests: XCTestCase {
         let hang = DurationEvent(id: "hang", type: .error, start: 40, duration: 50)
         let longTask = DurationEvent(id: "long-task", type: .longTask, start: 20, duration: 30)
         let cpu = snapshot(
-            rumEvents: [.vital(vital), .hang(hang), .longTask(longTask)],
+            rumEvents: [.vital(vital), .error(hang), .longTask(longTask)],
             attributes: ["application.id": "app", "session.id": "session", "view.id": ["cpu-view"], "view.name": ["CPU view"]]
         )
         let heap = snapshot(
@@ -383,6 +399,39 @@ final class ProfileWriterTests: XCTestCase {
             XCTAssertEqual(attachments.pprofs.map(\.filename), [captured.attachment.filename])
             XCTAssertEqual(attachments.pprofs.map(\.data), [captured.attachment.data])
             XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [index == 0 ? vital.id : task.id])
+        }
+    }
+
+    func testSizeSplitDoesNotGiveUncorrelatedHeapTheCPULongTaskCorrelations() throws {
+        let halfLimit = Int(ProfilerFeature.Constants.maxObjectSize) / 2
+        let task = DurationEvent(id: "cpu-long-task", type: .longTask, start: 20, duration: 30)
+        let cpu = snapshot(
+            data: Data(repeating: 1, count: halfLimit),
+            rumEvents: [.longTask(task)],
+            attributes: [RUMCoreContext.IDs.viewID: ["cpu-view"], "cpu-only": "cpu-value"]
+        )
+        let heap = snapshot(
+            filename: "heap.pprof",
+            data: Data(repeating: 2, count: halfLimit + 1),
+            rumEvents: [],
+            attributes: [RUMCoreContext.IDs.viewID: ["heap-view"], "heap-only": "heap-value"]
+        )
+
+        for snapshots in [[cpu, heap], [heap, cpu]] {
+            let previousCount = core.events.count
+            writer.write(snapshots, operation: .continuousProfiling)
+
+            XCTAssertEqual(core.events.count, previousCount + 1)
+            let event = try XCTUnwrap(core.events.last as? ProfileEvent)
+            let attachments = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
+            XCTAssertEqual(event.attachments, ["profile.pprof", "rum-mobile-events.json"])
+            XCTAssertEqual(attachments.pprofs.map(\.filename), ["profile.pprof"])
+            XCTAssertEqual(attachments.pprofs.map(\.data), [cpu.attachment.data])
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["cpu-view"])
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [task.id])
+            XCTAssertEqual(event.additionalAttributes?["cpu-only"] as? String, "cpu-value")
+            XCTAssertNil(event.additionalAttributes?["heap-only"])
+            XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [task.id])
         }
     }
 

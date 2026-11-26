@@ -34,6 +34,7 @@ internal final class ProfilingSessionMetric {
     enum StartReason: String {
         case applicationLaunch = "application_launch"
         case continuous = "continuous"
+        case trigger = "trigger"
         case rumOperation = "rum_operation"
     }
 

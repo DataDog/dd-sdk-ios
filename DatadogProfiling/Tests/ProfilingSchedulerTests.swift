@@ -85,7 +85,7 @@ final class ProfileSnapshotSchedulingTests: XCTestCase {
             let heap = snapshot(
                 filename: "heap.pprof",
                 data: Data([4, 5, 6]),
-                rumEvents: [.longTask(.init(id: "heap-task", type: .longTask, start: 20, duration: 30))],
+                rumEvents: [.error(.init(id: "heap-warning", type: .error, start: 20, duration: 0))],
                 attributes: ["session.id": "session", "view.id": ["heap-view"]]
             )
             let cpuProvider = SnapshotProviderMock(snapshot: cpu, completesImmediately: false, onCapture: { _ in captured.fulfill() })
@@ -367,6 +367,7 @@ final class ProfilingSchedulerTests: XCTestCase {
         let rum = try XCTUnwrap(core.context.additionalContext(ofType: RUMCoreContext.self))
         XCTAssertEqual(sharedEvent.additionalAttributes?[RUMCoreContext.IDs.applicationID] as? String, rum.applicationID)
         XCTAssertEqual(sharedEvent.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, rum.sessionID)
+        XCTAssertTrue(sharedEvent.tags.contains("operation:continuous"))
         withExtendedLifetime(cpu) {}
     }
 
@@ -391,18 +392,17 @@ final class ProfilingSchedulerTests: XCTestCase {
 
         func recordHeapWindow() {
             recordMemorySample()
-            let task = DurationEvent(
+            let warning = DurationEvent(
                 id: UUID().uuidString,
-                type: .longTask,
+                type: .error,
                 start: Date().timeIntervalSince1970.dd.toInt64Nanoseconds,
                 duration: 0
             )
-            _ = memory.receive(message: .payload(LongTaskMessage(attributes: [:], longTask: task)), from: core)
-            memoryQueue.sync {}
+            _ = memory.receive(message: .payload(MemoryWarningMessage(attributes: [:], warning: warning)), from: core)
         }
 
         let heapOnly = expectation(description: "heap captured before the CPU minimum duration")
-        let combined = expectation(description: "eligible CPU window joins a later heap capture")
+        let cpuCapture = expectation(description: "CPU window captured once its minimum duration is reached")
         core.onEventWriteContext = { _ in
             guard let attachments = core.metadata.last as? ProfileAttachments else {
                 return XCTFail("Missing profile attachments")
@@ -410,7 +410,7 @@ final class ProfilingSchedulerTests: XCTestCase {
             if attachments.pprofs.contains(where: { $0.filename == ProfileAttachments.Constants.pprofFilename }) {
                 scheduler.stopPeriodic(for: cpu)
                 scheduler.stopPeriodic(for: memory)
-                combined.fulfill()
+                cpuCapture.fulfill()
             } else {
                 XCTAssertEqual(attachments.pprofs.map(\.filename), [ProfileAttachments.Constants.heapPprofFilename])
                 if core.events.count == 1 {
@@ -425,10 +425,10 @@ final class ProfilingSchedulerTests: XCTestCase {
         }
         recordHeapWindow()
 
-        wait(for: [heapOnly, combined], timeout: 3, enforceOrder: true)
+        wait(for: [heapOnly, cpuCapture], timeout: 3, enforceOrder: true)
 
         let attachments = try XCTUnwrap(core.metadata.last as? ProfileAttachments)
-        XCTAssertEqual(Set(attachments.pprofs.map(\.filename)), ["profile.pprof", "heap.pprof"])
+        XCTAssertEqual(attachments.pprofs.map(\.filename), ["profile.pprof"])
         XCTAssertTrue(attachments.pprofs.allSatisfy { !$0.data.isEmpty })
         let event = try XCTUnwrap(core.events.last as? ProfileEvent)
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], [vital.id])
@@ -436,6 +436,74 @@ final class ProfilingSchedulerTests: XCTestCase {
 
     func testDisabledCPUDoesNotDisableMemoryCadence() throws {
         try assertMemoryKeepsCapturing(continuousSampleRate: 0, rejectCPUQuota: false)
+    }
+
+    func testCPULongTasksMakeCombinedPeriodicProfilesUploadable() throws {
+        let provider = sampledProvider(continuousSampleRate: 100)
+        let core = PassthroughCoreMock(context: context())
+        let writer = ProfileWriter(featureScope: core)
+        let scheduler = ProfilingScheduler(writer: writer, profilingInterval: 0.1)
+        let cpu = makeCPU(provider: provider, core: core, scheduler: scheduler)
+        let memory = MemoryProfiler(profilingSamplerProvider: provider, writer: writer, scheduler: scheduler, queue: memoryQueue)
+        defer {
+            scheduler.stopPeriodic(for: cpu)
+            scheduler.stopPeriodic(for: memory)
+            core.onEventWriteContext = nil
+            memory.flushAndStop()
+        }
+        _ = memory.receive(message: .context(core.context), from: core)
+        memoryQueue.sync {}
+
+        func recordWindow(_ index: Int) {
+            var sample = dd_memory_live_sample_t()
+            sample.address = UnsafeRawPointer(bitPattern: 0x10000 + index * 0x10000)
+            sample.size = 16
+            sample.weight = 1
+            dd_memory_profiler_record_for_testing(&sample)
+            cpuQueue.sync { addCPUSample() }
+            let task = DurationEvent(
+                id: "cpu-periodic-task-\(index)",
+                type: .longTask,
+                start: Date().addingTimeInterval(core.context.serverTimeOffset - 1).timeIntervalSince1970.dd.toInt64Nanoseconds,
+                duration: 1_000_000_000
+            )
+            let message = LongTaskMessage(
+                attributes: [RUMCoreContext.IDs.viewID: ["cpu-view"], RUMCoreContext.IDs.viewName: ["CPU View"]],
+                longTask: task
+            )
+            _ = cpu.receive(message: .payload(message), from: core)
+            XCTAssertFalse(memory.receive(message: .payload(message), from: core))
+            cpuQueue.sync {}
+        }
+
+        let uploaded = expectation(description: "CPU long tasks correlate two combined periodic uploads")
+        uploaded.expectedFulfillmentCount = 2
+        uploaded.assertForOverFulfill = true
+        core.onEventWriteContext = { _ in
+            if core.events.count == 1 {
+                recordWindow(1)
+            } else {
+                scheduler.stopPeriodic(for: cpu)
+                scheduler.stopPeriodic(for: memory)
+            }
+            uploaded.fulfill()
+        }
+        recordWindow(0)
+        wait(for: [uploaded], timeout: 3)
+        memoryQueue.sync {}
+
+        let events: [ProfileEvent] = core.events()
+        XCTAssertEqual(events.count, 2)
+        XCTAssertTrue(events.allSatisfy { $0.tags.contains("operation:continuous") })
+        for (index, metadata) in core.metadata.enumerated() {
+            let attachments = try XCTUnwrap(metadata as? ProfileAttachments)
+            XCTAssertEqual(Set(attachments.pprofs.map(\.filename)), ["profile.pprof", "heap.pprof"])
+            let correlations = try XCTUnwrap(JSONSerialization.jsonObject(with: attachments.rumEvents) as? [[String: Any]])
+            XCTAssertEqual(correlations.compactMap { $0["id"] as? String }, ["cpu-periodic-task-\(index)"])
+            XCTAssertEqual(events[index].additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["cpu-view"])
+            XCTAssertEqual(events[index].additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], ["cpu-periodic-task-\(index)"])
+        }
+        withExtendedLifetime(cpu) {}
     }
 
     func testCPUQuotaRejectionDoesNotDisableMemoryCadence() throws {
@@ -616,13 +684,8 @@ private extension ProfilingSchedulerTests {
             XCTAssertEqual(memory.state, .running)
         }
         XCTAssertGreaterThanOrEqual(dd_memory_profiler_capture_diagnostics_for_testing().captures_count, 2)
-        let attachments = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        let rum = try XCTUnwrap(core.context.additionalContext(ofType: RUMCoreContext.self))
-        XCTAssertEqual(attachments.pprofs.map(\.filename), [ProfileAttachments.Constants.heapPprofFilename])
-        XCTAssertFalse(attachments.pprofs[0].data.isEmpty)
-        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.applicationID] as? String, rum.applicationID)
-        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, rum.sessionID)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
         withExtendedLifetime(cpu) {}
     }
 }

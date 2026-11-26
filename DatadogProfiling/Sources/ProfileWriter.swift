@@ -169,8 +169,8 @@ internal final class ProfileWriter: @unchecked Sendable {
             case .vital(let vital):
                 vitalIDs.append(vital.id)
                 vitalLabels.append(vital.name)
-            case .hang(let hang):
-                errorIDs.append(hang.id)
+            case .error(let error):
+                errorIDs.append(error.id)
             case .longTask(let longTask):
                 longTaskIDs.append(longTask.id)
             }

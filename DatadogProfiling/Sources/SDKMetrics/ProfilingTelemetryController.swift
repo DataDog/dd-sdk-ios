@@ -211,6 +211,8 @@ private extension ProfilingOperation {
             .applicationLaunch
         case .continuousProfiling:
             .continuous
+        case .trigger:
+            .trigger
         case .customProfiling:
             .rumOperation
         }
