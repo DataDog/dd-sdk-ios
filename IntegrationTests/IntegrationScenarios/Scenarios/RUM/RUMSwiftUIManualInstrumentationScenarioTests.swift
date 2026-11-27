@@ -37,6 +37,12 @@ class RUMSwiftUIManualInstrumentationScenarioTests: IntegrationTests, RUMCommonA
         )
 
         // start on "SwiftUI.View 1"
+        XCTAssertTrue(app.staticTexts["Hello from Bits Code 🐶"].waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "SwiftUI View 1"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+
         app.tapPushToNextView() // go to "SwiftUI.View 2"
         app.tapPushToNextView() // go to "SwiftUI.View 3"
         app.tapPresentModalView() // go to "SwiftUI.View 4"
