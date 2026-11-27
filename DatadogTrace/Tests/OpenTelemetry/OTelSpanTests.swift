@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -494,3 +495,4 @@ extension PassthroughCoreMock {
         return events.flatMap { $0.spans }
     }
 }
+#endif

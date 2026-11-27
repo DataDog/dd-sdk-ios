@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import XCTest
 import KSCrashRecording
 @testable import DatadogCrashReporting
@@ -268,3 +269,4 @@ class DatadogMinifyFilterTests: XCTestCase {
         XCTAssertTrue(exception.description.contains("not a CrashDictionary"))
     }
 }
+#endif

@@ -4,6 +4,7 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import Foundation
 import OpenTelemetryApi
 
@@ -53,3 +54,4 @@ extension OTelSpanLink: Encodable {
         try container.encode(context.traceFlags.byte, forKey: .traceFlags)
     }
 }
+#endif

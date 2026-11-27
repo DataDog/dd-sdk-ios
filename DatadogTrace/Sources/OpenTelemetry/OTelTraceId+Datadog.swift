@@ -4,6 +4,7 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import Foundation
 import OpenTelemetryApi
 import DatadogInternal
@@ -15,3 +16,4 @@ extension OpenTelemetryApi.TraceId {
         return .init(idHi: self.idHi, idLo: self.idLo)
     }
 }
+#endif

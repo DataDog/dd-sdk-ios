@@ -3,6 +3,25 @@
 import PackageDescription
 import Foundation
 
+let _traits: Set<Trait> = [
+    .default(enabledTraits: ["CrashReporting", "OpenTelemetry"]),
+    .trait(
+        name: "CrashReporting",
+        description: "Enables the built-in KSCrash integration in DatadogCrashReporting."
+    ),
+    .trait(
+        name: "OpenTelemetry",
+        description: "Enables the OpenTelemetry API integration in DatadogTrace."
+    ),
+    .trait(
+        name: "Apollo",
+        description: """
+            Enables Apollo iOS 2 integration for network instrumentation.
+            Exposes the Apollo interceptor, delegate, and URLSession wrapper through DatadogCore.
+            """
+    ),
+]
+
 var internalSwiftSettings: [SwiftSetting] = []
 if ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil {
     internalSwiftSettings.append(.define("DD_BENCHMARK"))
@@ -59,9 +78,11 @@ let package = Package(
             targets: ["DatadogProfiling"]
         ),
     ],
+    traits: _traits,
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", exact: "2.5.1"),
         .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.5.0")),
+        .package(url: "https://github.com/apollographql/apollo-ios.git", .upToNextMajor(from: "2.0.0")),
     ],
     targets: [
         .target(
@@ -84,6 +105,10 @@ let package = Package(
 
         .target(
             name: "DatadogInternal",
+            dependencies: [
+                .product(name: "Apollo", package: "apollo-ios", condition: .when(traits: ["Apollo"])),
+                .product(name: "ApolloAPI", package: "apollo-ios", condition: .when(traits: ["Apollo"])),
+            ],
             path: "DatadogInternal",
             sources: ["Sources"],
             resources: [
@@ -96,6 +121,8 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
                 .target(name: "TestUtilities"),
+                .product(name: "Apollo", package: "apollo-ios", condition: .when(traits: ["Apollo"])),
+                .product(name: "ApolloAPI", package: "apollo-ios", condition: .when(traits: ["Apollo"])),
             ],
             path: "DatadogInternal/Tests"
         ),
@@ -120,7 +147,7 @@ let package = Package(
             name: "DatadogTrace",
             dependencies: [
                 .target(name: "DatadogInternal"),
-                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core")
+                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core", condition: .when(traits: ["OpenTelemetry"]))
             ],
             path: "DatadogTrace/Sources",
             swiftSettings: [
@@ -132,6 +159,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogTrace"),
                 .target(name: "TestUtilities"),
+                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core", condition: .when(traits: ["OpenTelemetry"])),
             ],
             path: "DatadogTrace/Tests",
             swiftSettings: [
@@ -169,8 +197,8 @@ let package = Package(
             name: "DatadogCrashReporting",
             dependencies: [
                 .target(name: "DatadogInternal"),
-                .product(name: "Recording", package: "KSCrash"),
-                .product(name: "Filters", package: "KSCrash")
+                .product(name: "Recording", package: "KSCrash", condition: .when(traits: ["CrashReporting"])),
+                .product(name: "Filters", package: "KSCrash", condition: .when(traits: ["CrashReporting"]))
             ],
             path: "DatadogCrashReporting",
             sources: ["Sources"],
@@ -183,6 +211,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogCrashReporting"),
                 .target(name: "TestUtilities"),
+                .product(name: "Recording", package: "KSCrash", condition: .when(traits: ["CrashReporting"])),
             ],
             path: "DatadogCrashReporting/Tests"
         ),

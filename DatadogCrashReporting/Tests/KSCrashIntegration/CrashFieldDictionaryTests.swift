@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import XCTest
 import KSCrashRecording
 @testable import DatadogCrashReporting
@@ -120,3 +121,4 @@ class CrashFieldDictionaryTests: XCTestCase {
         XCTAssertEqual(updatedErrorDict?[.address] as? String, "0x0")
     }
 }
+#endif

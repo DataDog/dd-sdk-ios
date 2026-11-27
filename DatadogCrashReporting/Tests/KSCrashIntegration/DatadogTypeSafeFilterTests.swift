@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import XCTest
 import KSCrashRecording
 @testable import DatadogCrashReporting
@@ -111,3 +112,4 @@ class DatadogTypeSafeFilterTests: XCTestCase {
 private class InvalidCrashReport: NSObject, KSCrashRecording.CrashReport {
     var untypedValue: Any? { return "not a dictionary" }
 }
+#endif

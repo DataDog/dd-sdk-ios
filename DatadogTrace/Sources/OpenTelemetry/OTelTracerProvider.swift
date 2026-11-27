@@ -4,6 +4,7 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import Foundation
 import DatadogInternal
 import OpenTelemetryApi
@@ -91,3 +92,4 @@ public class OTelTracerProvider: OpenTelemetryApi.TracerProvider {
         }
     }
 }
+#endif

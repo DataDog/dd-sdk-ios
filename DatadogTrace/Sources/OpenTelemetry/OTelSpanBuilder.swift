@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import Foundation
 import OpenTelemetryApi
 
@@ -183,3 +184,4 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
     }
 #endif
 }
+#endif

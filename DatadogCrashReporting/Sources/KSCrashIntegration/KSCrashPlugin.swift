@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import Foundation
 @_spi(Internal)
 import DatadogInternal
@@ -133,3 +134,4 @@ extension KSCrashConfiguration {
         return config
     }
 }
+#endif

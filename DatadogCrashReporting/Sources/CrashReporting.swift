@@ -42,6 +42,7 @@ public final class CrashReporting {
         }
     }
 
+    #if CrashReporting || !SWIFT_PACKAGE
     /// Initializes the Datadog Crash Reporter using the default
     /// `KSCrash` plugin.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
@@ -57,6 +58,7 @@ public final class CrashReporting {
     public static func enable(with configuration: Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
         enable(with: try KSCrashPlugin(telemetry: core.telemetry), configuration: configuration, in: core)
     }
+    #endif
 
     /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
     ///
@@ -150,6 +152,7 @@ public final class CrashReporting {
     }
 }
 
+#if CrashReporting || !SWIFT_PACKAGE
 /// Enable iOS Crash Reporting and Error Tracking to get comprehensive crash reports and
 /// error trends with Real User Monitoring. With this feature, you can access:
 ///
@@ -177,6 +180,7 @@ public final class objc_CrashReporting: NSObject {
         CrashReporting.enable(with: configuration.configuration)
     }
 }
+#endif
 
 /// The Crash Reporting configuration.
 @available(swift, obsoleted: 1)

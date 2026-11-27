@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import Foundation
 
 // swiftlint:disable duplicate_imports
@@ -198,3 +199,4 @@ extension CrashField {
     /// Flag indicating whether a backtrace has been truncated.
     static var truncated: Self { .key("truncated") }
 }
+#endif

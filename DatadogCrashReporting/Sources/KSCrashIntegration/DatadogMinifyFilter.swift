@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import Foundation
 // swiftlint:disable duplicate_imports
 #if COCOAPODS
@@ -127,3 +128,4 @@ internal final class DatadogMinifyFilter: NSObject, CrashReportFilter {
         return true
     }
 }
+#endif

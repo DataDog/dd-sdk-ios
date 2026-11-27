@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import XCTest
 import DatadogInternal
 @testable import DatadogCrashReporting
@@ -205,3 +206,4 @@ class KSCrashBacktraceTests: XCTestCase {
         #endif
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -18,3 +19,4 @@ class OTelSpanIdDatadogTests: XCTestCase {
         XCTAssertEqual(otelId.rawValue, ddId.rawValue)
     }
 }
+#endif

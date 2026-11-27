@@ -211,9 +211,10 @@ Data that a feature passes to its writer later, for example from an asynchronous
 
 - **KSCrash 2.5.0**: Crash detection and reporting (`DatadogCrashReporting`)
 - **opentelemetry-swift-core 2.3.0+**: OpenTelemetry API for distributed tracing (`DatadogTrace`).
+- **Apollo iOS 2.x (optional)**: Built and linked by `DatadogInternal` only when the `Apollo` Swift package trait is enabled. The implementation lives alongside network instrumentation; its public types are re-exported through `DatadogCore`.
 
 Avoid adding new dependencies unless absolutely necessary (small footprint principle).
 
 ## Extension Libraries
 
-- **Datadog Integration for Apollo iOS**: https://github.com/DataDog/dd-sdk-ios-apollo-interceptor — extracts GraphQL Operation information from requests to let DatadogRUM enrich GraphQL RUM Resources
+- **Datadog Integration for Apollo iOS**: Included in `DatadogInternal` for Apollo 2.x through the opt-in `Apollo` Swift package trait and exposed through `DatadogCore`; see [setup](../APOLLO_INTEGRATION.md). The [standalone package](https://github.com/DataDog/dd-sdk-ios-apollo-interceptor) continues to support Apollo 1.x.

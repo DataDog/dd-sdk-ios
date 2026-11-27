@@ -50,6 +50,27 @@ Native AppKit and SwiftUI apps on macOS 12.0 and later, on Apple silicon and Int
 
 If you use [Alamofire][7], [Apollo GraphQL][8], [SDWebImage][9], or [OpenAPI Generator][10], see [Integrated Libraries][4] to learn how to instrument requests automatically.
 
+For Apollo iOS 2.x, enable the `Apollo` Swift package trait to use the integration through `DatadogCore`. See the [Apollo integration guide](APOLLO_INTEGRATION.md) for setup and migration from the standalone interceptor package.
+
+### Swift package traits
+
+| Trait | Default | Enables |
+|------|---------|---------|
+| `CrashReporting` | Enabled | The built-in KSCrash reporter in `DatadogCrashReporting` |
+| `OpenTelemetry` | Enabled | The OpenTelemetry API adapters in `DatadogTrace` |
+| `Apollo` | Disabled | The Apollo iOS 2 integration exposed through `DatadogCore` |
+
+Keep default integrations and add Apollo with `traits: [.defaults, "Apollo"]` on your
+`dd-sdk-ios` package dependency. Select individual traits explicitly, or use
+`traits: []` to build without these external integrations. Without `OpenTelemetry`,
+native tracing through `Tracer.shared()` remains available. Without `CrashReporting`,
+the custom `CrashReportingPlugin` API remains available, but `CrashReporting.enable()`
+with the built-in reporter does not. CocoaPods and the Xcode framework targets keep
+their existing integrations.
+
+Traits control compilation and linking; depending on the SwiftPM version, disabled
+dependencies may still participate in package resolution.
+
 ## Contributing
 
 Pull requests are welcome. First, open an issue to discuss what you would like to change. For more information, read the [Contributing Guide](CONTRIBUTING.md).

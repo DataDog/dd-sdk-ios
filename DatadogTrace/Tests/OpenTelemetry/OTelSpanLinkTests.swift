@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -79,3 +80,4 @@ final class OTelSpanLinkTests: XCTestCase {
         XCTAssertEqual(decoded["flags"]?.value as? Int, 0)
     }
 }
+#endif

@@ -6,7 +6,9 @@
 
 import Foundation
 import DatadogInternal
+#if OpenTelemetry || !SWIFT_PACKAGE
 import OpenTelemetryApi
+#endif
 
 internal struct DDNoopGlobals {
     static let tracer = DDNoopTracer()
@@ -14,7 +16,7 @@ internal struct DDNoopGlobals {
     static let context = DDNoopSpanContext()
 }
 
-internal final class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer, Sendable {
+internal final class DDNoopTracer: OTTracer, Sendable {
     var activeSpan: OTSpan? { nil }
 
     private func warn() {
@@ -50,14 +52,16 @@ internal final class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer, Sendable {
         warn()
         return DDNoopGlobals.span
     }
+}
 
-    // MARK: - Open Telemetry
-
+#if OpenTelemetry || !SWIFT_PACKAGE
+extension DDNoopTracer: OpenTelemetryApi.Tracer {
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
         warn()
         return NOPOTelSpanBuilder()
     }
 }
+#endif
 
 internal struct DDNoopSpan: OTSpan {
     var context: OTSpanContext { DDNoopGlobals.context }

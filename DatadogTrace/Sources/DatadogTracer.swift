@@ -6,9 +6,11 @@
 
 import Foundation
 import DatadogInternal
+#if OpenTelemetry || !SWIFT_PACKAGE
 import OpenTelemetryApi
+#endif
 
-internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
+internal final class DatadogTracer: OTTracer {
     /// Trace feature scope.
     let featureScope: FeatureScope
 
@@ -202,9 +204,10 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             }
         )
     }
+}
 
-    // MARK: - OpenTelemetry
-
+#if OpenTelemetry || !SWIFT_PACKAGE
+extension DatadogTracer: OpenTelemetryApi.Tracer {
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
         OTelSpanBuilder(
             active: false,
@@ -217,3 +220,4 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         )
     }
 }
+#endif

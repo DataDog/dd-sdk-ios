@@ -22,6 +22,8 @@ Crash Reporting captures fatal crashes with [KSCrash](https://github.com/kstener
 
 Crash Reporting has no upload path of its own. Crash reports reach Datadog only through RUM, so **RUM must be enabled**. Crash Reporting requires initialization via `Datadog.initialize()` before enabling.
 
+For Swift Package Manager, the default-enabled `CrashReporting` trait provides the built-in KSCrash reporter and its Swift and Objective-C enable methods. Disabling this trait removes KSCrash from the build while keeping `CrashReportingPlugin`, configuration, and the custom-plugin enable methods available. CocoaPods and Xcode framework builds retain KSCrash. See [package traits](../README.md#swift-package-traits).
+
 **Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only) — with platform-specific limitations:
 - **iOS / tvOS / visionOS**: Fatal signals (including Swift runtime traps such as `fatalError()` and force-unwrapping `nil`, and Mach exceptions such as `EXC_BAD_ACCESS`, which the kernel delivers as signals), uncaught `NSException`s, and uncaught C++ exceptions.
 - **macOS**: Fatal signals, Mach exceptions and uncaught C++ exceptions, as on iOS. AppKit catches `NSException`s raised on the main thread while it handles an event, logs them and keeps the app running, so they are not reported. If the app sets the `NSApplicationCrashOnExceptions` user default to `true`, AppKit stops the app with a trap instead: the crash is reported as a `SIGTRAP` signal, without the exception's name, reason, or the stack where it was raised. Each app keeps its crash reports in its own `~/Library/Caches/<bundle identifier>` subdirectory, since apps that are not sandboxed share `~/Library/Caches`. Watchdog terminations are not reported.

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import XCTest
 import TestUtilities
 @testable import DatadogCrashReporting
@@ -78,3 +79,4 @@ final class KSCrashPluginTests: XCTestCase {
         return Data(contextString.utf8CString.map(UInt8.init(bitPattern:)))
     }
 }
+#endif

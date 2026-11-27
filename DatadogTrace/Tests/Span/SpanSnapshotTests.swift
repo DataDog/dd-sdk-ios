@@ -7,7 +7,9 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+#if OpenTelemetry || !SWIFT_PACKAGE
 import OpenTelemetryApi
+#endif
 
 @testable import DatadogTrace
 
@@ -228,6 +230,7 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertTrue(capture.snapshots.allSatisfy(\.isTopLevel))
     }
 
+    #if OpenTelemetry || !SWIFT_PACKAGE
     func testOpenTelemetryUsesUnfinishedParentsCurrentAttributes() throws {
         for parentFinishesFirst in [false, true] {
             let capture = SpanSnapshotCapture()
@@ -368,6 +371,7 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertTrue(capture.snapshots[1].isTopLevel)
         XCTAssertNotNil(capture.snapshots[1].parentSpanID)
     }
+    #endif
 
     // MARK: - Snapshot Creation
 
@@ -424,6 +428,7 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertEqual(snapshot.httpStatusCode, 404)
     }
 
+    #if OpenTelemetry || !SWIFT_PACKAGE
     func testSnapshotCapturesTheStableOpenTelemetryHTTPStatusCode() throws {
         let core = PassthroughCoreMock()
         let capture = SpanSnapshotCapture()
@@ -437,6 +442,7 @@ class SpanSnapshotTests: XCTestCase {
 
         XCTAssertEqual(try XCTUnwrap(capture.snapshot).httpStatusCode, 503)
     }
+    #endif
 
     func testWhenBothHTTPStatusCodeKeysAreSet_theStableOpenTelemetryOneWins() throws {
         let core = PassthroughCoreMock()

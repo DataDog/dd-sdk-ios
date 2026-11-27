@@ -11,6 +11,11 @@ import DatadogInternal
 //swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.TrackingConsent
 @_exported import protocol DatadogInternal.DatadogCoreProtocol
+#if Apollo
+@_exported import struct DatadogInternal.DatadogApolloInterceptor
+@_exported import class DatadogInternal.DatadogApolloDelegate
+@_exported import class DatadogInternal.DatadogApolloURLSession
+#endif
 //swiftlint:enable duplicate_imports
 
 /// An entry point to Datadog SDK.

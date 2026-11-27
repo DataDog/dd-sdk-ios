@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import XCTest
 import DatadogInternal
 import TestUtilities
@@ -573,3 +574,4 @@ class DatadogCrashReportFilterTests: XCTestCase {
         XCTAssertEqual(parsed.offset, 0, "Offset should be 0 when instruction_addr < object_addr (prevents underflow)")
     }
 }
+#endif

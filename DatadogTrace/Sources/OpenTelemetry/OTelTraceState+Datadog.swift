@@ -4,6 +4,7 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if OpenTelemetry || !SWIFT_PACKAGE
 import Foundation
 import OpenTelemetryApi
 
@@ -16,3 +17,4 @@ extension OpenTelemetryApi.TraceState {
         return self.entries.map { "\($0.key)=\($0.value)" }.joined(separator: ",")
     }
 }
+#endif

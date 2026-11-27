@@ -7,7 +7,9 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+#if OpenTelemetry || !SWIFT_PACKAGE
 import OpenTelemetryApi
+#endif
 
 @testable import DatadogTrace
 
@@ -609,6 +611,7 @@ class SpanEventBuilderTests: XCTestCase {
         })
     }
 
+    #if OpenTelemetry || !SWIFT_PACKAGE
     func testBuildingSpanWhenSpanLinkIsPresentInTags() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -667,6 +670,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         DDAssertJSONEqual(expectedTags, actualTags!)
     }
+    #endif
 
     // MARK: - RUM context enrichment
 

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import Foundation
 
 // swiftlint:disable duplicate_imports
@@ -69,3 +70,4 @@ internal final class DatadogTypeSafeFilter: NSObject, CrashReportFilter {
         }
     }
 }
+#endif

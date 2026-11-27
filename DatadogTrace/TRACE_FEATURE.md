@@ -38,6 +38,8 @@ Trace can also connect to automatic `URLSession` network instrumentation; for th
 
 Trace requires initialization via `Datadog.initialize()` before enabling.
 
+For Swift Package Manager, the default-enabled `OpenTelemetry` trait provides `OTelTracerProvider` and the OpenTelemetry adapters. Disabling it removes the OpenTelemetry dependency from the build while preserving native tracing through `Tracer.shared()`, OpenTracing, and automatic URLSession instrumentation. CocoaPods and Xcode framework builds retain the OpenTelemetry integration. See [package traits](../README.md#swift-package-traits).
+
 **Platform**: iOS, tvOS, watchOS, visionOS, macOS (Swift Package Manager only)
 
 ## Quick Start Example

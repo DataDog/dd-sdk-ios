@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if CrashReporting || !SWIFT_PACKAGE
 import Foundation
 import DatadogInternal
 
@@ -239,3 +240,4 @@ extension BinaryImage {
         )
     }
 }
+#endif
