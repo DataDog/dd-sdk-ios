@@ -43,7 +43,8 @@ Feature-specific docs (in each module directory):
 ├── DatadogLogs/LOGS_FEATURE.md
 ├── DatadogFlags/FLAGS_FEATURE.md
 ├── DatadogCrashReporting/CRASH_REPORTING_FEATURE.md
-└── DatadogCore/CORE_FEATURE.md
+├── DatadogCore/CORE_FEATURE.md
+└── DatadogWebViewTracking/WEBVIEW_TRACKING_FEATURE.md
 ```
 
 ## Where to Look First
@@ -65,6 +66,7 @@ Feature-specific docs (in each module directory):
 | Work on Feature Flags specifically | `DatadogFlags/FLAGS_FEATURE.md` |
 | Work on Crash Reporting specifically | `DatadogCrashReporting/CRASH_REPORTING_FEATURE.md` |
 | Work on Core (initialization, consent, batching, upload) specifically | `DatadogCore/CORE_FEATURE.md` |
+| Work on WebView Tracking specifically | `DatadogWebViewTracking/WEBVIEW_TRACKING_FEATURE.md` |
 | Update a `*_FEATURE.md` file | `docs/LLM_FEATURE_DOCS_GUIDELINES.md` |
 
 ## Critical Rules (always apply)

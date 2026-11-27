@@ -27,7 +27,7 @@ DatadogLogs/LOGS_FEATURE.md
 DatadogFlags/FLAGS_FEATURE.md
 DatadogCrashReporting/CRASH_REPORTING_FEATURE.md
 DatadogCore/CORE_FEATURE.md
-DatadogWebViewTracking/WEBVIEW_FEATURE.md  # (future)
+DatadogWebViewTracking/WEBVIEW_TRACKING_FEATURE.md
 ```
 
 ## Frontmatter
