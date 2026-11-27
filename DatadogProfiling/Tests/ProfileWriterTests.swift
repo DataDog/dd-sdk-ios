@@ -365,8 +365,13 @@ final class ProfileWriterTests: XCTestCase {
         let halfLimit = Int(ProfilerFeature.Constants.maxObjectSize) / 2
         let vital = Vital.mockWith(id: "cpu-vital", name: "operation")
         let task = DurationEvent(id: "heap-task", type: .longTask, start: 20, duration: 30)
-        let cpu = snapshot(data: Data(repeating: 1, count: halfLimit), rumEvents: [.vital(vital)])
-        let heap = snapshot(filename: "heap.pprof", data: Data(repeating: 2, count: halfLimit + 1), rumEvents: [.longTask(task)])
+        let cpu = snapshot(data: Data(repeating: 1, count: halfLimit), rumEvents: [.vital(vital)], attributes: ["view.id": ["cpu-view"]])
+        let heap = snapshot(
+            filename: "heap.pprof",
+            data: Data(repeating: 2, count: halfLimit + 1),
+            rumEvents: [.longTask(task)],
+            attributes: ["view.id": ["heap-view"]]
+        )
 
         writer.write([cpu, heap], operation: .continuousProfiling)
 
@@ -383,6 +388,79 @@ final class ProfileWriterTests: XCTestCase {
             XCTAssertEqual(attachments.pprofs.map(\.filename), [captured.attachment.filename])
             XCTAssertEqual(attachments.pprofs.map(\.data), [captured.attachment.data])
             XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [index == 0 ? vital.id : task.id])
+            XCTAssertEqual(events[index].additionalAttributes?["view.id"] as? [String], [index == 0 ? "cpu-view" : "heap-view"])
+        }
+    }
+
+    func testWriteCombinedProfilesAboveSizeLimit_preservesSharedCPURUMData() throws {
+        let halfLimit = Int(ProfilerFeature.Constants.maxObjectSize) / 2
+        let vital = Vital.mockWith(id: "cpu-vital", name: "operation")
+        let context = RUMCoreContext.mockWith(applicationID: "app", sessionID: UUID())
+        let cpu = snapshot(
+            data: Data(repeating: 1, count: halfLimit),
+            start: 20,
+            end: 60,
+            rumEvents: [.vital(vital)],
+            attributes: ["view.id": ["cpu-view"]],
+            rumContext: context
+        )
+        let heap = snapshot(
+            filename: "heap.pprof",
+            data: Data(repeating: 2, count: halfLimit + 1),
+            rumEvents: [],
+            attributes: ["view.id": ["heap-view"]],
+            rumContext: context
+        )
+
+        for snapshots in [[cpu, heap], [heap, cpu]] {
+            let previousCount = core.events.count
+
+            writer.write(snapshots, operation: .continuousProfiling)
+
+            let events = Array(core.events(ofType: ProfileEvent.self).dropFirst(previousCount))
+            XCTAssertEqual(events.count, 2)
+            let metadata = Array(core.metadata.dropFirst(previousCount))
+            XCTAssertEqual(metadata.count, 2)
+            guard events.count == 2, metadata.count == 2 else {
+                continue
+            }
+            for (index, captured) in snapshots.enumerated() {
+                let attachments = try XCTUnwrap(metadata[index] as? ProfileAttachments)
+                XCTAssertEqual(events[index].start, captured.start)
+                XCTAssertEqual(events[index].end, captured.end)
+                XCTAssertEqual(events[index].attachments, [captured.attachment.filename, "rum-mobile-events.json"])
+                XCTAssertEqual(events[index].additionalAttributes?["application.id"] as? String, context.applicationID)
+                XCTAssertEqual(events[index].additionalAttributes?["session.id"] as? String, context.sessionID)
+                XCTAssertEqual(events[index].additionalAttributes?["view.id"] as? [String], ["cpu-view"])
+                XCTAssertEqual(events[index].additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], [vital.id])
+                XCTAssertEqual(attachments.pprofs.map(\.data), [captured.attachment.data])
+                XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [vital.id])
+            }
+        }
+        XCTAssertEqual(telemetry.messages.count, 4)
+    }
+
+    func testWriteCombinedProfilesAboveSizeLimit_preservesSharedHeapRUMData() throws {
+        let halfLimit = Int(ProfilerFeature.Constants.maxObjectSize) / 2
+        let task = DurationEvent(id: "heap-task", type: .longTask, start: 20, duration: 30)
+        let cpu = snapshot(data: Data(repeating: 1, count: halfLimit), rumEvents: [], attributes: ["view.id": ["cpu-view"]])
+        let heap = snapshot(
+            filename: "heap.pprof",
+            data: Data(repeating: 2, count: halfLimit + 1),
+            rumEvents: [.longTask(task)],
+            attributes: ["view.id": ["heap-view"]]
+        )
+
+        writer.write([cpu, heap], operation: .continuousProfiling)
+
+        let events: [ProfileEvent] = core.events()
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(core.metadata.count, 2)
+        for (event, metadata) in zip(events, core.metadata) {
+            let attachments = try XCTUnwrap(metadata as? ProfileAttachments)
+            XCTAssertEqual(event.additionalAttributes?["view.id"] as? [String], ["heap-view"])
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [task.id])
+            XCTAssertEqual(try typedRUMEvents(from: attachments).compactMap { $0["id"] as? String }, [task.id])
         }
     }
 

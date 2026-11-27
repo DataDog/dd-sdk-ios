@@ -593,6 +593,43 @@ final class MemoryProfilerTests: XCTestCase {
         XCTAssertFalse(dd_memory_profiler_is_running())
     }
 
+    func testLosingRequiredHookAfterStartFailsCaptureAndStopsRecording() {
+        for stopHook in [dd_swift_alloc_hook_stop, dd_objc_alloc_hook_stop] {
+            let profiler = makeRuntimeProfiler()
+            receive(context: context(), on: profiler)
+            drain()
+            record()
+            let capturesBeforeFailure = diagnostics.captures_count
+
+            // A late Swift rebinding failure also makes is_enabled false.
+            stopHook()
+            profiler.captureWindow()
+            drain()
+
+            XCTAssertEqual(profiler.state, .failed)
+            XCTAssertFalse(dd_memory_profiler_is_running())
+            XCTAssertFalse(dd_swift_alloc_hook_diagnostics().is_enabled)
+            XCTAssertFalse(dd_objc_alloc_hook_diagnostics().is_enabled)
+            XCTAssertEqual(diagnostics.last_status, DD_MEMORY_CAPTURE_FAILED)
+            XCTAssertEqual(diagnostics.sample_count, 0)
+            XCTAssertEqual(memoryMetrics.last?.captureResult, .captureFailed)
+            XCTAssertEqual(memoryMetrics.last?.recordedAllocations, 1)
+            XCTAssertTrue(core.events.isEmpty)
+            XCTAssertTrue(core.metadata.isEmpty)
+
+            receive(context: context(consent: .notGranted), on: profiler)
+            receive(context: context(), on: profiler)
+            record(address: 0x20000)
+            profiler.captureWindow()
+            drain()
+
+            XCTAssertEqual(profiler.state, .failed)
+            XCTAssertFalse(dd_memory_profiler_is_running())
+            XCTAssertEqual(diagnostics.captures_count, capturesBeforeFailure + 1)
+            XCTAssertTrue(core.events.isEmpty)
+        }
+    }
+
     func testBackgroundClosesForegroundWindowOnceWhileRecordingContinues() {
         let profiler = makeRuntimeProfiler()
         receive(context: context(), on: profiler)

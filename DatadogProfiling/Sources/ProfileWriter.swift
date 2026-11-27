@@ -85,7 +85,7 @@ internal final class ProfileWriter: @unchecked Sendable {
         for snapshot in snapshots {
             guard snapshot.attachment.data.count <= Int(ProfilerFeature.Constants.maxObjectSize) - profileSize else {
                 if snapshots.count > 1 {
-                    writeSeparately(snapshots, operation: operation)
+                    writeSeparately(snapshots, operation: operation, sharingRUMDataFrom: rumSnapshot)
                 } else {
                     telemetryController.sendProfileDropped(
                         for: operation,
@@ -137,9 +137,26 @@ internal final class ProfileWriter: @unchecked Sendable {
         }
     }
 
-    private func writeSeparately(_ snapshots: [ProfileSnapshot], operation: ProfilingOperation) {
+    private func writeSeparately(
+        _ snapshots: [ProfileSnapshot],
+        operation: ProfilingOperation,
+        sharingRUMDataFrom rumSnapshot: ProfileSnapshot? = nil
+    ) {
         for snapshot in snapshots {
-            write([snapshot], operation: operation)
+            if snapshot.rumEvents.isEmpty, let rumSnapshot {
+                let correlatedSnapshot = ProfileSnapshot(
+                    start: snapshot.start,
+                    end: snapshot.end,
+                    attachment: snapshot.attachment,
+                    rumEvents: rumSnapshot.rumEvents,
+                    attributes: rumSnapshot.attributes,
+                    rumContext: rumSnapshot.rumContext,
+                    memoryDiagnostics: snapshot.memoryDiagnostics
+                )
+                write([correlatedSnapshot], operation: operation)
+            } else {
+                write([snapshot], operation: operation)
+            }
         }
     }
 

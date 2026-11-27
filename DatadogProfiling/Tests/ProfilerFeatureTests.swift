@@ -41,7 +41,7 @@ final class ProfilerFeatureTests: XCTestCase {
         super.tearDown()
     }
 
-    func testInit_setsIsEnabledFlagToTrue() {
+    func testInit_disablesLaunchProfilingUntilInitialConsentArrives() {
         // Given
         XCTAssertNil(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY))
 
@@ -55,10 +55,10 @@ final class ProfilerFeatureTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, true)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, false)
     }
 
-    func testInit_setsSampleRateValue() {
+    func testInit_clearsCPULaunchRateUntilInitialConsentArrives() {
         // Given
         userDefaults.setValue(SampleRate(20), forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
         let newSampleRate: SampleRate = 23
@@ -73,10 +73,11 @@ final class ProfilerFeatureTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, 0)
     }
 
-    func testInit_persistsConfiguredMemoryRate() {
+    func testInit_disablesMemoryLaunchUntilInitialConsentArrives() {
+        userDefaults.setValue(100, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
         let feature = ProfilerFeature(
             core: core,
             configuration: .init(memorySampleRate: 42),
@@ -85,7 +86,8 @@ final class ProfilerFeatureTests: XCTestCase {
             userDefaults: userDefaults
         )
 
-        XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 42)
+        XCTAssertEqual(feature.profilingSamplerProvider.memory.sampleRate, 42)
+        XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 0)
         withExtendedLifetime(feature) {}
     }
 
@@ -119,7 +121,7 @@ final class ProfilerFeatureTests: XCTestCase {
 
             XCTAssertTrue(feature.profilingSamplerProvider.memory.isConfigured)
             XCTAssertEqual(feature.profilingSamplerProvider.memory.sampleRate, .maxSampleRate)
-            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 100)
+            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 0)
             withExtendedLifetime(feature) {}
         }
     }
@@ -161,7 +163,7 @@ final class ProfilerFeatureTests: XCTestCase {
         withExtendedLifetime(feature) {}
     }
 
-    func testInit_normalizesMemoryRateBeforePersistingIt() {
+    func testInit_normalizesMemoryRate() {
         for (configured, expected): (SampleRate, SampleRate) in [(-1, 0), (101, 100)] {
             let feature = ProfilerFeature(
                 core: core,
@@ -172,7 +174,90 @@ final class ProfilerFeatureTests: XCTestCase {
             )
 
             XCTAssertEqual(feature.profilingSamplerProvider.memory.sampleRate, expected)
-            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), Double(expected))
+            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 0)
+            withExtendedLifetime(feature) {}
+        }
+    }
+
+    func testInitialDeniedConsentDisablesLaunchProfiling() {
+        dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+        defer { dd_memory_profiler_reset_for_testing() }
+        let feature = ProfilerFeature(
+            core: core,
+            configuration: .init(applicationLaunchSampleRate: 23, cpuSampleRate: 0, memorySampleRate: 42),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+
+        _ = feature.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .notGranted)), from: core)
+        MemoryProfiler.defaultQueue.sync {}
+        DatadogProfiler.defaultQueue.sync {}
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, false)
+        XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY), 0)
+        XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), 0)
+
+        dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
+
+        XCTAssertFalse(dd_memory_profiler_is_running())
+        XCTAssertFalse(dd_memory_profiler_was_started_at_launch())
+        withExtendedLifetime(feature) {}
+    }
+
+    func testConsentChangesUpdateLaunchProfilingWithoutRUMContext() {
+        dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+        defer { dd_memory_profiler_reset_for_testing() }
+        for (cpuRate, memoryRate): (SampleRate, SampleRate) in [(0, 0), (23, 0), (0, 42), (23, 42)] {
+            let feature = ProfilerFeature(
+                core: core,
+                configuration: .init(applicationLaunchSampleRate: cpuRate, cpuSampleRate: 0, memorySampleRate: memoryRate),
+                requestBuilder: requestBuilder,
+                telemetryController: telemetryController,
+                userDefaults: userDefaults
+            )
+
+            for consent: TrackingConsent in [.pending, .notGranted, .granted, .notGranted, .pending] {
+                _ = feature.messageReceiver.receive(message: .context(.mockWith(trackingConsent: consent)), from: core)
+                MemoryProfiler.defaultQueue.sync {}
+                DatadogProfiler.defaultQueue.sync {}
+                let isAllowed = consent != .notGranted
+                let expectedCPURate = isAllowed ? Double(cpuRate) : 0
+                let expectedMemoryRate = isAllowed ? Double(memoryRate) : 0
+                XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, isAllowed)
+                XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY), expectedCPURate)
+                XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), expectedMemoryRate)
+
+                // Model the next process consuming the persisted eligibility before SDK initialization.
+                dd_memory_profiler_stop()
+                dd_memory_profiler_auto_start_for_testing(suiteName, false, false)
+                XCTAssertEqual(dd_memory_profiler_is_running(), expectedMemoryRate > 0)
+                XCTAssertEqual(dd_memory_profiler_was_started_at_launch(), expectedMemoryRate > 0)
+            }
+            withExtendedLifetime(feature) {}
+        }
+    }
+
+    func testInitialConsentPersistsEffectiveLaunchRates() {
+        dd_memory_profiler_configure_for_testing(DD_MEMORY_TEST_HOOKS_SUCCEED)
+        defer { dd_memory_profiler_reset_for_testing() }
+        for (configured, debug, expected): (SampleRate, Bool, Double) in [(-1, false, 0), (101, false, 100), (0, true, 100)] {
+            var configuration = Profiling.Configuration(applicationLaunchSampleRate: 23, cpuSampleRate: 0, memorySampleRate: configured)
+            configuration.debugSDK = debug
+            let feature = ProfilerFeature(
+                core: core,
+                configuration: configuration,
+                requestBuilder: requestBuilder,
+                telemetryController: telemetryController,
+                userDefaults: userDefaults
+            )
+
+            _ = feature.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .pending)), from: core)
+            MemoryProfiler.defaultQueue.sync {}
+            DatadogProfiler.defaultQueue.sync {}
+
+            XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, true)
+            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY), debug ? 100 : 23)
+            XCTAssertEqual(userDefaults.double(forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY), expected)
             withExtendedLifetime(feature) {}
         }
     }

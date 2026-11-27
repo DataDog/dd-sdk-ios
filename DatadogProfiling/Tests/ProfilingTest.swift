@@ -59,7 +59,7 @@ class ProfilingTest: XCTestCase {
     // MARK: - Remote Configuration
 
     func testWhenEnabledWithRemoteConfiguration_itInjectsApplicationLaunchSampleRate() throws {
-        // Clear the shared suite so the feature's "lowest sample rate wins" persistence is deterministic.
+        // Clear the shared suite so launch configuration persistence is deterministic.
         let userDefaults = try XCTUnwrap(UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME))
         dd_delete_profiling_defaults()
         defer { dd_delete_profiling_defaults() }
@@ -74,9 +74,14 @@ class ProfilingTest: XCTestCase {
 
         // When
         Profiling.enable(with: configuration, in: core)
+        let feature = try XCTUnwrap(core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self))
+        // This mock does not deliver Core's initial context after registration.
+        feature.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .pending)), from: core)
+        MemoryProfiler.defaultQueue.sync {}
+        DatadogProfiler.defaultQueue.sync {}
 
-        // Then the merged remote sample rate is injected into the feature and persisted at enable time
-        XCTAssertNotNil(core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self))
+        // Then the merged remote sample rate is persisted after the initial consent decision.
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, true)
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, 100)
 
         let telemetryConfiguration = try XCTUnwrap(receiver.messages.compactMap { message -> ConfigurationTelemetry? in

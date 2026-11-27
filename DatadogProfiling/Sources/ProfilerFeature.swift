@@ -68,10 +68,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         )
         self.memoryProfiler = memoryProfiler
 
-        Self.setProfilingEnabled(in: userDefaults)
-        Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
-        userDefaults.setValue(memorySampleRate, forKey: DD_PROFILING_MEMORY_SAMPLE_RATE_KEY)
-
         let datadogProfiler = DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
@@ -82,20 +78,17 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             minProfileDuration: configuration.minProfileDuration
         )
         self.messageReceiver = CombinedFeatureMessageReceiver([
+            ProfilingLaunchSettingsWriter(
+                applicationLaunchSampleRate: appLaunchSampleRate,
+                memorySampleRate: memorySampleRate,
+                userDefaults: userDefaults
+            ),
             ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
             // Always return false so CPU profiling also receives TTID.
             memoryProfiler,
             quotaChecker,
             datadogProfiler
         ])
-    }
-
-    private static func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
-        userDefaults.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
-    }
-
-    private static func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
-        userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
     }
 }
 

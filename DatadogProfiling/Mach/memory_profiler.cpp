@@ -487,6 +487,13 @@ dd_memory_capture_status_t dd_memory_profiler::capture_locked(dd_memory_capture_
         return DD_MEMORY_CAPTURE_FAILED;
     }
     diagnostics.window = dd_memory_allocation_window_closed_diagnostics(window);
+    // Late image rebinding can disable Swift observation after start. Without
+    // both observers, the live set may retain objects whose frees were missed.
+    // Check after aggregation before accepting even an otherwise idle capture.
+    if (!dd_swift_alloc_hook_diagnostics().is_enabled ||
+        !dd_objc_alloc_hook_diagnostics().is_enabled) {
+        return DD_MEMORY_CAPTURE_FAILED;
+    }
     const auto &closed = diagnostics.window;
     capture->aggregation = dd_memory_allocation_window_view(window);
     capture->time_nanos = window_start_wall;

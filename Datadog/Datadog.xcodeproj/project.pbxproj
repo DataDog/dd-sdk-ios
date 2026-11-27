@@ -103,6 +103,9 @@
 		1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
 		1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD042F00000000297156 /* ProfilingSessionMetric.swift */; };
 		1121FD072F00000100297156 /* ProfilingDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD062F00000100297156 /* ProfilingDiagnostics.swift */; };
+		11248AA230BA1EA100638B14 /* ProfilingLaunchSettingsWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11248AA130BA1EA100638B14 /* ProfilingLaunchSettingsWriter.swift */; };
+		11248AA630BA25BB00638B14 /* fishhook_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 11248AA530BA25BB00638B14 /* fishhook_testing.h */; };
+		11248AA830BA264600638B14 /* FishhookTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11248AA730BA264600638B14 /* FishhookTests.swift */; };
 		1124D5302EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5322EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */; };
 		1124D5382EA6D4390002E053 /* RUMAppLaunchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */; };
@@ -2231,6 +2234,9 @@
 		1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMetric.swift; sourceTree = "<group>"; };
 		1121FD042F00000000297156 /* ProfilingSessionMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingSessionMetric.swift; sourceTree = "<group>"; };
 		1121FD062F00000100297156 /* ProfilingDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingDiagnostics.swift; sourceTree = "<group>"; };
+		11248AA130BA1EA100638B14 /* ProfilingLaunchSettingsWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingLaunchSettingsWriter.swift; sourceTree = "<group>"; };
+		11248AA530BA25BB00638B14 /* fishhook_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fishhook_testing.h; sourceTree = "<group>"; };
+		11248AA730BA264600638B14 /* FishhookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FishhookTests.swift; sourceTree = "<group>"; };
 		1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandler.swift; sourceTree = "<group>"; };
 		1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManagerTests.swift; sourceTree = "<group>"; };
 		1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManager.swift; sourceTree = "<group>"; };
@@ -7320,6 +7326,7 @@
 				1150CAEF30828364007338C7 /* memory_pprof.h */,
 				1150CAF7308BB79E007338C7 /* memory_profiler.h */,
 				1150CAF9308BB7A1007338C7 /* memory_profiler_testing.h */,
+				11248AA530BA25BB00638B14 /* fishhook_testing.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -7944,6 +7951,7 @@
 				1121FCFA2EE305D900297156 /* SDKMetrics */,
 				1152B73230AB984300694EC8 /* Profiling+objc.swift */,
 				1152B72E30AA614900694EC8 /* ProfilingScheduler.swift */,
+				11248AA130BA1EA100638B14 /* ProfilingLaunchSettingsWriter.swift */,
 			);
 			name = DatadogProfiling;
 			path = ../DatadogProfiling/Sources;
@@ -7981,6 +7989,7 @@
 				1150CB01308BB856007338C7 /* MemoryProfilerNativeTests.swift */,
 				1150CB03308BB910007338C7 /* MemoryProfilerTests.swift */,
 				1152B73030AA614D00694EC8 /* ProfilingSchedulerTests.swift */,
+				11248AA730BA264600638B14 /* FishhookTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -8327,6 +8336,7 @@
 				1157930A2F51F05100AEE829 /* binary_image_resolver_testing.h in Headers */,
 				1150CAF8308BB79E007338C7 /* memory_profiler.h in Headers */,
 				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
+				11248AA630BA25BB00638B14 /* fishhook_testing.h in Headers */,
 				11D519223074F977008C003F /* swift_alloc_hook_testing.h in Headers */,
 				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				11D51914306AF456008C003F /* objc_alloc_hook_testing.h in Headers */,
@@ -10159,6 +10169,7 @@
 				1150CAFE308BB81B007338C7 /* MemoryProfiler.swift in Sources */,
 				11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */,
 				11D5190E306AA6A0008C003F /* swift_alloc_hook.cpp in Sources */,
+				11248AA230BA1EA100638B14 /* ProfilingLaunchSettingsWriter.swift in Sources */,
 				1152B72F30AA614900694EC8 /* ProfilingScheduler.swift in Sources */,
 				1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */,
 				11D51908306AA5D2008C003F /* fishhook.c in Sources */,
@@ -10838,6 +10849,7 @@
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,
 				1150CAF2308283DE007338C7 /* MemoryPprofTests.swift in Sources */,
+				11248AA830BA264600638B14 /* FishhookTests.swift in Sources */,
 				110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				0EFAE08216FC46BC84FEDF88 /* ProfileWriterTests.swift in Sources */,
 				11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */,

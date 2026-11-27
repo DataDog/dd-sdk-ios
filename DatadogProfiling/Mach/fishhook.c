@@ -27,6 +27,7 @@
 
 #include "fishhook.h"
 
+#include <TargetConditionals.h>
 #include <dlfcn.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -137,6 +138,12 @@ static int get_protection(void *addr, vm_prot_t *prot, vm_prot_t *max_prot) {
 }
 #endif
 
+#if defined(DEBUG)
+typedef kern_return_t (*fishhook_protect_t)(
+    vm_map_t task, vm_address_t address, vm_size_t size, boolean_t set_maximum,
+    vm_prot_t protection, void *context);
+#endif
+
 static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
                                            section_t *section,
                                            intptr_t slide,
@@ -144,7 +151,12 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
                                            char *strtab,
                                            uint32_t *indirect_symtab,
                                            uintptr_t stub_helper_start,
-                                           uintptr_t stub_helper_end) {
+                                           uintptr_t stub_helper_end
+#if defined(DEBUG)
+                                           , fishhook_protect_t protect,
+                                           void *protect_context
+#endif
+                                           ) {
   bool authenticated_got =
       strncmp(section->sectname, "__auth_got", sizeof(section->sectname)) == 0 ||
       strncmp(section->sectname, "__weak_auth_got", sizeof(section->sectname)) == 0;
@@ -224,6 +236,18 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
           if (cur->rebindings[j].replaced != NULL)
             *(cur->rebindings[j].replaced) = forward_target;
 
+          /* Datadog: reject known forwarding-chain conflicts before granting
+           * write access. The CAS below still handles concurrent publication. */
+          if (cur->rebindings[j].first_replaced != NULL) {
+            void *first = __atomic_load_n(cur->rebindings[j].first_replaced,
+                                          __ATOMIC_ACQUIRE);
+            if (first != NULL && first != forward_target) {
+              if (cur->rebindings[j].conflict_count != NULL)
+                __atomic_fetch_add(cur->rebindings[j].conflict_count, 1, __ATOMIC_RELAXED);
+              goto symbol_loop;
+            }
+          }
+
           /**
            * 1. Moved the vm protection modifying codes to here to reduce the
            *    changing scope.
@@ -231,7 +255,19 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
            *    API on some iOS/Mac reports mismatch vm protection attributes.
            * -- Lianfu Hao Jun 16th, 2021
            **/
-          err = vm_protect (mach_task_self (), (uintptr_t)indirect_symbol_bindings, section->size, 0, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
+          /* Datadog: grant only the pages covering this slot. Do not restore
+           * permissions while independent page writers may still be active. */
+          vm_address_t address = (uintptr_t)&indirect_symbol_bindings[i];
+          vm_size_t size = sizeof(indirect_symbol_bindings[i]);
+          vm_prot_t protection = VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY;
+#if defined(DEBUG)
+          if (protect != NULL) {
+            err = protect(mach_task_self(), address, size, 0, protection, protect_context);
+          } else
+#endif
+          {
+            err = vm_protect(mach_task_self(), address, size, 0, protection);
+          }
           if (err == KERN_SUCCESS) {
             /* Datadog extension: one trampoline can forward through only one
              * previous implementation. Leave a conflicting slot untouched. */
@@ -270,6 +306,25 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
   symbol_loop:;
   }
 }
+
+#if defined(DEBUG) && !TARGET_OS_WATCH && !TARGET_OS_OSX
+#include "fishhook_testing.h"
+
+void dd_fishhook_rebind_section_for_testing(
+    void **slots, size_t slot_count, uint32_t *symbol_indices,
+    struct rebinding *binding, dd_fishhook_protect_callback_t protect, void *context) {
+  section_t section = {0};
+  section.addr = (uintptr_t)slots;
+  section.size = slot_count * sizeof(void *);
+  section.flags = S_NON_LAZY_SYMBOL_POINTERS;
+  nlist_t symbol = {0};
+  symbol.n_un.n_strx = 1;
+  char strings[] = "\0_target";
+  struct rebindings_entry entry = {binding, 1, NULL};
+  perform_rebinding_with_section(&entry, &section, 0, &symbol, strings,
+                                 symbol_indices, 0, 0, protect, context);
+}
+#endif
 
 static void rebind_symbols_for_image(struct rebindings_entry *rebindings,
                                      const struct mach_header *header,
@@ -335,11 +390,19 @@ static void rebind_symbols_for_image(struct rebindings_entry *rebindings,
           (section_t *)(cur + sizeof(segment_command_t)) + j;
         if ((sect->flags & SECTION_TYPE) == S_LAZY_SYMBOL_POINTERS) {
           perform_rebinding_with_section(rebindings, sect, slide, symtab, strtab,
-                                         indirect_symtab, stub_helper_start, stub_helper_end);
+                                         indirect_symtab, stub_helper_start, stub_helper_end
+#if defined(DEBUG)
+                                         , NULL, NULL
+#endif
+                                         );
         }
         if ((sect->flags & SECTION_TYPE) == S_NON_LAZY_SYMBOL_POINTERS) {
           perform_rebinding_with_section(rebindings, sect, slide, symtab, strtab,
-                                         indirect_symtab, stub_helper_start, stub_helper_end);
+                                         indirect_symtab, stub_helper_start, stub_helper_end
+#if defined(DEBUG)
+                                         , NULL, NULL
+#endif
+                                         );
         }
       }
     }
