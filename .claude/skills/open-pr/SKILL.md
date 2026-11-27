@@ -1,6 +1,6 @@
 ---
 name: dd-sdk-ios:open-pr
-description: Use when creating a pull request in dd-sdk-ios. Use when writing PR titles, PR body, or choosing the target branch.
+description: Use when creating a development pull request in dd-sdk-ios, including its title, body, target branch and draft state.
 ---
 
 # Pull Requests in dd-sdk-ios
@@ -22,7 +22,7 @@ For regular release PRs, use `dd-sdk-ios:prepare-release` for titles, descriptio
 
 - **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket for internal development PRs
 - **Target branch**: `develop` or the change's shared feature branch
-- **Always open as draft** — mark ready only when CI passes and the PR is ready for review
+- **Always open as draft**
 - All commits on the branch must be signed
 
 ## Creating via gh
@@ -59,6 +59,15 @@ gh pr create \
 - [ ] `make test-ios-all` passes
 - [ ] `make api-surface-verify` passes (if public API changed)
 - [ ] Changelog metadata follows the PR template
+
+## Verify and hand off
+
+Verify the new PR's head, base, title, body and draft state. Return its URL and
+local validation results.
+
+When the user requests continued ownership of CI, feedback or merge, continue
+with [dd-sdk-ios:follow-up-pr](../follow-up-pr/SKILL.md). Creating a PR alone does
+not authorize ongoing monitoring or merge.
 
 ## Common Mistakes
 
