@@ -100,13 +100,25 @@ extension Trace {
         /// Default: `nil`.
         public var customEndpoint: URL?
 
+        /// Enables client-side APM stats.
+        ///
+        /// When enabled, the SDK computes trace statistics (hit counts, error rates, latency
+        /// distributions) locally over eligible finished spans, including sampled-out ones, and
+        /// uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans,
+        /// and spans of kind client, server, producer or consumer. This yields accurate RED metrics
+        /// regardless of the trace `sampleRate`. To avoid double counting, uploaded spans are stamped
+        /// with `_dd.compute_stats=0` so the backend does not recompute stats for the same traffic.
+        ///
+        /// Default: `false`.
+        public var statsComputationEnabled: Bool
+
         /// Custom server url for sending client-side stats.
         ///
         /// Stats are uploaded to a different intake than spans (`/api/v0.2/stats` vs `/api/v2/spans`),
         /// so a separate override is required. Used mainly for integration tests against mock servers
         /// and for advanced setups with self-hosted collectors.
         ///
-        /// Has no effect unless the `clientSideStats` feature flag is enabled.
+        /// Has no effect unless client-side stats are enabled, see `statsComputationEnabled`.
         ///
         /// Default: `nil`.
         public var customStatsEndpoint: URL?
@@ -209,6 +221,7 @@ extension Trace {
         ///   - networkInfoEnabled: Determines if traces should be enriched with network connection information.
         ///   - eventMapper: Custom mapper for span events.
         ///   - customEndpoint: Custom server url for sending traces.
+        ///   - statsComputationEnabled: Determines if the SDK computes client-side APM stats.
         ///   - customStatsEndpoint: Custom server url for sending client-side stats.
         ///   - featureFlags: Feature flags to preview experimental features in Trace.
         public init(
@@ -220,6 +233,7 @@ extension Trace {
             networkInfoEnabled: Bool = false,
             eventMapper: EventMapper? = nil,
             customEndpoint: URL? = nil,
+            statsComputationEnabled: Bool = false,
             customStatsEndpoint: URL? = nil,
             featureFlags: FeatureFlags = .defaults
         ) {
@@ -231,6 +245,7 @@ extension Trace {
             self.networkInfoEnabled = networkInfoEnabled
             self.eventMapper = eventMapper
             self.customEndpoint = customEndpoint
+            self.statsComputationEnabled = statsComputationEnabled
             self.customStatsEndpoint = customStatsEndpoint
             self.featureFlags = featureFlags
         }
@@ -244,12 +259,8 @@ extension Trace.Configuration {
     public enum FeatureFlag: String, Sendable {
         /// Client-side APM stats.
         ///
-        /// When enabled, the SDK computes trace statistics (hit counts, error rates, latency
-        /// distributions) locally over eligible finished spans, including sampled-out ones, and
-        /// uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans,
-        /// and spans of kind client, server, producer or consumer. This yields accurate RED metrics
-        /// regardless of the trace `sampleRate`. To avoid double counting, uploaded spans are stamped
-        /// with `_dd.compute_stats=0` so the backend does not recompute stats for the same traffic.
+        /// Setting it to `true` enables client-side APM stats, even when `statsComputationEnabled` is `false`.
+        @available(*, deprecated, message: "Use Trace.Configuration.statsComputationEnabled instead.")
         case clientSideStats = "client_side_stats"
     }
 }
@@ -257,9 +268,7 @@ extension Trace.Configuration {
 extension Trace.Configuration.FeatureFlags {
     /// The default feature flags applied to the Trace configuration.
     public static var defaults: Self {
-        [
-            .clientSideStats: false,
-        ]
+        [:]
     }
 
     /// Accesses the feature flag value.
@@ -267,5 +276,17 @@ extension Trace.Configuration.FeatureFlags {
     /// Falls back to the flag's entry in `.defaults` when not explicitly set, or `false` if it has no default.
     public subscript(flag: Key) -> Bool {
         self[flag] ?? Self.defaults[flag, default: false]
+    }
+}
+
+extension Trace.Configuration {
+    /// Turns on `statsComputationEnabled` when the deprecated `clientSideStats` feature flag is set.
+    ///
+    /// The flag is matched by raw value so the SDK does not use the deprecated case itself.
+    // TODO: RUM-20506 Remove with the `clientSideStats` feature flag in v4.
+    internal mutating func applyDeprecatedFeatureFlags() {
+        if featureFlags.contains(where: { $0.key.rawValue == "client_side_stats" && $0.value }) {
+            statsComputationEnabled = true
+        }
     }
 }

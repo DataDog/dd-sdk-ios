@@ -50,7 +50,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
                 networkInfoEnabled: configuration.networkInfoEnabled,
                 eventsMapper: configuration.eventMapper,
                 bundleWithRUM: configuration.bundleWithRumEnabled,
-                statsComputationEnabled: configuration.featureFlags[.clientSideStats],
+                statsComputationEnabled: configuration.statsComputationEnabled,
                 telemetry: core.telemetry
             ),
             onSpanFinished: onSpanFinished
@@ -58,6 +58,6 @@ internal final class TraceFeature: DatadogRemoteFeature {
         self.performanceOverride = nil
 
         // Send configuration telemetry:
-        core.telemetry.configuration(useClientSideStats: configuration.featureFlags[.clientSideStats], useTracing: true)
+        core.telemetry.configuration(useClientSideStats: configuration.statsComputationEnabled, useTracing: true)
     }
 }

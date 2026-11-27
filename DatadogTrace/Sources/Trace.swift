@@ -45,13 +45,14 @@ public enum Trace {
         // the in-code configuration is used unchanged.
         var configuration = configuration
         configuration.apply(remoteConfiguration: core.remoteConfiguration)
+        configuration.applyDeprecatedFeatureFlags()
 
         // Register Client-Side Stats feature first if enabled, so the Trace feature (which stamps
         // `meta._dd.compute_stats=0` on every span) is only registered once the stats pipeline is
         // known to be installed. If stats registration fails, we return before any span is stamped,
         // which prevents suppressing the backend's own stats while no client stats are uploaded.
         var stats: ClientStatsFeature?
-        if configuration.featureFlags[.clientSideStats] {
+        if configuration.statsComputationEnabled {
             let statsFeature = ClientStatsFeature(core: core, configuration: configuration, dateProvider: configuration.dateProvider)
             try core.register(feature: statsFeature)
             stats = statsFeature

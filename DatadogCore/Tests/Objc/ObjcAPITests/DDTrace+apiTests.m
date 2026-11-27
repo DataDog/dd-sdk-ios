@@ -63,6 +63,10 @@
     XCTAssertNil(config.customEndpoint);
     config.customEndpoint = [NSURL new];
     XCTAssertNotNil(config.customEndpoint);
+
+    XCTAssertFalse(config.statsComputationEnabled);
+    config.statsComputationEnabled = YES;
+    XCTAssertTrue(config.statsComputationEnabled);
 }
 
 - (void)testDDTracerAPI {

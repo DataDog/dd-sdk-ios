@@ -28,7 +28,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationDisabled_thenClientStatsFeatureIsNotRegistered() {
         // Given
-        config.featureFlags[.clientSideStats] = false
+        config.statsComputationEnabled = false
 
         // When
         Trace.enable(with: config, in: core)
@@ -39,7 +39,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationEnabled_thenClientStatsFeatureIsRegistered() {
         // Given
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
 
         // When
         Trace.enable(with: config, in: core)
@@ -50,7 +50,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationEnabled_thenTraceFeatureIsAlsoRegistered() {
         // Given
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
 
         // When
         Trace.enable(with: config, in: core)
@@ -60,12 +60,37 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertNotNil(core.get(feature: ClientStatsFeature.self))
     }
 
+    @available(*, deprecated)
+    func testWhenDeprecatedClientSideStatsFlagEnabled_thenClientStatsFeatureIsRegistered() {
+        // Given
+        config.featureFlags[.clientSideStats] = true
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(core.get(feature: ClientStatsFeature.self))
+    }
+
+    @available(*, deprecated)
+    func testWhenDeprecatedClientSideStatsFlagDisabled_thenStatsComputationEnabledStillRegistersClientStatsFeature() {
+        // Given
+        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = false
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(core.get(feature: ClientStatsFeature.self))
+    }
+
     func testWhenDefaultConfiguration_thenStatsComputationIsDisabled() {
         // Given
         let defaultConfig = Trace.Configuration()
 
         // Then
-        XCTAssertFalse(defaultConfig.featureFlags[.clientSideStats])
+        XCTAssertFalse(defaultConfig.statsComputationEnabled)
     }
 
     // MARK: - Consent
@@ -321,7 +346,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationEnabled_thenRequestBuilderUsesStatsEndpoint() throws {
         // Given
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
 
         // When
         Trace.enable(with: config, in: core)
@@ -334,7 +359,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenStatsComputationEnabledWithCustomStatsEndpoint_thenRequestBuilderUsesCustomURL() throws {
         // Given
         let customURL: URL = .mockRandom()
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.customStatsEndpoint = customURL
 
         // When
@@ -349,7 +374,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenStatsComputationEnabledWithCustomEndpointOnly_thenStatsRequestBuilderDoesNotUseIt() throws {
         // Given: customEndpoint is for spans, not stats. Setting it must not affect the stats request builder.
         let spansURL: URL = .mockRandom()
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.customEndpoint = spansURL
 
         // When
@@ -421,7 +446,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let core = FeatureRegistrationPassthroughCoreMock(
             context: .mockWith(service: "ios-app", env: "staging", version: "2.0.0")
         )
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
         stats.concentrator.add(SpanSnapshot.mockWith(
@@ -449,7 +474,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
 
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)
@@ -474,7 +499,7 @@ class ClientStatsFeatureTests: XCTestCase {
         var wireSizes: [Int] = []
         for spanCount in [limit, limit + 1, 10_000] {
             let core = FeatureRegistrationPassthroughCoreMock()
-            config.featureFlags[.clientSideStats] = true
+            config.statsComputationEnabled = true
             config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
             Trace.enable(with: config, in: core)
             let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
@@ -518,7 +543,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testAlternatingOverflowDeploymentsAreStoredOncePerDeploymentWithTheirWireIdentity() throws {
         let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(trackingConsent: .pending))
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
@@ -593,7 +618,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)
@@ -621,7 +646,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)
@@ -640,7 +665,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenFlushProducesNoBuckets_itDoesNotSendFlushMetric() throws {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
 
         Trace.enable(with: config, in: core)
@@ -657,7 +682,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)
@@ -895,7 +920,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenAFlushedGroupCannotFitAlone_itIsDroppedAndReportedWhileOthersAreStored() throws {
         let core = FeatureRegistrationPassthroughCoreMock()
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
@@ -937,7 +962,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertGreaterThan(try encodedSize(of: expected), 1_024 * 1_024)
 
         let core = FeatureRegistrationPassthroughCoreMock()
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
@@ -1311,7 +1336,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenTheClockSynchronizesAfterSpansFinished_theirBucketUsesTheNewerOffset() throws {
         // Given: spans finish at startup, before the first clock synchronization, so the offset is still 0.
         let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(serverTimeOffset: 0))
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
@@ -1329,7 +1354,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenABucketIsStored_itKeepsTheServerOffsetOfThatMomentWhateverTheUploadContext() throws {
         // Given: the device clock is an hour behind when the bucket is stored.
         let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(serverTimeOffset: 3_600))
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
@@ -1541,7 +1566,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     private func enableClientStats() throws -> (FeatureRegistrationPassthroughCoreMock, ClientStatsFeature) {
         let core = FeatureRegistrationPassthroughCoreMock()
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
         Trace.enable(with: config, in: core)
         return (core, try XCTUnwrap(core.get(feature: ClientStatsFeature.self)))

@@ -52,6 +52,11 @@ public final class objc_TraceConfiguration: NSObject {
         get { swiftConfig.customEndpoint }
     }
 
+    public var statsComputationEnabled: Bool {
+        set { swiftConfig.statsComputationEnabled = newValue }
+        get { swiftConfig.statsComputationEnabled }
+    }
+
     public var customStatsEndpoint: URL? {
         set { swiftConfig.customStatsEndpoint = newValue }
         get { swiftConfig.customStatsEndpoint }
@@ -60,7 +65,8 @@ public final class objc_TraceConfiguration: NSObject {
     /// Experimental feature flags, keyed by flag name. Unknown names are ignored.
     ///
     /// Available flags:
-    /// - `client_side_stats`: `false` by default.
+    /// - `client_side_stats`: deprecated, use `statsComputationEnabled` instead.
+    @available(*, deprecated, message: "Use statsComputationEnabled instead.")
     public var featureFlags: [String: Bool] {
         set { swiftConfig.featureFlags = newValue.dd.featureFlags }
         get { swiftConfig.featureFlags.dd.featureFlags }
