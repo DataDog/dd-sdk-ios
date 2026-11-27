@@ -357,6 +357,15 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
     }
 
+    func testOpenTelemetryNestedGlobalServiceIsVisibleToChildren() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), tags: ["service": ["name": "shared"]], onSpanFinished: capture.capture)
+        let parent = tracer.spanBuilder(spanName: "parent").setNoParent().startSpan()
+        tracer.spanBuilder(spanName: "child").setParent(parent).startSpan().end()
+        XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+        parent.end()
+    }
+
     func testOpenTelemetryRemoteParentIsNotInferredFromMissingMetadata() throws {
         let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)

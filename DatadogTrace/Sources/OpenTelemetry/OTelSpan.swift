@@ -192,7 +192,8 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
         // Preserve tag side effects (including manual sampling overrides), but do not
         // temporarily replace the service visible to children with an overridden global value.
-        for (key, value) in tracer.tags where key != SpanTags.service || tags[key] == nil {
+        for (key, value) in tracer.flattenedTags.sorted(by: { $0.key < $1.key })
+            where key != SpanTags.service || tags[key] == nil {
             ddSpan.setTag(key: key, value: value)
         }
         for (key, value) in tags {
@@ -267,7 +268,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         guard let service = ddSpan.ddContext.serviceForStats else {
             return
         }
-        service.serviceOverride = attributes.tags[SpanTags.service] ?? tracer.tags[SpanTags.service]?.dd.decode()
+        service.serviceOverride = attributes.tags[SpanTags.service] ?? tracer.flattenedTags[SpanTags.service]?.dd.decode()
     }
 
     func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) {
