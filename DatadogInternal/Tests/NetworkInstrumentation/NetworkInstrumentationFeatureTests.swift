@@ -272,7 +272,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let interception = try XCTUnwrap(handler.interceptions.first).value
         XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
         XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
-        XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
+        XCTAssertEqual(interception.data?.count, 10, "Async data APIs deliver data through the swizzled private completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
@@ -309,7 +309,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let interception = try XCTUnwrap(handler.interceptions.first).value
         XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
         XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
-        XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
+        XCTAssertEqual(interception.data?.count, 10, "Async data APIs deliver data through the swizzled private completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
@@ -346,7 +346,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let interception = try XCTUnwrap(handler.interceptions.first).value
         XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
         XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
-        XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
+        XCTAssertEqual(interception.data?.count, 10, "Async data APIs deliver data through the swizzled private completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
@@ -475,7 +475,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let interception = try XCTUnwrap(handler.interceptions.first).value
         XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
         XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
-        XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
+        XCTAssertEqual(interception.data?.count, 10, "Async data APIs deliver data through the swizzled private completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
@@ -1118,7 +1118,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let interception = try XCTUnwrap(handler.interceptions.first).value
         XCTAssertEqual(interception.trackingMode, .automatic, "Task should be in automatic mode")
         XCTAssertNil(interception.metrics, "Automatic mode should not capture URLSessionTaskMetrics")
-        XCTAssertNil(interception.data, "Data should not be captured in automatic mode")
+        XCTAssertEqual(interception.data?.count, 10, "Async data APIs deliver data through the swizzled private completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
         XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
@@ -1790,14 +1790,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let interception1 = try XCTUnwrap(handler.interception(for: url1))
         XCTAssertEqual(interception1.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
         XCTAssertNotNil(interception1.metrics, "Task with registered delegate should collect metrics")
-        XCTAssertNil(interception1.data, "Data should not be recorded for tasks with no completion handler")
+        XCTAssertEqual(interception1.data?.count, 10, "Async data APIs deliver data through the swizzled private completion handler")
         XCTAssertEqual(interception1.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception1.completion, "Should capture completion")
 
         let interception2 = try XCTUnwrap(handler.interception(for: url2))
         XCTAssertEqual(interception2.trackingMode, .automatic, "Task with no registered delegate should be in automatic mode")
         XCTAssertNil(interception2.metrics, "Task in automatic mode should not collect metrics")
-        XCTAssertNil(interception2.data, "Data should not be recorded for tasks with no completion handler")
+        XCTAssertEqual(interception2.data?.count, 10, "Async data APIs deliver data through the swizzled private completion handler")
         XCTAssertEqual(interception2.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception2.completion, "Should capture completion")
         XCTAssertNotNil(interception2.startDate, "Should capture approximate start date")
@@ -2650,6 +2650,48 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.operationType), "GraphQL operation type header should be removed")
         XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.variables), "GraphQL variables header should be removed")
         XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.payload), "GraphQL payload header should be removed")
+    }
+
+    // MARK: - Completion handler vs. metrics ordering
+
+    private var completedInterceptions: [URLSessionTaskInterception] = []
+
+    private func interceptTaskWithCompletionHandler(in feature: NetworkInstrumentationFeature) -> URLSessionTask {
+        feature.handlers = [handler]
+        handler.onInterceptionDidComplete = { [weak self] in self?.completedInterceptions.append($0) }
+        let task = URLSessionTask.mockWith(request: .mockAny(), response: .mockAny())
+        var tracking = task.dd
+        tracking.hasCompletion = true
+        feature.intercept(task: task, with: [], additionalFirstPartyHosts: nil, trackingMode: .registeredDelegate)
+        return task
+    }
+
+    func testGivenTaskWithCompletionHandler_whenMetricsArriveAfterCompletion_itFinishesOnce() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let task = interceptTaskWithCompletionHandler(in: feature)
+
+        feature.task(task, didCompleteWithError: nil, fromCompletionHandler: true)
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 0, "Must wait for metrics in registered delegate mode")
+
+        feature.task(task, didFinishCollecting: .mockAny())
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 1, "Delayed metrics must finish the interception once the completion ran")
+        XCTAssertNotNil(completedInterceptions.first?.metrics)
+    }
+
+    func testGivenTaskWithCompletionHandler_whenMetricsArriveBeforeCompletion_itFinishesOnceAfterCompletion() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let task = interceptTaskWithCompletionHandler(in: feature)
+
+        feature.task(task, didFinishCollecting: .mockAny())
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 0, "Must wait for the completion handler to capture data")
+
+        feature.task(task, didCompleteWithError: nil, fromCompletionHandler: true)
+        feature.flush()
+        XCTAssertEqual(completedInterceptions.count, 1)
+        XCTAssertNotNil(completedInterceptions.first?.metrics)
     }
 
     // MARK: - Thread Safety

@@ -33,10 +33,10 @@ public class URLSessionTaskInterception {
     ///
     /// Collected via:
     /// - Registered delegate mode: incremental `URLSessionDataDelegate` chunks
-    /// - Automatic mode: completion handler swizzling (tasks with completion handlers only)
+    /// - Completion handler swizzling (tasks with completion handlers, including async/await `data(for:)` / `data(from:)`)
     ///
     /// `nil` when:
-    /// - No completion handler in automatic mode (e.g., async/await tasks)
+    /// - No completion handler in automatic mode (e.g., async/await `upload`, `download` or `bytes` tasks)
     /// - Download tasks (data is written to file, not memory)
     /// - Media responses in registered-delegate mode (`image/*`, `video/*`, `audio/*`, `application/octet-stream`)
     /// - Response body exceeds 512 KB in registered-delegate mode
@@ -54,6 +54,9 @@ public class URLSessionTaskInterception {
     public private(set) var responseSize: Int64?
     /// Task completion collected during this interception.
     public private(set) var completion: ResourceCompletion?
+    /// Whether the task's swizzled completion handler has executed. Lets a later callback
+    /// (e.g. delayed `didFinishCollecting`) finish the interception. Accessed on the feature queue only.
+    internal var hasExecutedCompletionHandler = false
     /// Trace context injected to request headers. Can be `nil` if the trace was not sampled or if modifying
     /// request was not possible in `URLSession` swizzling on certain OS version.
     public private(set) var trace: TraceContext?

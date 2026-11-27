@@ -82,6 +82,7 @@ RUM.enable(
             // Note: in registered-delegate mode (enableDurationBreakdown), `data` is:
             //   - nil for media types (image/*, video/*, audio/*, application/octet-stream)
             //   - nil for responses over 512 KB (all other types)
+            // For async/await, `data` is provided for `data(for:)` / `data(from:)` but nil for async upload/download/bytes.
             resourceAttributesProvider: { request, response, data, error in
                 return ["custom.attribute": "value"]
             },

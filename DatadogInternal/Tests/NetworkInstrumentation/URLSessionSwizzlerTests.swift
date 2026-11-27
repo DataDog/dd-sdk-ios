@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 
 @testable import DatadogInternal
 
@@ -36,5 +37,180 @@ class URLSessionSwizzlerTests: XCTestCase {
         session.dataTask(with: URLRequest(url: url)) { _, _, _ in }.resume() // not intercepted
 
         wait(for: [didReceive, didInterceptCompletion], timeout: 5)
+    }
+
+    @available(iOS 15, tvOS 15, *)
+    func testSwizzling_asyncDataAPIs_interceptCompletionAndCallOriginalOnce() async throws {
+        let body: Data = .mock(ofSize: 10)
+        var receivedData: [Data] = []
+        var interceptedData: [Data?] = []
+
+        let swizzler = URLSessionSwizzler()
+        try swizzler.swizzle(
+            interceptCompletionHandler: { _, data, _ in interceptedData.append(data) },
+            didReceive: { _, data in receivedData.append(data) }
+        )
+        defer { swizzler.unswizzle() }
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: body), skipIsMainThreadCheck: true)
+        let session = server.getInterceptedURLSession()
+
+        let (data1, response1) = try await session.data(from: URL.mockAny())
+        let (data2, response2) = try await session.data(for: URLRequest(url: URL.mockAny()))
+        _ = server.waitAndReturnRequests(count: 2)
+
+        // original completion delivered unchanged values, exactly once per call (async API would trap otherwise)
+        XCTAssertEqual(data1, body)
+        XCTAssertEqual(data2, body)
+        XCTAssertEqual((response1 as? HTTPURLResponse)?.statusCode, 200)
+        XCTAssertEqual((response2 as? HTTPURLResponse)?.statusCode, 200)
+        // intercepted once per request
+        XCTAssertEqual(receivedData, [body, body])
+        XCTAssertEqual(interceptedData, [body, body])
+    }
+
+    // MARK: - Async data APIs cancellation
+
+    @available(iOS 15, tvOS 15, *)
+    func testSwizzling_asyncDataFromURL_whenSwiftTaskIsCancelled_itInterceptsCancellationOnce() async throws {
+        try await assertCancellationIsIntercepted { session in _ = try await session.data(from: URL.mockAny()) }
+    }
+
+    @available(iOS 15, tvOS 15, *)
+    func testSwizzling_asyncDataForRequest_whenSwiftTaskIsCancelled_itInterceptsCancellationOnce() async throws {
+        try await assertCancellationIsIntercepted { session in _ = try await session.data(for: URLRequest(url: URL.mockAny())) }
+    }
+
+    @available(iOS 15, tvOS 15, *)
+    private func assertCancellationIsIntercepted(sending send: @escaping (URLSession) async throws -> Void) async throws {
+        let lock = NSLock()
+        var interceptedErrors: [Error?] = []
+        var receivedData: [Data] = []
+
+        let swizzler = URLSessionSwizzler()
+        try swizzler.swizzle(
+            interceptCompletionHandler: { _, _, error in lock.lock(); interceptedErrors.append(error); lock.unlock() },
+            didReceive: { _, data in lock.lock(); receivedData.append(data); lock.unlock() }
+        )
+        defer { swizzler.unswizzle() }
+
+        let requestStarted = expectation(description: "request in flight")
+        HangingURLProtocol.onStartLoading = { requestStarted.fulfill() }
+        defer { HangingURLProtocol.onStartLoading = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [HangingURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+
+        let request = Task { try await send(session) }
+        await fulfillment(of: [requestStarted], timeout: 5)
+        request.cancel()
+
+        do {
+            try await request.value
+            XCTFail("Cancelled request must throw")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .cancelled)
+        }
+
+        lock.lock()
+        defer { lock.unlock() }
+        XCTAssertEqual(interceptedErrors.count, 1, "Completion interceptor must receive the cancellation exactly once")
+        XCTAssertEqual((interceptedErrors.first as? URLError)?.code, .cancelled)
+        XCTAssertTrue(receivedData.isEmpty)
+    }
+
+    // MARK: - AsyncDataTaskCompletionHandler guards
+
+    func testAsyncDataTaskHook_whenSelectorIsMissing_itIsNotBuilt() {
+        XCTAssertNil(URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(selectorName: "_ddtest_missing:delegate:completionHandler:"))
+    }
+
+    func testAsyncDataTaskHook_whenSignatureIsIncompatible_itIsNotBuilt() {
+        XCTAssertNil(
+            URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(
+                selectorName: "ddtest_incompatible:delegate:completionHandler:",
+                klass: AsyncDataTaskSessionMock.self
+            )
+        )
+    }
+
+    func testAsyncDataTaskHook_whenCompletionIsNil_itPassesItThrough() throws {
+        let hook = try XCTUnwrap(
+            URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(
+                selectorName: "ddtest_dataTaskWith:delegate:completionHandler:",
+                klass: AsyncDataTaskSessionMock.self
+            )
+        )
+        var intercepted = 0
+        hook.swizzle(interceptCompletion: { _, _, _ in intercepted += 1 }, didReceive: { _, _ in intercepted += 1 })
+        defer { hook.unswizzle() }
+
+        let session = AsyncDataTaskSessionMock()
+        _ = session.dataTask(with: URL.mockAny() as NSURL, delegate: nil, completionHandler: nil)
+
+        XCTAssertEqual(session.callCount, 1)
+        XCTAssertNil(session.receivedCompletion, "nil completion must reach the original implementation as nil")
+        XCTAssertEqual(intercepted, 0)
+    }
+
+    func testAsyncDataTaskHook_whenCompletionIsGiven_itInterceptsAndCallsOriginalOnce() throws {
+        let hook = try XCTUnwrap(
+            URLSessionSwizzler.AsyncDataTaskCompletionHandler.build(
+                selectorName: "ddtest_dataTaskWith:delegate:completionHandler:",
+                klass: AsyncDataTaskSessionMock.self
+            )
+        )
+        let body: Data = .mock(ofSize: 10)
+        var received: [Data] = []
+        var intercepted: [Data?] = []
+        hook.swizzle(interceptCompletion: { _, data, _ in intercepted.append(data) }, didReceive: { _, data in received.append(data) })
+        defer { hook.unswizzle() }
+
+        let session = AsyncDataTaskSessionMock()
+        var calls: [Data?] = []
+        let task = session.dataTask(with: URL.mockAny() as NSURL, delegate: nil) { data, _, _ in calls.append(data) }
+        session.complete(with: body)
+
+        XCTAssertEqual(calls, [body])
+        XCTAssertEqual(received, [body])
+        XCTAssertEqual(intercepted, [body])
+        XCTAssertTrue(task.dd.hasCompletion)
+    }
+}
+
+/// Starts loading and never responds, keeping the request in flight until it is cancelled.
+private final class HangingURLProtocol: URLProtocol {
+    static var onStartLoading: (() -> Void)?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() { Self.onStartLoading?() }
+    override func stopLoading() {}
+}
+
+/// Exposes selectors shaped like the private `NSURLSession` async-data entry points.
+private final class AsyncDataTaskSessionMock: NSObject {
+    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+
+    private(set) var callCount = 0
+    private(set) var receivedCompletion: CompletionHandler?
+    private let task = URLSession.shared.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+
+    @objc(ddtest_dataTaskWith:delegate:completionHandler:)
+    dynamic func dataTask(with urlOrRequest: AnyObject, delegate: AnyObject?, completionHandler: CompletionHandler?) -> URLSessionDataTask {
+        callCount += 1
+        receivedCompletion = completionHandler
+        return task
+    }
+
+    @objc(ddtest_incompatible:delegate:completionHandler:)
+    func incompatible(_ value: Int, delegate: AnyObject?, completionHandler: CompletionHandler?) -> URLSessionDataTask {
+        return task
+    }
+
+    func complete(with data: Data) {
+        receivedCompletion?(data, nil, nil)
     }
 }
