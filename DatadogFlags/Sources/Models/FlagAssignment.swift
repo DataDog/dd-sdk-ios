@@ -25,6 +25,8 @@ public struct FlagAssignment: Equatable {
     /// Consent captured with this assignment, including when bridged or restored from disk.
     @_spi(Internal)
     public var observeFullEvaluationData: Bool = false
+    /// Features of the selected split. The public initializer starts with an empty list.
+    internal var features: [SplitFeature] = []
 
     /// 2^53 - 1. Above this magnitude, a whole `Double` can be the rounded form of a different number.
     private static let maxSafeInteger: Double = 9_007_199_254_740_991
@@ -66,6 +68,79 @@ public struct FlagAssignment: Equatable {
         self.doLog = doLog
         self.serialID = serialID
     }
+
+    /// Rebuilds a bridged assignment. Features are normalized like a decoded response: the first valid
+    /// entry for each key wins, and entries with an empty key, a non-finite number or no destination are skipped.
+    public init(
+        allocationKey: String,
+        variationKey: String,
+        variation: Variation,
+        reason: String,
+        doLog: Bool,
+        serialID: Int?,
+        observeFullEvaluationData: Bool,
+        snapshotFeatures: [FlagSnapshotFeature]
+    ) {
+        self.init(
+            allocationKey: allocationKey,
+            variationKey: variationKey,
+            variation: variation,
+            reason: reason,
+            doLog: doLog,
+            serialID: serialID
+        )
+        self.observeFullEvaluationData = observeFullEvaluationData
+        self.features = SplitFeature.firstValidPerKey(
+            snapshotFeatures.lazy.map { SplitFeature.validated(key: $0.key, value: $0.value.anyValue, destinations: $0.destinations) }
+        )
+    }
+
+    /// Every feature of the selected split, all destinations included, for bridges that rebuild the assignment.
+    public var snapshotFeatures: [FlagSnapshotFeature] {
+        features.compactMap(FlagSnapshotFeature.init(splitFeature:))
+    }
+}
+
+/// The value of a split feature in a bridged assignment.
+@_spi(Internal)
+public enum FlagSnapshotFeatureValue: Equatable {
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+
+    var anyValue: AnyValue {
+        switch self {
+        case .string(let value): return .string(value)
+        case .number(let value): return .double(value)
+        case .bool(let value): return .bool(value)
+        }
+    }
+}
+
+/// A split feature of a bridged assignment.
+@_spi(Internal)
+public struct FlagSnapshotFeature: Equatable {
+    public let key: String
+    public let value: FlagSnapshotFeatureValue
+    /// Wire names, unknown ones included. Only `HOOK`, `EXPOSURE` and `EVALUATION` route the feature.
+    public let destinations: [String]
+
+    public init(key: String, value: FlagSnapshotFeatureValue, destinations: [String]) {
+        self.key = key
+        self.value = value
+        self.destinations = destinations
+    }
+
+    init?(splitFeature: SplitFeature) {
+        switch splitFeature.value {
+        case .string(let value): self.value = .string(value)
+        case .double(let value): self.value = .number(value)
+        case .bool(let value): self.value = .bool(value)
+        default: return nil
+        }
+        self.key = splitFeature.key
+        self.destinations = splitFeature.destinations
+    }
 }
 
 internal extension CodingUserInfoKey {
@@ -95,6 +170,7 @@ extension FlagAssignment: Codable {
         case doLog
         case serialID = "serialId"
         case observeFullEvaluationData
+        case features
     }
 
     public init(from decoder: any Decoder) throws {
@@ -107,6 +183,7 @@ extension FlagAssignment: Codable {
         // A malformed serial id decodes as absent so it cannot fail the whole response.
         self.serialID = try? container.decodeIfPresent(Int.self, forKey: .serialID)
         self.observeFullEvaluationData = (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
+        self.features = (try? container.decodeIfPresent(LenientSplitFeatures.self, forKey: .features))?.features ?? []
 
         let variationType = try container.decode(String.self, forKey: .variationType)
 
@@ -145,6 +222,9 @@ extension FlagAssignment: Codable {
         try container.encode(doLog, forKey: .doLog)
         try container.encodeIfPresent(serialID, forKey: .serialID)
         try container.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
+        if !features.isEmpty {
+            try container.encode(features, forKey: .features)
+        }
 
         switch variation {
         case .boolean(let value):
@@ -167,5 +247,166 @@ extension FlagAssignment: Codable {
             try container.encode(typeName, forKey: .variationType)
             try container.encodeNil(forKey: .variationValue)
         }
+    }
+}
+
+/// A feature of the split that produced an assignment.
+internal struct SplitFeature: Equatable {
+    enum Destination: String {
+        case hook = "HOOK"
+        case exposure = "EXPOSURE"
+        case evaluation = "EVALUATION"
+    }
+
+    /// The public metadata prefix. Customers read `HOOK` features under it.
+    static let hookMetadataPrefix = "__dd_feature."
+
+    let key: String
+    /// `.string`, `.double` or `.bool`.
+    let value: AnyValue
+    /// Wire names, unknown ones included. Routing uses the known names.
+    let destinations: [String]
+
+    func routes(to destination: Destination) -> Bool {
+        destinations.contains(destination.rawValue)
+    }
+
+    /// Returns nil for an empty key, a value other than a string, a finite number or a Boolean, or no non-empty destination.
+    static func validated(key: String, value: AnyValue, destinations: [String]) -> SplitFeature? {
+        switch value {
+        case .string, .bool: break
+        case .double(let number) where number.isFinite: break
+        default: return nil
+        }
+        let destinations = destinations.filter { !$0.isEmpty }
+        guard !key.isEmpty, !destinations.isEmpty else {
+            return nil
+        }
+        return SplitFeature(key: key, value: value, destinations: destinations)
+    }
+
+    /// Keeps the first valid feature for each key. An invalid entry does not claim its key.
+    static func firstValidPerKey<S: Sequence>(_ candidates: S) -> [SplitFeature] where S.Element == SplitFeature? {
+        var features: [SplitFeature] = []
+        var keys: Set<String> = []
+        for case let feature? in candidates where keys.insert(feature.key).inserted {
+            features.append(feature)
+        }
+        return features
+    }
+}
+
+extension SplitFeature: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case key
+        case value
+        case destinations
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(key, forKey: .key)
+        try container.encode(value, forKey: .value)
+        try container.encode(destinations, forKey: .destinations)
+    }
+}
+
+extension Array where Element == SplitFeature {
+    /// Feature values for one destination, keyed by feature key.
+    func values(for destination: SplitFeature.Destination) -> [String: AnyValue] {
+        var values: [String: AnyValue] = [:]
+        for feature in self where feature.routes(to: destination) {
+            values[feature.key] = feature.value
+        }
+        return values
+    }
+
+    func hookMetadata() -> [String: AnyValue] {
+        var metadata: [String: AnyValue] = [:]
+        for feature in self where feature.routes(to: .hook) {
+            metadata[SplitFeature.hookMetadataPrefix + feature.key] = feature.value
+        }
+        return metadata
+    }
+}
+
+/// Decodes `features` leniently and returns an empty list for a malformed field. It skips invalid
+/// entries and keeps the first valid entry for each key.
+internal struct LenientSplitFeatures: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case key
+        case value
+        case destinations
+    }
+
+    /// Consumes any JSON value, so a skipped element still advances an unkeyed container.
+    private struct Skip: Decodable {}
+
+    private struct Entry: Decodable {
+        let feature: SplitFeature?
+
+        init(from decoder: any Decoder) {
+            guard let container = try? decoder.container(keyedBy: CodingKeys.self),
+                  let key = try? container.decode(String.self, forKey: .key),
+                  let value = Self.value(in: container),
+                  let destinations = Self.destinations(in: container) else {
+                feature = nil
+                return
+            }
+            feature = SplitFeature.validated(key: key, value: value, destinations: destinations)
+        }
+
+        private static func value(in container: KeyedDecodingContainer<CodingKeys>) -> AnyValue? {
+            if let value = try? container.decode(Bool.self, forKey: .value) {
+                return .bool(value)
+            }
+            if let value = try? container.decode(Double.self, forKey: .value) {
+                return .double(value)
+            }
+            if let value = try? container.decode(String.self, forKey: .value) {
+                return .string(value)
+            }
+            return nil
+        }
+
+        private static func destinations(in container: KeyedDecodingContainer<CodingKeys>) -> [String]? {
+            guard var list = try? container.nestedUnkeyedContainer(forKey: .destinations) else {
+                return nil
+            }
+            var names: [String] = []
+            while !list.isAtEnd {
+                if let name = try? list.decode(String.self) {
+                    names.append(name)
+                } else if !LenientSplitFeatures.skip(&list) {
+                    break
+                }
+            }
+            return names
+        }
+    }
+
+    let features: [SplitFeature]
+
+    init(from decoder: any Decoder) {
+        guard var list = try? decoder.unkeyedContainer() else {
+            features = []
+            return
+        }
+        var candidates: [SplitFeature?] = []
+        while !list.isAtEnd {
+            guard let entry = try? list.decode(Entry.self) else {
+                break
+            }
+            candidates.append(entry.feature)
+        }
+        self.features = SplitFeature.firstValidPerKey(candidates)
+    }
+
+    /// An unkeyed container advances on a successful decode, so this consumes a skipped element explicitly.
+    fileprivate static func skip(_ list: inout UnkeyedDecodingContainer) -> Bool {
+        if (try? list.decodeNil()) == true {
+            return true
+        }
+        return (try? list.decode(Skip.self)) != nil
     }
 }

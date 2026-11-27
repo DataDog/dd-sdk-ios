@@ -22,6 +22,8 @@ internal struct ExposureEvent: Equatable, Codable {
     let variant: Identifier
     let serialID: Int?
     let subject: Subject
+    /// `EXPOSURE` features of the selected split.
+    var features: [String: AnyValue]? = nil
 
     enum CodingKeys: String, CodingKey {
         case timestamp
@@ -30,5 +32,6 @@ internal struct ExposureEvent: Equatable, Codable {
         case variant
         case serialID = "serial_id"
         case subject
+        case features
     }
 }

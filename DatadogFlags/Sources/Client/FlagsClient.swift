@@ -114,6 +114,7 @@ public final class FlagsClient {
     private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
     private let configuration: Configuration
+    private let trackingConsent: () -> TrackingConsent?
 
     private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
     private static let defaultAssignment = FlagAssignment(
@@ -129,13 +130,15 @@ public final class FlagsClient {
         exposureLogger: any ExposureLogging,
         evaluationLogger: any EvaluationLogging,
         rumFlagEvaluationReporter: any RUMFlagEvaluationReporting,
-        configuration: Configuration = .init()
+        configuration: Configuration = .init(),
+        trackingConsent: @escaping () -> TrackingConsent? = { nil }
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
         self.evaluationLogger = evaluationLogger
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
         self.configuration = configuration
+        self.trackingConsent = trackingConsent
     }
 
     /// Creates a new `FlagsClient` instance.
@@ -300,7 +303,8 @@ public final class FlagsClient {
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
             rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope),
-            configuration: configuration
+            configuration: configuration,
+            trackingConsent: { [observer = feature.trackingConsentObserver] in observer.trackingConsent }
         )
 
         feature.clientRegistry.register(client, named: name)
@@ -326,6 +330,10 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
+        evaluate(key: key, defaultValue: defaultValue).details
+    }
+
+    fileprivate func evaluate<T>(key: String, defaultValue: T) -> FlagDetailsWithExposure<T> where T: Equatable, T: FlagValue {
         let snapshot = repository.evaluationSnapshot(for: key)
         let context = snapshot.context
         let trackEvaluationTelemetry = !configuration.enableEvaluationTelemetryOptOutParameter || !snapshot.telemetryOptedOut
@@ -340,28 +348,30 @@ extension FlagsClient: FlagsClientProtocol {
                 evaluationContext: snapshot.requestedContext ?? .empty,
                 flagError: EvaluationError.general
             )
-            return FlagDetails(key: key, value: defaultValue, error: .general)
+            return withExposure(FlagDetails(key: key, value: defaultValue, error: .general), context: snapshot.requestedContext ?? .empty)
         }
 
         if snapshot.error == .invalidContext {
+            let evaluationContext = snapshot.requestedContext ?? .empty
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: defaultAssignment,
-                evaluationContext: snapshot.requestedContext ?? .empty,
+                evaluationContext: evaluationContext,
                 flagError: EvaluationError.invalidContext
             )
-            return FlagDetails(key: key, value: defaultValue, error: .invalidContext)
+            return withExposure(FlagDetails(key: key, value: defaultValue, error: .invalidContext), context: evaluationContext)
         }
         guard let context else {
+            let evaluationContext = snapshot.requestedContext ?? .empty
             logEvaluation(
                 enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: defaultAssignment,
-                evaluationContext: snapshot.requestedContext ?? .empty,
+                evaluationContext: evaluationContext,
                 flagError: EvaluationError.providerNotReady
             )
-            return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
+            return withExposure(FlagDetails(key: key, value: defaultValue, error: .providerNotReady), context: evaluationContext)
         }
 
         guard let flagAssignment = snapshot.assignment else {
@@ -374,7 +384,7 @@ extension FlagsClient: FlagsClientProtocol {
             )
             var details = FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
             details.observeFullEvaluationData = snapshot.observeFullEvaluationData
-            return details
+            return withExposure(details, context: context)
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
@@ -387,7 +397,7 @@ extension FlagsClient: FlagsClientProtocol {
             )
             var details = FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
             details.observeFullEvaluationData = snapshot.observeFullEvaluationData
-            return details
+            return withExposure(details, context: context)
         }
 
         var details = FlagDetails(
@@ -397,18 +407,23 @@ extension FlagsClient: FlagsClientProtocol {
             reason: flagAssignment.reason,
             allocationKey: flagAssignment.allocationKey.isEmpty ? nil : flagAssignment.allocationKey
         )
+        details.flagMetadata = flagAssignment.features.hookMetadata()
 
         details.observeFullEvaluationData = snapshot.observeFullEvaluationData
-        trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
+        let decision = trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
 
-        return details
+        // The provider's hook counts an exposure only with an allocation and a variant, as the Android SDK does.
+        // The Datadog send keeps its doLog-only rule.
+        let hookDecision = flagAssignment.hasExposureKeys ? decision : .notAnExposure
+        return withExposure(details, context: context, features: flagAssignment.features, decision: hookDecision)
     }
 
-    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
-        sendFlagExposure(key: key, assignment: assignment, context: context)
+    @discardableResult
+    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) -> ExposureDecision {
+        let decision = exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
 
         guard trackEvaluationTelemetry else {
-            return
+            return decision
         }
 
         // Log directly instead of calling sendFlagEvaluationEvent, which would check context again.
@@ -423,6 +438,24 @@ extension FlagsClient: FlagsClientProtocol {
         rumFlagEvaluationReporter.sendFlagEvaluation(
             flagKey: key,
             value: assignment.variationKey
+        )
+        return decision
+    }
+
+    private func withExposure<T>(
+        _ details: FlagDetails<T>,
+        context: FlagsEvaluationContext,
+        features: [SplitFeature] = [],
+        decision: ExposureDecision = .notAnExposure
+    ) -> FlagDetailsWithExposure<T> {
+        FlagDetailsWithExposure(
+            details: details,
+            exposure: FlagExposureDecision(
+                isExposure: decision.isExposure,
+                isCacheHit: decision.isCacheHit,
+                targetingKey: context.hasTargetingKey ? context.targetingKey : nil,
+                features: features.values(for: .hook)
+            )
         )
     }
 
@@ -448,6 +481,11 @@ extension FlagsClient: FlagsClientProtocol {
 
 extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
+    public func getDetailsWithExposure<T>(key: String, defaultValue: T) -> FlagDetailsWithExposure<T>? where T: Equatable, T: FlagValue {
+        evaluate(key: key, defaultValue: defaultValue)
+    }
+
+    @_spi(Internal)
     public func getFlagAssignments() -> [String: FlagAssignment]? {
         return repository.flagAssignments()
     }
@@ -467,6 +505,30 @@ extension FlagsClient: FlagsClientInternal {
     public func sendFlagExposure(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         let context = context.extractingAssignmentAuthorization().context
         exposureLogger.logExposure(for: key, assignment: assignment, evaluationContext: context)
+    }
+
+    @_spi(Internal)
+    public func admitSnapshotExposure(
+        key: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext?,
+        sendToDatadog: Bool
+    ) -> FlagSnapshotExposureDecision {
+        guard let context, context.hasTargetingKey, assignment.doLog, assignment.hasExposureKeys else {
+            return .ineligible
+        }
+        let subject = context.extractingAssignmentAuthorization().context
+        // The caller evaluated this assignment, so only granted consent and the native context policy permit a record.
+        guard trackingConsent() == .granted, repository.acceptsCapturedExposure(for: subject) else {
+            return .unavailable
+        }
+        let decision = exposureLogger.logExposure(
+            for: key,
+            assignment: assignment,
+            evaluationContext: subject,
+            sendsToDatadog: sendToDatadog
+        )
+        return decision.isCacheHit ? .duplicate : .admitted
     }
 
     @_spi(Internal)
@@ -531,5 +593,11 @@ extension FlagsClient {
             return nil
         }
         return (snapshot.flags, snapshot.observeFullEvaluationData)
+    }
+}
+
+private extension FlagAssignment {
+    var hasExposureKeys: Bool {
+        !allocationKey.allSatisfy(\.isWhitespace) && !variationKey.allSatisfy(\.isWhitespace)
     }
 }

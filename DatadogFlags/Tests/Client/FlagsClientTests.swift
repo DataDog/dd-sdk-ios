@@ -1755,3 +1755,520 @@ extension FeatureMessage {
         }
     }
 }
+
+final class FlagsClientExposureDecisionTests: XCTestCase {
+    private let context = FlagsEvaluationContext(targetingKey: "user-1", attributes: ["tier": .string("gold")])
+
+    private var holdoutAssignment: FlagAssignment {
+        var assignment = FlagAssignment(allocationKey: "allocation", variationKey: "on", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: true, serialID: 7)
+        assignment.features = [
+            SplitFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"]),
+            SplitFeature(key: "holdout.should_include_in_holdout_analysis", value: .bool(false), destinations: ["HOOK"]),
+            SplitFeature(key: "cohort", value: .string("c"), destinations: ["EXPOSURE"]),
+            SplitFeature(key: "group", value: .double(2), destinations: ["EVALUATION"]),
+            SplitFeature(key: "nowhere", value: .string("n"), destinations: ["FUTURE"]),
+        ]
+        return assignment
+    }
+
+    private func makeClient(
+        flags: [String: FlagAssignment]?,
+        exposureLogger: any ExposureLogging = ExposureLoggerMock()
+    ) -> FlagsClient {
+        FlagsClient(
+            repository: FlagsRepositoryMock(flagsData: flags.map { FlagsData(flags: $0, context: context, date: .mockAny()) }),
+            exposureLogger: exposureLogger,
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+    }
+
+    private func evaluate<T: Equatable & FlagValue>(_ client: FlagsClient, _ key: String, _ defaultValue: T) throws -> FlagDetailsWithExposure<T> {
+        try XCTUnwrap(client.getDetailsWithExposure(key: key, defaultValue: defaultValue))
+    }
+
+    func testOnlyHookFeaturesAppearInPublicMetadata() {
+        let client = makeClient(flags: ["flag": holdoutAssignment])
+
+        let details = client.getBooleanDetails(key: "flag", defaultValue: false)
+
+        XCTAssertEqual(details.flagMetadata, [
+            "__dd_feature.holdout.key": .string("h-1"),
+            "__dd_feature.holdout.should_include_in_holdout_analysis": .bool(false),
+        ])
+    }
+
+    func testSplitWithoutFeaturesAndFailedEvaluationsAddNoMetadata() {
+        let client = makeClient(flags: ["plain": .mockAnyBoolean(), "flag": holdoutAssignment])
+
+        XCTAssertEqual(client.getBooleanDetails(key: "plain", defaultValue: false).flagMetadata, [:])
+        XCTAssertEqual(client.getStringDetails(key: "flag", defaultValue: "x").flagMetadata, [:], "type mismatch")
+        XCTAssertEqual(client.getBooleanDetails(key: "missing", defaultValue: false).flagMetadata, [:])
+    }
+
+    func testDecisionCarriesTheVerdictAndHookFeatures() throws {
+        let client = makeClient(flags: ["flag": holdoutAssignment], exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: FeatureScopeMock()))
+
+        let first = try evaluate(client, "flag", false)
+        let repeated = try evaluate(client, "flag", false)
+
+        XCTAssertEqual(first.details, client.getBooleanDetails(key: "flag", defaultValue: false), "the SPI returns the getDetails result")
+        XCTAssertEqual(first.exposure, FlagExposureDecision(
+            isExposure: true,
+            isCacheHit: false,
+            targetingKey: "user-1",
+            features: ["holdout.key": .string("h-1"), "holdout.should_include_in_holdout_analysis": .bool(false)]
+        ))
+        XCTAssertTrue(first.exposure.shouldSend)
+        XCTAssertTrue(repeated.exposure.isExposure)
+        XCTAssertTrue(repeated.exposure.isCacheHit)
+        XCTAssertFalse(repeated.exposure.shouldSend)
+    }
+
+    func testFailedEvaluationsAreNonExposuresAndRecordNothing() throws {
+        let exposureLogger = ExposureLoggerMock()
+        let client = makeClient(flags: ["flag": holdoutAssignment], exposureLogger: exposureLogger)
+
+        for result in [try evaluate(client, "flag", "x").exposure, try evaluate(client, "missing", false).exposure] {
+            XCTAssertFalse(result.isExposure)
+            XCTAssertFalse(result.isCacheHit)
+            XCTAssertTrue(result.features.isEmpty)
+            XCTAssertEqual(result.targetingKey, "user-1")
+        }
+        XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
+    }
+
+    func testAllocationWithoutDoLogIsNotAnExposure() throws {
+        var assignment = holdoutAssignment
+        assignment.doLog = false
+        let client = makeClient(flags: ["flag": assignment], exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: FeatureScopeMock()))
+
+        let result = try evaluate(client, "flag", false)
+
+        XCTAssertTrue(result.details.value)
+        XCTAssertFalse(result.exposure.isExposure)
+        XCTAssertEqual(result.exposure.features["holdout.key"], .string("h-1"))
+    }
+
+    func testBlankAllocationOrVariantIsNotAnExposureAndDatadogStillReceivesIt() throws {
+        for (allocationKey, variationKey) in [("", "on"), (" ", "on"), ("allocation", ""), ("allocation", "\t")] {
+            let scope = FeatureScopeMock()
+            var assignment = holdoutAssignment
+            assignment.allocationKey = allocationKey
+            assignment.variationKey = variationKey
+            let client = makeClient(flags: ["flag": assignment], exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: scope))
+
+            let result = try evaluate(client, "flag", false)
+
+            XCTAssertFalse(result.exposure.isExposure, "\(allocationKey)/\(variationKey)")
+            XCTAssertFalse(result.exposure.shouldSend, "\(allocationKey)/\(variationKey)")
+            XCTAssertEqual(scope.eventsWritten(ofType: ExposureEvent.self).count, 1, "\(allocationKey)/\(variationKey)")
+        }
+    }
+
+    func testNotReadyEvaluationHasNoTargetingKey() throws {
+        let client = makeClient(flags: nil)
+
+        let result = try evaluate(client, "flag", false)
+
+        XCTAssertEqual(result.details.error, .providerNotReady)
+        XCTAssertEqual(result.details.flagMetadata, [:])
+        XCTAssertNil(result.exposure.targetingKey, "an evaluation before any context has no targeting key")
+        XCTAssertFalse(result.exposure.isExposure)
+        XCTAssertTrue(result.exposure.features.isEmpty)
+    }
+
+    func testRejectedContextEvaluationKeepsTheRequestedTargetingKey() throws {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(with: .init(), in: core)
+        let invalid = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .bool(true)])
+        let client = try XCTUnwrap(FlagsClient.create(configuration: .init(experimentationOptOutMode: .immediate), in: core) as? FlagsClientInternal)
+        let completed = expectation(description: "invalid context")
+        (client as? FlagsClientProtocol)?.setEvaluationContext(invalid) { _ in completed.fulfill() }
+        wait(for: [completed], timeout: 1)
+
+        let result = try XCTUnwrap(client.getDetailsWithExposure(key: "flag", defaultValue: false))
+
+        XCTAssertEqual(result.details.error, .invalidContext)
+        XCTAssertEqual(result.exposure.targetingKey, "subject")
+        XCTAssertFalse(result.exposure.isExposure)
+    }
+
+    func testConcurrentEvaluationsShareOneNewExposurePerSubjectAndFlag() {
+        let keys = ["a", "b", "c", "d"]
+        // Each round uses a fresh cache, so every round has one new exposure per flag to race for.
+        for round in 0..<100 {
+            let decisions = ExposureDecisionRecorder()
+            // The evaluation and RUM mocks are not thread-safe, so this test uses the NOP implementations.
+            let client = FlagsClient(
+                repository: FlagsRepositoryMock(flagsData: FlagsData(
+                    flags: Dictionary(uniqueKeysWithValues: keys.map { ($0, holdoutAssignment) }),
+                    context: context,
+                    date: .mockAny()
+                )),
+                exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: FeatureScopeMock()),
+                evaluationLogger: NOPEvaluationLogger(),
+                rumFlagEvaluationReporter: NOPRUMFlagEvaluationReporter()
+            )
+
+            DispatchQueue.concurrentPerform(iterations: 400) { index in
+                let key = keys[index % keys.count]
+                if let result = client.getDetailsWithExposure(key: key, defaultValue: false) {
+                    decisions.record(key, result.exposure)
+                }
+            }
+
+            let all = decisions.all
+            XCTAssertEqual(all.count, 400, "round \(round)")
+            for key in keys {
+                XCTAssertEqual(all.filter { $0.key == key && $0.decision.shouldSend }.count, 1, "round \(round), flag \(key)")
+            }
+        }
+    }
+
+    func testFallbackClientReturnsNoDecision() {
+        let fallback = FallbackFlagsClient(name: "fallback", core: FeatureRegistrationCoreMock())
+        XCTAssertNil(fallback.getDetailsWithExposure(key: "flag", defaultValue: false))
+    }
+
+    func testBridgedEvaluationEventKeepsFeaturesWithCapturedConsent() throws {
+        let evaluationLogger = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        client.sendFlagEvaluationEvent(
+            key: "flag",
+            assignment: holdoutAssignment,
+            context: context,
+            telemetryTargetingKey: "user-1",
+            observeFullEvaluationData: true,
+            errorCode: nil
+        )
+
+        let call = try XCTUnwrap(evaluationLogger.logEvaluationCalls.first)
+        XCTAssertEqual(call.assignment.features, holdoutAssignment.features)
+        XCTAssertTrue(call.assignment.observeFullEvaluationData)
+    }
+
+    func testWithTrackExposuresDisabledDecisionsStayCorrectAndNothingIsSent() throws {
+        let data = try JSONEncoder().encode(FlagsData(flags: ["flag": holdoutAssignment], context: context, date: .mockAny()))
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(storage: [FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)])
+        )
+        Flags.enable(with: .init(trackExposures: false), in: core)
+        let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+
+        let first = try XCTUnwrap(client.getDetailsWithExposure(key: "flag", defaultValue: false))
+        let repeated = try XCTUnwrap(client.getDetailsWithExposure(key: "flag", defaultValue: false))
+
+        XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 0)
+        XCTAssertEqual([first.exposure.shouldSend, repeated.exposure.shouldSend], [true, false])
+        XCTAssertEqual([first.exposure.isCacheHit, repeated.exposure.isCacheHit], [false, true])
+    }
+
+    func testWithTrackExposuresEnabledDatadogAndTheDecisionAgree() throws {
+        let data = try JSONEncoder().encode(FlagsData(flags: ["flag": holdoutAssignment], context: context, date: .mockAny()))
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(storage: [FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)])
+        )
+        Flags.enable(with: .init(), in: core)
+        let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClientInternal)
+
+        var newExposures = 0
+        for _ in 0..<3 where try XCTUnwrap(client.getDetailsWithExposure(key: "flag", defaultValue: false)).exposure.shouldSend {
+            newExposures += 1
+        }
+
+        let exposures = core.events(ofType: ExposureEvent.self)
+        XCTAssertEqual(exposures.count, newExposures)
+        XCTAssertEqual(exposures.count, 1)
+        XCTAssertEqual(exposures.first?.features, ["cohort": .string("c")])
+    }
+}
+
+final class FlagDetailsEqualityTests: XCTestCase {
+    private let details = FlagDetails(key: "flag", value: true, variant: "on", reason: "TARGETING_MATCH", allocationKey: "a")
+
+    func testFlagDetailsEqualityIgnoresInternalConsent() {
+        var withConsent = details
+        withConsent.observeFullEvaluationData = true
+        XCTAssertEqual(withConsent, details)
+    }
+
+    func testFlagDetailsEqualityComparesEveryPublicField() {
+        let changes: [(inout FlagDetails<Bool>) -> Void] = [
+            { $0.key = "other" },
+            { $0.value = false },
+            { $0.variant = "off" },
+            { $0.reason = "DEFAULT" },
+            { $0.error = .flagNotFound },
+            { $0.allocationKey = "b" },
+            { $0.flagMetadata = ["__dd_feature.holdout.key": .string("h-1")] },
+        ]
+        for change in changes {
+            var changed = details
+            change(&changed)
+            XCTAssertNotEqual(changed, details)
+        }
+    }
+}
+
+extension FlagsClientTests {
+    func testFullReplayUsesConsentCarriedByTheAssignment() throws {
+        for consent in [false, true] {
+            let scope = FeatureScopeMock()
+            let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+            let client = FlagsClient(
+                repository: FlagsRepositoryMock(),
+                exposureLogger: ExposureLoggerMock(),
+                evaluationLogger: EvaluationLogger(aggregator: aggregator),
+                rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+            )
+            var assignment = FlagAssignment(allocationKey: "a", variationKey: "v", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: false)
+            assignment.observeFullEvaluationData = consent
+            client.sendFlagEvaluation(
+                key: "flag",
+                assignment: assignment,
+                context: .init(targetingKey: "jane.doe@datadoghq.com", attributes: ["tier": .string("premium")])
+            )
+            aggregator.sendEvaluations()
+            let event = try XCTUnwrap(scope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
+            XCTAssertEqual(event.targetingKey, consent ? "jane.doe@datadoghq.com" : "sha256_b4698f9b6d186781fa8dc59e533578fa2d8379a46b1cf6db85cda6aa9c99e51b")
+            XCTAssertEqual(event.context != nil, consent)
+        }
+    }
+}
+
+/// Collects decisions from several threads under a lock.
+final class ExposureDecisionRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var values: [(key: String, decision: FlagExposureDecision)] = []
+
+    func record(_ key: String, _ decision: FlagExposureDecision) {
+        lock.lock()
+        defer { lock.unlock() }
+        values.append((key, decision))
+    }
+
+    var all: [(key: String, decision: FlagExposureDecision)] {
+        lock.lock()
+        defer { lock.unlock() }
+        return values
+    }
+}
+
+final class SnapshotExposureAdmissionTests: XCTestCase {
+    private final class Consent {
+        var value: TrackingConsent? = .granted
+    }
+
+    private let consent = Consent()
+    private let featureScope = FeatureScopeMock()
+    private let repository = FlagsRepositoryMock()
+    private let evaluationLogger = EvaluationLoggerMock()
+    private let rumReporter = RUMFlagEvaluationReporterMock()
+    private let subject = FlagsEvaluationContext(targetingKey: "subject", attributes: ["plan": .string("pro")])
+
+    private func makeClient(trackExposures: Bool = true) -> FlagsClient {
+        FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope, sendsExposures: trackExposures),
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: rumReporter,
+            trackingConsent: { [consent] in consent.value }
+        )
+    }
+
+    private func assignment(
+        allocation: String = "allocation",
+        variation: String = "on",
+        serialID: Int? = 7,
+        doLog: Bool = true,
+        features: [FlagSnapshotFeature] = []
+    ) -> FlagAssignment {
+        FlagAssignment(
+            allocationKey: allocation,
+            variationKey: variation,
+            variation: .boolean(true),
+            reason: "TARGETING_MATCH",
+            doLog: doLog,
+            serialID: serialID,
+            observeFullEvaluationData: false,
+            snapshotFeatures: features
+        )
+    }
+
+    private var exposures: [ExposureEvent] { featureScope.eventsWritten(ofType: ExposureEvent.self) }
+
+    func testAdmitsTheSuppliedOfflineAssignmentWithoutReadingTheClientAssignments() throws {
+        repository.flagsData = FlagsData(
+            flags: ["flag": .init(allocationKey: "installed", variationKey: "installed", variation: .boolean(false), reason: "STATIC", doLog: true, serialID: 1)],
+            context: subject,
+            date: Date(),
+            observeFullEvaluationData: false
+        )
+        let client = makeClient()
+        let supplied = assignment(serialID: 0, features: [
+            FlagSnapshotFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"]),
+            FlagSnapshotFeature(key: "holdout.assignment_group", value: .string("2026"), destinations: ["EXPOSURE"]),
+            FlagSnapshotFeature(key: "weight", value: .number(2), destinations: ["EVALUATION"]),
+        ])
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: supplied, context: subject, sendToDatadog: true), .admitted)
+
+        let exposure = try XCTUnwrap(exposures.first)
+        XCTAssertEqual(exposures.count, 1)
+        XCTAssertEqual(exposure.allocation.key, "allocation")
+        XCTAssertEqual(exposure.variant.key, "on")
+        XCTAssertEqual(exposure.serialID, 0)
+        XCTAssertEqual(exposure.subject.id, "subject")
+        XCTAssertEqual(exposure.features, ["holdout.assignment_group": .string("2026")])
+        XCTAssertTrue(evaluationLogger.logEvaluationCalls.isEmpty)
+        XCTAssertTrue(rumReporter.sendFlagEvaluationCalls.isEmpty)
+    }
+
+    func testAClientWithoutSupportIsUnavailable() {
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        Flags.enable(in: core)
+        let client: FlagsClientInternal = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: true), .unavailable)
+    }
+
+    func testAMissingSubjectOrAnAssignmentWithoutExposureKeysIsIneligible() {
+        let client = makeClient()
+        let empty = FlagsEvaluationContext(targetingKey: "", attributes: [:])
+        let ineligible: [(FlagAssignment, FlagsEvaluationContext?)] = [
+            (assignment(), nil),
+            (assignment(), .empty),
+            (assignment(doLog: false), empty),
+            (assignment(allocation: " \t"), empty),
+            (assignment(variation: "\n"), empty),
+            (assignment(allocation: "", variation: ""), empty),
+        ]
+        for (index, (assignment, context)) in ineligible.enumerated() {
+            XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment, context: context, sendToDatadog: true), .ineligible, "case \(index)")
+        }
+        XCTAssertEqual(exposures.count, 0)
+        XCTAssertTrue(repository.capturedExposureContexts.isEmpty)
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: empty, sendToDatadog: true), .admitted)
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: empty, sendToDatadog: true), .duplicate)
+        XCTAssertEqual(exposures.map(\.subject.id), [""])
+    }
+
+    func testConsentOtherThanGrantedIsUnavailableAndLeavesTheCacheEmpty() {
+        let client = makeClient()
+        for value in [nil, TrackingConsent.pending, .notGranted] {
+            consent.value = value
+            XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: true), .unavailable)
+        }
+        XCTAssertEqual(exposures.count, 0)
+
+        consent.value = .granted
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: true), .admitted)
+        XCTAssertEqual(exposures.count, 1)
+    }
+
+    func testTheNativeContextPolicyGatesAdmissionAndSeesTheContextWithoutCredentials() throws {
+        let client = makeClient()
+        let credentialed = FlagsEvaluationContext(targetingKey: "subject", attributes: [
+            "plan": .string("pro"),
+            "dd_assignment_token": .string("secret-token"),
+        ])
+
+        repository.acceptsCapturedExposures = false
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: credentialed, sendToDatadog: true), .unavailable)
+        XCTAssertEqual(exposures.count, 0)
+
+        repository.acceptsCapturedExposures = true
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: credentialed, sendToDatadog: true), .admitted)
+        XCTAssertEqual(repository.capturedExposureContexts, [subject, subject])
+        XCTAssertEqual(try XCTUnwrap(exposures.first).subject.attributes, ["plan": .string("pro")])
+    }
+
+    func testRecordOnlyAndSendingCallsShareOneCache() {
+        let client = makeClient()
+        let hook = [FlagSnapshotFeature(key: "holdout.key", value: .string("h-1"), destinations: ["HOOK"])]
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: false), .admitted)
+        XCTAssertEqual(exposures.count, 0)
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: true), .duplicate)
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(features: hook), context: subject, sendToDatadog: true), .duplicate)
+        XCTAssertEqual(exposures.count, 0)
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(variation: "off"), context: subject, sendToDatadog: true), .admitted)
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(variation: "off", serialID: 8), context: subject, sendToDatadog: true), .admitted)
+        XCTAssertEqual(exposures.map(\.serialID), [7, 8])
+    }
+
+    func testDisabledExposureTrackingAdmitsAndWritesNothing() {
+        let client = makeClient(trackExposures: false)
+
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: true), .admitted)
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: true), .duplicate)
+        XCTAssertEqual(exposures.count, 0)
+    }
+
+    func testNativeEvaluationsAndAdmissionsShareTheCache() {
+        repository.flagsData = FlagsData(flags: ["flag": assignment()], context: subject, date: Date(), observeFullEvaluationData: false)
+        let client = makeClient()
+
+        XCTAssertTrue(client.getBooleanValue(key: "flag", defaultValue: false))
+        XCTAssertEqual(exposures.count, 1)
+        XCTAssertEqual(client.admitSnapshotExposure(key: "flag", assignment: assignment(), context: subject, sendToDatadog: true), .duplicate)
+        XCTAssertEqual(exposures.count, 1)
+    }
+
+    func testConcurrentMatchingCallsAdmitOnce() {
+        for round in 0..<100 {
+            let featureScope = FeatureScopeMock()
+            let client = FlagsClient(
+                repository: FlagsRepositoryMock(),
+                exposureLogger: ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope),
+                evaluationLogger: NOPEvaluationLogger(),
+                rumFlagEvaluationReporter: NOPRUMFlagEvaluationReporter(),
+                trackingConsent: { .granted }
+            )
+            let supplied = assignment()
+            let subject = subject
+            let lock = NSLock()
+            var decisions: [FlagSnapshotExposureDecision] = []
+            DispatchQueue.concurrentPerform(iterations: 16) { _ in
+                let decision = client.admitSnapshotExposure(key: "flag", assignment: supplied, context: subject, sendToDatadog: true)
+                lock.lock()
+                decisions.append(decision)
+                lock.unlock()
+            }
+            XCTAssertEqual(decisions.filter { $0 == .admitted }.count, 1, "round \(round)")
+            XCTAssertEqual(decisions.filter { $0 == .duplicate }.count, 15, "round \(round)")
+            XCTAssertEqual(featureScope.eventsWritten.count, 1, "round \(round)")
+        }
+    }
+}
+
+final class TrackingConsentObserverTests: XCTestCase {
+    func testItKeepsTheConsentOfTheLatestCoreContext() {
+        let observer = TrackingConsentObserver()
+        let core = PassthroughCoreMock()
+        XCTAssertNil(observer.trackingConsent)
+
+        XCTAssertFalse(observer.receive(message: .payload("other"), from: core))
+        XCTAssertNil(observer.trackingConsent)
+
+        XCTAssertTrue(observer.receive(message: .context(.mockWith(trackingConsent: .granted)), from: core))
+        XCTAssertEqual(observer.trackingConsent, .granted)
+        XCTAssertTrue(observer.receive(message: .context(.mockWith(trackingConsent: .notGranted)), from: core))
+        XCTAssertEqual(observer.trackingConsent, .notGranted)
+    }
+
+    func testTheFeatureReceivesCoreMessagesThroughTheObserver() {
+        let feature = FlagsFeature(configuration: .init(), featureScope: FeatureScopeMock(), core: FeatureRegistrationCoreMock())
+
+        XCTAssertTrue((feature.messageReceiver as? TrackingConsentObserver) === feature.trackingConsentObserver)
+    }
+}

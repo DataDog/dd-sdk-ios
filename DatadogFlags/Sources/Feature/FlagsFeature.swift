@@ -20,6 +20,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let initializationTimeout: TimeInterval?
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
+    let trackingConsentObserver: TrackingConsentObserver
     let clientRegistry: FlagsClientRegistry
     let makeExposureLogger: (any FeatureScope) -> any ExposureLogging
     let makeEvaluationLogger: (any FeatureScope) -> any EvaluationLogging
@@ -46,15 +47,14 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry
         )
-        messageReceiver = NOPFeatureMessageReceiver()
+        trackingConsentObserver = TrackingConsentObserver()
+        messageReceiver = trackingConsentObserver
         clientRegistry = FlagsClientRegistry()
         makeExposureLogger = { featureScope in
-            guard configuration.trackExposures else {
-                return NOPExposureLogger()
-            }
-            return ExposureLogger(
+            ExposureLogger(
                 dateProvider: SystemDateProvider(),
-                featureScope: featureScope
+                featureScope: featureScope,
+                sendsExposures: configuration.trackExposures
             )
         }
 
@@ -98,5 +98,20 @@ extension FlagsFeature: Flushable {
     func flush() {
         evaluationAggregator?.sendEvaluations()
         clientRegistry.flushClients()
+    }
+}
+
+/// Keeps the tracking consent of the latest core context, so a bridge call reads it without waiting on the core.
+internal final class TrackingConsentObserver: FeatureMessageReceiver {
+    /// `nil` until the core publishes a context.
+    @ReadWriteLock
+    private(set) var trackingConsent: TrackingConsent?
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        guard case .context(let context) = message else {
+            return false
+        }
+        trackingConsent = context.trackingConsent
+        return true
     }
 }

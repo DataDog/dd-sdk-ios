@@ -7,50 +7,85 @@
 import Foundation
 import DatadogInternal
 
+/// The one exposure verdict of an evaluation, shared by the Datadog send and the customer hook.
+internal struct ExposureDecision: Equatable {
+    /// A successful evaluation of an allocation that logs exposures, repeats included.
+    let isExposure: Bool
+    /// For an exposure (`isExposure`), the exposure cache holds the same allocation, variant and serial ID for the subject and flag.
+    let isCacheHit: Bool
+
+    /// A new exposure. The Datadog write depends on exposure tracking and the tracking consent.
+    var shouldSend: Bool { isExposure && !isCacheHit }
+
+    static let notAnExposure = ExposureDecision(isExposure: false, isCacheHit: false)
+}
+
 internal protocol ExposureLogging {
+    /// Records the exposure in the cache and returns the verdict. Call it for successful evaluations.
+    /// - Parameter sendsToDatadog: `false` records in the cache and writes no event, whatever exposure tracking is set to.
+    @discardableResult
+    func logExposure(
+        for flagKey: String,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext,
+        sendsToDatadog: Bool
+    ) -> ExposureDecision
+}
+
+extension ExposureLogging {
+    @discardableResult
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
         evaluationContext: FlagsEvaluationContext
-    )
+    ) -> ExposureDecision {
+        logExposure(for: flagKey, assignment: assignment, evaluationContext: evaluationContext, sendsToDatadog: true)
+    }
 }
 
 internal final class ExposureLogger: ExposureLogging {
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let sendsExposures: Bool
     private let loggedExposures = ExposureTracker()
 
-    init(dateProvider: any DateProvider, featureScope: any FeatureScope) {
+    /// - Parameter sendsExposures: `true` writes new exposures to Datadog. The cache records in both modes, which keeps verdicts correct.
+    init(dateProvider: any DateProvider, featureScope: any FeatureScope, sendsExposures: Bool = true) {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.sendsExposures = sendsExposures
     }
 
+    @discardableResult
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
-        evaluationContext: FlagsEvaluationContext
-    ) {
+        evaluationContext: FlagsEvaluationContext,
+        sendsToDatadog: Bool
+    ) -> ExposureDecision {
         guard assignment.doLog else {
-            return
+            return .notAnExposure
         }
 
-        featureScope.eventWriteContext { [weak self] context, writer in
-            guard let self else {
-                return
-            }
+        let exposure = ExposureTracker.Exposure(
+            targetingKey: evaluationContext.targetingKey,
+            flagKey: flagKey,
+            allocationKey: assignment.allocationKey,
+            variationKey: assignment.variationKey,
+            serialID: assignment.serialID
+        )
 
-            let exposure = ExposureTracker.Exposure(
-                targetingKey: evaluationContext.targetingKey,
-                flagKey: flagKey,
-                allocationKey: assignment.allocationKey,
-                variationKey: assignment.variationKey,
-                serialID: assignment.serialID
-            )
+        guard loggedExposures.track(exposure) else {
+            return ExposureDecision(isExposure: true, isCacheHit: true)
+        }
 
-            guard loggedExposures.track(exposure) else {
-                return
-            }
+        let decision = ExposureDecision(isExposure: true, isCacheHit: false)
+        guard sendsExposures, sendsToDatadog else {
+            return decision
+        }
 
+        let features = assignment.features.values(for: .exposure)
+        featureScope.eventWriteContext { [dateProvider] context, writer in
             let date = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
             let exposureEvent = ExposureEvent(
                 timestamp: date.timeIntervalSince1970.dd.toInt64Milliseconds,
@@ -61,22 +96,12 @@ internal final class ExposureLogger: ExposureLogging {
                 subject: .init(
                     id: evaluationContext.targetingKey,
                     attributes: evaluationContext.attributes
-                )
+                ),
+                features: features.isEmpty ? nil : features
             )
 
             writer.write(value: exposureEvent)
         }
-    }
-}
-
-// MARK: - NOPExposureLogger
-
-internal final class NOPExposureLogger: ExposureLogging {
-    func logExposure(
-        for flagKey: String,
-        assignment: FlagAssignment,
-        evaluationContext: FlagsEvaluationContext
-    ) {
-        // No-op: exposure logging is disabled
+        return decision
     }
 }

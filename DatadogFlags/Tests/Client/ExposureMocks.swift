@@ -61,12 +61,18 @@ final class ExposureLoggerMock: ExposureLogging {
         assignment: FlagAssignment,
         context: FlagsEvaluationContext
     )] = []
+    var sendsToDatadogValues: [Bool] = []
+
+    var decision: ExposureDecision?
 
     func logExposure(
         for flagKey: String,
         assignment: FlagAssignment,
-        evaluationContext: FlagsEvaluationContext
-    ) {
+        evaluationContext: FlagsEvaluationContext,
+        sendsToDatadog: Bool
+    ) -> ExposureDecision {
         logExposureCalls.append((flagKey, assignment, evaluationContext))
+        sendsToDatadogValues.append(sendsToDatadog)
+        return decision ?? ExposureDecision(isExposure: assignment.doLog, isCacheHit: false)
     }
 }

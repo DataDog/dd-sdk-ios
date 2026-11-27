@@ -205,6 +205,16 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         flagsData?.obfuscation == nil ? flagsData : nil
     }
 
+    var acceptsCapturedExposures = true
+    /// Lock-protected because concurrency tests call the policy from many threads.
+    @ReadWriteLock
+    var capturedExposureContexts: [FlagsEvaluationContext] = []
+
+    func acceptsCapturedExposure(for context: FlagsEvaluationContext) -> Bool {
+        _capturedExposureContexts.mutate { $0.append(context) }
+        return acceptsCapturedExposures
+    }
+
     func reset() {
         flagsData = nil
     }

@@ -4623,3 +4623,117 @@ extension FlagsRepositoryTests {
         }
     }
 }
+
+extension FlagsRepositoryTests {
+    func testRejectedAndPendingContextsStayProtectedWhenStoredConfigurationOptsIn() throws {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let scope = FeatureScopeMock()
+            let fetcher = FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(.init(flags: ["flag": .mockAnyBoolean(doLog: false)], observeFullEvaluationData: true)))
+            }
+            let repository = FlagsRepository(
+                clientName: UUID().uuidString,
+                flagAssignmentsFetcher: fetcher,
+                dateProvider: DateProviderMock(),
+                featureScope: scope,
+                flagSelection: nil,
+                initializationTimeout: nil,
+                experimentationOptOutMode: mode
+            )
+            defer { repository.flush() }
+            let aggregator = EvaluationAggregator(dateProvider: DateProviderMock(), featureScope: scope, flushInterval: 100)
+            let client = FlagsClient(
+                repository: repository,
+                exposureLogger: ExposureLoggerMock(),
+                evaluationLogger: EvaluationLogger(aggregator: aggregator),
+                rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock(),
+                configuration: .init(experimentationOptOutMode: mode)
+            )
+            let ready = expectation(description: "ready \(mode)")
+            client.setEvaluationContext(.init(targetingKey: "served", attributes: ["private": .string("CANARY")])) { _ in ready.fulfill() }
+            wait(for: [ready], timeout: 1)
+            XCTAssertTrue(client.getBooleanDetails(key: "flag", defaultValue: false).observeFullEvaluationData)
+
+            // A rejected context reports in protected mode, whatever the stored configuration allows.
+            let invalid = expectation(description: "invalid \(mode)")
+            client.setEvaluationContext(.init(
+                targetingKey: "subject",
+                attributes: ["dd_experimentation_opt_out_at": .bool(true), "private": .string("CANARY")]
+            )) { _ in invalid.fulfill() }
+            wait(for: [invalid], timeout: 1)
+            let rejectedDetails = client.getBooleanDetails(key: "flag", defaultValue: true)
+            XCTAssertEqual(rejectedDetails.error, .invalidContext)
+            XCTAssertFalse(rejectedDetails.observeFullEvaluationData)
+
+            // A pending context, for a new subject whose configuration is still loading, also reports in protected mode.
+            fetcher.flagAssignmentsStub = { _, _ in }
+            client.setEvaluationContext(.init(targetingKey: "subject", attributes: ["private": .string("CANARY")])) { _ in }
+            XCTAssertEqual(client.getBooleanDetails(key: "flag", defaultValue: true).error, .providerNotReady)
+
+            aggregator.sendEvaluations()
+            let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+            for code in ["INVALID_CONTEXT", "PROVIDER_NOT_READY"] {
+                let event = try XCTUnwrap(events.first { $0.error?.message == code }, "\(code) \(mode)")
+                XCTAssertEqual(event.targetingKey, "sha256_a9491f4c1bf7b0cffbadcba2db8f028e4b3f2867cb59e1f3a0bc1968f3c51242", "\(code) \(mode)")
+                XCTAssertNil(event.context, "\(code) \(mode)")
+            }
+        }
+    }
+}
+
+final class CapturedExposurePolicyTests: XCTestCase {
+    private func makeRepository(mode: FlagsClient.ExperimentationOptOutMode) -> FlagsRepository {
+        FlagsRepository(
+            clientName: UUID().uuidString,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(),
+            flagSelection: nil,
+            experimentationOptOutMode: mode
+        )
+    }
+
+    private let subject = FlagsEvaluationContext(targetingKey: "subject", attributes: ["plan": .string("pro")])
+    private let other = FlagsEvaluationContext(targetingKey: "other", attributes: [:])
+
+    func testWithoutOptOutEnforcementOrIsolationAnyCapturedContextIsAccepted() {
+        let repository = makeRepository(mode: .disabled)
+        defer { repository.flush() }
+        let marked = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")])
+
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: subject))
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: marked))
+        repository.setEvaluationContext(subject) { _ in }
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: other))
+    }
+
+    func testOptOutEnforcementAcceptsOnlyTheCurrentValidUnmarkedRequest() {
+        for mode in [FlagsClient.ExperimentationOptOutMode.immediate, .futureExperimentsOnly] {
+            let repository = makeRepository(mode: mode)
+            defer { repository.flush() }
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: subject), "\(mode): no request")
+
+            repository.setEvaluationContext(subject) { _ in }
+            XCTAssertTrue(repository.acceptsCapturedExposure(for: subject), "\(mode)")
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: other), "\(mode)")
+
+            let marked = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .string("2026-10-21T12:00:00Z")])
+            repository.setEvaluationContext(marked) { _ in }
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: marked), "\(mode): opt-out marker")
+
+            let invalid = FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_experimentation_opt_out_at": .string("not a time")])
+            repository.setEvaluationContext(invalid) { _ in }
+            XCTAssertFalse(repository.acceptsCapturedExposure(for: subject), "\(mode): invalid request")
+        }
+    }
+
+    func testSubjectIsolationAcceptsOnlyTheRequestedSubject() {
+        let repository = makeRepository(mode: .disabled)
+        defer { repository.flush() }
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "subject", attributes: ["dd_assignment_token": .string("token")])) { _ in }
+
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: subject))
+        XCTAssertTrue(repository.acceptsCapturedExposure(for: FlagsEvaluationContext(targetingKey: "subject", attributes: [:])))
+        XCTAssertFalse(repository.acceptsCapturedExposure(for: other))
+    }
+}
