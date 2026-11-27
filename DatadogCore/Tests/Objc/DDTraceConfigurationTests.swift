@@ -104,8 +104,16 @@ class DDTraceConfigurationTests: XCTestCase {
         XCTAssertEqual(swift.customEndpoint, random)
     }
 
+    func testStatsComputationEnabled() {
+        let random: Bool = .mockRandom()
+        objc.statsComputationEnabled = random
+        XCTAssertEqual(objc.statsComputationEnabled, random)
+        XCTAssertEqual(swift.statsComputationEnabled, random)
+    }
+
+    @available(*, deprecated)
     func testFeatureFlags() {
-        XCTAssertEqual(objc.featureFlags, ["client_side_stats": false], "Defaults are exposed by flag name")
+        XCTAssertEqual(objc.featureFlags, [:], "No flags are set by default")
 
         objc.featureFlags = ["client_side_stats": true, "unknown_flag": true]
         XCTAssertEqual(objc.featureFlags, ["client_side_stats": true], "Unknown flag names are ignored")

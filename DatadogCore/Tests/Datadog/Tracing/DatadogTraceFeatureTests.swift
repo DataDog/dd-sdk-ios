@@ -274,7 +274,7 @@ class DatadogTraceFeatureTests: XCTestCase {
             backgroundTasksEnabled: .mockAny()
         )
         var config = Trace.Configuration()
-        config.featureFlags[.clientSideStats] = true
+        config.statsComputationEnabled = true
         Trace.enable(with: config, in: core)
         return core
     }

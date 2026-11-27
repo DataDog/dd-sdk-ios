@@ -278,6 +278,62 @@ class TraceTests: XCTestCase {
         XCTAssertEqual(tracer.loggingIntegration.networkInfoEnabled, random)
     }
 
+    func testWhenEnabledWithStatsComputation() {
+        // Given
+        let random: Bool = .mockRandom()
+        config.statsComputationEnabled = random
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let tracer = Tracer.shared(in: core).dd
+        XCTAssertEqual(tracer.spanEventBuilder.statsComputationEnabled, random)
+    }
+
+    @available(*, deprecated)
+    func testWhenEnabledWithDeprecatedClientSideStatsFlag_itEnablesStatsComputation() {
+        // Given
+        config.featureFlags[.clientSideStats] = true
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let tracer = Tracer.shared(in: core).dd
+        XCTAssertTrue(tracer.spanEventBuilder.statsComputationEnabled)
+    }
+
+    func testWhenEnabledWithStatsComputation_itReportsItInConfigurationTelemetry() throws {
+        // Given
+        let telemetry = TelemetryReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: telemetry)
+        let random: Bool = .mockRandom()
+        config.statsComputationEnabled = random
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let configuration = try XCTUnwrap(telemetry.messages.firstConfiguration())
+        XCTAssertEqual(configuration.useClientSideStats, random)
+    }
+
+    @available(*, deprecated)
+    func testWhenEnabledWithDeprecatedClientSideStatsFlag_itReportsStatsComputationInConfigurationTelemetry() throws {
+        // Given
+        let telemetry = TelemetryReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: telemetry)
+        config.featureFlags[.clientSideStats] = true
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let configuration = try XCTUnwrap(telemetry.messages.firstConfiguration())
+        XCTAssertTrue(try XCTUnwrap(configuration.useClientSideStats))
+    }
+
     func testWhenEnabledWithEventMapper() {
         // Given
         let random: Bool = .mockRandom()
