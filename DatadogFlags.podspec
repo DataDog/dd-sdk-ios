@@ -20,5 +20,6 @@ Pod::Spec.new do |s|
   s.source_files = "DatadogFlags/Sources/**/*.swift"
 
   s.dependency 'DatadogInternal', s.version.to_s
+  s.dependency 'SwiftProtobuf', '>= 1.38.1', '< 2.0'
 
 end

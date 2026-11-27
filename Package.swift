@@ -62,6 +62,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", exact: "2.5.1"),
         .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.5.0")),
+        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.38.1"),
     ],
     targets: [
         .target(
@@ -264,6 +265,7 @@ let package = Package(
             name: "DatadogFlags",
             dependencies: [
                 .target(name: "DatadogInternal"),
+                .product(name: "SwiftProtobuf", package: "swift-protobuf"),
             ],
             path: "DatadogFlags/Sources"
         ),

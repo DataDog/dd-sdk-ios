@@ -405,6 +405,7 @@
 		4088A5EF7BEDF911A61F3B9C /* dec_sse41.c in Sources */ = {isa = PBXBuildFile; fileRef = 6CA4874BA238510246B85FFA /* dec_sse41.c */; };
 		476A3B335E1924A957F548D9 /* backward_references_cost_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = 17256DEFF26180EA9CCE9DD4 /* backward_references_cost_enc.c */; };
 		479539F3F9AC61238ACF3D6C /* DisallowListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66B9C6954A07274919E80B5E /* DisallowListTests.swift */; };
+		479B9E6CC37CA76B2787000B /* RulesConfigurationDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E28A380900FA52FDF1A4FBF /* RulesConfigurationDecoder.swift */; };
 		47A79C16181FCD5F1F4E3422 /* yuv_neon.c in Sources */ = {isa = PBXBuildFile; fileRef = DEC82E6588B0E89BDFABDFB3 /* yuv_neon.c */; };
 		49274906288048B500ECD49B /* InternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalProxyTests.swift */; };
 		49D8C0B72AC5D2160075E427 /* RUM+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */; };
@@ -1056,6 +1057,7 @@
 		AA0001012A000006000C0001 /* UIScrollViewDelegateProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */; };
 		AA0001012A000007000C0001 /* UIScrollViewSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */; };
 		AB1234CD5678EF901234ABCD /* CALayerSnapshot+Occlusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3456EF7890AB123456CDEF /* CALayerSnapshot+Occlusion.swift */; };
+		ADC21AEFDAD0D9FDBF9554E7 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 310B0F85A5D05FFAA399B28A /* SwiftProtobuf */; };
 		AF9357FB8B8BF79EDD56F7C0 /* FlagsEvaluationFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */; };
 		AFE42ABE5D8C8E6F887755A2 /* upsampling.c in Sources */ = {isa = PBXBuildFile; fileRef = 3ACD8FDFD4CA795A3FC92E25 /* upsampling.c */; };
 		B202DBC9FC73EEF0D237D306 /* HeatmapIdentifierComputationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F610A698379D300D06E515 /* HeatmapIdentifierComputationTests.swift */; };
@@ -1582,6 +1584,7 @@
 		E996B2C5B9B268490842F924 /* HeatmapAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E3DACDED0DB3C9908B93EB9 /* HeatmapAttributes.swift */; };
 		EDC13F3F220F554EE9C5CA36 /* DDSketchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */; };
 		EF5678AB9012CD345678EFAB /* CALayerSnapshotOcclusionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7890CD1234EF567890ABCD /* CALayerSnapshotOcclusionTests.swift */; };
+		F17894CB23CAC98F070106B6 /* ufc.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AF429290F3E576469F7BA90 /* ufc.pb.swift */; };
 		F1A600000000000000000002 /* FlagsClientEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A600000000000000000001 /* FlagsClientEvent.swift */; };
 		F1A600000000000000000004 /* FirstFlagsCallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A600000000000000000003 /* FirstFlagsCallbackTests.swift */; };
 		F1A600000000000000000005 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
@@ -1591,6 +1594,7 @@
 		F603F12B2CAEA4FA0088E6B7 /* DDInternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */; };
 		F603F1302CAEA7620088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
 		F6658CCBCEA07D3DFEEED4DF /* utils.c in Sources */ = {isa = PBXBuildFile; fileRef = B32B1B28D1FBF82D94B38106 /* utils.c */; };
+		FB08F34EDC36B5C3FF03EC88 /* RulesConfigurationDecoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A80E0AE6921B06968736CE /* RulesConfigurationDecoderTests.swift */; };
 		FEC77985DB5E76A0A671F31A /* iterator_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = C592E4EC852917925C30E97F /* iterator_enc.c */; };
 /* End PBXBuildFile section */
 
@@ -2377,6 +2381,7 @@
 		1E03E4DD559B4F63BD5A292E /* ProfilingConditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingConditionsTests.swift; sourceTree = "<group>"; };
 		1F2A41BE821B131A3DA7DA4D /* token_enc.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = token_enc.c; sourceTree = "<group>"; };
 		1F37511ED2F5E9011773E91E /* msa_macro.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = msa_macro.h; sourceTree = "<group>"; };
+		22A80E0AE6921B06968736CE /* RulesConfigurationDecoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesConfigurationDecoderTests.swift; sourceTree = "<group>"; };
 		25A9A68B884123420225DFDC /* lossless_enc_sse2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = lossless_enc_sse2.c; sourceTree = "<group>"; };
 		261255902E2167E40015042B /* HeaderProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderProcessor.swift; sourceTree = "<group>"; };
 		261255932E2167F10015042B /* HeaderProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderProcessorTests.swift; sourceTree = "<group>"; };
@@ -2455,6 +2460,7 @@
 		3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelTracerProvider.swift; sourceTree = "<group>"; };
 		3E092200F9D9FF1135EC5451 /* rescaler.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = rescaler.c; sourceTree = "<group>"; };
 		3E2117533B04181D92042DFB /* DDWebPSymbols.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = DDWebPSymbols.h; sourceTree = "<group>"; };
+		3E28A380900FA52FDF1A4FBF /* RulesConfigurationDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesConfigurationDecoder.swift; sourceTree = "<group>"; };
 		3E92CDCE50DC525AEB1F44B9 /* bit_reader_utils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = bit_reader_utils.h; sourceTree = "<group>"; };
 		3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcclusionMapTests.swift; sourceTree = "<group>"; };
 		3F4479EB0ECDBB1B19C92159 /* mux_types.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = mux_types.h; sourceTree = "<group>"; };
@@ -3109,6 +3115,7 @@
 		759302042FF0000100000001 /* LayerTreeSnapshotMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeSnapshotMocks.swift; sourceTree = "<group>"; };
 		76B3BBB0DA02A945F62772A5 /* huffman_encode_utils.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = huffman_encode_utils.c; sourceTree = "<group>"; };
 		7730F65353F7A7FABDD65A9D /* lossless_enc_neon.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = lossless_enc_neon.c; sourceTree = "<group>"; };
+		7AF429290F3E576469F7BA90 /* ufc.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ufc.pb.swift; sourceTree = "<group>"; };
 		7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcclusionMap.swift; sourceTree = "<group>"; };
 		7C927CDA843E2B282013EE54 /* yuv_sse2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = yuv_sse2.c; sourceTree = "<group>"; };
 		7D0DE1D82F8B4F7FA24BD2C9 /* RecordingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingController.swift; sourceTree = "<group>"; };
@@ -3220,6 +3227,7 @@
 		A1B2C3E62F92000100ABCDEF /* ProfilingContextRUMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingContextRUMTests.swift; sourceTree = "<group>"; };
 		A2268FCE84D9671213852D95 /* filters.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = filters.c; sourceTree = "<group>"; };
 		A2859DA3D4729201CBCCD918 /* alpha_processing_neon.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = alpha_processing_neon.c; sourceTree = "<group>"; };
+		A2945BBB286FE2F91F229B53 /* DatadogFlags.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogFlags.xcconfig; sourceTree = "<group>"; };
 		A33380013000000000000002 /* FlagsEvaluationContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationContextTests.swift; sourceTree = "<group>"; };
 		A38F7D135136313ED5BE7C1C /* common_sse2.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = common_sse2.h; sourceTree = "<group>"; };
 		A43980818DC682BA1EA9546D /* lossless_sse2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; path = lossless_sse2.c; sourceTree = "<group>"; };
@@ -3757,6 +3765,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */,
+				ADC21AEFDAD0D9FDBF9554E7 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4042,6 +4051,16 @@
 				095AE9542F7D4E9F00C332AE /* TracerSamplerProvider.swift */,
 			);
 			path = Sampling;
+			sourceTree = "<group>";
+		};
+		09A0D375A2A47B1B5946458F /* Rules */ = {
+			isa = PBXGroup;
+			children = (
+				4B57DDD33787D6B4C7A4182F /* Generated */,
+				3E28A380900FA52FDF1A4FBF /* RulesConfigurationDecoder.swift */,
+			);
+			name = Rules;
+			path = Rules;
 			sourceTree = "<group>";
 		};
 		09ACCD2C303607FA00DEBDF3 /* iOS */ = {
@@ -4496,6 +4515,15 @@
 			path = src;
 			sourceTree = "<group>";
 		};
+		20BF696E9064908D83CE70C2 /* Rules */ = {
+			isa = PBXGroup;
+			children = (
+				22A80E0AE6921B06968736CE /* RulesConfigurationDecoderTests.swift */,
+			);
+			name = Rules;
+			path = Rules;
+			sourceTree = "<group>";
+		};
 		261255962E2167E40015042B /* HeaderCapture */ = {
 			isa = PBXGroup;
 			children = (
@@ -4638,6 +4666,15 @@
 			path = WatchdogTerminations;
 			sourceTree = "<group>";
 		};
+		4B57DDD33787D6B4C7A4182F /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				7AF429290F3E576469F7BA90 /* ufc.pb.swift */,
+			);
+			name = Generated;
+			path = Generated;
+			sourceTree = "<group>";
+		};
 		4D412E300D3CDC7A87CF06BE /* Heatmaps */ = {
 			isa = PBXGroup;
 			children = (
@@ -4739,6 +4776,7 @@
 				614964462E7D7B0D00D9EFFF /* Feature */,
 				5BB294AA2E82864300CAA44B /* Models */,
 				5BA8C30F2E785A2000B1DA80 /* Flags.swift */,
+				09A0D375A2A47B1B5946458F /* Rules */,
 			);
 			name = DatadogFlags;
 			path = ../DatadogFlags/Sources;
@@ -4750,6 +4788,7 @@
 				5B5B8CB42E8BCA3C00A6740E /* Client */,
 				5B16A3682E83E40E0046A863 /* Models */,
 				5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */,
+				20BF696E9064908D83CE70C2 /* Rules */,
 			);
 			name = DatadogFlagsTests;
 			path = ../DatadogFlags/Tests;
@@ -5557,6 +5596,7 @@
 				61133B8F242393DE00786299 /* DatadogTests */,
 				6170DC0625C184FA003AED5C /* DatadogCrashReportingTests */,
 				61441C9E2461AF4D003D8BB8 /* Example */,
+				E706F51589DA30A62BEAB97C /* DatadogFlags */,
 			);
 			path = TargetSupport;
 			sourceTree = "<group>";
@@ -8101,6 +8141,15 @@
 			path = enc;
 			sourceTree = "<group>";
 		};
+		E706F51589DA30A62BEAB97C /* DatadogFlags */ = {
+			isa = PBXGroup;
+			children = (
+				A2945BBB286FE2F91F229B53 /* DatadogFlags.xcconfig */,
+			);
+			name = DatadogFlags;
+			path = DatadogFlags;
+			sourceTree = "<group>";
+		};
 		E7CSS03729C4D5A800000037 /* Stats */ = {
 			isa = PBXGroup;
 			children = (
@@ -8347,6 +8396,9 @@
 				5BA8C3072E784C0200B1DA80 /* PBXTargetDependency */,
 			);
 			name = DatadogFlags;
+			packageProductDependencies = (
+				310B0F85A5D05FFAA399B28A /* SwiftProtobuf */,
+			);
 			productName = "DatadogFlags iOS";
 			productReference = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */;
 			productType = "com.apple.product-type.framework";
@@ -8842,6 +8894,7 @@
 			packageReferences = (
 				D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */,
 				09393F132FF520DD00CBDDF9 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */,
+				B46A45388B3B1E9F9385265A /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 			);
 			productRefGroup = 61133B83242393DE00786299 /* Products */;
 			projectDirPath = "";
@@ -9263,6 +9316,8 @@
 				13A803EB3AAC6F4D34C5C3AC /* EvaluationRequestBuilder.swift in Sources */,
 				AF9357FB8B8BF79EDD56F7C0 /* FlagsEvaluationFeature.swift in Sources */,
 				3AFF4EF865EAECBA7BEDABDA /* FlagEvaluationEvent.swift in Sources */,
+				479B9E6CC37CA76B2787000B /* RulesConfigurationDecoder.swift in Sources */,
+				F17894CB23CAC98F070106B6 /* ufc.pb.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9293,6 +9348,7 @@
 				11FAFFF952FD470DCA2009B3 /* EvaluationMocks.swift in Sources */,
 				770E0BF093842AF7D350E888 /* EvaluationLoggingTests.swift in Sources */,
 				144CDB9AFBDFF0B7EB10B4A3 /* EvaluationAggregatorTests.swift in Sources */,
+				FB08F34EDC36B5C3FF03EC88 /* RulesConfigurationDecoderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11453,7 +11509,7 @@
 		};
 		5BA8C2FC2E784B3D00B1DA80 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			baseConfigurationReference = A2945BBB286FE2F91F229B53 /* DatadogFlags.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -11487,7 +11543,7 @@
 		};
 		5BA8C2FD2E784B3D00B1DA80 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			baseConfigurationReference = A2945BBB286FE2F91F229B53 /* DatadogFlags.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -11521,7 +11577,7 @@
 		};
 		5BA8C2FE2E784B3D00B1DA80 /* Integration */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			baseConfigurationReference = A2945BBB286FE2F91F229B53 /* DatadogFlags.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -13573,6 +13629,14 @@
 				minimumVersion = 2.7.11;
 			};
 		};
+		B46A45388B3B1E9F9385265A /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.38.1;
+			};
+		};
 		D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kstenerud/KSCrash.git";
@@ -13588,6 +13652,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 09393F132FF520DD00CBDDF9 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
 			productName = DatadogSDKTesting;
+		};
+		310B0F85A5D05FFAA399B28A /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B46A45388B3B1E9F9385265A /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
 		};
 		D22689B82EB12C3100875E44 /* Filters */ = {
 			isa = XCSwiftPackageProductDependency;
