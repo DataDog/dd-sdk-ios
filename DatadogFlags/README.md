@@ -30,6 +30,31 @@ Each client keeps its own configuration and current policy. If a client name alr
 
 This option controls evaluation telemetry only. Exposure events can still contain subject data. It does not replace the SDK tracking-consent API.
 
+## Evaluating flags without tracking
+
+Create a separate client with tracking turned off to read a flag without recording it, for example to choose notification content when the notification is sent. Record the exposure later by evaluating the flag through a client that tracks it:
+
+```swift
+Flags.enable()
+let peekClient = FlagsClient.create(
+    configuration: .init(trackExposures: false, trackEvaluations: false),
+    name: "peek"
+)
+let client = FlagsClient.create()
+
+// Same context as the default client.
+peekClient.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-123"))
+let variant = peekClient.getStringValue(key: "notification-copy", defaultValue: "control")
+
+// Later, when the user opens the notification:
+_ = client.getStringValue(key: "notification-copy", defaultValue: "control")
+```
+
+- `trackExposures: false`: the client sends no exposure events. It does not mark the exposure as logged, so a later evaluation of the same flag and subject through another client still sends one.
+- `trackEvaluations: false`: the client sends no evaluation events and adds no feature flag evaluations to RUM.
+
+Both default to `true` and can only narrow the SDK-wide `Flags.Configuration` settings `trackExposures`, `trackEvaluations` and `rumIntegrationEnabled`; they never re-enable tracking turned off there. Flag values and assignments are unchanged. Each client fetches its own assignments, so give both clients the same evaluation context. If a client name already exists, `create` returns that client and keeps its original configuration.
+
 ## Subject authorization for assignment downloads
 
 Subject authorization prevents the SDK from returning retained assignments for one subject while the app requests assignments for another subject. If your environment requires subject authorization, obtain a JWT for the subject from your backend and include it in the complete evaluation context update:

@@ -70,6 +70,30 @@ public final class FlagsClient {
         /// Default: `false`.
         public var enableEvaluationTelemetryOptOutParameter: Bool
 
+        /// Enables exposure logging for this client.
+        ///
+        /// When `false`, evaluations through this client send nothing to the exposures intake and do not mark
+        /// the exposure as already logged, so a later evaluation of the same flag and subject through another
+        /// client still logs its exposure. Flag values and assignments are unchanged.
+        ///
+        /// This can only narrow ``Flags/Configuration/trackExposures``: when exposure logging is disabled
+        /// for the SDK, this client logs no exposures either.
+        ///
+        /// Default: `true`.
+        public var trackExposures: Bool
+
+        /// Enables flag evaluation reporting for this client.
+        ///
+        /// When `false`, evaluations through this client send no events to the evaluations intake and
+        /// add no feature flag evaluations to RUM. Flag values, assignments, and exposure logging are unchanged.
+        ///
+        /// This can only narrow ``Flags/Configuration/trackEvaluations`` and
+        /// ``Flags/Configuration/rumIntegrationEnabled``: when either is disabled for the SDK,
+        /// it stays disabled for this client.
+        ///
+        /// Default: `true`.
+        public var trackEvaluations: Bool
+
         /// Creates configuration for an individual Flags client.
         /// - Parameters:
         ///   - enableEvaluationTelemetryOptOutParameter: Enables per-subject opt-out from flag evaluation data,
@@ -77,12 +101,33 @@ public final class FlagsClient {
         ///   `dd_evaluation_telemetry_opt_out` to be boolean `true`.
         ///   Default: `false`.
         ///   - experimentationOptOutMode: How to apply the subject's `dd_experimentation_opt_out_at` timestamp. Default: `.disabled`.
+        ///   - trackExposures: Enables exposure logging for this client. Default: `true`.
+        ///   - trackEvaluations: Enables evaluation and RUM flag evaluation reporting for this client. Default: `true`.
         public init(
             enableEvaluationTelemetryOptOutParameter: Bool = false,
-            experimentationOptOutMode: ExperimentationOptOutMode = .disabled
+            experimentationOptOutMode: ExperimentationOptOutMode = .disabled,
+            trackExposures: Bool = true,
+            trackEvaluations: Bool = true
         ) {
             self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
             self.experimentationOptOutMode = experimentationOptOutMode
+            self.trackExposures = trackExposures
+            self.trackEvaluations = trackEvaluations
+        }
+
+        /// Creates configuration for an individual Flags client.
+        ///
+        /// Preserves the initializer exported by earlier releases for binary compatibility.
+        public init(
+            enableEvaluationTelemetryOptOutParameter: Bool,
+            experimentationOptOutMode: ExperimentationOptOutMode
+        ) {
+            self.init(
+                enableEvaluationTelemetryOptOutParameter: enableEvaluationTelemetryOptOutParameter,
+                experimentationOptOutMode: experimentationOptOutMode,
+                trackExposures: true,
+                trackEvaluations: true
+            )
         }
 
         /// Creates configuration for an individual Flags client.
@@ -276,6 +321,21 @@ public final class FlagsClient {
                 )
                 return client
             }
+            if let existing = client as? FlagsClient,
+               existing.configuration.trackExposures != configuration.trackExposures
+                || existing.configuration.trackEvaluations != configuration.trackEvaluations {
+                reportIssue(
+                    """
+                    Attempted to create a `FlagsClient` named '\(name)' with `trackExposures: \(configuration.trackExposures)` \
+                    and `trackEvaluations: \(configuration.trackEvaluations)`, but one already exists with \
+                    `trackExposures: \(existing.configuration.trackExposures)` \
+                    and `trackEvaluations: \(existing.configuration.trackEvaluations)`. \
+                    The existing client will be used, and new configuration will be ignored.
+                    """,
+                    in: core
+                )
+                return client
+            }
             reportIssue(
                 """
                 Attempted to create a `FlagsClient` named '\(name)', but one already exists. \
@@ -297,9 +357,13 @@ public final class FlagsClient {
                 initializationTimeout: feature.initializationTimeout,
                 experimentationOptOutMode: configuration.experimentationOptOutMode
             ),
-            exposureLogger: feature.makeExposureLogger(featureScope),
-            evaluationLogger: feature.makeEvaluationLogger(featureScope),
-            rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope),
+            // Per-client settings only narrow the SDK-wide ones. A disabled client gets no-op loggers instead:
+            // it logs no exposures and adds nothing to the evaluation aggregator, which all clients share.
+            exposureLogger: configuration.trackExposures ? feature.makeExposureLogger(featureScope) : NOPExposureLogger(),
+            evaluationLogger: configuration.trackEvaluations ? feature.makeEvaluationLogger(featureScope) : NOPEvaluationLogger(),
+            rumFlagEvaluationReporter: configuration.trackEvaluations
+                ? feature.makeRUMFlagEvaluationReporter(featureScope)
+                : NOPRUMFlagEvaluationReporter(),
             configuration: configuration
         )
 
