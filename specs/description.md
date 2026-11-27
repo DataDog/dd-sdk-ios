@@ -1,0 +1,15 @@
+What and why?
+
+LongTaskObserver measures long tasks by diffing wall-clock timestamps (dateProvider.now) between main run-loop begin and end activities. When iOS suspends the process in the middle of a run-loop iteration, which routinely happens a few seconds after the app enters the background, the clock keeps running while no code executes. The iteration completes once the app is resumed and the observer emits one RUMAddLongTaskCommand whose duration is the entire background stay.
+
+The result is a long task event lasting seconds or minutes, flagged is_frozen_frame: true, booked on whatever view was active when the app went to background, and counted in that view’s frozen_frame.count. Nothing downstream checks the app state history, so these events are indistinguishable from a real main-thread hang.
+
+How?
+
+LongTaskObserver stamps every command it emits with its own threshold in mainRunLoopThreshold. Long tasks reported through the SDK API (for example by cross-platform SDKs) keep the default nil and are never touched, because the app may legitimately run permitted background work.
+
+Monitor.process(command:) handles each RUMAddLongTaskCommand carrying a threshold before it reaches any scope. It computes the task interval (time - duration)...time and asks context.applicationStateHistory.applicationNotSuspendedDuration(during:) how much of it the app spent in states where the process could not be suspended. When that is the whole duration, the command is unchanged. Otherwise the command is trimmed to the not suspended duration, keeping its end time, and dropped with a debug log only when that remaining duration is below the observer threshold. Handling this in Monitor, ahead of the session, view and action scopes, keeps the view's and action's long-task and frozen-frame counts consistent, and stops a pure suspension artifact from refreshing an expired session or starting a view like any other command would.
+
+Trimming, rather than dropping on any or most overlap, keeps real work that shares an interval with a suspension. The run loop iteration that resumes the app starts while the history still says .background, and the SDK records .inactive only when it handles willEnterForegroundNotification inside that same iteration. A real hang in applicationWillEnterForeground, or anywhere else in that iteration, therefore shares its interval with a 60 seconds suspension; a majority rule would drop the 2 seconds hang together with the suspension, the trimming reports the hang with its own duration.
+
+Unit tests cover: in RUMCommandTests, pure suspension (dropped), suspension with real work on both sides (trimmed), remainder below and at threshold, entirely inside, both boundaries, no transition, the .background to .inactive resume transition, API-measured and zero-duration commands; in MonitorTests, the suspension artifact neither being sent nor refreshing an expired session nor counted in the view, and a suspension followed by a resume hang being sent with only the hang duration; in LongTaskObserverTests, the observer stamping its threshold on the command and honouring it.
