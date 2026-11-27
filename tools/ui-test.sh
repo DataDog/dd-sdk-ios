@@ -11,6 +11,7 @@
 #   --test-plan: Identifies the test plan to run
 #   --mode: 'build-and-test' (default), 'build-for-testing' or 'test-without-building'
 #   --products-path: Build products location shared by 'build-for-testing' and 'test-without-building'
+#   --only-testing: Optional test identifier to run instead of the whole --test-plan, e.g. 'IntegrationScenarios/MyTests/testFoo'
 
 set -eo pipefail
 source ./tools/utils/echo-color.sh
@@ -23,6 +24,7 @@ define_arg "platform" "" "Defines the type of simulator platform for the tests, 
 define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "true"
 define_arg "mode" "build-and-test" "'build-and-test' builds and runs --test-plan. 'build-for-testing' builds all test plans into --products-path. 'test-without-building' runs --test-plan from --products-path." "string" "false"
 define_arg "products-path" "build/ui-tests" "Build products location shared by 'build-for-testing' and 'test-without-building'" "string" "false"
+define_arg "only-testing" "" "Optional test identifier to run instead of the whole --test-plan, e.g. 'IntegrationScenarios/MyTests/testFoo'" "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -71,6 +73,10 @@ WORKSPACE="IntegrationTests/IntegrationTests.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME="IntegrationScenarios"
 TEST_PLAN="$test_plan"
+ONLY_TESTING_ARGS=()
+if [[ -n "$only_testing" ]]; then
+    ONLY_TESTING_ARGS=(-only-testing:"$only_testing")
+fi
 
 xcodebuild -version
 
@@ -83,7 +89,7 @@ case "$mode" in
 
         # Failing tests end the script through `exit`, which runs the trap, rather than through `set -e`.
         TEST_STATUS=0
-        run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" || TEST_STATUS=$?
+        run_tests test -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" "${ONLY_TESTING_ARGS[@]}" || TEST_STATUS=$?
         exit $TEST_STATUS
         ;;
 
@@ -113,7 +119,7 @@ case "$mode" in
 
         # Failing tests end the script through `exit`, which runs the trap, rather than through `set -e`.
         TEST_STATUS=0
-        run_tests test-without-building -xctestrun "$XCTESTRUN_PATH" -destination "$DESTINATION" || TEST_STATUS=$?
+        run_tests test-without-building -xctestrun "$XCTESTRUN_PATH" -destination "$DESTINATION" "${ONLY_TESTING_ARGS[@]}" || TEST_STATUS=$?
         exit $TEST_STATUS
         ;;
 

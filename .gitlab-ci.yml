@@ -22,6 +22,9 @@ variables:
   DEFAULT_WATCHOS_OS: "26.0"
   DEFAULT_VISIONOS_OS: "26.0"
   DEFAULT_MACOS_OS: "26.0"
+  # TEMPORARY (test branch only, do not merge): when set, the pipeline runs only the
+  # "UI Test (validation only)" job, which runs just this test, and skips every other job.
+  VALIDATION_ONLY_TEST: "IntegrationScenarios/RUMSwiftUIManualInstrumentationScenarioTests/testSwiftUIManualScenario"
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
@@ -59,6 +62,8 @@ workflow:
 
 .test-pipeline-job:
   rules:
+    - if: '$VALIDATION_ONLY_TEST' # TEMPORARY: skip all regular test jobs in validation-only mode
+      when: never
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH || $CI_COMMIT_BRANCH == $MAIN_BRANCH' # always on main branches
     - if: '$CI_COMMIT_BRANCH' # when on other branch with following changes compared to develop
       changes:
@@ -440,9 +445,34 @@ SR Layer Snapshot Tests:
     - make clean repo-setup ENV=ci
     - make sr-layer-snapshots-pull sr-layer-snapshot-test SNAPSHOT_ENV="$SNAPSHOT_ENV" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
+# TEMPORARY (test branch only, do not merge): builds and runs only $VALIDATION_ONLY_TEST in one job,
+# so it skips the separate "Build Dependencies" and "UI Tests (build)" jobs and their artifact transfers.
+UI Test (validation only):
+  stage: test
+  rules:
+    - if: '$VALIDATION_ONLY_TEST'
+  dependencies: []
+  id_tokens:
+    <<: *dd-octo-sts-id-token
+  timeout: 30m
+  variables:
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 17 Pro"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean dependencies repo-setup ENV=ci
+    - ./tools/ui-test.sh --test-plan "RUM" --only-testing "$VALIDATION_ONLY_TEST" --os "$DEFAULT_IOS_OS" --platform "$PLATFORM" --device "$DEVICE"
+  artifacts:
+    paths:
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
+    when: always
+
 Tools Tests:
   stage: test
   rules:
+    - if: '$VALIDATION_ONLY_TEST' # TEMPORARY: skip in validation-only mode
+      when: never
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
       changes:
         paths:
