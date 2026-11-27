@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-11-11
-sdk_version: 3.21.0
-verified_against_commit: ed283dd28
+last_updated: 2026-11-27
+sdk_version: 3.23.0
+verified_against_commit: 278e4432a
 tracked_files:
   - DatadogWebViewTracking/Sources/WebViewTracking.swift
   - DatadogWebViewTracking/Sources/ObjC/WebViewTracking+objc.swift
