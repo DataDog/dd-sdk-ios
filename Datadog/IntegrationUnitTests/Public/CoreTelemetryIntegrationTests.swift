@@ -36,7 +36,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            tailSampleRate: 100
+            headSampleRate: 100
         )
 
         // Then
@@ -81,7 +81,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            tailSampleRate: 100
+            headSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -127,7 +127,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            tailSampleRate: 100
+            headSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -174,7 +174,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            tailSampleRate: 100
+            headSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -218,10 +218,10 @@ class CoreTelemetryIntegrationTests: XCTestCase {
             core.telemetry.debug("Debug Telemetry")
             core.telemetry.error("Error Telemetry")
             core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: metricsSampleRate)
-            core.telemetry.send(telemetry: .usage(.init(event: .setUser, sampleRate: metricsSampleRate)))
+            core.telemetry.usage(event: .setUser, sampleRate: metricsSampleRate)
             core.telemetry.stopMethodCalled(
                 core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: headSampleRate),
-                tailSampleRate: metricsSampleRate
+                headSampleRate: metricsSampleRate
             )
         }
 
@@ -256,6 +256,31 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertEqual(
             usage.effectiveSampleRate,
             Double(config.telemetrySampleRate.composed(with: metricsSampleRate))
+        )
+    }
+
+    func testGivenRUMEnabled_uploadQualityMetricIsNotForwardedAsDebugEvent() throws {
+        // Given - RUM registers CombinedFeatureMessageReceiver with TelemetryInterceptor before TelemetryReceiver.
+        // TelemetryInterceptor returns true for UploadQualityMetric, stopping propagation via contains(where:),
+        // so TelemetryReceiver never writes a debug event for it.
+        var config = RUM.Configuration(applicationID: .mockAny())
+        config.telemetrySampleRate = .maxSampleRate
+        RUM.enable(with: config, in: core)
+
+        RUMMonitor.shared(in: core).startView(key: "view")
+
+        // When
+        core.telemetry.metric(
+            name: UploadQualityMetric.name,
+            attributes: [UploadQualityMetric.track: "feature"],
+            sampleRate: .maxSampleRate
+        )
+
+        // Then - no TelemetryDebugEvent is produced for upload_quality
+        let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
+        XCTAssertFalse(
+            debugEvents.contains { $0.telemetry.message == "[Mobile Metric] \(UploadQualityMetric.name)" },
+            "upload_quality metric must not produce a TelemetryDebugEvent — it is consumed by TelemetryInterceptor"
         )
     }
 }

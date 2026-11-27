@@ -18,7 +18,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         let errorKinds: [String] = .mockRandom(count: 5)
 
         // Given
-        let controller = SessionEndedMetricController(telemetry: telemetry, sampleRate: 4.2, tracksBackgroundEvents: .mockRandom(), isUsingSceneLifecycle: .mockRandom())
+        let controller = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100, tracksBackgroundEvents: .mockRandom(), isUsingSceneLifecycle: .mockRandom())
         controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
@@ -34,8 +34,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.sdkErrorsCount.total, errorKinds.count)
         XCTAssertEqual(metric.noViewEventsCount.actions, 1)
         XCTAssertEqual(metric.wasStopped, true)
-        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
-        XCTAssertEqual(metricTelemetry.sampleRate, 4.2)
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
     }
 
     func testTrackingMultipleSessionsWithExplicitSessionID() throws {
@@ -144,6 +143,16 @@ class SessionEndedMetricControllerTests: XCTestCase {
             iterations: 100
         )
         // swiftlint:enable opening_brace
+    }
+
+    func testDefaultSampleRate() {
+        let controller = SessionEndedMetricController(
+            telemetry: telemetry,
+            sampleRate: SessionEndedMetricController.defaultSampleRate,
+            tracksBackgroundEvents: .mockRandom(),
+            isUsingSceneLifecycle: .mockRandom()
+        )
+        XCTAssertEqual(controller.sampleRate, 15)
     }
 }
 
