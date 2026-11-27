@@ -97,7 +97,7 @@ struct ScreenView: View {
             )
             .trackRUMTapAction(name: "Tap Push to Next View")
 
-            Text("Hello from Bits Code")
+            Text("Hello from Bits Code 🐶")
 
             Button("Present Modal View") {
                 presentSheet.toggle()
