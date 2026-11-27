@@ -57,6 +57,39 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertFalse(keys.contains { $0.hasPrefix("temporary-") })
     }
 
+    func testAddingAndRemovingGlobalAttributesConcurrently_updatesFatalErrorContextWithLatestAttributes() throws {
+        // Given
+        let iterations = 100
+        // Slow updates widen the window in which a concurrent, older snapshot could be written last.
+        let fatalErrorContext = SlowFatalErrorContextNotifierMock()
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+
+        // When
+        monitor.notifySDKInit()
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { [monitor] iteration in monitor?.addAttribute(forKey: "single-\(iteration)", value: iteration) },
+                { [monitor] iteration in monitor?.addAttributes(["bulk-\(iteration)": iteration]) },
+                { [monitor] iteration in
+                    monitor?.addAttribute(forKey: "temporary-\(iteration)", value: iteration)
+                    monitor?.removeAttribute(forKey: "temporary-\(iteration)")
+                }
+            ],
+            iterations: iterations
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let keys = fatalErrorContext.globalAttributes.keys
+        XCTAssertEqual(keys.filter { $0.hasPrefix("single-") }.count, iterations)
+        XCTAssertEqual(keys.filter { $0.hasPrefix("bulk-") }.count, iterations)
+        XCTAssertFalse(keys.contains { $0.hasPrefix("temporary-") })
+    }
+
     // MARK: - Changing Global Attributes After SDK Init
 
     func testAddingGlobalAttributeAfterSDKInit() throws {
@@ -676,6 +709,26 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 }
 
 // MARK: - Helpers
+
+/// A fatal error context whose `globalAttributes` updates take a little time, like a real notifier sending a message,
+/// so updates from concurrent threads could otherwise reach it out of order.
+private final class SlowFatalErrorContextNotifierMock: FatalErrorContextNotifying {
+    var sessionState: RUMSessionState?
+    var view: RUMViewEvent?
+
+    @ReadWriteLock
+    private var storedGlobalAttributes: [String: Encodable] = [:]
+
+    var globalAttributes: [String: Encodable] {
+        get { storedGlobalAttributes }
+        set {
+            usleep(.random(in: 0...200))
+            storedGlobalAttributes = newValue
+        }
+    }
+
+    func sessionDidStop() {}
+}
 
 private extension RUMViewEvent {
     func attribute(forKey key: String) -> Any? {

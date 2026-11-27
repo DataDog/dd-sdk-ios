@@ -233,8 +233,13 @@ internal class Monitor: RUMCommandSubscriber {
         return mutableCommand
     }
 
-    private func didUpdateAttributes() {
-        fatalErrorContext.globalAttributes = attributes
+    /// Updates global attributes and the fatal error context while holding the attributes lock,
+    /// so concurrent updates reach the fatal error context in order and it always ends with the latest attributes.
+    private func updateAttributes(_ update: (inout [AttributeKey: AttributeValue]) -> Void) {
+        _attributes.mutate { attributes in
+            update(&attributes)
+            fatalErrorContext.globalAttributes = attributes
+        }
     }
 }
 
@@ -257,25 +262,21 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - attributes
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        _attributes.mutate { $0[key] = value }
-        self.didUpdateAttributes()
+        updateAttributes { $0[key] = value }
     }
 
     func addAttributes(_ attributes: [AttributeKey: AttributeValue]) {
-        _attributes.mutate { $0.merge(attributes) { $1 } }
-        self.didUpdateAttributes()
+        updateAttributes { $0.merge(attributes) { $1 } }
     }
 
     func removeAttribute(forKey key: AttributeKey) {
-        _attributes.mutate { $0[key] = nil }
-        self.didUpdateAttributes()
+        updateAttributes { $0[key] = nil }
     }
 
     func removeAttributes(forKeys keys: [AttributeKey]) {
-        _attributes.mutate { attributes in
+        updateAttributes { attributes in
             keys.forEach { key in attributes.removeValue(forKey: key) }
         }
-        self.didUpdateAttributes()
     }
 
     // MARK: - session
