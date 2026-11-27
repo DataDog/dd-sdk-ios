@@ -40,6 +40,12 @@ internal class objc_SpanObjc: NSObject, objc_OTSpan {
         swiftSpan.setTag(key: key, value: boolValue)
     }
 
+    func setTag(_ key: String, dictionaryValue: NSDictionary) {
+        if let tags = castTagsToSwift(dictionaryValue) as? [String: OTTagValue] {
+            swiftSpan.setTag(key: key, value: tags)
+        }
+    }
+
     func log(_ fields: [String: NSObject]) {
         self.log(fields, timestamp: Date())
     }

@@ -367,6 +367,126 @@ class DDTracerTests: XCTestCase {
         )
     }
 
+    // MARK: - Dictionary Tags
+
+    func testWhenStartingSpanWithDictionaryTags_theyAreFlattened() throws {
+        Trace.enable(with: config)
+
+        let tags = NSDictionary(
+            dictionary: [
+                "ctx": [
+                    "string": "value",
+                    "int": 1,
+                    "double": 2.5,
+                    "bool": true,
+                    "url": URL(string: "https://example.com")!,
+                    "nested": ["leaf": "leaf-value"],
+                ]
+            ]
+        )
+        objc_Tracer.shared().startSpan("operation", tags: tags).finish()
+
+        let span = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx.string"), "value")
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx.int"), "1")
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx.double"), "2.5")
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx.bool"), "true")
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx.url"), "https://example.com")
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx.nested.leaf"), "leaf-value")
+    }
+
+    func testWhenStartingRootSpanWithDictionaryTags_theyAreFlattened() throws {
+        Trace.enable(with: config)
+
+        let tags = NSDictionary(dictionary: ["ctx": ["foo": "bar"]])
+        objc_Tracer.shared().startRootSpan("operation", tags: tags, startTime: nil, customSampleRate: nil).finish()
+
+        let span = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx.foo"), "bar")
+    }
+
+    func testWhenConfigurationTagsContainDictionaries_theyAreFlattened() throws {
+        let objcConfig = objc_TraceConfiguration()
+        objcConfig.tags = ["global": ["foo": "bar", "count": 2]]
+        objc_Trace.enable(with: objcConfig)
+
+        objc_Tracer.shared().startSpan("operation").finish()
+
+        let span = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.global.foo"), "bar")
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.global.count"), "2")
+        DDAssertJSONEqual(objcConfig.tags!, ["global": ["foo": "bar", "count": 2]], "Configuration tags should be returned unchanged")
+    }
+
+    func testWhenSpanTagReplacesConfigurationDictionaryTag_onlySpanTagIsSent() throws {
+        let objcConfig = objc_TraceConfiguration()
+        objcConfig.tags = ["ctx": ["foo": "global-value"]]
+        objc_Trace.enable(with: objcConfig)
+
+        objc_Tracer.shared().startSpan("operation", tags: NSDictionary(dictionary: ["ctx": "local-value"])).finish()
+
+        let span = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try span.meta.custom(keyPath: "meta.ctx"), "local-value")
+        XCTAssertNil(try? span.meta.custom(keyPath: "meta.ctx.foo"))
+    }
+
+    func testWhenSettingDictionaryTag_itIsFlattened() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary(dictionary: ["string": "value", "int": 1, "nested": ["double": 2.5]]))
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.string"), "value")
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.int"), "1")
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.nested.double"), "2.5")
+    }
+
+    func testWhenSettingDictionaryTagWithCollidingKeys_literalKeyWins() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary(dictionary: ["foo": ["bar": "nested-value"], "foo.bar": "literal-value"]))
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.foo.bar"), "literal-value")
+    }
+
+    func testWhenSettingEmptyDictionaryTag_itSetsNoTags() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary())
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertNil(try? matcher.meta.custom(keyPath: "meta.ctx"))
+    }
+
+    func testWhenSettingDictionaryTagWithNonStringKeys_thoseTagsAreDropped() throws {
+        Trace.enable(with: config)
+
+        let span = objc_Tracer.shared().startSpan("operation")
+        span.setTag("ctx", dictionaryValue: NSDictionary(dictionary: [123: "invalid key", "valid": "valid key"]))
+        span.finish()
+
+        let matcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try matcher.meta.custom(keyPath: "meta.ctx.valid"), "valid key")
+        XCTAssertNil(try? matcher.meta.custom(keyPath: "meta.ctx.123"), "123 is not a valid tag-key, so it should be dropped")
+    }
+
+    func testWhenNestedDictionaryTagHasNonStringKeys_itIsNotFlattened() throws {
+        Trace.enable(with: config)
+
+        let tags = NSDictionary(dictionary: ["ctx": NSDictionary(dictionary: [1: "value"])])
+        objc_Tracer.shared().startSpan("operation", tags: tags).finish()
+
+        let span = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertNil(try? span.meta.custom(keyPath: "meta.ctx.1"))
+    }
+
     // MARK: - Usage errors
 
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {

@@ -266,6 +266,29 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)
     }
 
+    func testWhenDictionaryTagIsWrappedInAnyEncodable_itIsFlattened() throws {
+        let core = PassthroughCoreMock()
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core, tags: ["global": AnyEncodable(["foo": "global-value"])])
+        let span = tracer.startSpan(operationName: .mockAny())
+
+        // When
+        span.setTag(key: "local", value: AnyEncodable(["foo": "local-value", "count": 2]))
+        span.finish()
+
+        // Then
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(
+            events.first?.spans.first?.tags,
+            [
+                "global.foo": "global-value",
+                "local.foo": "local-value",
+                "local.count": "2",
+            ]
+        )
+    }
+
     func testWhenSettingDictionaryWithBothSamplingTags_itAppliesThemInKeyOrder() {
         let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
         let tracer: DatadogTracer = .mockWith(core: core)

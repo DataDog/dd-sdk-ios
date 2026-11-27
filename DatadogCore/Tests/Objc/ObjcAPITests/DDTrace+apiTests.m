@@ -72,6 +72,7 @@
     [[DDTracer shared] startSpan:@"" tags:@{}];
     [[DDTracer shared] startSpan:@"" childOf:NULL];
     id<OTSpan> span = [[DDTracer shared] startSpan:@"" childOf:NULL tags:NULL startTime:NULL];
+    [span setTag:@"" dictionaryValue:@{}];
     [span finish];
     [span finishWithTime:NULL];
 }
