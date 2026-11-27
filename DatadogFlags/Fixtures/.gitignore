@@ -1,0 +1,5 @@
+# Shared feature flags conformance fixtures, fetched by `make feature-flags-fixtures-pull` from ffe-system-test-data
+# at the commit pinned in ci/feature-flags-precomputed-fixtures.json. Kept outside every SwiftPM target path.
+precomputed/
+# Staging folders that stay if the fetch script is interrupted
+.precompute-*/

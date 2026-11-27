@@ -8,6 +8,8 @@ import Foundation
 
 internal struct FlagsData: Equatable, Codable {
     var flags: [String: FlagAssignment]
+    /// Plaintext assignments that `flags` cannot hold beside a canonically equivalent key.
+    var keySpellings: [FlagKeySpelling]
     var context: FlagsEvaluationContext
     var date: Date
     let obfuscation: FlagKeyObfuscation?
@@ -15,6 +17,9 @@ internal struct FlagsData: Equatable, Codable {
     // Optional so snapshots written before opt-out support remain readable.
     let experimentationOptOutPolicy: ExperimentationOptOut?
     let observeFullEvaluationData: Bool
+    /// Served keys whose assignment the SDK cannot parse. Their evaluations report a parse error, not a missing flag.
+    /// An earlier reader ignores this field and reports these keys as missing, as it did before.
+    var unparsedFlagKeys: [String]
 
     init(
         flags: [String: FlagAssignment],
@@ -23,12 +28,19 @@ internal struct FlagsData: Equatable, Codable {
         obfuscation: FlagKeyObfuscation? = nil,
         flagSelection: CanonicalFlagSelection? = nil,
         experimentationOptOutPolicy: ExperimentationOptOut? = nil,
-        observeFullEvaluationData: Bool = false
+        observeFullEvaluationData: Bool = false,
+        keySpellings: [FlagKeySpelling] = [],
+        unparsedFlagKeys: [String] = []
     ) {
         self.flags = flags.mapValues { assignment in
             var assignment = assignment
             assignment.observeFullEvaluationData = observeFullEvaluationData
             return assignment
+        }
+        self.keySpellings = keySpellings.map { spelling in
+            var spelling = spelling
+            spelling.assignment.observeFullEvaluationData = observeFullEvaluationData
+            return spelling
         }
         self.context = context
         self.date = date
@@ -36,10 +48,12 @@ internal struct FlagsData: Equatable, Codable {
         self.flagSelection = flagSelection
         self.experimentationOptOutPolicy = experimentationOptOutPolicy
         self.observeFullEvaluationData = observeFullEvaluationData
+        self.unparsedFlagKeys = unparsedFlagKeys
     }
 
     private enum CodingKeys: String, CodingKey {
-        case flags, context, date, obfuscation, flagSelection, experimentationOptOutPolicy, observeFullEvaluationData
+        case flags, keySpellings, context, date, obfuscation, flagSelection, experimentationOptOutPolicy, observeFullEvaluationData
+        case unparsedFlagKeys
     }
 
     init(from decoder: any Decoder) throws {
@@ -51,7 +65,35 @@ internal struct FlagsData: Equatable, Codable {
             obfuscation: try container.decodeIfPresent(FlagKeyObfuscation.self, forKey: .obfuscation),
             flagSelection: try container.decodeIfPresent(CanonicalFlagSelection.self, forKey: .flagSelection),
             experimentationOptOutPolicy: try container.decodeIfPresent(ExperimentationOptOut.self, forKey: .experimentationOptOutPolicy),
-            observeFullEvaluationData: (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true
+            observeFullEvaluationData: (try? container.decode(Bool.self, forKey: .observeFullEvaluationData)) == true,
+            keySpellings: try container.decodeIfPresent([FlagKeySpelling].self, forKey: .keySpellings) ?? [],
+            unparsedFlagKeys: try container.decodeIfPresent([String].self, forKey: .unparsedFlagKeys) ?? []
         )
     }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(flags, forKey: .flags)
+        if !keySpellings.isEmpty {
+            try container.encode(keySpellings, forKey: .keySpellings)
+        }
+        try container.encode(context, forKey: .context)
+        try container.encode(date, forKey: .date)
+        try container.encodeIfPresent(obfuscation, forKey: .obfuscation)
+        try container.encodeIfPresent(flagSelection, forKey: .flagSelection)
+        try container.encodeIfPresent(experimentationOptOutPolicy, forKey: .experimentationOptOutPolicy)
+        try container.encode(observeFullEvaluationData, forKey: .observeFullEvaluationData)
+        if !unparsedFlagKeys.isEmpty {
+            try container.encode(unparsedFlagKeys, forKey: .unparsedFlagKeys)
+        }
+    }
+
+    /// Every served flag key, including the spellings in `keySpellings`.
+    var allFlagKeys: [String] {
+        Array(flags.keys) + keySpellings.map(\.key)
+    }
+}
+
+extension FlagsData: FlagNumericTokenRoot {
+    static var flagAssignmentsPath: [String] { ["flags"] }
 }

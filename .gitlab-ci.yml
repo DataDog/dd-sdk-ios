@@ -68,6 +68,7 @@ workflow:
           - "SmokeTests/**/*"
           - "TestUtilities/**/*"
           - "tools/**/*"
+          - "ci/**/*" # the shared Flags fixture pin and fetch script that unit tests use
           - "*" # match any file in the root directory
         compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 

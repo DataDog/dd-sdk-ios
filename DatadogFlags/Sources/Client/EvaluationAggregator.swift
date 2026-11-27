@@ -190,7 +190,8 @@ internal struct TelemetryTargetingKey {
 }
 
 private struct AggregationKey: Hashable {
-    let flagKey: String
+    // Encoded lookup keys preserve UTF-8 identity, including canonically equivalent Unicode.
+    let flagKey: Data
     let variantKey: String
     let allocationKey: String
     let targetingKey: String?
@@ -207,7 +208,7 @@ private struct AggregationKey: Hashable {
         context: [String: AnyValue],
         observeFullEvaluationData: Bool
     ) {
-        self.flagKey = flagKey
+        self.flagKey = Data(flagKey.utf8)
         self.variantKey = variantKey
         self.allocationKey = allocationKey
         self.targetingKey = targetingKey

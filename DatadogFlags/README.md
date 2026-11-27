@@ -129,7 +129,7 @@ Before the first context update, evaluations return defaults with `providerNotRe
 evaluations without readable assignments return `general` when a subject-authorization boundary is active and `providerNotReady` otherwise.
 A malformed timestamp returns `invalidContext`. Disabled mode keeps previous assignments available while a refresh is pending.
 An invalid context does not overwrite or delete the last successful disk snapshot.
-Snapshots with an opt-out policy use cache version 3. Older SDKs that support only versions 1 or 2 cannot restore them.
+Snapshots with an opt-out policy use cache version 3, or version 4 when they also need original numeric tokens. Older SDKs that support only versions 1 or 2 cannot restore them.
 The current SDK still reads unfiltered snapshots in versions 1 and 2. Filtered snapshots from earlier development builds using those versions are rejected.
 
 Experimentation opt-out does not disable evaluation telemetry or RUM flag annotations.
@@ -139,6 +139,59 @@ Older allocations retained by future mode still produce their normal exposures. 
 Immediate withdrawal can change an enrolled subject's experience. Account for that change in experiment analysis.
 
 Client configuration is fixed for each client name. Creating a client with an existing name returns the existing client, which keeps its original configuration.
+
+## Shared precomputed response tests
+
+The Flags module uses the JSON contract from [ffe-system-test-data](https://github.com/DataDog/ffe-system-test-data/tree/main/precomputed-assignments).
+This keeps response behavior consistent across mobile SDKs. The snapshot is test data only.
+It adds no runtime dependency and requires no Git submodule.
+
+`ci/feature-flags-precomputed-fixtures.json` lists the fixture sources. Each source has its own upstream path prefix, destination folder, commit pin and file map, so later fixture sets reuse the same pipeline. The `precomputed-assignments` source pins an upstream commit. Tests read the snapshot from the git-ignored `DatadogFlags/Fixtures/precomputed` folder, outside every SwiftPM target, so fixtures never reach a customer checkout. `SOURCE.json` records the source commit, the source prefix and file map, and the file digests. If the prefix or file map changes, the next run imports the source again.
+The runner discovers all nested JSON cases.
+Adding a case requires an upstream fixture change and a pin update. It requires no runner or filename-list change.
+Missing or empty fixtures fail the suite. Shared `_include` and `_skip` fields describe API applicability.
+Do not add local exclusions to hide failures.
+
+Diagnostic snapshots and native bridge exports omit numeric assignments with no representable Integer or Double value.
+Native typed getters still report `TYPE_MISMATCH` for these assignments. Valid zero values remain present.
+Caches that require original numeric metadata use version 4. Older readers ignore these caches and must refetch assignments;
+getters use application defaults until assignments become available. Other caches keep their existing versions.
+
+Numeric behavior follows the [shared numeric contract](https://github.com/DataDog/ffe-system-test-data/blob/main/precomputed-assignments/README.md#mobile-conformance-and-numeric-types).
+The native context API requires a string targeting key. Fixtures with `targetingKey: null` must declare this platform in `_skip` upstream; the runner reports an actionable fixture error if an applicable case violates that requirement.
+
+Upstream CI requires a generated obfuscated companion for each applicable plain fixture. It rejects missing, stale, or orphaned companions. Edit the plain case upstream and regenerate; do not maintain two sets of expectations. Dedicated malformed-encoding cases and fixed digest vectors remain separate.
+
+Cases cover values, defaults, errors, reasons, variants, emission gates, duplicate evaluations, and numeric boundaries.
+Obfuscation cases cover fixed digests, salts, Unicode, whitespace, malformed metadata, and plaintext event identity.
+The suite tests network decoding and serialized state. It checks real exposure and evaluation records. UTF-8 flag identity remains distinct during deduplication.
+
+Run from the repository root:
+
+```sh
+make feature-flags-fixtures-pull
+xcodebuild -workspace Datadog.xcworkspace -scheme DatadogFlags -destination '<installed simulator>' -only-testing:DatadogFlagsTests/CanonicalPrecomputedTests test
+```
+
+`make feature-flags-fixtures-pull` fetches the pinned commit of each source and records file digests in its `SOURCE.json`. When a local snapshot already matches its pin, it only verifies, without networking. `make test` runs it first for the `DatadogFlags` and `UnitTests-*` schemes, whose test plans include `DatadogFlagsTests`. The fetch has a time limit and retries 3 times.
+
+Move the pins to a reviewed upstream commit. A source keeps its pin when the new commit changes none of its files:
+
+```sh
+python3 ci/sync-feature-flags-precomputed-fixtures.py --update --ref <full-upstream-sha>
+```
+
+The importer copies committed bytes, regenerates the index, and removes deleted cases.
+It preserves Unity asset GUIDs where applicable. Do not edit fetched JSON or its checksums.
+Use `--update --source <local-checkout> --ref <commit>` to test an upstream fixture branch before publication.
+`--verify` checks that the local snapshot matches the pin without networking.
+
+The weekly `Feature flags precomputed fixtures` workflow opens a draft update PR that proposes the latest ffe-system-test-data `main` commit.
+It uses a short-lived token restricted to the default branch and this workflow.
+It waits when an update PR is already open. Normal SDK CI must pass before merge.
+If PR creation fails, the workflow retains the signed update branch for inspection and recovery.
+Merge the upstream fixture contract before merging its consumer PRs.
+The update workflow never merges or publishes an SDK release.
 
 ## Evaluation telemetry privacy
 

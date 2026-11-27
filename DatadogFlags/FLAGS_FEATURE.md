@@ -109,7 +109,7 @@ All methods are on `FlagsClientProtocol`:
 | `setEvaluationContext(_:)` / `setEvaluationContext(_:completion:)` / `try await setEvaluationContext(_:)` | Fire-and-forget, callback, or async throwing |
 | `state` | `FlagsStateObservable`: `currentState`, `addListener(_:)`, `removeListener(_:)` |
 | `onFirstFlags(_:)` | One-shot listener for the first accepted configuration; returns a `FlagsSubscription` to `cancel()` |
-| `snapshot()` | **Preview API**: side-effect-free `FlagsSnapshot` of cached assignments; records no exposure, evaluation or RUM annotation. Returns `nil` when no assignments are readable (no context or cache, `.error` state, fallback client) or when assignments use obfuscated flag keys |
+| `snapshot()` | **Preview API**: side-effect-free `FlagsSnapshot` of cached assignments; records no exposure, evaluation or RUM annotation. Returns `nil` when no assignments are readable (no context or cache, `.error` state, fallback client) or when assignments use obfuscated flag keys. Numeric assignments with no valid `Int` or `Double` value are left out, so a readable snapshot can have no assignments; it is still not `nil`. |
 
 Object flags use `AnyValue` (`.string`, `.bool`, `.int`, `.double`, `.dictionary`, `.array`, `.null`). Context attributes use the same type.
 
@@ -252,12 +252,14 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 ## Common Troubleshooting Patterns
 
 ### "Every flag returns its default value"
-**Causes:** Check `details.error` and `client.state.currentState` to find which of these applies:
+**Causes:** Check `details.error` and `client.state.currentState` to find which of these applies. Every error result has `details.reason` set to `"ERROR"`:
 - `.providerNotReady`: no context set yet and no cache, or no subject-authorization boundary is active and either the fetch is still running without readable assignments or an ordinary fetch failure has no eligible fallback.
 - `.general`: an active subject-authorization boundary has no readable assignments for the requested subject.
 - `.flagNotFound`: the key is not in the assignments. The flag is missing in this environment, not targeted at this subject, excluded by `flagSelection`, or the key is misspelled.
-- `.typeMismatch`: the value cannot convert to the requested type without loss. For example, `getIntegerValue` rejects a fractional `Double`, and `getDoubleValue` rejects an `Int` that `Double` cannot represent exactly.
+- `.typeMismatch`: the getter type differs from the flag's type, or the numeric value has no valid read for the getter. `getIntegerValue` needs a whole value within `Int` range. `getDoubleValue` needs a fractional value or a whole value that `Double` represents exactly. Values that overflow `Double`, and nonzero values that round to zero, fail both. The served `integer`, `number`, or `float` label does not change the result.
+- Known limitation: with older `JSONDecoder` implementations (seen with Swift 5.4 corelibs Foundation; expected on iOS and tvOS 15–16 and macOS 12–13, not verified there), a number outside `Double` range such as `1e400` can make the whole response invalid instead of only that flag. Newer OS versions return `.typeMismatch` for that flag only.
 - `.invalidContext`: `dd_experimentation_opt_out_at` is malformed while an opt-out mode is enabled.
+- `.parseError`: the response served the key, but the SDK cannot parse its assignment, for example because its variation type is not supported. Other flags in the response stay usable. The error survives the cache.
 - The client came from `FlagsClient.shared(named:)` before it was created, or `create` ran before `Flags.enable()`: this returns a no-op client that always returns defaults with `.providerNotReady`. Look for the SDK usage error message.
 
 **Solutions:** Call `Flags.enable()`, then `FlagsClient.create()`, then `setEvaluationContext` and wait for its completion (or `.ready` state) before relying on values.
@@ -309,7 +311,7 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 
 - **RUM**: optional. With `rumIntegrationEnabled`, each successful evaluation adds `feature_flags.<key> = <variant key>` to the active view. RUM must be enabled for this; without it, messages are ignored. When RUM is enabled before the fetch, the request also carries the RUM application ID.
 - **Tracking consent**: exposures and evaluation events are stored and uploaded like other events, following the SDK's tracking consent. Assignment fetching does not depend on consent.
-- **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `getFlagAssignmentsWithConsent`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Bridges that replay evaluations use the consent-aware snapshot and evaluation overload so each event keeps the privacy policy captured with its assignments. Obfuscated flag keys are supported only when the SDK source is `ios`.
+- **Cross-platform SDKs**: React Native and other bridges use `@_spi(Internal)` methods (`getFlagAssignments`, `getFlagAssignmentsWithConsent`, `sendFlagEvaluation`, `sendFlagExposure`, `sendFlagEvaluationEvent`, `sendFlagRUMEvaluation`). Bridges that replay evaluations use the consent-aware snapshot and evaluation overload so each event keeps the privacy policy captured with its assignments. Obfuscated flag keys are supported only when the SDK source is `ios`. `getFlagAssignments` and `getFlagAssignmentsWithConsent` omit numeric assignments with no valid `Int` or `Double` value.
 - **OpenFeature**: `dd-openfeature-provider-swift` wraps `FlagsClient` and reads `state` to map provider status.
 
 ## Additional Context
@@ -319,4 +321,4 @@ See [the README](README.md#subject-authorization-for-assignment-downloads) for t
 - `FlagsClientState` documentation mentions `reset()`, but reset is internal and not available to apps.
 - `onFirstFlags` listeners run on a background queue, or on the calling thread if the first configuration was already published. `flagsChanged` lists configuration keys, which may be obfuscated rather than plaintext names. The no-op fallback client calls the listener immediately with an empty list.
 - Exposure deduplication is in memory, per client, for up to 5,000 subject and flag pairs, so a new process logs exposures again.
-- Disk caches filtered by flag selection or an opt-out policy use cache version 3, which SDK versions without these features skip.
+- Disk caches that need original numeric tokens use cache version 4. Otherwise, caches filtered by flag selection or an opt-out policy use cache version 3. SDK versions skip cache versions they do not support.
